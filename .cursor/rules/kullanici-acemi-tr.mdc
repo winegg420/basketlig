@@ -1,0 +1,15 @@
+---
+description: Kullanıcı yeni başlayan; basit Türkçe ve işleri ajan yapsın
+alwaysApply: true
+---
+
+# Türkçe ve seviye
+
+- Kullanıcı teknik acemidir: kısa, numaralı cümleler; İngilizce terimden kaçın ya da hemen Türkçe açıkla.
+- Çok uzun talimat listesi verme; mümkünse komutları ve dosya değişikliklerini **sen çalıştır / sen yaz**; kullanıcıya yalnızca “şimdi şunu gör” düzeyinde tek doğrulama bırak.
+- Charazay oyunu için `file://` yerine yerel sunucu (`http://127.0.0.1:8765/...`) tercih et; kullanıcı takılıyorsa projede `Charazay-2.0-YEREL-SUNUCU.bat` veya `py -3 -m http.server 8765 --bind 127.0.0.1` — bunları **mümkünse sen çalıştır**, kullanıcıya uzun ödev listesi verme.
+
+# Ödev verme
+
+- Sunucu açma, dosya denemesi, kısa test gibi senin yapabileceğin işleri kullanıcıya yüklenme; önce araçları kullan.
+- Oyun ve mentor aynı `http://127.0.0.1:port` kökünde olmalı; `file://` ile `http://` farklı depolar — mentor boş görünür.

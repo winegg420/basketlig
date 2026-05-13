@@ -1,0 +1,22 @@
+CHARAZAY — EN KISA YOL
+=====================
+
+1) Bu klasörde çift tık: Charazay-2.0-YEREL-SUNUCU.bat
+   (İsimde .bat görünmüyorsa normal; türü "Toplu iş dosyası" olsun.)
+
+2) Açılan siyah pencereyi KAPATMA. Chrome kendiliğinden açılmazsa adres çubuğuna yaz:
+   http://127.0.0.1:8765/charazay2.0.html
+
+3) Mentor paneli de AYNI adresten aç (yoksa X/Y kartları boş kalır):
+   http://127.0.0.1:8765/charazay-mentor-panel.html
+
+4) Cursor veya başka program İÇİNDE açma — dışarıda Chrome kullan.
+
+5) Sunucu yoksa: Windows tuşu + R  →  cmd  →  Enter  →  şu iki satırı sırayla yapıştır:
+
+   cd /d "C:\Users\idagu\OneDrive\Masaüstü\charazay2.0_files"
+   py -3 -m http.server 8765 --bind 127.0.0.1
+
+   Sonra Chrome’da yine: http://127.0.0.1:8765/charazay2.0.html
+
+6) Menü tıklanmazsa (yedek): oyun açıkken Alt + 1…0 — 1=Ana panel, 2=Takım, 3=Kadro, 4=Maç, 5=Lig, 6=Market, 7=Altyapı, 8=Antrenman, 9=Arena, 0=Bilanço.

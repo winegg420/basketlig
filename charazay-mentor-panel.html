@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Charazay — Mentor Panel (Geliştirici Asistanı)</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23f97316'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -39,6 +40,18 @@ small.note{display:block;margin-top:8px;color:var(--text2);font-size:11px;}
 footer{margin-top:28px;padding-top:16px;border-top:1px solid var(--border);font-size:12px;color:var(--text2);}
 code{font-size:12px;background:var(--bg3);padding:2px 6px;border-radius:4px;}
 @media print{.nav-top,textarea,.no-print{display:none!important;}body{max-width:100%;}}
+.mentor-log-wrap{margin-top:12px;}
+#mentorLayoutLogTa{
+  width:100%;min-height:220px;max-height:480px;resize:vertical;
+  background:var(--bg3);border:1px solid var(--border);border-radius:10px;
+  padding:12px;color:var(--text);font-size:12px;line-height:1.45;
+  font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
+  white-space:pre-wrap;word-break:break-word;
+}
+.mentor-log-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.mentor-log-btns button{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 14px;border-radius:8px;font-weight:600;cursor:pointer;font-size:12px;}
+.mentor-log-btns button.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+.mentor-log-btns button:hover{filter:brightness(1.08);}
 </style>
 </head>
 <body>
@@ -51,6 +64,37 @@ code{font-size:12px;background:var(--bg3);padding:2px 6px;border-radius:4px;}
   <a href="Charazay-2.0-BASLAT.html">→ Hızlı giriş (yönlendirme)</a>
 </div>
 
+<div id="mentorOriginHint" class="card box-danger no-print" style="border-left:4px solid #ef4444;display:none;">
+  <strong style="color:var(--text);">Yerel dosya (file://) uyarısı</strong>
+  <p style="margin-top:8px;font-size:13px;color:var(--text2);line-height:1.5;">Bu sayfa <code>file://</code> ile açıldıysa oyunla aynı tarayıcı deposunu paylaşmaz; X/Y boş kalır. Oyunu ve bu paneli <strong>http://127.0.0.1:8765/...</strong> adresinden açın. Örnek: <code>http://127.0.0.1:8765/charazay-mentor-panel.html</code></p>
+</div>
+<script>
+(function(){
+  var el=document.getElementById('mentorOriginHint');
+  if(el&&location.protocol==='file:') el.style.display='block';
+})();
+</script>
+
+<div id="mentorSyncCard" class="card no-print box-warn">
+  <h2>X — Canlı denetim (layout + DOM + yan panel)</h2>
+  <p id="mentorSyncLine" style="font-size:13px;color:var(--text2);margin-bottom:8px;">Yükleniyor…</p>
+  <div id="mentorIssuesDetail" style="font-size:12px;color:var(--text2);line-height:1.5;margin-top:10px;padding-top:12px;border-top:1px solid var(--border);max-height:320px;overflow-y:auto;"></div>
+  <p style="font-size:11px;color:var(--text2);margin:12px 0 0;">Oyunda her sayfa değişiminde <code>charazayRunLayoutCalibration</code> çalışır; <code>localStorage.CHARAZAY_MENTOR_SYNC</code> <strong>v8</strong> (tip <code>mentor-sync</code>): layout, rota sayısı, aktif sayfa yeri, üst başlık eşleşmesi, <strong>lig bloğu menüden önce mi</strong>. Oyun ve panel <strong>aynı kök</strong> (örn. <code>http://127.0.0.1:8765/…</code>). <strong>Y</strong> günlüğü: kırmızı/sarı koşullarda satır birikir.</p>
+</div>
+
+<div id="mentorLogCard" class="card no-print box-warn">
+  <h2>Y — Denetim günlüğü (biriken satırlar)</h2>
+  <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Her tıklamada sorun varsa (DOM, yan panel sırası, layout) satır eklenir — <code>localStorage.CHARAZAY_MENTOR_LAYOUT_LOG</code>. Kopyala → Cursor’a yapıştır.</p>
+  <div class="mentor-log-wrap">
+    <textarea id="mentorLayoutLogTa" readonly placeholder="Henüz uyarı yok — oyunda problemli sayfaları dolaş…"></textarea>
+    <div class="mentor-log-btns">
+      <button type="button" class="primary" id="mentorLogCopyBtn">Günlüğü kopyala</button>
+      <button type="button" id="mentorLogClearBtn">Günlüğü temizle</button>
+      <button type="button" id="mentorLogRefreshBtn">Yenile</button>
+    </div>
+  </div>
+</div>
+
 <div class="card no-print box-warn box-ok">
   <strong style="color:var(--text);">Otomatik güncelleme nasıl işler?</strong>
   <p style="margin-top:8px;">Tarayıcıdaki mentor sayfası git push veya dosya izleme yapmaz. “Otomatik” kısmı: <strong>aynı görevde</strong> oyun dosyası değişince asistanın <code>charazay-mentor-panel.html</code>&nbsp;ile birlikte güncellemesidir. İstersen repo köküne <code>.cursor/rules</code> içinde kalıcı kural ekleyerek bunu iş akışına kilitleyebilirsin.</p>
@@ -58,17 +102,21 @@ code{font-size:12px;background:var(--bg3);padding:2px 6px;border-radius:4px;}
 
 <div class="card">
   <h2>G — Son kod senkronu (charazay2.0.html ile hizalı)</h2>
-  <span class="tag tag-new">v1.2 panel</span>
+  <span class="tag tag-new">v1.9 panel</span>
   <span class="tag tag-ok">G.season tek çekirdek</span>
   <ul>
-    <li><strong>Tarih:</strong> 13 Mayıs 2026 — sezon çekirdeği, keşif, enerji, saha vb. · <strong>Klasör:</strong> Eski <code>basketlig_v5.html</code> / <code>BURADAN_AC_CHARAZAY.html</code> kaldırıldı; tek yönlendirme <code>Charazay-2.0-BASLAT.html</code>, Chrome için <code>Charazay-2.0-Chrome.bat</code>.</li>
-    <li><strong><code>G.season</code>:</strong> 20 kulüp round-robin (19 tur), <code>matches[]</code> + <code>standings</code>; kullanıcı maçı bitince aynı tur CPU maçları simüle.</li>
-    <li><strong>Maç:</strong> Skor tahtasında sol = hep kullanıcı; ev/deplasman simülasyonda <code>userIsHome</code> ile.</li>
-    <li><strong><code>G.wins/losses/points</code>:</strong> Sezon aktifken tablodan <code>syncUserRecordFromStandings</code>.</li>
-    <li><strong>Fikstür:</strong> <code>regenerateSeasonFixtures</code> — sezon bitse bile geçmiş skorlar <code>matches</code> üzerinden.</li>
-    <li><strong>Transfer:</strong> Keşif raporu (filtre + 3 öneri, <code>renderScoutingReport</code>).</li>
-    <li><strong>Enerji:</strong> <code>enerji</code> alanı, maç öncesi/sonrası toparlanma ve yorgunluk.</li>
-    <li><strong>Saha:</strong> NBA oranlı çizim; restricted arc sweep düzeltmesi.</li>
+    <li><strong>Tarih:</strong> 13 Mayıs 2026 — <strong>Klasör:</strong> <code>Charazay-2.0-BASLAT.html</code>, <code>Charazay-2.0-Chrome.bat</code>.</li>
+    <li><strong>Kayıt v4:</strong> <code>localStorage</code> ana kayıt + <strong>IndexedDB</strong> yedek aynı JSON; içe/dışa aktar <code>v2|v3|v4</code>; kota hatasında IDB yedek; <code>CHARAZAY_DEBUG</code> + <code>dbg()</code>.</li>
+    <li><strong>Saha (görsel):</strong> Dış çerçeve <strong>3200×1900</strong>, oyun alanı <strong>2800×1500</strong> iç içe SVG; çizgiler <strong>940×500</strong> harici viewBox’da; şutlar aynı koordinat sisteminde.</li>
+    <li><strong>Mentor canlı senkron:</strong> Kalibrasyon <code>CHARAZAY_MENTOR_SYNC</code> + <code>BroadcastChannel('charazay-mentor')</code>; mentor <strong>X</strong> kartı; anomali birikimi <code>CHARAZAY_MENTOR_LAYOUT_LOG</code> + <strong>Y</strong> (yalnızca uyarı satırları).</li>
+    <li><strong>Ana layout (masaüstü):</strong> Uygulama <code>app-layout</code> <code>260px | 1fr</code>; <code>main.content</code> iki satır <strong>grid</strong> (üst bar + <code>page-stage</code>); route kutuları yalnızca <code>#pageStage</code> içinde — Maç sayfasındaki fazladan <code>&lt;/div&gt;</code> kapatıları #pageStage’i erken kapatıp rotaları bozuyordu (2026 düzeltmesi).</li>
+    <li><strong>Layout bayrağı:</strong> Oyun içi <code>window.__CHARAZAY_LAYOUT_OK</code>; mentor metrikleri payload <code>v:7</code>.</li>
+    <li><strong>Üçlük yayı:</strong> Pota merkezinden <strong>23′9″</strong> ölçeğe yakın (~196 px görünüm); köşede düz + yay.</li>
+    <li><strong>Maç:</strong> Sakatlar sahada kullanılmıyor; min. 5 sağlıklı oyuncu. CPU skorda kullanıcı için <strong>OFR/DEF</strong> kadro ortalaması (top-10).</li>
+    <li><strong>Portre v12 (büst):</strong> Omuz+forma, <strong>boyun</strong> (çene→yaka), yaka çizgisi — tek parça büst; v11’e göre daha “insan” silüet.</li>
+    <li><strong>Sakatlık:</strong> Kullanıcı maçı sonrası şans (yaş ↑ risk ↑), <code>injReturnDay</code>; maç simülasyonunda <strong>oynatılmaz</strong>.</li>
+    <li><strong>Lig UI:</strong> Üst başlık / üst bar: <strong>LİG PUAN DURUMU</strong>; tablo kartın üstünde, kaydırılabilir sarmalayıcı; sezon bitince sarı bant + dondurulmuş görünüm; yeni sezon <code>startLeagueSeason</code>.</li>
+    <li><strong>Diğer:</strong> Fikstür, keşif, <code>regenerateSeasonFixtures</code>; CPU form + yorgunluk cezası (isim proxy rakipler için).</li>
   </ul>
 </div>
 
@@ -80,8 +128,8 @@ code{font-size:12px;background:var(--bg3);padding:2px 6px;border-radius:4px;}
   <span class="tag tag-ok">Keşif (3 öneri)</span>
   <span class="tag tag-ok">Enerji / yorgunluk</span>
   <ul>
-    <li><strong>Tek HTML</strong> — tüm mantık istemci tarafında; kalıcı oyun durumu hâlâ sınırlı (ağırlık <code>localStorage</code> lig slotları + sekmelik haber).</li>
-    <li><strong>Lig tablosu:</strong> Sezon varken puan / averaj / isim sıralı; sezon yokken alfabetik yerleşim.</li>
+    <li><strong>Tek HTML</strong> — tüm mantık istemci tarafında; kayıt <code>serialize v:4</code> (<code>localStorage</code> + IndexedDB yedek); içe aktar <code>v2|v3|v4</code>.</li>
+    <li><strong>Takım OFR/DEF:</strong> Sağlıklı top-10 ortalaması (Takım → Detaylar); CPU maç skorunda kullanıcı gücü buna bağlı.</li>
     <li><strong>Yüksel/düş:</strong> Hâlâ “tablo sırası” heuristiğine dayanıyor; gerçek kurallar değil — bilinçli demo.</li>
     <li><strong>Ekonomi:</strong> USDT temalı; FFP, tavan, borç yok.</li>
   </ul>
@@ -91,12 +139,13 @@ code{font-size:12px;background:var(--bg3);padding:2px 6px;border-radius:4px;}
   <h2>B — Kod / mantık tarafında dikkat (güncel riskler)</h2>
   <p style="font-size:13px;color:var(--text2);margin-bottom:8px;">Bunlar hâlâ “revizyon yorgunluğu” ile kaçabilir; Cursor’a “B listesini doğrula” diye ver.</p>
   <ul>
-    <li><strong><code>G.season</code> kalıcılığı:</strong> Sayfa yenilenince sezon / kadro / para <strong>kaybolur</strong> — tek doğruluk kaynağı tarayıcı oturumu. Ürün hissi için save/load şart.</li>
-    <li><strong>CPU maç simülasyonu:</strong> Skor rastgele aralıkta; kulüp gücü / ev sahibi ile tam bağlı değil — tablo gerçekçiliği sınırlı.</li>
+    <li><strong>Kayıt:</strong> v2/v3 içe aktarılabilir; IndexedDB ilk açılışta LS doluysa yedeklenir. Tam migrasyon şeması ileride genişletilebilir.</li>
+    <li><strong>CPU maçı:</strong> Form + fikstür yorgunluğu + kullanıcı enerji cezası — hâlâ demo seviyesinde.</li>
+    <li><strong>Sakatlık:</strong> Maç sonrası rastgele; gerçek takvim / doktor / MRI yok.</li>
     <li><strong>Beraberlik:</strong> Nadiren ayakta kalabilir; puan tablosu eşitlikte basit kural kullanıyor.</li>
     <li><strong>Antrenman:</strong> Hâlâ <code>setTimeout</code> demo; sekme uyku / uzun oturum edge-case’leri belirsiz.</li>
-    <li><strong>Çok sekme:</strong> İki sekmede aynı dosya açılırsa state çatışması — <code>storage</code> event veya tek kaynak tasarımı düşünülebilir.</li>
-    <li><strong>Kota / gizli pencere:</strong> İleride save büyürse <code>QuotaExceededError</code> ve private mode hataları yakala (aşağıdaki web özeti).</li>
+    <li><strong>Çok sekme:</strong> Kayıt güncellenince diğer sekmede <code>storage</code> ile G yeniden yüklenir; aynı anda iki sekmede <strong>çakışan düzenleme</strong> hâlâ risk — son yazan kazanır.</li>
+    <li><strong>Layout CSS:</strong> <code>main.content</code> → üst bar + <code>page-stage</code> (<code>minmax(0,1fr)</code>); mentor <code>contentGapPx</code> / <code>structShiftPx</code> + <code>__CHARAZAY_LAYOUT_OK</code>. Mobil menü <code>fixed</code> + overlay; açılışta overlay temizlenir.</li>
   </ul>
 </div>
 
@@ -104,10 +153,11 @@ code{font-size:12px;background:var(--bg3);padding:2px 6px;border-radius:4px;}
   <h2>C — İnternette aranan: yeni hata / öneri özeti (web araştırması)</h2>
   <p style="font-size:13px;color:var(--text2);margin-bottom:12px;"> spor &amp; web oyun pratikleri — Charazay mimarisine indirgeme:</p>
   <ul>
-    <li><strong>Kayır (Basketball GM / benzeri):</strong> Büyük veri için <strong>IndexedDB</strong> tercih edilir; <code>localStorage</code> küçük tercihler için. Kayıtta <strong>sürüm numarası</strong> ve migrasyon olmadan eski save’ler kırılır.</li>
-    <li><strong>Veri kaybı senaryoları:</strong> Tarayıcı “çıkışta sil”, manuel cache temizliği, düşük disk (özellikle mobil) — kullanıcıya <strong>dışa aktar / içe aktar</strong> ikilisi şart.</li>
-    <li><strong>Çok sekme:</strong> Aynı origin’de <code>storage</code> event ile sekmeler arası senkron mümkün; kaynak sekme kendi yazısında event almaz — tasarımda dikkat.</li>
-    <li><strong>Hata ayıklama:</strong> Konsol log + export/import ile izolasyon (Basketball GM dokümantasyonu benzeri yaklaşım).</li>
+    <li><strong>Ne zaman IndexedDB:</strong> Kayıt &gt; birkaç MB, çok sezon geçmişi, ek kulüp önbelleği; Charazay şu an LS + IDB yedek.</li>
+    <li><strong>3 adım (Charazay):</strong> (1) Her kayıtta <code>v</code> alanı ve şema tablosu; (2) İlk açılışta IDB’ye LS kopyası; (3) Kota/hata ayıklama: <code>CHARAZAY_DEBUG</code> + export JSON.</li>
+    <li><strong>localStorage ne zaman yeter:</strong> Küçük tercihler, TBL slotları (~10KB); tam kariyerde IDB veya agresif sıkıştırma.</li>
+    <li><strong>Çok sekme:</strong> Aynı origin’de başka sekme <code>localStorage.setItem</code> yapınca <code>storage</code> olayı tetiklenir; oyun açıksa <code>syncUiAfterExternalSave</code> ile G yenilenir (kaynak sekme kendi yazısında olayı almaz).</li>
+    <li><strong>Hata ayıklama:</strong> Konsol: <code>CHARAZAY_DEBUG=true</code> → <code>dbg()</code>; yanında her zaman <strong>dışa aktar</strong> ile repro (Basketball GM SSS mantığı).</li>
   </ul>
   <p class="note"><small>Okuma: <a href="https://basketball-gm.com/manual/debugging/" style="color:var(--blue);">Basketball GM — Debugging</a> · <a href="https://basketball-gm.com/faq/" style="color:var(--blue);">FAQ (export/import)</a> · <a href="https://bugnet.io/blog/game-save-best-practices-web" style="color:var(--blue);">Game save — web best practices</a> · <a href="https://web.dev/articles/indexeddb-best-practices-app-state" style="color:var(--blue);">web.dev — IndexedDB</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria" style="color:var(--blue);">MDN — storage quotas</a></small></p>
 </div>
@@ -115,27 +165,27 @@ code{font-size:12px;background:var(--bg3);padding:2px 6px;border-radius:4px;}
 <div class="card">
   <h2>D — Hızlı yapılacaklar (öneri sırası, güncel)</h2>
   <ul>
-    <li><strong>Tamamlandı (demo):</strong> Tek çekirdek sezon (fikstür → maç → tablo → sezon sonu), G/M/Puan senkronu, basit keşif, enerji katmanı, saha çizgileri.</li>
-    <li><strong>1 — Öncelik:</strong> Save/Load (JSON veya IndexedDB + sürüm alanı + try/catch kota).</li>
-    <li><strong>2:</strong> CPU maçlarını takım gücü / ev sahibi / yorgunlukla ölçekle.</li>
-    <li><strong>3:</strong> Board hedefi (min. sıra, gelir) — başarısızlık sonuçları.</li>
-    <li><strong>4:</strong> Sakatlık / tıbbi (hafif versiyon).</li>
-    <li><strong>5:</strong> Taktik setleri (pace, pick-roll yoğunluğu) — maç olaylarına çarpan.</li>
+    <li><strong>Tamamlandı (bu tur):</strong> Saha 3200×1900; layout <code>page-stage</code> + kalibrasyon v6; Unicode route <code>bilanco</code>; güvenli <code>showPage</code>; lig “puan durumu” başlığı; IDB yedek; dondurulmuş tablo + otomatik yeni sezon.</li>
+    <li><strong>1:</strong> Tam IndexedDB birincil + şema migrasyonu (şu an LS birincil).</li>
+    <li><strong>2:</strong> Board / hedef modülü.</li>
+    <li><strong>3:</strong> Sakatlık sonrası forma / dakika kısıdı (şu an tam oynamama).</li>
+    <li><strong>4:</strong> Taktik çarpanları.</li>
+    <li><strong>5:</strong> Rakiplerde OFR/DEF — şu an isim proxy; ileride kulüp kadrosu verisi.</li>
   </ul>
 </div>
 
 <div class="card">
   <h2>E — Cursor’da “ajan” gibi kullan (kopyala-yapıştır)</h2>
   <p style="font-size:13px;color:var(--text2);margin-bottom:8px;">Her büyük değişimden sonra kullan; çıktıda mentor panelde hangi bölümü güncellediğini iste.</p>
-  <textarea readonly id="promptBlock" style="min-height:260px;">1) charazay2.0.html: G.season.matches, standings, startMatch, syncUserRecordFromStandings ve regenerateSeasonFixtures tutarlı mı? Çelişki varsa dosya:fonksiyon ile yaz.
+  <textarea readonly id="promptBlock" style="min-height:220px;">1) charazay2.0.html: G.season.matches, standings, startMatch, syncUserRecordFromStandings ve regenerateSeasonFixtures tutarlı mı? Çelişki varsa dosya:fonksiyon ile yaz.
 
-2) Sezon bitince tablo “dondurulmuş” görünüm + yeni sezon akışı kırılıyor mu?
+2) Sezon bitince dondurulmuş tablo + yeni sezon (<code>startLeagueSeason</code>) akışı; <code>resumeFromSavedGame</code> LS boş / IDB yedek senaryosu.
 
-3) charazay-mentor-panel.html bölümleri G, A, B, D bu kodla uyumlu mu — değilse metinleri güncelle ve “Son kod senkronu” tarihini değiştir.
+3) charazay-mentor-panel.html bölümleri G, A, B, D bu kodla uyumlu mu — saha 3200×1900, layout (<code>charazayRunLayoutCalibration</code> / <code>__CHARAZAY_LAYOUT_OK</code>), lig başlığı — değilse güncelle ve “Son kod senkronu” tarihini değiştir.
 
-4) Web oyun kalıcılığı: localStorage yeter mi, ne zaman IndexedDB? Charazay için somut 3 adım öner.
+4) Web kalıcılığı: localStorage ne zaman yeter, ne zaman IndexedDB? Charazay için 3 somut adım (<code>v</code>, IDB yedek, <code>CHARAZAY_DEBUG</code> + export).
 
-5) FM / PBM tipi eksik modül: bu demoda sonraki en mantıklı 5 özellik (kısa gerekçe).
+5) <code>CHARAZAY_DEBUG</code> + dbg yeterli mi; export ile repro yeterli mi?
 
 Çıktı: Türkçe, maddeler halinde, madde başına max 2 cümle. KRİTİK bug varsa en üstte KRİTİK başlığı.</textarea>
   <p class="note no-print"><button type="button" id="copyBtn" style="margin-top:8px;background:var(--accent);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-weight:700;cursor:pointer;">Metni kopyala</button></p>
@@ -163,11 +213,152 @@ code{font-size:12px;background:var(--bg3);padding:2px 6px;border-radius:4px;}
 </details>
 
 <footer>
-  Panel sürümü: <strong>1.2</strong> · Oyun: charazay2.0.html · Son kod senkronu: <strong>13 Mayıs 2026</strong> (launcher dosyaları birleştirildi)<br>
+  Panel sürümü: <strong>1.9</strong> · Oyun: charazay2.0.html · Son kod senkronu: <strong>13 Mayıs 2026</strong> (layout v7, Maç HTML kapanış düzeltmesi, üst hızlı şerit kaldırıldı, lig başlığı sabit)<br>
   Sonraki adım (isteğe bağlı): Ana oyunda “Mentor” linki veya <code>.cursor/rules</code> ile “oyun + panel birlikte güncellenir” kuralı.
 </footer>
 
 <script>
+(function(){
+  const KEY='CHARAZAY_MENTOR_SYNC';
+  const KEY_LOG='CHARAZAY_MENTOR_LAYOUT_LOG';
+  function render(data){
+    const box=document.getElementById('mentorSyncCard');
+    const line=document.getElementById('mentorSyncLine');
+    const detail=document.getElementById('mentorIssuesDetail');
+    if(!box||!line) return;
+    if(data&&data._charazayReadError){
+      line.innerHTML='localStorage içindeki <code>CHARAZAY_MENTOR_SYNC</code> bozuk (JSON). Tarayıcı geliştirici araçları → Uygulama → Depolama’dan sil veya oyunu açıp menüde gezin (yeniden yazar).';
+      if(detail) detail.innerHTML='';
+      box.className='card no-print box-danger';
+      return;
+    }
+    if(!data){
+      line.innerHTML='Henüz kayıt yok. Oyunu <strong>aynı kök</strong>ten aç; menüde gezin — <code>CHARAZAY_MENTOR_SYNC</code> <strong>v8</strong> dolar.';
+      if(detail) detail.innerHTML='';
+      box.className='card no-print box-warn';
+      return;
+    }
+    const isV8=data.type==='mentor-sync'&&Number(data.v)>=8;
+    const lay=data.layout||{};
+    const gap=typeof lay.contentGapPx==='number'?lay.contentGapPx:(typeof data.contentGapPx==='number'?data.contentGapPx:0);
+    const st=typeof lay.structShiftPx==='number'?lay.structShiftPx:(typeof data.structShiftPx==='number'?data.structShiftPx:0);
+    const layoutOk=(lay.layoutOk!==false&&data.layoutOk!==false);
+    const layoutLineOk=layoutOk&&gap<=200&&st<=14&&gap<=72;
+    const mOk=isV8?(data.mentorReportOk!==false):layoutLineOk;
+    const issues=Array.isArray(data.issues)?data.issues:[];
+    const errN=issues.filter(function(x){ return x&&x.level==='err'; }).length;
+    const warnN=issues.filter(function(x){ return x&&x.level==='warn'; }).length;
+    const age=Date.now()-(data.at||0);
+    const stale=age>86400000;
+    const t=new Date(data.at||0).toLocaleString('tr-TR');
+    const gapWarn=gap>72||st>14;
+    var nf=typeof data.navFirst==='boolean'?data.navFirst:(data.leagueBeforeNav===false);
+    line.innerHTML='<strong>'+t+'</strong> · Genel: <strong style="color:'+(mOk?'var(--green)':'var(--red)')+'">'+(mOk?'TAMAM':'DİKKAT')+'</strong> · Layout: <strong style="color:'+(layoutLineOk?'var(--green)':'var(--red)')+'">'+(layoutLineOk?'OK':'UYARI')+'</strong> · gap <strong>'+Math.round(gap)+'px</strong> · shift <strong>'+Math.round(st)+'px</strong>'+(gapWarn?' <span style="color:var(--red);font-weight:700;">(layout anomali)</span>':'')+' · Sayfa: <code>'+String(data.page||'?').replace(/</g,'')+'</code> · Menü↑Lig: '+(nf?'<span style="color:var(--green)">evet</span>':'<span style="color:var(--red)">hayır</span>')+' · Rota: '+(data.routesInStage!=null?data.routesInStage:'?')+'/'+(data.expectedRoutes||10)+' · v'+String(data.v||'?')+' · '+Math.round(data.vw||0)+'×'+Math.round(data.vh||0)+(stale?' · <em>(24h+ eski)</em>':'');
+    if(detail){
+      if(isV8){
+        if(!issues.length)
+          detail.innerHTML='<span style="opacity:.85">Ek uyarı yok — tüm kontroller bu örnek için temiz görünüyor.</span>';
+        else{
+          detail.innerHTML='<ul style="margin:0;padding-left:18px;">'+issues.map(function(i){
+            var lv=(i&&i.level)||'';
+            var col=lv==='err'?'#f87171':'#fbbf24';
+            var code=String(i&&i.code||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            var msg=String(i&&i.msg||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            return '<li style="margin:6px 0;"><span style="color:'+col+';font-weight:700;">'+lv.toUpperCase()+'</span> <code>'+code+'</code> — '+msg+'</li>';
+          }).join('')+'</ul>';
+        }
+      }else{
+        detail.innerHTML='<span style="opacity:.85">Kayıt <strong>eski format</strong> (v7 veya öncesi). Tam DOM + yan panel denetimi için oyunu güncel <code>charazay2.0.html</code> ile açıp sayfalar arasında gezin.</span>';
+      }
+    }
+    if(isV8){
+      if(errN>0||!mOk||!layoutLineOk) box.className='card no-print box-danger';
+      else if(warnN>0||gapWarn) box.className='card no-print box-warn';
+      else box.className='card no-print box-ok';
+    }else{
+      if(!layoutLineOk) box.className='card no-print box-danger';
+      else if(gapWarn) box.className='card no-print box-warn';
+      else box.className='card no-print box-ok';
+    }
+  }
+  function read(){
+    try{
+      const s=localStorage.getItem(KEY);
+      if(!s) return null;
+      return JSON.parse(s);
+    }catch(e){
+      return {_charazayReadError:true, message:String(e&&e.message||e)};
+    }
+  }
+  function parseLayoutLog(){
+    try{
+      const s=localStorage.getItem(KEY_LOG);
+      if(!s) return [];
+      const arr=JSON.parse(s);
+      return Array.isArray(arr)?arr:[];
+    }catch(e){ return []; }
+  }
+  function renderLog(){
+    const ta=document.getElementById('mentorLayoutLogTa');
+    if(!ta) return;
+    const arr=parseLayoutLog();
+    if(!arr.length){
+      ta.placeholder='Henüz uyarı yok — oyunda problemli sayfaları dolaş…';
+      ta.value='';
+      return;
+    }
+    ta.placeholder='';
+    ta.value=arr.map(function(x){ return x&&x.line?String(x.line):''; }).filter(Boolean).join('\n');
+  }
+  function copyLog(){
+    const ta=document.getElementById('mentorLayoutLogTa');
+    if(!ta||!ta.value){ return; }
+    ta.focus();
+    ta.select();
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(ta.value).then(function(){
+          alert('Layout günlüğü kopyalandı. Cursor’a yapıştırabilirsin.');
+        },function(){
+          if(document.execCommand('copy')) alert('Layout günlüğü kopyalandı.');
+        });
+      }else if(document.execCommand('copy')){
+        alert('Layout günlüğü kopyalandı.');
+      }
+    }catch(e){
+      try{
+        if(document.execCommand('copy')) alert('Layout günlüğü kopyalandı.');
+      }catch(_e){ alert('Kopyalanamadı; metni elle seçip Ctrl+C kullan.'); }
+    }
+  }
+  function clearLog(){
+    try{ localStorage.removeItem(KEY_LOG); }catch(e){}
+    renderLog();
+  }
+  render(read());
+  renderLog();
+  var b=document.getElementById('mentorLogCopyBtn'); if(b) b.addEventListener('click',copyLog);
+  b=document.getElementById('mentorLogClearBtn'); if(b) b.addEventListener('click',clearLog);
+  b=document.getElementById('mentorLogRefreshBtn'); if(b) b.addEventListener('click',function(){ render(read()); renderLog(); });
+  window.addEventListener('storage',function(e){
+    if(e.key===KEY||e.key===KEY_LOG){
+      render(read());
+      renderLog();
+    }
+  });
+  if(typeof BroadcastChannel!=='undefined'){
+    try{
+      var ch=new BroadcastChannel('charazay-mentor');
+      ch.onmessage=function(ev){
+        var d=ev.data;
+        if(!d) return;
+        if(d.type==='layout'||d.type==='mentor-sync') render(d);
+        if(d.type==='layout-log') renderLog();
+      };
+    }catch(e){}
+  }
+  setInterval(function(){ render(read()); renderLog(); }, 4000);
+})();
 document.getElementById('copyBtn').addEventListener('click',function(){
   const t=document.getElementById('promptBlock');
   t.select();
