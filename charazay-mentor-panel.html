@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Charazay — Mentor Panel (Geliştirici Asistanı)</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--accent:#f97316;--gold:#fbbf24;
+  --text:#f1f5f9;--text2:#94a3b8;--border:rgba(249,115,22,0.25);
+  --green:#22c55e;--red:#ef4444;--blue:#3b82f6;--purple:#a855f7;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.55;padding:20px;max-width:920px;margin:0 auto;}
+h1{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--accent);letter-spacing:2px;margin-bottom:6px;}
+.sub{color:var(--text2);font-size:13px;margin-bottom:20px;}
+.nav-top{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px;}
+.nav-top a{color:var(--blue);font-size:13px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px;}
+.card h2{font-family:'Bebas Neue',sans-serif;color:var(--accent);font-size:1.35rem;letter-spacing:1px;margin-bottom:12px;}
+.tag{display:inline-block;font-size:10px;padding:3px 8px;border-radius:20px;font-weight:700;margin-right:6px;margin-bottom:6px;}
+.tag-fact{background:rgba(59,130,246,0.2);color:#93c5fd;}
+.tag-gap{background:rgba(239,68,68,0.2);color:#fca5a5;}
+.tag-ok{background:rgba(34,197,94,0.2);color:#86efac;}
+.tag-warn{background:rgba(251,191,36,0.2);color:#fcd34d;}
+.tag-new{background:rgba(168,85,247,0.2);color:#e9d5ff;}
+ul{margin:10px 0 0 18px;}
+li{margin:6px 0;font-size:14px;color:var(--text2);}
+li strong{color:var(--text);}
+.box-warn{border-left:4px solid var(--gold);padding:12px 14px;background:var(--bg3);border-radius:0 10px 10px 0;margin:12px 0;font-size:13px;color:var(--text2);}
+.box-danger{border-left-color:var(--red);}
+.box-ok{border-left-color:var(--green);}
+details{margin:10px 0;}
+summary{cursor:pointer;font-weight:600;color:var(--gold);font-size:14px;}
+details p, details li{color:var(--text2);font-size:13px;margin-top:8px;}
+textarea{width:100%;min-height:100px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-size:13px;margin-top:10px;font-family:inherit;}
+small.note{display:block;margin-top:8px;color:var(--text2);font-size:11px;}
+footer{margin-top:28px;padding-top:16px;border-top:1px solid var(--border);font-size:12px;color:var(--text2);}
+code{font-size:12px;background:var(--bg3);padding:2px 6px;border-radius:4px;}
+@media print{.nav-top,textarea,.no-print{display:none!important;}body{max-width:100%;}}
+</style>
+</head>
+<body>
+
+<h1>CHARAZAY MENTOR PANEL</h1>
+<p class="sub">Charazay 2.0 tek dosya mimarisi — geliştirici özeti, riskler ve sektör karşılaştırması. <strong>Cursor Agent kuralı:</strong> <code>charazay2.0.html</code> için anlamlı her kod güncellemesinden sonra bu dosyayı da güncelle (A–D metinleri, sürüm, “Son senkron” tarihi). Bu HTML sayfası tek başına internette canlı tarama yapmaz; aşağıdaki “Web taraması” bölümü el ile veya sohbetle beslenen özet + harici bağlantılardır.</p>
+
+<div class="nav-top">
+  <a href="charazay2.0.html">→ Oyun (charazay2.0.html)</a>
+  <a href="Charazay-2.0-BASLAT.html">→ Hızlı giriş (yönlendirme)</a>
+</div>
+
+<div class="card no-print box-warn box-ok">
+  <strong style="color:var(--text);">Otomatik güncelleme nasıl işler?</strong>
+  <p style="margin-top:8px;">Tarayıcıdaki mentor sayfası git push veya dosya izleme yapmaz. “Otomatik” kısmı: <strong>aynı görevde</strong> oyun dosyası değişince asistanın <code>charazay-mentor-panel.html</code>&nbsp;ile birlikte güncellemesidir. İstersen repo köküne <code>.cursor/rules</code> içinde kalıcı kural ekleyerek bunu iş akışına kilitleyebilirsin.</p>
+</div>
+
+<div class="card">
+  <h2>G — Son kod senkronu (charazay2.0.html ile hizalı)</h2>
+  <span class="tag tag-new">v1.2 panel</span>
+  <span class="tag tag-ok">G.season tek çekirdek</span>
+  <ul>
+    <li><strong>Tarih:</strong> 13 Mayıs 2026 — sezon çekirdeği, keşif, enerji, saha vb. · <strong>Klasör:</strong> Eski <code>basketlig_v5.html</code> / <code>BURADAN_AC_CHARAZAY.html</code> kaldırıldı; tek yönlendirme <code>Charazay-2.0-BASLAT.html</code>, Chrome için <code>Charazay-2.0-Chrome.bat</code>.</li>
+    <li><strong><code>G.season</code>:</strong> 20 kulüp round-robin (19 tur), <code>matches[]</code> + <code>standings</code>; kullanıcı maçı bitince aynı tur CPU maçları simüle.</li>
+    <li><strong>Maç:</strong> Skor tahtasında sol = hep kullanıcı; ev/deplasman simülasyonda <code>userIsHome</code> ile.</li>
+    <li><strong><code>G.wins/losses/points</code>:</strong> Sezon aktifken tablodan <code>syncUserRecordFromStandings</code>.</li>
+    <li><strong>Fikstür:</strong> <code>regenerateSeasonFixtures</code> — sezon bitse bile geçmiş skorlar <code>matches</code> üzerinden.</li>
+    <li><strong>Transfer:</strong> Keşif raporu (filtre + 3 öneri, <code>renderScoutingReport</code>).</li>
+    <li><strong>Enerji:</strong> <code>enerji</code> alanı, maç öncesi/sonrası toparlanma ve yorgunluk.</li>
+    <li><strong>Saha:</strong> NBA oranlı çizim; restricted arc sweep düzeltmesi.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>A — Projede şu an ne var? (güncel özet)</h2>
+  <span class="tag tag-ok">localStorage · TBL</span>
+  <span class="tag tag-ok">G.season + tablo sıralaması</span>
+  <span class="tag tag-ok">Fikstür ↔ maç</span>
+  <span class="tag tag-ok">Keşif (3 öneri)</span>
+  <span class="tag tag-ok">Enerji / yorgunluk</span>
+  <ul>
+    <li><strong>Tek HTML</strong> — tüm mantık istemci tarafında; kalıcı oyun durumu hâlâ sınırlı (ağırlık <code>localStorage</code> lig slotları + sekmelik haber).</li>
+    <li><strong>Lig tablosu:</strong> Sezon varken puan / averaj / isim sıralı; sezon yokken alfabetik yerleşim.</li>
+    <li><strong>Yüksel/düş:</strong> Hâlâ “tablo sırası” heuristiğine dayanıyor; gerçek kurallar değil — bilinçli demo.</li>
+    <li><strong>Ekonomi:</strong> USDT temalı; FFP, tavan, borç yok.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>B — Kod / mantık tarafında dikkat (güncel riskler)</h2>
+  <p style="font-size:13px;color:var(--text2);margin-bottom:8px;">Bunlar hâlâ “revizyon yorgunluğu” ile kaçabilir; Cursor’a “B listesini doğrula” diye ver.</p>
+  <ul>
+    <li><strong><code>G.season</code> kalıcılığı:</strong> Sayfa yenilenince sezon / kadro / para <strong>kaybolur</strong> — tek doğruluk kaynağı tarayıcı oturumu. Ürün hissi için save/load şart.</li>
+    <li><strong>CPU maç simülasyonu:</strong> Skor rastgele aralıkta; kulüp gücü / ev sahibi ile tam bağlı değil — tablo gerçekçiliği sınırlı.</li>
+    <li><strong>Beraberlik:</strong> Nadiren ayakta kalabilir; puan tablosu eşitlikte basit kural kullanıyor.</li>
+    <li><strong>Antrenman:</strong> Hâlâ <code>setTimeout</code> demo; sekme uyku / uzun oturum edge-case’leri belirsiz.</li>
+    <li><strong>Çok sekme:</strong> İki sekmede aynı dosya açılırsa state çatışması — <code>storage</code> event veya tek kaynak tasarımı düşünülebilir.</li>
+    <li><strong>Kota / gizli pencere:</strong> İleride save büyürse <code>QuotaExceededError</code> ve private mode hataları yakala (aşağıdaki web özeti).</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>C — İnternette aranan: yeni hata / öneri özeti (web araştırması)</h2>
+  <p style="font-size:13px;color:var(--text2);margin-bottom:12px;"> spor &amp; web oyun pratikleri — Charazay mimarisine indirgeme:</p>
+  <ul>
+    <li><strong>Kayır (Basketball GM / benzeri):</strong> Büyük veri için <strong>IndexedDB</strong> tercih edilir; <code>localStorage</code> küçük tercihler için. Kayıtta <strong>sürüm numarası</strong> ve migrasyon olmadan eski save’ler kırılır.</li>
+    <li><strong>Veri kaybı senaryoları:</strong> Tarayıcı “çıkışta sil”, manuel cache temizliği, düşük disk (özellikle mobil) — kullanıcıya <strong>dışa aktar / içe aktar</strong> ikilisi şart.</li>
+    <li><strong>Çok sekme:</strong> Aynı origin’de <code>storage</code> event ile sekmeler arası senkron mümkün; kaynak sekme kendi yazısında event almaz — tasarımda dikkat.</li>
+    <li><strong>Hata ayıklama:</strong> Konsol log + export/import ile izolasyon (Basketball GM dokümantasyonu benzeri yaklaşım).</li>
+  </ul>
+  <p class="note"><small>Okuma: <a href="https://basketball-gm.com/manual/debugging/" style="color:var(--blue);">Basketball GM — Debugging</a> · <a href="https://basketball-gm.com/faq/" style="color:var(--blue);">FAQ (export/import)</a> · <a href="https://bugnet.io/blog/game-save-best-practices-web" style="color:var(--blue);">Game save — web best practices</a> · <a href="https://web.dev/articles/indexeddb-best-practices-app-state" style="color:var(--blue);">web.dev — IndexedDB</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria" style="color:var(--blue);">MDN — storage quotas</a></small></p>
+</div>
+
+<div class="card">
+  <h2>D — Hızlı yapılacaklar (öneri sırası, güncel)</h2>
+  <ul>
+    <li><strong>Tamamlandı (demo):</strong> Tek çekirdek sezon (fikstür → maç → tablo → sezon sonu), G/M/Puan senkronu, basit keşif, enerji katmanı, saha çizgileri.</li>
+    <li><strong>1 — Öncelik:</strong> Save/Load (JSON veya IndexedDB + sürüm alanı + try/catch kota).</li>
+    <li><strong>2:</strong> CPU maçlarını takım gücü / ev sahibi / yorgunlukla ölçekle.</li>
+    <li><strong>3:</strong> Board hedefi (min. sıra, gelir) — başarısızlık sonuçları.</li>
+    <li><strong>4:</strong> Sakatlık / tıbbi (hafif versiyon).</li>
+    <li><strong>5:</strong> Taktik setleri (pace, pick-roll yoğunluğu) — maç olaylarına çarpan.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>E — Cursor’da “ajan” gibi kullan (kopyala-yapıştır)</h2>
+  <p style="font-size:13px;color:var(--text2);margin-bottom:8px;">Her büyük değişimden sonra kullan; çıktıda mentor panelde hangi bölümü güncellediğini iste.</p>
+  <textarea readonly id="promptBlock" style="min-height:260px;">1) charazay2.0.html: G.season.matches, standings, startMatch, syncUserRecordFromStandings ve regenerateSeasonFixtures tutarlı mı? Çelişki varsa dosya:fonksiyon ile yaz.
+
+2) Sezon bitince tablo “dondurulmuş” görünüm + yeni sezon akışı kırılıyor mu?
+
+3) charazay-mentor-panel.html bölümleri G, A, B, D bu kodla uyumlu mu — değilse metinleri güncelle ve “Son kod senkronu” tarihini değiştir.
+
+4) Web oyun kalıcılığı: localStorage yeter mi, ne zaman IndexedDB? Charazay için somut 3 adım öner.
+
+5) FM / PBM tipi eksik modül: bu demoda sonraki en mantıklı 5 özellik (kısa gerekçe).
+
+Çıktı: Türkçe, maddeler halinde, madde başına max 2 cümle. KRİTİK bug varsa en üstte KRİTİK başlığı.</textarea>
+  <p class="note no-print"><button type="button" id="copyBtn" style="margin-top:8px;background:var(--accent);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-weight:700;cursor:pointer;">Metni kopyala</button></p>
+</div>
+
+<div class="card">
+  <h2>F — Not alanı (sen doldur)</h2>
+  <p style="font-size:13px;color:var(--text2);">Panelden veya AI cevabından kopyaladığın maddeleri buraya yapıştır; kalıcı kayıt için dosyayı kaydet.</p>
+  <textarea placeholder="Ör: K1 — İki sekmede açınca G.season çiftleniyor..."></textarea>
+</div>
+
+<div class="card">
+  <h2>H — Klasörde hangi dosya ne işe yarar?</h2>
+  <ul>
+    <li><strong>charazay2.0.html</strong> — Ana oyun (tek büyük dosya).</li>
+    <li><strong>Charazay-2.0-BASLAT.html</strong> — İsteğe bağlı kısayol; hemen <code>charazay2.0.html</code> yönlendirir.</li>
+    <li><strong>Charazay-2.0-Chrome.bat</strong> — Windows’ta oyunu Chrome/Edge ile açar.</li>
+    <li><strong>charazay-mentor-panel.html</strong> — Geliştirici / mentor özeti.</li>
+  </ul>
+</div>
+
+<details>
+  <summary>Neden otomatik web taraması yok?</summary>
+  <p>Normal HTML, kullanıcı izni ve API/CORS olmadan sürekli arama motoru veya LLM çağıramaz. Pratik akış: <strong>Cursor Agent</strong> kodu günceller + (gerekirse) web_search ile özet üretir + mentor panel metnini günceller.</p>
+</details>
+
+<footer>
+  Panel sürümü: <strong>1.2</strong> · Oyun: charazay2.0.html · Son kod senkronu: <strong>13 Mayıs 2026</strong> (launcher dosyaları birleştirildi)<br>
+  Sonraki adım (isteğe bağlı): Ana oyunda “Mentor” linki veya <code>.cursor/rules</code> ile “oyun + panel birlikte güncellenir” kuralı.
+</footer>
+
+<script>
+document.getElementById('copyBtn').addEventListener('click',function(){
+  const t=document.getElementById('promptBlock');
+  t.select();
+  t.setSelectionRange(0,99999);
+  navigator.clipboard.writeText(t.value).then(function(){
+    alert('Prompt panoya kopyalandı. Cursor’a yapıştır.');
+  }).catch(function(){
+    alert('Kopyalanamadı; metni elle seçip Ctrl+C kullan.');
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+---
+description: charazay2.0.html değişince mentor panelini aynı görevde güncelle
+globs: charazay2.0.html
+alwaysApply: false
+---
+
+# Charazay — mentor panel senkronu
+
+`charazay2.0.html` dosyasında **oyun mantığını**, **veri modelini (G, sezon, maç)** veya **kullanıcıya görünen özellikleri** değiştiriyorsan, **aynı oturumda** `charazay-mentor-panel.html` dosyasını da güncelle:
+
+1. Bölüm **G — Son kod senkronu**: yeni/ değişen davranışları kısa maddelerle yaz.
+2. **A, B, D** listelerini gerçek durumla hizala (tamamlanan / kalan riskler / öncelik sırası).
+3. Gerekirse **C** bölümüne web kaynaklı yeni uyarı veya link ekle.
+4. Footer’daki **Son kod senkronu** tarihini bugünün tarihiyle güncelle; panel sürümünü anlamlı biçimde artır (ör. küçük değişiklik +0.0.1).
+
+Bu kural, “tek dosya oyun + mentor özeti” çiftinin birbirinden kopmaması içindir.
