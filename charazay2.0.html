@@ -1267,6 +1267,12 @@ function applyGameState(d){
   G.season=d.season||null;
   G.seasonFixtures=Array.isArray(d.seasonFixtures)?d.seasonFixtures:[];
   if(G.team&&(!G.ligTeams||!G.ligTeams.length)) G.ligTeams=genLigTeams();
+  [G.players,G.youth,G.marketPlayers].forEach(list=>{
+    (list||[]).forEach((p,i)=>{
+      if(!p||p.seed) return;
+      p.seed='legacy'+String(p.id||i)+hash32((p.isim||'')+(p.yas||'')+(p.poz||''));
+    });
+  });
   ensureMarketStock();
   if(!G.coaches.length) G.coaches=genCoaches();
   if(!G.coachMarket.length) G.coachMarket=genCoachMarket();
@@ -1534,8 +1540,55 @@ ${numSvg}
 </svg>`;
   return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 }
+const PORTRAIT_POOL_SIZE=120;
+const PORTRAIT_POOL_BASE='assets/portraits/p_';
+const PORTRAIT_ETH=['African American man','Turkish man','Japanese man','Irish man','Nigerian man','Colombian man','Russian man','Italian man','Brazilian man','German man','Spanish woman basketball player','Korean woman basketball player','French man','Greek man','Polish man','Mexican man','Canadian man','Australian man','Serbian man','Lithuanian man'];
+const PORTRAIT_JERSEY=['blue white basketball jersey','green basketball jersey','red white basketball jersey','purple yellow basketball jersey','black athletic shirt','grey hoodie','white t-shirt','orange basketball jersey'];
+function portraitPoolIndex(seed,salt){
+  return Math.abs(hash32(String(seed)+'|'+String(salt??'')+'|photoPool'))%PORTRAIT_POOL_SIZE;
+}
+function playerPortraitFile(seed,salt){
+  const i=portraitPoolIndex(seed,salt);
+  return PORTRAIT_POOL_BASE+String(i).padStart(4,'0')+'.jpg';
+}
+function playerPortraitPhotoUrl(seed,salt){
+  const raw=String(seed)+'|'+String(salt??'')+'|v2';
+  const h1=hash32(raw);
+  const h2=hash32(raw.split('').reverse().join(''));
+  const eth=PORTRAIT_ETH[h1%PORTRAIT_ETH.length];
+  const jersey=PORTRAIT_JERSEY[(h1>>>8)%PORTRAIT_JERSEY.length];
+  const look=['short hair','curly hair','buzz cut','beard','clean shaven','strong jawline','athletic build'][(h2>>>4)%7];
+  const age=19+(h2%17);
+  const prompt=encodeURIComponent(
+    'professional basketball player portrait headshot, '+eth+', '+jersey+', '+look+
+    ', age '+age+', neutral light gray studio background, photorealistic, front facing, chest up, soft lighting, no text, no watermark'
+  );
+  return 'https://image.pollinations.ai/prompt/'+prompt+'?seed='+h1+'&width=256&height=320&nologo=true';
+}
+function playerAvatarSvgFallback(el){
+  if(!el||!el.dataset) return;
+  const seed=el.dataset.avSeed||'';
+  const salt=el.dataset.avSalt||'';
+  const src=String(el.src||'');
+  if(!el.dataset.avPhotoTried&&!src.includes('pollinations.ai')&&!window.__charazaySvgPortraits){
+    el.dataset.avPhotoTried='1';
+    el.src=playerPortraitPhotoUrl(seed,salt);
+    return;
+  }
+  let opts={};
+  try{ opts=JSON.parse(el.dataset.avOpts||'{}'); }catch(e){}
+  el.src=basketballPortraitDataUri(seed,salt,opts);
+  el.onerror=null;
+}
 function playerAvatar(seed,salt,opts){
-  return basketballPortraitDataUri(seed,salt,typeof opts==='object'&&opts?opts:{});
+  opts=typeof opts==='object'&&opts?opts:{};
+  if(window.__charazaySvgPortraits) return basketballPortraitDataUri(seed,salt,opts);
+  return playerPortraitPhotoUrl(seed,salt);
+}
+function playerAvatarImgAttrs(seed,salt,opts){
+  const o=typeof opts==='object'&&opts?opts:{};
+  const esc=v=>String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  return `data-av-seed="${esc(seed)}" data-av-salt="${esc(salt??'')}" data-av-opts="${esc(JSON.stringify(o))}" onerror="playerAvatarSvgFallback(this)"`;
 }
 
 /** Antrenmanda yaş / potansiyel boşluğuna göre çarpan (genç + yüksek pot = hızlı gelişim) */
@@ -2039,7 +2092,7 @@ function openLigGroupModal(ligKey){
 function openClubPublicModal(teamName,ligKey){
   const prof=getBotClubProfile(teamName,ligKey);
   const logo=prof.logoUrl?`<img src="${prof.logoUrl.replace(/"/g,'')}" style="max-width:100px;border-radius:8px;" referrerpolicy="no-referrer" onerror="this.style.display='none'">`:`<div style="width:72px;height:72px;border-radius:12px;background:${prof.renk};"></div>`;
-  const roster=prof.roster.map(p=>`<div style="display:flex;gap:8px;align-items:center;padding:6px;background:var(--bg3);border-radius:8px;margin-bottom:4px;"><div class="mavatar-wrap"><img src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" style="width:44px;height:56px;border-radius:6px;object-fit:cover;"><span style="font-size:9px;font-weight:700;color:var(--accent);">OVR ${p.genel}</span></div><div style="font-size:12px;"><strong>${p.bayrak} ${p.isim}</strong><br><span style="color:var(--text2);">${p.poz} · ${p.genel}</span></div></div>`).join('');
+  const roster=prof.roster.map(p=>`<div style="display:flex;gap:8px;align-items:center;padding:6px;background:var(--bg3);border-radius:8px;margin-bottom:4px;"><div class="mavatar-wrap"><img src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} style="width:44px;height:56px;border-radius:6px;object-fit:cover;"><span style="font-size:9px;font-weight:700;color:var(--accent);">OVR ${p.genel}</span></div><div style="font-size:12px;"><strong>${p.bayrak} ${p.isim}</strong><br><span style="color:var(--text2);">${p.poz} · ${p.genel}</span></div></div>`).join('');
   const note=prof.human?'<p style="font-size:11px;color:var(--gold);margin-top:10px;">Kendi kulübün: bilanço ve detaylar sadece sana açık.</p>':'<p style="font-size:11px;color:var(--text2);margin-top:10px;">Bot kulüp — ileride bu slota kayıtlı menajer olursa güncellemeler burada görünür.</p>';
   showAppModal(`<div class="modal-title">${teamName}</div><div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">${logo}<div><p style="font-size:13px;margin:0;"><strong>Arena:</strong> ${prof.arena}</p><p style="font-size:12px;color:var(--text2);margin:4px 0 0;">${formatTblSlotLabel(ligKey)}</p></div></div>${note}<div style="font-weight:700;font-size:12px;margin-top:12px;">Kadro (özet — OVR)</div>${roster}`);
 }
@@ -2048,7 +2101,7 @@ function openPlayerInspectModal(pid){
   const p=G.players.find(x=>x.id===pid);
   if(!p) return;
   const stats=STAT_KEYS.map(k=>`<div class="sitem"><span class="sname">${STAT_LABELS[k]}</span><span class="sval ${sv(p[k])}">${p[k]}</span></div>`).join('');
-  showAppModal(`<div class="modal-title">${p.isim}</div><div style="display:flex;gap:14px;flex-wrap:wrap;"><div class="pimg-wrap"><img src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" style="width:90px;height:112px;border-radius:10px;border:2px solid var(--accent);object-fit:cover;"><div class="pimg-cap">OVR ${p.genel}</div></div><div style="flex:1;min-width:200px;font-size:13px;line-height:1.55;"><p style="margin:0 0 6px;">${p.bayrak} ${p.ulke} · ${p.yas} yaş · ${p.boy}cm / ${p.kilo}kg</p><p style="margin:0 0 6px;"><span class="pbadge pos-${p.poz.toLowerCase()}">${p.poz}</span> · <strong style="color:var(--accent);font-family:'Bebas Neue',sans-serif;font-size:20px;">OVR ${p.genel}</strong> · ${starFromGenel(p.genel)}★</p><p style="margin:0 0 6px;">Potansiyel: ${p.potansiyel||'—'}</p><p style="margin:0 0 6px;">Enerji (maç yorgunluğu): <strong>${Math.round(Number(p.enerji)||100)}</strong>/100</p><p style="margin:0 0 6px;">Maaş: <strong style="color:var(--gold);">${fmtn(p.maas)}</strong> USDT/hf</p><p style="margin:0;">Psikoloji: <span style="color:${moodColor(p.mood)};">${moodText(p.mood)}</span></p></div></div><div class="sgrid" style="margin-top:14px;">${stats}</div>`);
+  showAppModal(`<div class="modal-title">${p.isim}</div><div style="display:flex;gap:14px;flex-wrap:wrap;"><div class="pimg-wrap"><img src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} style="width:90px;height:112px;border-radius:10px;border:2px solid var(--accent);object-fit:cover;"><div class="pimg-cap">OVR ${p.genel}</div></div><div style="flex:1;min-width:200px;font-size:13px;line-height:1.55;"><p style="margin:0 0 6px;">${p.bayrak} ${p.ulke} · ${p.yas} yaş · ${p.boy}cm / ${p.kilo}kg</p><p style="margin:0 0 6px;"><span class="pbadge pos-${p.poz.toLowerCase()}">${p.poz}</span> · <strong style="color:var(--accent);font-family:'Bebas Neue',sans-serif;font-size:20px;">OVR ${p.genel}</strong> · ${starFromGenel(p.genel)}★</p><p style="margin:0 0 6px;">Potansiyel: ${p.potansiyel||'—'}</p><p style="margin:0 0 6px;">Enerji (maç yorgunluğu): <strong>${Math.round(Number(p.enerji)||100)}</strong>/100</p><p style="margin:0 0 6px;">Maaş: <strong style="color:var(--gold);">${fmtn(p.maas)}</strong> USDT/hf</p><p style="margin:0;">Psikoloji: <span style="color:${moodColor(p.mood)};">${moodText(p.mood)}</span></p></div></div><div class="sgrid" style="margin-top:14px;">${stats}</div>`);
 }
 
 function pushLeagueNewsLine(html){
@@ -2327,7 +2380,7 @@ function renderTeamRosterMini(){
   w.innerHTML=list.map(p=>`
     <div class="team-rmini" data-pid="${p.id}">
       <div class="mavatar-wrap" style="align-items:center;">
-      <img src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" alt="" width="52" height="64" loading="lazy" style="border-radius:8px;border:2px solid var(--accent);object-fit:cover;">
+      <img src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} alt="" width="52" height="64" loading="lazy" style="border-radius:8px;border:2px solid var(--accent);object-fit:cover;">
       <span style="font-size:9px;font-weight:800;color:var(--accent);margin-top:2px;">OVR ${p.genel}</span>
       </div>
       <div style="min-width:0;">
@@ -2830,7 +2883,7 @@ function renderScoutingReport(){
   host.innerHTML=pick.map(p=>{
     const st=starFromGenel(p.genel);
     return `<div onclick="openPlayerModal('${p.id}')" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:10px;border:1px solid var(--border);margin-bottom:8px;cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openPlayerModal('${p.id}')">
-      <img src="${playerAvatar(p.seed,p.marketIdx!=null?p.marketIdx:p.id,{market:true})}" alt="" width="48" height="60" style="border-radius:8px;object-fit:cover;border:2px solid var(--border);">
+      <img src="${playerAvatar(p.seed,p.marketIdx!=null?p.marketIdx:p.id,{market:true})}" ${playerAvatarImgAttrs(p.seed,p.marketIdx!=null?p.marketIdx:p.id,{market:true})} alt="" width="48" height="60" style="border-radius:8px;object-fit:cover;border:2px solid var(--border);">
       <div style="flex:1;min-width:0;">
         <div style="font-weight:700;font-size:13px;">${p.bayrak} ${p.isim} <span class="pbadge pos-${p.poz.toLowerCase()}" style="font-size:9px;">${p.poz}</span></div>
         <div style="font-size:11px;color:var(--text2);">OVR ${p.genel} · ${st}★ · ${fmtn(transferFeeUSDT(p))} USDT</div>
@@ -3012,8 +3065,7 @@ function renderPlayerCard(p,showBuy=false,price=0,showPromote=false,showList=fal
     <div class="overall-badge" style="color:${oc};">${p.genel}</div>
     <div class="pcard-top">
       <div class="pimg-wrap">
-      <img class="pimg" src="${playerAvatar(p.seed,p.id,avOpt)}" alt="${p.isim}"
-        onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2268%22 height=%2268%22><rect width=%2268%22 height=%2268%22 rx=%228%22 fill=%22%23333%22/><text x=%2234%22 y=%2244%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2226%22>🏀</text></svg>'">
+      <img class="pimg" src="${playerAvatar(p.seed,p.id,avOpt)}" ${playerAvatarImgAttrs(p.seed,p.id,avOpt)} alt="${p.isim}">
       <div class="pimg-cap">OVR ${p.genel}</div>
       </div>
       <div style="flex:1;min-width:0;">
@@ -3075,7 +3127,7 @@ function openPlayerModal(pid){
   ${potBlock}
   <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
     <div style="flex:0 0 min(42vw,240px);">
-      <img class="player-modal-hero" src="${bigImg}" alt="">
+      <img class="player-modal-hero" src="${bigImg}" ${playerAvatarImgAttrs(p.seed,salt,av)} alt="">
       ${injBannerHtml(p)}
       <div style="text-align:center;margin-top:8px;font-family:'Bebas Neue',sans-serif;font-size:32px;color:${oc};">${p.genel} <span style="font-size:13px;color:var(--text2);font-weight:600;font-family:system-ui;">OVR · ${st}★</span></div>
     </div>
@@ -3096,8 +3148,7 @@ function renderRosterListRow(p){
     <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openPlayerModal('${p.id}')">
     ${injBannerHtml(p)}
       <div class="mavatar-wrap">
-      <img class="mavatar" src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" alt="${p.isim}"
-        onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2252%22 height=%2252%22><rect width=%2252%22 height=%2252%22 rx=%226%22 fill=%22%23333%22/><text x=%2226%22 y=%2234%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2220%22>🏀</text></svg>'">
+      <img class="mavatar" src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} alt="${p.isim}">
       <div class="pimg-cap" style="margin-top:2px;">OVR ${p.genel}</div>
       </div>
       <div style="min-width:36px;text-align:center;">
@@ -3126,8 +3177,7 @@ function renderYouthListRow(p){
     <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openPlayerModal('${p.id}')">
     ${injBannerHtml(p)}
       <div class="mavatar-wrap">
-      <img class="mavatar" src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" alt="${p.isim}"
-        onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2252%22 height=%2252%22><rect width=%2252%22 height=%2252%22 rx=%226%22 fill=%22%23333%22/><text x=%2226%22 y=%2234%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2220%22>🏀</text></svg>'">
+      <img class="mavatar" src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} alt="${p.isim}">
       <div class="pimg-cap" style="margin-top:2px;">OVR ${p.genel}</div>
       </div>
       <div style="min-width:36px;text-align:center;">
@@ -3275,8 +3325,7 @@ function renderMarket(){
     return `
     <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openPlayerModal('${p.id}')">
       <div class="mavatar-wrap">
-      <img class="mavatar" src="${playerAvatar(p.seed,p.marketIdx,{market:true})}" alt="${p.isim}"
-        onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2252%22 height=%2252%22><rect width=%2252%22 height=%2252%22 rx=%226%22 fill=%22%23333%22/><text x=%2226%22 y=%2234%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2220%22>🏀</text></svg>'">
+      <img class="mavatar" src="${playerAvatar(p.seed,p.marketIdx,{market:true})}" ${playerAvatarImgAttrs(p.seed,p.marketIdx,{market:true})} alt="${p.isim}">
       <div class="pimg-cap" style="margin-top:2px;">OVR ${p.genel}</div>
       </div>
       <div style="min-width:36px;text-align:center;">
