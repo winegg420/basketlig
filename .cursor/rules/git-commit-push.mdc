@@ -1,0 +1,11 @@
+---
+description: Oturum sonunda veya anlamlı degisiklikten sonra otomatik git commit + push
+alwaysApply: true
+---
+
+# Git commit ve push
+
+- Kullanici acikca "commit etme" demedikce, Charazay projesinde **anlamli degisiklik** yaptiktan sonra **commit + push** yap (kullanicidan ayri isteme).
+- Commit mesaji: Turkce veya Ingilizce, kisa, neyin degistigini anlatsin.
+- `.env`, sifre, API anahtari iceren dosyalari commit etme.
+- Push oncesi `git status` ile kontrol et; push basarisizsa kullaniciya soyle.
