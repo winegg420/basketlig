@@ -1,5 +1,4 @@
-{
-  "version": 1,
-  "count": 120,
-  "pattern": "p_%04d.jpg"
+﻿{
+    "version":  1,
+    "count":  25
 }
