@@ -90,9 +90,13 @@ def main() -> None:
         except Exception as e:
             print(f"fail {name}: {e}")
         time.sleep(DELAY)
-    manifest = {"version": 1, "count": COUNT, "pattern": "p_%04d.jpg"}
+    # manifest gerçek (kesintisiz) dosya sayısını yazsın — oyun PORTRAIT_POOL_SIZE bununla eşit olmalı
+    n = 0
+    while (OUT / f"p_{n:04d}.jpg").exists():
+        n += 1
+    manifest = {"version": 1, "count": n, "pattern": "p_%04d.jpg"}
     (OUT / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-    print(f"done: {ok}/{COUNT} portraits in {OUT}")
+    print(f"done: {ok}/{COUNT} portraits, manifest count={n} in {OUT}")
 
 
 if __name__ == "__main__":
