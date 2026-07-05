@@ -33,13 +33,15 @@ Ekonomi zaten bağlıydı; denge doğrulandı ve iyileştirildi:
 - **Maç galibiyet ödülü ~150 KR → ~2.500 KR** (rand 1500–3500) yükseltildi; mağlubiyet günü geliri ~55 → ~650.
   Böylece galibiyet doğrudan ekonomik anlam kazandı, ama bilet ana gelir olarak kaldı (denge korundu).
 
-### Görev 5 — Portre havuzu 120 → 500
-- `PORTRAIT_POOL_SIZE` üretim tamamlanınca gerçek dosya sayısına eşitlenecek (manifest otomatik consecutive
-  sayıyı yazıyor).
+### Görev 5 — Portre havuzu 120 → 201 (kullanıcı kararıyla 201'de sabitlendi)
 - Script paralel işçi (ThreadPool) + 429 (rate limit) yeniden deneme + genişletilmiş çeşitlilik (30 erkek
   ülke, 12 forma, 10 görünüm, yaş) ile güncellendi. Tümü erkek (kadın üretilmez).
-- **Not:** pollinations.ai eşzamanlı isteklerde 429 veriyor; üretim ~5 görsel/dk hızında, 500'e ulaşmak uzun
-  sürüyor. Arka planda çalışıyor, ilerleme raporlanıyor.
+- pollinations.ai eşzamanlı isteklerde 429 veriyor; hız ~2-3/dk olduğu için 500 pratik değildi. Kullanıcı
+  "mevcut sayıda sabitle" dedi (dedup zaten aynı takımda tekrar yüzü engelliyor).
+- **Sonuç:** üretim durduruldu, **201 portre** (p_0000–p_0200) kesintisiz, hepsi geçerli JPEG (FFD9 kontrolü),
+  hepsi erkek (3 partide kontak sayfası taraması). Stray dosya (p_0432) temizlendi. `PORTRAIT_POOL_SIZE=201`,
+  `manifest.json count=201`. Oyunda 70 oyuncuda 0×404 doğrulandı. Foto-index tekilleştirmesi havuz boyutundan
+  bağımsız aynı takım/market'te tekrar yüzü engelliyor.
 
 ## 2026-07-05 — Yayına hazırlık taraması ve düzeltmeler
 
