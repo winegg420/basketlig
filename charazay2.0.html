@@ -1990,14 +1990,25 @@ function genPlayer(poz=null,tr=false){
   return {id,isim,poz:p,yas,ulke:ulke.ad,bayrak:ulke.b,boy:rand(185,220),kilo:rand(80,120),seed,maas,...stats,genel,mood,enerji:100,potansiyel:rand(genel,Math.min(99,genel+20)),formDay:0,kontratSezon:rand(1,3),sezon:{mac:0,pts:0,ast:0,reb:0}};
 }
 
-/** Aynı kadroda iki özdeş tam ad olmasın — çakışan adları benzersiz yapar (anlatım ve kadro netliği). */
+/** Aynı grupta (kadro / market listesi) iki oyuncu aynı ADA ya da aynı FOTOĞRAF index'ine denk gelmesin.
+ *  Ad çakışınca yeni ad; foto çakışınca seed değiştirilerek farklı portreye kaydırılır. */
 function ensureUniquePlayerNames(players){
-  const taken=new Set();
+  const takenNames=new Set();
+  const takenPhotos=new Set();
   (players||[]).forEach(p=>{
     if(!p) return;
-    let guard=0;
-    while(taken.has(p.isim)&&guard++<400){ p.isim=`${ch(ILK)} ${ch(SY)}`; }
-    taken.add(p.isim);
+    let g=0;
+    while(takenNames.has(p.isim)&&g++<400){ p.isim=`${ch(ILK)} ${ch(SY)}`; }
+    takenNames.add(p.isim);
+    /* Foto index seed+id'den türer; grup içinde benzersiz kalması için seed'i kaydır. */
+    try{
+      let idx=portraitPoolIndex(p.seed,p.id), g2=0;
+      while(takenPhotos.has(idx)&&g2<PORTRAIT_POOL_SIZE&&g2++<PORTRAIT_POOL_SIZE){
+        p.seed=String(p.seed||'')+'~'+g2;
+        idx=portraitPoolIndex(p.seed,p.id);
+      }
+      takenPhotos.add(idx);
+    }catch(e){}
   });
   return players;
 }
@@ -2096,16 +2107,19 @@ function genSingleMarketPlayer(idx){
 }
 
 function genMarket(){
-  return Array.from({length:MARKET_TARGET},(_,i)=>genSingleMarketPlayer(i));
+  return ensureUniquePlayerNames(Array.from({length:MARKET_TARGET},(_,i)=>genSingleMarketPlayer(i)));
 }
 
 function ensureMarketStock(){
   if(!Array.isArray(G.marketPlayers)) G.marketPlayers=[];
   let idx=G.marketPlayers.length;
+  let added=false;
   while(G.marketPlayers.length<MARKET_TARGET){
     G.marketPlayers.push(genSingleMarketPlayer(idx));
-    idx++;
+    idx++; added=true;
   }
+  /* Yeni oyuncu eklendiyse tüm market listesinde ad/foto çakışmasını tekrar tekilleştir. */
+  if(added) ensureUniquePlayerNames(G.marketPlayers);
 }
 
 function genRandomClubName(){
@@ -2780,14 +2794,6 @@ function renderTeamRosterMini(){
   });
 }
 
-function shuffleArr(a){
-  const x=a.slice();
-  for(let i=x.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [x[i],x[j]]=[x[j],x[i]];
-  }
-  return x;
-}
 
 function emptyStandingsRow(){ return {o:0,g:0,m:0,sf:0,sa:0}; }
 
@@ -2805,13 +2811,19 @@ function genRoundRobinMatches(teamNames){
   const R=N-1;
   const out=[];
   let arr=teams.slice();
+  /* Ev/deplasman dengesi: dönme yönteminin (r+i)%2 heuristiği bazı takımlara aşırı ev maçı veriyordu
+     (ör. kullanıcı 18 ev / 1 deplasman). Ev sahibini o ana dek daha az ev maçı oynayana vererek dengeler. */
+  const homeCount={};
+  teams.forEach(t=>{ if(t) homeCount[t]=0; });
   for(let r=0;r<R;r++){
     for(let i=0;i<N/2;i++){
       const a=arr[i], b=arr[N-1-i];
       if(a==null||b==null) continue;
-      const swap=(r+i)%2;
-      const home=swap?b:a;
-      const away=swap?a:b;
+      let home,away;
+      if(homeCount[a]<homeCount[b]){ home=a; away=b; }
+      else if(homeCount[b]<homeCount[a]){ home=b; away=a; }
+      else { const swap=(r+i)%2; home=swap?b:a; away=swap?a:b; }
+      homeCount[home]++;
       out.push({round:r+1,home,away,played:false,hs:0,as:0,day:0});
     }
     const last=arr.pop();
@@ -3098,15 +3110,14 @@ function simulateCpuMatch(m){
   const drift=(G.season&&G.season.drift)||{};
   let hr=pseudoTeamStrength(m.home,k)+(drift[m.home]||0)+teamFormModifier(m.home,st)-cpuScheduleTire(m.home,st);
   let ar=pseudoTeamStrength(m.away,k)+(drift[m.away]||0)+teamFormModifier(m.away,st)-cpuScheduleTire(m.away,st);
-  /* Skor ölçeği kullanıcı maçlarıyla aynı format (4×5 dk): averaj tabloda karşılaştırılabilir olsun. */
-  let hs=Math.round(27+rand(-4,4)+(hr-ar)*0.12+1);
-  let as=Math.round(27+rand(-4,4)+(ar-hr)*0.12);
-  const tot=hs+as;
-  if(tot<44){ const b=Math.round((44-tot)/2); hs+=b; as+=b; }
-  if(tot>66){ const b=Math.round((tot-66)/2); hs-=b; as-=b; }
-  hs=Math.max(14,Math.min(42,hs));
-  as=Math.max(14,Math.min(42,as));
-  if(hs===as) hs+=1;
+  /* Skor ölçeği kullanıcı maçlarıyla (canlı motor: 4×10 dk FIBA, ~85-95 sayı/takım) aynı bantta olsun ki
+     lig tablosunda averaj (sayı farkı) tutarlı karşılaştırılabilsin. */
+  const diff=Math.max(-35,Math.min(35,hr-ar));
+  let hs=Math.round(86+rand(-8,8)+diff*0.6+2);   /* +2 ev sahibi avantajı */
+  let as=Math.round(86+rand(-8,8)-diff*0.6);
+  hs=Math.max(58,Math.min(125,hs));
+  as=Math.max(58,Math.min(125,as));
+  if(hs===as){ if(rand(0,1)) hs+=rand(2,6); else as+=rand(2,6); }  /* beraberlik → uzatma benzeri kırılma */
   m.hs=hs;
   m.as=as;
   m.played=true;
@@ -3930,7 +3941,7 @@ function renderArena(){
 }
 
 function saveArenaName(){
-  const v=document.getElementById('arenaNameInput').value.trim();
+  const v=sanitizeTeamName(document.getElementById('arenaNameInput').value);
   if(!v){showNotif('Arena adı gir!');return;}
   G.arena.isim=v;
   document.getElementById('arenaNameDisp').textContent=v;
@@ -3988,7 +3999,6 @@ function emptyBox(){
   return {twoMade:0,twoAtt:0,thrMade:0,thrAtt:0,ftMade:0,ftAtt:0,reb:0,ast:0,to:0,stl:0,blk:0,foul:0};
 }
 function cloneBox(b){return {...b};}
-function cloneArr(a){return a.slice();}
 function cloneQx(o){return {...o};}
 
 function randShotXY(isHome,is3,made){
@@ -4472,13 +4482,13 @@ function startMatch(){
         else if(ev.winner==='away') G.losses++;
       }
       if(ev.winner==='home'){
-        const priz=ecoRound(rand(95,215));
+        const priz=ecoRound(rand(1500,3500));
         txn('Maç ödülü (galibiyet)',priz);
         sfx('win');
         showNotif(`🏆 Galip geldin! +2 tablo puanı · +${fmtn(priz)} KR ödül`);
       }
       else if(ev.winner==='away'){
-        const cons=ecoRound(rand(28,82));
+        const cons=ecoRound(rand(400,900));
         txn('Maç günü geliri',cons);
         sfx('lose');
         showNotif(`😔 Mağlup — +${fmtn(cons)} KR maç günü geliri.`);
