@@ -426,7 +426,14 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 /* COACH CARD */
 .coach-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;}
 .coach-header{display:flex;gap:12px;align-items:center;margin-bottom:12px;}
-.coach-avatar{width:54px;height:54px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:24px;border:2px solid var(--gold);flex-shrink:0;}
+.coach-avatar{width:54px;height:54px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:24px;border:2px solid var(--gold);flex-shrink:0;overflow:hidden;}
+.coach-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;}
+.market-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.market-tab{flex:1;min-width:150px;padding:11px 14px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
+.market-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.tmode-badge{display:inline-block;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;margin-left:4px;}
+.tmode-sale{background:rgba(34,197,94,0.18);color:#4ade80;}
+.tmode-loan{background:rgba(59,130,246,0.2);color:#60a5fa;}
 .coach-name{font-weight:700;font-size:14px;}
 .coach-spec{font-size:11px;color:var(--gold);margin-top:2px;}
 .coach-stat{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
@@ -890,37 +897,36 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <div class="page" id="page-market">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
           <div style="font-size:13px;color:var(--gold);font-weight:700;">💰 Bakiye: <span id="marketCoins">50.000</span> KR</div>
-          <div style="font-size:12px;color:var(--text2);">Serbest oyuncular · <strong id="marketCountNum">40</strong> ilan · <span style="color:var(--text2);">Sezon ~30 gün (demo), fikstür 1–2 günde bir maç</span></div>
+          <div style="font-size:12px;color:var(--text2);"><strong id="marketCountNum">40</strong> serbest oyuncu · <strong id="clubCountNum">0</strong> kulüp ilanı · fikstür 1–2 günde bir maç</div>
         </div>
-        <div class="card" style="margin-bottom:14px;">
-          <div class="card-title">🔭 Keşif raporu</div>
-          <p style="font-size:11px;color:var(--text2);margin:0 0 10px;">Aktif pozisyon filtresine göre marketten <strong>3</strong> aday (OVR / fiyat dengesi).</p>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-            <label style="font-size:11px;color:var(--text2);">Profil:</label>
-            <select id="scoutPozFilter" onchange="renderScoutingReport()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-size:12px;min-width:140px;">
-              <option value="all">Tüm pozisyonlar</option>
-              <option value="PG">PG</option>
-              <option value="SG">SG</option>
-              <option value="SF">SF</option>
-              <option value="PF">PF</option>
-              <option value="C">C</option>
-            </select>
-            <button type="button" class="btn-sm" onclick="renderScoutingReport()">Raporu güncelle</button>
+        <div class="market-tabs">
+          <button type="button" id="mTabFree" class="market-tab active" onclick="switchMarketTab('free')">🆓 Serbest Oyuncular</button>
+          <button type="button" id="mTabClub" class="market-tab" onclick="switchMarketTab('club')">🔁 Kulüp Transferleri</button>
+        </div>
+        <div id="marketFreeSection">
+          <div class="fbar" style="align-items:center;">
+            <span style="font-size:11px;color:var(--text2);margin-right:6px;">Sırala (tekrar tıkla ⇄):</span>
+            <button type="button" class="fbtn msort active" id="mSortOvr" onclick="setMarketSort(&#39;ovr&#39;,this)">OVR ↓</button>
+            <button type="button" class="fbtn msort" id="mSortMaas" onclick="setMarketSort(&#39;maas&#39;,this)">Maaş ↓</button>
+            <button class="fbtn active" onclick="filterMarket(&#39;all&#39;,this)" style="margin-left:auto;">Tümü</button>
+            <button class="fbtn" onclick="filterMarket(&#39;PG&#39;,this)">PG — Organizatör</button>
+            <button class="fbtn" onclick="filterMarket(&#39;SG&#39;,this)">SG — Şutör</button>
+            <button class="fbtn" onclick="filterMarket(&#39;SF&#39;,this)">SF — K. Forvet</button>
+            <button class="fbtn" onclick="filterMarket(&#39;PF&#39;,this)">PF — G. Forvet</button>
+            <button class="fbtn" onclick="filterMarket(&#39;C&#39;,this)">C — Pivot</button>
           </div>
-          <div id="scoutReport" style="margin-top:12px;"></div>
+          <div id="marketList"></div>
         </div>
-        <div class="fbar" style="align-items:center;">
-          <span style="font-size:11px;color:var(--text2);margin-right:6px;">Sırala (tekrar tıkla ⇄):</span>
-          <button type="button" class="fbtn msort active" id="mSortOvr" onclick="setMarketSort(&#39;ovr&#39;,this)">OVR ↓</button>
-          <button type="button" class="fbtn msort" id="mSortMaas" onclick="setMarketSort(&#39;maas&#39;,this)">Maaş ↓</button>
-          <button class="fbtn active" onclick="filterMarket(&#39;all&#39;,this)" style="margin-left:auto;">Tümü</button>
-          <button class="fbtn" onclick="filterMarket(&#39;PG&#39;,this)">PG — Organizatör</button>
-          <button class="fbtn" onclick="filterMarket(&#39;SG&#39;,this)">SG — Şutör</button>
-          <button class="fbtn" onclick="filterMarket(&#39;SF&#39;,this)">SF — K. Forvet</button>
-          <button class="fbtn" onclick="filterMarket(&#39;PF&#39;,this)">PF — G. Forvet</button>
-          <button class="fbtn" onclick="filterMarket(&#39;C&#39;,this)">C — Pivot</button>
+        <div id="marketClubSection" style="display:none;">
+          <p style="font-size:11px;color:var(--text2);margin:0 0 10px;">Rakip kulüplerin <strong>satışa</strong> veya <strong>kiralığa</strong> çıkardığı oyuncular. Kiralık oyuncu sezon sonunda kulübüne döner.</p>
+          <div class="fbar" style="align-items:center;">
+            <span style="font-size:11px;color:var(--text2);margin-right:6px;">Filtre:</span>
+            <button type="button" class="fbtn ctf active" onclick="filterClubTransfers(&#39;all&#39;,this)">Tümü</button>
+            <button type="button" class="fbtn ctf" onclick="filterClubTransfers(&#39;sale&#39;,this)">💵 Satılık</button>
+            <button type="button" class="fbtn ctf" onclick="filterClubTransfers(&#39;loan&#39;,this)">🔁 Kiralık</button>
+          </div>
+          <div id="clubTransferList"></div>
         </div>
-        <div id="marketList"></div>
       </div>
 
       <!-- ALTYAPI -->
@@ -1404,6 +1410,7 @@ function serializeGameState(){
     coins:G.coins,wins:G.wins,losses:G.losses,points:G.points,chemistry:G.chemistry,
     team:G.team,
     players:G.players,youth:G.youth,marketPlayers:G.marketPlayers,
+    clubTransferPlayers:G.clubTransferPlayers||[],_ctSeq:G._ctSeq||0,
     coaches:G.coaches,coachMarket:G.coachMarket,
     ligTeams:pl,
     arena:G.arena,selectedColor:G.selectedColor,activeTrainings:G.activeTrainings||[],
@@ -1528,6 +1535,9 @@ function applyGameState(d){
   G.players=Array.isArray(d.players)?d.players:[];
   G.youth=Array.isArray(d.youth)?d.youth:[];
   G.marketPlayers=Array.isArray(d.marketPlayers)?d.marketPlayers:[];
+  G.clubTransferPlayers=Array.isArray(d.clubTransferPlayers)?d.clubTransferPlayers:[];
+  G._ctSeq=d._ctSeq||0;
+  G.marketTab='free';G.clubTransferFilter='all';
   G.coaches=Array.isArray(d.coaches)?d.coaches:[];
   G.coachMarket=Array.isArray(d.coachMarket)?d.coachMarket:[];
   G.ligTeams=Array.isArray(d.ligTeams)?d.ligTeams:[];
@@ -1904,6 +1914,11 @@ function playerAvatarImgAttrs(seed,salt,opts){
   const esc=v=>String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
   return `data-av-seed="${esc(seed)}" data-av-salt="${esc(salt??'')}" data-av-opts="${esc(JSON.stringify(o))}" onerror="playerAvatarSvgFallback(this)"`;
 }
+/** Koç portresi: oyuncu havuzunu paylaşır (ayrı havuz üretmeye gerek yok).
+ *  Koç-özel seed ile foto stabil ve oyunculardan farklı bir index'e düşer. */
+function coachSeedOf(c){ return 'coach_'+String((c&&c.id)||'')+'_'+String((c&&c.ad)||''); }
+function coachAvatar(c){ return playerAvatar(coachSeedOf(c),(c&&c.ad)||'',{}); }
+function coachAvatarAttrs(c){ return playerAvatarImgAttrs(coachSeedOf(c),(c&&c.ad)||'',{}); }
 
 /** Antrenmanda yaş / potansiyel boşluğuna göre çarpan (genç + yüksek pot = hızlı gelişim) */
 function trainingGrowthMult(p){
@@ -1932,6 +1947,7 @@ const ANTRENMAN_T=[{isim:'Hücum Antrenmanı',ikon:'⚔️',etki:'hucum',gun:5,m
 let G={
   coins:START_KR,wins:0,losses:0,points:0,chemistry:75,
   team:null,players:[],youth:[],marketPlayers:[],
+  clubTransferPlayers:[],marketTab:'free',clubTransferFilter:'all',
   coaches:[],coachMarket:[],ligTeams:[],
   arena:{s:1,kap:5000,bk:ecoRound(45),isim:'Başlangıç Arena'},
   selectedColor:'#f97316',
@@ -2668,7 +2684,7 @@ function renderTeamDetailPage(){
     ['🌱 Altyapı',`<button type="button" class="linklike" onclick="gotoAltyapiPage()">Altyapı →</button>`],
     ['⚔️ Rakip (ör.)',rival],
     ['🏀 Arena',`${G.arena.isim||'Arena'} — ${fmtn(G.arena.kap)} kişi`],
-    ['📣 Sponsor','Charazay 2.0 (demo)'],
+    ['📣 Sponsor','Charazay 2.0'],
     ['🌍 Ülke','🇹🇷 Türkiye'],
     ['👥 Taraftar grubu',`${fs.group} · ~${fmtn(fan)} taraftar`],
     ['📊 Taraftar havası',fanLbl+' <div class="chem-bar" style="margin-top:6px;"><div class="chem-fill" style="width:'+Math.min(100,G.chemistry)+'%;"></div></div>'],
@@ -3296,32 +3312,169 @@ function renderDashboardNextMatch(){
   if(meta) meta.textContent=`${formatFixtureDayLabel(m.day)} · ${tClock} · Tur ${m.round}/19 · Sen: ${us}`;
 }
 
-function renderScoutingReport(){
-  const host=document.getElementById('scoutReport');
-  if(!host||!G.team) return;
-  ensureMarketStock();
-  const sel=document.getElementById('scoutPozFilter');
-  const poz=sel?sel.value:'all';
-  const owned=new Set(G.players.map(p=>p.id));
-  let pool=poz==='all'?G.marketPlayers.slice():G.marketPlayers.filter(p=>p.poz===poz);
-  pool=pool.filter(p=>!owned.has(p.id));
-  pool.sort((a,b)=> (b.genel-a.genel) - ((Number(b.fiyat)||transferFeeKR(b))-(Number(a.fiyat)||transferFeeKR(a)))/Math.max(1,ecoRound(450)) );
-  const pick=pool.slice(0,3);
-  if(!pick.length){
-    host.innerHTML='<div style="font-size:11px;color:var(--text2);">Filtreye uygun yeterli aday yok (market boş veya hepsi kadroda).</div>';
+// ===== KULÜP TRANSFERLERİ (rakip kulüplerin satılık/kiralık oyuncuları) =====
+const CLUB_TRANSFER_TARGET=14;
+/** Kullanıcının lig grubundaki rakip kulüp adları. */
+function userLeaguePeers(){
+  try{
+    if(!G.team||!G.team.tblKey) return [];
+    const sub=getTblState().subs[G.team.tblKey];
+    if(!sub||!sub.teams) return [];
+    return sub.teams.filter(n=>n&&n!==G.team.isim);
+  }catch(e){ return []; }
+}
+function genClubListing(peers){
+  const club=peers.length?ch(peers):'Rakip Kulüp';
+  const r=Math.random();
+  let minG,maxG;
+  if(r<0.2){ minG=58; maxG=64; }
+  else if(r<0.5){ minG=64; maxG=71; }
+  else if(r<0.78){ minG=71; maxG=78; }
+  else if(r<0.93){ minG=78; maxG=84; }
+  else { minG=84; maxG=90; }
+  const p=genPlayerBounded(ch(POZLAR),minG,maxG);
+  const loan=Math.random()<0.42;
+  p.id='ct'+(G._ctSeq=(G._ctSeq||0)+1)+'_'+Math.floor(Math.random()*1e6);
+  p.seed='ct'+p.id+'_'+hash32(p.isim+p.poz+club);
+  p.fromClub=club;
+  p.mode=loan?'loan':'sale';
+  const base=transferFeeKR(p);
+  /* Sahipli oyuncu: satış priml, kiralık tek seferlik ucuz bedel + haftalık maaş sende. */
+  p.fiyat=loan?Math.round(base*0.22):Math.round(base*1.3);
+  p.kiralik=loan;
+  p.sure=rand(6,72);
+  p.teklifler=rand(0,14);
+  return p;
+}
+function ensureClubTransferStock(){
+  if(!Array.isArray(G.clubTransferPlayers)) G.clubTransferPlayers=[];
+  const peers=userLeaguePeers();
+  let added=false;
+  let guard=0;
+  while(G.clubTransferPlayers.length<CLUB_TRANSFER_TARGET&&guard++<60){
+    G.clubTransferPlayers.push(genClubListing(peers));
+    added=true;
+  }
+  if(added) ensureUniquePlayerNames(G.clubTransferPlayers);
+}
+/** Gün ilerledikçe: bazı ilanlar başka kulüplerce alınır (çıkar), havuz yenilenir. */
+function tickClubTransferMarket(daysAdvanced){
+  if(!Array.isArray(G.clubTransferPlayers)) G.clubTransferPlayers=[];
+  const d=Math.max(0,Math.round(Number(daysAdvanced)||0));
+  if(d<=0) return;
+  const remove=Math.min(G.clubTransferPlayers.length,rand(0,2));
+  for(let i=0;i<remove;i++){
+    if(G.clubTransferPlayers.length) G.clubTransferPlayers.splice(rand(0,G.clubTransferPlayers.length-1),1);
+  }
+  ensureClubTransferStock();
+}
+function renderClubTransfers(){
+  const host=document.getElementById('clubTransferList');
+  const cnt=document.getElementById('clubCountNum');
+  if(!host) return;
+  ensureClubTransferStock();
+  if(cnt) cnt.textContent=String(G.clubTransferPlayers.length);
+  const filt=G.clubTransferFilter||'all';
+  let list=G.clubTransferPlayers.slice();
+  if(filt!=='all') list=list.filter(p=>p.mode===filt);
+  list.sort((a,b)=>(b.genel||0)-(a.genel||0));
+  if(!list.length){
+    host.innerHTML='<div style="font-size:12px;color:var(--text2);padding:16px;text-align:center;">Bu filtreye uygun kulüp ilanı yok.</div>';
     return;
   }
-  host.innerHTML=pick.map(p=>{
+  host.innerHTML=list.map(p=>{
     const st=starFromGenel(p.genel);
-    return `<div onclick="openPlayerModal('${p.id}')" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:10px;border:1px solid var(--border);margin-bottom:8px;cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openPlayerModal('${p.id}')">
-      <img src="${playerAvatar(p.seed,p.marketIdx!=null?p.marketIdx:p.id,{market:true})}" ${playerAvatarImgAttrs(p.seed,p.marketIdx!=null?p.marketIdx:p.id,{market:true})} alt="" width="48" height="60" style="border-radius:8px;object-fit:cover;border:2px solid var(--border);">
-      <div style="flex:1;min-width:0;">
-        <div style="font-weight:700;font-size:13px;">${p.bayrak} ${p.isim} <span class="pbadge pos-${p.poz.toLowerCase()}" style="font-size:9px;">${p.poz}</span></div>
-        <div style="font-size:11px;color:var(--text2);">OVR ${p.genel} · ${st}★ · ${fmtn(transferFeeKR(p))} KR</div>
+    const loan=p.mode==='loan';
+    const modeBadge=loan?'<span class="tmode-badge tmode-loan">🔁 KİRALIK</span>':'<span class="tmode-badge tmode-sale">💵 SATILIK</span>';
+    const priceLbl=loan?'Kira bedeli':'Bonservis';
+    const act=loan
+      ?`<button class="btn-bid" onclick="event.stopPropagation();loanClubPlayer('${p.id}')" style="background:var(--blue);">KİRALA</button>`
+      :`<button class="btn-bid" onclick="event.stopPropagation();buyClubPlayer('${p.id}')">SATIN AL</button>`;
+    return `
+    <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openPlayerModal('${p.id}')">
+      <div class="mavatar-wrap">
+      <img class="mavatar" src="${playerAvatar(p.seed,p.id,{market:true})}" ${playerAvatarImgAttrs(p.seed,p.id,{market:true})} alt="${p.isim}">
+      <div class="pimg-cap" style="margin-top:2px;">OVR ${p.genel}</div>
       </div>
-      <button type="button" class="btn-bid" onclick="event.stopPropagation();buyFromMarket('${p.id}')" style="white-space:nowrap;padding:8px 12px;font-size:11px;">Teklif</button>
+      <div style="min-width:36px;text-align:center;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${p.genel>=75?'var(--green)':p.genel>=60?'var(--gold)':'var(--red)'};">${p.genel}</div>
+        <span class="pbadge pos-${p.poz.toLowerCase()}" style="font-size:9px;">${p.poz}</span>
+        <div style="font-size:9px;color:var(--text2);">${st}★</div>
+      </div>
+      <div class="minfo">
+        <div style="font-weight:700;font-size:13px;">${p.bayrak} ${p.isim} ${modeBadge}</div>
+        <div style="font-size:11px;color:var(--text2);">${p.ulke} • ${p.yas} yaş • ${p.boy}cm</div>
+        <div style="font-size:10px;color:var(--accent);margin-top:3px;">🏛️ ${escMatch(p.fromClub||'')} kulübünden</div>
+        <div style="display:flex;gap:7px;margin-top:4px;flex-wrap:wrap;">
+          <span style="font-size:11px;">⚔️${p.hucum}</span><span style="font-size:11px;">🛡️${p.savunma}</span>
+          <span style="font-size:11px;">🏀${p.ribaund}</span><span style="font-size:11px;">🎯${p.pas}</span>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-top:3px;">Maaş: ${fmtn(p.maas)} KR/hf${loan?' · sezon sonunda döner':''}</div>
+      </div>
+      <div class="mprice">
+        <div style="font-size:9px;color:var(--text2);">${priceLbl}</div>
+        <div class="pval">${fmtn(p.fiyat)}</div>
+        <div style="font-size:10px;color:var(--text2);">KR</div>
+        ${act}
+      </div>
     </div>`;
   }).join('');
+}
+function buyClubPlayer(id){
+  ensureClubTransferStock();
+  const p=(G.clubTransferPlayers||[]).find(x=>x.id===id);
+  if(!p||p.mode!=='sale') return;
+  if(G.players.length>=18){ showNotif('Kadro dolu (en fazla 18). Önce bir oyuncu gönder.'); return; }
+  if(G.coins<p.fiyat){ showNotif('❌ Yeterli KR yok!'); return; }
+  const st=starFromGenel(p.genel);
+  txn('Transfer (kulüpten): '+p.isim,-p.fiyat);
+  unlockAchievement('transfer');
+  const np={...p};
+  ['mode','fiyat','kiralik','fromClub','sure','teklifler','freeAgent'].forEach(k=>delete np[k]);
+  if(np.enerji==null||np.enerji==='') np.enerji=100;
+  G.players.push(np);
+  G.clubTransferPlayers=G.clubTransferPlayers.filter(x=>x.id!==id);
+  G.chemistry=Math.max(20,G.chemistry-rand(5,12));
+  showNotif(`✅ ${p.isim} ${p.fromClub} kulübünden kadrona katıldı!`);
+  if(G.team&&G.team.tblKey){
+    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">💰 <strong>${G.team.isim}</strong>, <strong>${escMatch(p.fromClub||'')}</strong> kulübünden <strong>${fmtn(p.fiyat)} KR</strong> bonservisle <strong>${p.isim}</strong> (${st}★) transferini bitirdi.</div>`);
+  }
+  updateCoins();updateChemistry();renderMarket();
+  if(document.getElementById('page-kadro')&&document.getElementById('page-kadro').classList.contains('active')) renderRoster();
+  scheduleGameSave();
+}
+function loanClubPlayer(id){
+  ensureClubTransferStock();
+  const p=(G.clubTransferPlayers||[]).find(x=>x.id===id);
+  if(!p||p.mode!=='loan') return;
+  if(G.players.length>=18){ showNotif('Kadro dolu (en fazla 18). Önce bir oyuncu gönder.'); return; }
+  if(G.coins<p.fiyat){ showNotif('❌ Kira bedeli için yeterli KR yok!'); return; }
+  txn('Kiralama bedeli: '+p.isim,-p.fiyat);
+  const np={...p};
+  ['mode','fiyat','kiralik','sure','teklifler','freeAgent'].forEach(k=>delete np[k]);
+  np.loan=true;
+  np.loanFrom=p.fromClub;
+  delete np.fromClub;
+  np.loanReturnDay=(G.gameDay||1)+rand(45,75);
+  if(np.enerji==null||np.enerji==='') np.enerji=100;
+  G.players.push(np);
+  G.clubTransferPlayers=G.clubTransferPlayers.filter(x=>x.id!==id);
+  showNotif(`✅ ${p.isim} kiralık olarak kadrona katıldı — ~${np.loanReturnDay-(G.gameDay||1)} gün sonra ${np.loanFrom} kulübüne dönecek.`);
+  updateCoins();renderMarket();
+  if(document.getElementById('page-kadro')&&document.getElementById('page-kadro').classList.contains('active')) renderRoster();
+  scheduleGameSave();
+}
+/** Süresi dolan kiralık oyuncuları kadrodan çıkarır (gün ilerleyince çağrılır). */
+function processLoanReturns(){
+  if(!Array.isArray(G.players)) return;
+  const now=G.gameDay||1;
+  const returning=G.players.filter(p=>p&&p.loan&&p.loanReturnDay&&p.loanReturnDay<=now);
+  if(!returning.length) return;
+  returning.forEach(p=>{
+    showNotif(`↩️ ${p.isim} kiralık süresi bitti — ${p.loanFrom||'kulübüne'} döndü.`);
+  });
+  const ids=new Set(returning.map(p=>p.id));
+  G.players=G.players.filter(p=>!ids.has(p.id));
 }
 
 function regenerateSeasonFixtures(){
@@ -3528,6 +3681,7 @@ function findPlayerRecord(pid){
   return G.players.find(p=>p.id===pid)
     ||G.youth.find(p=>p.id===pid)
     ||G.marketPlayers.find(p=>p.id===pid)
+    ||(G.clubTransferPlayers||[]).find(p=>p.id===pid)
     ||null;
 }
 
@@ -3536,7 +3690,8 @@ function openPlayerModal(pid){
   if(!p){ showNotif('Oyuncu bulunamadı.'); return; }
   const inMarket=G.marketPlayers.some(x=>x.id===pid);
   const inYouth=G.youth.some(x=>x.id===pid);
-  const av=inMarket?{market:true}:{ovr:p.genel};
+  const inClub=(G.clubTransferPlayers||[]).some(x=>x.id===pid);
+  const av=(inMarket||inClub)?{market:true}:{ovr:p.genel};
   const salt=inMarket?(p.marketIdx!=null?p.marketIdx:p.id):p.id;
   const bigImg=playerAvatar(p.seed,salt,av);
   const oc=p.genel>=75?'var(--green)':p.genel>=60?'var(--gold)':'var(--red)';
@@ -3546,10 +3701,17 @@ function openPlayerModal(pid){
     const pr=p.fiyat!=null?Number(p.fiyat):transferFeeKR(p);
     actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();buyFromMarket('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;">TEKLİF VER — ${fmtn(pr)} KR</button>`);
   }
+  if(inClub){
+    if(p.mode==='loan'){
+      actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();loanClubPlayer('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;background:var(--blue);">🔁 KİRALA — ${fmtn(p.fiyat)} KR · ${escMatch(p.fromClub||'')}</button>`);
+    } else {
+      actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();buyClubPlayer('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;">💵 SATIN AL — ${fmtn(p.fiyat)} KR · ${escMatch(p.fromClub||'')}</button>`);
+    }
+  }
   if(inYouth){
     actions.push(`<button type="button" class="btn-p" onclick="event.stopPropagation();promoteYouth('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;padding:9px;">KADROYA AL</button>`);
   }
-  if(!inMarket&&!inYouth){
+  if(!inMarket&&!inYouth&&!inClub){
     actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();listPlayerToMarket('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;">TRANSFER MARKETE KOY</button>`);
   }
   const potBlock=p.potansiyel?`<div style="font-size:11px;color:var(--blue);margin-bottom:8px;">⭐ Potansiyel: ${p.potansiyel} (yaklaşık +${Math.max(0,(p.potansiyel||p.genel)-p.genel)} gelişim payı)</div>`:'';
@@ -3783,7 +3945,28 @@ function renderMarket(){
       </div>
     </div>`;
   }).join('');
-  renderScoutingReport();
+  ensureClubTransferStock();
+  renderClubTransfers();
+  switchMarketTab(G.marketTab||'free');
+}
+
+function switchMarketTab(tab){
+  G.marketTab=tab==='club'?'club':'free';
+  const fs=document.getElementById('marketFreeSection');
+  const cs=document.getElementById('marketClubSection');
+  const bf=document.getElementById('mTabFree');
+  const bc=document.getElementById('mTabClub');
+  if(fs) fs.style.display=G.marketTab==='free'?'':'none';
+  if(cs) cs.style.display=G.marketTab==='club'?'':'none';
+  if(bf) bf.classList.toggle('active',G.marketTab==='free');
+  if(bc) bc.classList.toggle('active',G.marketTab==='club');
+}
+
+function filterClubTransfers(mode,btn){
+  G.clubTransferFilter=(mode==='sale'||mode==='loan')?mode:'all';
+  document.querySelectorAll('#page-market .fbtn.ctf').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderClubTransfers();
 }
 
 function setMarketSort(mode,btn){
@@ -3880,11 +4063,10 @@ function renderAntrenman(){
   }
 
   // Koçlar
-  const coachEmojis=['👨‍🏫','👨‍💼','🧑‍🏫','👨‍🔬','🧔'];
   document.getElementById('coachList').innerHTML=G.coaches.length
     ?G.coaches.map((c,i)=>`<div class="coach-card">
       <div class="coach-header">
-        <div class="coach-avatar">${coachEmojis[i%coachEmojis.length]}</div>
+        <div class="coach-avatar"><img src="${coachAvatar(c)}" ${coachAvatarAttrs(c)} alt=""></div>
         <div><div class="coach-name">${c.ad}</div><div class="coach-spec">${c.ikon} ${c.isim}</div></div>
       </div>
       <div class="coach-stat"><span style="color:var(--text2);">Uzmanlık</span><span style="font-size:11px;">${c.bonus}</span></div>
@@ -3897,7 +4079,7 @@ function renderAntrenman(){
   document.getElementById('coachMarket').innerHTML=G.coachMarket.map((c,i)=>`
     <div class="coach-card">
       <div class="coach-header">
-        <div class="coach-avatar">${coachEmojis[i%coachEmojis.length]}</div>
+        <div class="coach-avatar"><img src="${coachAvatar(c)}" ${coachAvatarAttrs(c)} alt=""></div>
         <div><div class="coach-name">${c.ad}</div><div class="coach-spec">${c.ikon} ${c.uzm}</div></div>
       </div>
       <div class="coach-stat"><span style="color:var(--text2);">Bonus</span><span style="font-size:11px;">${c.bonus}</span></div>
@@ -4461,6 +4643,8 @@ function startMatch(){
         G.gameDay=Math.max(...roundDays,G.gameDay||1);
         advanceTrainingDays(G.gameDay-prevDay);
         processEconomyWeeks();
+        processLoanReturns();
+        tickClubTransferMarket(G.gameDay-prevDay);
         mergeMatchPlayerStats(ev);
         clearResolvedInjuries();
         rollInjuriesAfterUserMatch();
