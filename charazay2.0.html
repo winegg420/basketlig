@@ -737,7 +737,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                 </div>
                 <div class="score-mid">
                   <div class="qlabel" id="liveQuarter">1. Periyot</div>
-                  <div class="qtime" id="liveTime">5:00</div>
+                  <div class="qtime" id="liveTime">10:00</div>
                   <span class="status-badge" id="liveStatus" style="background:rgba(100,100,100,0.2);color:var(--text2);">BEKLEMEDE</span>
                 </div>
                 <div class="score-side">
@@ -1082,7 +1082,8 @@ const NEWS_SESSION_KEY='charazay_news_sess_v1';
 const GAME_SAVE_KEY='charazay_game_save_v2';
 const IDB_NAME='charazay_idb_v1';
 const IDB_STORE_G='game';
-const MATCH_CLOCK_SEC=300;
+const MATCH_CLOCK_SEC=600;   /* Regülasyon çeyrek süresi — FIBA 10 dk (gerçekçi skorlar için) */
+const OT_CLOCK_SEC=300;      /* Uzatma süresi — FIBA 5 dk */
 /** Eski ekonomi 2.400 KR — yeni başlangıç 50.000 KR ile orantılı fiyatlar */
 const START_KR=50000;
 const ECO_REF_KR=2400;
@@ -1989,6 +1990,18 @@ function genPlayer(poz=null,tr=false){
   return {id,isim,poz:p,yas,ulke:ulke.ad,bayrak:ulke.b,boy:rand(185,220),kilo:rand(80,120),seed,maas,...stats,genel,mood,enerji:100,potansiyel:rand(genel,Math.min(99,genel+20)),formDay:0,kontratSezon:rand(1,3),sezon:{mac:0,pts:0,ast:0,reb:0}};
 }
 
+/** Aynı kadroda iki özdeş tam ad olmasın — çakışan adları benzersiz yapar (anlatım ve kadro netliği). */
+function ensureUniquePlayerNames(players){
+  const taken=new Set();
+  (players||[]).forEach(p=>{
+    if(!p) return;
+    let guard=0;
+    while(taken.has(p.isim)&&guard++<400){ p.isim=`${ch(ILK)} ${ch(SY)}`; }
+    taken.add(p.isim);
+  });
+  return players;
+}
+
 function genPlayerBounded(poz,minG,maxG){
   let p=genPlayer(poz,false);
   let guard=0;
@@ -2026,11 +2039,11 @@ function genRoster(){
     players[idx].maas=salaryKRFromGenel(players[idx].genel);
     players[idx].potansiyel=Math.max(players[idx].genel,players[idx].potansiyel||0);
   }
-  return players;
+  return ensureUniquePlayerNames(players);
 }
 
 function genYouth(){
-  return Array.from({length:15},()=>{
+  return ensureUniquePlayerNames(Array.from({length:15},()=>{
     const roll=Math.random();
     let minO,maxO,pLo,pHi,yLo,yHi,prospect=false;
     if(roll<0.09){
@@ -2057,7 +2070,7 @@ function genYouth(){
     p.seed='yt'+p.id+hash32(p.isim+p.yas+p.potansiyel);
     p.academyProspect=!!prospect;
     return p;
-  });
+  }));
 }
 
 function genSingleMarketPlayer(idx){
@@ -2417,6 +2430,7 @@ function getBotClubProfile(teamName,ligKey){
     p.maas=salaryKRFromGenel(p.genel);
     roster.push(p);
   }
+  ensureUniquePlayerNames(roster);
   const arenas=['Şehir Spor Salonu','Metro Arena','Karadeniz Kapalı','Ege Basket Merkezi','Anadolu Spor Kompleksi'];
   const row={human:false,teamName,ligKey,logoUrl:'',arena:arenas[seed%arenas.length],renk:['#3b82f6','#22c55e','#ef4444','#a855f7'][seed%4],roster};
   cache[ck]=row;
@@ -4103,9 +4117,11 @@ function generateMatchEvents(rakip, opts){
   const tac=G.tactics||{};
   const tempo=tac.tempo||'normal';
   const odak=tac.odak||'dengeli';
-  const playsMax=tempo==='hizli'?66:tempo==='yavas'?50:58;
-  const decLo=tempo==='hizli'?3:tempo==='yavas'?5:4;
-  const decHi=tempo==='hizli'?10:tempo==='yavas'?13:12;
+  /* Pozisyon süresi (sn) — 10 dk (600 sn) çeyrekte gerçekçi pozisyon sayısı üretir.
+     Hızlı tempo daha çok pozisyon → daha yüksek skor; yavaş tempo kontrollü/az pozisyon. */
+  const decLo=tempo==='hizli'?9:tempo==='yavas'?12:10;
+  const decHi=tempo==='hizli'?17:tempo==='yavas'?24:20;
+  const playsMax=tempo==='hizli'?56:tempo==='yavas'?40:48;
   const userIs3Oran=odak==='dis'?0.42:odak==='ic'?0.18:0.30;
   const acc2=(odak==='ic'?0.03:0)+(tempo==='yavas'?0.02:tempo==='hizli'?-0.01:0);
   const acc3=(odak==='dis'?-0.01:0)+(tempo==='yavas'?0.02:tempo==='hizli'?-0.01:0);
@@ -4132,6 +4148,102 @@ function generateMatchEvents(rakip, opts){
   ]);
   const pump=()=>ch(['Şut tehdidiyle savunmayı havaya kaldırdı. ','Sahte yükseliş çok şık. ','Pivot ayağıyla yerleşti, savunmayı kilitlemeye çalışıyor. ']);
 
+  const ftLine=(nMade,nAtt,who)=> nMade===nAtt?`${who} çizgiden ${nAtt}'de ${nMade} — kusursuz.`
+    : nMade===0?`${who} serbest atışlarda ${nAtt}'de 0; seyirci sustu.`
+    : `${who} çizgiden ${nAtt}'de ${nMade}.`;
+
+  /* ── Tek pozisyon simülasyonu (gerçekçi FIBA temposu) ──
+     Pozisyonların çoğu saha içi şutla biter; ribaund/asist/blok/faul kutuya ve anlatıma gömülür.
+     userPos=true → kullanıcı takımı (kutu hB, skor homeScore); değilse rakip (aB, awayScore). */
+  function runPossession(q,t){
+    const userPos=Math.random()<(userIsHome?0.53:0.47);
+    const roll=Math.random();
+    const B=userPos?hB:aB, D=userPos?aB:hB;
+    const shooter=userPos?ch([pg,sg,sf,pf,c]):oppPick();
+    const sc=()=>`(${homeScore} - ${awayScore})`;
+    const addU=(n)=>{ homeScore+=n; qh[q]+=n; };
+    const addO=(n)=>{ awayScore+=n; qa[q]+=n; };
+    const addPts=(n)=>{ if(userPos) addU(n); else addO(n); };
+
+    if(roll<0.80){
+      /* Saha içi şut denemesi */
+      const is3=Math.random()<(userPos?userIs3Oran:0.32);
+      const acc=userPos?(is3?0.355+acc3:0.505+acc2)*staminaFactor*uMul:(is3?0.35:0.495)*oMul;
+      const made=Math.random()<Math.max(0.14,Math.min(0.72,acc));
+      const xy=randShotXY(userIsHome===userPos,is3,made);
+      const pts=is3?3:2;
+      let passer=null;
+      if(made){
+        if(userPos){ const pp=[pg,sg,sf,pf].filter(p=>p&&p.id!==shooter.id); if(pp.length&&Math.random()<0.60) passer=ch(pp); }
+        else if(Math.random()<0.55) passer=oppPick();
+        if(passer&&passer.isim===shooter.isim) passer=null;
+      }
+      if(is3){ B.thrAtt++; if(made) B.thrMade++; } else { B.twoAtt++; if(made) B.twoMade++; }
+      if(made){
+        addPts(pts);
+        if(userPos){ bumpP(shooter,'pts',pts); if(passer){ B.ast++; bumpP(passer,'ast',1); } }
+        else if(passer) B.ast++;
+      }
+      /* And-1 (yalnızca isabetli 2 sayıda) */
+      let and1=false, and1Made=false;
+      if(made&&!is3&&Math.random()<0.12){
+        and1=true; B.ftAtt++; if(userPos) D.foul++; else D.foul++;
+        and1Made=Math.random()<0.76;
+        if(and1Made){ B.ftMade++; addPts(1); if(userPos) bumpP(shooter,'pts',1); }
+      }
+      /* Kaçan turnikede savunma faulü → 2 serbest atış */
+      if(!made&&!is3&&Math.random()<0.15){
+        const nMade=Math.random()<0.5?2:(Math.random()<0.6?1:0);
+        B.ftAtt+=2; B.ftMade+=nMade; D.foul++;
+        addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade);
+        const lineX=userPos?208:732;
+        events.push({type:'free',text:`${shooter.isim} şut çekerken faul aldı — ${ftLine(nMade,2,shooter.isim)} ${sc()}`,q,t,home:homeScore,away:awayScore,
+          shots:[{x:lineX+rand(-10,10),y:242,made:nMade>=1,isHome:userPos,kind:'ft',q},{x:lineX+rand(-10,10),y:262,made:nMade===2,isHome:userPos,kind:'ft',q}],
+          box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+        return;
+      }
+      /* Blok / ribaund (kaçan şutlarda) */
+      let blocked=false, blk=null;
+      if(!made&&Math.random()<0.10){ blocked=true; blk=userPos?oppPick():c; D.blk++; }
+      if(!made){
+        const offReb=Math.random()<0.26;
+        if(offReb){ B.reb++; if(userPos) bumpP(ch([pf,c]),'reb',1); }
+        else { D.reb++; if(!userPos) bumpP(ch([pf,c]),'reb',1); }
+      }
+      let txt;
+      if(made){
+        if(is3){ const pasTxt=passer?`${passer.isim}'in pasında `:''; txt=pasTxt+cross()+' '+`${shooter.isim} derinden bombayı patlattı — ÜÇLÜK! ${sc()}`; }
+        else if(and1){ txt=`${shooter.isim} faule rağmen turnikeyi bitirdi — ${and1Made?'AND-1 tamam!':'ek atış kaçtı.'} ${sc()}`; }
+        else { const pasTxt=passer?`${passer.isim} buldu; `:''; txt=pasTxt+ch([`${shooter.isim} boyalı alanda turnikeyi bitirdi! ${sc()}`,`${shooter.isim} pota altında güçlü tamamladı! ${sc()}`,`${shooter.isim} orta mesafeyi vurdu. ${sc()}`,`${shooter.isim} pick-and-roll sonrası kolay iki! ${sc()}`]); }
+      } else if(blocked){
+        txt=`${blk.isim} muhteşem blok! ${shooter.isim}'in şutu geri döndü.`;
+      } else {
+        txt=is3?`${shooter.isim}'in üçlüğü çemberden döndü.`:ch([`${shooter.isim} turnikede isabet bulamadı.`,`${shooter.isim}'in orta mesafesi kısa kaldı.`,`${shooter.isim} yüzer şutu sepete oturtamadı.`]);
+      }
+      events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+
+    } else if(roll<0.90){
+      /* Ceza/faul serbest atış turu */
+      const nMade=Math.random()<0.45?2:(Math.random()<0.7?1:0);
+      B.ftAtt+=2; B.ftMade+=nMade; D.foul++;
+      addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade);
+      const lineX=userPos?208:732;
+      events.push({type:'free',text:`Faul düdüğü — ${shooter.isim} çizgide. ${ftLine(nMade,2,shooter.isim)} ${sc()}`,q,t,home:homeScore,away:awayScore,
+        shots:[{x:lineX+rand(-10,10),y:242,made:nMade>=1,isHome:userPos,kind:'ft',q},{x:lineX+rand(-10,10),y:262,made:nMade===2,isHome:userPos,kind:'ft',q}],
+        box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+
+    } else if(roll<0.96){
+      /* Top kaybı / top çalma — sayı yok */
+      const stealer=userPos?oppPick():ch([pg,sg,sf]);
+      B.to++; D.stl++;
+      events.push({type:'steal',text:`${stealer.isim} pas arasını okudu ve topu çaldı! Hızlı hücum geliyor.`,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+
+    } else {
+      /* Renk — mola/taktik vurgusu */
+      events.push({type:'tactic',text:`Mola! Kenar çizgisinde ${ch(['pick-and-roll yükle','el presini artır','2-3 bölge savunması','erken tempo'])} vurgusu.`,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+    }
+  }
+
   events.push({
     type:'start',
     text:`Maç hava atışıyla başlıyor. ${G.team.isim} ${userIsHome?'ev sahibi':'deplasman takımı olarak'}; ${c.isim} hava atışında dairede, ${pg.isim} ilk hücumu kuruyor. Tribünler dolu.`,
@@ -4154,155 +4266,8 @@ function generateMatchEvents(rakip, opts){
     let plays=0;
     while(t>0&&plays<playsMax){
       plays++;
-      const dec=rand(decLo,decHi);
-      t=Math.max(0,t-dec);
-      const userPos=Math.random()<(userIsHome?0.54:0.48);
-      const roll=Math.random();
-
-      if(roll<0.34){
-        const is3=Math.random()<(userPos?userIs3Oran:0.30);
-        let made;
-        if(userPos) made=Math.random()<(is3?(0.36+acc3):(0.51+acc2))*staminaFactor*uMul;
-        else made=Math.random()<(is3?0.36:0.51)*oMul;
-        const scorer=userPos?ch([pg,sg,sf,c]):oppPick();
-        let passer=null;
-        if(userPos){
-          const passPool=[pg,sg,sf].filter(p=>p&&scorer&&p.id!==scorer.id);
-          if(passPool.length&&Math.random()<0.58) passer=ch(passPool);
-        } else if(Math.random()<0.5){
-          passer=oppPick();
-        }
-        if(made&&userPos){ bumpP(scorer,'pts',is3?3:2); if(passer) bumpP(passer,'ast',1); }
-        let txt='';
-        const xy=randShotXY(userIsHome===userPos,is3,made);
-        if(userPos){
-          if(is3){ hB.thrAtt++; if(made){ hB.thrMade++; homeScore+=3; qh[q]+=3; } }
-          else { hB.twoAtt++; if(made){ hB.twoMade++; homeScore+=2; qh[q]+=2; } }
-          if(made&&passer) hB.ast++;
-        } else {
-          if(is3){ aB.thrAtt++; if(made){ aB.thrMade++; awayScore+=3; qa[q]+=3; } }
-          else { aB.twoAtt++; if(made){ aB.twoMade++; awayScore+=2; qa[q]+=2; } }
-          if(made&&passer) aB.ast++;
-        }
-        if(made){
-          if(is3){
-            const pasTxt=passer?`Çok şık bir pas: ${passer.isim} iki kişi üzerinden ${scorer.isim}'i boş bıraktı. `: '';
-            txt=pasTxt+cross()+' '+pump()+`${scorer.isim} geriye çekilerek harika bir şut sallıyor — ÜÇLÜK! (${homeScore} - ${awayScore})`;
-          } else {
-            const perdeci=userPos?pf:oppPick();
-            txt=ch([
-              `${scorer.isim} boyalı alana sürüp turnikeysini bitirdi! (${homeScore} - ${awayScore})`,
-              `${scorer.isim} penetrasyonda rakibin üzerinden turnike ile sayıyı buldu! (${homeScore} - ${awayScore})`,
-              `${scorer.isim} restricted alana güçlü giriş yaptı; layup isabetli. (${homeScore} - ${awayScore})`,
-              `${perdeci.isim} perde kurdu; ${scorer.isim} içeri sızdı ve turnike ile bitirdi! (${homeScore} - ${awayScore})`
-            ]);
-          }
-        } else {
-          if(is3) txt=`${scorer.isim} arkadan serbest bıraktı; çember inandı ama top dışarı düştü. Üçlük kaçtı.`;
-          else txt=ch([
-            `${scorer.isim} orta mesafeden floater denedi; top çemberi geçemedi. İki sayılık isabetsiz.`,
-            `${scorer.isim} yüzer şut salladı; sepet yok. İki sayılık kaçtı.`,
-            `${scorer.isim} perde sonrası orta mesafe denemesi — isabet yok, savunma nefes aldı.`
-          ]);
-          if(userPos) aB.reb++;
-          else hB.reb++;
-        }
-        events.push({
-          type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),
-          text:txt,
-          shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q},
-          q,t,home:homeScore,away:awayScore,
-          box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
-        });
-
-      } else if(roll<0.42){
-        const shooter=userPos?ch([pg,sg,sf]):oppPick();
-        const nMade=rand(0,2);
-        const nAtt=2;
-        const lineX=userPos?208:732;
-        if(userPos){
-          homeScore+=nMade; qh[q]+=nMade;
-          hB.ftAtt+=nAtt; hB.ftMade+=nMade;
-          bumpP(shooter,'pts',nMade);
-        } else {
-          awayScore+=nMade; qa[q]+=nMade;
-          aB.ftAtt+=nAtt; aB.ftMade+=nMade;
-        }
-        const ftShot1={x:lineX+rand(-10,10),y:242,made:nMade>=1,isHome:userPos,kind:'ft',q};
-        const ftShot2={x:lineX+rand(-10,10),y:262,made:nMade===2,isHome:userPos,kind:'ft',q};
-        events.push({
-          type:'free',
-          text:`Düdük çalıyor — faul. ${shooter.isim} serbest atış çizgisinde. ${nMade===2?'İki atış da sayı oldu.':nMade===1?'Atışlardan biri sayı oldu, diğeri sepeti bulmadı.':'Her iki serbest atış da isabetsiz; seyirci sessizleşti.'} (${homeScore} - ${awayScore})`,
-          q,t,home:homeScore,away:awayScore,
-          shots:[ftShot1,ftShot2],
-          box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
-        });
-
-      } else if(roll<0.50){
-        const stealer=userPos?oppPick():ch([pg,sg,sf]);
-        if(userPos){ aB.stl++; hB.to++; }
-        else { hB.stl++; aB.to++; }
-        events.push({
-          type:'steal',
-          text:`${stealer.isim} pas koridoruna girdi ve topu çaldı. Rakip hücumu bölündü; hızlı hücum fırsatı.`,
-          q,t,home:homeScore,away:awayScore,
-          box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
-        });
-
-      } else if(roll<0.57){
-        const blokcu=userPos?oppPick():c;
-        if(userPos) aB.blk++;
-        else hB.blk++;
-        events.push({
-          type:'block',
-          text:`${blokcu.isim} zamanlamayı kusursuz yakaladı; şut havada kaldı ve şahane bir blok geldi!`,
-          q,t,home:homeScore,away:awayScore,
-          box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
-        });
-
-      } else if(roll<0.64){
-        const ribauncu=userPos?oppPick():c;
-        if(userPos) aB.reb++;
-        else { hB.reb++; bumpP(c,'reb',1); }
-        events.push({
-          type:'rebound',
-          text:`Demir sesi... şut kaçtı; ${ribauncu.isim} sekiden topu topladı, yeniden hücum.`,
-          q,t,home:homeScore,away:awayScore,
-          box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
-        });
-
-      } else if(roll<0.70){
-        if(userPos) hB.foul++;
-        else aB.foul++;
-        const faulOyuncu=userPos?ch([pf,c,sf]):oppPick();
-        events.push({
-          type:'foul',
-          text:`Hakem faul düdüğünü çalıyor — birebir mücadelede faul değerlendirmesi. ${faulOyuncu.isim} itiraz ediyor ama karar net.`,
-          q,t,home:homeScore,away:awayScore,
-          box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
-        });
-
-      } else if(roll<0.76){
-        events.push({
-          type:'tactic',
-          text:`Mola! Kenarda vurgu: ${ch(['daha fazla pick-and-roll','el presini yükselt','dönen zone savunması','erken offense ve tempo'])}.`,
-          q,t,home:homeScore,away:awayScore,
-          box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
-        });
-
-      } else {
-        events.push({
-          type:'normal',
-          text:ch([
-            `${pg.isim} seti uzatıyor; ${sf.isim} köşede el istiyor.`,
-            `${sg.isim} ile ${pg.isim} el değiştiriyor — savunma geçişi kontrollü.`,
-            `24 saniye azalıyor; ${pf.isim} çift perde gösteriyor, skip pas aranıyor.`
-          ]),
-          q,t,home:homeScore,away:awayScore,
-          box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
-        });
-      }
-
+      t=Math.max(0,t-rand(decLo,decHi));
+      runPossession(q,t);
       if(t===0) break;
     }
 
@@ -4316,45 +4281,31 @@ function generateMatchEvents(rakip, opts){
     }
   }
 
+  /* Uzatma — gerçek FIBA kuralı: tam 5 dk periyot oynanır, süre sonunda hâlâ beraberse yeni uzatma. */
+  const otDecLo=tempo==='hizli'?9:tempo==='yavas'?11:10;
+  const otDecHi=tempo==='hizli'?17:tempo==='yavas'?22:19;
   let otRound=0;
   while(homeScore===awayScore){
     otRound++;
-    if(otRound>10){
-      if(Math.random()<0.5){ homeScore+=2; qh[4+otRound]=(qh[4+otRound]||0)+2; hB.twoMade++; hB.twoAtt++;}
-      else { awayScore+=2; qa[4+otRound]=(qa[4+otRound]||0)+2; aB.twoMade++; aB.twoAtt++;}
-      events.push({type:'score2',text:`Çok uzayan eşitlik (demo): ekstra pozisyon — ${homeScore}-${awayScore}`,q:4+otRound,t:0,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
-      lastPeriod=4+otRound;
-      break;
-    }
     const qq=4+otRound;
     lastPeriod=qq;
     qh[qq]=0; qa[qq]=0;
-    events.push({type:'quarter_start',text:`🔔 Uzatma ${otRound} — 5:00 periyot. Skor ${homeScore}-${awayScore}`,q:qq,t:MATCH_CLOCK_SEC,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
-    let t=MATCH_CLOCK_SEC;
+    events.push({type:'quarter_start',text:`🔔 Uzatma ${otRound} başladı — 5:00. Skor ${homeScore}-${awayScore}. Gerginlik tavan!`,q:qq,t:OT_CLOCK_SEC,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+    let t=OT_CLOCK_SEC;
     let step=0;
-    while(t>0 && step<48 && homeScore===awayScore){
+    while(t>0 && step<40){
       step++;
-      t=Math.max(0,t-rand(4,14));
-      const userPos=Math.random()<(userIsHome?0.54:0.48);
-      if(Math.random()<0.44){
-        const is3=Math.random()<0.28;
-        let made;
-        if(userPos) made=Math.random()<(is3?0.34:0.5)*staminaFactor*uMul;
-        else made=Math.random()<(is3?0.34:0.5)*oMul;
-        const scorer=userPos?ch([pg,sg,sf,c]):oppPick();
-        const xy=randShotXY(userIsHome===userPos,is3,made);
-        if(userPos){
-          if(is3){ hB.thrAtt++; if(made){ hB.thrMade++; homeScore+=3; qh[qq]+=3; bumpP(scorer,'pts',3); } }
-          else { hB.twoAtt++; if(made){ hB.twoMade++; homeScore+=2; qh[qq]+=2; bumpP(scorer,'pts',2); } }
-        } else {
-          if(is3){ aB.thrAtt++; if(made){ aB.thrMade++; awayScore+=3; qa[qq]+=3; } }
-          else { aB.twoAtt++; if(made){ aB.twoMade++; awayScore+=2; qa[qq]+=2; } }
-        }
-        const tx=(made?(is3?`${scorer.isim} uzatmada üçlük!`:`${scorer.isim} uzatmada iki sayı!`):`${scorer.isim} uzatmada isabetsiz.`)+` (${homeScore}-${awayScore})`;
-        events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:tx,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q:qq},q:qq,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
-      }
+      t=Math.max(0,t-rand(otDecLo,otDecHi));
+      runPossession(qq,t);
+      if(t===0) break;
     }
-    events.push({type:'quarter_end',text:`Uzatma ${otRound} bitti: ${homeScore} - ${awayScore}${homeScore===awayScore?' — hâlâ berabere, bir sonraki uzatma.':''}`,q:qq,t:0,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+    events.push({type:'quarter_end',text:`Uzatma ${otRound} bitti: ${G.team.isim} ${homeScore} - ${awayScore} ${rname}${homeScore===awayScore?' — hâlâ berabere, bir uzatma daha!':'.'}`,q:qq,t:0,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+    /* Güvenlik: aşırı uzarsa (çok nadir) bir sonraki uzatmada kesin sonuç için küçük eşik. */
+    if(otRound>=8 && homeScore===awayScore){
+      if(Math.random()<0.5){ homeScore++; qh[qq]++; hB.ftMade++; hB.ftAtt++; } else { awayScore++; qa[qq]++; aB.ftMade++; aB.ftAtt++; }
+      events.push({type:'free',text:`Son saniye serbest atışı sonucu belirledi — ${G.team.isim} ${homeScore} - ${awayScore} ${rname}.`,q:qq,t:0,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      break;
+    }
   }
 
   let winner='draw';
@@ -4423,8 +4374,8 @@ function startMatch(){
   document.getElementById('commentary').innerHTML='';
   document.getElementById('liveScoreHome').textContent='0';
   document.getElementById('liveScoreAway').textContent='0';
-  document.getElementById('liveQuarter').textContent='1. Periyot (5:00)';
-  document.getElementById('liveTime').textContent='5:00';
+  document.getElementById('liveQuarter').textContent='1. Periyot (10:00)';
+  document.getElementById('liveTime').textContent='10:00';
   document.getElementById('liveStatus').textContent='CANLI';
   document.getElementById('liveStatus').style.background='rgba(239,68,68,0.2)';
   document.getElementById('liveStatus').style.color='#f87171';
@@ -4449,7 +4400,7 @@ function startMatch(){
     }
     if(ev.q){
       mState.quarter=ev.q;
-      document.getElementById('liveQuarter').textContent=ev.q<=4?`${ev.q}. Periyot (5:00)`:`Uzatma ${ev.q-4} (5:00)`;
+      document.getElementById('liveQuarter').textContent=ev.q<=4?`${ev.q}. Periyot (10:00)`:`Uzatma ${ev.q-4} (5:00)`;
     }
     if(ev.t!==undefined){
       const dm=Math.floor(ev.t/60);
@@ -4547,7 +4498,7 @@ function startMatch(){
       scheduleGameSave();
       return;
     }
-    matchEventTimer=setTimeout(matchStep,2200);
+    matchEventTimer=setTimeout(matchStep,1800);
   }
   matchStep();
 }
@@ -4563,9 +4514,10 @@ function addComment(txt,type=''){
   const div=document.getElementById('commentary');
   const ev=mState.events[Math.max(0,mState.idx-1)]||{};
   const q=ev.q||mState.quarter;
-  const t=ev.t!==undefined?ev.t:MATCH_CLOCK_SEC;
-  const dm=Math.floor((MATCH_CLOCK_SEC-t)/60);
-  const ds=(MATCH_CLOCK_SEC-t)%60;
+  const clk=q<=4?MATCH_CLOCK_SEC:OT_CLOCK_SEC;
+  const t=ev.t!==undefined?ev.t:clk;
+  const dm=Math.floor((clk-t)/60);
+  const ds=(clk-t)%60;
   const qLbl=q<=4?q+'P':('U'+String(q-4));
   const item=document.createElement('div');
   let cls='ci';
