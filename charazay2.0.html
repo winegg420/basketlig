@@ -1843,7 +1843,7 @@ ${numSvg}
 /** assets/portraits/ içindeki gerçek dosya sayısıyla eşit tutulmalı (tools/generate-portraits.py). */
 const PORTRAIT_POOL_SIZE=120;
 const PORTRAIT_POOL_BASE='assets/portraits/p_';
-const PORTRAIT_ETH=['African American man','Turkish man','Japanese man','Irish man','Nigerian man','Colombian man','Russian man','Italian man','Brazilian man','German man','Spanish woman basketball player','Korean woman basketball player','French man','Greek man','Polish man','Mexican man','Canadian man','Australian man','Serbian man','Lithuanian man'];
+const PORTRAIT_ETH=['African American man','Turkish man','Japanese man','Irish man','Nigerian man','Colombian man','Russian man','Italian man','Brazilian man','German man','Spanish man','Korean man','French man','Greek man','Polish man','Mexican man','Canadian man','Australian man','Serbian man','Lithuanian man'];
 const PORTRAIT_JERSEY=['blue white basketball jersey','green basketball jersey','red white basketball jersey','purple yellow basketball jersey','black athletic shirt','grey hoodie','white t-shirt','orange basketball jersey'];
 function portraitPoolIndex(seed,salt){
   return Math.abs(hash32(String(seed)+'|'+String(salt??'')+'|photoPool'))%PORTRAIT_POOL_SIZE;
@@ -2099,9 +2099,22 @@ function genRandomClubName(){
   return `${ch(SEHIR)} ${ch(LIG_T)}`;
 }
 
+/** Grup içinde benzersiz kulüp adı üretir (aynı ligde iki özdeş isim olmasın). */
+function genUniqueClubName(taken){
+  for(let tries=0;tries<300;tries++){
+    const n=genRandomClubName();
+    if(!taken.has(n)){ taken.add(n); return n; }
+  }
+  const base=genRandomClubName();
+  let n=base, k=2;
+  while(taken.has(n)){ n=base+' '+k; k++; }
+  taken.add(n); return n;
+}
+
 function makeSubTemplate(){
+  const taken=new Set();
   const teams=[];
-  for(let i=0;i<LEAGUE_SIZE;i++) teams.push(genRandomClubName());
+  for(let i=0;i<LEAGUE_SIZE;i++) teams.push(genUniqueClubName(taken));
   return {teams};
 }
 
@@ -2143,13 +2156,21 @@ function ensureTblState(){
     if(!sub||!sub.teams) continue;
     if(!Array.isArray(sub.teams)||sub.teams.length!==LEAGUE_SIZE){
       const old=sub.teams||[];
+      const taken=new Set();
       const teams=[];
-      for(let i=0;i<LEAGUE_SIZE;i++) teams[i]=old[i]||genRandomClubName();
+      for(let i=0;i<LEAGUE_SIZE;i++){
+        const cur=old[i];
+        if(cur&&!taken.has(cur)){ taken.add(cur); teams[i]=cur; }
+        else teams[i]=genUniqueClubName(taken);
+      }
       sub.teams=teams;
       changed=true;
     } else {
+      const taken=new Set();
       for(let i=0;i<LEAGUE_SIZE;i++){
-        if(!sub.teams[i]){ sub.teams[i]=genRandomClubName(); changed=true; }
+        const cur=sub.teams[i];
+        if(!cur||taken.has(cur)){ sub.teams[i]=genUniqueClubName(taken); changed=true; }
+        else taken.add(cur);
       }
     }
   }
