@@ -1246,6 +1246,28 @@ function applyWeeklyCoachBonuses(){
   });
 }
 
+/** Madde 13: bot kulübün önbellek kadrosunda GERÇEK transfer — en zayıf oyuncuyu daha iyisiyle değiştirir. */
+function botClubTransfer(teamName,ligKey){
+  try{
+    let cache={}; try{ cache=JSON.parse(localStorage.getItem(CLUB_CACHE_KEY)||'{}'); }catch(e){ cache={}; }
+    const ck=ligKey+'||'+teamName;
+    const row=cache[ck];
+    if(!row||!Array.isArray(row.roster)||!row.roster.length) return null;
+    const roster=row.roster;
+    let wi=0; for(let i=1;i<roster.length;i++){ if((roster[i].genel||0)<(roster[wi].genel||0)) wi=i; }
+    const eski=roster[wi];
+    const target=Math.min(95,(eski.genel||65)+rand(3,11));
+    const np=genPlayerBounded(eski.poz||ch(POZLAR),Math.max(50,target-2),target+2);
+    np.id='b'+hash32(ck+wi+Date.now())+'_'+wi;
+    np.seed='bt'+ck+wi+(Date.now()%100000);
+    np.maas=salaryKRFromGenel(np.genel);
+    roster[wi]=np;
+    ensureUniquePlayerNames(roster);
+    cache[ck]=row;
+    try{ localStorage.setItem(CLUB_CACHE_KEY,JSON.stringify(cache)); }catch(e){}
+    return {inP:np,outP:eski};
+  }catch(e){ dbg('botClubTransfer',e); return null; }
+}
 /** Bot kulüpler haftalık form/transfer hareketi yapar — güçleri sezon içinde değişir. */
 function aiWeeklyLeagueActivity(){
   try{
@@ -1261,9 +1283,11 @@ function aiWeeklyLeagueActivity(){
       const delta=rand(-12,18)/10;
       G.season.drift[t]=Math.max(-6,Math.min(8,(G.season.drift[t]||0)+delta));
       if(delta>0.5){
-        const fake=`${ch(ILK)} ${ch(SY)}`;
         const fee=rand(4000,80000);
-        pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--blue);">💰 <strong>${escMatch(t)}</strong> kadrosunu güçlendirdi: <strong>${fake}</strong> — ${fmtn(fee)} KR</div>`);
+        const tr=botClubTransfer(t,G.team.tblKey);
+        const isim=tr?tr.inP.isim:`${ch(ILK)} ${ch(SY)}`;
+        const detay=tr?` (OVR ${tr.inP.genel}, ${tr.outP.isim} yerine)`:'';
+        pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--blue);">💰 <strong>${escMatch(t)}</strong> kadrosunu güçlendirdi: <strong>${escMatch(isim)}</strong>${detay} — ${fmtn(fee)} KR</div>`);
       }
     }
   }catch(e){ dbg('aiWeekly',e); }
