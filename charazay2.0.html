@@ -1424,6 +1424,7 @@ function serializeGameState(){
     ledger:G.ledger||[],
     lastEcoDay:G.lastEcoDay!=null?G.lastEcoDay:1,
     tactics:G.tactics||{tempo:'normal',odak:'dengeli'},
+    lineup:G.lineup||null,
     tutorialDone:!!G.tutorialDone
   };
 }
@@ -1562,6 +1563,7 @@ function applyGameState(d){
   G.ledger=Array.isArray(d.ledger)?d.ledger:[];
   G.lastEcoDay=d.lastEcoDay!=null?d.lastEcoDay:(d.gameDay||1);
   G.tactics=Object.assign({tempo:'normal',odak:'dengeli'},d.tactics||{});
+  G.lineup=d.lineup&&typeof d.lineup==='object'?d.lineup:null;
   G.tutorialDone=!!d.tutorialDone;
   if(G.team&&(!G.ligTeams||!G.ligTeams.length)) G.ligTeams=genLigTeams();
   [G.players,G.youth,G.marketPlayers].forEach(list=>{
@@ -1970,6 +1972,7 @@ let G={
   ledger:[],
   lastEcoDay:1,
   tactics:{tempo:'normal',odak:'dengeli'},
+  lineup:null,
   tutorialDone:false
 };
 
@@ -2999,9 +3002,9 @@ function openMatchTactics(seasonMatchIx){
     </div>
     <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
       <button type="button" class="btn-p" style="flex:1;padding:10px;" onclick="saveMatchTactics()">Taktiği kaydet</button>
-      <button type="button" class="btn-sm" style="flex:1;" onclick="closeAppModal();showPage('kadro',document.querySelector('#sbNav button[data-page=&quot;kadro&quot;]'))">Kadroyu düzenle</button>
+      <button type="button" class="btn-sm" style="flex:1;" onclick="openLineupEditor()">🏀 İlk 5 seç</button>
     </div>
-    <p style="font-size:10px;color:var(--text2);margin-top:10px;">İlk 5, sağlıklı oyuncular arasından otomatik seçilir. Taktik sonraki maçlarda da geçerli kalır.</p>`);
+    <p style="font-size:10px;color:var(--text2);margin-top:10px;">İlk 5 seçmezsen sağlıklı oyunculardan en iyi 5 otomatik oynar. Taktik ve ilk 5 sonraki maçlarda da geçerli kalır.</p>`);
 }
 
 function saveMatchTactics(){
@@ -3019,6 +3022,94 @@ function clearPrepareMatch(){
   G.prepareMatchIx=null;
   scheduleGameSave();
   renderRoster();
+}
+
+/* ── İlk 5 / rotasyon seçimi (Madde 1) ──────────────────────────────────────
+   Kullanıcı ilk 5'ini ve yedek sırasını seçer; G.lineup'a yazılır. Seçim yoksa
+   matchLineup() otomatik (en iyi 5) fallback'e döner. Yedek sırası; sakatlık,
+   faul limiti ve canlı müdahaledeki oyuncu değişikliklerinde öncelik belirler. */
+let _lineupEdit=null;
+function openLineupEditor(){
+  try{
+    if(!G.team){ showNotif('Önce takım oluştur.'); return; }
+    const healthy=(G.players||[]).filter(p=>!playerIsInjured(p));
+    if(healthy.length<5){ showNotif('İlk 5 seçmek için en az 5 sağlıklı oyuncu gerekli.'); return; }
+    const byOvr=healthy.slice().sort((a,b)=>(b.genel||0)-(a.genel||0));
+    let starters=[],bench=[];
+    const sel=(G.lineup&&Array.isArray(G.lineup.starters))?G.lineup.starters.filter(id=>healthy.some(p=>p.id===id)):[];
+    starters=sel.slice(0,5);
+    byOvr.forEach(p=>{ if(starters.length<5&&!starters.includes(p.id)) starters.push(p.id); });
+    const savedBench=(G.lineup&&Array.isArray(G.lineup.bench))?G.lineup.bench:[];
+    savedBench.forEach(id=>{ if(!starters.includes(id)&&healthy.some(p=>p.id===id)&&!bench.includes(id)) bench.push(id); });
+    byOvr.forEach(p=>{ if(!starters.includes(p.id)&&!bench.includes(p.id)) bench.push(p.id); });
+    _lineupEdit={starters,bench};
+    renderLineupEditor();
+  }catch(e){ dbg('openLineupEditor',e); showNotif('İlk 5 ekranı açılamadı.'); }
+}
+function _lineupPlayerById(id){ return (G.players||[]).find(p=>p.id===id); }
+function lineupRowHtml(id,isStarter,idx){
+  const p=_lineupPlayerById(id); if(!p) return '';
+  const en=Math.round(Number(p.enerji||100));
+  const enCol=en>=70?'var(--green)':en>=45?'var(--gold)':'var(--red)';
+  const btn=isStarter
+    ? `<button type="button" class="btn-sm" style="padding:4px 9px;font-size:11px;" onclick="toggleLineupStarter('${id}')">⬇ Yedeğe</button>`
+    : `<button type="button" class="btn-sm" style="padding:4px 9px;font-size:11px;" onclick="toggleLineupStarter('${id}')">⬆ İlk 5'e</button>`;
+  const moves=isStarter?'':`<button type="button" class="btn-sm" style="padding:4px 7px;font-size:11px;" onclick="moveBench('${id}',-1)" title="Yukarı">▲</button><button type="button" class="btn-sm" style="padding:4px 7px;font-size:11px;" onclick="moveBench('${id}',1)" title="Aşağı">▼</button>`;
+  return `<div style="display:flex;align-items:center;gap:8px;padding:7px 9px;background:var(--bg3);border:1px solid ${isStarter?'var(--accent)':'var(--border)'};border-radius:9px;margin-bottom:5px;">
+    <span style="width:22px;text-align:center;font-weight:700;color:var(--text2);font-size:11px;">${isStarter?'★':(idx+1)}</span>
+    <span style="flex:1;min-width:0;"><strong style="font-size:12px;">${escMatch(p.isim)}</strong> <span style="font-size:10px;color:var(--text2);">${p.poz} · OVR ${p.genel}</span><br><span style="font-size:10px;color:${enCol};">⚡ ${en}%</span></span>
+    ${moves}${btn}
+  </div>`;
+}
+function renderLineupEditor(){
+  if(!_lineupEdit) return;
+  const st=_lineupEdit.starters.map((id,i)=>lineupRowHtml(id,true,i)).join('');
+  const bn=_lineupEdit.bench.map((id,i)=>lineupRowHtml(id,false,i)).join('');
+  const full=_lineupEdit.starters.length>=5;
+  showAppModal(`<div class="modal-title">🏀 İlk 5 & Rotasyon</div>
+    <p style="font-size:11px;color:var(--text2);margin-bottom:10px;">İlk 5'ini seç (${_lineupEdit.starters.length}/5). Yedek sırası; sakatlık, faul limiti ve maç içi değişikliklerde öncelik verir. Seçim yapmazsan en iyi 5 otomatik oynar.</p>
+    <div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:700;">İlk 5</div>
+    ${st||'<p style="font-size:11px;color:var(--text2);">Boş</p>'}
+    <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px;font-weight:700;">Yedekler (öncelik sırası)</div>
+    ${bn||'<p style="font-size:11px;color:var(--text2);">Yedek yok</p>'}
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button type="button" class="btn-p" style="flex:1;padding:10px;${full?'':'opacity:.5;'}" ${full?'':'disabled'} onclick="saveLineup()">Kaydet</button>
+      <button type="button" class="btn-sm" style="flex:1;" onclick="resetLineup()">Otomatik (en iyi 5)</button>
+    </div>`);
+}
+function toggleLineupStarter(id){
+  if(!_lineupEdit) return;
+  const si=_lineupEdit.starters.indexOf(id);
+  if(si>=0){ _lineupEdit.starters.splice(si,1); _lineupEdit.bench.unshift(id); }
+  else{
+    if(_lineupEdit.starters.length>=5){ showNotif('İlk 5 dolu — önce bir oyuncuyu yedeğe al.'); return; }
+    const bi=_lineupEdit.bench.indexOf(id);
+    if(bi>=0) _lineupEdit.bench.splice(bi,1);
+    _lineupEdit.starters.push(id);
+  }
+  renderLineupEditor();
+}
+function moveBench(id,dir){
+  if(!_lineupEdit) return;
+  const i=_lineupEdit.bench.indexOf(id);
+  const j=i+dir;
+  if(i<0||j<0||j>=_lineupEdit.bench.length) return;
+  const t=_lineupEdit.bench[i]; _lineupEdit.bench[i]=_lineupEdit.bench[j]; _lineupEdit.bench[j]=t;
+  renderLineupEditor();
+}
+function saveLineup(){
+  if(!_lineupEdit||_lineupEdit.starters.length<5){ showNotif('İlk 5 tam olmalı.'); return; }
+  G.lineup={starters:_lineupEdit.starters.slice(),bench:_lineupEdit.bench.slice()};
+  scheduleGameSave();
+  closeAppModal();
+  showNotif('🏀 İlk 5 kaydedildi.');
+}
+function resetLineup(){
+  G.lineup=null;
+  _lineupEdit=null;
+  scheduleGameSave();
+  closeAppModal();
+  showNotif('Rotasyon otomatiğe alındı (en iyi 5).');
 }
 
 function gotoMacPage(){
@@ -3082,17 +3173,23 @@ function statN(p,k){
   const v=Number(p&&p[k]);
   return Number.isFinite(v)?Math.min(99,Math.max(0,v)):0;
 }
-/** Sağlıklı oyuncular üzerinden; top-10 genel sıralı ortalama OFR/DEF + ham toplamlar. */
+/** Sağlıklı oyuncular üzerinden; top-10 genel sıralı ortalama OFR/DEF + ham toplamlar.
+ *  Madde 3: her oyuncunun kendi enerjisi kendi katkısını ağırlıklandırır (yorgun yıldız gücü düşürür).
+ *  Madde 4: takım moral (mood) + kimya küçük, sınırlı bir çarpan olarak dahil (±%~6). */
 function computeRosterOfrDef(){
   const avail=(G.players||[]).filter(p=>!playerIsInjured(p));
   const top=avail.slice().sort((a,b)=>(b.genel||0)-(a.genel||0)).slice(0,10);
   if(!top.length) return {ofr:58,def:58,sumOfr:0,sumDef:0,n:0};
   let sumO=0,sumD=0;
   for(const p of top){
-    sumO+=statN(p,'hucum')*1.1+statN(p,'sutIsabeti')+statN(p,'pas')*0.75+statN(p,'topSurme')*0.55+statN(p,'hiz')*0.35;
-    sumD+=statN(p,'savunma')*1.15+statN(p,'blok')+statN(p,'topCalma')+statN(p,'ribaund')*0.45+statN(p,'dayaniklilik')*0.25;
+    const en=Math.max(0,Math.min(100,Number(p.enerji!=null?p.enerji:100)));
+    const enW=0.85+en/100*0.15;   /* 0.85..1.0 — tam enerjide etkisiz, yorgunlukta gücü düşürür */
+    sumO+=(statN(p,'hucum')*1.1+statN(p,'sutIsabeti')+statN(p,'pas')*0.75+statN(p,'topSurme')*0.55+statN(p,'hiz')*0.35)*enW;
+    sumD+=(statN(p,'savunma')*1.15+statN(p,'blok')+statN(p,'topCalma')+statN(p,'ribaund')*0.45+statN(p,'dayaniklilik')*0.25)*enW;
   }
   const n=top.length;
+  /* Moral/kimya bilerek burada uygulanmaz — bireysel şut formülünde (shooterAcc) çarpan olarak var;
+     çift sayım güç dengesini (strengthEdge) kullanıcı lehine bozuyordu. Enerji ağırlığı yeterli. */
   return{
     ofr:Math.round(sumO/n),
     def:Math.round(sumD/n),
@@ -3101,19 +3198,32 @@ function computeRosterOfrDef(){
     n
   };
 }
-/** Maç anlatımı için — sadece sakat olmayanlar; pozisyon dolunca sonraki en iyi genel. */
+/** Maç anlatımı için — sadece sakat olmayanlar. Kullanıcı ilk 5'i seçtiyse (G.lineup) o kullanılır;
+ *  seçilmeyen/sakat kalan slotlar için yedek sırası (bench) ve en iyi genel fallback devreye girer. */
 function matchLineup(){
   const avail=(G.players||[]).filter(p=>!playerIsInjured(p)).sort((a,b)=>(b.genel||0)-(a.genel||0));
   if(!avail.length) return null;
+  const byId=id=>avail.find(p=>p.id===id);
   const used=new Set();
-  const take=poz=>{
-    const x=avail.find(p=>!used.has(p.id)&&p.poz===poz);
-    if(x){ used.add(x.id); return x; }
-    const y=avail.find(p=>!used.has(p.id));
-    if(y){ used.add(y.id); return y; }
-    return avail[0];
-  };
-  return{pg:take('PG'),sg:take('SG'),sf:take('SF'),pf:take('PF'),c:take('C'),avail};
+  const onCourt=[];
+  const addP=p=>{ if(p&&!used.has(p.id)&&onCourt.length<5){ used.add(p.id); onCourt.push(p); } };
+  /* 1) Kullanıcının seçtiği ilk 5 (sağlıklı olanlar) */
+  const sel=(G.lineup&&Array.isArray(G.lineup.starters))?G.lineup.starters:[];
+  sel.forEach(id=>addP(byId(id)));
+  /* 2) Eksik slotları kullanıcının yedek sırasından doldur */
+  const benchOrder=(G.lineup&&Array.isArray(G.lineup.bench))?G.lineup.bench:[];
+  benchOrder.forEach(id=>addP(byId(id)));
+  /* 3) Hâlâ eksikse en iyi genelden doldur (fallback / geriye dönük uyum) */
+  avail.forEach(p=>addP(p));
+  /* Pozisyonlara ata: önce doğal pozisyona, sonra kalanları sırayla */
+  const slots={pg:null,sg:null,sf:null,pf:null,c:null};
+  const order=['PG','SG','SF','PF','C'];
+  const pool=onCourt.slice();
+  order.forEach(poz=>{ const key=poz.toLowerCase(); const i=pool.findIndex(p=>p.poz===poz); if(i>=0){ slots[key]=pool[i]; pool.splice(i,1); } });
+  order.forEach(poz=>{ const key=poz.toLowerCase(); if(!slots[key]&&pool.length){ slots[key]=pool.shift(); } });
+  const onCourtIds=new Set(onCourt.map(p=>p.id));
+  const bench=avail.filter(p=>!onCourtIds.has(p.id));
+  return{pg:slots.pg,sg:slots.sg,sf:slots.sf,pf:slots.pf,c:slots.c,avail,onCourt,bench};
 }
 function pseudoTeamStrength(isim,tblKey){
   return 58+(seqFromName(String(isim),tblKey||'tbl')%4200)/100;
@@ -3156,7 +3266,21 @@ function recoverStaminaBetweenMatchdays(prevDay,newDay){
   });
 }
 
-function applyMatchFatigueToRoster(){
+/** Madde 30: yorgunluk yalnızca sahaya gerçekten çıkan oyunculara uygulanır.
+ *  playedIds bir Set ise sadece o oyuncular yorulur; verilmezse eski davranış (OVR'a göre kademeli). */
+function applyMatchFatigueToRoster(playedIds){
+  const dayanCost=p=>{
+    const dayan=Number(p.dayaniklilik)||60;
+    const mit=Math.max(0,Math.min(8,Math.round((dayan-55)/10)));
+    return Math.max(4,rand(9,20)-mit);
+  };
+  if(playedIds instanceof Set){
+    G.players.forEach(p=>{
+      if(!playedIds.has(p.id)) return;
+      p.enerji=Math.max(0,Math.round((Number(p.enerji)||100)-dayanCost(p)));
+    });
+    return;
+  }
   const sorted=G.players.slice().sort((a,b)=>(b.genel||0)-(a.genel||0));
   sorted.forEach((p,i)=>{
     const base=i<7?rand(9,20):rand(3,8);
@@ -4321,6 +4445,24 @@ function generateMatchEvents(rakip, opts){
   let oppRoster=[];
   try{ oppRoster=(getBotClubProfile(oppName,ligKey).roster||[]); }catch(e){ oppRoster=[]; }
   const oppPick=()=>oppRoster.length?ch(oppRoster):{isim:oppName+' oyuncusu'};
+  /* ── Madde 2/3/4: kullanıcı şutörünün kendi statı + enerjisi + moral/kimya isabeti belirler ──
+     Takım gücü (uMul) ikincil çarpan olarak kalır; genel skor bandı (~85-95) korunur. */
+  const teamChem=Math.max(0,Math.min(100,Number(G.chemistry!=null?G.chemistry:75)));
+  const shooterAcc=(shooter,is3,base)=>{
+    const s2=statN(shooter,'hucum')*0.5+statN(shooter,'sutIsabeti')*0.5;
+    const s3=statN(shooter,'sutIsabeti')*0.7+statN(shooter,'hucum')*0.3;
+    const skill=is3?s3:s2;
+    const skillMul=1+(skill-70)/100*0.6;                 /* ~0.91..1.13 (avg 70 → 1.0) */
+    const en=Math.max(0,Math.min(100,Number(shooter.enerji!=null?shooter.enerji:100)));
+    const enMul=0.85+en/100*0.17;                        /* 0.85..1.02 — bireysel yorgunluk */
+    const mood=Number(shooter.mood!=null?shooter.mood:70);
+    const psyMul=Math.max(0.95,Math.min(1.05,1+((mood-60)/40)*0.04+((teamChem-70)/30)*0.03));
+    return base*skillMul*enMul*psyMul*uMul;
+  };
+  const ftMake=(shooter)=>{
+    const sb=statN(shooter,'serbest');
+    return Math.random()<Math.max(0.45,Math.min(0.95,0.55+sb/100*0.30));
+  };
   /* Kullanıcı oyuncularının sezon istatistikleri bu maç için burada toplanır. */
   const pstats={};
   const bumpP=(pl,k,v)=>{ if(!pl||!pl.id) return; const o=pstats[pl.id]||(pstats[pl.id]={pts:0,ast:0,reb:0}); o[k]+=v; };
@@ -4360,7 +4502,7 @@ function generateMatchEvents(rakip, opts){
     if(roll<0.80){
       /* Saha içi şut denemesi */
       const is3=Math.random()<(userPos?userIs3Oran:0.32);
-      const acc=userPos?(is3?0.355+acc3:0.505+acc2)*staminaFactor*uMul:(is3?0.35:0.495)*oMul;
+      const acc=userPos?shooterAcc(shooter,is3,is3?0.355+acc3:0.505+acc2):(is3?0.35:0.495)*oMul;
       const made=Math.random()<Math.max(0.14,Math.min(0.72,acc));
       const xy=randShotXY(userIsHome===userPos,is3,made);
       const pts=is3?3:2;
@@ -4380,12 +4522,14 @@ function generateMatchEvents(rakip, opts){
       let and1=false, and1Made=false;
       if(made&&!is3&&Math.random()<0.12){
         and1=true; B.ftAtt++; if(userPos) D.foul++; else D.foul++;
-        and1Made=Math.random()<0.76;
+        and1Made=userPos?ftMake(shooter):(Math.random()<0.74);
         if(and1Made){ B.ftMade++; addPts(1); if(userPos) bumpP(shooter,'pts',1); }
       }
       /* Kaçan turnikede savunma faulü → 2 serbest atış */
       if(!made&&!is3&&Math.random()<0.15){
-        const nMade=Math.random()<0.5?2:(Math.random()<0.6?1:0);
+        let nMade=0;
+        if(userPos){ if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++; }
+        else { if(Math.random()<0.74)nMade++; if(Math.random()<0.74)nMade++; }
         B.ftAtt+=2; B.ftMade+=nMade; D.foul++;
         addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade);
         const lineX=userPos?208:732;
@@ -4416,7 +4560,9 @@ function generateMatchEvents(rakip, opts){
 
     } else if(roll<0.90){
       /* Ceza/faul serbest atış turu */
-      const nMade=Math.random()<0.45?2:(Math.random()<0.7?1:0);
+      let nMade=0;
+      if(userPos){ if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++; }
+      else { if(Math.random()<0.72)nMade++; if(Math.random()<0.72)nMade++; }
       B.ftAtt+=2; B.ftMade+=nMade; D.foul++;
       addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade);
       const lineX=userPos?208:732;
@@ -4637,7 +4783,9 @@ function startMatch(){
         else { sm.hs=oPts; sm.as=uPts; }
         sm.played=true;
         updateStandingsFromResult(sm.home,sm.away,sm.hs,sm.as);
-        applyMatchFatigueToRoster();
+        const playedSet=new Set(ev.lineupIds||[]);
+        (mState.subInIds||[]).forEach(id=>playedSet.add(id));
+        applyMatchFatigueToRoster(playedSet.size?playedSet:undefined);
         const prevDay=G.gameDay||1;
         const roundDays=G.season.matches.filter(x=>x.round===sm.round).map(x=>x.day);
         G.gameDay=Math.max(...roundDays,G.gameDay||1);
