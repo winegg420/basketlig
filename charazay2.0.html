@@ -4567,6 +4567,39 @@ function generateMatchEvents(rakip, opts){
     const sb=statN(shooter,'serbest');
     return Math.random()<Math.max(0.45,Math.min(0.95,0.55+sb/100*0.30));
   };
+  /* ── Faul sistemi (Madde 16/17/20) ──
+     Her kullanıcı oyuncusunun kendi faulü (p.matchFouls) tutulur; 5. faulde oyundan atılır ve
+     yedek sırasından (benchQueue) değiştirilir. Çeyrek bazında takım faulü sayılır; 5. takım
+     faulünden sonra ortak (şutsuz) fauller otomatik 2 serbest atışa (bonus) döner. */
+  const foulLimit=5;
+  const qFoulU={},qFoulO={};
+  let userCourt=[pg,sg,sf,pf,c].filter(Boolean);
+  const benchQueue=(lu.bench||[]).slice();
+  const subbedIds=new Set();
+  (lu.avail||[]).forEach(p=>{ if(p) p.matchFouls=0; });
+  const uShooter=()=>userCourt.length?ch(userCourt):(pg||sg||sf||pf||c);
+  const uAny=()=>userCourt.length?ch(userCourt):(pg||sg||sf||pf||c);
+  const benchNext=()=>{ while(benchQueue.length){ const nx=benchQueue.shift(); if(nx&&(nx.matchFouls||0)<foulLimit) return nx; } return null; };
+  const foulingTeamName=(defenderIsUser)=>defenderIsUser?G.team.isim:rname;
+  function userFoulsOut(p,q,t){
+    const sub=benchNext();
+    const ix=userCourt.indexOf(p);
+    if(sub){ if(ix>=0) userCourt[ix]=sub; else userCourt.push(sub); subbedIds.add(sub.id); }
+    else if(ix>=0) userCourt.splice(ix,1);
+    events.push({type:'foul',text:`⚠️ ${p.isim} 5. faulüne ulaştı ve oyundan atıldı${sub?` — yerine ${sub.isim} girdi.`:' — yedek kalmadı, eksik oynanıyor.'} (${homeScore} - ${awayScore})`,q,t:t||0,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+  }
+  /* Savunma faulü kaydı — defenderIsUser=!userPos. Kullanıcı savunmadaysa somut oyuncuya yüklenir. */
+  function recordFoul(defenderIsUser,q,t){
+    if(defenderIsUser){
+      qFoulU[q]=(qFoulU[q]||0)+1;
+      const cand=userCourt.filter(p=>p&&(p.matchFouls||0)<foulLimit);
+      const p=cand.length?ch(cand):userCourt[0];
+      if(p){ p.matchFouls=(p.matchFouls||0)+1; if(p.matchFouls>=foulLimit) userFoulsOut(p,q,t); }
+    } else {
+      qFoulO[q]=(qFoulO[q]||0)+1;
+    }
+  }
+  const inBonus=(defenderIsUser,q)=>(defenderIsUser?(qFoulU[q]||0):(qFoulO[q]||0))>=5;
   /* Kullanıcı oyuncularının sezon istatistikleri bu maç için burada toplanır. */
   const pstats={};
   const bumpP=(pl,k,v)=>{ if(!pl||!pl.id) return; const o=pstats[pl.id]||(pstats[pl.id]={pts:0,ast:0,reb:0}); o[k]+=v; };
@@ -4597,7 +4630,8 @@ function generateMatchEvents(rakip, opts){
     const userPos=Math.random()<(userIsHome?0.53:0.47);
     const roll=Math.random();
     const B=userPos?hB:aB, D=userPos?aB:hB;
-    const shooter=userPos?ch([pg,sg,sf,pf,c]):oppPick();
+    const defenderIsUser=!userPos;
+    const shooter=userPos?uShooter():oppPick();
     const sc=()=>`(${homeScore} - ${awayScore})`;
     const addU=(n)=>{ homeScore+=n; qh[q]+=n; };
     const addO=(n)=>{ awayScore+=n; qa[q]+=n; };
@@ -4612,7 +4646,7 @@ function generateMatchEvents(rakip, opts){
       const pts=is3?3:2;
       let passer=null;
       if(made){
-        if(userPos){ const pp=[pg,sg,sf,pf].filter(p=>p&&p.id!==shooter.id); if(pp.length&&Math.random()<0.60) passer=ch(pp); }
+        if(userPos){ const pp=userCourt.filter(p=>p&&p.id!==shooter.id); if(pp.length&&Math.random()<0.60) passer=ch(pp); }
         else if(Math.random()<0.55) passer=oppPick();
         if(passer&&passer.isim===shooter.isim) passer=null;
       }
@@ -4625,7 +4659,7 @@ function generateMatchEvents(rakip, opts){
       /* And-1 (yalnızca isabetli 2 sayıda) */
       let and1=false, and1Made=false;
       if(made&&!is3&&Math.random()<0.12){
-        and1=true; B.ftAtt++; if(userPos) D.foul++; else D.foul++;
+        and1=true; B.ftAtt++; D.foul++; recordFoul(defenderIsUser,q,t);
         and1Made=userPos?ftMake(shooter):(Math.random()<0.74);
         if(and1Made){ B.ftMade++; addPts(1); if(userPos) bumpP(shooter,'pts',1); }
       }
@@ -4634,7 +4668,7 @@ function generateMatchEvents(rakip, opts){
         let nMade=0;
         if(userPos){ if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++; }
         else { if(Math.random()<0.74)nMade++; if(Math.random()<0.74)nMade++; }
-        B.ftAtt+=2; B.ftMade+=nMade; D.foul++;
+        B.ftAtt+=2; B.ftMade+=nMade; D.foul++; recordFoul(defenderIsUser,q,t);
         addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade);
         const lineX=userPos?208:732;
         events.push({type:'free',text:`${shooter.isim} şut çekerken faul aldı — ${ftLine(nMade,2,shooter.isim)} ${sc()}`,q,t,home:homeScore,away:awayScore,
@@ -4642,13 +4676,25 @@ function generateMatchEvents(rakip, opts){
           box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         return;
       }
+      /* Madde 20: kaçan 3 sayı denemesinde savunma faulü → 3 serbest atış */
+      if(!made&&is3&&Math.random()<0.08){
+        let nMade=0;
+        for(let k=0;k<3;k++){ if(userPos?ftMake(shooter):(Math.random()<0.74)) nMade++; }
+        B.ftAtt+=3; B.ftMade+=nMade; D.foul++; recordFoul(defenderIsUser,q,t);
+        addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade);
+        const lineX=userPos?200:740;
+        events.push({type:'free',text:`${shooter.isim} üç sayı denerken faul aldı — 3 atış: ${ftLine(nMade,3,shooter.isim)} ${sc()}`,q,t,home:homeScore,away:awayScore,
+          shots:[{x:lineX+rand(-8,8),y:236,made:nMade>=1,isHome:userPos,kind:'ft',q},{x:lineX+rand(-8,8),y:250,made:nMade>=2,isHome:userPos,kind:'ft',q},{x:lineX+rand(-8,8),y:264,made:nMade>=3,isHome:userPos,kind:'ft',q}],
+          box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+        return;
+      }
       /* Blok / ribaund (kaçan şutlarda) */
       let blocked=false, blk=null;
-      if(!made&&Math.random()<0.10){ blocked=true; blk=userPos?oppPick():c; D.blk++; }
+      if(!made&&Math.random()<0.10){ blocked=true; blk=userPos?oppPick():uAny(); D.blk++; }
       if(!made){
         const offReb=Math.random()<0.26;
-        if(offReb){ B.reb++; if(userPos) bumpP(ch([pf,c]),'reb',1); }
-        else { D.reb++; if(!userPos) bumpP(ch([pf,c]),'reb',1); }
+        if(offReb){ B.reb++; if(userPos) bumpP(uAny(),'reb',1); }
+        else { D.reb++; if(!userPos) bumpP(uAny(),'reb',1); }
       }
       let txt;
       if(made){
@@ -4663,11 +4709,11 @@ function generateMatchEvents(rakip, opts){
       events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
 
     } else if(roll<0.90){
-      /* Ceza/faul serbest atış turu */
+      /* Şut faulü — çizgide 2 serbest atış */
       let nMade=0;
       if(userPos){ if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++; }
       else { if(Math.random()<0.72)nMade++; if(Math.random()<0.72)nMade++; }
-      B.ftAtt+=2; B.ftMade+=nMade; D.foul++;
+      B.ftAtt+=2; B.ftMade+=nMade; D.foul++; recordFoul(defenderIsUser,q,t);
       addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade);
       const lineX=userPos?208:732;
       events.push({type:'free',text:`Faul düdüğü — ${shooter.isim} çizgide. ${ftLine(nMade,2,shooter.isim)} ${sc()}`,q,t,home:homeScore,away:awayScore,
@@ -4675,10 +4721,29 @@ function generateMatchEvents(rakip, opts){
         box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
 
     } else if(roll<0.96){
-      /* Top kaybı / top çalma — sayı yok */
-      const stealer=userPos?oppPick():ch([pg,sg,sf]);
-      B.to++; D.stl++;
-      events.push({type:'steal',text:`${stealer.isim} pas arasını okudu ve topu çaldı! Hızlı hücum geliyor.`,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      if(Math.random()<0.32){
+        /* Şutsuz ortak faul — Madde 17: takım çeyrek faulü 5'i geçtiyse bonus (2 serbest atış). */
+        D.foul++; recordFoul(defenderIsUser,q,t);
+        if(inBonus(defenderIsUser,q)){
+          let nMade=0;
+          if(userPos){ if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++; }
+          else { if(Math.random()<0.72)nMade++; if(Math.random()<0.72)nMade++; }
+          B.ftAtt+=2; B.ftMade+=nMade;
+          addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade);
+          const lineX=userPos?208:732;
+          events.push({type:'free',text:`🎯 Bonus! ${foulingTeamName(defenderIsUser)} çeyrek faul cezasında — ${shooter.isim} çizgide. ${ftLine(nMade,2,shooter.isim)} ${sc()}`,q,t,home:homeScore,away:awayScore,
+            shots:[{x:lineX+rand(-10,10),y:242,made:nMade>=1,isHome:userPos,kind:'ft',q},{x:lineX+rand(-10,10),y:262,made:nMade===2,isHome:userPos,kind:'ft',q}],
+            box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+        } else {
+          const cnt=defenderIsUser?(qFoulU[q]||0):(qFoulO[q]||0);
+          events.push({type:'foul',text:`Faul — ${foulingTeamName(defenderIsUser)} bu çeyrek ${cnt}. faulünü yaptı (5'te bonus başlar). Top yandan.`,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+        }
+      } else {
+        /* Top kaybı / top çalma — sayı yok */
+        const stealer=userPos?oppPick():uAny();
+        B.to++; D.stl++;
+        events.push({type:'steal',text:`${stealer.isim} pas arasını okudu ve topu çaldı! Hızlı hücum geliyor.`,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      }
 
     } else {
       /* Renk — mola/taktik vurgusu */
@@ -4764,6 +4829,7 @@ function generateMatchEvents(rakip, opts){
     q:lastPeriod,t:0,home:homeScore,away:awayScore,winner,
     players:pstats,
     lineupIds:[pg,sg,sf,pf,c].filter(Boolean).map(x=>x.id),
+    subIds:[...subbedIds],
     box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
   });
 
@@ -4888,7 +4954,7 @@ function startMatch(){
         sm.played=true;
         updateStandingsFromResult(sm.home,sm.away,sm.hs,sm.as);
         const playedSet=new Set(ev.lineupIds||[]);
-        (mState.subInIds||[]).forEach(id=>playedSet.add(id));
+        (ev.subIds||[]).forEach(id=>playedSet.add(id));
         applyMatchFatigueToRoster(playedSet.size?playedSet:undefined);
         const prevDay=G.gameDay||1;
         const roundDays=G.season.matches.filter(x=>x.round===sm.round).map(x=>x.day);
