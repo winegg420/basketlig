@@ -792,7 +792,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                     <path d="M 223.6 197.2 A 52.8 52.8 0 0 1 223.6 302.8" fill="none" stroke="rgba(255,255,255,0.65)" stroke-dasharray="6,5"></path>
                     <line x1="108.2" y1="250" x2="142.2" y2="250" stroke="#fbbf24" stroke-width="3"></line>
                     <circle cx="125.2" cy="250" r="17.6" stroke="#fbbf24" stroke-width="3"></circle>
-                    <line x1="56.4" y1="223.6" x2="56.4" y2="276.4" stroke-width="4" stroke="rgba(255,255,255,0.98)"></line>
+                    <line x1="91.6" y1="223.6" x2="91.6" y2="276.4" stroke-width="4" stroke="rgba(255,255,255,0.98)"></line>
                     <circle cx="102.6" cy="250" r="6.6" stroke="#fbbf24" stroke-width="2.2"></circle>
                     <path d="M 102.6 214.8 A 35.2 35.2 0 0 1 102.6 285.2" fill="none" stroke-width="1.9"></path>
                     <g stroke="rgba(255,255,255,0.75)" stroke-width="1.5">
@@ -814,7 +814,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                     <path d="M 716.4 197.2 A 52.8 52.8 0 0 0 716.4 302.8" fill="none" stroke="rgba(255,255,255,0.65)" stroke-dasharray="6,5"></path>
                     <line x1="831.8" y1="250" x2="797.8" y2="250" stroke="#fbbf24" stroke-width="3"></line>
                     <circle cx="814.8" cy="250" r="17.6" stroke="#fbbf24" stroke-width="3"></circle>
-                    <line x1="883.6" y1="223.6" x2="883.6" y2="276.4" stroke-width="4" stroke="rgba(255,255,255,0.98)"></line>
+                    <line x1="848.4" y1="223.6" x2="848.4" y2="276.4" stroke-width="4" stroke="rgba(255,255,255,0.98)"></line>
                     <circle cx="837.4" cy="250" r="6.6" stroke="#fbbf24" stroke-width="2.2"></circle>
                     <path d="M 837.4 214.8 A 35.2 35.2 0 0 0 837.4 285.2" fill="none" stroke-width="1.9"></path>
                     <g stroke="rgba(255,255,255,0.75)" stroke-width="1.5">
@@ -1011,7 +1011,8 @@ tr:hover td{background:rgba(255,255,255,0.02);}
               <div class="brow"><span class="blbl">Kapasite</span><span class="bval" id="arCap2">5,000</span></div>
               <div class="brow"><span class="blbl">Taraftar grubu</span><span class="bval" id="arenaFanCard">—</span></div>
               <div class="brow"><span class="blbl">Doluluk (forma göre)</span><span class="bval" id="arenaDoluluk">%55</span></div>
-              <div class="brow"><span class="blbl">Bilet Fiyatı</span><span class="bval">1,2 KR</span></div>
+              <div class="brow"><span class="blbl">Bilet Fiyatı</span><span class="bval" id="ticketPriceLbl">Normal</span></div>
+              <div id="ticketPriceCtrl" style="display:flex;gap:5px;margin:4px 0 8px;flex-wrap:wrap;"></div>
               <div class="brow"><span class="blbl">Maç Başı Gelir</span><span class="bval gelir" id="ticketInc">— KR</span></div>
               <div class="brow"><span class="blbl">Haftalık Bakım</span><span class="bval gider" id="arenaMaint">— KR</span></div>
             </div>
@@ -1183,11 +1184,39 @@ function txn(label,amount){
 }
 
 /** Ev maçı bilet geliri: kapasite × doluluk (form ile %45-95) × 1,2 KR bilet. Arena yatırımının getirisi budur. */
+/** Madde 23: doluluk güncel forma bağlı — son N maçın galibiyet oranı (yoksa sezon oranı). */
+function recentUserForm(n){
+  n=n||5;
+  try{
+    if(!G.season||!G.season.matches||!G.team) return null;
+    const u=G.team.isim;
+    const played=G.season.matches.filter(m=>m.played&&(m.home===u||m.away===u))
+      .sort((a,b)=>(a.day-b.day)||(a.round-b.round)||(a.seasonMatchIx-b.seasonMatchIx));
+    const last=played.slice(-n);
+    if(!last.length) return null;
+    let w=0;
+    last.forEach(m=>{ const uh=m.home===u; const us=uh?m.hs:m.as; const os=uh?m.as:m.hs; if(us>os) w++; });
+    return w/last.length;
+  }catch(e){ return null; }
+}
 function homeTicketIncome(){
-  const played=(G.wins+G.losses)||0;
-  const wr=played?G.wins/Math.max(1,played):0.5;
-  const occ=Math.max(0.45,Math.min(0.95,0.55+wr*0.35));
-  return Math.round((G.arena&&G.arena.kap||5000)*occ*1.2);
+  const form=recentUserForm(5);
+  const seasonPlayed=(G.wins+G.losses)||0;
+  const seasonWr=seasonPlayed?G.wins/Math.max(1,seasonPlayed):0.5;
+  const wr=form!=null?form*0.7+seasonWr*0.3:seasonWr;
+  const occ=Math.max(0.35,Math.min(0.98,(0.55+wr*0.35)*ticketDemandFactor()));
+  return Math.round((G.arena&&G.arena.kap||5000)*occ*1.2*ticketPriceFactor());
+}
+/** Madde 24: bilet fiyatı çarpanı — kullanıcı fiyatı belirler; yüksek fiyat gelir/bilet ↑ ama doluluk ↓. */
+function ticketPriceLevel(){ const v=Number(G.ticketPrice); return Number.isFinite(v)?Math.max(0,Math.min(4,v)):2; }
+function ticketPriceFactor(){
+  /* 0:Çok ucuz .. 4:Çok pahalı. Fiyat çarpanı gelire, ayrı doluluk cezası occ'a uygulanır. */
+  const lvl=ticketPriceLevel();
+  return [0.7,0.85,1.0,1.2,1.45][lvl];
+}
+function ticketDemandFactor(){
+  const lvl=ticketPriceLevel();
+  return [1.15,1.07,1.0,0.88,0.72][lvl]; /* pahalı → doluluk düşer */
 }
 
 function weeklyWageBill(){
@@ -1425,6 +1454,7 @@ function serializeGameState(){
     lastEcoDay:G.lastEcoDay!=null?G.lastEcoDay:1,
     tactics:G.tactics||{tempo:'normal',odak:'dengeli'},
     lineup:G.lineup||null,
+    ticketPrice:G.ticketPrice!=null?G.ticketPrice:2,
     tutorialDone:!!G.tutorialDone
   };
 }
@@ -1564,6 +1594,7 @@ function applyGameState(d){
   G.lastEcoDay=d.lastEcoDay!=null?d.lastEcoDay:(d.gameDay||1);
   G.tactics=Object.assign({tempo:'normal',odak:'dengeli'},d.tactics||{});
   G.lineup=d.lineup&&typeof d.lineup==='object'?d.lineup:null;
+  G.ticketPrice=d.ticketPrice!=null?d.ticketPrice:2;
   G.tutorialDone=!!d.tutorialDone;
   if(G.team&&(!G.ligTeams||!G.ligTeams.length)) G.ligTeams=genLigTeams();
   [G.players,G.youth,G.marketPlayers].forEach(list=>{
@@ -1945,6 +1976,7 @@ const ARENA_LVL=[{s:1,isim:'Küçük Arena',kap:5000,m:0,bk:150},{s:2,isim:'Orta
 /** stat: haftalık koç bonusunun işlediği özellik (null = altyapı çarpanı). Maaşlar ham KR/hafta. */
 const KOC_T=[{isim:'Hücum Koçu',ikon:'⚔️',uzm:'Hücum',stat:'hucum',bonus:'Haftada zayıf oyunculara +1 Hücum',maas:120},{isim:'Savunma Koçu',ikon:'🛡️',uzm:'Savunma',stat:'savunma',bonus:'Haftada zayıf oyunculara +1 Savunma',maas:120},{isim:'Kondisyon Koçu',ikon:'🏃',uzm:'Kondisyon',stat:'kondisyon',bonus:'Haftada zayıf oyunculara +1 Kondisyon',maas:90},{isim:'Şut Koçu',ikon:'🎯',uzm:'Şut İsabeti',stat:'sutIsabeti',bonus:'Haftada zayıf oyunculara +1 Şut',maas:135},{isim:'Altyapı Koçu',ikon:'🌱',uzm:'Altyapı',stat:null,bonus:'Altyapı +%5 gelişim',maas:150}];
 const ANTRENMAN_T=[{isim:'Hücum Antrenmanı',ikon:'⚔️',etki:'hucum',gun:5,maliyet:0},{isim:'Savunma Antrenmanı',ikon:'🛡️',etki:'savunma',gun:5,maliyet:0},{isim:'Kondisyon Koşusu',ikon:'🏃',etki:'kondisyon',gun:4,maliyet:0},{isim:'Çift Antrenman',ikon:'💪',etki:'all',gun:6,maliyet:ecoRound(42)}];
+const MAX_COACHES=5; /* Madde 29: teknik ekip üst sınırı (5 uzmanlık, her birinden en fazla 1) */
 /* ── Sakatlık kataloğu (Madde 5) — gerçek spor sakatlıkları; sabit iyileşme gün aralığı + şiddet.
    siddet: 'Hafif' | 'Orta' | 'Ağır'. w = seçilme ağırlığı (hafif sakatlıklar daha sık). */
 const INJURIES=[
@@ -2002,6 +2034,7 @@ let G={
   lastEcoDay:1,
   tactics:{tempo:'normal',odak:'dengeli'},
   lineup:null,
+  ticketPrice:2,
   tutorialDone:false
 };
 
@@ -2496,10 +2529,14 @@ function getBotClubProfile(teamName,ligKey){
   const arenas=['Şehir Spor Salonu','Metro Arena','Karadeniz Kapalı','Ege Basket Merkezi','Anadolu Spor Kompleksi'];
   const row={human:false,teamName,ligKey,logoUrl:'',arena:arenas[seed%arenas.length],renk:['#3b82f6','#22c55e','#ef4444','#a855f7'][seed%4],roster};
   cache[ck]=row;
-  /* Önbellek sınırı: en eski kayıtlar atılır — localStorage kotası dolmasın. */
+  /* Önbellek sınırı: en eski kayıtlar atılır — ama aktif lig grubundaki takımlar ASLA silinmez
+     (Madde 31), yoksa kullanıcının rakip kadroları/isimleri sezon ortasında değişebilir. */
   const keys=Object.keys(cache);
   if(keys.length>60){
-    keys.slice(0,keys.length-60).forEach(k=>{ delete cache[k]; });
+    const activePrefix=((G.team&&G.team.tblKey)||'')+'||';
+    const evictable=keys.filter(k=>!k.startsWith(activePrefix));
+    const overflow=keys.length-60;
+    evictable.slice(0,Math.min(overflow,evictable.length)).forEach(k=>{ delete cache[k]; });
   }
   try{ localStorage.setItem(CLUB_CACHE_KEY,JSON.stringify(cache)); }catch(e){}
   return row;
@@ -4278,11 +4315,19 @@ function renderArena(){
   document.getElementById('arCap2').textContent=fmtn(a.kap);
   document.getElementById('arenaLvl').textContent=a.s;
   document.getElementById('capFill').style.width=(a.s/5*100)+'%';
-  const played=(G.wins+G.losses)||0;
-  const wr=played?G.wins/Math.max(1,played):0.5;
-  const occ=Math.max(0.45,Math.min(0.95,0.55+wr*0.35));
+  const form=recentUserForm(5);
+  const seasonPlayed=(G.wins+G.losses)||0;
+  const seasonWr=seasonPlayed?G.wins/Math.max(1,seasonPlayed):0.5;
+  const wr=form!=null?form*0.7+seasonWr*0.3:seasonWr;
+  const occ=Math.max(0.35,Math.min(0.98,(0.55+wr*0.35)*ticketDemandFactor()));
   const dol=document.getElementById('arenaDoluluk');
   if(dol) dol.textContent='%'+Math.round(occ*100);
+  const priceNames=['Çok ucuz','Ucuz','Normal','Pahalı','Çok pahalı'];
+  const lvl=ticketPriceLevel();
+  const plbl=document.getElementById('ticketPriceLbl');
+  if(plbl) plbl.textContent=priceNames[lvl];
+  const pctrl=document.getElementById('ticketPriceCtrl');
+  if(pctrl) pctrl.innerHTML=priceNames.map((nm,i)=>`<button type="button" class="btn-sm" style="padding:5px 8px;font-size:10px;${i===lvl?'background:var(--accent);color:#111;font-weight:700;':''}" onclick="setTicketPrice(${i})">${nm}</button>`).join('');
   document.getElementById('ticketInc').textContent=fmtn(homeTicketIncome())+' KR';
   document.getElementById('arenaMaint').textContent='-'+fmtn(a.bk)+' KR';
   document.getElementById('upgradeList').innerHTML=ARENA_LVL.slice(1).map(g=>`
@@ -4295,6 +4340,14 @@ function renderArena(){
         </button>
       </div>
     </div>`).join('');
+}
+
+function setTicketPrice(lvl){
+  G.ticketPrice=Math.max(0,Math.min(4,Number(lvl)||0));
+  scheduleGameSave();
+  renderArena();
+  const nm=['Çok ucuz','Ucuz','Normal','Pahalı','Çok pahalı'][G.ticketPrice];
+  showNotif(`🎟️ Bilet fiyatı: ${nm} — doluluk ve gelir güncellendi.`);
 }
 
 function saveArenaName(){
@@ -5015,6 +5068,7 @@ function buyFromMarket(id){
   ensureMarketStock();
   const p=G.marketPlayers.find(x=>x.id===id);if(!p)return;
   const st=starFromGenel(p.genel);
+  if(G.players.length>=18){ showNotif('Kadro dolu (en fazla 18). Önce bir oyuncu gönder.'); return; }
   if(G.coins<p.fiyat){showNotif('❌ Yeterli KR yok!');return;}
   txn('Transfer: '+p.isim,-p.fiyat);
   unlockAchievement('transfer');
@@ -5082,6 +5136,8 @@ function promoteYouth(id){
 
 function hireCoach(id){
   const c=G.coachMarket.find(x=>x.id===id);if(!c)return;
+  if((G.coaches||[]).length>=MAX_COACHES){ showNotif(`En fazla ${MAX_COACHES} koç çalıştırabilirsin — önce birini kov.`); return; }
+  if((G.coaches||[]).some(x=>x.uzm===c.uzm)){ showNotif(`Zaten bir "${c.uzm}" koçun var — aynı uzmanlıktan ikincisi alınamaz (önce mevcut koçu kov).`); return; }
   if(G.coins<c.satisFiyat){showNotif('❌ Yeterli KR yok!');return;}
   txn('Koç transferi: '+c.ad,-c.satisFiyat);G.coaches.push(c);
   G.coachMarket=G.coachMarket.filter(x=>x.id!==id);
