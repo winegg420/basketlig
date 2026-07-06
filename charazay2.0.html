@@ -1446,11 +1446,54 @@ function openSettingsModal(){
         </div>
         <p id="saveStatusLine" style="font-size:10px;color:var(--text2);margin:10px 0 0;">Otomatik kayıt aktif</p>
       </div>
+      <div style="border-top:1px solid var(--border);padding-top:12px;">
+        <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Kayıt slotları (çoklu kariyer)</div>
+        <div id="saveSlotList">${[1,2,3].map(n=>slotRowHtml(n)).join('')}</div>
+        <p style="font-size:10px;color:var(--text2);margin:8px 0 0;">Slotlar otomatik kayıttan bağımsızdır — farklı kariyerleri buraya kaydedip yükleyebilirsin.</p>
+      </div>
       <div style="border-top:1px solid var(--border);padding-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
         <button type="button" class="btn-sm" onclick="closeAppModal();showTutorial(0)">❓ Öğreticiyi göster</button>
         <button type="button" class="btn-sm" onclick="closeAppModal();openAchievementsModal()">🏆 Başarımlar</button>
       </div>
     </div>`);
+}
+
+/* Madde 32: manuel çoklu kayıt slotları (otomatik kayıttan ayrı anahtarlar). */
+function slotKey(n){ return 'charazay_slot_'+n; }
+function slotInfo(n){
+  try{
+    const raw=localStorage.getItem(slotKey(n));
+    if(!raw) return null;
+    const d=JSON.parse(raw);
+    return {team:(d.team&&d.team.isim)||'—',at:d.savedAt||null,year:(d.season&&d.season.year)||'?'};
+  }catch(e){ return null; }
+}
+function slotRowHtml(n){
+  const inf=slotInfo(n);
+  const label=inf?`<strong>${escMatch(inf.team)}</strong> · S${inf.year}${inf.at?` · ${new Date(inf.at).toLocaleDateString('tr-TR')}`:''}`:'<span style="color:var(--text2);">Boş slot</span>';
+  return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:9px;margin-bottom:6px;">
+    <span style="flex:1;font-size:12px;">💾 Slot ${n}: ${label}</span>
+    <button type="button" class="btn-sm" style="padding:4px 9px;font-size:11px;" onclick="saveToSlot(${n})">Kaydet</button>
+    <button type="button" class="btn-sm" style="padding:4px 9px;font-size:11px;${inf?'':'opacity:.4;'}" ${inf?'':'disabled'} onclick="loadFromSlot(${n})">Yükle</button>
+  </div>`;
+}
+function saveToSlot(n){
+  if(!G||!G.team){ showNotif('Kaydedilecek aktif oyun yok.'); return; }
+  try{
+    localStorage.setItem(slotKey(n),JSON.stringify(serializeGameState()));
+    showNotif(`💾 Slot ${n}'e kaydedildi.`);
+    const list=document.getElementById('saveSlotList');
+    if(list) list.innerHTML=[1,2,3].map(k=>slotRowHtml(k)).join('');
+  }catch(e){ showNotif('Slota yazılamadı (kota dolu olabilir).'); }
+}
+function loadFromSlot(n){
+  const raw=localStorage.getItem(slotKey(n));
+  if(!raw){ showNotif('Bu slot boş.'); return; }
+  try{
+    localStorage.setItem(GAME_SAVE_KEY,raw);
+    showNotif(`Slot ${n} yükleniyor...`);
+    setTimeout(()=>{ try{ location.reload(); }catch(e){} },450);
+  }catch(e){ showNotif('Slot yüklenemedi.'); }
 }
 
 /** Kayıt silme iki adımlı — yanlışlıkla tek tıkla silinmesin. */
