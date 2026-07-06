@@ -830,6 +830,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                     <path d="M 883.6 30 L 883.6 48.5 A 196 196 0 1 0 883.6 451.5 L 883.6 470" stroke-width="2.2"></path>
                   </g>
                   <g id="shotsLayer"></g>
+                  <circle id="liveBall" cx="470" cy="250" r="9" fill="#f97316" stroke="#7c2d12" stroke-width="2" style="opacity:0;transition:cx 0.55s cubic-bezier(.4,.05,.3,1),cy 0.55s cubic-bezier(.4,.05,.3,1),opacity 0.3s;"></circle>
                   </svg>
                 </svg>
               </div>
@@ -4852,6 +4853,29 @@ function randShotXY(isHome,is3,made){
 function clearMatchCourt(){
   const layer=document.getElementById('shotsLayer');
   if(layer) layer.innerHTML='';
+  const b=document.getElementById('liveBall');
+  if(b) b.style.opacity='0';
+}
+/** Madde 18 (temel hareket animasyonu): top hücum yarısından şut noktasına akar; girerse potaya, kaçarsa yakınına. */
+function animateBall(x,y,isHome,made){
+  const b=document.getElementById('liveBall');
+  if(!b) return;
+  try{
+    const startX=isHome?rand(300,430):rand(510,640);
+    const startY=rand(190,310);
+    b.style.transition='none';
+    b.setAttribute('cx',startX); b.setAttribute('cy',startY);
+    b.style.opacity='0.95';
+    b.getBoundingClientRect();
+    b.style.transition='cx 0.5s cubic-bezier(.4,.05,.3,1),cy 0.5s cubic-bezier(.4,.05,.3,1),opacity 0.35s';
+    requestAnimationFrame(()=>{
+      /* Girerse potaya yönelt (rim: ev 102.6 / dep 837.4), kaçarsa şut noktası civarı. */
+      const tx=made?(isHome?102.6:837.4):x;
+      const ty=made?250:y;
+      b.setAttribute('cx',tx); b.setAttribute('cy',ty);
+    });
+    clearTimeout(b._t); b._t=setTimeout(()=>{ b.style.opacity='0'; },1000);
+  }catch(e){}
 }
 
 function drawShotMark(sh){
@@ -5449,6 +5473,7 @@ function startMatch(playoff){
       mState.allShots.push(sh);
       const f=mState.shotFilter||'all';
       if(f==='all'||String(sh.q)===String(f)) drawShotMark(sh);
+      animateBall(sh.x,sh.y,sh.isHome,sh.made); /* Madde 18: temel top hareketi */
     }
     if(ev.shots){
       ev.shots.forEach(sh=>{
