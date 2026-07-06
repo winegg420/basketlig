@@ -1491,7 +1491,7 @@ function serializeGameState(){
     coaches:G.coaches,coachMarket:G.coachMarket,
     ligTeams:pl,
     arena:G.arena,youthFacility:G.youthFacility||{s:1},selectedColor:G.selectedColor,activeTrainings:G.activeTrainings||[],
-    gameDay:G.gameDay,managerName:G.managerName,joinedAt:G.joinedAt,lastActive:new Date().toISOString(),
+    gameDay:G.gameDay,managerName:G.managerName,managerRep:G.managerRep||0,managerHistory:G.managerHistory||[],joinedAt:G.joinedAt,lastActive:new Date().toISOString(),
     marketPozFilter:G.marketPozFilter,marketSort:G.marketSort,marketSortDesc:G.marketSortDesc||{ovr:true,maas:true},
     kadroFilter:G.kadroFilter,kadroView:G.kadroView,youthView:G.youthView||'list',
     prepareMatchIx:G.prepareMatchIx!=null?G.prepareMatchIx:null,
@@ -1627,6 +1627,8 @@ function applyGameState(d){
   G.activeTrainings=Array.isArray(d.activeTrainings)?d.activeTrainings:[];
   G.gameDay=d.gameDay??1;
   G.managerName=d.managerName||'Menajer';
+  G.managerRep=Number(d.managerRep)||0;
+  G.managerHistory=Array.isArray(d.managerHistory)?d.managerHistory:[];
   G.joinedAt=d.joinedAt||null;
   G.lastActive=d.lastActive||null;
   G.marketPozFilter=d.marketPozFilter||'all';
@@ -2071,6 +2073,8 @@ let G={
   activeTrainings:[],
   gameDay:1,
   managerName:'Menajer',
+  managerRep:0,
+  managerHistory:[],
   joinedAt:null,
   lastActive:null,
   marketPozFilter:'all',
@@ -2629,8 +2633,11 @@ function openClubPublicModal(teamName,ligKey){
   const prof=getBotClubProfile(teamName,ligKey);
   const logo=prof.logoUrl?`<img src="${prof.logoUrl.replace(/"/g,'')}" style="max-width:100px;border-radius:8px;" referrerpolicy="no-referrer" onerror="this.style.display='none'">`:`<div style="width:72px;height:72px;border-radius:12px;background:${prof.renk};"></div>`;
   const roster=prof.roster.map(p=>`<div style="display:flex;gap:8px;align-items:center;padding:6px;background:var(--bg3);border-radius:8px;margin-bottom:4px;"><div class="mavatar-wrap"><img src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} style="width:44px;height:56px;border-radius:6px;object-fit:cover;"><span style="font-size:9px;font-weight:700;color:var(--accent);">OVR ${p.genel}</span></div><div style="font-size:12px;"><strong>${p.bayrak} ${p.isim}</strong><br><span style="color:var(--text2);">${p.poz} · ${p.genel}</span></div></div>`).join('');
-  const note=prof.human?'<p style="font-size:11px;color:var(--gold);margin-top:10px;">Kendi kulübün: bilanço ve detaylar sadece sana açık.</p>':'<p style="font-size:11px;color:var(--text2);margin-top:10px;">Bot kulüp — ileride bu slota kayıtlı menajer olursa güncellemeler burada görünür.</p>';
-  showAppModal(`<div class="modal-title">${escMatch(teamName)}</div><div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">${logo}<div><p style="font-size:13px;margin:0;"><strong>Arena:</strong> ${escMatch(prof.arena)}</p><p style="font-size:12px;color:var(--text2);margin:4px 0 0;">${formatTblSlotLabel(ligKey)}</p></div></div>${note}<div style="font-weight:700;font-size:12px;margin-top:12px;">Kadro (özet — OVR)</div>${roster}`);
+  const mgr=prof.human
+    ?`<p style="font-size:11px;color:var(--blue);margin:6px 0 0;">👔 Menajer: ${escMatch(G.managerName||'Menajer')} · itibar ${Number(G.managerRep)||0}</p>`
+    :(()=>{ const r=botManagerRepText(teamName); return `<p style="font-size:11px;color:var(--blue);margin:6px 0 0;">👔 Menajer: ${r.text} · ${r.titles} kupa geçmişi</p>`; })();
+  const note=prof.human?'<p style="font-size:11px;color:var(--gold);margin-top:10px;">Kendi kulübün: bilanço ve detaylar sadece sana açık.</p>':'<p style="font-size:11px;color:var(--text2);margin-top:10px;">Bot kulüp — rakip menajerin geçmişi yukarıda.</p>';
+  showAppModal(`<div class="modal-title">${escMatch(teamName)}</div><div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">${logo}<div><p style="font-size:13px;margin:0;"><strong>Arena:</strong> ${escMatch(prof.arena)}</p><p style="font-size:12px;color:var(--text2);margin:4px 0 0;">${formatTblSlotLabel(ligKey)}</p>${mgr}</div></div>${note}<div style="font-weight:700;font-size:12px;margin-top:12px;">Kadro (özet — OVR)</div>${roster}`);
 }
 
 function openPlayerInspectModal(pid){
@@ -3309,6 +3316,22 @@ function statN(p,k){
   const v=Number(p&&p[k]);
   return Number.isFinite(v)?Math.min(99,Math.max(0,v)):0;
 }
+/* ── Menajer itibarı (Madde 9) + koç skoru (Madde 8) — küçük performans katmanları ── */
+function managerRepBonus(){ return Math.max(0,Math.min(0.03,(Number(G.managerRep)||0)/450)); }
+function coachScoreBonus(){
+  const cs=(G.coaches||[]).filter(c=>c&&c.stat);
+  if(!cs.length) return 0;
+  const avg=cs.reduce((s,c)=>s+(Number(c.skor)||(Number(c.seviye)||1)*10),0)/cs.length;
+  return Math.max(0,Math.min(0.025,(avg-30)/1600));
+}
+function teamBonusFactor(){ return 1+managerRepBonus()+coachScoreBonus(); }
+/** Bot menajer itibarı — takım adından deterministik (kısmı hazır geçmişle gelir, Madde 9). */
+function botManagerTitles(name){ return hash32('mgr'+String(name))%6; }
+function botManagerRepText(name){
+  const t=botManagerTitles(name);
+  const rep=hash32('mgrrep'+String(name))%400;
+  return {titles:t,rep:rep,text:t>=4?'Efsane menajer':t>=2?'Tecrübeli menajer':t>=1?'Yükselen menajer':'Çaylak menajer'};
+}
 /** Sağlıklı oyuncular üzerinden; top-10 genel sıralı ortalama OFR/DEF + ham toplamlar.
  *  Madde 3: her oyuncunun kendi enerjisi kendi katkısını ağırlıklandırır (yorgun yıldız gücü düşürür).
  *  Madde 4: takım moral (mood) + kimya küçük, sınırlı bir çarpan olarak dahil (±%~6). */
@@ -3362,7 +3385,8 @@ function matchLineup(){
   return{pg:slots.pg,sg:slots.sg,sf:slots.sf,pf:slots.pf,c:slots.c,avail,onCourt,bench};
 }
 function pseudoTeamStrength(isim,tblKey){
-  return 58+(seqFromName(String(isim),tblKey||'tbl')%4200)/100;
+  /* Madde 9: bot menajerin itibarı (hazır geçmiş) takıma küçük bir güç katkısı sağlar. */
+  return 58+(seqFromName(String(isim),tblKey||'tbl')%4200)/100+botManagerTitles(isim)*0.4;
 }
 
 /** Yalnızca bot-bot maçları buradan geçer; kullanıcı maçları canlı motorla (generateMatchEvents) oynanır. */
@@ -3498,9 +3522,16 @@ function endLeagueSeasonIfDone(){
   if(!G.season||!G.season.active||!seasonAllMatchesPlayed()) return false;
   G.season.active=false;
   unlockAchievement('sezonTamam');
+  G.managerRep=(Number(G.managerRep)||0)+1;
   try{
     const rows=buildLeagueRows(G.team.tblKey||'tbl');
-    if(rows.findIndex(r=>r.isUser)===0) unlockAchievement('ligBirinci');
+    if(rows.findIndex(r=>r.isUser)===0){
+      unlockAchievement('ligBirinci');
+      G.managerRep+=5;
+      G.managerHistory=Array.isArray(G.managerHistory)?G.managerHistory:[];
+      G.managerHistory.push({year:G.season.year,basari:'Lig 1.liği'});
+      awardCoaches('Lig 1.liği',5);
+    }
   }catch(e){}
   pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--purple);">🏁 <strong>Sezon ${G.season.year}</strong> düzenli sezonu tamamlandı — ilk 8 takım playoff'a kaldı!</div>`);
   showNotif('Düzenli sezon bitti — playoff başlıyor!');
@@ -3583,7 +3614,12 @@ function finishPlayoffs(){
     const priz=ecoRound(rand(6000,12000));
     txn('Playoff şampiyonluk ödülü',priz);
     updateCoins();
-    showNotif(`🏆 ${G.team.isim} PLAYOFF ŞAMPİYONU! +${fmtn(priz)} KR`,{critical:true});
+    /* Madde 8/9: itibar + koç skoru artışı. */
+    G.managerRep=(Number(G.managerRep)||0)+10;
+    G.managerHistory=Array.isArray(G.managerHistory)?G.managerHistory:[];
+    G.managerHistory.push({year:G.playoff.year,basari:'Playoff Şampiyonluğu'});
+    awardCoaches('Playoff Şampiyonluğu',10);
+    showNotif(`🏆 ${G.team.isim} PLAYOFF ŞAMPİYONU! +${fmtn(priz)} KR · itibar arttı`,{critical:true});
   } else {
     showNotif(`🏆 Playoff şampiyonu: ${champ||'—'}`);
   }
@@ -4062,7 +4098,7 @@ function renderTeamFixturePanel(){
 function genCoaches(){
   return KOC_T.slice(0,3).map((k,i)=>{
     const sev=rand(1,5);
-    return {...k,id:'c'+i,ad:['Ahmet Yıldız','Carlos Ruiz','Mike Johnson'][i],seviye:sev,maas:Math.round(45+sev*18+sev*sev*2)};
+    return {...k,id:'c'+i,ad:['Ahmet Yıldız','Carlos Ruiz','Mike Johnson'][i],seviye:sev,maas:Math.round(45+sev*18+sev*sev*2),skor:sev*10+rand(0,15),gecmis:[]};
   });
 }
 
@@ -4071,7 +4107,19 @@ function genCoachMarket(){
     const sev=rand(2,8);
     const maas=Math.round(50+sev*22+sev*sev*2.5);
     const satis=Math.round(400+sev*sev*140+maas*2);
-    return {...k,id:'cm'+i,ad:`${ch(ILK)} ${ch(SY)}`,seviye:sev,maas,satisFiyat:satis};
+    /* Madde 8: piyasa koçları hazır bir CV ile gelir (geçmiş başarı → skor). */
+    const past=rand(0,3);
+    const gecmis=[];
+    for(let g=0;g<past;g++) gecmis.push({sezon:'geçmiş',basari:ch(['Şampiyonluk','Playoff','Lig 1.liği'])});
+    return {...k,id:'cm'+i,ad:`${ch(ILK)} ${ch(SY)}`,seviye:sev,maas,satisFiyat:satis,skor:sev*10+past*12+rand(0,15),gecmis};
+  });
+}
+/** Koç CV'sine başarı ekler ve skorunu artırır (sezon/playoff kazanımında çağrılır). */
+function awardCoaches(basari,puan){
+  (G.coaches||[]).forEach(c=>{
+    c.gecmis=Array.isArray(c.gecmis)?c.gecmis:[];
+    c.gecmis.push({sezon:'S'+((G.season&&G.season.year)||'?'),basari});
+    c.skor=(Number(c.skor)||(Number(c.seviye)||1)*10)+puan;
   });
 }
 
@@ -4628,8 +4676,18 @@ function renderAntrenman(){
     activeDiv.innerHTML='';
   }
 
+  // Menajer itibarı (Madde 9)
+  const repPts=Number(G.managerRep)||0;
+  const repTitle=repPts>=60?'Efsane Menajer':repPts>=30?'Saygın Menajer':repPts>=12?'Yükselen Menajer':'Çaylak Menajer';
+  const repBonusPct=(managerRepBonus()*100).toFixed(1);
+  const mgrBanner=`<div style="grid-column:1/-1;padding:11px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div><strong style="font-size:13px;">👔 ${escMatch(G.managerName||'Menajer')}</strong> <span style="font-size:11px;color:var(--gold);">${repTitle}</span></div>
+      <div style="font-size:11px;color:var(--text2);">İtibar: <strong style="color:var(--blue);">${repPts}</strong> · takım bonusu +%${repBonusPct}${(G.managerHistory&&G.managerHistory.length)?` · ${G.managerHistory.length} kupa`:''}</div>
+    </div>
+  </div>`;
   // Koçlar
-  document.getElementById('coachList').innerHTML=G.coaches.length
+  document.getElementById('coachList').innerHTML=mgrBanner+(G.coaches.length
     ?G.coaches.map((c,i)=>`<div class="coach-card">
       <div class="coach-header">
         <div class="coach-avatar"><img src="${coachAvatar(c)}" ${coachAvatarAttrs(c)} alt=""></div>
@@ -4637,10 +4695,11 @@ function renderAntrenman(){
       </div>
       <div class="coach-stat"><span style="color:var(--text2);">Uzmanlık</span><span style="font-size:11px;">${c.bonus}</span></div>
       <div class="coach-stat"><span style="color:var(--text2);">Seviye</span><span style="color:var(--gold);">${c.seviye}</span></div>
+      <div class="coach-stat"><span style="color:var(--text2);">CV / Skor</span><span style="color:var(--blue);">${Math.round(Number(c.skor)||0)}${(c.gecmis&&c.gecmis.length)?` · ${c.gecmis.length} başarı`:''}</span></div>
       <div class="coach-stat"><span style="color:var(--text2);">Maaş</span><span style="color:var(--red);">${fmtn(c.maas)} KR/hf</span></div>
       <button class="btn-sm btn-danger" onclick="fireCoach('${c.id}')" style="width:100%;margin-top:8px;">KADRODAN ÇIKAR</button>
     </div>`).join('')
-    :'<div style="color:var(--text2);font-size:12px;grid-column:1/-1;padding:16px;text-align:center;">Henüz koçun yok. Aşağıdan işe al.</div>';
+    :'<div style="color:var(--text2);font-size:12px;grid-column:1/-1;padding:16px;text-align:center;">Henüz koçun yok. Aşağıdan işe al.</div>');
 
   document.getElementById('coachMarket').innerHTML=G.coachMarket.map((c,i)=>`
     <div class="coach-card">
@@ -4650,6 +4709,7 @@ function renderAntrenman(){
       </div>
       <div class="coach-stat"><span style="color:var(--text2);">Bonus</span><span style="font-size:11px;">${c.bonus}</span></div>
       <div class="coach-stat"><span style="color:var(--text2);">Seviye</span><span style="color:var(--gold);">${c.seviye}</span></div>
+      <div class="coach-stat"><span style="color:var(--text2);">CV / Skor</span><span style="color:var(--blue);">${Math.round(Number(c.skor)||0)}${(c.gecmis&&c.gecmis.length)?` · ${c.gecmis.length} başarı`:''}</span></div>
       <div class="coach-stat"><span style="color:var(--text2);">Haftalık Maaş</span><span style="color:var(--red);">${fmtn(c.maas)} KR</span></div>
       <div class="coach-stat"><span style="color:var(--text2);">Transfer Bedeli</span><span style="color:var(--accent);">${fmtn(c.satisFiyat)} KR</span></div>
       <button class="btn-p" onclick="hireCoach('${c.id}')" style="padding:7px;font-size:11px;margin-top:8px;">İŞE AL</button>
@@ -4944,7 +5004,8 @@ function generateMatchEvents(rakip, opts){
   const uq=Math.max(0,Math.min(1,((rrStr.ofr+rrStr.def)/2-190)/130));
   const oq=Math.max(0,Math.min(1,(oppStr-58)/42));
   const strengthEdge=Math.max(-0.16,Math.min(0.16,(uq-oq)*0.22));
-  const uMul=1+strengthEdge, oMul=1-strengthEdge;
+  /* Madde 8/9: koç skoru + menajer itibarı küçük ek çarpan olarak kullanıcı lehine (maks ~+%5.5). */
+  const uMul=(1+strengthEdge)*teamBonusFactor(), oMul=1-strengthEdge;
   /* Taktik etkisi: tempo hücum sayısını ve isabeti, odak şut seçimi ve isabeti etkiler. */
   const tac=G.tactics||{};
   const tempo=tac.tempo||'normal';
