@@ -1,2 +1,22 @@
+# --- Proje geçici dosyaları ---
 scratch_*.js
 scratch_s*.js
+
+# --- Python araç kalıntıları (tools/generate-portraits.py) ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# --- İşletim sistemi çöp dosyaları ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# --- Editör / IDE ---
+.vscode/
+*.swp
+*.swo
+*~
