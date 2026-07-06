@@ -1484,7 +1484,7 @@ function serializeGameState(){
   return{
     v:5,
     savedAt:new Date().toISOString(),
-    coins:G.coins,wins:G.wins,losses:G.losses,points:G.points,chemistry:G.chemistry,
+    coins:G.coins,wins:G.wins,losses:G.losses,points:G.points,chemistry:G.chemistry,winStreak:G.winStreak||0,
     team:G.team,
     players:G.players,youth:G.youth,marketPlayers:G.marketPlayers,
     clubTransferPlayers:G.clubTransferPlayers||[],_ctSeq:G._ctSeq||0,
@@ -1611,6 +1611,7 @@ function applyGameState(d){
   G.losses=d.losses??0;
   G.points=d.points??0;
   G.chemistry=d.chemistry??75;
+  G.winStreak=Number(d.winStreak)||0;
   G.team=d.team||null;
   G.players=Array.isArray(d.players)?d.players:[];
   G.youth=Array.isArray(d.youth)?d.youth:[];
@@ -2063,7 +2064,7 @@ const INJURIES=[
 ];
 
 let G={
-  coins:START_KR,wins:0,losses:0,points:0,chemistry:75,
+  coins:START_KR,wins:0,losses:0,points:0,chemistry:75,winStreak:0,
   team:null,players:[],youth:[],marketPlayers:[],
   clubTransferPlayers:[],marketTab:'free',clubTransferFilter:'all',
   coaches:[],coachMarket:[],ligTeams:[],
@@ -2545,11 +2546,13 @@ function applyPromotionRelegation(){
     if(divNum<=1){
       const slot=findFirstNullInTbl(st);
       if(!slot){ showNotif('TBL Süper Lig’de boş yer yok; yerinde kalırsın.'); return; }
+      unlockAchievement('ustLig');
       finish(slot,'↑ TBL Süper Lig’e yükseldin:');
       return;
     }
     const slot=findFirstNullInDivision(divNum-1,st);
     if(!slot){ showNotif('Üst Div’da boş yer yok; yerinde kalırsın.'); return; }
+    unlockAchievement('ustLig');
     finish(slot,'↑ Üst Div’a yükseldin:');
     return;
   }
@@ -5510,6 +5513,11 @@ function startMatch(playoff){
           const bilet=homeTicketIncome();
           txn('Bilet geliri',bilet);
           pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">🎟️ Ev maçı bilet geliri: <strong>+${fmtn(bilet)} KR</strong> (${fmtn(G.arena.kap)} kapasite)</div>`);
+        } else {
+          /* Madde 34: deplasman seyahat masrafı (yol + konaklama). */
+          const seyahat=ecoRound(rand(300,700));
+          txn('Deplasman seyahat masrafı',-seyahat);
+          pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">✈️ Deplasman seyahat masrafı: <strong>-${fmtn(seyahat)} KR</strong></div>`);
         }
         if(G.wins>=1) unlockAchievement('ilkGalibiyet');
         if(G.wins>=5) unlockAchievement('seri5');
@@ -5550,9 +5558,12 @@ function startMatch(playoff){
         const priz=ecoRound(rand(1500,3500));
         txn('Maç ödülü (galibiyet)',priz);
         sfx('win');
-        showNotif(`🏆 Galip geldin! +2 tablo puanı · +${fmtn(priz)} KR ödül`);
+        G.winStreak=(Number(G.winStreak)||0)+1;
+        if(G.winStreak>=10) unlockAchievement('seri10');
+        showNotif(`🏆 Galip geldin! +2 tablo puanı · +${fmtn(priz)} KR ödül${G.winStreak>=3?` · ${G.winStreak} maçlık seri!`:''}`);
       }
       else if(ev.winner==='away'){
+        G.winStreak=0;
         const cons=ecoRound(rand(400,900));
         txn('Maç günü geliri',cons);
         sfx('lose');
