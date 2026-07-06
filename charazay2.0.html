@@ -2214,6 +2214,7 @@ function genSingleYouth(potBoost){
   p.mood=rand(55,92);
   p.seed='yt'+p.id+hash32(p.isim+p.yas+p.potansiyel);
   p.academyProspect=!!prospect;
+  p.hiddenPot=Math.random()<0.70; /* Madde 7: gençlerin çoğunun potansiyeli gizli (keşif gerekir) */
   return p;
 }
 function youthFacilityLevel(){ return Math.max(1,Math.min(4,(G.youthFacility&&Number(G.youthFacility.s))||1)); }
@@ -2252,6 +2253,7 @@ function genSingleMarketPlayer(idx){
   p.freeAgent=true;
   p.listedFromUser=false;
   p.seed='mkt'+idx+'_'+p.id+'_'+hash32(p.isim+p.poz+idx);
+  p.hiddenPot=Math.random()<0.40; /* Madde 7: pazardaki bazı oyuncuların potansiyeli gizli */
   return p;
 }
 
@@ -3872,7 +3874,8 @@ function buyClubPlayer(id){
   txn('Transfer (kulüpten): '+p.isim,-p.fiyat);
   unlockAchievement('transfer');
   const np={...p};
-  ['mode','fiyat','kiralik','fromClub','sure','teklifler','freeAgent'].forEach(k=>delete np[k]);
+  ['mode','fiyat','kiralik','fromClub','sure','teklifler','freeAgent','hiddenPot'].forEach(k=>delete np[k]);
+  np.scouted=true;
   if(np.enerji==null||np.enerji==='') np.enerji=100;
   G.players.push(np);
   G.clubTransferPlayers=G.clubTransferPlayers.filter(x=>x.id!==id);
@@ -4076,6 +4079,40 @@ function genCoachMarket(){
 function moodColor(m){return m>=70?'var(--green)':m>=40?'var(--gold)':'var(--red)';}
 function moodText(m){return m>=75?'😄 Mutlu':m>=50?'😐 Normal':m>=30?'😕 Mutsuz':'😠 Kızgın';}
 
+/* ── Scouting (Madde 7) — bazı oyuncuların gerçek potansiyeli gizli; KR ile keşif raporu açar. */
+function playerScouted(p){ return !p||p.scouted===true||!p.hiddenPot; }
+function potRange(p){
+  const pot=Number(p.potansiyel)||Number(p.genel)||60;
+  const spread=6+(hash32(String(p.id||p.seed||''))%7);   /* 6-12, oyuncuya sabit */
+  const lo=Math.max(Number(p.genel)||0,pot-spread);
+  const hi=Math.min(99,pot+Math.floor(spread/2));
+  return {lo,hi};
+}
+function scoutCost(p){ return ecoRound(200+(hash32('scout'+String(p.id||''))%420)); }
+function potHtml(p){
+  if(!p.potansiyel) return '';
+  if(playerScouted(p)){
+    return `<div style="font-size:10px;color:var(--blue);margin-top:3px;">⭐ Pot: ${p.potansiyel} (${Math.max(0,(p.potansiyel||p.genel)-p.genel)} boşluk)</div>`;
+  }
+  const r=potRange(p);
+  return `<div style="font-size:10px;color:var(--text2);margin-top:3px;">🔍 Pot: ${r.lo}–${r.hi} <span style="color:var(--gold);">(belirsiz — keşif gerek)</span></div>`;
+}
+function scoutPlayer(id){
+  const p=findPlayerRecord(id);
+  if(!p){ showNotif('Oyuncu bulunamadı.'); return; }
+  if(playerScouted(p)){ showNotif('Bu oyuncu zaten keşfedildi.'); return; }
+  const cost=scoutCost(p);
+  if(G.coins<cost){ showNotif('❌ Keşif raporu için yeterli KR yok!'); return; }
+  txn('Keşif raporu: '+p.isim,-cost);
+  p.scouted=true;
+  updateCoins();
+  showNotif(`🔍 ${p.isim} keşfedildi — gerçek potansiyel: ${p.potansiyel}.`);
+  scheduleGameSave();
+  const mr=document.getElementById('appModalRoot');
+  if(mr&&mr.style.display!=='none') openPlayerModal(id);
+  if(document.getElementById('page-altyapi')&&document.getElementById('page-altyapi').classList.contains('active')) renderAltyapi();
+  if(document.getElementById('page-market')&&document.getElementById('page-market').classList.contains('active')) renderMarket();
+}
 function injBannerHtml(p){
   if(typeof playerIsInjured!=='function'||!playerIsInjured(p)) return '';
   const left=Math.max(0,(p.injReturnDay||0)-(G.gameDay||1));
@@ -4102,7 +4139,7 @@ function renderPlayerCard(p,showBuy=false,price=0,showPromote=false,showList=fal
         <div class="pmeta">${p.bayrak} ${p.ulke} • ${p.yas} yaş<br>${p.boy}cm • ${p.kilo}kg</div>
         <span class="pbadge pos-${p.poz.toLowerCase()}">${p.poz} — ${POZ_TR[p.poz]}</span>
         <div style="font-size:10px;color:var(--gold);margin-top:3px;">OVR ${p.genel} · ${st}★</div>
-        ${p.potansiyel?`<div style="font-size:10px;color:var(--blue);margin-top:3px;">⭐ Pot: ${p.potansiyel} (${Math.max(0,(p.potansiyel||p.genel)-p.genel)} boşluk)</div>`:''}
+        ${potHtml(p)}
         ${p.academyProspect?'<div style="font-size:9px;color:var(--green);margin-top:3px;font-weight:600;">★ Gelişime çok açık profil</div>':''}
         <div style="margin-top:6px;">
           <div style="font-size:10px;color:var(--text2);">Psikoloji: <span style="color:${moodColor(p.mood)};">${moodText(p.mood)}</span></div>
@@ -4162,7 +4199,15 @@ function openPlayerModal(pid){
     actions.push(`<button type="button" class="btn-p" onclick="event.stopPropagation();extendContract('${p.id}');" style="margin-top:4px;width:100%;padding:9px;${expiring?'background:var(--gold);color:#111;':''}">✍️ SÖZLEŞME UZAT — ${fmtn(extCost)} KR${expiring?' (bitmek üzere!)':''}</button>`);
     actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();listPlayerToMarket('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;">TRANSFER MARKETE KOY</button>`);
   }
-  const potBlock=p.potansiyel?`<div style="font-size:11px;color:var(--blue);margin-bottom:8px;">⭐ Potansiyel: ${p.potansiyel} (yaklaşık +${Math.max(0,(p.potansiyel||p.genel)-p.genel)} gelişim payı)</div>`:'';
+  let potBlock='';
+  if(p.potansiyel){
+    if(playerScouted(p)){
+      potBlock=`<div style="font-size:11px;color:var(--blue);margin-bottom:8px;">⭐ Potansiyel: ${p.potansiyel} (yaklaşık +${Math.max(0,(p.potansiyel||p.genel)-p.genel)} gelişim payı)</div>`;
+    } else {
+      const r=potRange(p);
+      potBlock=`<div style="font-size:11px;color:var(--text2);margin-bottom:8px;">🔍 Potansiyel: <strong>${r.lo}–${r.hi}</strong> (belirsiz) <button type="button" class="btn-sm" style="padding:3px 8px;font-size:10px;margin-left:6px;" onclick="event.stopPropagation();scoutPlayer('${p.id}')">Keşfet — ${fmtn(scoutCost(p))} KR</button></div>`;
+    }
+  }
   const html=`<div class="card-title" style="margin-top:0;">${p.bayrak} ${p.isim}</div>
   <p style="font-size:12px;color:var(--text2);margin-bottom:8px;">${POZ_TR[p.poz]||''} · ${p.ulke} · ${p.yas} yaş · ${p.boy}cm · ${p.kilo}kg</p>
   <p style="font-size:10px;color:var(--text2);margin-bottom:10px;">Psikoloji: <span style="color:${moodColor(p.mood)};">${moodText(p.mood)}</span></p>
@@ -5704,6 +5749,7 @@ function buyFromMarket(id){
   unlockAchievement('transfer');
   const np={...p};
   np.listedFromUser=false;
+  np.scouted=true; delete np.hiddenPot;
   delete np.fiyat;
   delete np.teklifler;
   delete np.sure;
@@ -5772,6 +5818,7 @@ function listPlayerToMarket(id){
 function promoteYouth(id){
   const p=G.youth.find(x=>x.id===id);if(!p)return;
   p.maas=salaryKRFromGenel(p.genel);
+  p.scouted=true; delete p.hiddenPot;
   if(p.enerji==null||p.enerji==='') p.enerji=100;
   G.players.push(p);G.youth=G.youth.filter(x=>x.id!==id);
   if(p.kontratSezon==null) p.kontratSezon=rand(2,3);
