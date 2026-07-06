@@ -1278,7 +1278,46 @@ function processEconomyWeeks(){
     applyWeeklyCoachBonuses();
     aiWeeklyLeagueActivity();
     pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">🧾 Haftalık gider: <strong>-${fmtn(w.top)} KR</strong> (oyuncu ${fmtn(w.oy)} · koç ${fmtn(w.ko)} · arena ${fmtn(w.ar)})</div>`);
-    if(G.coins<0) showNotif('⚠️ Kasa eksiye düştü! Oyuncu sat veya maaş yükünü azalt.');
+    processBankruptcy();
+  }
+}
+
+/** Zorunlu satış: en yüksek maaşlı oyuncuyu değerinin %80'iyle satar (maaş yükünü de azaltır). Kadro min 8. */
+function forcedPlayerSale(){
+  if(!G.players||G.players.length<=8) return null;
+  const p=G.players.slice().sort((a,b)=>(Number(b.maas)||0)-(Number(a.maas)||0))[0];
+  if(!p) return null;
+  const gelir=Math.max(1,Math.round(transferFeeKR(p)*0.8));
+  G.players=G.players.filter(x=>x.id!==p.id);
+  txn('Zorunlu satış (mali kriz): '+p.isim,gelir);
+  return {p,gelir};
+}
+
+/** Madde 25: game over YOK — kademeli mali baskı. Negatif kasa: 1. hafta uyarı, sonraki haftalar zorunlu satış. */
+function processBankruptcy(){
+  if(G.coins<0){
+    G.bankruptWeeks=(Number(G.bankruptWeeks)||0)+1;
+    if(G.bankruptWeeks===1){
+      showNotif('⚠️ Kulüp mali sıkıntıda — maaşlar tam ödenemiyor. Federasyon/başkan devreye giriyor. Toparlanmazsan zorunlu oyuncu satışı başlar.',{critical:true});
+      pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">🏦 <strong>Mali uyarı:</strong> Kasa negatif (${fmtn(G.coins)} KR). Bir hafta içinde toparlanmazsa başkan zorunlu satışa başlayacak.</div>`);
+    } else {
+      let sold=0;
+      while(G.coins<0 && sold<2 && G.players.length>8){
+        const r=forcedPlayerSale();
+        if(!r) break;
+        sold++;
+        pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">🏦 <strong>Zorunlu satış:</strong> Başkan mali krizde <strong>${r.p.isim}</strong> oyuncusunu ${fmtn(r.gelir)} KR karşılığında sattı.</div>`);
+      }
+      if(sold){
+        showNotif(`🏦 Mali kriz: başkan ${sold} oyuncuyu zorunlu sattı — maaş yükü azaldı, kasa toparlanıyor.`,{critical:true});
+        updateCoins();
+      } else {
+        showNotif('🏦 Mali kriz sürüyor — satılacak oyuncu kalmadı (kadro asgaride). Galibiyetlerle toparlanmalısın.',{critical:true});
+      }
+    }
+  } else if(G.bankruptWeeks){
+    G.bankruptWeeks=0;
+    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">✅ Kasa artıya döndü — mali kriz sona erdi.</div>`);
   }
 }
 
@@ -1453,6 +1492,7 @@ function serializeGameState(){
     achievements:G.achievements||{},
     ledger:G.ledger||[],
     lastEcoDay:G.lastEcoDay!=null?G.lastEcoDay:1,
+    bankruptWeeks:G.bankruptWeeks||0,
     tactics:G.tactics||{tempo:'normal',odak:'dengeli'},
     lineup:G.lineup||null,
     ticketPrice:G.ticketPrice!=null?G.ticketPrice:2,
@@ -1594,6 +1634,7 @@ function applyGameState(d){
   G.achievements=d.achievements&&typeof d.achievements==='object'?d.achievements:{};
   G.ledger=Array.isArray(d.ledger)?d.ledger:[];
   G.lastEcoDay=d.lastEcoDay!=null?d.lastEcoDay:(d.gameDay||1);
+  G.bankruptWeeks=d.bankruptWeeks||0;
   G.tactics=Object.assign({tempo:'normal',odak:'dengeli'},d.tactics||{});
   G.lineup=d.lineup&&typeof d.lineup==='object'?d.lineup:null;
   G.ticketPrice=d.ticketPrice!=null?d.ticketPrice:2;
@@ -2036,6 +2077,7 @@ let G={
   achievements:{},
   ledger:[],
   lastEcoDay:1,
+  bankruptWeeks:0,
   tactics:{tempo:'normal',odak:'dengeli'},
   lineup:null,
   ticketPrice:2,
@@ -3403,6 +3445,7 @@ function pickInjury(){
 function rollInjuriesAfterUserMatch(){
   if(!G.players||!G.players.length) return;
   const gd=G.gameDay||1;
+  const yeniSakatlar=[];
   G.players.forEach(p=>{
     if(playerIsInjured(p)) return;
     const yas=Number(p.yas)||25;
@@ -3419,11 +3462,20 @@ function rollInjuriesAfterUserMatch(){
       p.injuryBolge=inj.bolge;
       p.injurySeverity=inj.siddet;
       p.formReturnMatches=0; /* yeniden sakatlandı, sayaç sıfırlanır */
+      yeniSakatlar.push(p);
       dbg('sakat',p.isim,inj.ad,inj.siddet,'dönüşGün',p.injReturnDay);
     } else if(returning){
       p.formReturnMatches=Math.max(0,Number(p.formReturnMatches||0)-1);
     }
   });
+  if(yeniSakatlar.length){
+    const ilk=yeniSakatlar[0];
+    const ek=yeniSakatlar.length>1?` (+${yeniSakatlar.length-1} oyuncu daha)`:'';
+    showNotif(`🩹 ${ilk.isim} sakatlandı — ${ilk.injuryEtiket} (${ilk.injurySeverity}), dönüş Gün ${ilk.injReturnDay}.${ek}`,{critical:true});
+    yeniSakatlar.forEach(p=>{
+      pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">🩹 <strong>${p.isim}</strong> sakatlandı — ${p.injuryEtiket} (${p.injurySeverity}). Tahmini dönüş: Gün ${p.injReturnDay}.</div>`);
+    });
+  }
 }
 
 function seasonAllMatchesPlayed(){
@@ -5695,11 +5747,45 @@ function createTeam(){
   if(!G.tutorialDone) showTutorial(0);
 }
 
-function showNotif(msg){
+/* Madde 37: bildirim kuyruğu — bildirimler sırayla gösterilir, birbirini ezmez.
+   Kritik bildirimler (iflas, sakatlık, sözleşme kaybı) öne alınır ve daha uzun/vurgulu gösterilir. */
+let _notifQueue=[];
+let _notifShowing=false;
+function showNotif(msg,opts){
+  opts=opts||{};
+  const item={msg:String(msg==null?'':msg),critical:!!opts.critical};
+  if(item.critical) _notifQueue.unshift(item); else _notifQueue.push(item);
+  /* Taşma kontrolü: kritikleri koru, en eski normali at. */
+  while(_notifQueue.length>15){
+    const i=_notifQueue.findIndex(x=>!x.critical);
+    if(i>=0) _notifQueue.splice(i,1); else { _notifQueue.shift(); break; }
+  }
+  _drainNotif();
+}
+function _drainNotif(){
+  if(_notifShowing) return;
+  const item=_notifQueue.shift();
+  if(!item) return;
   const n=document.getElementById('notif');
-  n.textContent=msg;n.classList.add('show');
-  sfx('notif');
-  setTimeout(()=>n.classList.remove('show'),3500);
+  if(!n) return;
+  _notifShowing=true;
+  n.textContent=item.msg;
+  if(item.critical){
+    n.style.borderColor='#ef4444';
+    n.style.boxShadow='0 0 0 2px rgba(239,68,68,0.35)';
+    n.style.background='linear-gradient(180deg,rgba(239,68,68,0.14),var(--bg2))';
+  } else {
+    n.style.borderColor='';
+    n.style.boxShadow='';
+    n.style.background='';
+  }
+  n.classList.add('show');
+  sfx(item.critical?'achv':'notif');
+  const dur=item.critical?6000:3200;
+  setTimeout(()=>{
+    n.classList.remove('show');
+    setTimeout(()=>{ _notifShowing=false; _drainNotif(); },340);
+  },dur);
 }
 
 (function(){
