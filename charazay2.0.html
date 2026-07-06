@@ -934,6 +934,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <div style="margin-bottom:14px;padding:12px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;">
         <p style="font-size:13px;">🌱 <strong>Altyapı akademisi:</strong> Her gencin <strong>potansiyel tavanı</strong> farklı — nadiren 50–60 civarı OVR’lı ama 90+ potansiyelli “ham elmas”lar da çıkar. Genç yaş ve büyük potansiyel boşluğu, antrenmanda <strong>çok daha hızlı gelişim</strong> demektir.</p>
         </div>
+        <div id="youthFacilityPanel" style="margin-bottom:14px;"></div>
         <div class="fbar" style="align-items:center;margin-bottom:12px;flex-wrap:wrap;">
           <span style="font-size:11px;color:var(--text2);margin-right:6px;">Görünüm:</span>
           <button type="button" class="fbtn kvbtn yvbtn" id="youthViewCard" onclick="setYouthView(&#39;cards&#39;,this)">Kart</button>
@@ -1442,7 +1443,7 @@ function serializeGameState(){
     clubTransferPlayers:G.clubTransferPlayers||[],_ctSeq:G._ctSeq||0,
     coaches:G.coaches,coachMarket:G.coachMarket,
     ligTeams:pl,
-    arena:G.arena,selectedColor:G.selectedColor,activeTrainings:G.activeTrainings||[],
+    arena:G.arena,youthFacility:G.youthFacility||{s:1},selectedColor:G.selectedColor,activeTrainings:G.activeTrainings||[],
     gameDay:G.gameDay,managerName:G.managerName,joinedAt:G.joinedAt,lastActive:new Date().toISOString(),
     marketPozFilter:G.marketPozFilter,marketSort:G.marketSort,marketSortDesc:G.marketSortDesc||{ovr:true,maas:true},
     kadroFilter:G.kadroFilter,kadroView:G.kadroView,youthView:G.youthView||'list',
@@ -1573,6 +1574,7 @@ function applyGameState(d){
   G.coachMarket=Array.isArray(d.coachMarket)?d.coachMarket:[];
   G.ligTeams=Array.isArray(d.ligTeams)?d.ligTeams:[];
   G.arena=d.arena||G.arena;
+  G.youthFacility=d.youthFacility&&typeof d.youthFacility==='object'?d.youthFacility:{s:1};
   G.selectedColor=d.selectedColor||'#f97316';
   G.activeTrainings=Array.isArray(d.activeTrainings)?d.activeTrainings:[];
   G.gameDay=d.gameDay??1;
@@ -1604,6 +1606,7 @@ function applyGameState(d){
     });
   });
   ensureMarketStock();
+  if(G.team) ensureYouthStock();
   if(!G.coaches.length) G.coaches=genCoaches();
   if(!G.coachMarket.length) G.coachMarket=genCoachMarket();
   return !!G.team;
@@ -2013,6 +2016,7 @@ let G={
   clubTransferPlayers:[],marketTab:'free',clubTransferFilter:'all',
   coaches:[],coachMarket:[],ligTeams:[],
   arena:{s:1,kap:5000,bk:ecoRound(45),isim:'Başlangıç Arena'},
+  youthFacility:{s:1},
   selectedColor:'#f97316',
   activeTrainings:[],
   gameDay:1,
@@ -2134,35 +2138,47 @@ function genRoster(){
   return ensureUniquePlayerNames(players);
 }
 
+/** Tek bir altyapı genci üretir. potBoost: altyapı tesisi seviyesine göre potansiyel primi (Madde 35). */
+function genSingleYouth(potBoost){
+  potBoost=Number(potBoost)||0;
+  const roll=Math.random();
+  let minO,maxO,pLo,pHi,yLo,yHi,prospect=false;
+  if(roll<0.09){
+    minO=46; maxO=56; pLo=86; pHi=97; yLo=15; yHi=17; prospect=true;
+  } else if(roll<0.22){
+    minO=50; maxO=60; pLo=82; pHi=93; yLo=15; yHi=18; prospect=true;
+  } else if(roll<0.48){
+    minO=54; maxO=64; pLo=76; pHi=89; yLo=16; yHi=19; prospect=roll<0.32;
+  } else {
+    minO=56; maxO=72; pLo=71; pHi=84; yLo=17; yHi=20; prospect=false;
+  }
+  const p=genPlayerBounded(ch(POZLAR),minO,maxO);
+  p.yas=rand(yLo,yHi);
+  let pot=rand(pLo,pHi)+potBoost;
+  pot=Math.max(pot,p.genel+11,Math.min(99,p.genel+rand(12,28)));
+  pot=Math.min(99,pot);
+  p.potansiyel=pot;
+  p.maas=Math.max(60,Math.round(salaryKRFromGenel(p.genel)*0.25));
+  p.mood=rand(55,92);
+  p.seed='yt'+p.id+hash32(p.isim+p.yas+p.potansiyel);
+  p.academyProspect=!!prospect;
+  return p;
+}
+function youthFacilityLevel(){ return Math.max(1,Math.min(4,(G.youthFacility&&Number(G.youthFacility.s))||1)); }
+function youthTarget(){ return [0,15,18,22,26][youthFacilityLevel()]||15; }
+function youthPotBoost(){ return [0,0,3,6,10][youthFacilityLevel()]||0; }
 function genYouth(){
-  return ensureUniquePlayerNames(Array.from({length:15},()=>{
-    const roll=Math.random();
-    let minO,maxO,pLo,pHi,yLo,yHi,prospect=false;
-    if(roll<0.09){
-      minO=46; maxO=56; pLo=86; pHi=97; yLo=15; yHi=17;
-      prospect=true;
-    } else if(roll<0.22){
-      minO=50; maxO=60; pLo=82; pHi=93; yLo=15; yHi=18;
-      prospect=true;
-    } else if(roll<0.48){
-      minO=54; maxO=64; pLo=76; pHi=89; yLo=16; yHi=19;
-      prospect=roll<0.32;
-    } else {
-      minO=56; maxO=72; pLo=71; pHi=84; yLo=17; yHi=20;
-      prospect=false;
-    }
-    const p=genPlayerBounded(ch(POZLAR),minO,maxO);
-    p.yas=rand(yLo,yHi);
-    let pot=rand(pLo,pHi);
-    pot=Math.max(pot,p.genel+11,Math.min(99,p.genel+rand(12,28)));
-    pot=Math.min(99,pot);
-    p.potansiyel=pot;
-    p.maas=Math.max(60,Math.round(salaryKRFromGenel(p.genel)*0.25));
-    p.mood=rand(55,92);
-    p.seed='yt'+p.id+hash32(p.isim+p.yas+p.potansiyel);
-    p.academyProspect=!!prospect;
-    return p;
-  }));
+  return ensureUniquePlayerNames(Array.from({length:youthTarget()},()=>genSingleYouth(youthPotBoost())));
+}
+/** Madde 28: altyapı havuzu tükenince yenilenir — hedefe (tesise bağlı) kadar yeni genç eklenir. */
+function ensureYouthStock(){
+  if(!Array.isArray(G.youth)) G.youth=[];
+  const target=youthTarget();
+  let guard=0;
+  while(G.youth.length<target && guard++<40){
+    G.youth.push(genSingleYouth(youthPotBoost()));
+  }
+  ensureUniquePlayerNames(G.youth);
 }
 
 function genSingleMarketPlayer(idx){
@@ -3455,9 +3471,23 @@ function startLeagueSeason(){
   const prevY=G.season&&G.season.year?G.season.year:0;
   /* Sezon geçişi: sözleşmeler 1 sezon azalır; biten sözleşme güncel yetenekle otomatik yenilenir (imza bedeli 2 haftalık maaş). */
   if(prevY>0){
+    const ayrilanlar=[];
     (G.players||[]).forEach(p=>{
       p.kontratSezon=(p.kontratSezon!=null?p.kontratSezon:rand(1,3))-1;
       if(p.kontratSezon<=0){
+        /* Madde 19: sözleşme bitti. Kullanıcı erkenden uzatmadıysa, moral/performansa bağlı bir
+           olasılıkla oyuncu serbest kalıp ayrılır (takımı kaybetme riski). Aksi halde yeniler. */
+        const mood=Number(p.mood!=null?p.mood:70);
+        const macSay=(p.sezon&&p.sezon.mac)||0;
+        let leaveChance=0.16;
+        if(mood<35) leaveChance+=0.40; else if(mood<50) leaveChance+=0.24; else if(mood<65) leaveChance+=0.10;
+        if(macSay<4) leaveChance+=0.12;               /* az forma giren oyuncu ayrılmaya daha meyilli */
+        if((Number(p.yas)||25)>=34) leaveChance+=0.08; /* yaşlı oyuncu emeklilik/ayrılığa yakın */
+        leaveChance=Math.min(0.85,leaveChance);
+        if(Math.random()<leaveChance){
+          ayrilanlar.push(p);
+          return;
+        }
         const yeniMaas=salaryKRFromGenel(p.genel);
         const imza=yeniMaas*2;
         p.maas=yeniMaas;
@@ -3468,7 +3498,62 @@ function startLeagueSeason(){
       p.sezon={mac:0,pts:0,ast:0,reb:0};
       const y=Number(p.yas)||25;
       p.yas=y+1; /* oyuncular sezonla yaşlanır */
+      /* Madde 22: yaşa bağlı gerileme — 32+ fiziksel statlarda küçük sezonluk düşüş. */
+      const na=p.yas;
+      if(na>=32){
+        const decl=na>=37?rand(2,4):na>=35?rand(1,3):rand(1,2);
+        ['hiz','kondisyon','dayaniklilik','topSurme','blok','topCalma'].forEach(k=>{ p[k]=Math.max(30,(Number(p[k])||50)-decl); });
+        if(na>=35){ p.sutIsabeti=Math.max(30,(Number(p.sutIsabeti)||50)-1); p.hucum=Math.max(30,(Number(p.hucum)||50)-1); p.savunma=Math.max(30,(Number(p.savunma)||50)-1); }
+        p.genel=Math.round(STAT_KEYS.reduce((s,k)=>s+(Number(p[k])||0),0)/STAT_KEYS.length);
+        p.potansiyel=Math.max(p.genel,Number(p.potansiyel)||0); /* artık gelişmez */
+      }
     });
+    /* Madde 19: sözleşmesi biten ayrılıkçıları önce kadrodan çıkar (emeklilik/altyapı ondan sonra işlesin). */
+    if(ayrilanlar.length){
+      const kalan=(G.players||[]).length-ayrilanlar.length;
+      if(kalan>=8){
+        ayrilanlar.forEach(p=>{
+          G.players=G.players.filter(x=>x.id!==p.id);
+          pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">🚪 <strong>${p.isim}</strong> sözleşmesi bitti ve serbest kaldı — başka takıma gitti. Erken uzatma yapılmamıştı.</div>`);
+        });
+        showNotif(`⚠️ ${ayrilanlar.length} oyuncu sözleşmesi bitti ve takımdan ayrıldı!`,{critical:true});
+      } else {
+        ayrilanlar.forEach(p=>{ p.maas=salaryKRFromGenel(p.genel); p.kontratSezon=rand(1,2); });
+      }
+    }
+    /* Madde 22: emeklilik — ileri yaşta kulüpten ayrılır, slot boşalır (kadro min 8 korunur). */
+    const emekli=[];
+    (G.players||[]).forEach(p=>{
+      const y=Number(p.yas)||25;
+      let rc=0;
+      if(y>=40) rc=0.92; else if(y>=38) rc=0.45; else if(y>=37) rc=0.22; else if(y>=36) rc=0.10;
+      if(rc>0&&Math.random()<rc) emekli.push(p);
+    });
+    if(emekli.length&&(G.players.length-emekli.length)>=8){
+      emekli.forEach(p=>{
+        G.players=G.players.filter(x=>x.id!==p.id);
+        pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--purple);">🎓 <strong>${p.isim}</strong> (${p.yas}) basketbolu bıraktı — emekli oldu. Kadro slotu boşaldı.</div>`);
+      });
+      showNotif(`${emekli.length} oyuncu emekli oldu.`);
+    }
+    /* Madde 21: altyapı gençleri de yaşlanır; 21+ olan hâlâ terfi etmemiş gençler terfi eder ya da ayrılır. */
+    (G.youth||[]).forEach(p=>{ p.yas=(Number(p.yas)||17)+1; });
+    const grads=(G.youth||[]).filter(p=>(Number(p.yas)||17)>=21);
+    grads.forEach(p=>{
+      G.youth=G.youth.filter(x=>x.id!==p.id);
+      if((G.players||[]).length<18){
+        p.maas=salaryKRFromGenel(p.genel);
+        if(p.enerji==null||p.enerji==='') p.enerji=100;
+        p.kontratSezon=rand(2,3);
+        p.sezon={mac:0,pts:0,ast:0,reb:0};
+        G.players.push(p);
+        pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">⬆️ <strong>${p.isim}</strong> (21) altyapıdan A takıma terfi etti.</div>`);
+      } else {
+        pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--gold);">🚪 <strong>${p.isim}</strong> (21) altyapıdan ayrıldı — A takımda yer yoktu, terfi edemedi.</div>`);
+      }
+    });
+    if(G.players) ensureUniquePlayerNames(G.players);
+    ensureYouthStock(); /* Madde 28: altyapı havuzunu sezon başında hedefe tamamla */
   }
   G.season={
     active:true,
@@ -3924,6 +4009,9 @@ function openPlayerModal(pid){
     actions.push(`<button type="button" class="btn-p" onclick="event.stopPropagation();promoteYouth('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;padding:9px;">KADROYA AL</button>`);
   }
   if(!inMarket&&!inYouth&&!inClub){
+    const extCost=salaryKRFromGenel(p.genel)*2;
+    const expiring=(p.kontratSezon!=null&&p.kontratSezon<=1);
+    actions.push(`<button type="button" class="btn-p" onclick="event.stopPropagation();extendContract('${p.id}');" style="margin-top:4px;width:100%;padding:9px;${expiring?'background:var(--gold);color:#111;':''}">✍️ SÖZLEŞME UZAT — ${fmtn(extCost)} KR${expiring?' (bitmek üzere!)':''}</button>`);
     actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();listPlayerToMarket('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;">TRANSFER MARKETE KOY</button>`);
   }
   const potBlock=p.potansiyel?`<div style="font-size:11px;color:var(--blue);margin-bottom:8px;">⭐ Potansiyel: ${p.potansiyel} (yaklaşık +${Math.max(0,(p.potansiyel||p.genel)-p.genel)} gelişim payı)</div>`:'';
@@ -4080,9 +4168,45 @@ function updateChemistry(){
   }
 }
 
+/** Madde 35: altyapı tesisi — ücretli, isteğe bağlı yükseltme; genç sayısı + potansiyel havuzunu büyütür. */
+const YOUTH_FAC_LVL=[
+  {s:1,isim:'Temel Akademi',hedef:15,potBonus:0,m:0},
+  {s:2,isim:'Gelişmiş Akademi',hedef:18,potBonus:3,m:ecoRound(1200)},
+  {s:3,isim:'Elit Akademi',hedef:22,potBonus:6,m:ecoRound(3000)},
+  {s:4,isim:'Uluslararası Kamp',hedef:26,potBonus:10,m:ecoRound(6000)}
+];
+function renderYouthFacility(){
+  const panel=document.getElementById('youthFacilityPanel');
+  if(!panel) return;
+  const lvl=youthFacilityLevel();
+  const cur=YOUTH_FAC_LVL[lvl-1];
+  const nx=YOUTH_FAC_LVL[lvl];
+  panel.innerHTML=`<div style="padding:12px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+    <div>
+      <div style="font-weight:700;font-size:13px;">🏫 ${cur.isim} <span style="font-size:11px;color:var(--text2);">(Seviye ${lvl}/4)</span></div>
+      <div style="font-size:11px;color:var(--text2);margin-top:3px;">Havuz hedefi: <strong>${cur.hedef} genç</strong>${cur.potBonus?` · potansiyel primi +${cur.potBonus}`:''}</div>
+    </div>
+    ${nx?`<button type="button" class="btn-p" style="padding:8px 14px;font-size:12px;" onclick="upgradeYouthFacility()" ${G.coins<nx.m?'disabled':''}>⬆ ${nx.isim} — ${fmtn(nx.m)} KR</button>`:'<span style="font-size:11px;color:var(--gold);">Maksimum seviye</span>'}
+  </div>`;
+}
+function upgradeYouthFacility(){
+  const lvl=youthFacilityLevel();
+  const nx=YOUTH_FAC_LVL[lvl];
+  if(!nx){ showNotif('Altyapı tesisi maksimum seviyede.'); return; }
+  if(G.coins<nx.m){ showNotif('❌ Yeterli KR yok!'); return; }
+  txn('Altyapı tesisi yatırımı: '+nx.isim,-nx.m);
+  G.youthFacility={s:nx.s};
+  ensureYouthStock();
+  updateCoins();
+  showNotif(`🏫 Altyapı tesisi ${nx.isim} seviyesine yükseltildi — havuz ${nx.hedef} gence çıktı.`);
+  renderAltyapi();
+  scheduleGameSave();
+}
+
 function renderAltyapi(){
   const grid=document.getElementById('altyapiGrid');
   if(!grid) return;
+  renderYouthFacility();
   const view=G.youthView||'list';
   if(view==='list'){
     grid.className='roster-as-list';
@@ -5155,6 +5279,24 @@ function buyFromMarket(id){
   }
   updateCoins();updateChemistry();renderMarket();if(document.getElementById('page-kadro')&&document.getElementById('page-kadro').classList.contains('active')) renderRoster();
   scheduleGameSave();
+}
+
+/** Madde 19: kullanıcı oyuncunun sözleşmesini erkenden uzatır — imza bedeli öder, ayrılma riski sıfırlanır. */
+function extendContract(id){
+  const p=G.players.find(x=>x.id===id);
+  if(!p){ showNotif('Oyuncu bulunamadı.'); return; }
+  const cost=salaryKRFromGenel(p.genel)*2;
+  if(G.coins<cost){ showNotif('❌ İmza bedeli için yeterli KR yok!'); return; }
+  txn('Sözleşme uzatma: '+p.isim,-cost);
+  p.maas=salaryKRFromGenel(p.genel);
+  p.kontratSezon=Math.min(4,(Number(p.kontratSezon)||0)+rand(2,3));
+  p.mood=Math.min(100,(Number(p.mood)||70)+rand(3,8)); /* güven → moral artışı */
+  updateCoins();
+  showNotif(`✍️ ${p.isim} ile sözleşme uzatıldı — ${p.kontratSezon} sezon, ${fmtn(cost)} KR imza bedeli.`);
+  scheduleGameSave();
+  const mr=document.getElementById('appModalRoot');
+  if(mr&&mr.style.display!=='none') openPlayerModal(id);
+  if(document.getElementById('page-kadro')&&document.getElementById('page-kadro').classList.contains('active')) renderRoster();
 }
 
 function listPlayerToMarket(id){
