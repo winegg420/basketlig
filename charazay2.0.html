@@ -1945,6 +1945,35 @@ const ARENA_LVL=[{s:1,isim:'Küçük Arena',kap:5000,m:0,bk:150},{s:2,isim:'Orta
 /** stat: haftalık koç bonusunun işlediği özellik (null = altyapı çarpanı). Maaşlar ham KR/hafta. */
 const KOC_T=[{isim:'Hücum Koçu',ikon:'⚔️',uzm:'Hücum',stat:'hucum',bonus:'Haftada zayıf oyunculara +1 Hücum',maas:120},{isim:'Savunma Koçu',ikon:'🛡️',uzm:'Savunma',stat:'savunma',bonus:'Haftada zayıf oyunculara +1 Savunma',maas:120},{isim:'Kondisyon Koçu',ikon:'🏃',uzm:'Kondisyon',stat:'kondisyon',bonus:'Haftada zayıf oyunculara +1 Kondisyon',maas:90},{isim:'Şut Koçu',ikon:'🎯',uzm:'Şut İsabeti',stat:'sutIsabeti',bonus:'Haftada zayıf oyunculara +1 Şut',maas:135},{isim:'Altyapı Koçu',ikon:'🌱',uzm:'Altyapı',stat:null,bonus:'Altyapı +%5 gelişim',maas:150}];
 const ANTRENMAN_T=[{isim:'Hücum Antrenmanı',ikon:'⚔️',etki:'hucum',gun:5,maliyet:0},{isim:'Savunma Antrenmanı',ikon:'🛡️',etki:'savunma',gun:5,maliyet:0},{isim:'Kondisyon Koşusu',ikon:'🏃',etki:'kondisyon',gun:4,maliyet:0},{isim:'Çift Antrenman',ikon:'💪',etki:'all',gun:6,maliyet:ecoRound(42)}];
+/* ── Sakatlık kataloğu (Madde 5) — gerçek spor sakatlıkları; sabit iyileşme gün aralığı + şiddet.
+   siddet: 'Hafif' | 'Orta' | 'Ağır'. w = seçilme ağırlığı (hafif sakatlıklar daha sık). */
+const INJURIES=[
+  {ad:'Ayak bileği burkulması (hafif)',bolge:'Ayak bileği',siddet:'Hafif',minD:2,maxD:6,w:10},
+  {ad:'Baldır kası krampı',bolge:'Baldır',siddet:'Hafif',minD:2,maxD:5,w:9},
+  {ad:'Parmak ezilmesi',bolge:'El',siddet:'Hafif',minD:2,maxD:6,w:8},
+  {ad:'Sırt spazmı',bolge:'Sırt',siddet:'Hafif',minD:3,maxD:7,w:8},
+  {ad:'Uyluk kası zorlanması (hafif)',bolge:'Uyluk',siddet:'Hafif',minD:3,maxD:8,w:8},
+  {ad:'Boyun tutulması',bolge:'Boyun',siddet:'Hafif',minD:2,maxD:6,w:6},
+  {ad:'Diz sıyrığı / darbesi',bolge:'Diz',siddet:'Hafif',minD:3,maxD:7,w:6},
+  {ad:'Hafif beyin sarsıntısı',bolge:'Baş',siddet:'Hafif',minD:4,maxD:8,w:5},
+  {ad:'Hamstring zorlanması',bolge:'Arka bacak',siddet:'Orta',minD:9,maxD:18,w:8},
+  {ad:'Kasık zorlanması',bolge:'Kasık',siddet:'Orta',minD:9,maxD:17,w:7},
+  {ad:'Omuz zorlanması',bolge:'Omuz',siddet:'Orta',minD:10,maxD:20,w:6},
+  {ad:'Ayak bileği burkulması (orta)',bolge:'Ayak bileği',siddet:'Orta',minD:10,maxD:19,w:7},
+  {ad:'El bileği burkulması',bolge:'El bileği',siddet:'Orta',minD:9,maxD:18,w:6},
+  {ad:'Baldır kası yırtığı (kısmi)',bolge:'Baldır',siddet:'Orta',minD:12,maxD:22,w:5},
+  {ad:'Ayak parmağı çıkığı',bolge:'Ayak',siddet:'Orta',minD:8,maxD:16,w:5},
+  {ad:'Diz bağı zorlanması',bolge:'Diz',siddet:'Orta',minD:12,maxD:22,w:5},
+  {ad:'Bel fıtığı alevlenmesi',bolge:'Bel',siddet:'Orta',minD:11,maxD:21,w:4},
+  {ad:'Ön çapraz bağ (ACL) yırtığı',bolge:'Diz',siddet:'Ağır',minD:34,maxD:52,w:2},
+  {ad:'Menisküs yırtığı',bolge:'Diz',siddet:'Ağır',minD:26,maxD:44,w:3},
+  {ad:'Aşil tendon kopması',bolge:'Aşil',siddet:'Ağır',minD:32,maxD:50,w:2},
+  {ad:'Omuz çıkığı',bolge:'Omuz',siddet:'Ağır',minD:24,maxD:40,w:3},
+  {ad:'Parmak kırığı',bolge:'El',siddet:'Ağır',minD:22,maxD:36,w:3},
+  {ad:'El bileği kırığı',bolge:'El bileği',siddet:'Ağır',minD:26,maxD:42,w:3},
+  {ad:'Ayak bileği kırığı',bolge:'Ayak bileği',siddet:'Ağır',minD:28,maxD:46,w:2},
+  {ad:'Stres kırığı (metatars)',bolge:'Ayak',siddet:'Ağır',minD:24,maxD:40,w:3}
+];
 
 let G={
   coins:START_KR,wins:0,losses:0,points:0,chemistry:75,
@@ -3302,26 +3331,45 @@ function clearResolvedInjuries(){
     if(p.injReturnDay!=null && !isNaN(p.injReturnDay) && gd>=p.injReturnDay){
       delete p.injReturnDay;
       delete p.injuryEtiket;
+      delete p.injuryBolge;
+      delete p.injurySeverity;
+      /* Madde 5: iyileşen oyuncu tam forma dönmemiş — ilk 3 maçta yeniden-sakatlanma riski yüksek. */
+      p.formReturnMatches=3;
     }
   });
+}
+
+/** Şiddet ağırlıklı sakatlık seçimi — hafif sakatlıklar daha sık. */
+function pickInjury(){
+  const total=INJURIES.reduce((s,x)=>s+x.w,0);
+  let r=Math.random()*total;
+  for(const inj of INJURIES){ r-=inj.w; if(r<=0) return inj; }
+  return INJURIES[0];
 }
 
 function rollInjuriesAfterUserMatch(){
   if(!G.players||!G.players.length) return;
   const gd=G.gameDay||1;
-  const labels=['Ayak bileği','Diz','Kasık','Omuz','Sırt','El bileği'];
   G.players.forEach(p=>{
     if(playerIsInjured(p)) return;
     const yas=Number(p.yas)||25;
     const enerji=Number(p.enerji||100);
     let risk=yas>=36?0.17:yas>=33?0.11:yas>=30?0.078:yas>=27?0.052:0.034;
     if(enerji<52) risk*=1.58; else if(enerji<68) risk*=1.24;
-    if(Math.random()>=risk) return;
-    const minD=yas>=34?4:2;
-    const maxD=yas>=35?22:15;
-    p.injReturnDay=gd+rand(minD,maxD);
-    p.injuryEtiket=labels[hash32(String(p.id)+String(gd))%labels.length];
-    dbg('sakat',p.isim,p.injuryEtiket,'dönüşGün',p.injReturnDay);
+    /* Yeni dönen oyuncu tam form değil → daha yüksek yeniden-sakatlanma ihtimali. */
+    const returning=Number(p.formReturnMatches||0)>0;
+    if(returning) risk*=1.7;
+    if(Math.random()<risk){
+      const inj=pickInjury();
+      p.injReturnDay=gd+rand(inj.minD,inj.maxD);
+      p.injuryEtiket=inj.ad;
+      p.injuryBolge=inj.bolge;
+      p.injurySeverity=inj.siddet;
+      p.formReturnMatches=0; /* yeniden sakatlandı, sayaç sıfırlanır */
+      dbg('sakat',p.isim,inj.ad,inj.siddet,'dönüşGün',p.injReturnDay);
+    } else if(returning){
+      p.formReturnMatches=Math.max(0,Number(p.formReturnMatches||0)-1);
+    }
   });
 }
 
@@ -3761,7 +3809,10 @@ function moodText(m){return m>=75?'😄 Mutlu':m>=50?'😐 Normal':m>=30?'😕 M
 function injBannerHtml(p){
   if(typeof playerIsInjured!=='function'||!playerIsInjured(p)) return '';
   const left=Math.max(0,(p.injReturnDay||0)-(G.gameDay||1));
-  return `<div class="pinj-banner">🩹 Sakat · ${p.injuryEtiket||'Tıbbi'} · tahmini: <strong>~${left} gün</strong></div>`;
+  const sevIcon={'Hafif':'🟡','Orta':'🟠','Ağır':'🔴'}[p.injurySeverity]||'🩹';
+  const sev=p.injurySeverity?`${sevIcon} ${p.injurySeverity}`:'🩹 Sakat';
+  const bolge=p.injuryBolge?` (${p.injuryBolge})`:'';
+  return `<div class="pinj-banner">${sev} · ${p.injuryEtiket||'Tıbbi'}${bolge} · dönüş: <strong>Gün ${p.injReturnDay||'?'}</strong> (~${left} gün)</div>`;
 }
 
 function renderPlayerCard(p,showBuy=false,price=0,showPromote=false,showList=false){
