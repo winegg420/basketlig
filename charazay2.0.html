@@ -873,6 +873,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
       <!-- LİG -->
       <div class="page" id="page-lig">
+        <div id="playoffPanel" style="margin-bottom:14px;"></div>
         <div class="card">
           <div class="card-title">🏆 Lig puan durumu</div>
           <p id="ligScopeLine" style="font-size:12px;color:var(--text2);margin-bottom:6px;"></p>
@@ -1332,7 +1333,12 @@ const ACHV=[
   {id:'zengin',ad:'Kasa Doldu',desc:'100.000 KR bakiyeye ulaş',ikon:'💰'},
   {id:'megaArena',ad:'Mega Arena',desc:'Arenayı son seviyeye getir',ikon:'🏟️'},
   {id:'altyapi',ad:'Gençlerin Gücü',desc:'Altyapıdan oyuncu yükselt',ikon:'🌱'},
-  {id:'sezonTamam',ad:'Maraton',desc:'Bir sezonu tamamla',ikon:'🎽'}
+  {id:'sezonTamam',ad:'Maraton',desc:'Bir sezonu tamamla',ikon:'🎽'},
+  {id:'ligBirinci',ad:'Lig Lideri',desc:'Düzenli sezonu 1. sırada bitir',ikon:'🥇'},
+  {id:'playoffSampiyon',ad:'Playoff Kralı',desc:'Playoff şampiyonu ol',ikon:'👑'},
+  {id:'seri10',ad:'Yenilmezler',desc:'Üst üste 10 galibiyet serisi yakala',ikon:'🔥'},
+  {id:'mvpOyuncu',ad:'Yıldız Doğuyor',desc:'Bir maçta MVP çıkar',ikon:'⭐'},
+  {id:'ustLig',ad:'Yükseliş',desc:'Bir üst lige çık',ikon:'📈'}
 ];
 function unlockAchievement(id){
   if(!G) return;
@@ -1487,7 +1493,7 @@ function serializeGameState(){
     marketPozFilter:G.marketPozFilter,marketSort:G.marketSort,marketSortDesc:G.marketSortDesc||{ovr:true,maas:true},
     kadroFilter:G.kadroFilter,kadroView:G.kadroView,youthView:G.youthView||'list',
     prepareMatchIx:G.prepareMatchIx!=null?G.prepareMatchIx:null,
-    season:G.season,seasonFixtures:G.seasonFixtures||[],
+    season:G.season,seasonFixtures:G.seasonFixtures||[],playoff:G.playoff||null,
     settings:G.settings||{sound:true,autosaveSec:12},
     achievements:G.achievements||{},
     ledger:G.ledger||[],
@@ -1629,6 +1635,7 @@ function applyGameState(d){
   G.youthView=d.youthView||'list';
   G.prepareMatchIx=d.prepareMatchIx!=null&&d.prepareMatchIx!==undefined?d.prepareMatchIx:null;
   G.season=d.season||null;
+  G.playoff=d.playoff&&typeof d.playoff==='object'?d.playoff:null;
   G.seasonFixtures=Array.isArray(d.seasonFixtures)?d.seasonFixtures:[];
   G.settings=Object.assign({sound:true,autosaveSec:12},d.settings||{});
   G.achievements=d.achievements&&typeof d.achievements==='object'?d.achievements:{};
@@ -2073,6 +2080,7 @@ let G={
   prepareMatchIx:null,
   seasonFixtures:[],
   season:null,
+  playoff:null,
   settings:{sound:true,autosaveSec:12},
   achievements:{},
   ledger:[],
@@ -3488,18 +3496,103 @@ function endLeagueSeasonIfDone(){
   unlockAchievement('sezonTamam');
   try{
     const rows=buildLeagueRows(G.team.tblKey||'tbl');
-    if(rows.findIndex(r=>r.isUser)===0) unlockAchievement('sampiyon');
+    if(rows.findIndex(r=>r.isUser)===0) unlockAchievement('ligBirinci');
   }catch(e){}
-  pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--purple);">🏁 <strong>Sezon ${G.season.year}</strong> tamamlandı — yeni sezon kısa süre içinde otomatik açılacak.</div>`);
-  showNotif('Sezon sonu — tablo kilitlendi.');
+  pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--purple);">🏁 <strong>Sezon ${G.season.year}</strong> düzenli sezonu tamamlandı — ilk 8 takım playoff'a kaldı!</div>`);
+  showNotif('Düzenli sezon bitti — playoff başlıyor!');
+  startPlayoffs();
+  return true;
+}
+
+/* ── Playoff sistemi (Madde 6) — ilk 8 takım, tek maç eleme (Çeyrek/Yarı/Final).
+   Kullanıcı kendi maçlarını canlı oynar; bot maçları anında simüle edilir. Şampiyon = playoff kazananı. */
+function playoffPickWinner(home,away){
+  const k=G.team&&G.team.tblKey?G.team.tblKey:'tbl';
+  const drift=(G.season&&G.season.drift)||{};
+  const hr=pseudoTeamStrength(home,k)+(drift[home]||0);
+  const ar=pseudoTeamStrength(away,k)+(drift[away]||0);
+  const diff=Math.max(-35,Math.min(35,hr-ar));
+  let hs=Math.round(86+rand(-8,8)+diff*0.6+2);
+  let as=Math.round(86+rand(-8,8)-diff*0.6);
+  hs=Math.max(58,Math.min(125,hs)); as=Math.max(58,Math.min(125,as));
+  if(hs===as){ if(rand(0,1)) hs+=rand(2,6); else as+=rand(2,6); }
+  return {hs,as,winner:hs>as?home:away};
+}
+function startPlayoffs(){
+  try{
+    const rows=buildLeagueRows(G.team.tblKey||'tbl').filter(r=>r&&!r.bos&&r.isim);
+    const top=rows.slice(0,8).map(r=>r.isim);
+    if(top.length<8){ /* grup küçükse playoff atla, doğrudan yeni sezon */ afterPlayoffsProceed(); return; }
+    const pairs=[[0,7],[3,4],[1,6],[2,5]];
+    const r0=pairs.map(([a,b])=>({home:top[a],away:top[b],hs:null,as:null,played:false,winner:null}));
+    G.playoff={active:true,year:G.season.year,teams:top,round:0,rounds:[r0],champion:null};
+    simPlayoffBotMatches();
+    if(!userPlayoffMatch()) maybeAdvancePlayoff(); /* kullanıcı playoff dışıysa tümünü simüle et */
+    renderLig();
+    renderDashboardNextMatch();
+    if(userPlayoffMatch()) showNotif('🏆 Playoff maçın hazır — Lig ekranından oyna!',{critical:true});
+  }catch(e){ dbg('startPlayoffs',e); afterPlayoffsProceed(); }
+}
+function currentPlayoffRound(){ return G.playoff&&G.playoff.rounds?G.playoff.rounds[G.playoff.round]:null; }
+function userPlayoffMatch(){
+  const r=currentPlayoffRound();
+  if(!r||!G.team) return null;
+  return r.find(m=>!m.played&&(m.home===G.team.isim||m.away===G.team.isim))||null;
+}
+function simPlayoffBotMatches(){
+  const r=currentPlayoffRound();
+  if(!r) return;
+  r.forEach(m=>{
+    if(m.played) return;
+    if(G.team&&(m.home===G.team.isim||m.away===G.team.isim)) return;
+    const res=playoffPickWinner(m.home,m.away);
+    m.hs=res.hs; m.as=res.as; m.winner=res.winner; m.played=true;
+  });
+}
+function playoffRoundLabel(idx,total){
+  /* total = o turdaki maç sayısı: 4→Çeyrek, 2→Yarı, 1→Final */
+  return total>=4?'Çeyrek Final':total===2?'Yarı Final':'Final';
+}
+function maybeAdvancePlayoff(){
+  const r=currentPlayoffRound();
+  if(!r||!r.every(m=>m.played)) return;
+  const winners=r.map(m=>m.winner).filter(Boolean);
+  if(winners.length<=1){
+    G.playoff.champion=winners[0]||null;
+    G.playoff.active=false;
+    finishPlayoffs();
+    return;
+  }
+  const next=[];
+  for(let i=0;i<winners.length;i+=2){ next.push({home:winners[i],away:winners[i+1],hs:null,as:null,played:false,winner:null}); }
+  G.playoff.rounds.push(next);
+  G.playoff.round++;
+  simPlayoffBotMatches();
+  if(!userPlayoffMatch()) maybeAdvancePlayoff();
+}
+function finishPlayoffs(){
+  const champ=G.playoff&&G.playoff.champion;
+  const userChamp=champ&&G.team&&champ===G.team.isim;
+  if(userChamp){
+    unlockAchievement('sampiyon');
+    unlockAchievement('playoffSampiyon');
+    const priz=ecoRound(rand(6000,12000));
+    txn('Playoff şampiyonluk ödülü',priz);
+    updateCoins();
+    showNotif(`🏆 ${G.team.isim} PLAYOFF ŞAMPİYONU! +${fmtn(priz)} KR`,{critical:true});
+  } else {
+    showNotif(`🏆 Playoff şampiyonu: ${champ||'—'}`);
+  }
+  pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--gold);">🏆 <strong>Sezon ${G.playoff?G.playoff.year:''}</strong> playoff şampiyonu: <strong>${escMatch(champ||'—')}</strong>${userChamp?' — TEBRİKLER!':''}</div>`);
+  afterPlayoffsProceed();
+}
+function afterPlayoffsProceed(){
   setTimeout(()=>{
     if(G.team) ensureLeagueSeasonOrStart();
     renderLig();
     renderFixture();
     renderDashboardNextMatch();
-    if(document.getElementById('page-lig')&&document.getElementById('page-lig').classList.contains('active')) renderLig();
-  },1100);
-  return true;
+  },1200);
 }
 
 function ensureLeagueSeasonOrStart(){
@@ -3607,6 +3700,7 @@ function startLeagueSeason(){
     if(G.players) ensureUniquePlayerNames(G.players);
     ensureYouthStock(); /* Madde 28: altyapı havuzunu sezon başında hedefe tamamla */
   }
+  G.playoff=null; /* önceki sezonun playoff'unu temizle */
   G.season={
     active:true,
     year:prevY+1,
@@ -4379,7 +4473,38 @@ function filterMarket(f,btn){
   renderMarket();
 }
 
+/** Playoff bracket + kullanıcı maçı paneli (Madde 6). */
+function renderPlayoffPanel(){
+  const panel=document.getElementById('playoffPanel');
+  if(!panel) return;
+  const po=G.playoff;
+  if(!po||!po.active&&!po.champion){ panel.innerHTML=''; return; }
+  const um=userPlayoffMatch();
+  const roundBlocks=(po.rounds||[]).map((r,ri)=>{
+    const total=r.length;
+    const games=r.map(m=>{
+      const uHere=G.team&&(m.home===G.team.isim||m.away===G.team.isim);
+      const hw=m.played&&m.winner===m.home, aw=m.played&&m.winner===m.away;
+      return `<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--bg3);border-radius:7px;margin-bottom:4px;${uHere?'border:1px solid var(--accent);':''}">
+        <span style="flex:1;font-size:11px;${hw?'font-weight:800;color:var(--green);':''}">${escMatch(m.home)}</span>
+        <span style="font-size:11px;font-family:'Bebas Neue',sans-serif;">${m.played?`${m.hs}-${m.as}`:'vs'}</span>
+        <span style="flex:1;font-size:11px;text-align:right;${aw?'font-weight:800;color:var(--green);':''}">${escMatch(m.away)}</span>
+      </div>`;
+    }).join('');
+    return `<div style="margin-bottom:8px;"><div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:4px;">${playoffRoundLabel(ri,total)}</div>${games}</div>`;
+  }).join('');
+  const action=po.champion
+    ? `<div style="text-align:center;padding:10px;font-weight:800;color:var(--gold);">🏆 Şampiyon: ${escMatch(po.champion)}</div>`
+    : um
+      ? `<button type="button" class="btn-p" style="width:100%;padding:11px;margin-top:6px;" onclick="scrollToMacLive();startPlayoffMatch()">🏆 Playoff maçını oyna — vs ${escMatch(um.home===G.team.isim?um.away:um.home)}</button>`
+      : `<div style="text-align:center;padding:8px;font-size:11px;color:var(--text2);">Diğer maçlar oynanıyor...</div>`;
+  panel.innerHTML=`<div class="card" style="border:1px solid var(--gold);">
+    <div class="card-title">🏆 Sezon ${po.year} Playoff'ları (İlk 8 · Tek Maç Eleme)</div>
+    ${roundBlocks}${action}
+  </div>`;
+}
 function renderLig(){
+  renderPlayoffPanel();
   const key=G.team&&G.team.tblKey||'tbl';
   const rows=buildLeagueRows(key);
   const frozen=G.season&&G.team&&key===G.team.tblKey&&G.season.standings&&!G.season.active;
@@ -5046,20 +5171,34 @@ function clearMatchEventTimer(){
   if(matchEventTimer){ clearTimeout(matchEventTimer); matchEventTimer=null; }
 }
 
-function startMatch(){
+function startPlayoffMatch(){
+  const m=userPlayoffMatch();
+  if(!m){ showNotif('Oynanacak playoff maçın yok.'); return; }
+  const opp=m.home===G.team.isim?m.away:m.home;
+  const userIsHome=m.home===G.team.isim;
+  startMatch({opp,userIsHome,matchup:m});
+}
+function startMatch(playoff){
   if(mState.running) return;
   if(!G.team){ showNotif('Önce takım oluştur.'); return; }
-  if(!G.season||!G.season.active){ showNotif('Önce Lig’den sezonu başlat.'); return; }
-  const match=findNextUserSeasonMatch();
-  if(!match){ showNotif(seasonAllMatchesPlayed()?'Bu sezonun maçların bitti.':'Fikstürde maç yok.'); return; }
+  const isPlayoff=!!(playoff&&playoff.matchup);
+  let match=null,rakip,userIsHome;
+  if(isPlayoff){
+    rakip={isim:playoff.opp};
+    userIsHome=!!playoff.userIsHome;
+  } else {
+    if(!G.season||!G.season.active){ showNotif('Önce Lig’den sezonu başlat.'); return; }
+    match=findNextUserSeasonMatch();
+    if(!match){ showNotif(seasonAllMatchesPlayed()?'Bu sezonun maçların bitti.':'Fikstürde maç yok.'); return; }
+    rakip={isim:match.home===G.team.isim?match.away:match.home};
+    userIsHome=match.home===G.team.isim;
+  }
   const lu=matchLineup();
   if(!lu||lu.avail.length<5){ showNotif('Maça en az 5 sağlıklı oyuncu gerekli (sakatlar sahaya çıkmaz).'); return; }
-  recoverStaminaBetweenMatchdays(G.season._lastRecoveryDay||0, match.day);
-  G.season._lastRecoveryDay=match.day;
-  const rakip={isim:match.home===G.team.isim?match.away:match.home};
-  const userIsHome=match.home===G.team.isim;
+  if(isPlayoff){ recoverStaminaBetweenMatchdays((G.gameDay||1)-3,G.gameDay||1); }
+  else { recoverStaminaBetweenMatchdays(G.season._lastRecoveryDay||0, match.day); G.season._lastRecoveryDay=match.day; }
   const events=generateMatchEvents(rakip,{userIsHome});
-  mState={running:true,events,idx:0,score:[0,0],quarter:1,time:MATCH_CLOCK_SEC,allShots:[],shotFilter:'all',rakipName:rakip.isim,seasonMatchIx:match.seasonMatchIx,seasonRound:match.round,userIsHome};
+  mState={running:true,events,idx:0,score:[0,0],quarter:1,time:MATCH_CLOCK_SEC,allShots:[],shotFilter:'all',rakipName:rakip.isim,seasonMatchIx:isPlayoff?-1:match.seasonMatchIx,seasonRound:isPlayoff?0:match.round,userIsHome,isPlayoff,playoffMatch:isPlayoff?playoff.matchup:null};
 
   document.querySelectorAll('input[name="shotQ"]').forEach(r=>{ if(r.value==='all') r.checked=true; });
   clearMatchEventTimer();
@@ -5165,6 +5304,32 @@ function startMatch(){
         if(G.wins>=10) unlockAchievement('g10');
         pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid ${ev.winner==='home'?'var(--green)':ev.winner==='draw'?'var(--gold)':'var(--red)'};">🏀 <strong>${G.team.isim}</strong> ${uPts}-${oPts} <strong>${mState.rakipName}</strong> · Gün ${sm.day} · Tur ${sm.round}/19</div>`);
         endLeagueSeasonIfDone();
+      } else if(mState.isPlayoff && mState.playoffMatch){
+        /* Playoff maçı — bracket'i güncelle, ekonomi/yorgunluk/sakatlık normal işlesin. */
+        const m=mState.playoffMatch;
+        if(m.home===G.team.isim){ m.hs=uPts; m.as=oPts; } else { m.hs=oPts; m.as=uPts; }
+        m.played=true;
+        m.winner=(uPts>oPts)?G.team.isim:mState.rakipName;
+        if(uPts===oPts) m.winner=G.team.isim; /* beraberlik olmaz ama güvenlik: ev sahibi lehine */
+        const playedSet=new Set(ev.lineupIds||[]);
+        (ev.subIds||[]).forEach(id=>playedSet.add(id));
+        applyMatchFatigueToRoster(playedSet.size?playedSet:undefined);
+        const prevDay=G.gameDay||1;
+        G.gameDay=(G.gameDay||1)+2;
+        advanceTrainingDays(G.gameDay-prevDay);
+        processEconomyWeeks();
+        processLoanReturns();
+        tickClubTransferMarket(G.gameDay-prevDay);
+        mergeMatchPlayerStats(ev);
+        clearResolvedInjuries();
+        rollInjuriesAfterUserMatch();
+        if(mState.userIsHome){
+          const bilet=homeTicketIncome();
+          txn('Playoff bilet geliri',bilet);
+        }
+        const total=(currentPlayoffRound()||[]).length;
+        pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid ${uPts>oPts?'var(--green)':'var(--red)'};">🏆 Playoff (${playoffRoundLabel(0,total)}): <strong>${G.team.isim}</strong> ${uPts}-${oPts} <strong>${mState.rakipName}</strong> — ${uPts>oPts?'tur atlandı!':'elendin.'}</div>`);
+        maybeAdvancePlayoff();
       } else {
         if(ev.winner==='home'){ G.wins++; G.points+=2; }
         else if(ev.winner==='away') G.losses++;
