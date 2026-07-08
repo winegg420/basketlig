@@ -101,7 +101,7 @@ function renderClubTransfers(){
     const priceLbl=loan?'Kira bedeli':'Bonservis';
     const act=loan
       ?`<button class="btn-bid" onclick="event.stopPropagation();loanClubPlayer('${p.id}')" style="background:var(--blue);">KİRALA</button>`
-      :`<button class="btn-bid" onclick="event.stopPropagation();buyClubPlayer('${p.id}')">SATIN AL</button>`;
+      :`<button class="btn-bid" onclick="event.stopPropagation();openClubOfferModal('${p.id}')">TEKLİF VER</button>`;
     return `
     <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openPlayerModal('${p.id}')">
       <div class="mavatar-wrap">
@@ -132,14 +132,57 @@ function renderClubTransfers(){
     </div>`;
   }).join('');
 }
-function buyClubPlayer(id){
+/* Faz 4.1: Kulüpten transfer artık PAZARLIK ile — kullanıcı teklif verir, kararı oyuncu (kişiliği) verir. */
+function openClubOfferModal(id){
+  ensureClubTransferStock();
+  const p=(G.clubTransferPlayers||[]).find(x=>x.id===id);
+  if(!p||p.mode!=='sale'){ showNotif('Bu oyuncu satılık değil.'); return; }
+  if(G.players.length>=18){ showNotif('Kadro dolu (en fazla 18). Önce bir oyuncu gönder.'); return; }
+  const ki=kisilikInfo(p.kisilik);
+  const asking=p.fiyat;
+  const lo=Math.round(asking*0.5), hi=Math.round(asking*1.5), def=asking;
+  showAppModal(`<div class="modal-title">🤝 Teklif — ${escMatch(p.isim)}</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">${escMatch(p.fromClub||'Kulüp')} · ${p.poz} · OVR ${p.genel} · ${starFromGenel(p.genel)}★</p>
+    <div style="background:var(--bg3);border-radius:9px;padding:10px;margin-bottom:12px;font-size:12px;">
+      <div>İstenen bonservis (asking): <strong style="color:var(--gold);">${fmtn(asking)} KR</strong></div>
+      <div style="margin-top:4px;">Oyuncu kişiliği: <strong>${ki.ikon} ${ki.ad}</strong> — <span style="color:var(--text2);">${ki.desc}</span></div>
+    </div>
+    <label style="font-size:11px;color:var(--text2);">Teklifin (KR)</label>
+    <input id="clubOfferInput" type="number" min="${lo}" max="${hi}" value="${def}" step="500" style="width:100%;padding:10px;border-radius:9px;background:var(--bg3);color:var(--text);border:1px solid var(--border);font-size:14px;margin:5px 0 4px;">
+    <p style="font-size:10px;color:var(--text2);margin-bottom:12px;">Düşük teklif reddedilebilir; kararı oyuncu verir. Yüksek teklif kabul şansını artırır.</p>
+    <div style="display:flex;gap:8px;">
+      <button type="button" class="btn-p" style="flex:1;padding:10px;" onclick="submitClubOffer('${id}')">Teklifi gönder</button>
+      <button type="button" class="btn-sm" style="flex:1;" onclick="closeAppModal()">Vazgeç</button>
+    </div>`);
+}
+function submitClubOffer(id){
+  const p=(G.clubTransferPlayers||[]).find(x=>x.id===id);
+  if(!p||p.mode!=='sale') return;
+  const inp=document.getElementById('clubOfferInput');
+  let offer=Math.round(Number(inp&&inp.value)||p.fiyat);
+  offer=Math.max(1,offer);
+  if(G.coins<offer){ showNotif('❌ Bu teklifi karşılayacak KR yok!'); return; }
+  const dec=playerAcceptsOffer(p,offer,p.fiyat,{betterTeam:false});
+  if(dec.accept){
+    closeAppModal();
+    buyClubPlayer(id,offer);
+  } else {
+    const ki=kisilikInfo(p.kisilik);
+    const red=offer<p.fiyat
+      ? `${p.isim} bu teklifi düşük buldu (${ki.ad.toLowerCase()} kişilik).`
+      : `${p.isim} şu an ayrılmak istemiyor (${ki.ad.toLowerCase()} kişilik).`;
+    showNotif(`🤝 Teklif reddedildi — ${red} Daha iyi bir teklif deneyebilirsin.`,{critical:true});
+  }
+}
+function buyClubPlayer(id,price){
   ensureClubTransferStock();
   const p=(G.clubTransferPlayers||[]).find(x=>x.id===id);
   if(!p||p.mode!=='sale') return;
   if(G.players.length>=18){ showNotif('Kadro dolu (en fazla 18). Önce bir oyuncu gönder.'); return; }
-  if(G.coins<p.fiyat){ showNotif('❌ Yeterli KR yok!'); return; }
+  const bedel=Math.round(Number(price)>0?Number(price):p.fiyat);
+  if(G.coins<bedel){ showNotif('❌ Yeterli KR yok!'); return; }
   const st=starFromGenel(p.genel);
-  txn('Transfer (kulüpten): '+p.isim,-p.fiyat);
+  txn('Transfer (kulüpten): '+p.isim,-bedel);
   unlockAchievement('transfer');
   const np={...p};
   ['mode','fiyat','kiralik','fromClub','sure','teklifler','freeAgent','hiddenPot'].forEach(k=>delete np[k]);
@@ -148,9 +191,9 @@ function buyClubPlayer(id){
   G.players.push(np);
   G.clubTransferPlayers=G.clubTransferPlayers.filter(x=>x.id!==id);
   G.chemistry=Math.max(20,G.chemistry-(teamLeadership()>=78?rand(3,8):rand(5,12)));
-  showNotif(`✅ ${p.isim} ${p.fromClub} kulübünden kadrona katıldı!`);
+  showNotif(`✅ ${p.isim} ${p.fromClub} kulübünden ${fmtn(bedel)} KR ile kadrona katıldı!`);
   if(G.team&&G.team.tblKey){
-    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">💰 <strong>${G.team.isim}</strong>, <strong>${escMatch(p.fromClub||'')}</strong> kulübünden <strong>${fmtn(p.fiyat)} KR</strong> bonservisle <strong>${p.isim}</strong> (${st}★) transferini bitirdi.</div>`);
+    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">💰 <strong>${G.team.isim}</strong>, <strong>${escMatch(p.fromClub||'')}</strong> kulübünden <strong>${fmtn(bedel)} KR</strong> bonservisle <strong>${p.isim}</strong> (${st}★) transferini bitirdi.</div>`);
   }
   updateCoins();updateChemistry();renderMarket();
   if(document.getElementById('page-kadro')&&document.getElementById('page-kadro').classList.contains('active')) renderRoster();
@@ -467,7 +510,7 @@ function openPlayerModal(pid){
     if(p.mode==='loan'){
       actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();loanClubPlayer('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;background:var(--blue);">🔁 KİRALA — ${fmtn(p.fiyat)} KR · ${escMatch(p.fromClub||'')}</button>`);
     } else {
-      actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();buyClubPlayer('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;">💵 SATIN AL — ${fmtn(p.fiyat)} KR · ${escMatch(p.fromClub||'')}</button>`);
+      actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();closeAppModal();openClubOfferModal('${p.id}');" style="margin-top:4px;width:100%;">🤝 TEKLİF VER — istenen ${fmtn(p.fiyat)} KR · ${escMatch(p.fromClub||'')}</button>`);
     }
   }
   if(inYouth){
@@ -490,7 +533,8 @@ function openPlayerModal(pid){
   }
   const html=`<div class="card-title" style="margin-top:0;">${p.bayrak} ${p.isim}</div>
   <p style="font-size:12px;color:var(--text2);margin-bottom:8px;">${POZ_TR[p.poz]||''} · ${p.ulke} · ${p.yas} yaş · ${p.boy}cm · ${p.kilo}kg</p>
-  <p style="font-size:10px;color:var(--text2);margin-bottom:10px;">Psikoloji: <span style="color:${moodColor(p.mood)};">${moodText(p.mood)}</span></p>
+  <p style="font-size:10px;color:var(--text2);margin-bottom:4px;">Psikoloji: <span style="color:${moodColor(p.mood)};">${moodText(p.mood)}</span></p>
+  <p style="font-size:10px;color:var(--text2);margin-bottom:10px;" title="${kisilikInfo(p.kisilik).desc}">Kişilik: <strong>${kisilikInfo(p.kisilik).ikon} ${kisilikInfo(p.kisilik).ad}</strong> — <span style="opacity:.85;">${kisilikInfo(p.kisilik).desc}</span></p>
   ${potBlock}
   <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
     <div style="flex:0 0 min(42vw,240px);">

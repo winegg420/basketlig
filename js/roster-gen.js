@@ -82,6 +82,18 @@ function sanitizeTeamName(s){return String(s||'').replace(/[<>&"'`]/g,'').trim()
 function sv(v){return v>=75?'sv-h':v>=55?'sv-m':'sv-l';}
 
 // ===== OYUNCU OLUŞTUR =====
+/* Faz 4.2: Oyuncu kişilikleri — transfer kabul eğilimi + sözleşme davranışını etkiler.
+   para = teklif/para duyarlılığı, sadakat = ayrılmaya direnç (yüksek = zor ayrılır). */
+const KISILIKLER={
+  sadik:    {ad:'Sadık',          ikon:'🛡️', desc:'Kulübüne bağlı — ayrılmaya isteksiz, düşük teklifi kolay kabul etmez.', para:0.7, sadakat:1.5},
+  hirsli:   {ad:'Hırslı',         ikon:'🔥', desc:'Başarı ve büyük hedef ister — iyi fırsata atlar.',                       para:1.1, sadakat:0.6},
+  parasever:{ad:'Parasever',      ikon:'💰', desc:'Parayı önemser — en yüksek teklife gitmeye meyilli.',                   para:1.6, sadakat:0.5},
+  sehir:    {ad:'Şehir bağımlısı',ikon:'🏙️', desc:'Şehrine/kulübüne bağlı — taşınmaya çok isteksiz.',                      para:0.6, sadakat:1.6},
+  kararsiz: {ad:'Kararsız',       ikon:'🎲', desc:'Öngörülemez — kararları ruh haline göre değişebilir.',                  para:1.0, sadakat:1.0}
+};
+const KISILIK_KEYS=Object.keys(KISILIKLER);
+function kisilikInfo(k){ return KISILIKLER[k]||KISILIKLER.kararsiz; }
+function ensurePersonality(p){ if(p&&!p.kisilik) p.kisilik=ch(KISILIK_KEYS); return p; }
 function genPlayer(poz=null,tr=false){
   const ulke=tr?TR_ULKE:ch(ULKELER);
   const p=poz||ch(POZLAR);
@@ -102,7 +114,7 @@ function genPlayer(poz=null,tr=false){
   const mood=rand(60,90);
   const id=Math.random().toString(36).substr(2,11);
   const seed='pl'+id+hash32(isim+yas);
-  return {id,isim,poz:p,yas,ulke:ulke.ad,bayrak:ulke.b,boy:rand(185,220),kilo:rand(80,120),seed,maas,...stats,genel,mood,enerji:100,potansiyel:rand(genel,Math.min(99,genel+20)),formDay:0,kontratSezon:rand(1,3),sezon:{mac:0,pts:0,ast:0,reb:0}};
+  return {id,isim,poz:p,yas,ulke:ulke.ad,bayrak:ulke.b,boy:rand(185,220),kilo:rand(80,120),seed,maas,...stats,genel,mood,enerji:100,potansiyel:rand(genel,Math.min(99,genel+20)),formDay:0,kontratSezon:rand(1,3),kisilik:ch(KISILIK_KEYS),sezon:{mac:0,pts:0,ast:0,reb:0}};
 }
 
 /** Aynı grupta (kadro / market listesi) iki oyuncu aynı ADA ya da aynı FOTOĞRAF index'ine denk gelmesin.

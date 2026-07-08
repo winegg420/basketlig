@@ -411,6 +411,59 @@ function buyFromMarket(id){
   scheduleGameSave();
 }
 
+/* ── Faz 4.1: Kullanıcı oyuncusuna gelen teklif — KULLANICININ ONAYINA düşer (oyuncu ne kadar istese de). ── */
+function showIncomingOfferModal(){
+  const q=G.pendingOffers||[];
+  if(!q.length){ return; }
+  const o=q[0];
+  const p=(G.players||[]).find(x=>x.id===o.playerId);
+  if(!p){ q.shift(); return showIncomingOfferModal(); }
+  const ki=kisilikInfo(o.kisilik||p.kisilik);
+  const wantTxt=o.wantsToGo?`<span style="color:var(--gold);font-weight:700;">gitmek istiyor</span>`:`<span style="color:var(--text2);">ayrılmaya sıcak bakmıyor</span>`;
+  showAppModal(`<div class="modal-title">📨 Transfer Teklifi</div>
+    <p style="font-size:13px;line-height:1.6;">
+      <strong>${escMatch(o.club)}</strong>, <strong>${escMatch(p.isim)}</strong> (${p.poz}·OVR ${p.genel}) için
+      <strong style="color:var(--gold);">${fmtn(o.offer)} KR</strong> teklif etti.
+    </p>
+    <div style="background:var(--bg3);border-radius:9px;padding:10px;margin:10px 0;font-size:12px;">
+      Oyuncu: ${ki.ikon} <strong>${ki.ad}</strong> — ${wantTxt}. <span style="color:var(--text2);">(İstenen bonservis ~${fmtn(o.asking)} KR)</span>
+    </div>
+    <p style="font-size:11px;color:var(--text2);margin-bottom:12px;">Karar senin: onaylarsan oyuncu ${fmtn(o.offer)} KR karşılığında satılır, reddedersen kadroda kalır.</p>
+    <div style="display:flex;gap:8px;">
+      <button type="button" class="btn-p" style="flex:1;padding:10px;" onclick="acceptIncomingOffer()">✅ Onayla (sat)</button>
+      <button type="button" class="btn-sm" style="flex:1;" onclick="rejectIncomingOffer()">❌ Reddet</button>
+    </div>`);
+}
+function acceptIncomingOffer(){
+  const q=G.pendingOffers||[];
+  const o=q.shift(); if(!o){ closeAppModal(); return; }
+  const ix=(G.players||[]).findIndex(x=>x.id===o.playerId);
+  if(ix<0){ closeAppModal(); return showIncomingOfferModal(); }
+  if(G.players.length<=10){ showNotif('Kadroda en az 10 oyuncu kalmalı — satış iptal.'); closeAppModal(); return; }
+  const p=G.players[ix];
+  G.players.splice(ix,1);
+  txn('Oyuncu satışı: '+p.isim,o.offer);
+  unlockAchievement('satis');
+  updateCoins(); updateChemistry();
+  pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--blue);">🤝 <strong>${escMatch(G.team.isim)}</strong>, <strong>${escMatch(p.isim)}</strong>'i <strong>${escMatch(o.club)}</strong> kulübüne <strong>${fmtn(o.offer)} KR</strong> karşılığında sattı.</div>`);
+  showNotif(`✅ ${p.isim} ${o.club} kulübüne satıldı — +${fmtn(o.offer)} KR.`);
+  if(document.getElementById('page-kadro')&&document.getElementById('page-kadro').classList.contains('active')) renderRoster();
+  scheduleGameSave();
+  closeAppModal();
+  if((G.pendingOffers||[]).length) setTimeout(showIncomingOfferModal,300);
+}
+function rejectIncomingOffer(){
+  const q=G.pendingOffers||[];
+  const o=q.shift(); if(!o){ closeAppModal(); return; }
+  const p=(G.players||[]).find(x=>x.id===o.playerId);
+  if(p&&o.wantsToGo){ p.mood=Math.max(0,Number(p.mood||70)-rand(4,9)); } /* gitmek isteyen reddedilince moral düşer */
+  updateChemistry();
+  showNotif(o.wantsToGo?`${o.playerName} teklifin reddine üzüldü — morali düştü.`:`${o.club} kulübünün teklifi reddedildi.`);
+  scheduleGameSave();
+  closeAppModal();
+  if((G.pendingOffers||[]).length) setTimeout(showIncomingOfferModal,300);
+}
+
 /** Madde 19: kullanıcı oyuncunun sözleşmesini erkenden uzatır — imza bedeli öder, ayrılma riski sıfırlanır. */
 function extendContract(id){
   const p=G.players.find(x=>x.id===id);
@@ -816,6 +869,7 @@ function createTeam(){
   G.ledger=[];
   G.lastEcoDay=1;
   G.tactics={tempo:'normal',odak:'dengeli',defensiveStyle:'adam',focusPlayerId:null,markStar:false};
+  G.pendingOffers=[];G.presidentTarget=null;G.budgetPenalty=0;
   G.tutorialDone=false;
   bootstrapAppUi();
   applyAutosaveSetting();

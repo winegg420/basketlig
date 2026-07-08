@@ -654,6 +654,7 @@ function applyMatchResult(ev,ctx){
     processEconomyWeeks();
     processLoanReturns();
     tickClubTransferMarket(G.gameDay-prevDay);
+    if(typeof maybeIncomingOffers==='function') maybeIncomingOffers(); /* Faz 4.1: kullanıcı oyuncularına teklif */
     mergeMatchPlayerStats(ev);
     clearResolvedInjuries();
     rollInjuriesAfterUserMatch();

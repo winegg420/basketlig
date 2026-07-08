@@ -204,7 +204,10 @@ function serializeGameState(){
     lineup:G.lineup||null,
     ticketPrice:G.ticketPrice!=null?G.ticketPrice:2,
     tutorialDone:!!G.tutorialDone,
-    pendingMatch:G.pendingMatch||null
+    pendingMatch:G.pendingMatch||null,
+    pendingOffers:G.pendingOffers||[],
+    presidentTarget:G.presidentTarget||null,
+    budgetPenalty:G.budgetPenalty||0
   };
 }
 
@@ -352,7 +355,12 @@ function applyGameState(d){
   G.ticketPrice=d.ticketPrice!=null?d.ticketPrice:2;
   G.tutorialDone=!!d.tutorialDone;
   G.pendingMatch=d.pendingMatch&&typeof d.pendingMatch==='object'?d.pendingMatch:null; /* C1: kilitli maç sonucu */
+  G.pendingOffers=Array.isArray(d.pendingOffers)?d.pendingOffers:[]; /* Faz 4.1: kullanıcı oyuncularına gelen teklifler */
+  G.presidentTarget=d.presidentTarget&&typeof d.presidentTarget==='object'?d.presidentTarget:null; /* Faz 4.3 */
+  G.budgetPenalty=Number(d.budgetPenalty)||0; /* Faz 4.3: hedef tutmayınca bütçe kısıtı */
   if(G.team&&(!G.ligTeams||!G.ligTeams.length)) G.ligTeams=genLigTeams();
+  /* Faz 4.2: eski kayıtlardaki oyunculara kişilik ata (geriye dönük uyum). */
+  [G.players,G.youth,G.marketPlayers,G.clubTransferPlayers].forEach(list=>{ (list||[]).forEach(p=>{ if(p&&!p.kisilik) p.kisilik=ch(KISILIK_KEYS); }); });
   [G.players,G.youth,G.marketPlayers].forEach(list=>{
     (list||[]).forEach((p,i)=>{
       if(!p||p.seed) return;

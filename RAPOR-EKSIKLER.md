@@ -33,8 +33,8 @@ Rakip kadrolar her maçta `getBotClubProfile()` ile yeniden üretiliyor; kalıc�
 
 ## B · EKSİK OYUN SİSTEMLERİ (boşluklar — tam sürüm için beklenir)
 
-### B1. Transfer pazarlığı yok
-Serbest oyuncu ve kulüp transferleri **sabit fiyattan direkt alım**. Teklif verme/pazarlık, rakip kulübün "hayır" demesi, açık artırma yok. Menajerlik oyununun çekirdek eksiği.
+### B1. Transfer pazarlığı yok — ✅ UYGULANDI (7. oturum, Faz 4)
+Kulüpten transfer artık **pazarlık**: kullanıcı teklif verir (`openClubOfferModal`/`submitClubOffer`), **kararı oyuncu** verir (`playerAcceptsOffer` — kişilik + teklif/istek oranı + ruh hali + küçük sürpriz payı). Kullanıcının oyuncusuna gelen her teklif **kullanıcının onayına** düşer (`showIncomingOfferModal`/`acceptIncomingOffer`/`rejectIncomingOffer` — KRİTİK KURAL). **Oyuncu kişilikleri** (Sadık/Hırslı/Parasever/Şehir bağımlısı/Kararsız) transfer + sözleşme davranışını etkiler. **Başkan hedef sistemi** (sezon başı hedef, sezon sonu kademeli sonuç — game over YOK).
 
 ### B2. Playoff çok sığ — ✅ UYGULANDI (7. oturum, Faz 2.1)
 İlk 8 → artık **seri** (best-of-7, ilk 4 galibiyet). Ev sahibi avantajı sıralamaya göre **2-2-1-1-1**. Playoff paneli seri skorunu ("2-1 önde") gösterir. **Playoff MVP** (final serisi istatistikleri) + **şampiyonluk kutlama modalı** (kupa/konfeti) eklendi. Harness ile bracket (çeyrek→yarı→final), ilk-4-galibiyet ve MVP doğrulandı.

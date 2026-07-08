@@ -390,6 +390,7 @@ function endLeagueSeasonIfDone(){
   G.season.active=false;
   unlockAchievement('sezonTamam');
   try{ announceSeasonAwards(); }catch(e){ dbg('season awards',e); } /* Faz 2.2 */
+  try{ evaluatePresidentTarget(); }catch(e){ dbg('president eval',e); } /* Faz 4.3 */
   G.managerRep=(Number(G.managerRep)||0)+1;
   try{
     const rows=buildLeagueRows(G.team.tblKey||'tbl');
@@ -628,7 +629,10 @@ function startLeagueSeason(){
         if(mood<35) leaveChance+=0.40; else if(mood<50) leaveChance+=0.24; else if(mood<65) leaveChance+=0.10;
         if(macSay<4) leaveChance+=0.12;               /* az forma giren oyuncu ayrılmaya daha meyilli */
         if((Number(p.yas)||25)>=34) leaveChance+=0.08; /* yaşlı oyuncu emeklilik/ayrılığa yakın */
-        leaveChance=Math.min(0.85,leaveChance);
+        /* Faz 4.2: kişilik ayrılma eğilimini kaydırır (sadık/şehir bağımlısı kalır, parasever/hırslı ayrılır). */
+        const kk=(typeof kisilikInfo==='function')?kisilikInfo(p.kisilik):{sadakat:1,para:1};
+        leaveChance+=(kk.para-1)*0.10-(kk.sadakat-1)*0.14;
+        leaveChance=Math.max(0.03,Math.min(0.85,leaveChance));
         if(Math.random()<leaveChance){
           ayrilanlar.push(p);
           return;
@@ -717,6 +721,8 @@ function startLeagueSeason(){
   G.lastEcoDay=1;
   regenerateSeasonFixtures();
   syncUserRecordFromStandings();
+  setPresidentTarget(); /* Faz 4.3: başkan sezon hedefi */
+  applyBudgetPenaltyDecay(); /* Faz 4.3: geçen sezon hedef tutmadıysa bütçe kısıtı bu sezon işler, sonra azalır */
   updateStats();
   renderLig();
   renderFixture();
@@ -725,5 +731,61 @@ function startLeagueSeason(){
   pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--gold);">🏀 <strong>Sezon ${G.season.year}</strong> — ${formatTblSlotLabel(G.team.tblKey)} · ${totalRounds()} tur (tek devre). Fikstür, tablo ve skorlar tek kaynaktan.</div>`);
   showNotif('Sezon başladı.');
   scheduleGameSave();
+}
+/* ── Faz 4.3: Başkan beklentisi / hedef sistemi ── */
+function setPresidentTarget(){
+  try{
+    if(!G.team||!G.team.tblKey) return;
+    const key=G.team.tblKey;
+    const rows=buildLeagueRows(key).filter(r=>r&&!r.bos&&r.isim);
+    const n=rows.length||20;
+    const userTop=(G.players||[]).slice().sort((a,b)=>(b.genel||0)-(a.genel||0)).slice(0,8);
+    const userStr=userTop.length?userTop.reduce((s,p)=>s+(p.genel||0),0)/userTop.length:65;
+    let stronger=0;
+    rows.forEach(r=>{ if(r.isim!==G.team.isim){ const s=pseudoTeamStrength(r.isim,key)+((G.season&&G.season.drift&&G.season.drift[r.isim])||0); if(s>userStr) stronger++; } });
+    const expectedRank=Math.max(1,Math.min(n,stronger+1));
+    let targetRank,label;
+    if(expectedRank<=3){ targetRank=3; label='şampiyonluk yarışı — ilk 3'; }
+    else if(expectedRank<=8){ targetRank=8; label='playoff (ilk 8)'; }
+    else if(expectedRank<=Math.floor(n*0.7)){ targetRank=Math.min(n-2,expectedRank+2); label=`orta sıra — en fazla ${targetRank}. sıra`; }
+    else { targetRank=Math.max(1,n-4); label='düşme hattından uzak durmak'; }
+    G.presidentTarget={year:G.season.year,expectedRank,targetRank,n,label,evaluated:false};
+    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--blue);">🗣️ <strong>Başkan</strong> — Sezon ${G.season.year} hedefi: <strong>${label}</strong> (beklenen güç sıran ~${expectedRank}.).</div>`);
+    showNotif(`🗣️ Başkanın hedefi: ${label}.`,{critical:true});
+  }catch(e){ dbg('president target',e); }
+}
+function applyBudgetPenaltyDecay(){
+  try{
+    if((Number(G.budgetPenalty)||0)>0){
+      pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">💸 <strong>Başkan bütçeyi kıstı</strong> — geçen sezon hedef tutmadı; bu sezon bilet gelirleri baskı altında.</div>`);
+      G.budgetPenalty=Math.max(0,Number(G.budgetPenalty)-1);
+    }
+  }catch(e){}
+}
+function evaluatePresidentTarget(){
+  try{
+    const pt=G.presidentTarget;
+    if(!pt||pt.evaluated||!G.team||!G.team.tblKey) return;
+    const rows=buildLeagueRows(G.team.tblKey).filter(r=>r&&!r.bos&&r.isim);
+    const actualRank=rows.findIndex(r=>r.isUser)+1;
+    if(actualRank<=0) return;
+    pt.evaluated=true; pt.actualRank=actualRank;
+    G.managerHistory=Array.isArray(G.managerHistory)?G.managerHistory:[];
+    if(actualRank<=pt.targetRank){
+      const over=pt.targetRank-actualRank;
+      const bonus=3+Math.min(7,over*2);
+      G.managerRep=(Number(G.managerRep)||0)+bonus;
+      G.managerHistory.push({year:pt.year,basari:`Başkan hedefi tuttu (${actualRank}. sıra)`});
+      pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">🗣️ <strong>Başkan memnun</strong> — hedef (${pt.label}) tuttu, ${actualRank}. sırada bitirdin. İtibar +${bonus}.</div>`);
+      showNotif(`🗣️ Başkan memnun — hedef tuttu (${actualRank}. sıra). İtibar +${bonus}.`);
+    } else {
+      const miss=actualRank-pt.targetRank;
+      const repDrop=Math.min(8,2+miss);
+      G.managerRep=Math.max(0,(Number(G.managerRep)||0)-repDrop);
+      pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">🗣️ <strong>Başkan hayal kırıklığında</strong> — hedef (${pt.label}) tutmadı, ${actualRank}. sırada bitirdin. İtibar −${repDrop}.</div>`);
+      showNotif(`🗣️ Başkan hedefin tutmamasından memnun değil (${actualRank}. sıra). İtibar −${repDrop}.`,{critical:true});
+      if(miss>=4){ G.budgetPenalty=(Number(G.budgetPenalty)||0)+1; } /* ağır sapmada gelecek sezon bütçe kısıtı (game over YOK) */
+    }
+  }catch(e){ dbg('president eval',e); }
 }
 

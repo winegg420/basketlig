@@ -31,7 +31,8 @@ function homeTicketIncome(){
   const seasonWr=seasonPlayed?G.wins/Math.max(1,seasonPlayed):0.5;
   const wr=form!=null?form*0.7+seasonWr*0.3:seasonWr;
   const occ=Math.max(0.35,Math.min(0.98,(0.55+wr*0.35)*ticketDemandFactor()));
-  return Math.round((G.arena&&G.arena.kap||5000)*occ*1.2*ticketPriceFactor());
+  const budgetMul=(Number(G.budgetPenalty)||0)>0?0.90:1; /* Faz 4.3: başkan bütçe kısıtı sezonu */
+  return Math.round((G.arena&&G.arena.kap||5000)*occ*1.2*ticketPriceFactor()*budgetMul);
 }
 /** Madde 24: bilet fiyatı çarpanı — kullanıcı fiyatı belirler; yüksek fiyat gelir/bilet ↑ ama doluluk ↓. */
 function ticketPriceLevel(){ const v=Number(G.ticketPrice); return Number.isFinite(v)?Math.max(0,Math.min(4,v)):2; }
@@ -88,6 +89,46 @@ function botClubTransfer(teamName,ligKey){
     try{ localStorage.setItem(CLUB_CACHE_KEY,JSON.stringify(cache)); }catch(e){}
     return {inP:np,outP:eski};
   }catch(e){ dbg('botClubTransfer',e); return null; }
+}
+/* ── Faz 4.1: Transfer pazarlığı — kararı OYUNCU verir (kulüp değil), kişiliğine göre. ──
+   Teklif/istek oranı + ruh hali + kişilik (para/sadakat) → sigmoid kabul olasılığı.
+   "Beklenenin aksine" küçük rastgelelik payı (kararsız oyuncuda daha yüksek), ama kişilik ana eğilimi belirler. */
+function playerAcceptsOffer(player,offer,asking,opts){
+  opts=opts||{};
+  const k=(typeof kisilikInfo==='function')?kisilikInfo(player&&player.kisilik):{para:1,sadakat:1};
+  const ratio=asking>0?offer/asking:1;
+  const mood=Number(player&&player.mood!=null?player.mood:70);
+  let score=(ratio-1)*1.4*k.para;                 /* teklif istenen bedelin üstündeyse +, altındaysa − */
+  score+=(mood<45?0.5:mood>75?-0.25:0);           /* mutsuz oyuncu daha çok gitmek ister */
+  score-=(k.sadakat-1)*0.55;                      /* sadık / şehir bağımlısı ayrılmaya direnç gösterir */
+  if(opts.betterTeam) score+=0.6*k.para;          /* hırslı/parasever daha iyi kulübe atlamaya meyilli */
+  const noise=(Math.random()-0.5)*((player&&player.kisilik==='kararsiz')?1.5:0.5);
+  score+=noise;                                   /* kişilik ana eğilim; küçük sürpriz payı */
+  const prob=1/(1+Math.exp(-score*1.6));
+  return {accept:Math.random()<prob,wantsToGo:score>0.15,prob,score};
+}
+/* Gün ilerledikçe (maç sonrası) kullanıcının oyuncularına AI kulüplerden teklif gelebilir.
+   KRİTİK KURAL: kullanıcının oyuncusu ne kadar "gitmek istese" de satış KULLANICININ ONAYINA düşer. */
+function maybeIncomingOffers(){
+  try{
+    if(!G.team||!Array.isArray(G.players)||G.players.length<=10) return;
+    G.pendingOffers=Array.isArray(G.pendingOffers)?G.pendingOffers:[];
+    if(G.pendingOffers.length>=3) return;
+    if(Math.random()>0.26) return; /* her gün ilerlemede ~%26 */
+    const cands=G.players.filter(p=>p&&!(typeof playerIsInjured==='function'&&playerIsInjured(p)));
+    if(cands.length<=10) return;
+    const ranked=cands.slice().sort((a,b)=>((b.genel||0)+((b.mood||70)<50?15:0))-((a.genel||0)+((a.mood||70)<50?15:0)));
+    const pick=ranked[Math.floor(Math.random()*Math.min(5,ranked.length))];
+    if(!pick||G.pendingOffers.some(o=>o.playerId===pick.id)) return;
+    const peers=(typeof userLeaguePeers==='function')?userLeaguePeers():[];
+    const club=peers.length?ch(peers):'Bir kulüp';
+    const asking=transferFeeKR(pick);
+    const offer=Math.round(asking*(0.7+Math.random()*0.65)); /* %70..135 */
+    const dec=playerAcceptsOffer(pick,offer,asking,{betterTeam:Math.random()<0.5});
+    if(!dec.wantsToGo&&Math.random()<0.6) return;  /* oyuncu ilgilenmiyorsa çoğu teklif düşer */
+    G.pendingOffers.push({playerId:pick.id,playerName:pick.isim,poz:pick.poz,genel:pick.genel,club,offer,asking,wantsToGo:dec.wantsToGo,kisilik:pick.kisilik});
+    if(typeof showIncomingOfferModal==='function') showIncomingOfferModal();
+  }catch(e){ dbg('incoming offer',e); }
 }
 /** Bot kulüpler haftalık form/transfer hareketi yapar — güçleri sezon içinde değişir. */
 function aiWeeklyLeagueActivity(){
