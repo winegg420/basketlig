@@ -628,14 +628,16 @@ function applyMatchResult(ev,ctx){
     pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid ${ev.winner==='home'?'var(--green)':ev.winner==='draw'?'var(--gold)':'var(--red)'};">🏀 <strong>${G.team.isim}</strong> ${uPts}-${oPts} <strong>${ctx.rakipName}</strong> · Gün ${sm.day} · Tur ${sm.round}/${totalRounds()}</div>`);
     endLeagueSeasonIfDone();
   } else if(ctx.isPlayoff && ctx.playoffMatch){
-    const m=ctx.playoffMatch;
-    if(m.home===G.team.isim){ m.hs=uPts; m.as=oPts; } else { m.hs=oPts; m.as=uPts; }
-    m.played=true;
-    m.winner=(uPts>oPts)?G.team.isim:ctx.rakipName;
-    if(uPts===oPts) m.winner=G.team.isim;
+    /* Faz 2.1: playoff artık seri — bu maç bir seri maçıdır; sonucu seriye işle. */
+    const gd=ctx.playoffMatch;
+    const s=gd.series;
+    const winnerTeam=(uPts>oPts)?G.team.isim:(uPts<oPts?ctx.rakipName:G.team.isim);
+    const host=gd.home; /* bu maçın ev sahibi */
+    const hostPts=(host===G.team.isim)?uPts:oPts;
+    const otherPts=(host===G.team.isim)?oPts:uPts;
     const playedSet=new Set(ev.lineupIds||[]);
     (ev.subIds||[]).forEach(id=>playedSet.add(id));
-    updateChronicFatigue(playedSet); /* Faz 1.2: yorgunluk düşmeden önce sayacı güncelle */
+    updateChronicFatigue(playedSet); /* Faz 1.2 */
     applyMatchFatigueToRoster(playedSet.size?playedSet:undefined);
     const prevDay=G.gameDay||1;
     G.gameDay=(G.gameDay||1)+2;
@@ -644,6 +646,7 @@ function applyMatchResult(ev,ctx){
     processLoanReturns();
     tickClubTransferMarket(G.gameDay-prevDay);
     mergeMatchPlayerStats(ev);
+    accumulatePlayoffFinalStats(ev); /* Faz 2.1: final serisi MVP verisi */
     clearResolvedInjuries();
     rollInjuriesAfterUserMatch();
     rollInjuriesForBotClub(ctx.rakipName,ligKey); /* A1 */
@@ -652,7 +655,14 @@ function applyMatchResult(ev,ctx){
       txn('Playoff bilet geliri',bilet);
     }
     const total=(currentPlayoffRound()||[]).length;
-    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid ${uPts>oPts?'var(--green)':'var(--red)'};">🏆 Playoff (${playoffRoundLabel(0,total)}): <strong>${G.team.isim}</strong> ${uPts}-${oPts} <strong>${ctx.rakipName}</strong> — ${uPts>oPts?'tur atlandı!':'elendin.'}</div>`);
+    if(s) recordSeriesGame(s,{gameNo:gd.gameNo,host,hs:hostPts,as:otherPts,winner:winnerTeam});
+    const uSeriesW=s?(s.home===G.team.isim?s.wins[0]:s.wins[1]):0;
+    const oSeriesW=s?(s.home===G.team.isim?s.wins[1]:s.wins[0]):0;
+    const serDone=s&&s.done;
+    const seriesTxt=serDone
+      ? (s.winner===G.team.isim?`seriyi ${uSeriesW}-${oSeriesW} kazandın — tur atlandı!`:`seriyi ${oSeriesW}-${uSeriesW} kaybettin — elendin.`)
+      : `seri ${uSeriesW}-${oSeriesW}`;
+    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid ${uPts>oPts?'var(--green)':'var(--red)'};">🏆 Playoff (${playoffRoundLabel(0,total)}) ${gd.gameNo}. maç: <strong>${G.team.isim}</strong> ${uPts}-${oPts} <strong>${ctx.rakipName}</strong> — ${seriesTxt}</div>`);
     maybeAdvancePlayoff();
   } else {
     if(ev.winner==='home'){ G.wins++; G.points+=2; }

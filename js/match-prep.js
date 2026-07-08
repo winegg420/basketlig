@@ -292,10 +292,100 @@ function seasonAllMatchesPlayed(){
   return G.season&&G.season.matches.every(m=>m.played);
 }
 
+/* ── Faz 2.2: Sezon sonu bireysel ödülleri ──
+   Kullanıcının gerçek oyuncu istatistikleri (p.sezon) + rakip kulüplerin en iyi oyuncuları için
+   OVR/pozisyondan türetilen sezonluk istatistik havuzu üzerinden ödüller. */
+function seasonAwardStatSynth(p,games){
+  const g=Number(p.genel)||60, poz=p.poz||'SF';
+  const M=({PG:{p:0.90,a:1.9,r:0.5},SG:{p:1.18,a:1.1,r:0.6},SF:{p:1.06,a:1.0,r:1.0},PF:{p:0.98,a:0.7,r:1.6},C:{p:0.92,a:0.6,r:1.9}})[poz]||{p:1,a:1,r:1};
+  const ppg=Math.max(3,(g-40)*0.34*M.p);
+  const apg=Math.max(0.4,(g-45)*0.14*M.a);
+  const rpg=Math.max(1,(g-45)*0.16*M.r);
+  return {mac:games,pts:Math.round(ppg*games),ast:Math.round(apg*games),reb:Math.round(rpg*games)};
+}
+function buildSeasonPlayerPool(){
+  const pool=[]; const games=Math.max(1,totalRounds());
+  (G.players||[]).forEach(p=>{
+    const s=p.sezon||{mac:0,pts:0,ast:0,reb:0};
+    if((s.mac||0)<1) return; /* hiç oynamamış oyuncu ödül havuzuna girmez */
+    pool.push({isim:p.isim,team:G.team.isim,poz:p.poz,genel:p.genel,yas:p.yas,mac:s.mac,pts:s.pts||0,ast:s.ast||0,reb:s.reb||0,isUser:true});
+  });
+  try{
+    userLeaguePeers().forEach(name=>{
+      const prof=getBotClubProfile(name,G.team.tblKey||'tbl');
+      (prof.roster||[]).slice().sort((a,b)=>(b.genel||0)-(a.genel||0)).slice(0,4).forEach(p=>{
+        const st=seasonAwardStatSynth(p,games);
+        pool.push({isim:p.isim,team:name,poz:p.poz,genel:p.genel,yas:p.yas,mac:st.mac,pts:st.pts,ast:st.ast,reb:st.reb,isUser:false});
+      });
+    });
+  }catch(e){ dbg('award pool',e); }
+  return pool;
+}
+function computeSeasonAwards(){
+  const pool=buildSeasonPlayerPool();
+  if(!pool.length) return null;
+  const perf=e=>((e.pts||0)+(e.ast||0)*1.5+(e.reb||0)*1.2);
+  const top=(arr,f)=>arr.slice().sort((a,b)=>f(b)-f(a))[0]||null;
+  const mvp=top(pool,perf);
+  const topScorer=top(pool,e=>e.pts||0);
+  const topAst=top(pool,e=>e.ast||0);
+  const topReb=top(pool,e=>e.reb||0);
+  const ideal=['PG','SG','SF','PF','C'].map(pz=>top(pool.filter(e=>e.poz===pz),perf));
+  const young=top(pool.filter(e=>Number(e.yas)<=21),perf);
+  return {mvp,topScorer,topAst,topReb,ideal,young,games:Math.max(1,totalRounds())};
+}
+function announceSeasonAwards(){
+  try{
+    const aw=computeSeasonAwards();
+    if(!aw||!aw.mvp) return;
+    const yr=G.season?G.season.year:'';
+    G.managerHistory=Array.isArray(G.managerHistory)?G.managerHistory:[];
+    if(aw.mvp.isUser){
+      G.managerRep=(Number(G.managerRep)||0)+3;
+      G.managerHistory.push({year:yr,basari:'Lig MVP ('+aw.mvp.isim+')'});
+    }
+    const pg=(v,e)=>((e.mac||1)>0?(v/(e.mac||1)).toFixed(1):'0');
+    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--gold);">🏅 <strong>Sezon ${yr} ödülleri</strong> — MVP: <strong>${escMatch(aw.mvp.isim)}</strong> (${escMatch(aw.mvp.team)}); En skorer: ${escMatch(aw.topScorer.isim)} (${pg(aw.topScorer.pts,aw.topScorer)}); En asistçi: ${escMatch(aw.topAst.isim)} (${pg(aw.topAst.ast,aw.topAst)}); En ribaundçu: ${escMatch(aw.topReb.isim)} (${pg(aw.topReb.reb,aw.topReb)}).</div>`);
+    showSeasonAwardsModal(aw,yr);
+  }catch(e){ dbg('awards',e); }
+}
+function showSeasonAwardsModal(aw,yr){
+  if(typeof showAppModal!=='function'||!aw||!aw.mvp) return;
+  const pg=(v,e)=>((e.mac||1)>0?(v/(e.mac||1)).toFixed(1):'0');
+  const tag=e=>e&&e.isUser?' <span style="color:var(--accent);font-size:10px;">★senin</span>':'';
+  const card=(ikon,baslik,e,val)=>e?`<div style="flex:1;min-width:120px;background:var(--bg3);border-radius:9px;padding:9px 10px;">
+      <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;">${ikon} ${baslik}</div>
+      <div style="font-size:13px;font-weight:700;margin-top:3px;">${escMatch(e.isim)}${tag(e)}</div>
+      <div style="font-size:11px;color:var(--text2);">${escMatch(e.team)} · ${val}</div>
+    </div>`:'';
+  const idealRow=(aw.ideal||[]).filter(Boolean).map(e=>`<div style="flex:1;min-width:88px;text-align:center;background:var(--bg3);border-radius:9px;padding:8px 6px;">
+      <div style="font-size:10px;color:var(--gold);font-weight:700;">${e.poz}</div>
+      <div style="font-size:12px;font-weight:700;margin-top:2px;line-height:1.2;">${escMatch(e.isim)}${tag(e)}</div>
+      <div style="font-size:10px;color:var(--text2);">${escMatch(e.team)}</div>
+    </div>`).join('');
+  showAppModal(`<div style="padding:6px 2px;">
+    <div class="modal-title" style="text-align:center;color:var(--gold);">🏅 Sezon ${yr} Ödül Töreni</div>
+    <div style="text-align:center;background:linear-gradient(135deg,rgba(249,115,22,0.18),rgba(251,191,36,0.10));border:1px solid var(--gold);border-radius:12px;padding:14px;margin:10px 0;">
+      <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;">Sezonun En Değerli Oyuncusu</div>
+      <div style="font-size:22px;font-weight:800;margin-top:4px;">${escMatch(aw.mvp.isim)}${tag(aw.mvp)}</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:2px;">${escMatch(aw.mvp.team)} · ${pg(aw.mvp.pts,aw.mvp)} sayı · ${pg(aw.mvp.ast,aw.mvp)} asist · ${pg(aw.mvp.reb,aw.mvp)} ribaund ort.</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+      ${card('🎯','En Skorer',aw.topScorer,pg(aw.topScorer.pts,aw.topScorer)+' sayı ort.')}
+      ${card('🅰️','En Asistçi',aw.topAst,pg(aw.topAst.ast,aw.topAst)+' asist ort.')}
+      ${card('💪','En Ribaundçu',aw.topReb,pg(aw.topReb.reb,aw.topReb)+' ribaund ort.')}
+      ${aw.young?card('🌱','Yılın Genci',aw.young,aw.young.yas+' yaş · '+pg(aw.young.pts,aw.young)+' sayı'):''}
+    </div>
+    <div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:5px;">⭐ İdeal Beşli</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">${idealRow}</div>
+    <div style="text-align:center;margin-top:16px;"><button type="button" class="btn-p" style="width:auto;padding:9px 28px;" onclick="closeAppModal()">Kapat</button></div>
+  </div>`);
+}
 function endLeagueSeasonIfDone(){
   if(!G.season||!G.season.active||!seasonAllMatchesPlayed()) return false;
   G.season.active=false;
   unlockAchievement('sezonTamam');
+  try{ announceSeasonAwards(); }catch(e){ dbg('season awards',e); } /* Faz 2.2 */
   G.managerRep=(Number(G.managerRep)||0)+1;
   try{
     const rows=buildLeagueRows(G.team.tblKey||'tbl');
@@ -327,61 +417,128 @@ function playoffPickWinner(home,away){
   if(hs===as){ if(rand(0,1)) hs+=rand(2,6); else as+=rand(2,6); }
   return {hs,as,winner:hs>as?home:away};
 }
+/* ── Faz 2.1: Playoff artık SERİ — ilk 4 galibiyeti alan turu geçer (best-of-7).
+   Ev sahibi avantajı sıralamaya göre 2-2-1-1-1 (üst sıralı takım 1,2,5,7. maçlarda ev sahibi). */
+const PLAYOFF_SERIES_WIN=4;
+const PLAYOFF_HOST_PATTERN=[1,1,0,0,1,0,1]; /* 1 = üst sıralı (seri.home) ev sahibi */
+function makeSeries(homeTeam,awayTeam,homeSeed,awaySeed){
+  return {home:homeTeam,away:awayTeam,homeSeed,awaySeed,wins:[0,0],games:[],done:false,winner:null};
+}
+function seriesGameHost(s,gameNo){
+  const hi=PLAYOFF_HOST_PATTERN[(gameNo-1)%7]===1;
+  return hi?s.home:s.away;
+}
+function seriesCurrentGameNo(s){ return (s.games?s.games.length:0)+1; }
+function recordSeriesGame(s,g){
+  s.games=s.games||[];
+  s.games.push(g);
+  if(g.winner===s.home) s.wins[0]++; else if(g.winner===s.away) s.wins[1]++;
+  if(s.wins[0]>=PLAYOFF_SERIES_WIN){ s.done=true; s.winner=s.home; }
+  else if(s.wins[1]>=PLAYOFF_SERIES_WIN){ s.done=true; s.winner=s.away; }
+}
+/* Kullanıcının oynayacağı SIRADAKI seri maçının tanımlayıcısı (home = bu maçın ev sahibi). */
+function userPlayoffMatch(){
+  const r=currentPlayoffRound();
+  if(!r||!G.team) return null;
+  const s=r.find(x=>!x.done&&(x.home===G.team.isim||x.away===G.team.isim));
+  if(!s) return null;
+  const gameNo=seriesCurrentGameNo(s);
+  const host=seriesGameHost(s,gameNo);
+  const other=host===s.home?s.away:s.home;
+  return {series:s,gameNo,home:host,away:other,isSeriesGame:true};
+}
 function startPlayoffs(){
   try{
     const rows=buildLeagueRows(G.team.tblKey||'tbl').filter(r=>r&&!r.bos&&r.isim);
     const top=rows.slice(0,8).map(r=>r.isim);
     if(top.length<8){ /* grup küçükse playoff atla, doğrudan yeni sezon */ afterPlayoffsProceed(); return; }
-    const pairs=[[0,7],[3,4],[1,6],[2,5]];
-    const r0=pairs.map(([a,b])=>({home:top[a],away:top[b],hs:null,as:null,played:false,winner:null}));
-    G.playoff={active:true,year:G.season.year,teams:top,round:0,rounds:[r0],champion:null};
+    const pairs=[[0,7],[3,4],[1,6],[2,5]]; /* çeyrek eşleşmeleri (üst sıralı önce = ev avantajı) */
+    const r0=pairs.map(([a,b])=>makeSeries(top[a],top[b],a,b));
+    G.playoff={active:true,year:G.season.year,teams:top,round:0,rounds:[r0],champion:null,finalStats:{},mvp:null};
     simPlayoffBotMatches();
     if(!userPlayoffMatch()) maybeAdvancePlayoff(); /* kullanıcı playoff dışıysa tümünü simüle et */
     renderLig();
     renderDashboardNextMatch();
-    if(userPlayoffMatch()) showNotif('🏆 Playoff maçın hazır — Lig ekranından oyna!',{critical:true});
+    if(userPlayoffMatch()) showNotif('🏆 Playoff serin başladı — Lig ekranından oyna (ilk 4 galibiyet turu geçer)!',{critical:true});
   }catch(e){ dbg('startPlayoffs',e); afterPlayoffsProceed(); }
 }
 function currentPlayoffRound(){ return G.playoff&&G.playoff.rounds?G.playoff.rounds[G.playoff.round]:null; }
-function userPlayoffMatch(){
-  const r=currentPlayoffRound();
-  if(!r||!G.team) return null;
-  return r.find(m=>!m.played&&(m.home===G.team.isim||m.away===G.team.isim))||null;
-}
+/* Bot-bot serilerini tamamına kadar simüle et (kullanıcının serisine dokunma). */
 function simPlayoffBotMatches(){
   const r=currentPlayoffRound();
   if(!r) return;
-  r.forEach(m=>{
-    if(m.played) return;
-    if(G.team&&(m.home===G.team.isim||m.away===G.team.isim)) return;
-    const res=playoffPickWinner(m.home,m.away);
-    m.hs=res.hs; m.as=res.as; m.winner=res.winner; m.played=true;
+  r.forEach(s=>{
+    if(s.done) return;
+    if(G.team&&(s.home===G.team.isim||s.away===G.team.isim)) return;
+    let guard=0;
+    while(!s.done&&guard++<9){
+      const gameNo=seriesCurrentGameNo(s);
+      const host=seriesGameHost(s,gameNo);
+      const other=host===s.home?s.away:s.home;
+      const res=playoffPickWinner(host,other);
+      recordSeriesGame(s,{gameNo,host,hs:res.hs,as:res.as,winner:res.winner});
+    }
   });
 }
 function playoffRoundLabel(idx,total){
-  /* total = o turdaki maç sayısı: 4→Çeyrek, 2→Yarı, 1→Final */
+  /* total = o turdaki seri sayısı: 4→Çeyrek, 2→Yarı, 1→Final */
   return total>=4?'Çeyrek Final':total===2?'Yarı Final':'Final';
+}
+/* Playoff MVP: final serisi boyunca kullanıcının oyuncu istatistiklerini biriktir. */
+function accumulatePlayoffFinalStats(ev){
+  try{
+    const r=currentPlayoffRound();
+    if(!r||r.length!==1||!G.playoff) return; /* yalnız final serisi */
+    G.playoff.finalStats=G.playoff.finalStats||{};
+    const map=(ev&&ev.players)||{};
+    Object.keys(map).forEach(id=>{
+      const p=(G.players||[]).find(x=>x.id===id); if(!p) return;
+      const fs=G.playoff.finalStats[id]||(G.playoff.finalStats[id]={isim:p.isim,team:G.team.isim,pts:0,ast:0,reb:0,g:0});
+      const st=map[id]; fs.g++; if(st){ fs.pts+=st.pts||0; fs.ast+=st.ast||0; fs.reb+=st.reb||0; }
+    });
+  }catch(e){}
 }
 function maybeAdvancePlayoff(){
   const r=currentPlayoffRound();
-  if(!r||!r.every(m=>m.played)) return;
-  const winners=r.map(m=>m.winner).filter(Boolean);
+  if(!r||!r.every(s=>s.done)) return;
+  const winners=r.map(s=>({team:s.winner,seed:(s.winner===s.home?s.homeSeed:s.awaySeed)})).filter(w=>w.team);
   if(winners.length<=1){
-    G.playoff.champion=winners[0]||null;
+    G.playoff.champion=winners[0]?winners[0].team:null;
     G.playoff.active=false;
     finishPlayoffs();
     return;
   }
   const next=[];
-  for(let i=0;i<winners.length;i+=2){ next.push({home:winners[i],away:winners[i+1],hs:null,as:null,played:false,winner:null}); }
+  for(let i=0;i<winners.length;i+=2){
+    const a=winners[i], b=winners[i+1];
+    const hi=(a.seed<=b.seed)?a:b, lo=(a.seed<=b.seed)?b:a; /* düşük seed no = üst sıra = ev avantajı */
+    next.push(makeSeries(hi.team,lo.team,hi.seed,lo.seed));
+  }
   G.playoff.rounds.push(next);
   G.playoff.round++;
   simPlayoffBotMatches();
   if(!userPlayoffMatch()) maybeAdvancePlayoff();
 }
+/* Şampiyonun en iyi oyuncusu (kullanıcı final oynamadıysa MVP için makul yedek). */
+function playoffChampionTopPlayer(champ){
+  try{
+    if(G.team&&champ===G.team.isim){
+      let best=null,sc=-1; const s=G.playoff&&G.playoff.finalStats||{};
+      Object.keys(s).forEach(id=>{ const v=s[id],x=(v.pts||0)+(v.ast||0)*1.5+(v.reb||0)*1.2; if(x>sc){sc=x;best=v;} });
+      if(best) return {isim:best.isim,team:champ,pts:best.pts,ast:best.ast,reb:best.reb,g:best.g};
+    }
+    const prof=getBotClubProfile(champ,G.team&&G.team.tblKey||'tbl');
+    const ros=(prof&&prof.roster||[]).slice().sort((a,b)=>(b.genel||0)-(a.genel||0));
+    const p=ros[0];
+    if(p) return {isim:p.isim,team:champ,pts:null,ast:null,reb:null,g:null,genel:p.genel};
+  }catch(e){}
+  return null;
+}
 function finishPlayoffs(){
   const champ=G.playoff&&G.playoff.champion;
   const userChamp=champ&&G.team&&champ===G.team.isim;
+  const mvp=playoffChampionTopPlayer(champ);
+  if(G.playoff) G.playoff.mvp=mvp;
   if(userChamp){
     unlockAchievement('sampiyon');
     unlockAchievement('playoffSampiyon');
@@ -397,8 +554,33 @@ function finishPlayoffs(){
   } else {
     showNotif(`🏆 Playoff şampiyonu: ${champ||'—'}`);
   }
-  pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--gold);">🏆 <strong>Sezon ${G.playoff?G.playoff.year:''}</strong> playoff şampiyonu: <strong>${escMatch(champ||'—')}</strong>${userChamp?' — TEBRİKLER!':''}</div>`);
+  const mvpText=mvp?` · Playoff MVP: <strong>${escMatch(mvp.isim)}</strong> (${escMatch(mvp.team)})`:'';
+  pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--gold);">🏆 <strong>Sezon ${G.playoff?G.playoff.year:''}</strong> playoff şampiyonu: <strong>${escMatch(champ||'—')}</strong>${userChamp?' — TEBRİKLER!':''}${mvpText}</div>`);
+  try{ showChampionshipModal(champ,userChamp,mvp); }catch(e){ dbg('champ modal',e); }
   afterPlayoffsProceed();
+}
+/* Faz 2.1: Şampiyonluk kutlama modalı (kupa + konfeti). */
+function showChampionshipModal(champ,userChamp,mvp){
+  if(typeof showAppModal!=='function') return;
+  const confetti=userChamp
+    ? Array.from({length:22}).map((_,i)=>{
+        const c=['#f97316','#fbbf24','#22c55e','#3b82f6','#ec4899','#8b5cf6'][i%6];
+        const left=Math.round((i*4.5+3)%98), dur=(2.4+((i*7)%13)/10).toFixed(2), delay=(((i*13)%20)/10).toFixed(2);
+        return `<span style="position:absolute;top:-14px;left:${left}%;width:8px;height:12px;background:${c};border-radius:2px;animation:czConfetti ${dur}s linear ${delay}s infinite;"></span>`;
+      }).join('')
+    : '';
+  const mvpLine=mvp?`<div style="margin-top:12px;font-size:13px;color:var(--text2);">🌟 Playoff MVP: <strong style="color:var(--accent);">${escMatch(mvp.isim)}</strong> <span style="opacity:.8">(${escMatch(mvp.team)})</span>${mvp.pts!=null?` — ${(mvp.pts/(mvp.g||1)).toFixed(1)} sayı ort.`:''}</div>`:'';
+  const head=userChamp?`${escMatch(G.team.isim)} ŞAMPİYON!`:`Şampiyon: ${escMatch(champ||'—')}`;
+  const sub=userChamp?'Playoff serilerini kazandın — kupa senin! 🎉':'Bu sezon kupayı başka takım kaldırdı.';
+  showAppModal(`<style>@keyframes czConfetti{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(420px) rotate(340deg);opacity:.15}}@keyframes czTrophy{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}</style>
+    <div style="position:relative;overflow:hidden;text-align:center;padding:14px 6px 6px;">
+      ${confetti}
+      <div style="font-size:70px;line-height:1;margin-bottom:8px;${userChamp?'animation:czTrophy 1.4s ease-in-out infinite;':''}">🏆</div>
+      <div class="modal-title" style="text-align:center;color:var(--gold);font-size:24px;">${head}</div>
+      <p style="font-size:13px;color:var(--text2);margin:6px auto 0;max-width:360px;">Sezon ${G.playoff?G.playoff.year:''} · ${sub}</p>
+      ${mvpLine}
+      <button type="button" class="btn-p" style="width:auto;padding:10px 30px;margin-top:18px;" onclick="closeAppModal()">Kapat</button>
+    </div>`);
 }
 function afterPlayoffsProceed(){
   setTimeout(()=>{

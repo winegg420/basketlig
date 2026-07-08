@@ -25,7 +25,7 @@ function startMatch(playoff){
   }
   /* C1: Maç imzası — durdurma/yenileme sonrası aynı maçı tanımak için. */
   const sig=isPlayoff
-    ? ('po|'+((G.playoff&&G.playoff.round)||0)+'|'+playoff.matchup.home+'|'+playoff.matchup.away)
+    ? ('po|'+((G.playoff&&G.playoff.round)||0)+'|'+playoff.matchup.home+'|'+playoff.matchup.away+'|g'+(playoff.matchup.gameNo||1))
     : ('lig|'+match.seasonMatchIx);
   /* C1: Bu maç daha önce başlatılıp sonucu kilitlenmişse (kaybederken durdurup çıkma / sayfa
      yenileme) YENİDEN ÜRETME — aynı kilitli sonucu uygula. Sonucu silip yeniden oynama açığı kapanır. */

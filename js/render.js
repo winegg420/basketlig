@@ -809,24 +809,29 @@ function renderPlayoffPanel(){
   const um=userPlayoffMatch();
   const roundBlocks=(po.rounds||[]).map((r,ri)=>{
     const total=r.length;
-    const games=r.map(m=>{
-      const uHere=G.team&&(m.home===G.team.isim||m.away===G.team.isim);
-      const hw=m.played&&m.winner===m.home, aw=m.played&&m.winner===m.away;
-      return `<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--bg3);border-radius:7px;margin-bottom:4px;${uHere?'border:1px solid var(--accent);':''}">
-        <span style="flex:1;font-size:11px;${hw?'font-weight:800;color:var(--green);':''}">${escMatch(m.home)}</span>
-        <span style="font-size:11px;font-family:'Bebas Neue',sans-serif;">${m.played?`${m.hs}-${m.as}`:'vs'}</span>
-        <span style="flex:1;font-size:11px;text-align:right;${aw?'font-weight:800;color:var(--green);':''}">${escMatch(m.away)}</span>
+    const series=r.map(s=>{
+      const uHere=G.team&&(s.home===G.team.isim||s.away===G.team.isim);
+      const hw=s.done&&s.winner===s.home, aw=s.done&&s.winner===s.away;
+      const wh=(s.wins&&s.wins[0])||0, wa=(s.wins&&s.wins[1])||0;
+      const lead=!s.done&&(wh!==wa)?`<div style="font-size:9px;color:var(--text2);text-align:center;">${wh>wa?escMatch(s.home):escMatch(s.away)} ${Math.max(wh,wa)}-${Math.min(wh,wa)} önde</div>`:'';
+      return `<div style="padding:5px 8px;background:var(--bg3);border-radius:7px;margin-bottom:4px;${uHere?'border:1px solid var(--accent);':''}">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="flex:1;font-size:11px;${hw?'font-weight:800;color:var(--green);':''}">${escMatch(s.home)}</span>
+          <span style="font-size:13px;font-family:'Bebas Neue',sans-serif;min-width:34px;text-align:center;">${wh}-${wa}</span>
+          <span style="flex:1;font-size:11px;text-align:right;${aw?'font-weight:800;color:var(--green);':''}">${escMatch(s.away)}</span>
+        </div>${lead}
       </div>`;
     }).join('');
-    return `<div style="margin-bottom:8px;"><div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:4px;">${playoffRoundLabel(ri,total)}</div>${games}</div>`;
+    return `<div style="margin-bottom:8px;"><div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:4px;">${playoffRoundLabel(ri,total)} <span style="color:var(--text2);font-weight:400;">(seri · ilk 4 galibiyet)</span></div>${series}</div>`;
   }).join('');
+  const mvpLine=po.champion&&po.mvp?`<div style="text-align:center;padding:4px 10px 8px;font-size:11px;color:var(--text2);">🌟 Playoff MVP: <strong style="color:var(--accent);">${escMatch(po.mvp.isim)}</strong> (${escMatch(po.mvp.team)})</div>`:'';
   const action=po.champion
-    ? `<div style="text-align:center;padding:10px;font-weight:800;color:var(--gold);">🏆 Şampiyon: ${escMatch(po.champion)}</div>`
+    ? `<div style="text-align:center;padding:10px 10px 4px;font-weight:800;color:var(--gold);">🏆 Şampiyon: ${escMatch(po.champion)}</div>${mvpLine}`
     : um
-      ? `<button type="button" class="btn-p" style="width:100%;padding:11px;margin-top:6px;" onclick="scrollToMacLive();startPlayoffMatch()">🏆 Playoff maçını oyna — vs ${escMatch(um.home===G.team.isim?um.away:um.home)}</button>`
-      : `<div style="text-align:center;padding:8px;font-size:11px;color:var(--text2);">Diğer maçlar oynanıyor...</div>`;
+      ? `<button type="button" class="btn-p" style="width:100%;padding:11px;margin-top:6px;" onclick="scrollToMacLive();startPlayoffMatch()">🏆 Seri maçını oyna (${um.gameNo}. maç${um.home===G.team.isim?' · ev':' · deplasman'}) — vs ${escMatch(um.home===G.team.isim?um.away:um.home)}</button>`
+      : `<div style="text-align:center;padding:8px;font-size:11px;color:var(--text2);">Diğer seriler oynanıyor...</div>`;
   panel.innerHTML=`<div class="card" style="border:1px solid var(--gold);">
-    <div class="card-title">🏆 Sezon ${po.year} Playoff'ları (İlk 8 · Tek Maç Eleme)</div>
+    <div class="card-title">🏆 Sezon ${po.year} Playoff'ları (İlk 8 · Seri: ilk 4 galibiyet)</div>
     ${roundBlocks}${action}
   </div>`;
 }

@@ -36,9 +36,9 @@ Rakip kadrolar her maçta `getBotClubProfile()` ile yeniden üretiliyor; kalıc�
 ### B1. Transfer pazarlığı yok
 Serbest oyuncu ve kulüp transferleri **sabit fiyattan direkt alım**. Teklif verme/pazarlık, rakip kulübün "hayır" demesi, açık artırma yok. Menajerlik oyununun çekirdek eksiği.
 
-### B2. Playoff çok sığ
-İlk 8 → **tek maçlık eleme**. Final/yarı-final/çeyrek etiketi var ama: seri (best-of), 3.'lük maçı, playoff MVP'si, şampiyonluk töreni yok.
-- Konum: `startPlayoffs`/`maybeAdvancePlayoff` (3627-3700).
+### B2. Playoff çok sığ — ✅ UYGULANDI (7. oturum, Faz 2.1)
+İlk 8 → artık **seri** (best-of-7, ilk 4 galibiyet). Ev sahibi avantajı sıralamaya göre **2-2-1-1-1**. Playoff paneli seri skorunu ("2-1 önde") gösterir. **Playoff MVP** (final serisi istatistikleri) + **şampiyonluk kutlama modalı** (kupa/konfeti) eklendi. Harness ile bracket (çeyrek→yarı→final), ilk-4-galibiyet ve MVP doğrulandı.
+- Konum: `js/match-prep.js` (`makeSeries`/`recordSeriesGame`/`maybeAdvancePlayoff`/`finishPlayoffs`), `js/render.js` (`renderPlayoffPanel`).
 
 ### B3. Rakip takımlarda sakatlık yok
 Sakatlık sistemi (25 gerçek sakatlık) **sadece kullanıcı** oyuncularına işliyor (`rollInjuriesAfterUserMatch`). Rakip kadrolar soyut olduğu için hiç sakatlanmıyor → lig gerçekçiliği tek taraflı.
