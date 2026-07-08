@@ -49,8 +49,26 @@ function ticketDemandFactor(){
 function weeklyWageBill(){
   const oy=(G.players||[]).reduce((s,p)=>s+(Number(p.maas)||0),0);
   const ko=(G.coaches||[]).reduce((s,c)=>s+(Number(c.maas)||0),0);
+  const iz=(G.scouts||[]).reduce((s,c)=>s+(Number(c.maas)||0),0); /* Faz 5.1: izci maaşları */
   const ar=(G.arena&&Number(G.arena.bk))||0;
-  return {oy,ko,ar,top:oy+ko+ar};
+  return {oy,ko,iz,ar,top:oy+ko+iz+ar};
+}
+/* Faz 5.1: Her ekonomi haftası izciler atandıkları havuzda potansiyel keşfeder (kalite = keşif adedi). */
+function processScoutingWeek(){
+  try{
+    if(!Array.isArray(G.scouts)||!G.scouts.length) return;
+    G.scouts.forEach(sc=>{
+      const pool=sc.atama==='youth'?(G.youth||[]):(G.marketPlayers||[]);
+      const unscouted=pool.filter(p=>p&&!(typeof playerScouted==='function'&&playerScouted(p)));
+      if(!unscouted.length) return;
+      unscouted.sort((a,b)=>(Number(b.potansiyel)||0)-(Number(a.potansiyel)||0));
+      const n=Math.max(1,Number(sc.kalite)||1);
+      const found=unscouted.slice(0,n);
+      found.forEach(p=>{ p.scouted=true; });
+      const gem=found.find(p=>(Number(p.potansiyel)||0)-(Number(p.genel)||0)>=12);
+      if(gem){ pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--blue);">🔭 İzcin <strong>${escMatch(sc.ad)}</strong> (${escMatch(sc.bolge)}) parlak bir yetenek keşfetti: <strong>${escMatch(gem.isim)}</strong> — potansiyel ${gem.potansiyel} (${(sc.atama==='youth'?'altyapı':'market')}).</div>`); }
+    });
+  }catch(e){ dbg('scouting',e); }
 }
 
 /** Koç bonusu: her koç, uzmanlık statı en düşük 'seviye' kadar oyuncuya +1 verir (potansiyel tavanına kadar). */
@@ -166,8 +184,9 @@ function processEconomyWeeks(){
     const w=weeklyWageBill();
     txn('Haftalık maaş + bakım',-w.top);
     applyWeeklyCoachBonuses();
+    processScoutingWeek(); /* Faz 5.1: izci ağı otomatik keşif */
     aiWeeklyLeagueActivity();
-    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">🧾 Haftalık gider: <strong>-${fmtn(w.top)} KR</strong> (oyuncu ${fmtn(w.oy)} · koç ${fmtn(w.ko)} · arena ${fmtn(w.ar)})</div>`);
+    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">🧾 Haftalık gider: <strong>-${fmtn(w.top)} KR</strong> (oyuncu ${fmtn(w.oy)} · koç ${fmtn(w.ko)}${w.iz?' · izci '+fmtn(w.iz):''} · arena ${fmtn(w.ar)})</div>`);
     processBankruptcy();
   }
 }

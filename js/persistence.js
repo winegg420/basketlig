@@ -188,6 +188,7 @@ function serializeGameState(){
     players:G.players,youth:G.youth,marketPlayers:G.marketPlayers,
     clubTransferPlayers:G.clubTransferPlayers||[],_ctSeq:G._ctSeq||0,
     coaches:G.coaches,coachMarket:G.coachMarket,
+    scouts:G.scouts||[],scoutMarket:G.scoutMarket||[],
     ligTeams:pl,
     arena:G.arena,youthFacility:G.youthFacility||{s:1},selectedColor:G.selectedColor,activeTrainings:G.activeTrainings||[],
     gameDay:G.gameDay,managerName:G.managerName,managerRep:G.managerRep||0,managerHistory:G.managerHistory||[],joinedAt:G.joinedAt,lastActive:new Date().toISOString(),
@@ -207,7 +208,8 @@ function serializeGameState(){
     pendingMatch:G.pendingMatch||null,
     pendingOffers:G.pendingOffers||[],
     presidentTarget:G.presidentTarget||null,
-    budgetPenalty:G.budgetPenalty||0
+    budgetPenalty:G.budgetPenalty||0,
+    analytics:G.analytics||{teamMatches:[],playerDev:{}}
   };
 }
 
@@ -355,9 +357,12 @@ function applyGameState(d){
   G.ticketPrice=d.ticketPrice!=null?d.ticketPrice:2;
   G.tutorialDone=!!d.tutorialDone;
   G.pendingMatch=d.pendingMatch&&typeof d.pendingMatch==='object'?d.pendingMatch:null; /* C1: kilitli maç sonucu */
+  G.scouts=Array.isArray(d.scouts)?d.scouts:[]; /* Faz 5.1: izci ağı */
+  G.scoutMarket=Array.isArray(d.scoutMarket)&&d.scoutMarket.length?d.scoutMarket:(typeof genScoutMarket==='function'?genScoutMarket():[]);
   G.pendingOffers=Array.isArray(d.pendingOffers)?d.pendingOffers:[]; /* Faz 4.1: kullanıcı oyuncularına gelen teklifler */
   G.presidentTarget=d.presidentTarget&&typeof d.presidentTarget==='object'?d.presidentTarget:null; /* Faz 4.3 */
   G.budgetPenalty=Number(d.budgetPenalty)||0; /* Faz 4.3: hedef tutmayınca bütçe kısıtı */
+  G.analytics=d.analytics&&typeof d.analytics==='object'?{teamMatches:Array.isArray(d.analytics.teamMatches)?d.analytics.teamMatches:[],playerDev:d.analytics.playerDev&&typeof d.analytics.playerDev==='object'?d.analytics.playerDev:{}}:{teamMatches:[],playerDev:{}}; /* Faz 5.2 */
   if(G.team&&(!G.ligTeams||!G.ligTeams.length)) G.ligTeams=genLigTeams();
   /* Faz 4.2: eski kayıtlardaki oyunculara kişilik ata (geriye dönük uyum). */
   [G.players,G.youth,G.marketPlayers,G.clubTransferPlayers].forEach(list=>{ (list||[]).forEach(p=>{ if(p&&!p.kisilik) p.kisilik=ch(KISILIK_KEYS); }); });

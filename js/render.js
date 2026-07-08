@@ -995,6 +995,114 @@ function renderAntrenman(){
       <div class="coach-stat"><span style="color:var(--text2);">Transfer Bedeli</span><span style="color:var(--accent);">${fmtn(c.satisFiyat)} KR</span></div>
       <button class="btn-p" onclick="hireCoach('${c.id}')" style="padding:7px;font-size:11px;margin-top:8px;">İŞE AL</button>
     </div>`).join('');
+  renderScouts();
+}
+/* ── Faz 5.2: Gelişmiş istatistik / analiz ekranı ── */
+function svgLineChart(vals,opts){
+  opts=opts||{};
+  const w=opts.w||560,h=opts.h||150,pad=opts.pad||26;
+  if(!vals||vals.length<1) return '<div style="color:var(--text2);font-size:12px;padding:16px;text-align:center;">Veri yok — birkaç maç oyna, grafikler burada oluşur.</div>';
+  const min=opts.min!=null?opts.min:Math.min(...vals);
+  const max=opts.max!=null?opts.max:Math.max(...vals);
+  const rng=(max-min)||1;
+  const X=i=>pad+(vals.length<=1?0:(i/(vals.length-1))*(w-2*pad));
+  const Y=v=>h-pad-((v-min)/rng)*(h-2*pad);
+  const col=opts.color||'var(--accent)';
+  const pts=vals.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+  const zeroLine=(opts.zero!=null&&opts.zero>=min&&opts.zero<=max)?`<line x1="${pad}" y1="${Y(opts.zero).toFixed(1)}" x2="${w-pad}" y2="${Y(opts.zero).toFixed(1)}" stroke="var(--border)" stroke-dasharray="4 3"/>`:'';
+  const area=vals.length>1?`<polyline fill="none" stroke="${col}" stroke-width="2.5" points="${pts}"/>`:'';
+  const dots=vals.map((v,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${vals.length>30?'1.6':'3'}" fill="${col}"/>`).join('');
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;display:block;">
+    <text x="2" y="12" fill="var(--text2)" font-size="10">${(opts.fmt?opts.fmt(max):max)}</text>
+    <text x="2" y="${h-4}" fill="var(--text2)" font-size="10">${(opts.fmt?opts.fmt(min):min)}</text>
+    ${zeroLine}${area}${dots}
+  </svg>`;
+}
+function renderAnalytics(){
+  const el=document.getElementById('analiz-body');
+  if(!el) return;
+  const a=(G.analytics&&typeof G.analytics==='object')?G.analytics:{teamMatches:[],playerDev:{}};
+  const curSeason=(G.season&&G.season.year)||0;
+  const tm=(a.teamMatches||[]).filter(m=>m.season===curSeason);
+  const src=tm.length?tm:(a.teamMatches||[]);
+  const margins=src.map(m=>m.margin);
+  const forPts=src.map(m=>m.uPts);
+  const agstPts=src.map(m=>m.oPts);
+  const last5=src.slice(-5);
+  const formStr=last5.map(m=>m.win?'<span style="color:var(--green);font-weight:800;">G</span>':'<span style="color:var(--red);font-weight:800;">M</span>').join(' ');
+  const wins=src.filter(m=>m.win).length, played=src.length;
+  const avgFor=played?(forPts.reduce((s,v)=>s+v,0)/played).toFixed(1):'—';
+  const avgAg=played?(agstPts.reduce((s,v)=>s+v,0)/played).toFixed(1):'—';
+  const netAvg=played?((margins.reduce((s,v)=>s+v,0)/played)).toFixed(1):'—';
+  const players=(G.players||[]).slice().sort((x,y)=>(y.genel||0)-(x.genel||0));
+  const sel=G._analiticPlayerId&&players.some(p=>p.id===G._analiticPlayerId)?G._analiticPlayerId:(players[0]&&players[0].id);
+  const playerOpts=players.map(p=>`<option value="${p.id}" ${p.id===sel?'selected':''}>${escMatch(p.isim)} (${p.poz}·OVR ${p.genel})</option>`).join('');
+  el.innerHTML=`
+    <div class="card">
+      <div class="card-title">📊 Takım Trendi ${curSeason?`· Sezon ${curSeason}`:''}</div>
+      <div class="g3" style="margin-bottom:10px;">
+        <div style="background:var(--bg3);border-radius:9px;padding:10px;"><div style="font-size:10px;color:var(--text2);text-transform:uppercase;">Galibiyet</div><div style="font-size:20px;font-weight:800;">${wins}/${played}</div></div>
+        <div style="background:var(--bg3);border-radius:9px;padding:10px;"><div style="font-size:10px;color:var(--text2);text-transform:uppercase;">Sayı ort. (attı/yedi)</div><div style="font-size:20px;font-weight:800;">${avgFor} / ${avgAg}</div></div>
+        <div style="background:var(--bg3);border-radius:9px;padding:10px;"><div style="font-size:10px;color:var(--text2);text-transform:uppercase;">Averaj (+/-)</div><div style="font-size:20px;font-weight:800;color:${Number(netAvg)>=0?'var(--green)':'var(--red)'};">${netAvg}</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">Son 5 maç formu: ${formStr||'—'}</div>
+      <div style="font-size:11px;color:var(--gold);margin:8px 0 2px;">Maç bazında sayı farkı (+/-)</div>
+      ${svgLineChart(margins,{zero:0,color:'var(--accent)',min:margins.length?Math.min(-5,...margins):-5,max:margins.length?Math.max(5,...margins):5})}
+      <div style="font-size:11px;color:var(--gold);margin:10px 0 2px;">Attığı sayı (maç bazında)</div>
+      ${svgLineChart(forPts,{color:'var(--green)'})}
+    </div>
+    <div class="card" style="margin-top:14px;">
+      <div class="card-title">📈 Oyuncu Gelişimi</div>
+      <select id="analiticPlayerSel" onchange="G._analiticPlayerId=this.value;renderAnalytics();" style="width:100%;max-width:340px;padding:8px;border-radius:9px;background:var(--bg3);color:var(--text);border:1px solid var(--border);font-size:12px;margin-bottom:10px;">${playerOpts}</select>
+      <div id="analiticPlayerBody">${renderAnalyticsPlayerBody(sel)}</div>
+    </div>`;
+}
+function renderAnalyticsPlayerBody(pid){
+  const a=(G.analytics&&G.analytics.playerDev)||{};
+  const p=(G.players||[]).find(x=>x.id===pid);
+  if(!p) return '<div style="color:var(--text2);font-size:12px;">Oyuncu seç.</div>';
+  const dev=(a[pid]||[]).map(x=>x.genel);
+  const sez=p.sezon||{mac:0,pts:0,ast:0,reb:0};
+  const pg=v=>(sez.mac?(v/sez.mac).toFixed(1):'0.0');
+  return `<div class="g3" style="margin-bottom:10px;">
+      <div style="background:var(--bg3);border-radius:9px;padding:10px;"><div style="font-size:10px;color:var(--text2);text-transform:uppercase;">Sayı ort.</div><div style="font-size:18px;font-weight:800;">${pg(sez.pts)}</div></div>
+      <div style="background:var(--bg3);border-radius:9px;padding:10px;"><div style="font-size:10px;color:var(--text2);text-transform:uppercase;">Asist ort.</div><div style="font-size:18px;font-weight:800;">${pg(sez.ast)}</div></div>
+      <div style="background:var(--bg3);border-radius:9px;padding:10px;"><div style="font-size:10px;color:var(--text2);text-transform:uppercase;">Ribaund ort.</div><div style="font-size:18px;font-weight:800;">${pg(sez.reb)}</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--gold);margin:2px 0;">OVR gelişim eğrisi (${dev.length} maç · şu an ${p.genel})</div>
+    ${svgLineChart(dev,{color:'var(--blue)',min:dev.length?Math.min(...dev)-1:50,max:dev.length?Math.max(...dev)+1:99,fmt:v=>Math.round(v)})}
+    <div style="font-size:10px;color:var(--text2);margin-top:6px;">Kişilik: ${kisilikInfo(p.kisilik).ikon} ${kisilikInfo(p.kisilik).ad} · Potansiyel: ${playerScouted(p)?p.potansiyel:'keşif gerek'}</div>`;
+}
+/* Faz 5.1: izci ağı + izci pazarı render'ı (Antrenman sayfası). */
+function renderScouts(){
+  const list=document.getElementById('scoutList');
+  if(list){
+    list.innerHTML=(G.scouts&&G.scouts.length)
+      ? G.scouts.map(s=>`<div class="coach-card">
+          <div class="coach-header"><div class="coach-avatar"><img src="${coachAvatar(s)}" ${coachAvatarAttrs(s)} alt=""></div>
+            <div><div class="coach-name">${escMatch(s.ad)}</div><div class="coach-spec">🔭 ${escMatch(s.bolge)}</div></div></div>
+          <div class="coach-stat"><span style="color:var(--text2);">Kalite</span><span style="color:var(--gold);">${'★'.repeat(Math.max(1,Number(s.kalite)||1))}</span></div>
+          <div class="coach-stat"><span style="color:var(--text2);">Maaş</span><span style="color:var(--red);">${fmtn(s.maas)} KR/hf</span></div>
+          <div class="coach-stat"><span style="color:var(--text2);">Havuz</span>
+            <select onchange="assignScout('${s.id}',this.value)" style="background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:11px;padding:3px;">
+              <option value="market" ${s.atama!=='youth'?'selected':''}>Transfer Market</option>
+              <option value="youth" ${s.atama==='youth'?'selected':''}>Altyapı</option>
+            </select></div>
+          <button class="btn-sm btn-danger" onclick="fireScout('${s.id}')" style="width:100%;margin-top:8px;">AĞDAN ÇIKAR</button>
+        </div>`).join('')
+      : '<div style="color:var(--text2);font-size:12px;grid-column:1/-1;padding:16px;text-align:center;">Henüz izcin yok. Aşağıdan işe al — atadıkları havuzda oyuncuları otomatik keşfederler.</div>';
+  }
+  const mkt=document.getElementById('scoutMarket');
+  if(mkt){
+    mkt.innerHTML=(G.scoutMarket||[]).map(s=>`<div class="coach-card">
+      <div class="coach-header"><div class="coach-avatar"><img src="${coachAvatar(s)}" ${coachAvatarAttrs(s)} alt=""></div>
+        <div><div class="coach-name">${escMatch(s.ad)}</div><div class="coach-spec">🔭 ${escMatch(s.bolge)}</div></div></div>
+      <div class="coach-stat"><span style="color:var(--text2);">Kalite</span><span style="color:var(--gold);">${'★'.repeat(Math.max(1,Number(s.kalite)||1))}</span></div>
+      <div class="coach-stat"><span style="color:var(--text2);">Haftalık Maaş</span><span style="color:var(--red);">${fmtn(s.maas)} KR</span></div>
+      <div class="coach-stat"><span style="color:var(--text2);">Transfer Bedeli</span><span style="color:var(--accent);">${fmtn(s.satisFiyat)} KR</span></div>
+      <button class="btn-p" onclick="hireScout('${s.id}')" style="padding:7px;font-size:11px;margin-top:8px;">İŞE AL</button>
+    </div>`).join('');
+  }
 }
 
 function renderArena(){

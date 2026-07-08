@@ -94,6 +94,17 @@ const KISILIKLER={
 const KISILIK_KEYS=Object.keys(KISILIKLER);
 function kisilikInfo(k){ return KISILIKLER[k]||KISILIKLER.kararsiz; }
 function ensurePersonality(p){ if(p&&!p.kisilik) p.kisilik=ch(KISILIK_KEYS); return p; }
+
+/* Faz 5.1: Bölgesel izci ağı — her izci bir bölgeye odaklı; kalite keşif hızını/isabetini belirler. */
+const SCOUT_REGIONS=['Yerli (Türkiye)','Avrupa','Amerika','Global Genç Yetenek'];
+function genScout(tag){
+  const kalite=rand(1,5);
+  const maas=Math.round(40+kalite*22+kalite*kalite*2);
+  return {id:'sc'+String(tag)+Math.random().toString(36).slice(2,7),ad:`${ch(ILK)} ${ch(SY)}`,bolge:ch(SCOUT_REGIONS),kalite,maas,atama:'market'};
+}
+function genScoutMarket(){
+  return Array.from({length:5}).map((_,i)=>{ const s=genScout('m'+i); s.satisFiyat=Math.round(300+s.kalite*s.kalite*120+s.maas*2); return s; });
+}
 function genPlayer(poz=null,tr=false){
   const ulke=tr?TR_ULKE:ch(ULKELER);
   const p=poz||ch(POZLAR);

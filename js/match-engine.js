@@ -662,6 +662,7 @@ function applyMatchResult(ev,ctx){
     simulateRoundCpuMatches(sm.round);
     regenerateSeasonFixtures();
     syncUserRecordFromStandings();
+    if(typeof recordMatchAnalytics==='function') recordMatchAnalytics(sm,uPts,oPts); /* Faz 5.2: analiz verisi */
     if(ctx.userIsHome){
       const bilet=homeTicketIncome();
       txn('Bilet geliri',bilet);

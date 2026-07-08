@@ -213,6 +213,24 @@ function updateChronicFatigue(playedSet){
 }
 
 /** Şiddet ağırlıklı sakatlık seçimi — hafif sakatlıklar daha sık. */
+/* Faz 5.2: Maç sonrası analiz verisi topla — takım trendi (+/-) + oyuncu gelişim eğrisi. */
+function recordMatchAnalytics(sm,uPts,oPts){
+  try{
+    G.analytics=G.analytics&&typeof G.analytics==='object'?G.analytics:{teamMatches:[],playerDev:{}};
+    G.analytics.teamMatches=Array.isArray(G.analytics.teamMatches)?G.analytics.teamMatches:[];
+    G.analytics.playerDev=G.analytics.playerDev&&typeof G.analytics.playerDev==='object'?G.analytics.playerDev:{};
+    const win=uPts>oPts;
+    G.analytics.teamMatches.push({season:(G.season&&G.season.year)||0,round:sm.round,day:sm.day,uPts,oPts,margin:uPts-oPts,win});
+    if(G.analytics.teamMatches.length>120) G.analytics.teamMatches.shift();
+    (G.players||[]).forEach(p=>{
+      const arr=G.analytics.playerDev[p.id]||(G.analytics.playerDev[p.id]=[]);
+      arr.push({day:sm.day,genel:Number(p.genel)||0});
+      if(arr.length>60) arr.shift();
+    });
+    const ids=new Set((G.players||[]).map(p=>p.id));
+    Object.keys(G.analytics.playerDev).forEach(id=>{ if(!ids.has(id)) delete G.analytics.playerDev[id]; });
+  }catch(e){ dbg('analytics',e); }
+}
 function pickInjury(){
   const total=INJURIES.reduce((s,x)=>s+x.w,0);
   let r=Math.random()*total;

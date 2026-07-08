@@ -584,6 +584,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <button type="button" class="ni" data-page="antrenman"><span class="icon">💪</span>Antrenman</button>
         <button type="button" class="ni" data-page="arena"><span class="icon">🏟️</span>Arena</button>
         <button type="button" class="ni" data-page="bilanco"><span class="icon">📈</span>Bilanço</button>
+        <button type="button" class="ni" data-page="analiz"><span class="icon">📊</span>Analiz</button>
       </nav>
       <div class="sb-league">
         <div class="sb-league-head">
@@ -984,6 +985,15 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <div class="card-title">🛒 Koç Pazarı</div>
           <div class="g3" id="coachMarket"></div>
         </div>
+        <div class="card">
+          <div class="card-title">🔭 İzci Ağı</div>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">İzciler her ekonomi haftası atandıkları havuzda (Altyapı / Transfer Market) oyuncu potansiyellerini otomatik keşfeder. Kalite = keşif hızı ve isabeti.</p>
+          <div class="g3" id="scoutList"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">🛰️ İzci Pazarı</div>
+          <div class="g3" id="scoutMarket"></div>
+        </div>
       </div>
 
       <!-- ARENA -->
@@ -1053,6 +1063,11 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <div class="card-title">🧾 Son hareketler</div>
           <div id="sonHareketler"></div>
         </div>
+      </div>
+
+      <!-- ANALİZ (Faz 5.2) -->
+      <div class="page" id="page-analiz">
+        <div id="analiz-body"></div>
       </div>
       </div>
     </main>

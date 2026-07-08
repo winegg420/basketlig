@@ -543,6 +543,30 @@ function fireCoach(id){
   showNotif(`${c.ad} kadrodan çıkarıldı.`);renderAntrenman();
   scheduleGameSave();
 }
+/* ── Faz 5.1: İzci ağı — işe alma / çıkarma / atama ── */
+function hireScout(id){
+  const s=(G.scoutMarket||[]).find(x=>x.id===id); if(!s) return;
+  G.scouts=Array.isArray(G.scouts)?G.scouts:[];
+  if(G.scouts.length>=4){ showNotif('En fazla 4 izci çalıştırabilirsin — önce birini çıkar.'); return; }
+  if(G.coins<s.satisFiyat){ showNotif('❌ Yeterli KR yok!'); return; }
+  txn('İzci transferi: '+s.ad,-s.satisFiyat);
+  const hired={...s}; delete hired.satisFiyat;
+  G.scouts.push(hired);
+  G.scoutMarket=(G.scoutMarket||[]).filter(x=>x.id!==id);
+  if(G.scoutMarket.length<3) G.scoutMarket.push(...genScoutMarket().slice(0,2)); /* pazarı taze tut */
+  updateCoins(); showNotif(`✅ İzci ${s.ad} (${s.bolge}) ağına katıldı!`); renderAntrenman(); scheduleGameSave();
+}
+function fireScout(id){
+  const s=(G.scouts||[]).find(x=>x.id===id); if(!s) return;
+  G.scouts=(G.scouts||[]).filter(x=>x.id!==id);
+  showNotif(`İzci ${s.ad} ağdan çıkarıldı.`); renderAntrenman(); scheduleGameSave();
+}
+function assignScout(id,pool){
+  const s=(G.scouts||[]).find(x=>x.id===id); if(!s) return;
+  s.atama=(pool==='youth')?'youth':'market';
+  showNotif(`İzci ${s.ad} → ${s.atama==='youth'?'Altyapı':'Transfer Market'} havuzuna atandı.`);
+  scheduleGameSave();
+}
 
 function upgradeArena(s){
   const g=ARENA_LVL[s-1];
@@ -555,8 +579,8 @@ function upgradeArena(s){
 }
 
 // ===== NAVİGASYON =====
-const PAGE_TITLES={dashboard:'ANA PANEL',takim:'TAKIM',kadro:'KADRO YÖNETİMİ',mac:'MAÇLAR',lig:'LİG PUAN DURUMU',market:'TRANSFER MARKET',altyapi:'ALTYAPI',antrenman:'ANTRENMAN & KOÇLAR',arena:'ARENA',bilanco:'BİLANÇO'};
-const MENTOR_ROUTE_SLUGS=['dashboard','takim','kadro','mac','lig','market','altyapi','antrenman','arena','bilanco'];
+const PAGE_TITLES={dashboard:'ANA PANEL',takim:'TAKIM',kadro:'KADRO YÖNETİMİ',mac:'MAÇLAR',lig:'LİG PUAN DURUMU',market:'TRANSFER MARKET',altyapi:'ALTYAPI',antrenman:'ANTRENMAN & KOÇLAR',arena:'ARENA',bilanco:'BİLANÇO',analiz:'ANALİZ & İSTATİSTİK'};
+const MENTOR_ROUTE_SLUGS=['dashboard','takim','kadro','mac','lig','market','altyapi','antrenman','arena','bilanco','analiz'];
 
 /** Mentor denetimi: DOM rotaları, yan panel sırası, başlık eşleşmesi + layout metrikleri (panel JSON v8). */
 function charazayCollectMentorIssues(slug, lay){
@@ -814,6 +838,7 @@ function showPage(page,btn){
     if(page==='antrenman')renderAntrenman();
     if(page==='arena')renderArena();
     if(page==='bilanco')renderBilanço();
+    if(page==='analiz')renderAnalytics();
     requestAnimationFrame(()=>{
       requestAnimationFrame(()=>{
         requestAnimationFrame(()=>charazayRunLayoutCalibration(page));
@@ -862,6 +887,7 @@ function createTeam(){
   G.team={isim:name,renk:G.selectedColor,tblKey:assignUserToTblSlot(name),logoUrl:''};
   G.players=genRoster();G.youth=genYouth();G.marketPlayers=genMarket();
   G.ligTeams=genLigTeams();G.coaches=genCoaches();G.coachMarket=genCoachMarket();
+  G.scouts=[];G.scoutMarket=genScoutMarket();
   G.season=null;
   G.seasonFixtures=[];
   G.settings=Object.assign({sound:true,autosaveSec:12},G.settings||{});
@@ -870,6 +896,7 @@ function createTeam(){
   G.lastEcoDay=1;
   G.tactics={tempo:'normal',odak:'dengeli',defensiveStyle:'adam',focusPlayerId:null,markStar:false};
   G.pendingOffers=[];G.presidentTarget=null;G.budgetPenalty=0;
+  G.analytics={teamMatches:[],playerDev:{}};
   G.tutorialDone=false;
   bootstrapAppUi();
   applyAutosaveSetting();
