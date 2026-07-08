@@ -1,14 +1,33 @@
+/** Bir takımın lig içindeki G-M rekorunu döndürür (puan durumundan). */
+function _teamRecordLabel(name){
+  try{
+    const row=G.season&&G.season.standings&&G.season.standings[name];
+    if(!row) return '';
+    return `${row.g||0}G · ${row.m||0}M`;
+  }catch(e){ return ''; }
+}
 function renderDashboardNextMatch(){
   const nh=document.getElementById('nextHome');
   const na=document.getElementById('nextAway');
   const meta=document.getElementById('nextMatchMeta');
+  const card=document.getElementById('dashNextCard');
+  const homeCol=document.getElementById('dnHomeCol');
+  const awayCol=document.getElementById('dnAwayCol');
+  const homeRec=document.getElementById('dnHomeRec');
+  const awayRec=document.getElementById('dnAwayRec');
+  const setTxt=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
   if(!nh||!na||!G.team) return;
   ensureMatchKickoffs();
   const m=findNextUserSeasonMatch();
+  if(homeCol) homeCol.classList.remove('mine');
+  if(awayCol) awayCol.classList.remove('mine');
   if(!m){
     nh.textContent=G.team.isim;
     const done=G.season&&seasonAllMatchesPlayed();
     na.textContent=done?'— sezon bitti —':'— sezon yok —';
+    if(homeRec) homeRec.textContent='';
+    if(awayRec) awayRec.textContent='';
+    if(card){ card.style.opacity='0.6'; card.style.pointerEvents='none'; const btn=card.querySelector('.dn-play'); if(btn){ btn.textContent='Maç yok'; btn.disabled=true; } }
     if(meta){
       if(!G.season||!G.season.matches||!G.season.matches.length) meta.textContent='Sezon senkronize ediliyor…';
       else if(done) meta.textContent='Sezon tamam — sıradaki sezon otomatik.';
@@ -16,9 +35,16 @@ function renderDashboardNextMatch(){
     }
     return;
   }
+  if(card){ card.style.opacity=''; card.style.pointerEvents=''; const btn=card.querySelector('.dn-play'); if(btn){ btn.textContent='▶ Maçı Başlat'; btn.disabled=false; } }
   nh.textContent=m.home;
   na.textContent=m.away;
+  if(homeRec) homeRec.textContent=_teamRecordLabel(m.home);
+  if(awayRec) awayRec.textContent=_teamRecordLabel(m.away);
   const u=G.team.isim;
+  if(m.home===u&&homeCol) homeCol.classList.add('mine');
+  if(m.away===u&&awayCol) awayCol.classList.add('mine');
+  setTxt('dnHomeRole','Ev'+(m.home===u?' · SEN':''));
+  setTxt('dnAwayRole','Deplasman'+(m.away===u?' · SEN':''));
   const us=m.home===u?'Ev':'Dep.';
   const tClock=formatKickClock(m);
   if(meta) meta.textContent=`${formatFixtureDayLabel(m.day)} · ${tClock} · Tur ${m.round}/${totalRounds()} · Sen: ${us}`;

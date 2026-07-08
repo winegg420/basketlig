@@ -1,3 +1,13 @@
+/** Ana panel / fikstür kartından sıradaki maçı doğrudan başlat (test kolaylığı). */
+function startNextMatchNow(){
+  if(!G.team){ showNotif('Önce takım oluştur.'); return; }
+  gotoMacPage();
+  if(mState.running){ requestAnimationFrame(()=>scrollToMacLive()); return; }
+  if(!G.season||!G.season.active){ requestAnimationFrame(()=>scrollToMacLive()); showNotif('Önce Lig’den sezonu başlat.'); return; }
+  const m=findNextUserSeasonMatch();
+  if(!m){ showNotif(seasonAllMatchesPlayed()?'Bu sezonun maçların bitti.':'Sıradaki maç bulunamadı.'); return; }
+  requestAnimationFrame(()=>{ scrollToMacLive(); startMatch(); });
+}
 function startPlayoffMatch(){
   const m=userPlayoffMatch();
   if(!m){ showNotif('Oynanacak playoff maçın yok.'); return; }

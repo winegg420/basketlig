@@ -509,7 +509,10 @@ function macSeasonMatchCardHtml(m,isNext){
   const tact=m.played
     ?'<span style="font-size:11px;color:var(--text2);text-align:center;">Oynandı</span>'
     :isNext
-    ?`<button type="button" class="btn-p mac-fx-tact" onclick="openMatchTactics(${m.seasonMatchIx})">Taktik ayarla</button>`
+    ?`<div style="display:flex;flex-direction:column;gap:6px;">
+        <button type="button" class="btn-p mac-fx-tact" style="background:linear-gradient(135deg,var(--accent),#ea580c);" onclick="startNextMatchNow()">▶ Maçı Başlat</button>
+        <button type="button" class="btn-sm mac-fx-tact" onclick="openMatchTactics(${m.seasonMatchIx})">🎯 Taktik ayarla</button>
+      </div>`
     :'<span style="font-size:11px;color:rgba(255,255,255,0.42);text-align:center;line-height:1.35;">Sadece sıradaki maç (sim test)</span>';
   return `<div class="mac-fx-card${cl}">
     <div class="mac-fx-teams">
@@ -639,6 +642,14 @@ function clearPrepareMatch(){
    matchLineup() otomatik (en iyi 5) fallback'e döner. Yedek sırası; sakatlık,
    faul limiti ve canlı müdahaledeki oyuncu değişikliklerinde öncelik belirler. */
 let _lineupEdit=null;
+/* Saha üzerindeki 5 pozisyon yuvası — yarı saha (pota üstte), oyuncular yerleştirilebilir. */
+const LINEUP_SLOTS=[
+  {poz:'PG',x:50,y:82,label:'Oyun Kurucu'},
+  {poz:'SG',x:24,y:64,label:'Şut Guardı'},
+  {poz:'SF',x:76,y:64,label:'Küçük Forvet'},
+  {poz:'PF',x:32,y:38,label:'Güç Forveti'},
+  {poz:'C', x:68,y:38,label:'Pivot'}
+];
 function openLineupEditor(){
   try{
     if(!G.team){ showNotif('Önce takım oluştur.'); return; }
@@ -652,64 +663,182 @@ function openLineupEditor(){
     const savedBench=(G.lineup&&Array.isArray(G.lineup.bench))?G.lineup.bench:[];
     savedBench.forEach(id=>{ if(!starters.includes(id)&&healthy.some(p=>p.id===id)&&!bench.includes(id)) bench.push(id); });
     byOvr.forEach(p=>{ if(!starters.includes(p.id)&&!bench.includes(p.id)) bench.push(p.id); });
-    _lineupEdit={starters,bench};
+    const slots=[null,null,null,null,null];
+    starters.forEach((id,i)=>{ if(i<5) slots[i]=id; });
+    _lineupEdit={slots,bench};
     renderLineupEditor();
   }catch(e){ dbg('openLineupEditor',e); showNotif('İlk 5 ekranı açılamadı.'); }
 }
 function _lineupPlayerById(id){ return (G.players||[]).find(p=>p.id===id); }
-function lineupRowHtml(id,isStarter,idx){
+/** Yarı saha SVG'si (pota üstte) — yuvaların arkasına çizilir. */
+function lineupCourtSvg(){
+  return `<svg viewBox="0 0 100 120" preserveAspectRatio="none">
+    <g fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="0.8">
+      <rect x="3" y="3" width="94" height="114"/>
+      <rect x="35" y="3" width="30" height="34"/>
+      <circle cx="50" cy="37" r="9"/>
+      <path d="M 8 3 Q 8 66 50 66 Q 92 66 92 3" />
+      <line x1="45" y1="8" x2="55" y2="8" stroke="#fbbf24" stroke-width="1.2"/>
+      <circle cx="50" cy="12" r="3.2" stroke="#fbbf24" stroke-width="1.1"/>
+      <path d="M 3 117 A 47 47 0 0 0 97 117" />
+    </g>
+  </svg>`;
+}
+function lineupSlotHtml(i){
+  const s=LINEUP_SLOTS[i];
+  const id=_lineupEdit.slots[i];
+  const pos=`left:${s.x}%;top:${s.y}%;`;
+  if(!id){
+    return `<div class="lu-slot empty" data-luslot="${i}" style="${pos}" onclick="lineupSlotTap(${i})">
+      <span class="lu-slot-poz">${s.poz}</span><span class="lu-slot-hint">boş</span></div>`;
+  }
+  const p=_lineupPlayerById(id);
+  if(!p){ _lineupEdit.slots[i]=null; return lineupSlotHtml(i); }
+  const av=playerAvatar(p.seed,p.id,{});
+  return `<div class="lu-slot filled" data-luslot="${i}" style="${pos}" onpointerdown="lineupPointerDown(event,'${id}','slot',${i})" onclick="lineupSlotTap(${i})" title="${escMatch(p.isim)} — sürükle ya da tıkla (yedeğe al)">
+    <span class="lu-slot-badge">${s.poz}</span>
+    <img class="lu-av" src="${av}" ${playerAvatarImgAttrs(p.seed,p.id,{})} alt="">
+    <span class="lu-nm">${escMatch(p.isim)}</span>
+    <span class="lu-sub">OVR ${p.genel}</span>
+  </div>`;
+}
+function lineupBenchCardHtml(id){
   const p=_lineupPlayerById(id); if(!p) return '';
   const en=Math.round(Number(p.enerji||100));
   const enCol=en>=70?'var(--green)':en>=45?'var(--gold)':'var(--red)';
-  const btn=isStarter
-    ? `<button type="button" class="btn-sm" style="padding:4px 9px;font-size:11px;" onclick="toggleLineupStarter('${id}')">⬇ Yedeğe</button>`
-    : `<button type="button" class="btn-sm" style="padding:4px 9px;font-size:11px;" onclick="toggleLineupStarter('${id}')">⬆ İlk 5'e</button>`;
-  const moves=isStarter?'':`<button type="button" class="btn-sm" style="padding:4px 7px;font-size:11px;" onclick="moveBench('${id}',-1)" title="Yukarı">▲</button><button type="button" class="btn-sm" style="padding:4px 7px;font-size:11px;" onclick="moveBench('${id}',1)" title="Aşağı">▼</button>`;
-  return `<div style="display:flex;align-items:center;gap:8px;padding:7px 9px;background:var(--bg3);border:1px solid ${isStarter?'var(--accent)':'var(--border)'};border-radius:9px;margin-bottom:5px;">
-    <span style="width:22px;text-align:center;font-weight:700;color:var(--text2);font-size:11px;">${isStarter?'★':(idx+1)}</span>
-    <span style="flex:1;min-width:0;"><strong style="font-size:12px;">${escMatch(p.isim)}</strong> <span style="font-size:10px;color:var(--text2);">${p.poz} · OVR ${p.genel}</span><br><span style="font-size:10px;color:${enCol};">⚡ ${en}%</span></span>
-    ${moves}${btn}
+  const av=playerAvatar(p.seed,p.id,{});
+  return `<div class="lu-card" data-lucard="${id}" onpointerdown="lineupPointerDown(event,'${id}','bench',-1)" onclick="lineupBenchTap('${id}')" title="Sürükle sahaya ya da tıkla">
+    <img class="lu-av" src="${av}" ${playerAvatarImgAttrs(p.seed,p.id,{})} alt="">
+    <span class="lu-info"><b>${escMatch(p.isim)}</b><small>${p.poz} · OVR ${p.genel} · <span style="color:${enCol};">⚡${en}%</span></small></span>
   </div>`;
 }
 function renderLineupEditor(){
   if(!_lineupEdit) return;
-  const st=_lineupEdit.starters.map((id,i)=>lineupRowHtml(id,true,i)).join('');
-  const bn=_lineupEdit.bench.map((id,i)=>lineupRowHtml(id,false,i)).join('');
-  const full=_lineupEdit.starters.length>=5;
-  showAppModal(`<div class="modal-title">🏀 İlk 5 & Rotasyon</div>
-    <p style="font-size:11px;color:var(--text2);margin-bottom:10px;">İlk 5'ini seç (${_lineupEdit.starters.length}/5). Yedek sırası; sakatlık, faul limiti ve maç içi değişikliklerde öncelik verir. Seçim yapmazsan en iyi 5 otomatik oynar.</p>
-    <div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:700;">İlk 5</div>
-    ${st||'<p style="font-size:11px;color:var(--text2);">Boş</p>'}
-    <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px;font-weight:700;">Yedekler (öncelik sırası)</div>
-    ${bn||'<p style="font-size:11px;color:var(--text2);">Yedek yok</p>'}
+  const filled=_lineupEdit.slots.filter(Boolean).length;
+  const full=filled>=5;
+  const slotsHtml=LINEUP_SLOTS.map((s,i)=>lineupSlotHtml(i)).join('');
+  const benchHtml=_lineupEdit.bench.length
+    ? _lineupEdit.bench.map(id=>lineupBenchCardHtml(id)).join('')
+    : '<p style="font-size:11px;color:var(--text2);padding:6px;">Tüm oyuncular sahada.</p>';
+  showAppModal(`<div class="modal-title">🏀 İlk 5 — Sahaya Diz</div>
+    <p class="lu-hint">Oyuncuları <strong>tutup sahadaki yuvalara sürükle</strong> (mobilde de çalışır). Yuvaya tıklayınca oyuncu yedeğe döner; yedek karta tıklayınca ilk boş yuvaya girer. Yuvalar arasında da sürükleyerek yer değiştirebilirsin. Seçmezsen en iyi 5 otomatik oynar.</p>
+    <div class="lu-wrap">
+      <div class="lu-court" id="luCourt">
+        ${lineupCourtSvg()}
+        ${slotsHtml}
+      </div>
+      <div>
+        <div class="lu-bench-wrap" id="luBench" data-lubench="1">
+          <div class="lu-bench-title">Yedekler (${_lineupEdit.bench.length}) · İlk 5: ${filled}/5</div>
+          <div class="lu-bench">${benchHtml}</div>
+        </div>
+      </div>
+    </div>
     <div style="display:flex;gap:8px;margin-top:14px;">
       <button type="button" class="btn-p" style="flex:1;padding:10px;${full?'':'opacity:.5;'}" ${full?'':'disabled'} onclick="saveLineup()">Kaydet</button>
       <button type="button" class="btn-sm" style="flex:1;" onclick="resetLineup()">Otomatik (en iyi 5)</button>
-    </div>`);
+    </div>`,{xl:true});
 }
-function toggleLineupStarter(id){
-  if(!_lineupEdit) return;
-  const si=_lineupEdit.starters.indexOf(id);
-  if(si>=0){ _lineupEdit.starters.splice(si,1); _lineupEdit.bench.unshift(id); }
-  else{
-    if(_lineupEdit.starters.length>=5){ showNotif('İlk 5 dolu — önce bir oyuncuyu yedeğe al.'); return; }
-    const bi=_lineupEdit.bench.indexOf(id);
-    if(bi>=0) _lineupEdit.bench.splice(bi,1);
-    _lineupEdit.starters.push(id);
+/* ── Model yardımcıları (yuva ↔ yedek) ── */
+function _luRemoveFromBench(id){ const i=_lineupEdit.bench.indexOf(id); if(i>=0) _lineupEdit.bench.splice(i,1); }
+function _luSlotOf(id){ return _lineupEdit.slots.indexOf(id); }
+/** id oyuncusunu slot i'ye yerleştirir; oradaki oyuncuyu (varsa) uygun yere taşır (takas/yedek). */
+function lineupPlaceInSlot(id,i){
+  if(!_lineupEdit||i<0||i>4) return;
+  const from=_luSlotOf(id);           // -1 => yedekten geliyor
+  const occ=_lineupEdit.slots[i];
+  if(occ===id) return;
+  if(from>=0){                        // yuvadan yuvaya: takas
+    _lineupEdit.slots[from]=occ;      // occ null olabilir → eski yuva boşalır
+  } else {                            // yedekten: yeri yedekten al, eski sakini yedeğe koy
+    _luRemoveFromBench(id);
+    if(occ) _lineupEdit.bench.unshift(occ);
   }
+  _lineupEdit.slots[i]=id;
   renderLineupEditor();
 }
-function moveBench(id,dir){
+function lineupMoveToBench(id){
   if(!_lineupEdit) return;
-  const i=_lineupEdit.bench.indexOf(id);
-  const j=i+dir;
-  if(i<0||j<0||j>=_lineupEdit.bench.length) return;
-  const t=_lineupEdit.bench[i]; _lineupEdit.bench[i]=_lineupEdit.bench[j]; _lineupEdit.bench[j]=t;
+  const s=_luSlotOf(id);
+  if(s>=0) _lineupEdit.slots[s]=null;
+  _luRemoveFromBench(id);
+  _lineupEdit.bench.unshift(id);
   renderLineupEditor();
+}
+/* ── Tıklama (drag olmadan) ── */
+function lineupBenchTap(id){
+  if(!_lineupEdit||_luDragMoved) return;
+  const empty=_lineupEdit.slots.indexOf(null);
+  if(empty<0){ showNotif('İlk 5 dolu — bir yuvaya tıklayıp oyuncuyu yedeğe al, sonra dene.'); return; }
+  lineupPlaceInSlot(id,empty);
+}
+function lineupSlotTap(i){
+  if(!_lineupEdit||_luDragMoved) return;
+  const id=_lineupEdit.slots[i];
+  if(id) lineupMoveToBench(id);
+}
+/* ── Pointer tabanlı sürükle-bırak (fare + dokunma) ── */
+let _luDrag=null, _luDragMoved=false;
+function lineupPointerDown(ev,id,from,slotIx){
+  if(ev.button!=null&&ev.button!==0) return;
+  ev.preventDefault();
+  const p=_lineupPlayerById(id); if(!p) return;
+  _luDragMoved=false;
+  const srcEl=(from==='slot')
+    ? document.querySelector('[data-luslot="'+slotIx+'"]')
+    : document.querySelector('[data-lucard="'+CSS.escape(id)+'"]');
+  const ghost=document.createElement('div');
+  ghost.className='lu-ghost';
+  ghost.innerHTML=`<img src="${playerAvatar(p.seed,p.id,{})}" alt=""><b>${escMatch(p.isim)}</b>`;
+  document.body.appendChild(ghost);
+  _luDrag={id,from,slotIx,ghost,srcEl,startX:ev.clientX,startY:ev.clientY};
+  _luPositionGhost(ev.clientX,ev.clientY);
+  document.addEventListener('pointermove',lineupPointerMove);
+  document.addEventListener('pointerup',lineupPointerUp);
+  try{ if(ev.target&&ev.target.setPointerCapture) ev.target.setPointerCapture(ev.pointerId); }catch(e){}
+}
+function _luPositionGhost(x,y){ if(_luDrag&&_luDrag.ghost){ _luDrag.ghost.style.left=x+'px'; _luDrag.ghost.style.top=y+'px'; } }
+function _luClearHot(){ document.querySelectorAll('.drop-hot').forEach(e=>e.classList.remove('drop-hot')); }
+function lineupPointerMove(ev){
+  if(!_luDrag) return;
+  const dx=ev.clientX-_luDrag.startX, dy=ev.clientY-_luDrag.startY;
+  if(!_luDragMoved&&Math.hypot(dx,dy)>5){ _luDragMoved=true; if(_luDrag.srcEl) _luDrag.srcEl.classList.add('dragging'); }
+  if(!_luDragMoved) return;
+  _luPositionGhost(ev.clientX,ev.clientY);
+  _luClearHot();
+  const t=_luTargetAt(ev.clientX,ev.clientY);
+  if(t) t.classList.add('drop-hot');
+}
+function _luTargetAt(x,y){
+  if(_luDrag&&_luDrag.ghost) _luDrag.ghost.style.display='none';
+  const el=document.elementFromPoint(x,y);
+  if(_luDrag&&_luDrag.ghost) _luDrag.ghost.style.display='';
+  if(!el) return null;
+  return el.closest('[data-luslot]')||el.closest('[data-lubench]');
+}
+function lineupPointerUp(ev){
+  document.removeEventListener('pointermove',lineupPointerMove);
+  document.removeEventListener('pointerup',lineupPointerUp);
+  if(!_luDrag) return;
+  const d=_luDrag; _luDrag=null;
+  if(d.ghost) d.ghost.remove();
+  _luClearHot();
+  if(!_luDragMoved){ return; } // salt tıklama → onclick devralır
+  const t=_luTargetAt(ev.clientX,ev.clientY);
+  if(t){
+    if(t.hasAttribute('data-luslot')) lineupPlaceInSlot(d.id,Number(t.getAttribute('data-luslot')));
+    else lineupMoveToBench(d.id);
+  } else {
+    renderLineupEditor(); // dragging sınıfını temizle
+  }
+  // tıklama olayının drag sonrası tetiklenmemesi için bayrağı bir tik sonra sıfırla
+  setTimeout(()=>{ _luDragMoved=false; },0);
 }
 function saveLineup(){
-  if(!_lineupEdit||_lineupEdit.starters.length<5){ showNotif('İlk 5 tam olmalı.'); return; }
-  G.lineup={starters:_lineupEdit.starters.slice(),bench:_lineupEdit.bench.slice()};
+  if(!_lineupEdit) return;
+  const starters=_lineupEdit.slots.filter(Boolean);
+  if(starters.length<5){ showNotif('İlk 5 tam olmalı — 5 yuvayı da doldur.'); return; }
+  G.lineup={starters:starters.slice(),bench:_lineupEdit.bench.slice()};
   scheduleGameSave();
   closeAppModal();
   showNotif('🏀 İlk 5 kaydedildi.');

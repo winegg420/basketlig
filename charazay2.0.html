@@ -379,6 +379,54 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .modal-close{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;line-height:1;}
 .modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent);margin-bottom:10px;letter-spacing:2px;}
 
+/* İLK 5 — SAHA & SÜRÜKLE-BIRAK */
+.lu-wrap{display:grid;grid-template-columns:1.05fr 0.95fr;gap:16px;align-items:start;}
+@media(max-width:720px){.lu-wrap{grid-template-columns:1fr;}}
+.lu-court{position:relative;width:100%;aspect-ratio:5/6;background:linear-gradient(160deg,#c8922a,#a9761f);border:2px solid rgba(0,0,0,0.3);border-radius:14px;overflow:hidden;box-shadow:inset 0 0 40px rgba(0,0,0,0.28),0 8px 22px rgba(0,0,0,0.35);touch-action:none;user-select:none;}
+.lu-court svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.lu-slot{position:absolute;transform:translate(-50%,-50%);width:74px;height:92px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;transition:box-shadow .12s,background .12s,transform .12s;}
+@media(max-width:720px){.lu-slot{width:62px;height:80px;}}
+.lu-slot.empty{border:2px dashed rgba(255,255,255,0.55);background:rgba(0,0,0,0.18);}
+.lu-slot.empty .lu-slot-poz{font-size:14px;font-weight:800;color:rgba(255,255,255,0.92);letter-spacing:1px;}
+.lu-slot.empty .lu-slot-hint{font-size:8px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:.5px;}
+.lu-slot.filled{background:rgba(10,10,15,0.9);border:2px solid var(--accent);box-shadow:0 4px 12px rgba(0,0,0,0.45);padding:5px 3px;}
+.lu-slot.filled .lu-av{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);}
+.lu-slot .lu-nm{font-size:9px;font-weight:700;color:var(--text);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;}
+.lu-slot .lu-sub{font-size:8px;color:var(--gold);font-weight:700;}
+.lu-slot-badge{position:absolute;top:-7px;left:-7px;background:var(--accent);color:#111;font-size:9px;font-weight:800;padding:1px 5px;border-radius:8px;letter-spacing:.5px;}
+.lu-slot.drop-hot{box-shadow:0 0 0 3px var(--gold),0 6px 16px rgba(0,0,0,0.5);transform:translate(-50%,-50%) scale(1.06);}
+.lu-bench-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:10px;}
+.lu-bench-wrap.drop-hot{box-shadow:0 0 0 2px var(--gold) inset;}
+.lu-bench-title{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px;}
+.lu-bench{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;}
+.lu-card{display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;cursor:grab;touch-action:none;user-select:none;transition:border-color .12s,transform .12s;}
+.lu-card:active{cursor:grabbing;}
+.lu-card.dragging{opacity:.35;}
+.lu-card .lu-av{width:34px;height:34px;border-radius:50%;object-fit:cover;border:1.5px solid var(--border);flex:0 0 auto;}
+.lu-card .lu-info{flex:1;min-width:0;}
+.lu-card .lu-info b{font-size:12px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lu-card .lu-info small{font-size:10px;color:var(--text2);}
+.lu-ghost{position:fixed;z-index:99999;pointer-events:none;display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg2);border:2px solid var(--accent);border-radius:12px;box-shadow:0 10px 26px rgba(0,0,0,0.5);transform:translate(-50%,-50%) rotate(-3deg);}
+.lu-ghost img{width:32px;height:32px;border-radius:50%;object-fit:cover;}
+.lu-ghost b{font-size:12px;color:var(--text);}
+.lu-hint{font-size:11px;color:var(--text2);margin:2px 0 12px;line-height:1.5;}
+
+/* ANA PANEL — Sonraki maç kartı (pro) */
+.dash-next{position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(249,115,22,0.14),rgba(59,130,246,0.12));border:1px solid var(--border);border-radius:16px;padding:16px;cursor:pointer;transition:transform .14s,box-shadow .14s,border-color .14s;}
+.dash-next:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,0.4);border-color:var(--accent);}
+.dash-next:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.dash-next .dn-tag{position:absolute;top:12px;right:12px;font-size:9px;font-weight:800;letter-spacing:1px;background:rgba(239,68,68,0.22);color:#fca5a5;padding:3px 9px;border-radius:20px;}
+.dn-meta{font-size:11px;color:var(--text2);margin-bottom:12px;font-weight:600;}
+.dn-teams{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:14px;}
+.dn-team{flex:1;text-align:center;min-width:0;}
+.dn-team .dn-name{font-weight:800;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dn-team .dn-role{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.dn-team .dn-rec{font-size:10px;color:var(--gold);font-weight:700;margin-top:3px;}
+.dn-team.mine .dn-name{color:var(--accent);}
+.dn-vs{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--text2);line-height:1;}
+.dn-play{width:100%;padding:11px;font-size:14px;font-weight:800;letter-spacing:.5px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),#ea580c);color:#fff;cursor:pointer;box-shadow:0 6px 16px rgba(249,115,22,0.35);transition:filter .12s,transform .12s;}
+.dn-play:hover{filter:brightness(1.08);transform:translateY(-1px);}
+
 /* TABLE */
 .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;}
 #ligTableWrap table{font-size:12px;table-layout:fixed;min-width:720px;width:100%;}
@@ -614,17 +662,23 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <!-- DASHBOARD -->
       <div class="page active" id="page-dashboard">
         <div class="g2" style="margin-bottom:16px;">
-          <div class="card">
-            <div class="card-title">📅 Sonraki Maç</div>
-            <div style="text-align:center;padding:14px 0;">
-              <div id="nextMatchMeta" style="font-size:11px;color:var(--text2);margin-bottom:10px;">—</div>
-              <div style="display:flex;align-items:center;justify-content:center;gap:18px;">
-                <div><div style="font-weight:700;font-size:14px;" id="nextHome">-</div><div style="font-size:10px;color:var(--text2);">Ev</div></div>
-                <div style="font-family:&#39;Bebas Neue&#39;,sans-serif;font-size:26px;color:var(--text2);">VS</div>
-                <div><div style="font-weight:700;font-size:14px;" id="nextAway">-</div><div style="font-size:10px;color:var(--text2);">Deplasman</div></div>
+          <div class="dash-next" id="dashNextCard" role="button" tabindex="0" onclick="startNextMatchNow()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();startNextMatchNow();}" title="Tıkla — maçı başlat">
+            <span class="dn-tag">SONRAKİ MAÇ</span>
+            <div class="dn-meta" id="nextMatchMeta">—</div>
+            <div class="dn-teams">
+              <div class="dn-team" id="dnHomeCol">
+                <div class="dn-name" id="nextHome">-</div>
+                <div class="dn-role" id="dnHomeRole">Ev</div>
+                <div class="dn-rec" id="dnHomeRec"></div>
               </div>
-              <span style="display:inline-block;margin-top:10px;background:rgba(59,130,246,0.2);color:#60a5fa;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;">YAKINDA</span>
+              <div class="dn-vs">VS</div>
+              <div class="dn-team" id="dnAwayCol">
+                <div class="dn-name" id="nextAway">-</div>
+                <div class="dn-role" id="dnAwayRole">Deplasman</div>
+                <div class="dn-rec" id="dnAwayRec"></div>
+              </div>
             </div>
+            <button type="button" class="dn-play" onclick="event.stopPropagation();startNextMatchNow();">▶ Maçı Başlat</button>
           </div>
           <div class="card">
             <div class="card-title">📰 Haberler</div>
