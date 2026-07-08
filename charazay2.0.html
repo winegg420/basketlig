@@ -417,6 +417,16 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 /* Canlı maç oynanırken panel vurgulansın */
 .match-layout.live-on{box-shadow:0 0 0 2px var(--accent),0 10px 30px rgba(249,115,22,0.25);border-radius:16px;}
 
+/* BÜYÜK EKRAN (theater) — maçı geniş izle */
+body.theater-open{overflow:hidden;}
+.match-layout.mac-theater{position:fixed;inset:0;z-index:9000;margin:0;grid-template-columns:1fr;background:linear-gradient(180deg,#0a0a0f,#12121a);padding:14px clamp(12px,4vw,60px);overflow-y:auto;box-shadow:none;}
+.match-layout.mac-theater > div:nth-child(2){display:none;}
+.match-layout.mac-theater .card{background:transparent;border:none;box-shadow:none;padding:0;margin:0 auto;max-width:1280px;width:100%;}
+.match-layout.mac-theater .court-stats-row{grid-template-columns:1fr;}
+.match-layout.mac-theater .court-container{max-width:none;width:100%;margin:0;}
+.match-layout.mac-theater .commentary{height:150px;}
+#theaterBtn.on{background:var(--accent);color:#111;}
+
 /* ANA PANEL — Sonraki maç kartı (pro) */
 .dash-next{position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(249,115,22,0.14),rgba(59,130,246,0.12));border:1px solid var(--border);border-radius:16px;padding:16px;cursor:pointer;transition:transform .14s,box-shadow .14s,border-color .14s;}
 .dash-next:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,0.4);border-color:var(--accent);}
@@ -815,14 +825,16 @@ tr:hover td{background:rgba(255,255,255,0.02);}
               </div>
               <div class="mac-qbox" id="quarterScores"></div>
               <div class="shot-filters">
-                <span>Şutları göster:</span>
-                <label><input type="radio" name="shotQ" value="all" checked onchange="setShotFilter(this.value)"> Tümü</label>
+                <span>Şut haritası:</span>
+                <label><input type="radio" name="shotQ" value="live" checked onchange="setShotFilter(this.value)"> Canlı (bu çeyrek)</label>
+                <label><input type="radio" name="shotQ" value="all" onchange="setShotFilter(this.value)"> Tüm maç</label>
                 <label><input type="radio" name="shotQ" value="1" onchange="setShotFilter(this.value)"> Ç1</label>
                 <label><input type="radio" name="shotQ" value="2" onchange="setShotFilter(this.value)"> Ç2</label>
                 <label><input type="radio" name="shotQ" value="3" onchange="setShotFilter(this.value)"> Ç3</label>
                 <label><input type="radio" name="shotQ" value="4" onchange="setShotFilter(this.value)"> Ç4</label>
+                <button type="button" class="btn-sm" id="theaterBtn" onclick="toggleMatchTheater()" style="padding:4px 11px;font-size:11px;margin-left:auto;">⛶ Büyük Ekran</button>
               </div>
-        <p style="font-size:11px;color:var(--text2);margin-bottom:8px;">Görsel alan <strong>3200×1900</strong> (oyun <strong>2800×1500</strong>, çevrede <strong>200</strong> birim çerçeve). Çizim içi <strong>NBA 94′×50′ → 940×500</strong>; üçlük köşe düzlükleri + yay. Üçlük yayı oyunda <strong>~23′</strong> ölçeği (~196 px) ile içeriden çizilir.</p>
+        <p style="font-size:11px;color:var(--text2);margin-bottom:8px;"><strong>O</strong> = isabetli şut, <strong>X</strong> = kaçan şut. Canlı görünüm her çeyrek sıfırlanır; maç boyunca biriken şutlar için <strong>Tüm maç</strong> ya da <strong>Ç1–Ç4</strong> seç.</p>
 
 
               <div class="court-stats-row">
@@ -832,15 +844,35 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                   <rect x="200" y="200" width="2800" height="1500" fill="none" stroke="rgba(249,115,22,0.18)" stroke-width="3"/>
                   <svg x="200" y="200" width="2800" height="1500" viewBox="0 0 940 500" preserveAspectRatio="none">
                   <defs>
-                    <pattern id="wood" patternUnits="userSpaceOnUse" width="940" height="20">
-                      <rect width="940" height="20" fill="#c8922a"></rect>
-                      <rect width="940" height="1" y="19" fill="rgba(0,0,0,0.08)"></rect>
-                      <rect width="940" height="1" y="10" fill="rgba(255,255,255,0.04)"></rect>
+                    <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stop-color="#d69a40"></stop>
+                      <stop offset="0.5" stop-color="#c68a30"></stop>
+                      <stop offset="1" stop-color="#b57c27"></stop>
+                    </linearGradient>
+                    <pattern id="planks" patternUnits="userSpaceOnUse" width="940" height="26">
+                      <rect width="940" height="26" fill="url(#woodGrad)"></rect>
+                      <rect width="940" height="1.1" y="25" fill="rgba(0,0,0,0.11)"></rect>
+                      <rect width="940" height="1" y="13" fill="rgba(255,255,255,0.05)"></rect>
                     </pattern>
+                    <radialGradient id="courtVign" cx="0.5" cy="0.5" r="0.72">
+                      <stop offset="0.5" stop-color="rgba(0,0,0,0)"></stop>
+                      <stop offset="1" stop-color="rgba(0,0,0,0.30)"></stop>
+                    </radialGradient>
                   </defs>
-                  <rect width="940" height="500" fill="#b8842d"></rect>
+                  <rect width="940" height="500" fill="url(#planks)"></rect>
+                  <rect width="940" height="500" fill="url(#courtVign)" pointer-events="none"></rect>
+                  <!-- Merkez saha markası: arena adı + takım amblemi + takım adı -->
+                  <g id="courtBrand" pointer-events="none">
+                    <text id="courtArenaName" x="470" y="24" text-anchor="middle" font-size="14" font-weight="700" letter-spacing="4" fill="rgba(255,255,255,0.20)"></text>
+                    <image id="courtLogo" x="424" y="153" width="92" height="92" opacity="0.5" preserveAspectRatio="xMidYMid meet" style="display:none"></image>
+                    <g id="courtLogoFb" style="display:none">
+                      <circle cx="470" cy="199" r="44" fill="rgba(255,255,255,0.045)" stroke="rgba(255,255,255,0.13)" stroke-width="2"></circle>
+                      <text id="courtLogoFbT" x="470" y="199" text-anchor="middle" dy="15" font-size="44" font-weight="900" fill="rgba(255,255,255,0.18)"></text>
+                    </g>
+                    <text id="courtHomeName" x="470" y="300" text-anchor="middle" font-size="23" font-weight="900" letter-spacing="1" fill="rgba(255,255,255,0.15)"></text>
+                  </g>
                   <!-- NBA 94'×50' — tek ölçek s=8.8 px/ft; 3pt yayı oyun için ~196 px (köşe-boşluk) -->
-                  <g stroke="rgba(255,255,255,0.96)" stroke-width="2.4" fill="none">
+                  <g stroke="rgba(255,255,255,0.97)" stroke-width="2.6" fill="none" stroke-linejoin="round">
                     <rect x="56.4" y="30" width="827.2" height="440" rx="2"></rect>
                     <line x1="470" y1="30" x2="470" y2="470"></line>
                     <circle cx="470" cy="250" r="48"></circle>
@@ -891,7 +923,11 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                     <path d="M 883.6 30 L 883.6 48.5 A 196 196 0 1 0 883.6 451.5 L 883.6 470" stroke-width="2.2"></path>
                   </g>
                   <g id="shotsLayer"></g>
-                  <circle id="liveBall" cx="470" cy="250" r="9" fill="#f97316" stroke="#7c2d12" stroke-width="2" style="opacity:0;transition:cx 0.55s cubic-bezier(.4,.05,.3,1),cy 0.55s cubic-bezier(.4,.05,.3,1),opacity 0.3s;"></circle>
+                  <g id="liveBall" transform="translate(470,250)" style="opacity:0;transition:transform 0.5s cubic-bezier(.34,.02,.28,1),opacity 0.3s;">
+                    <circle r="11.5" fill="#e07b1e" stroke="#6b2810" stroke-width="1.6"></circle>
+                    <path d="M -11.5 0 L 11.5 0 M 0 -11.5 L 0 11.5 M -8.1 -8.1 Q 0 0 -8.1 8.1 M 8.1 -8.1 Q 0 0 8.1 8.1" stroke="#5c2410" stroke-width="1.15" fill="none"></path>
+                    <circle cx="-3.6" cy="-3.6" r="3.4" fill="rgba(255,255,255,0.4)" stroke="none"></circle>
+                  </g>
                   </svg>
                 </svg>
               </div>
@@ -904,11 +940,9 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                 </table>
               </div>
               </div>
-              <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
-                <span style="font-size:11px;color:var(--text2);"><span style="color:var(--accent);">●</span> Ev — giren</span>
-                <span style="font-size:11px;color:var(--text2);"><span style="color:var(--accent);">○</span> Ev — kaçan</span>
-                <span style="font-size:11px;color:var(--text2);"><span style="color:#4ade80;">●</span> Dep — giren</span>
-                <span style="font-size:11px;color:var(--text2);"><span style="color:#4ade80;">○</span> Dep — kaçan</span>
+              <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+                <span style="font-size:11px;color:var(--text2);"><b style="color:var(--accent);font-size:13px;">O</b> Bizim — isabet &nbsp; <b style="color:var(--accent);font-size:13px;">X</b> Bizim — kaçan</span>
+                <span style="font-size:11px;color:var(--text2);"><b style="color:#4ade80;font-size:13px;">O</b> Rakip — isabet &nbsp; <b style="color:#4ade80;font-size:13px;">X</b> Rakip — kaçan</span>
               </div>
 
               <div style="display:flex;gap:8px;margin-bottom:8px;">
@@ -1145,16 +1179,16 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 <div class="notif" id="notif"></div>
 
-<script src="js/state.js?v=8"></script>
-<script src="js/economy.js?v=8"></script>
-<script src="js/persistence.js?v=8"></script>
-<script src="js/portraits.js?v=8"></script>
-<script src="js/roster-gen.js?v=8"></script>
-<script src="js/league.js?v=8"></script>
-<script src="js/match-prep.js?v=8"></script>
-<script src="js/render.js?v=8"></script>
-<script src="js/match-engine.js?v=8"></script>
-<script src="js/main.js?v=8"></script>
+<script src="js/state.js?v=9"></script>
+<script src="js/economy.js?v=9"></script>
+<script src="js/persistence.js?v=9"></script>
+<script src="js/portraits.js?v=9"></script>
+<script src="js/roster-gen.js?v=9"></script>
+<script src="js/league.js?v=9"></script>
+<script src="js/match-prep.js?v=9"></script>
+<script src="js/render.js?v=9"></script>
+<script src="js/match-engine.js?v=9"></script>
+<script src="js/main.js?v=9"></script>
 
 
 </body></html>
