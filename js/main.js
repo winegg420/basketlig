@@ -96,7 +96,9 @@ function startMatch(playoff){
   clearMatchEventTimer();
   clearMatchCourt();
   updateCourtBranding(rakip);          /* parkeye arena/takım/amblem işle */
-  initMatchPlayers(lu,rakip);          /* sahaya 5v5 oyuncu jetonları koy */
+  let oppNames=[];
+  try{ const prof=getBotClubProfile(rakip.isim,(G.team&&G.team.tblKey)||'tbl'); oppNames=(prof.roster||[]).slice().sort((a,b)=>(b.genel||0)-(a.genel||0)).slice(0,5).map(p=>p.isim); }catch(e){}
+  initMatchPlayers(lu,rakip,oppNames); /* sahaya 5v5 oyuncu jetonları (rakip gerçek isimleri) koy */
   const _ml=document.getElementById('macLiveAnchor'); if(_ml) _ml.classList.add('live-on');
   renderBoxScore(emptyBox(),emptyBox(),G.team.isim,rakip.isim);
   document.getElementById('commentary').innerHTML='';
@@ -144,10 +146,12 @@ function startMatch(playoff){
     if(ev.qh&&ev.qa){
       updateQuarterBoard(ev.qh,ev.qa,ev.home||0,ev.away||0);
     }
+    /* Önce oyuncuları yerleştir (top bu GERÇEK konumlara paslanacak), sonra topu canlandır. */
+    movePlayersForEvent(ev);
     if(ev.shot){
       const sh={...ev.shot};
       mState.allShots.push(sh);
-      /* Gerçekçi hücum: top ayak ayak akar; iz + ses top şut noktasına VARINCA (senkron). */
+      /* Gerçekçi hücum: top oyuncudan oyuncuya, sonra şutöre; iz + ses top şutöre VARINCA (senkron). */
       animateShotPossession(sh,()=>{
         if(shotPassesFilter(sh)) drawShotMark(sh);
         if(sh.made) sfx('score');
@@ -159,7 +163,6 @@ function startMatch(playoff){
         if(shotPassesFilter(sh)) drawShotMark(sh);
       });
     }
-    movePlayersForEvent(ev);   /* oyuncu jetonlarını olaya göre hareket ettir */
 
     addComment(ev.text,ev.type);
     /* Saha-şutunun sesi top potaya varınca çalar (yukarıda); serbest atış vb. anında. */
@@ -208,6 +211,7 @@ function startMatch(playoff){
 function stopMatch(){
   clearMatchEventTimer();
   clearBallTimers();
+  if(mState._toInterval){ clearInterval(mState._toInterval); mState._toInterval=null; }
   mState.running=false;
   const st=document.getElementById('liveStatus');
   if(st) st.textContent='DURDURULDU';
@@ -276,15 +280,43 @@ function renderCoachingPanel(atBreak){
     </div>`;
   }).join('');
   const paused=mState.paused;
+  const countdown=(paused&&mState._toRemain>0)?`<span id="toCountdown" style="color:var(--accent);font-weight:800;">${mState._toRemain} sn</span>`:'';
+  const tacBlock=paused?_liveTacticsHtml():'';
   el.innerHTML=`<div style="padding:9px 11px;background:var(--bg2);border:1px solid var(--accent);border-radius:10px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
       <strong style="font-size:12px;">${paused?'⏸ Mola / Değişiklik':'🎧 Sahadaki 5 · canlı enerji'}</strong>
-      <span style="font-size:10px;color:var(--text2);">Mola hakkı: ${mState.timeoutsLeft!=null?mState.timeoutsLeft:0}</span>
+      <span style="font-size:10px;color:var(--text2);">${countdown?countdown+' · ':''}Mola: ${mState.timeoutsLeft!=null?mState.timeoutsLeft:0}</span>
     </div>
     ${onList}
     ${canSub?'<div style="font-size:10px;color:var(--text2);margin-top:4px;">Ölü topta değişiklik serbest — yedek seç ve ↔ ile değiştir.</div>':'<div style="font-size:10px;color:var(--text2);margin-top:4px;">Değişiklik için ⏸ Mola al ya da çeyrek arasını bekle.</div>'}
-    ${paused?`<button type="button" class="btn-p" style="width:100%;padding:8px;margin-top:6px;" onclick="continueMatchAfterBreak()">▶ Devam et</button>`:''}
+    ${tacBlock}
+    ${paused?`<button type="button" class="btn-p" style="width:100%;padding:8px;margin-top:8px;" onclick="continueMatchAfterBreak()">▶ Devam et</button>`:''}
   </div>`;
+}
+/** Maç içi taktik editörü (mola/duraklamada) — savunma stili, hücum odağı, tempo anında değişir. */
+function _liveTacticsHtml(){
+  const tac=G.tactics||{tempo:'normal',odak:'dengeli',defensiveStyle:'adam'};
+  const o=(cur,val,lbl)=>`<option value="${val}" ${cur===val?'selected':''}>${lbl}</option>`;
+  const selStyle='flex:1;min-width:96px;font-size:10px;padding:4px;border-radius:7px;background:var(--bg3);color:var(--text);border:1px solid var(--border);';
+  return `<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+    <div style="font-size:10px;color:var(--accent);font-weight:700;margin-bottom:5px;">🎯 Maç içi taktik (anında geçerli)</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+      <select style="${selStyle}" onchange="setLiveTactic('tempo',this.value)">${o(tac.tempo,'yavas','🐢 Yavaş')}${o(tac.tempo||'normal','normal','⚖️ Normal tempo')}${o(tac.tempo,'hizli','⚡ Hızlı tempo')}</select>
+      <select style="${selStyle}" onchange="setLiveTactic('odak',this.value)">${o(tac.odak,'ic','🏀 İçeri')}${o(tac.odak,'dis','🎯 Dış şut')}${o(tac.odak,'hizli','⚡ Hızlı hücum')}${o(tac.odak,'set','📋 Set oyun')}${o(tac.odak||'dengeli','dengeli','⚖️ Dengeli hücum')}</select>
+      <select style="${selStyle}" onchange="setLiveTactic('defensiveStyle',this.value)">${o(tac.defensiveStyle||'adam','adam','🧍 Adam adama')}${o(tac.defensiveStyle,'bolge','🛡️ Bölge sav.')}${o(tac.defensiveStyle,'pres','🔥 Pres sav.')}</select>
+    </div>
+  </div>`;
+}
+function setLiveTactic(key,val){
+  if(!mState.running){ return; }
+  G.tactics=G.tactics||{tempo:'normal',odak:'dengeli',defensiveStyle:'adam'};
+  G.tactics[key]=val;
+  const nm={tempo:'Tempo',odak:'Hücum odağı',defensiveStyle:'Savunma'}[key]||key;
+  const vl={yavas:'Yavaş',normal:'Normal',hizli:(key==='odak'?'Hızlı hücum':'Hızlı'),ic:'İçeri',dis:'Dış şut',set:'Set oyun',dengeli:'Dengeli',adam:'Adam adama',bolge:'Bölge',pres:'Pres'}[val]||val;
+  addComment(`🎯 Taktik değişti — ${nm}: ${vl} (koç kararı).`,'tactic');
+  regenerateMatchRemainder();      /* kalan maç yeni taktikle yeniden simüle edilir */
+  if(typeof scheduleGameSave==='function') scheduleGameSave();
+  renderCoachingPanel(true);
 }
 /** Mola al: maçı duraklatır, sahadaki oyuncuların enerjisini biraz tazeler, değişiklik penceresi açar. */
 function callTimeout(){
@@ -305,8 +337,17 @@ function callTimeout(){
   });
   addComment(`⏸ MOLA! ${G.team.isim} molasını kullandı — oyuncular nefeslendi, enerji tazelendi. (Kalan mola: ${mState.timeoutsLeft})`,'tactic');
   updateTimeoutBtn();
+  /* Gerçek mola süresi: 30 saniye geri sayım — oyuncu rahatça değişiklik/taktik yapar, 0'da otomatik devam. */
+  mState._toRemain=30;
+  if(mState._toInterval) clearInterval(mState._toInterval);
+  mState._toInterval=setInterval(()=>{
+    mState._toRemain--;
+    const el=document.getElementById('toCountdown');
+    if(el) el.textContent=mState._toRemain+' sn';
+    if(mState._toRemain<=0) continueMatchAfterBreak();
+  },1000);
   renderCoachingPanel(true);
-  showNotif('⏸ Mola alındı — enerji tazelendi. Dilersen değişiklik yap, sonra "Devam et".');
+  showNotif('⏸ Mola (30 sn) — enerji tazelendi. Değişiklik/taktik yap; süre bitince ya da "Devam et" ile sürer.');
 }
 function updateTimeoutBtn(){
   const b=document.getElementById('timeoutBtn');
@@ -357,6 +398,8 @@ function regenerateMatchRemainder(){
   }catch(e){ dbg('regen',e); }
 }
 function continueMatchAfterBreak(){
+  if(mState._toInterval){ clearInterval(mState._toInterval); mState._toInterval=null; }
+  mState._toRemain=0;
   mState.paused=false;
   renderCoachingPanel(false);
   if(mState.running && mState.step && !matchEventTimer){ matchEventTimer=setTimeout(mState.step,700); }

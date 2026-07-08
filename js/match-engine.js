@@ -48,7 +48,7 @@ function clearMatchPlayers(){
   if(l) l.remove();
   if(typeof mState!=='undefined'&&mState) mState._tokens=null;
 }
-function initMatchPlayers(lu,rakip){
+function initMatchPlayers(lu,rakip,oppNames){
   try{
     const ball=document.getElementById('liveBall');
     const svg=ball&&ball.parentNode;
@@ -83,7 +83,7 @@ function initMatchPlayers(lu,rakip){
     mState._tokens={home:[],away:[]};
     for(let i=0;i<5;i++){ const p=homeP[i]; mState._tokens.home.push(mk(String(i+1),p?_tokShort(p.isim):('Ev'+(i+1)),homeCol)); }
     const rk=(rakip&&rakip.isim)?_tokShort(rakip.isim):'Rakip';
-    for(let i=0;i<5;i++){ mState._tokens.away.push(mk(String(i+1),rk,awayCol)); }
+    for(let i=0;i<5;i++){ const on=(oppNames&&oppNames[i])?_tokShort(oppNames[i]):rk; mState._tokens.away.push(mk(String(i+1),on,awayCol)); }
     mState._lastAttackHome=true;
     /* tip-off: orta sahada karşılıklı diz */
     const hs=[[430,150],[430,350],[405,250],[360,185],[360,315]];
@@ -113,8 +113,11 @@ function movePlayersForEvent(ev){
     }
     const offTok=attackHome?mState._tokens.home:mState._tokens.away;
     const defTok=attackHome?mState._tokens.away:mState._tokens.home;
-    offTok.forEach((g,i)=>{ const c=off[i]||off[0]; _tokSet(g, i===0?c[0]:jit(c[0]), i===0?c[1]:jit(c[1])); });
+    /* Uygulanan (jitter'lı) hücum konumlarını sakla — top bu GERÇEK noktalara paslanır. */
+    const finalOff=offTok.map((g,i)=>{ const c=off[i]||off[0]; const x=(i===0?c[0]:jit(c[0])); const y=(i===0?c[1]:jit(c[1])); _tokSet(g,x,y); return [x,y]; });
     defTok.forEach((g,i)=>{ const c=def[i]||def[0]; _tokSet(g, jit(c[0]), jit(c[1])); });
+    mState._offPos=finalOff;
+    mState._attackHome=attackHome;
   }catch(e){}
 }
 /* ── Top hareketi (çok ayaklı, gerçekçi): topu getir → oyun kur → pas → şut ──
@@ -139,31 +142,41 @@ function _ballPath(legs){
   const run=()=>{ if(i>=legs.length) return; const w=legs[i]; i++; _ballMove(w.x,w.y,w.ms); _ballLegTimer=setTimeout(run,w.ms); };
   run();
 }
-/** Bir hücumu canlandır. sh:{x,y,isHome,made}. onArrive top şut noktasına varınca çağrılır. */
+/** Bir hücumu canlandır. sh:{x,y,isHome,made}. Top GERÇEK hücum oyuncularına paslanır,
+    şutöre (şut noktası) gelir, sonra (girerse) potaya. onArrive şut anında (top şutöre varınca) çağrılır. */
 function animateShotPossession(sh,onArrive){
   const b=document.getElementById('liveBall'); if(!b) return;
   try{
     clearBallTimers();
     const home=!!sh.isHome;
     const start=mState._ballXY||[470,250];
-    const bringX=home?405:535;                 /* topu kendi yarısına getir */
-    const topKey=home?[300,250]:[640,250];      /* oyun kurma noktası */
-    const wingY=(sh.y<250)?165:335;
-    const wing=home?[248,wingY]:[692,wingY];    /* kanata pas */
+    const off=(mState._offPos&&mState._offPos.length>=5)?mState._offPos:null;
     const rim=home?[112,250]:[828,250];
-    _ballPath([
-      {x:(start[0]+bringX)/2,y:(start[1]+250)/2,ms:560},  /* topu çıkar */
-      {x:topKey[0],y:topKey[1],ms:520},                    /* oyun kur */
-      {x:wing[0],y:wing[1],ms:440},                        /* pas */
-      {x:sh.x,y:sh.y,ms:440}                               /* şuta çıkış */
-    ]);
-    const travel=560+520+440+440;
+    const dist=(a,c)=>Math.hypot(a[0]-c[0],a[1]-c[1]);
+    /* 1) Oyun kurucu topu kendi yarısından karşıya YAVAŞÇA getirir (mesafeye göre süre). */
+    const bring=[home?430:510, 250+rand(-28,28)];
+    const ms1=Math.min(900,Math.max(560,Math.round(dist(start,bring)*1.3)));
+    const legs=[{x:bring[0],y:bring[1],ms:ms1}];
+    /* 2) 2 gerçek hücum oyuncusuna pas (şutör hariç, off[1..4] token konumları). */
+    let passers=[];
+    if(off){
+      const idxs=[1,2,3,4].filter(i=>off[i]);
+      for(let k=idxs.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); const tmp=idxs[k]; idxs[k]=idxs[j]; idxs[j]=tmp; }
+      passers=idxs.slice(0,2).map(i=>off[i]);
+    } else {
+      passers=[[home?300:640,250],[home?248:692,(sh.y<250?165:335)]];
+    }
+    passers.forEach(p=>legs.push({x:p[0],y:p[1],ms:400}));
+    /* 3) Son pas şutöre = şut noktası. */
+    legs.push({x:sh.x,y:sh.y,ms:400});
+    _ballPath(legs);
+    const arriveMs=legs.reduce((a,l)=>a+l.ms,0);
     _ballArriveTimer=setTimeout(()=>{
-      try{ if(typeof onArrive==='function') onArrive(); }catch(e){}
-      if(sh.made) _ballMove(rim[0],rim[1],320);            /* file: potaya */
+      try{ if(typeof onArrive==='function') onArrive(); }catch(e){}   /* şut izi + ses tam bu an */
+      if(sh.made) _ballMove(rim[0],rim[1],320);                       /* file: potaya */
       _ballFadeTimer=setTimeout(()=>{ const bb=document.getElementById('liveBall'); if(bb) bb.style.opacity='0.30'; }, sh.made?900:680);
-    },travel);
-    return travel;
+    },arriveMs);
+    return arriveMs;
   }catch(e){ return 0; }
 }
 
