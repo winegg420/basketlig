@@ -607,11 +607,92 @@ function showChampionshipModal(champ,userChamp,mvp){
 }
 function afterPlayoffsProceed(){
   setTimeout(()=>{
-    if(G.team) ensureLeagueSeasonOrStart();
-    renderLig();
-    renderFixture();
-    renderDashboardNextMatch();
+    if(G.team) startDraft(); /* Faz 6: draft → tamamlanınca yeni sezon */
+    else proceedToNewSeason();
   },1200);
+}
+function proceedToNewSeason(){
+  if(G.team) ensureLeagueSeasonOrStart();
+  renderLig();
+  renderFixture();
+  renderDashboardNextMatch();
+}
+
+/* ── Faz 6: Draft sistemi — sezon sonunda genç aday havuzu; ligi düşük bitiren önce seçer (NBA tarzı). ── */
+function startDraft(){
+  try{
+    if(!G.team||!G.team.tblKey){ proceedToNewSeason(); return; }
+    const rows=buildLeagueRows(G.team.tblKey).filter(r=>r&&!r.bos&&r.isim);
+    if(rows.length<2){ proceedToNewSeason(); return; }
+    const order=rows.map(r=>r.isim).reverse(); /* en kötü sıra önce seçer */
+    const poolSize=order.length+10;
+    const pool=Array.from({length:poolSize}).map((_,i)=>genDraftProspect(i));
+    if(typeof ensureUniquePlayerNames==='function') ensureUniquePlayerNames(pool);
+    G.draft={year:(G.season&&G.season.year)||0,order,pool,picks:[],idx:0,done:false};
+    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--blue);">🎓 <strong>Sezon sonu draftı</strong> başladı — ligi düşük sırada bitiren takım önce seçer.</div>`);
+    processDraftPicks();
+  }catch(e){ dbg('startDraft',e); proceedToNewSeason(); }
+}
+function draftAvailable(){ const d=G.draft; return d?d.pool.filter(p=>!d.picks.some(x=>x.prospectId===p.id)):[]; }
+function processDraftPicks(){
+  const d=G.draft;
+  if(!d||d.done) return;
+  while(d.idx<d.order.length){
+    const team=d.order[d.idx];
+    if(team===G.team.isim){ openDraftModal(); return; } /* kullanıcı sırası → seçim bekle */
+    botDraftPick(team);
+    d.idx++;
+  }
+  finalizeDraft();
+}
+function botDraftPick(team){
+  const d=G.draft;
+  const avail=draftAvailable();
+  if(!avail.length) return;
+  avail.sort((a,b)=>(Number(b.potansiyel)||0)-(Number(a.potansiyel)||0)); /* bot gerçek potansiyeli görür */
+  d.picks.push({team,prospectId:avail[0].id});
+}
+function draftPick(prospectId){
+  const d=G.draft; if(!d) return;
+  const p=d.pool.find(x=>x.id===prospectId);
+  if(!p||d.picks.some(x=>x.prospectId===prospectId)){ showNotif('Bu aday zaten seçildi.'); return; }
+  d.picks.push({team:G.team.isim,prospectId});
+  const np={...p}; np.draftYili=d.year;
+  G.youth=Array.isArray(G.youth)?G.youth:[];
+  G.youth.push(np);
+  showNotif(`🎓 Draft: ${p.isim} (${p.poz}) altyapına katıldı!`,{critical:true});
+  pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">🎓 <strong>${escMatch(G.team.isim)}</strong> draftta <strong>${escMatch(p.isim)}</strong> (${p.poz}·OVR ${p.genel}) seçti.</div>`);
+  closeAppModal();
+  d.idx++;
+  scheduleGameSave();
+  processDraftPicks();
+}
+function finalizeDraft(){
+  if(G.draft) G.draft.done=true;
+  scheduleGameSave();
+  proceedToNewSeason();
+}
+/* Kullanıcının en iyi izcisinin kalitesi draft ipuçlarını netleştirir (scouting'e bağlı). */
+function draftScoutQuality(){ return (G.scouts||[]).reduce((m,s)=>Math.max(m,Number(s.kalite)||0),0); }
+function openDraftModal(){
+  if(typeof showAppModal!=='function'){ finalizeDraft(); return; }
+  const d=G.draft; if(!d) return;
+  const pickNo=d.idx+1;
+  const q=draftScoutQuality();
+  const avail=draftAvailable().slice().sort((a,b)=>(Number(b.genel)||0)-(Number(a.genel)||0));
+  const potHint=p=>{
+    if(q>=4) return `<span style="color:var(--blue);">⭐ Pot ${p.potansiyel}</span>`; /* güçlü izci → net */
+    const spread=6+(hash32(String(p.id||p.seed||''))%7);
+    const lo=Math.max(Number(p.genel)||0,(Number(p.potansiyel)||60)-spread), hi=Math.min(99,(Number(p.potansiyel)||60)+Math.floor(spread/2));
+    return `<span style="color:var(--gold);">🔍 Pot ${lo}–${hi}${q>=2?'':' (izci yok — belirsiz)'}</span>`;
+  };
+  const rows=avail.slice(0,16).map(p=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 9px;background:var(--bg3);border-radius:8px;margin-bottom:5px;">
+      <div style="flex:1;"><strong style="font-size:12px;">${escMatch(p.isim)}</strong> <span style="color:var(--text2);font-size:11px;">${p.poz}·${p.yas}y·OVR ${p.genel}</span><br><span style="font-size:10px;">${potHint(p)} · ${kisilikInfo(p.kisilik).ikon} ${kisilikInfo(p.kisilik).ad}</span></div>
+      <button type="button" class="btn-p" style="padding:6px 12px;font-size:11px;" onclick="draftPick('${p.id}')">Seç</button>
+    </div>`).join('');
+  showAppModal(`<div class="modal-title">🎓 Draft ${d.year} — ${pickNo}. sıra senin</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Ligi ${d.order.length}. sırada bitirdin; draft sıran geldi. Bir genç yetenek seç (potansiyel ipucu izci kalitene bağlı${q?` — en iyi izci ${q}★`:' — izcin yok'}).</p>
+    <div style="max-height:340px;overflow-y:auto;">${rows}</div>`);
 }
 
 function ensureLeagueSeasonOrStart(){

@@ -897,6 +897,7 @@ function createTeam(){
   G.tactics={tempo:'normal',odak:'dengeli',defensiveStyle:'adam',focusPlayerId:null,markStar:false};
   G.pendingOffers=[];G.presidentTarget=null;G.budgetPenalty=0;
   G.analytics={teamMatches:[],playerDev:{}};
+  G.draft=null;
   G.tutorialDone=false;
   bootstrapAppUi();
   applyAutosaveSetting();

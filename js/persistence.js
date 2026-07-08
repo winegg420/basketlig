@@ -209,7 +209,8 @@ function serializeGameState(){
     pendingOffers:G.pendingOffers||[],
     presidentTarget:G.presidentTarget||null,
     budgetPenalty:G.budgetPenalty||0,
-    analytics:G.analytics||{teamMatches:[],playerDev:{}}
+    analytics:G.analytics||{teamMatches:[],playerDev:{}},
+    draft:(G.draft&&!G.draft.done)?G.draft:null
   };
 }
 
@@ -363,6 +364,7 @@ function applyGameState(d){
   G.presidentTarget=d.presidentTarget&&typeof d.presidentTarget==='object'?d.presidentTarget:null; /* Faz 4.3 */
   G.budgetPenalty=Number(d.budgetPenalty)||0; /* Faz 4.3: hedef tutmayınca bütçe kısıtı */
   G.analytics=d.analytics&&typeof d.analytics==='object'?{teamMatches:Array.isArray(d.analytics.teamMatches)?d.analytics.teamMatches:[],playerDev:d.analytics.playerDev&&typeof d.analytics.playerDev==='object'?d.analytics.playerDev:{}}:{teamMatches:[],playerDev:{}}; /* Faz 5.2 */
+  G.draft=d.draft&&typeof d.draft==='object'&&!d.draft.done?d.draft:null; /* Faz 6: yarım kalan draft */
   if(G.team&&(!G.ligTeams||!G.ligTeams.length)) G.ligTeams=genLigTeams();
   /* Faz 4.2: eski kayıtlardaki oyunculara kişilik ata (geriye dönük uyum). */
   [G.players,G.youth,G.marketPlayers,G.clubTransferPlayers].forEach(list=>{ (list||[]).forEach(p=>{ if(p&&!p.kisilik) p.kisilik=ch(KISILIK_KEYS); }); });
@@ -446,6 +448,8 @@ function resumeFromSavedGame(){
   showPage('dashboard',dashBtn);
   showNotif('Kayıt yüklendi — '+G.team.isim);
   saveGameNow(false);
+  /* Faz 6: yarım kalan draft varsa kaldığı yerden devam ettir. */
+  if(G.draft&&!G.draft.done&&typeof processDraftPicks==='function') setTimeout(processDraftPicks,600);
 }
 
 function exportGameJson(){

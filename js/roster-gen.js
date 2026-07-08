@@ -105,6 +105,22 @@ function genScout(tag){
 function genScoutMarket(){
   return Array.from({length:5}).map((_,i)=>{ const s=genScout('m'+i); s.satisFiyat=Math.round(300+s.kalite*s.kalite*120+s.maas*2); return s; });
 }
+
+/* Faz 6: Draft adayı — genç (18-20), düşük mevcut OVR ama yüksek gizli potansiyel (scouting'e bağlı). */
+function genDraftProspect(i){
+  const p=genPlayer(ch(POZLAR),false);
+  p.yas=rand(18,20);
+  p.id='dr'+String(i)+Math.random().toString(36).slice(2,7);
+  p.seed='draft_'+String(i)+Math.random().toString(36).slice(2,7);
+  const drop=rand(6,14);
+  STAT_KEYS.forEach(k=>{ p[k]=Math.max(30,(Number(p[k])||50)-drop); });
+  p.genel=Math.round(STAT_KEYS.reduce((s,k)=>s+p[k],0)/STAT_KEYS.length);
+  p.potansiyel=Math.min(99,p.genel+rand(12,26));
+  p.maas=salaryKRFromGenel(p.genel);
+  p.hiddenPot=true; delete p.scouted; /* draft ipuçları scouting'e bağlı */
+  p.enerji=100;
+  return p;
+}
 function genPlayer(poz=null,tr=false){
   const ulke=tr?TR_ULKE:ch(ULKELER);
   const p=poz||ch(POZLAR);
