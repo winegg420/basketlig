@@ -31,32 +31,40 @@ Oyun ilerlemesi tarayıcıda **localStorage + IndexedDB** ile saklanır (otomati
 
 | Yol | Açıklama |
 |-----|----------|
-| `charazay2.0.html` | **Ana oyun** — tüm mantık burada. Neredeyse tüm iş bu dosyada yapılır. |
+| `charazay2.0.html` | **Ana oyun** — HTML+CSS gövdesi. JS artık burada değil; sırayla `js/*.js` yüklenir (10 `<script src>`). |
+| `js/*.js` | **Oyun mantığı** — tek `<script>` bloğundan mekanik olarak bölünmüş 10 modül (aşağıdaki kod haritası). |
 | `index.html`, `Charazay-2.0-BASLAT.html` | `charazay2.0.html`'e yönlendiren giriş sayfaları. |
 | `charazay-mentor-panel.html` | Geliştirici öz-denetim aracı — **oyunun parçası değil**, dokunma. |
 | `assets/portraits/` | 201 oyuncu portresi (`p_0000.jpg`…`p_0200.jpg`) + `manifest.json`. |
 | `tools/generate-portraits.py` / `.ps1` | Portre üretim scriptleri (pollinations.ai, deterministik seed). |
+| `tools/visual-check.js` | **Otomatik görsel/konsol testi** (Playwright + sistem Chrome, masaüstü+mobil). Her değişiklikten sonra çalıştır. |
 | `*.bat`, `OYUNU-AC.txt` | Windows başlatıcılar / kullanıcı yardım notu. |
 | `PROGRESS.md` | **Oturum günlüğü** — yapılanlar, kararlar, nedenleri. Her oturumda güncelle. |
 | `RAPOR-EKSIKLER.md` | Tam sürüm için eksik/hata denetim raporu (öncelik sıralı). |
 | `README.md` | Son kullanıcı için oynatma / GitHub Pages talimatları. |
 
-## Kod haritası (charazay2.0.html)
+## Kod haritası (js/ modülleri)
 
-Tek `<script>` bloğu (~1073. satırdan sonra). Genel akış:
-- **Sabitler & ekonomi:** `LEAGUE_SIZE=20`, `MATCH_CLOCK_SEC=600` (çeyrek 10 dk), `OT_CLOCK_SEC=300`, `START_KR=50000`, `ECO_MUL`, `PORTRAIT_POOL_SIZE=201`.
-- **Durum:** global `G` nesnesi (takım, oyuncular, sezon, ekonomi, ayarlar). `serializeGameState`/`applyGameState` ile kayıt/yükleme.
-- **Üretim:** `genPlayer`, `genRoster`, `genYouth`, `genMarket`, `genLigTeams`, `getBotClubProfile` (rakip kadrolar prosedürel).
-- **Lig/sezon:** `startLeagueSeason`, `genRoundRobinMatches` (19 tur tek devre), `updateStandingsFromResult`, `buildLeagueRows`, `applyPromotionRelegation`, `startPlayoffs`.
-- **Maç motoru:** `generateMatchEvents` → `runPossession` (olay dizisi üretir), `startMatch`/`matchStep` (canlı oynatım), `toggleManualCoach` (canlı müdahale/oyuncu değişikliği).
-- **Ekonomi:** `processEconomyWeeks`, `weeklyWageBill`, `homeTicketIncome`, `processBankruptcy` (kademeli iflas, game over yok).
-- **Render:** `renderRoster`, `renderLig`, `renderMarket`, `renderArena`, `renderAltyapi`, `renderAntrenman`, `renderBilanço`, `showPage` (SPA yönlendirme).
+JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıfır mantık değişikliği; birleştirince orijinalle byte-birebir) 10 dosyaya bölündü. Sırayla, klasik `<script src>` ile yüklenir — **tümü global kapsamda** (fonksiyonlar `window`'a, top-level `const/let` paylaşılan global lexical env'e gider); dosyalar arası çağrı serbesttir. Yeni sabit/fonksiyon eklerken **tema hangi dosyaya aitse oraya** ekle, yükleme sırasını bozma.
+
+| Dosya | İçerik |
+|-------|--------|
+| `js/state.js` | Sabitler (`LEAGUE_SIZE=20`, `MATCH_CLOCK_SEC=600`, `OT_CLOCK_SEC=300`, `START_KR`, `ECO_MUL`, storage anahtarları), `ecoRound`, IndexedDB, kimlik/maaş/hash yardımcıları. |
+| `js/economy.js` | Ekonomi: `txn`, bilet (`homeTicketIncome`,`ticket*`), `weeklyWageBill`, bot transfer, `processEconomyWeeks`, `processBankruptcy` (kademeli iflas). |
+| `js/persistence.js` | Başarımlar, `sfx`, ayarlar, kayıt slotları, öğretici, `serializeGameState`/`applyGameState`/migrasyon, `bootstrapAppUi`. |
+| `js/portraits.js` | Portre data-URI + avatar yardımcıları, `PORTRAIT_POOL_SIZE=201`. |
+| `js/roster-gen.js` | Oyun sabitleri (`STAT_KEYS`,`ARENA_LVL`,`KOC_T`,`INJURIES`), global `G`, `genPlayer/genRoster/genYouth/genMarket`, TBL durumu, `buildLeagueRows`, terfi/düşme. |
+| `js/league.js` | Lig modalları, haber/sidebar, takım detay sayfası, `genRoundRobinMatches`, fikstür, `openMatchTactics`/`saveMatchTactics`, ilk-5 editörü. |
+| `js/match-prep.js` | `updateStandingsFromResult`, `computeRosterOfrDef`, `matchLineup`, `simulateCpuMatch`, yorgunluk/sakatlık, playoff, `startLeagueSeason`. |
+| `js/render.js` | Sayfa render'ları: `renderRoster/renderLig/renderMarket/renderArena/renderAltyapi/renderAntrenman/renderBilanço`, oyuncu kartı/modal, scouting, kulüp transferleri. |
+| `js/match-engine.js` | Maç motoru: `generateMatchEvents` → `runPossession`, şut haritası/kutu skor render, `applyMatchResult`. |
+| `js/main.js` | `startMatch`/`stopMatch`/canlı oynatım, `toggleManualCoach`, antrenman aksiyonları, transfer/koç/arena aksiyonları, `showPage` (SPA), `createTeam`, bildirim kuyruğu, `window.onload` bootstrap. |
 
 ## Geliştirme kuralları
 
 - **Global `~/.claude/CLAUDE.md` kuralları geçerli:** Türkçe yanıt ver; görevi baştan sona tamamla; mevcut kodu bozma, minimal değişiklik yap; dosya silme/yeniden yazma yerine düzenle; her oturum `PROGRESS.md`'yi oku ve sonunda **ekleyerek** güncelle.
-- **Test:** Tarayıcı otomasyonu genelde bağlı değil. Doğrulama için `node --check` (syntax) + izole VM harness (maç motoru + DOM-stub render) kullanılıyor. Değişiklikten sonra en azından syntax'i doğrula; mantık değişiminde maç akışını harness ile simüle et.
-- **Tek dosya disiplini:** Yeni mantık `charazay2.0.html` içindeki `<script>` bloğuna girer. Yeni buton eklenince onclick handler'ının global bir `function` olarak tanımlı olduğundan emin ol (mevcut handler'ların hepsi tanımlı — kopuk buton yok).
+- **Test (ZORUNLU):** Her mantık/UI değişikliğinden sonra sırayla: (1) değişen `js/*.js` dosyalarına `node --check`; (2) mantık değişiminde izole VM harness ile maç akışı simülasyonu; (3) **`node tools/visual-check.js`** — masaüstü (1440×900) + mobil (390×844), 0 konsol hatası şartı, akış: yeni kariyer → maç izle → taktik → market → ayarlar, ekran görüntüleri `tools/visual-check-output/`. **Bu script çıkış kodu 0 vermeden görev tamamlanmış sayılmaz.**
+- **Modül disiplini:** Yeni mantık ilgili `js/*.js` dosyasına girer (kod haritasındaki temaya göre); yükleme sırasını (`charazay2.0.html` içindeki `<script src>` sırası) bozma. Fonksiyonlar/`var`/`function` global; top-level `const/let` dosyalar arası paylaşılır ama `window.X` ile DEĞİL, ada göre erişilir. Yeni buton eklenince onclick handler'ının global bir `function` olduğundan emin ol.
 - **Ekonomi değerleri** `ecoRound()` üzerinden ölçeklenir; ham KR sabiti yazma.
 - **Kullanıcı girdileri** (takım/arena/menajer adı) `sanitizeTeamName` ile temizlenir (XSS).
 - **Para birimi KR** (kullanıcı kararı — USDT'ye dönme).

@@ -1,0 +1,18 @@
+{
+  "name": "basketlig",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Charazay 2.0 — Türkçe tek-sayfa basketbol menajerlik oyunu. Oyun statik HTML+js/*.js; bu paket yalnızca geliştirme testleri içindir.",
+  "scripts": {
+    "test": "node tools/visual-check.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/winegg420/basketlig.git"
+  },
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "playwright": "^1.61.1"
+  }
+}

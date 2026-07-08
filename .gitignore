@@ -2,6 +2,11 @@
 scratch_*.js
 scratch_s*.js
 
+# --- Test altyapısı (Playwright + üretilen ekran görüntüleri) ---
+node_modules/
+package-lock.json
+tools/visual-check-output/
+
 # --- Python araç kalıntıları (tools/generate-portraits.py) ---
 __pycache__/
 *.py[cod]

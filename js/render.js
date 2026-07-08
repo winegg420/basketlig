@@ -1,0 +1,1051 @@
+function renderDashboardNextMatch(){
+  const nh=document.getElementById('nextHome');
+  const na=document.getElementById('nextAway');
+  const meta=document.getElementById('nextMatchMeta');
+  if(!nh||!na||!G.team) return;
+  ensureMatchKickoffs();
+  const m=findNextUserSeasonMatch();
+  if(!m){
+    nh.textContent=G.team.isim;
+    const done=G.season&&seasonAllMatchesPlayed();
+    na.textContent=done?'— sezon bitti —':'— sezon yok —';
+    if(meta){
+      if(!G.season||!G.season.matches||!G.season.matches.length) meta.textContent='Sezon senkronize ediliyor…';
+      else if(done) meta.textContent='Sezon tamam — sıradaki sezon otomatik.';
+      else meta.textContent='Fikstür güncelleniyor…';
+    }
+    return;
+  }
+  nh.textContent=m.home;
+  na.textContent=m.away;
+  const u=G.team.isim;
+  const us=m.home===u?'Ev':'Dep.';
+  const tClock=formatKickClock(m);
+  if(meta) meta.textContent=`${formatFixtureDayLabel(m.day)} · ${tClock} · Tur ${m.round}/${totalRounds()} · Sen: ${us}`;
+}
+
+// ===== KULÜP TRANSFERLERİ (rakip kulüplerin satılık/kiralık oyuncuları) =====
+const CLUB_TRANSFER_TARGET=14;
+/** Kullanıcının lig grubundaki rakip kulüp adları. */
+function userLeaguePeers(){
+  try{
+    if(!G.team||!G.team.tblKey) return [];
+    const sub=getTblState().subs[G.team.tblKey];
+    if(!sub||!sub.teams) return [];
+    return sub.teams.filter(n=>n&&n!==G.team.isim);
+  }catch(e){ return []; }
+}
+function genClubListing(peers){
+  const club=peers.length?ch(peers):'Rakip Kulüp';
+  const r=Math.random();
+  let minG,maxG;
+  if(r<0.2){ minG=58; maxG=64; }
+  else if(r<0.5){ minG=64; maxG=71; }
+  else if(r<0.78){ minG=71; maxG=78; }
+  else if(r<0.93){ minG=78; maxG=84; }
+  else { minG=84; maxG=90; }
+  const p=genPlayerBounded(ch(POZLAR),minG,maxG);
+  const loan=Math.random()<0.42;
+  p.id='ct'+(G._ctSeq=(G._ctSeq||0)+1)+'_'+Math.floor(Math.random()*1e6);
+  p.seed='ct'+p.id+'_'+hash32(p.isim+p.poz+club);
+  p.fromClub=club;
+  p.mode=loan?'loan':'sale';
+  const base=transferFeeKR(p);
+  /* Sahipli oyuncu: satış priml, kiralık tek seferlik ucuz bedel + haftalık maaş sende. */
+  p.fiyat=loan?Math.round(base*0.22):Math.round(base*1.3);
+  p.kiralik=loan;
+  p.sure=rand(6,72);
+  p.teklifler=rand(0,14);
+  return p;
+}
+function ensureClubTransferStock(){
+  if(!Array.isArray(G.clubTransferPlayers)) G.clubTransferPlayers=[];
+  const peers=userLeaguePeers();
+  let added=false;
+  let guard=0;
+  while(G.clubTransferPlayers.length<CLUB_TRANSFER_TARGET&&guard++<60){
+    G.clubTransferPlayers.push(genClubListing(peers));
+    added=true;
+  }
+  if(added) ensureUniquePlayerNames(G.clubTransferPlayers);
+}
+/** Gün ilerledikçe: bazı ilanlar başka kulüplerce alınır (çıkar), havuz yenilenir. */
+function tickClubTransferMarket(daysAdvanced){
+  if(!Array.isArray(G.clubTransferPlayers)) G.clubTransferPlayers=[];
+  const d=Math.max(0,Math.round(Number(daysAdvanced)||0));
+  if(d<=0) return;
+  const remove=Math.min(G.clubTransferPlayers.length,rand(0,2));
+  for(let i=0;i<remove;i++){
+    if(G.clubTransferPlayers.length) G.clubTransferPlayers.splice(rand(0,G.clubTransferPlayers.length-1),1);
+  }
+  ensureClubTransferStock();
+}
+function renderClubTransfers(){
+  const host=document.getElementById('clubTransferList');
+  const cnt=document.getElementById('clubCountNum');
+  if(!host) return;
+  ensureClubTransferStock();
+  if(cnt) cnt.textContent=String(G.clubTransferPlayers.length);
+  const filt=G.clubTransferFilter||'all';
+  let list=G.clubTransferPlayers.slice();
+  if(filt!=='all') list=list.filter(p=>p.mode===filt);
+  list.sort((a,b)=>(b.genel||0)-(a.genel||0));
+  if(!list.length){
+    host.innerHTML='<div style="font-size:12px;color:var(--text2);padding:16px;text-align:center;">Bu filtreye uygun kulüp ilanı yok.</div>';
+    return;
+  }
+  host.innerHTML=list.map(p=>{
+    const st=starFromGenel(p.genel);
+    const loan=p.mode==='loan';
+    const modeBadge=loan?'<span class="tmode-badge tmode-loan">🔁 KİRALIK</span>':'<span class="tmode-badge tmode-sale">💵 SATILIK</span>';
+    const priceLbl=loan?'Kira bedeli':'Bonservis';
+    const act=loan
+      ?`<button class="btn-bid" onclick="event.stopPropagation();loanClubPlayer('${p.id}')" style="background:var(--blue);">KİRALA</button>`
+      :`<button class="btn-bid" onclick="event.stopPropagation();buyClubPlayer('${p.id}')">SATIN AL</button>`;
+    return `
+    <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openPlayerModal('${p.id}')">
+      <div class="mavatar-wrap">
+      <img class="mavatar" src="${playerAvatar(p.seed,p.id,{market:true})}" ${playerAvatarImgAttrs(p.seed,p.id,{market:true})} alt="${p.isim}">
+      <div class="pimg-cap" style="margin-top:2px;">OVR ${p.genel}</div>
+      </div>
+      <div style="min-width:36px;text-align:center;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${p.genel>=75?'var(--green)':p.genel>=60?'var(--gold)':'var(--red)'};">${p.genel}</div>
+        <span class="pbadge pos-${p.poz.toLowerCase()}" style="font-size:9px;">${p.poz}</span>
+        <div style="font-size:9px;color:var(--text2);">${st}★</div>
+      </div>
+      <div class="minfo">
+        <div style="font-weight:700;font-size:13px;">${p.bayrak} ${p.isim} ${modeBadge}</div>
+        <div style="font-size:11px;color:var(--text2);">${p.ulke} • ${p.yas} yaş • ${p.boy}cm</div>
+        <div style="font-size:10px;color:var(--accent);margin-top:3px;">🏛️ ${escMatch(p.fromClub||'')} kulübünden</div>
+        <div style="display:flex;gap:7px;margin-top:4px;flex-wrap:wrap;">
+          <span style="font-size:11px;">⚔️${p.hucum}</span><span style="font-size:11px;">🛡️${p.savunma}</span>
+          <span style="font-size:11px;">🏀${p.ribaund}</span><span style="font-size:11px;">🎯${p.pas}</span>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-top:3px;">Maaş: ${fmtn(p.maas)} KR/hf${loan?' · sezon sonunda döner':''}</div>
+      </div>
+      <div class="mprice">
+        <div style="font-size:9px;color:var(--text2);">${priceLbl}</div>
+        <div class="pval">${fmtn(p.fiyat)}</div>
+        <div style="font-size:10px;color:var(--text2);">KR</div>
+        ${act}
+      </div>
+    </div>`;
+  }).join('');
+}
+function buyClubPlayer(id){
+  ensureClubTransferStock();
+  const p=(G.clubTransferPlayers||[]).find(x=>x.id===id);
+  if(!p||p.mode!=='sale') return;
+  if(G.players.length>=18){ showNotif('Kadro dolu (en fazla 18). Önce bir oyuncu gönder.'); return; }
+  if(G.coins<p.fiyat){ showNotif('❌ Yeterli KR yok!'); return; }
+  const st=starFromGenel(p.genel);
+  txn('Transfer (kulüpten): '+p.isim,-p.fiyat);
+  unlockAchievement('transfer');
+  const np={...p};
+  ['mode','fiyat','kiralik','fromClub','sure','teklifler','freeAgent','hiddenPot'].forEach(k=>delete np[k]);
+  np.scouted=true;
+  if(np.enerji==null||np.enerji==='') np.enerji=100;
+  G.players.push(np);
+  G.clubTransferPlayers=G.clubTransferPlayers.filter(x=>x.id!==id);
+  G.chemistry=Math.max(20,G.chemistry-(teamLeadership()>=78?rand(3,8):rand(5,12)));
+  showNotif(`✅ ${p.isim} ${p.fromClub} kulübünden kadrona katıldı!`);
+  if(G.team&&G.team.tblKey){
+    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">💰 <strong>${G.team.isim}</strong>, <strong>${escMatch(p.fromClub||'')}</strong> kulübünden <strong>${fmtn(p.fiyat)} KR</strong> bonservisle <strong>${p.isim}</strong> (${st}★) transferini bitirdi.</div>`);
+  }
+  updateCoins();updateChemistry();renderMarket();
+  if(document.getElementById('page-kadro')&&document.getElementById('page-kadro').classList.contains('active')) renderRoster();
+  scheduleGameSave();
+}
+function loanClubPlayer(id){
+  ensureClubTransferStock();
+  const p=(G.clubTransferPlayers||[]).find(x=>x.id===id);
+  if(!p||p.mode!=='loan') return;
+  if(G.players.length>=18){ showNotif('Kadro dolu (en fazla 18). Önce bir oyuncu gönder.'); return; }
+  if(G.coins<p.fiyat){ showNotif('❌ Kira bedeli için yeterli KR yok!'); return; }
+  txn('Kiralama bedeli: '+p.isim,-p.fiyat);
+  const np={...p};
+  ['mode','fiyat','kiralik','sure','teklifler','freeAgent'].forEach(k=>delete np[k]);
+  np.loan=true;
+  np.loanFrom=p.fromClub;
+  delete np.fromClub;
+  np.loanReturnDay=(G.gameDay||1)+rand(45,75);
+  if(np.enerji==null||np.enerji==='') np.enerji=100;
+  G.players.push(np);
+  G.clubTransferPlayers=G.clubTransferPlayers.filter(x=>x.id!==id);
+  showNotif(`✅ ${p.isim} kiralık olarak kadrona katıldı — ~${np.loanReturnDay-(G.gameDay||1)} gün sonra ${np.loanFrom} kulübüne dönecek.`);
+  updateCoins();renderMarket();
+  if(document.getElementById('page-kadro')&&document.getElementById('page-kadro').classList.contains('active')) renderRoster();
+  scheduleGameSave();
+}
+/** Süresi dolan kiralık oyuncuları kadrodan çıkarır (gün ilerleyince çağrılır). */
+function processLoanReturns(){
+  if(!Array.isArray(G.players)) return;
+  const now=G.gameDay||1;
+  const returning=G.players.filter(p=>p&&p.loan&&p.loanReturnDay&&p.loanReturnDay<=now);
+  if(!returning.length) return;
+  returning.forEach(p=>{
+    showNotif(`↩️ ${p.isim} kiralık süresi bitti — ${p.loanFrom||'kulübüne'} döndü.`);
+  });
+  const ids=new Set(returning.map(p=>p.id));
+  G.players=G.players.filter(p=>!ids.has(p.id));
+}
+
+function regenerateSeasonFixtures(){
+  if(!G.team) return;
+  G.ligTeams=genLigTeams();
+  if(!G.season||!Array.isArray(G.season.matches)||!G.season.matches.length){
+    G.seasonFixtures=[];
+    return;
+  }
+  const u=G.team.isim;
+  const list=G.season.matches.filter(m=>m.home===u||m.away===u).sort((a,b)=>a.round-b.round||a.day-b.day||a.seasonMatchIx-b.seasonMatchIx);
+  G.seasonFixtures=list.map(m=>({
+    md:m.day,
+    round:m.round,
+    t1:m.home,
+    t2:m.away,
+    played:!!m.played,
+    s1:m.played?m.hs:0,
+    s2:m.played?m.as:0,
+    seasonMatchIx:m.seasonMatchIx
+  }));
+}
+
+function buildFixtureRows(){
+  if(!G.team) return [];
+  if(!G.ligTeams||!G.ligTeams.length) G.ligTeams=genLigTeams();
+  ensureMatchKickoffs();
+  if(G.season&&G.season.matches&&G.season.matches.length){
+    regenerateSeasonFixtures();
+    return G.seasonFixtures.map(m=>{
+      const sm=G.season.matches[m.seasonMatchIx];
+      return{
+        t1:m.t1,t2:m.t2,
+        round:m.round,
+        done:!!m.played,
+        s1:m.s1||0,s2:m.s2||0,
+        gun:`Gün ${m.md} · T${m.round}`,
+        saat:sm?formatKickClock(sm):'—',
+        seasonMatchIx:m.seasonMatchIx,
+        dayNum:m.md
+      };
+    });
+  }
+  if(!G.seasonFixtures||!G.seasonFixtures.length) return [];
+  return G.seasonFixtures.map(m=>({
+    t1:m.t1,t2:m.t2,
+    round:m.round,
+    done:!!m.played,
+    s1:m.s1||0,s2:m.s2||0,
+    gun:`Gün ${m.md}`,
+    saat:'—',
+    seasonMatchIx:m.seasonMatchIx,
+    dayNum:m.md
+  }));
+}
+
+function annotateFixtureClick(rows){
+  const nx=findNextUserSeasonMatch();
+  return rows.map(m=>{
+    const click=!m.done&&nx&&m.seasonMatchIx!=null&&m.seasonMatchIx===nx.seasonMatchIx;
+    return {...m,_click:click};
+  });
+}
+
+function fixtureGroupedHtml(rows){
+  const byDay=new Map();
+  rows.forEach(m=>{
+    const d=m.dayNum!=null&&m.dayNum>0?m.dayNum:0;
+    if(!byDay.has(d)) byDay.set(d,[]);
+    byDay.get(d).push(m);
+  });
+  const days=[...byDay.keys()].filter(d=>d>0).sort((a,b)=>a-b);
+  if(!days.length) return fixtureRowsHtml(rows);
+  return days.map(d=>`<div style="margin-bottom:18px;">
+    <div style="font-size:12px;font-weight:800;color:var(--gold);letter-spacing:0.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);">📆 Gün ${d}</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">${fixtureRowsHtml(byDay.get(d))}</div>
+  </div>`).join('');
+}
+
+function fixtureRowsHtml(rows){
+  return rows.map((m,i)=>{
+    const clickRow=m._click===true;
+    const ona=clickRow?`onclick="scrollToMacLive()" role="button" tabindex="0" onkeydown="if(event.key==='Enter')scrollToMacLive()"`:'';
+    const hlt=clickRow?'border-color:rgba(239,68,68,0.5);background:rgba(239,68,68,0.06);cursor:pointer;':'';
+    const hint=clickRow?' · tıkla → canlı panel':'';
+    const subMeta=!m.done&&m.saat&&m.saat!=='—'
+      ?`<div style="font-size:10px;color:var(--gold);margin-top:3px;">${m.saat} · ${formatFixtureDayLabel(m.dayNum)}</div>`
+      :'';
+    return `
+    <div ${ona} style="display:flex;align-items:center;gap:10px;padding:9px 10px;background:var(--bg3);border-radius:10px;border:1px solid var(--border);${hlt}">
+      <div style="flex:1;font-size:12px;font-weight:600;">${escMatch(m.t1)}</div>
+      <div style="text-align:center;min-width:90px;">
+        ${m.done?`<div style="font-family:'Bebas Neue',sans-serif;font-size:17px;">${m.s1}-${m.s2}</div>`:`<div style="font-size:10px;color:var(--text2);">${m.gun}</div>`}
+        ${subMeta}
+        <span style="display:inline-block;margin-top:2px;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:700;${m.done?'background:rgba(34,197,94,0.2);color:#4ade80;':'background:rgba(59,130,246,0.2);color:#60a5fa;'}">${m.done?'BİTTİ':'YAKINDA'}</span>
+        ${clickRow?`<div style="font-size:9px;color:var(--accent);margin-top:3px;font-weight:600;">Sıradaki${hint}</div>`:''}
+      </div>
+      <div style="flex:1;font-size:12px;font-weight:600;text-align:right;">${escMatch(m.t2)}</div>
+    </div>`;
+  }).join('');
+}
+
+function scrollToMacLive(){
+  const el=document.getElementById('macLiveAnchor');
+  if(el) try{ el.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){ el.scrollIntoView(); }
+  showNotif('Aşağıda canlı maç paneli — Maçı Başlat ile devam et.');
+}
+
+function renderFixture(){
+  const up=document.getElementById('fixtureUpcomingGrid');
+  const main=document.getElementById('fixtureMain');
+  if(!G.team){
+    if(up) up.innerHTML='<div style="font-size:12px;color:var(--text2);grid-column:1/-1;">Takım yüklenince fikstür burada.</div>';
+    if(main) main.innerHTML='<div style="font-size:12px;color:var(--text2);padding:8px 0;">—</div>';
+    return;
+  }
+  ensureMatchKickoffs();
+  const upcoming=getUpcomingUserMatches(6);
+  if(up){
+    if(!upcoming.length){
+      const done=G.season&&seasonAllMatchesPlayed();
+      up.innerHTML='<div style="font-size:12px;color:var(--text2);grid-column:1/-1;">'+(done?'Bu sezonun maçların bitti.':'Sezon bekleniyor — <strong>Lig</strong> ekranından sezonun aktif olduğundan emin ol.')+'</div>';
+    } else {
+      const nx=findNextUserSeasonMatch();
+      up.innerHTML=upcoming.map(m=>macSeasonMatchCardHtml(m,!!(nx&&nx.seasonMatchIx===m.seasonMatchIx))).join('');
+    }
+  }
+  if(main){
+    const rows=annotateFixtureClick(buildFixtureRows());
+    main.innerHTML=rows.length?fixtureFullSeasonGridHtml(rows):'<div style="font-size:12px;color:var(--text2);padding:10px;">Fikstür henüz yok. <strong>Lig</strong> sezonu başlayınca tüm maçların burada listelenir.</div>';
+  }
+}
+
+function renderTeamFixturePanel(){
+  const el=document.getElementById('teamFixtureList');
+  if(!el||!G.team) return;
+  el.innerHTML=fixtureGroupedHtml(annotateFixtureClick(buildFixtureRows()));
+}
+
+function genCoaches(){
+  return KOC_T.slice(0,3).map((k,i)=>{
+    const sev=rand(1,5);
+    return {...k,id:'c'+i,ad:['Ahmet Yıldız','Carlos Ruiz','Mike Johnson'][i],seviye:sev,maas:Math.round(45+sev*18+sev*sev*2),skor:sev*10+rand(0,15),gecmis:[]};
+  });
+}
+
+function genCoachMarket(){
+  return KOC_T.map((k,i)=>{
+    const sev=rand(2,8);
+    const maas=Math.round(50+sev*22+sev*sev*2.5);
+    const satis=Math.round(400+sev*sev*140+maas*2);
+    /* Madde 8: piyasa koçları hazır bir CV ile gelir (geçmiş başarı → skor). */
+    const past=rand(0,3);
+    const gecmis=[];
+    for(let g=0;g<past;g++) gecmis.push({sezon:'geçmiş',basari:ch(['Şampiyonluk','Playoff','Lig 1.liği'])});
+    return {...k,id:'cm'+i,ad:`${ch(ILK)} ${ch(SY)}`,seviye:sev,maas,satisFiyat:satis,skor:sev*10+past*12+rand(0,15),gecmis};
+  });
+}
+/** Koç CV'sine başarı ekler ve skorunu artırır (sezon/playoff kazanımında çağrılır). */
+function awardCoaches(basari,puan){
+  (G.coaches||[]).forEach(c=>{
+    c.gecmis=Array.isArray(c.gecmis)?c.gecmis:[];
+    c.gecmis.push({sezon:'S'+((G.season&&G.season.year)||'?'),basari});
+    c.skor=(Number(c.skor)||(Number(c.seviye)||1)*10)+puan;
+  });
+}
+
+// ===== RENDER =====
+function moodColor(m){return m>=70?'var(--green)':m>=40?'var(--gold)':'var(--red)';}
+function moodText(m){return m>=75?'😄 Mutlu':m>=50?'😐 Normal':m>=30?'😕 Mutsuz':'😠 Kızgın';}
+
+/* ── Scouting (Madde 7) — bazı oyuncuların gerçek potansiyeli gizli; KR ile keşif raporu açar. */
+function playerScouted(p){ return !p||p.scouted===true||!p.hiddenPot; }
+function potRange(p){
+  const pot=Number(p.potansiyel)||Number(p.genel)||60;
+  const spread=6+(hash32(String(p.id||p.seed||''))%7);   /* 6-12, oyuncuya sabit */
+  const lo=Math.max(Number(p.genel)||0,pot-spread);
+  const hi=Math.min(99,pot+Math.floor(spread/2));
+  return {lo,hi};
+}
+function scoutCost(p){ return ecoRound(200+(hash32('scout'+String(p.id||''))%420)); }
+function potHtml(p){
+  if(!p.potansiyel) return '';
+  if(playerScouted(p)){
+    return `<div style="font-size:10px;color:var(--blue);margin-top:3px;">⭐ Pot: ${p.potansiyel} (${Math.max(0,(p.potansiyel||p.genel)-p.genel)} boşluk)</div>`;
+  }
+  const r=potRange(p);
+  return `<div style="font-size:10px;color:var(--text2);margin-top:3px;">🔍 Pot: ${r.lo}–${r.hi} <span style="color:var(--gold);">(belirsiz — keşif gerek)</span></div>`;
+}
+function scoutPlayer(id){
+  const p=findPlayerRecord(id);
+  if(!p){ showNotif('Oyuncu bulunamadı.'); return; }
+  if(playerScouted(p)){ showNotif('Bu oyuncu zaten keşfedildi.'); return; }
+  const cost=scoutCost(p);
+  if(G.coins<cost){ showNotif('❌ Keşif raporu için yeterli KR yok!'); return; }
+  txn('Keşif raporu: '+p.isim,-cost);
+  p.scouted=true;
+  updateCoins();
+  showNotif(`🔍 ${p.isim} keşfedildi — gerçek potansiyel: ${p.potansiyel}.`);
+  scheduleGameSave();
+  const mr=document.getElementById('appModalRoot');
+  if(mr&&mr.style.display!=='none') openPlayerModal(id);
+  if(document.getElementById('page-altyapi')&&document.getElementById('page-altyapi').classList.contains('active')) renderAltyapi();
+  if(document.getElementById('page-market')&&document.getElementById('page-market').classList.contains('active')) renderMarket();
+}
+function injBannerHtml(p){
+  if(typeof playerIsInjured!=='function'||!playerIsInjured(p)) return '';
+  const left=Math.max(0,(p.injReturnDay||0)-(G.gameDay||1));
+  const sevIcon={'Hafif':'🟡','Orta':'🟠','Ağır':'🔴'}[p.injurySeverity]||'🩹';
+  const sev=p.injurySeverity?`${sevIcon} ${p.injurySeverity}`:'🩹 Sakat';
+  const bolge=p.injuryBolge?` (${p.injuryBolge})`:'';
+  return `<div class="pinj-banner">${sev} · ${p.injuryEtiket||'Tıbbi'}${bolge} · dönüş: <strong>Gün ${p.injReturnDay||'?'}</strong> (~${left} gün)</div>`;
+}
+
+function renderPlayerCard(p,showBuy=false,price=0,showPromote=false,showList=false){
+  const oc=p.genel>=75?'var(--green)':p.genel>=60?'var(--gold)':'var(--red)';
+  const st=starFromGenel(p.genel);
+  const avOpt=showBuy?{market:true}:{ovr:p.genel};
+  return `<div class="pcard">
+    ${injBannerHtml(p)}
+    <div class="overall-badge" style="color:${oc};">${p.genel}</div>
+    <div class="pcard-top">
+      <div class="pimg-wrap">
+      <img class="pimg" src="${playerAvatar(p.seed,p.id,avOpt)}" ${playerAvatarImgAttrs(p.seed,p.id,avOpt)} alt="${p.isim}">
+      <div class="pimg-cap">OVR ${p.genel}</div>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="pname">${p.isim}</div>
+        <div class="pmeta">${p.bayrak} ${p.ulke} • ${p.yas} yaş<br>${p.boy}cm • ${p.kilo}kg</div>
+        <span class="pbadge pos-${p.poz.toLowerCase()}">${p.poz} — ${POZ_TR[p.poz]}</span>
+        <div style="font-size:10px;color:var(--gold);margin-top:3px;">OVR ${p.genel} · ${st}★</div>
+        ${potHtml(p)}
+        ${p.academyProspect?'<div style="font-size:9px;color:var(--green);margin-top:3px;font-weight:600;">★ Gelişime çok açık profil</div>':''}
+        <div style="margin-top:6px;">
+          <div style="font-size:10px;color:var(--text2);">Psikoloji: <span style="color:${moodColor(p.mood)};">${moodText(p.mood)}</span></div>
+          <div class="mood-bar"><div class="mood-fill" style="width:${p.mood}%;background:${moodColor(p.mood)};"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="sgrid">
+      ${STAT_KEYS.map(k=>`<div class="sitem"><span class="sname">${STAT_LABELS[k]}</span><span class="sval ${sv(p[k])}">${p[k]}</span></div>`).join('')}
+    </div>
+    <div style="margin-top:8px;font-size:11px;color:var(--text2);">Maaş: <span style="color:var(--gold);">${fmtn(p.maas)} KR/hafta</span>${p.kontratSezon!=null?` · 📄 ${p.kontratSezon} sezon`:''}</div>
+    ${p.sezon&&p.sezon.mac?`<div style="margin-top:4px;font-size:10px;color:var(--blue);">📊 Sezon: ${p.sezon.mac} maç · ${(p.sezon.pts/p.sezon.mac).toFixed(1)} sayı · ${(p.sezon.ast/p.sezon.mac).toFixed(1)} asist ort.</div>`:''}
+    ${showBuy?`<button class="btn-bid" onclick="buyFromMarket('${p.id}')">TEKLİF VER — ${fmtn(price)} KR</button>`:''}
+    ${showPromote?`<button class="btn-p" onclick="promoteYouth('${p.id}')" style="padding:7px;font-size:11px;margin-top:8px;">KADROYA AL</button>`:''}
+    ${showList?`<button type="button" class="btn-bid" onclick="listPlayerToMarket('${p.id}')" style="margin-top:8px;">TRANSFER MARKETE KOY</button>`:''}
+  </div>`;
+}
+
+function findPlayerRecord(pid){
+  if(!pid) return null;
+  return G.players.find(p=>p.id===pid)
+    ||G.youth.find(p=>p.id===pid)
+    ||G.marketPlayers.find(p=>p.id===pid)
+    ||(G.clubTransferPlayers||[]).find(p=>p.id===pid)
+    ||null;
+}
+
+function openPlayerModal(pid){
+  const p=findPlayerRecord(pid);
+  if(!p){ showNotif('Oyuncu bulunamadı.'); return; }
+  const inMarket=G.marketPlayers.some(x=>x.id===pid);
+  const inYouth=G.youth.some(x=>x.id===pid);
+  const inClub=(G.clubTransferPlayers||[]).some(x=>x.id===pid);
+  const av=(inMarket||inClub)?{market:true}:{ovr:p.genel};
+  const salt=inMarket?(p.marketIdx!=null?p.marketIdx:p.id):p.id;
+  const bigImg=playerAvatar(p.seed,salt,av);
+  const oc=p.genel>=75?'var(--green)':p.genel>=60?'var(--gold)':'var(--red)';
+  const st=starFromGenel(p.genel);
+  const actions=[];
+  if(inMarket){
+    const pr=p.fiyat!=null?Number(p.fiyat):transferFeeKR(p);
+    actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();buyFromMarket('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;">TEKLİF VER — ${fmtn(pr)} KR</button>`);
+  }
+  if(inClub){
+    if(p.mode==='loan'){
+      actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();loanClubPlayer('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;background:var(--blue);">🔁 KİRALA — ${fmtn(p.fiyat)} KR · ${escMatch(p.fromClub||'')}</button>`);
+    } else {
+      actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();buyClubPlayer('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;">💵 SATIN AL — ${fmtn(p.fiyat)} KR · ${escMatch(p.fromClub||'')}</button>`);
+    }
+  }
+  if(inYouth){
+    actions.push(`<button type="button" class="btn-p" onclick="event.stopPropagation();promoteYouth('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;padding:9px;">KADROYA AL</button>`);
+  }
+  if(!inMarket&&!inYouth&&!inClub){
+    const extCost=salaryKRFromGenel(p.genel)*2;
+    const expiring=(p.kontratSezon!=null&&p.kontratSezon<=1);
+    actions.push(`<button type="button" class="btn-p" onclick="event.stopPropagation();extendContract('${p.id}');" style="margin-top:4px;width:100%;padding:9px;${expiring?'background:var(--gold);color:#111;':''}">✍️ SÖZLEŞME UZAT — ${fmtn(extCost)} KR${expiring?' (bitmek üzere!)':''}</button>`);
+    actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();listPlayerToMarket('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;">TRANSFER MARKETE KOY</button>`);
+  }
+  let potBlock='';
+  if(p.potansiyel){
+    if(playerScouted(p)){
+      potBlock=`<div style="font-size:11px;color:var(--blue);margin-bottom:8px;">⭐ Potansiyel: ${p.potansiyel} (yaklaşık +${Math.max(0,(p.potansiyel||p.genel)-p.genel)} gelişim payı)</div>`;
+    } else {
+      const r=potRange(p);
+      potBlock=`<div style="font-size:11px;color:var(--text2);margin-bottom:8px;">🔍 Potansiyel: <strong>${r.lo}–${r.hi}</strong> (belirsiz) <button type="button" class="btn-sm" style="padding:3px 8px;font-size:10px;margin-left:6px;" onclick="event.stopPropagation();scoutPlayer('${p.id}')">Keşfet — ${fmtn(scoutCost(p))} KR</button></div>`;
+    }
+  }
+  const html=`<div class="card-title" style="margin-top:0;">${p.bayrak} ${p.isim}</div>
+  <p style="font-size:12px;color:var(--text2);margin-bottom:8px;">${POZ_TR[p.poz]||''} · ${p.ulke} · ${p.yas} yaş · ${p.boy}cm · ${p.kilo}kg</p>
+  <p style="font-size:10px;color:var(--text2);margin-bottom:10px;">Psikoloji: <span style="color:${moodColor(p.mood)};">${moodText(p.mood)}</span></p>
+  ${potBlock}
+  <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
+    <div style="flex:0 0 min(42vw,240px);">
+      <img class="player-modal-hero" src="${bigImg}" ${playerAvatarImgAttrs(p.seed,salt,av)} alt="">
+      ${injBannerHtml(p)}
+      <div style="text-align:center;margin-top:8px;font-family:'Bebas Neue',sans-serif;font-size:32px;color:${oc};">${p.genel} <span style="font-size:13px;color:var(--text2);font-weight:600;font-family:system-ui;">OVR · ${st}★</span></div>
+    </div>
+    <div style="flex:1;min-width:240px;">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">Maaş: <span style="color:var(--gold);font-weight:600;">${fmtn(p.maas)} KR/hafta</span>${p.kontratSezon!=null?` · 📄 Sözleşme: ${p.kontratSezon} sezon`:''}</div>
+      ${p.sezon&&p.sezon.mac?`<div style="font-size:11px;color:var(--blue);margin-bottom:10px;">📊 Bu sezon: ${p.sezon.mac} maç · ${(p.sezon.pts/p.sezon.mac).toFixed(1)} sayı · ${(p.sezon.ast/p.sezon.mac).toFixed(1)} asist · ${(p.sezon.reb/p.sezon.mac).toFixed(1)} ribaund ort.</div>`:'<div style="font-size:11px;color:var(--text2);margin-bottom:10px;">📊 Bu sezon henüz maça çıkmadı.</div>'}
+      <div class="sgrid" style="margin-bottom:0;">
+        ${STAT_KEYS.map(k=>`<div class="sitem"><span class="sname">${STAT_LABELS[k]}</span><span class="sval ${sv(p[k])}">${p[k]}</span></div>`).join('')}
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:14px;display:flex;flex-direction:column;gap:6px;">${actions.join('')}</div>`;
+  showAppModal(html,{xl:true});
+}
+
+function renderRosterListRow(p){
+  const st=starFromGenel(p.genel);
+  return `
+    <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openPlayerModal('${p.id}')">
+    ${injBannerHtml(p)}
+      <div class="mavatar-wrap">
+      <img class="mavatar" src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} alt="${p.isim}">
+      <div class="pimg-cap" style="margin-top:2px;">OVR ${p.genel}</div>
+      </div>
+      <div style="min-width:36px;text-align:center;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${p.genel>=75?'var(--green)':p.genel>=65?'var(--gold)':'var(--red)'};">${p.genel}</div>
+        <span class="pbadge pos-${p.poz.toLowerCase()}" style="font-size:9px;">${p.poz}</span>
+        <div style="font-size:9px;color:var(--text2);">${st}★</div>
+      </div>
+      <div class="minfo">
+        <div style="font-weight:700;font-size:13px;">${p.bayrak} ${p.isim}</div>
+        <div style="font-size:11px;color:var(--text2);">${p.ulke} • ${p.yas} yaş • ${p.boy}cm</div>
+        <div style="display:flex;gap:7px;margin-top:5px;flex-wrap:wrap;">
+          <span style="font-size:11px;">⚔️${p.hucum}</span><span style="font-size:11px;">🛡️${p.savunma}</span>
+          <span style="font-size:11px;">🏀${p.ribaund}</span><span style="font-size:11px;">✋${p.topCalma}</span>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-top:3px;">Maaş: ${fmtn(p.maas)} KR/hf</div>
+      </div>
+      <div class="mprice">
+        <button type="button" class="btn-bid" onclick="event.stopPropagation();listPlayerToMarket('${p.id}')">MARKETE KOY</button>
+      </div>
+    </div>`;
+}
+
+function renderYouthListRow(p){
+  const st=starFromGenel(p.genel);
+  return `
+    <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openPlayerModal('${p.id}')">
+    ${injBannerHtml(p)}
+      <div class="mavatar-wrap">
+      <img class="mavatar" src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} alt="${p.isim}">
+      <div class="pimg-cap" style="margin-top:2px;">OVR ${p.genel}</div>
+      </div>
+      <div style="min-width:36px;text-align:center;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${p.genel>=75?'var(--green)':p.genel>=65?'var(--gold)':'var(--red)'};">${p.genel}</div>
+        <span class="pbadge pos-${p.poz.toLowerCase()}" style="font-size:9px;">${p.poz}</span>
+        <div style="font-size:9px;color:var(--text2);">${st}★</div>
+      </div>
+      <div class="minfo">
+        <div style="font-weight:700;font-size:13px;">${p.bayrak} ${p.isim}</div>
+        <div style="font-size:11px;color:var(--text2);">${p.ulke} • ${p.yas} yaş • ${p.boy}cm ${p.potansiyel?`· Pot ${p.potansiyel}`:''}</div>
+        <div style="display:flex;gap:7px;margin-top:5px;flex-wrap:wrap;">
+          <span style="font-size:11px;">⚔️${p.hucum}</span><span style="font-size:11px;">🛡️${p.savunma}</span>
+          <span style="font-size:11px;">🏀${p.ribaund}</span><span style="font-size:11px;">✋${p.topCalma}</span>
+        </div>
+      </div>
+      <div class="mprice">
+        <button type="button" class="btn-p" onclick="event.stopPropagation();promoteYouth('${p.id}')" style="padding:7px;font-size:11px;">KADROYA AL</button>
+      </div>
+    </div>`;
+}
+
+function renderRoster(){
+  const kb=document.getElementById('kadroPrepareBanner');
+  if(kb){
+    let ix=G.prepareMatchIx;
+    const nx=findNextUserSeasonMatch();
+    if(ix!=null&&nx&&ix!==nx.seasonMatchIx){
+      G.prepareMatchIx=null;
+      ix=null;
+      scheduleGameSave();
+    }
+    if(ix!=null&&G.team&&G.season&&Array.isArray(G.season.matches)){
+      const mm=G.season.matches.find(x=>x.seasonMatchIx===ix);
+      if(mm&&!mm.played&&(mm.home===G.team.isim||mm.away===G.team.isim)){
+        kb.style.display='block';
+        const op=mm.home===G.team.isim?mm.away:mm.home;
+        kb.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div style="font-size:12px;"><strong>🎯 Maç hazırlığı</strong> — vs <strong>${escMatch(op)}</strong> · ${formatFixtureDayLabel(mm.day)} · ${formatKickClock(mm)} · Tur ${mm.round}/${totalRounds()}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" class="fbtn" onclick="gotoMacPage()">Maçlara dön</button>
+            <button type="button" class="fbtn" onclick="clearPrepareMatch()">Kapat</button>
+          </div>
+        </div>`;
+      } else {
+        kb.style.display='none';
+        if(!mm||mm.played) G.prepareMatchIx=null;
+      }
+    } else {
+      kb.style.display='none';
+    }
+  }
+  const filter=G.kadroFilter||'all';
+  let f=filter==='all'?G.players.slice():G.players.filter(p=>p.poz===filter);
+  f.sort((a,b)=>(b.genel||0)-(a.genel||0));
+  const grid=document.getElementById('rosterGrid');
+  const view=G.kadroView||'cards';
+  if(view==='list'){
+    grid.className='roster-as-list';
+    grid.innerHTML=f.map(p=>renderRosterListRow(p)).join('');
+  } else {
+    grid.className='g3';
+    grid.innerHTML=f.map(p=>renderPlayerCard(p,false,0,false,true)).join('');
+  }
+  updateChemistry();
+}
+
+function setKadroView(mode,btn){
+  G.kadroView=mode||'cards';
+  document.querySelectorAll('#page-kadro .fbtn.kvbtn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderRoster();
+}
+
+function filterRoster(f,btn){
+  G.kadroFilter=f;
+  document.querySelectorAll('#page-kadro .fbtn:not(.kvbtn)').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderRoster();
+}
+
+function gotoAltyapiPage(){
+  const el=document.querySelector('#sbNav button[data-page="altyapi"]');
+  showPage('altyapi',el||null);
+}
+
+/** Madde 36: kadronun en yüksek liderlik statı (kaptan) — kimya/moral üzerinde olumlu etki için. */
+function teamLeadership(){
+  const avail=(G.players||[]).filter(p=>!playerIsInjured(p));
+  if(!avail.length) return 60;
+  return avail.reduce((m,p)=>Math.max(m,statN(p,'liderlik')),0);
+}
+function updateChemistry(){
+  const el=document.getElementById('chemFill');
+  const sc=document.getElementById('chemScore');
+  if(el){el.style.width=G.chemistry+'%';}
+  if(sc){
+    sc.textContent=G.chemistry;
+    sc.style.color=G.chemistry>=70?'var(--green)':G.chemistry>=40?'var(--gold)':'var(--red)';
+  }
+}
+
+/** Madde 35: altyapı tesisi — ücretli, isteğe bağlı yükseltme; genç sayısı + potansiyel havuzunu büyütür. */
+const YOUTH_FAC_LVL=[
+  {s:1,isim:'Temel Akademi',hedef:15,potBonus:0,m:0},
+  {s:2,isim:'Gelişmiş Akademi',hedef:18,potBonus:3,m:ecoRound(1200)},
+  {s:3,isim:'Elit Akademi',hedef:22,potBonus:6,m:ecoRound(3000)},
+  {s:4,isim:'Uluslararası Kamp',hedef:26,potBonus:10,m:ecoRound(6000)}
+];
+function renderYouthFacility(){
+  const panel=document.getElementById('youthFacilityPanel');
+  if(!panel) return;
+  const lvl=youthFacilityLevel();
+  const cur=YOUTH_FAC_LVL[lvl-1];
+  const nx=YOUTH_FAC_LVL[lvl];
+  panel.innerHTML=`<div style="padding:12px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+    <div>
+      <div style="font-weight:700;font-size:13px;">🏫 ${cur.isim} <span style="font-size:11px;color:var(--text2);">(Seviye ${lvl}/4)</span></div>
+      <div style="font-size:11px;color:var(--text2);margin-top:3px;">Havuz hedefi: <strong>${cur.hedef} genç</strong>${cur.potBonus?` · potansiyel primi +${cur.potBonus}`:''}</div>
+    </div>
+    ${nx?`<button type="button" class="btn-p" style="padding:8px 14px;font-size:12px;" onclick="upgradeYouthFacility()" ${G.coins<nx.m?'disabled':''}>⬆ ${nx.isim} — ${fmtn(nx.m)} KR</button>`:'<span style="font-size:11px;color:var(--gold);">Maksimum seviye</span>'}
+  </div>`;
+}
+function upgradeYouthFacility(){
+  const lvl=youthFacilityLevel();
+  const nx=YOUTH_FAC_LVL[lvl];
+  if(!nx){ showNotif('Altyapı tesisi maksimum seviyede.'); return; }
+  if(G.coins<nx.m){ showNotif('❌ Yeterli KR yok!'); return; }
+  txn('Altyapı tesisi yatırımı: '+nx.isim,-nx.m);
+  G.youthFacility={s:nx.s};
+  ensureYouthStock();
+  updateCoins();
+  showNotif(`🏫 Altyapı tesisi ${nx.isim} seviyesine yükseltildi — havuz ${nx.hedef} gence çıktı.`);
+  renderAltyapi();
+  scheduleGameSave();
+}
+
+function renderAltyapi(){
+  const grid=document.getElementById('altyapiGrid');
+  if(!grid) return;
+  renderYouthFacility();
+  const view=G.youthView||'list';
+  if(view==='list'){
+    grid.className='roster-as-list';
+    grid.innerHTML=G.youth.map(p=>renderYouthListRow(p)).join('');
+  } else {
+    grid.className='g3';
+    grid.innerHTML=G.youth.map(p=>renderPlayerCard(p,false,0,true)).join('');
+  }
+}
+
+function setYouthView(mode,btn){
+  G.youthView=mode||'list';
+  document.querySelectorAll('#page-altyapi .fbtn.yvbtn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderAltyapi();
+}
+
+function renderMarket(){
+  ensureMarketStock();
+  G.marketSortDesc=G.marketSortDesc||{ovr:true,maas:true};
+  const pozF=G.marketPozFilter||'all';
+  const sort=G.marketSort||'ovr';
+  const d=G.marketSortDesc;
+  const ovrBt=document.getElementById('mSortOvr');
+  const maBt=document.getElementById('mSortMaas');
+  if(ovrBt){
+    ovrBt.textContent=sort==='ovr'?(d.ovr?'OVR ↓':'OVR ↑'):'OVR';
+    ovrBt.classList.toggle('active',sort==='ovr');
+  }
+  if(maBt){
+    maBt.textContent=sort==='maas'?(d.maas?'Maaş ↓':'Maaş ↑'):'Maaş';
+    maBt.classList.toggle('active',sort==='maas');
+  }
+  let f=pozF==='all'?G.marketPlayers.slice():G.marketPlayers.filter(p=>p.poz===pozF);
+  f.sort((a,b)=>{
+    let cmp;
+    if(sort==='maas') cmp=(a.maas||0)-(b.maas||0);
+    else cmp=(a.genel||0)-(b.genel||0);
+    const desc=sort==='maas'?d.maas:d.ovr;
+    return desc?-cmp:cmp;
+  });
+  const cnt=document.getElementById('marketCountNum');
+  if(cnt) cnt.textContent=String(G.marketPlayers.length);
+  document.getElementById('marketList').innerHTML=f.map(p=>{
+    const st=starFromGenel(p.genel);
+    const tag=p.listedFromUser?'<span style="font-size:9px;color:var(--gold);"> · oyuncu ilanı</span>':'<span style="font-size:9px;color:var(--text2);"> · serbest</span>';
+    return `
+    <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openPlayerModal('${p.id}')">
+      <div class="mavatar-wrap">
+      <img class="mavatar" src="${playerAvatar(p.seed,p.marketIdx,{market:true})}" ${playerAvatarImgAttrs(p.seed,p.marketIdx,{market:true})} alt="${p.isim}">
+      <div class="pimg-cap" style="margin-top:2px;">OVR ${p.genel}</div>
+      </div>
+      <div style="min-width:36px;text-align:center;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${p.genel>=75?'var(--green)':p.genel>=60?'var(--gold)':'var(--red)'};">${p.genel}</div>
+        <span class="pbadge pos-${p.poz.toLowerCase()}" style="font-size:9px;">${p.poz}</span>
+        <div style="font-size:9px;color:var(--text2);">${st}★</div>
+      </div>
+      <div class="minfo">
+        <div style="font-weight:700;font-size:13px;">${p.bayrak} ${p.isim}${tag}</div>
+        <div style="font-size:11px;color:var(--text2);">${p.ulke} • ${p.yas} yaş • ${p.boy}cm</div>
+        <div style="display:flex;gap:7px;margin-top:5px;flex-wrap:wrap;">
+          <span style="font-size:11px;">⚔️${p.hucum}</span><span style="font-size:11px;">🛡️${p.savunma}</span>
+          <span style="font-size:11px;">🏀${p.ribaund}</span><span style="font-size:11px;">✋${p.topCalma}</span>
+          <span style="font-size:11px;">🎯${p.pas}</span><span style="font-size:11px;">⚡${p.hiz}</span>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-top:3px;">Maaş: ${fmtn(p.maas)} KR/hf • ${p.teklifler} teklif • ⏰ ${p.sure}s</div>
+      </div>
+      <div class="mprice">
+        <div class="pval">${fmtn(p.fiyat)}</div>
+        <div style="font-size:10px;color:var(--text2);">KR</div>
+        <button class="btn-bid" onclick="event.stopPropagation();buyFromMarket('${p.id}')">TEKLİF VER</button>
+      </div>
+    </div>`;
+  }).join('');
+  ensureClubTransferStock();
+  renderClubTransfers();
+  switchMarketTab(G.marketTab||'free');
+}
+
+function switchMarketTab(tab){
+  G.marketTab=tab==='club'?'club':'free';
+  const fs=document.getElementById('marketFreeSection');
+  const cs=document.getElementById('marketClubSection');
+  const bf=document.getElementById('mTabFree');
+  const bc=document.getElementById('mTabClub');
+  if(fs) fs.style.display=G.marketTab==='free'?'':'none';
+  if(cs) cs.style.display=G.marketTab==='club'?'':'none';
+  if(bf) bf.classList.toggle('active',G.marketTab==='free');
+  if(bc) bc.classList.toggle('active',G.marketTab==='club');
+}
+
+function filterClubTransfers(mode,btn){
+  G.clubTransferFilter=(mode==='sale'||mode==='loan')?mode:'all';
+  document.querySelectorAll('#page-market .fbtn.ctf').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderClubTransfers();
+}
+
+function setMarketSort(mode,btn){
+  G.marketSortDesc=G.marketSortDesc||{ovr:true,maas:true};
+  if((G.marketSort||'ovr')===mode) G.marketSortDesc[mode]=!G.marketSortDesc[mode];
+  G.marketSort=mode;
+  document.querySelectorAll('#page-market .fbtn.msort').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderMarket();
+}
+
+function filterMarket(f,btn){
+  G.marketPozFilter=f;
+  document.querySelectorAll('#page-market .fbtn:not(.msort)').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderMarket();
+}
+
+/** Playoff bracket + kullanıcı maçı paneli (Madde 6). */
+function renderPlayoffPanel(){
+  const panel=document.getElementById('playoffPanel');
+  if(!panel) return;
+  const po=G.playoff;
+  if(!po||!po.active&&!po.champion){ panel.innerHTML=''; return; }
+  const um=userPlayoffMatch();
+  const roundBlocks=(po.rounds||[]).map((r,ri)=>{
+    const total=r.length;
+    const games=r.map(m=>{
+      const uHere=G.team&&(m.home===G.team.isim||m.away===G.team.isim);
+      const hw=m.played&&m.winner===m.home, aw=m.played&&m.winner===m.away;
+      return `<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--bg3);border-radius:7px;margin-bottom:4px;${uHere?'border:1px solid var(--accent);':''}">
+        <span style="flex:1;font-size:11px;${hw?'font-weight:800;color:var(--green);':''}">${escMatch(m.home)}</span>
+        <span style="font-size:11px;font-family:'Bebas Neue',sans-serif;">${m.played?`${m.hs}-${m.as}`:'vs'}</span>
+        <span style="flex:1;font-size:11px;text-align:right;${aw?'font-weight:800;color:var(--green);':''}">${escMatch(m.away)}</span>
+      </div>`;
+    }).join('');
+    return `<div style="margin-bottom:8px;"><div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:4px;">${playoffRoundLabel(ri,total)}</div>${games}</div>`;
+  }).join('');
+  const action=po.champion
+    ? `<div style="text-align:center;padding:10px;font-weight:800;color:var(--gold);">🏆 Şampiyon: ${escMatch(po.champion)}</div>`
+    : um
+      ? `<button type="button" class="btn-p" style="width:100%;padding:11px;margin-top:6px;" onclick="scrollToMacLive();startPlayoffMatch()">🏆 Playoff maçını oyna — vs ${escMatch(um.home===G.team.isim?um.away:um.home)}</button>`
+      : `<div style="text-align:center;padding:8px;font-size:11px;color:var(--text2);">Diğer maçlar oynanıyor...</div>`;
+  panel.innerHTML=`<div class="card" style="border:1px solid var(--gold);">
+    <div class="card-title">🏆 Sezon ${po.year} Playoff'ları (İlk 8 · Tek Maç Eleme)</div>
+    ${roundBlocks}${action}
+  </div>`;
+}
+function renderLig(){
+  renderPlayoffPanel();
+  const key=G.team&&G.team.tblKey||'tbl';
+  const rows=buildLeagueRows(key);
+  const frozen=G.season&&G.team&&key===G.team.tblKey&&G.season.standings&&!G.season.active;
+  const fb=document.getElementById('ligFrozenBanner');
+  const wrap=document.getElementById('ligTableWrap');
+  const tab=document.getElementById('ligTable');
+  if(!tab) return;
+  if(fb) fb.style.display=frozen?'block':'none';
+  if(wrap) wrap.classList.toggle('lig-table-frozen',!!frozen);
+  const scope=document.getElementById('ligScopeLine');
+  const act=G.season&&G.season.active&&G.team&&key===G.team.tblKey;
+  if(scope){
+    if(act){
+      const nx=findNextUserSeasonMatch();
+      scope.textContent='Senin grubun: '+formatTblSlotLabel(key)+' · Sezon '+G.season.year+' · Takvim günü ~'+(G.gameDay||1)+(nx?' · Sıradaki: Tur '+nx.round+'/'+totalRounds():' · Tur tamam');
+    } else if(G.season&&G.team&&key===G.team.tblKey&&G.season.standings&&!G.season.active){
+      scope.textContent='Senin grubun: '+formatTblSlotLabel(key)+' · Sezon '+G.season.year+' bitti — son sıralama donduruldu; yeni sezon otomatik.';
+    } else {
+      scope.textContent='Senin grubun: '+formatTblSlotLabel(key)+' · 20 takım · Sezon hazırlanıyor';
+    }
+  }
+  const stEl=document.getElementById('ligSeasonStatus');
+  if(stEl){
+    if(act) stEl.textContent=seasonAllMatchesPlayed()?(totalRounds()+'/'+totalRounds()+' tur bitti — yeni sezon otomatik açılır.'):'Fikstür, tablo, G/M/Puan ve maç simülasyonu tek çekirdek.';
+    else if(G.season&&G.season.standings&&!G.season.active) stEl.textContent='Son sezon tamamlandı — tablo kilitli; sonraki sezon otomatik.';
+    else stEl.textContent='Lig sezonu otomatik başlar; tüm sayfalar aynı veriyi kullanır.';
+  }
+  tab.innerHTML=rows.map((t,i)=>{
+    let zone='lig-mid';
+    if(i<5) zone='lig-up';
+    else if(i>=15) zone='lig-down';
+    const stl=t.isUser?'outline:1px solid var(--accent);':'';
+    const avDisp=t.av==='—'||t.av===void 0?'—':String(t.av);
+    return `<tr class="${zone}" style="${stl}">
+      <td><span class="rank ${i===0?'r1':i===1?'r2':i===2?'r3':''}">${i+1}</span></td>
+      <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${t.renk};margin-right:8px;vertical-align:middle;"></span><strong>${escMatch(t.isim)}${t.isUser?' ⭐':''}</strong></td>
+      <td>${t.o}</td><td class="tw-win">${t.g}</td><td class="tw-lose">${t.m}</td>
+      <td>${t.sf}</td><td>${t.sa}</td><td style="font-size:12px;">${avDisp}</td>
+      <td style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--accent);">${t.puan}</td>
+    </tr>`;
+  }).join('');
+  const uix=rows.findIndex(t=>t.isUser);
+  ['dS','sbS'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=uix>=0?uix+1:'-'; });
+}
+
+function renderAntrenman(){
+  document.getElementById('teamTrainingList').innerHTML=ANTRENMAN_T.map((a,i)=>`
+    <div class="train-card">
+      <div class="train-header">
+        <div>
+          <div style="font-weight:700;font-size:13px;">${a.ikon} ${a.isim}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px;">⏱ ${a.gun} gün sürer${a.maliyet?' • '+fmtn(a.maliyet)+' KR':' • Ücretsiz'}</div>
+        </div>
+        <button class="btn-train" onclick="startTeamTrain(${i})">BAŞLAT</button>
+      </div>
+    </div>`).join('');
+
+  const sel=document.getElementById('trainPlayer');
+  sel.innerHTML='<option value="">-- Oyuncu seç --</option>'+G.players.map(p=>`<option value="${p.id}">${p.isim} (${p.poz}) — Genel: ${p.genel}</option>`).join('');
+
+  // Aktif antrenmanlar
+  const activeDiv=document.getElementById('activeTrains');
+  if(G.activeTrainings.length>0){
+    activeDiv.innerHTML='<div style="font-size:11px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">Devam Eden Antrenmanlar</div>'+
+    G.activeTrainings.map(t=>`
+      <div style="background:var(--bg3);border-radius:8px;padding:10px;margin-bottom:6px;border:1px solid rgba(249,115,22,0.2);">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:12px;font-weight:600;">${t.oyuncu} — ${STAT_LABELS[t.stat]||'Takım'}</span>
+          <span style="font-size:11px;color:var(--gold);">${t.kalanGun} gün kaldı</span>
+        </div>
+        <div class="train-progress"><div class="train-fill" style="width:${((t.toplamGun-t.kalanGun)/t.toplamGun*100)}%;"></div></div>
+      </div>`).join('');
+  } else {
+    activeDiv.innerHTML='';
+  }
+
+  // Menajer itibarı (Madde 9)
+  const repPts=Number(G.managerRep)||0;
+  const repTitle=repPts>=60?'Efsane Menajer':repPts>=30?'Saygın Menajer':repPts>=12?'Yükselen Menajer':'Çaylak Menajer';
+  const repBonusPct=(managerRepBonus()*100).toFixed(1);
+  const mgrBanner=`<div style="grid-column:1/-1;padding:11px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div><strong style="font-size:13px;">👔 ${escMatch(G.managerName||'Menajer')}</strong> <span style="font-size:11px;color:var(--gold);">${repTitle}</span></div>
+      <div style="font-size:11px;color:var(--text2);">İtibar: <strong style="color:var(--blue);">${repPts}</strong> · takım bonusu +%${repBonusPct}${(G.managerHistory&&G.managerHistory.length)?` · ${G.managerHistory.length} kupa`:''}</div>
+    </div>
+  </div>`;
+  // Koçlar
+  document.getElementById('coachList').innerHTML=mgrBanner+(G.coaches.length
+    ?G.coaches.map((c,i)=>`<div class="coach-card">
+      <div class="coach-header">
+        <div class="coach-avatar"><img src="${coachAvatar(c)}" ${coachAvatarAttrs(c)} alt=""></div>
+        <div><div class="coach-name">${c.ad}</div><div class="coach-spec">${c.ikon} ${c.isim}</div></div>
+      </div>
+      <div class="coach-stat"><span style="color:var(--text2);">Uzmanlık</span><span style="font-size:11px;">${c.bonus}</span></div>
+      <div class="coach-stat"><span style="color:var(--text2);">Seviye</span><span style="color:var(--gold);">${c.seviye}</span></div>
+      <div class="coach-stat"><span style="color:var(--text2);">CV / Skor</span><span style="color:var(--blue);">${Math.round(Number(c.skor)||0)}${(c.gecmis&&c.gecmis.length)?` · ${c.gecmis.length} başarı`:''}</span></div>
+      <div class="coach-stat"><span style="color:var(--text2);">Maaş</span><span style="color:var(--red);">${fmtn(c.maas)} KR/hf</span></div>
+      <button class="btn-sm btn-danger" onclick="fireCoach('${c.id}')" style="width:100%;margin-top:8px;">KADRODAN ÇIKAR</button>
+    </div>`).join('')
+    :'<div style="color:var(--text2);font-size:12px;grid-column:1/-1;padding:16px;text-align:center;">Henüz koçun yok. Aşağıdan işe al.</div>');
+
+  document.getElementById('coachMarket').innerHTML=G.coachMarket.map((c,i)=>`
+    <div class="coach-card">
+      <div class="coach-header">
+        <div class="coach-avatar"><img src="${coachAvatar(c)}" ${coachAvatarAttrs(c)} alt=""></div>
+        <div><div class="coach-name">${c.ad}</div><div class="coach-spec">${c.ikon} ${c.uzm}</div></div>
+      </div>
+      <div class="coach-stat"><span style="color:var(--text2);">Bonus</span><span style="font-size:11px;">${c.bonus}</span></div>
+      <div class="coach-stat"><span style="color:var(--text2);">Seviye</span><span style="color:var(--gold);">${c.seviye}</span></div>
+      <div class="coach-stat"><span style="color:var(--text2);">CV / Skor</span><span style="color:var(--blue);">${Math.round(Number(c.skor)||0)}${(c.gecmis&&c.gecmis.length)?` · ${c.gecmis.length} başarı`:''}</span></div>
+      <div class="coach-stat"><span style="color:var(--text2);">Haftalık Maaş</span><span style="color:var(--red);">${fmtn(c.maas)} KR</span></div>
+      <div class="coach-stat"><span style="color:var(--text2);">Transfer Bedeli</span><span style="color:var(--accent);">${fmtn(c.satisFiyat)} KR</span></div>
+      <button class="btn-p" onclick="hireCoach('${c.id}')" style="padding:7px;font-size:11px;margin-top:8px;">İŞE AL</button>
+    </div>`).join('');
+}
+
+function renderArena(){
+  const a=G.arena;
+  const fs=getFanBaseStats();
+  const fg=document.getElementById('arenaFanGroup');
+  const fc=document.getElementById('arenaFanCount');
+  const fcard=document.getElementById('arenaFanCard');
+  if(fg) fg.textContent=fs.group;
+  if(fc) fc.textContent=fmtn(fs.count);
+  if(fcard) fcard.textContent=`${fs.group} · ${fmtn(fs.count)}`;
+  document.getElementById('arenaCapDisp').textContent=fmtn(a.kap);
+  document.getElementById('arCap2').textContent=fmtn(a.kap);
+  document.getElementById('arenaLvl').textContent=a.s;
+  document.getElementById('capFill').style.width=(a.s/5*100)+'%';
+  const form=recentUserForm(5);
+  const seasonPlayed=(G.wins+G.losses)||0;
+  const seasonWr=seasonPlayed?G.wins/Math.max(1,seasonPlayed):0.5;
+  const wr=form!=null?form*0.7+seasonWr*0.3:seasonWr;
+  const occ=Math.max(0.35,Math.min(0.98,(0.55+wr*0.35)*ticketDemandFactor()));
+  const dol=document.getElementById('arenaDoluluk');
+  if(dol) dol.textContent='%'+Math.round(occ*100);
+  const priceNames=['Çok ucuz','Ucuz','Normal','Pahalı','Çok pahalı'];
+  const lvl=ticketPriceLevel();
+  const plbl=document.getElementById('ticketPriceLbl');
+  if(plbl) plbl.textContent=priceNames[lvl];
+  const pctrl=document.getElementById('ticketPriceCtrl');
+  if(pctrl) pctrl.innerHTML=priceNames.map((nm,i)=>`<button type="button" class="btn-sm" style="padding:5px 8px;font-size:10px;${i===lvl?'background:var(--accent);color:#111;font-weight:700;':''}" onclick="setTicketPrice(${i})">${nm}</button>`).join('');
+  document.getElementById('ticketInc').textContent=fmtn(homeTicketIncome())+' KR';
+  document.getElementById('arenaMaint').textContent='-'+fmtn(a.bk)+' KR';
+  document.getElementById('upgradeList').innerHTML=ARENA_LVL.slice(1).map(g=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg3);border-radius:8px;margin-bottom:7px;">
+      <div><div style="font-weight:700;font-size:13px;">${g.isim}</div><div style="font-size:11px;color:var(--text2);">${fmtn(g.kap)} kişilik</div></div>
+      <div style="text-align:right;">
+        <div style="font-size:12px;color:var(--gold);">${fmtn(g.m)} KR</div>
+        <button class="upbtn" onclick="upgradeArena(${g.s})" ${G.coins<g.m||G.arena.s>=g.s?'disabled':''} style="margin-top:5px;padding:6px 12px;font-size:11px;">
+          ${G.arena.s>=g.s?'✅':'SATIN AL'}
+        </button>
+      </div>
+    </div>`).join('');
+}
+
+function setTicketPrice(lvl){
+  G.ticketPrice=Math.max(0,Math.min(4,Number(lvl)||0));
+  scheduleGameSave();
+  renderArena();
+  const nm=['Çok ucuz','Ucuz','Normal','Pahalı','Çok pahalı'][G.ticketPrice];
+  showNotif(`🎟️ Bilet fiyatı: ${nm} — doluluk ve gelir güncellendi.`);
+}
+
+function saveArenaName(){
+  const v=sanitizeTeamName(document.getElementById('arenaNameInput').value);
+  if(!v){showNotif('Arena adı gir!');return;}
+  G.arena.isim=v;
+  document.getElementById('arenaNameDisp').textContent=v;
+  showNotif('🏟️ Arena adı kaydedildi!');
+  scheduleGameSave();
+}
+
+/** Bilanço: işlem defterinden (son 28 oyun günü) gerçek gelir/gider dökümü. */
+function renderBilanço(){
+  const gd=G.gameDay||1;
+  const ledger=(G.ledger||[]).filter(e=>e&&(gd-(e.d||1))<=28);
+  const grup={};
+  ledger.forEach(e=>{
+    /* Aynı türden kalemleri grupla — "Transfer: X" → "Transferler" gibi */
+    let k=e.l||'Diğer';
+    if(k.startsWith('Transfer:')) k='Oyuncu alımları';
+    else if(k.startsWith('Satış:')) k='Oyuncu satışları';
+    else if(k.startsWith('Koç transferi:')) k='Koç transferleri';
+    else if(k.startsWith('Sözleşme yenileme:')) k='Sözleşme yenilemeleri';
+    else if(k.startsWith('Antrenman gideri')) k='Antrenman giderleri';
+    else if(k.startsWith('Arena yatırımı')) k='Arena yatırımı';
+    grup[k]=(grup[k]||0)+(e.a||0);
+  });
+  const gelirler=[],giderler=[];
+  Object.keys(grup).forEach(k=>{
+    if(grup[k]>=0) gelirler.push({l:k,v:grup[k]});
+    else giderler.push({l:k,v:-grup[k]});
+  });
+  gelirler.sort((a,b)=>b.v-a.v);
+  giderler.sort((a,b)=>b.v-a.v);
+  const w=weeklyWageBill();
+  const tG=gelirler.reduce((s,i)=>s+i.v,0);
+  const tGid=giderler.reduce((s,i)=>s+i.v,0);
+  const net=tG-tGid;
+  const bos='<div class="brow"><span class="blbl" style="color:var(--text2);">Henüz hareket yok — maç oynadıkça dolar</span><span class="bval"></span></div>';
+  document.getElementById('gelirler').innerHTML=(gelirler.length?gelirler.map(i=>`<div class="brow"><span class="blbl">${i.l}</span><span class="bval gelir">+${fmtn(i.v)} KR</span></div>`).join(''):bos)
+    +`<div class="brow" style="opacity:0.75;"><span class="blbl">🎟️ Sıradaki ev maçı bilet tahmini</span><span class="bval gelir">~${fmtn(homeTicketIncome())} KR</span></div>`;
+  document.getElementById('giderler').innerHTML=(giderler.length?giderler.map(i=>`<div class="brow"><span class="blbl">${i.l}</span><span class="bval gider">-${fmtn(i.v)} KR</span></div>`).join(''):bos)
+    +`<div class="brow" style="opacity:0.75;"><span class="blbl">🧾 Haftalık sabit gider (maaş+bakım)</span><span class="bval gider">-${fmtn(w.top)} KR/hf</span></div>`;
+  document.getElementById('topGelir').textContent='+'+fmtn(tG)+' KR';
+  document.getElementById('topGider').textContent='-'+fmtn(tGid)+' KR';
+  const nd=document.getElementById('netDurum');
+  nd.textContent=(net>=0?'+':'')+fmtn(net)+' KR';
+  nd.style.color=net>=0?'var(--green)':'var(--red)';
+  const son=document.getElementById('sonHareketler');
+  if(son){
+    son.innerHTML=(G.ledger||[]).slice(0,14).map(e=>`<div class="brow"><span class="blbl">Gün ${e.d} · ${e.l}</span><span class="bval ${e.a>=0?'gelir':'gider'}">${e.a>=0?'+':''}${fmtn(e.a)} KR</span></div>`).join('')||'<p style="font-size:12px;color:var(--text2);">Henüz işlem yok.</p>';
+  }
+}
+
+// ===== MAÇ — şut haritası + kutu istatistik (anlatım ile senkron) =====
