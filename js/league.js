@@ -560,20 +560,42 @@ function openMatchTactics(seasonMatchIx){
     <input type="radio" name="${name}" value="${val}" ${val===cur?'checked':''} style="margin-top:2px;">
     <span><strong style="font-size:12px;">${label}</strong><br><span style="font-size:11px;color:var(--text2);">${desc}</span></span>
   </label>`;
+  const healthy=(G.players||[]).filter(p=>!playerIsInjured(p));
+  const focusOpts=`<option value="">— Yok (dengeli dağıtım) —</option>`+healthy.map(p=>`<option value="${p.id}" ${tac.focusPlayerId===p.id?'selected':''}>${escMatch(p.isim)} (${p.poz}·OVR ${p.genel})</option>`).join('');
+  const secTitle=t=>`<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">${t}</div>`;
   showAppModal(`<div class="modal-title">🎯 Taktik — vs ${escMatch(op)}</div>
     <p style="font-size:12px;color:var(--text2);margin-bottom:12px;">${formatFixtureDayLabel(m.day)} · ${formatKickClock(m)} · Tur ${m.round}/${totalRounds()} · Sen: ${m.home===u?'Ev':'Deplasman'}</p>
     <div class="g2" style="gap:12px;">
       <div>
-        <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Tempo</div>
+        ${secTitle('Tempo')}
         ${radio('tacTempo','yavas',tac.tempo,'🐢 Yavaş','Az hücum, kontrollü — isabet artar')}
         ${radio('tacTempo','normal',tac.tempo,'⚖️ Normal','Dengeli oyun')}
         ${radio('tacTempo','hizli',tac.tempo,'⚡ Hızlı','Çok hücum — isabet biraz düşer')}
       </div>
       <div>
-        <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Hücum odağı</div>
-        ${radio('tacOdak','ic',tac.odak,'🏀 İç oyun','Pota altı ağırlıklı, 2 sayı isabeti artar')}
+        ${secTitle('Hücum odağı')}
+        ${radio('tacOdak','ic',tac.odak,'🏀 İçeri ağırlıklı','Pota altı, 2 sayı isabeti artar')}
+        ${radio('tacOdak','dis',tac.odak,'🎯 Dış şut ağırlıklı','Bol üçlük denemesi')}
+        ${radio('tacOdak','hizli',tac.odak,'⚡ Hızlı hücum','Erken şut — top kaybı riski artar')}
+        ${radio('tacOdak','set',tac.odak,'📋 Set oyun','Sabırlı — asist ve isabet artar, top kaybı azalır')}
         ${radio('tacOdak','dengeli',tac.odak,'⚖️ Dengeli','Karışık şut seçimi')}
-        ${radio('tacOdak','dis',tac.odak,'🎯 Dış şut','Bol üçlük denemesi')}
+      </div>
+    </div>
+    <div class="g2" style="gap:12px;margin-top:12px;">
+      <div>
+        ${secTitle('Savunma stili')}
+        ${radio('tacDef','adam',tac.defensiveStyle||'adam','🧍 Adam adama','Dengeli — nötr')}
+        ${radio('tacDef','bolge',tac.defensiveStyle||'adam','🛡️ Bölge savunması','Pota altını kapar (iki sayı isabeti düşer), dışarı biraz açık')}
+        ${radio('tacDef','pres',tac.defensiveStyle||'adam','🔥 Pres','Çok top çalar ama isabet/faul riski artar')}
+      </div>
+      <div>
+        ${secTitle('Top yükleme (belirli oyuncu)')}
+        <select id="tacFocus" style="width:100%;padding:9px;border-radius:9px;background:var(--bg3);color:var(--text);border:1px solid var(--border);font-size:12px;margin-bottom:10px;">${focusOpts}</select>
+        ${secTitle('Rakibe özel eşleştirme')}
+        <label style="display:flex;gap:8px;align-items:flex-start;padding:9px 10px;background:var(--bg3);border:1px solid ${tac.markStar?'var(--accent)':'var(--border)'};border-radius:10px;cursor:pointer;">
+          <input type="checkbox" id="tacMark" ${tac.markStar?'checked':''} style="margin-top:2px;">
+          <span style="font-size:11px;">🎯 En iyi savunmacını <strong>rakibin yıldızına</strong> ata — o oyuncunun isabeti düşer.</span>
+        </label>
       </div>
     </div>
     <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
@@ -586,12 +608,24 @@ function openMatchTactics(seasonMatchIx){
 function saveMatchTactics(){
   const tempo=document.querySelector('input[name="tacTempo"]:checked');
   const odak=document.querySelector('input[name="tacOdak"]:checked');
-  G.tactics={tempo:tempo?tempo.value:'normal',odak:odak?odak.value:'dengeli'};
+  const def=document.querySelector('input[name="tacDef"]:checked');
+  const focusEl=document.getElementById('tacFocus');
+  const markEl=document.getElementById('tacMark');
+  G.tactics={
+    tempo:tempo?tempo.value:'normal',
+    odak:odak?odak.value:'dengeli',
+    defensiveStyle:def?def.value:'adam',
+    focusPlayerId:(focusEl&&focusEl.value)||null,
+    markStar:!!(markEl&&markEl.checked)
+  };
   scheduleGameSave();
   closeAppModal();
   const adT={yavas:'Yavaş',normal:'Normal',hizli:'Hızlı'}[G.tactics.tempo]||'Normal';
-  const adO={ic:'İç oyun',dengeli:'Dengeli',dis:'Dış şut'}[G.tactics.odak]||'Dengeli';
-  showNotif(`🎯 Taktik kaydedildi: ${adT} tempo · ${adO}`);
+  const adO={ic:'İçeri',dengeli:'Dengeli',dis:'Dış şut',hizli:'Hızlı hücum',set:'Set oyun'}[G.tactics.odak]||'Dengeli';
+  const adD={adam:'Adam adama',bolge:'Bölge',pres:'Pres'}[G.tactics.defensiveStyle]||'Adam adama';
+  const fp=G.tactics.focusPlayerId?(G.players||[]).find(p=>p.id===G.tactics.focusPlayerId):null;
+  const extra=(fp?` · 🎯 ${fp.isim}`:'')+(G.tactics.markStar?' · yıldız eşleştirme':'');
+  showNotif(`🎯 Taktik: ${adT} · ${adO} · ${adD} savunma${extra}`);
 }
 
 function clearPrepareMatch(){

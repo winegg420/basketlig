@@ -155,10 +155,14 @@ function applyMatchFatigueToRoster(playedIds){
     const mit=Math.max(0,Math.min(8,Math.round((dayan-55)/10)));
     return Math.max(4,rand(9,20)-mit);
   };
+  /* Faz 3: top yükleme yapılan oyuncu ekstra yıpranır (gerçekçilik — çok top taşımanın bedeli). */
+  const focusId=(G.tactics&&G.tactics.focusPlayerId)||null;
   if(playedIds instanceof Set){
     G.players.forEach(p=>{
       if(!playedIds.has(p.id)) return;
-      p.enerji=Math.max(0,Math.round((Number(p.enerji)||100)-dayanCost(p)));
+      let cost=dayanCost(p);
+      if(focusId&&p.id===focusId) cost+=rand(5,9);
+      p.enerji=Math.max(0,Math.round((Number(p.enerji)||100)-cost));
     });
     return;
   }

@@ -815,7 +815,7 @@ function createTeam(){
   G.achievements={};
   G.ledger=[];
   G.lastEcoDay=1;
-  G.tactics={tempo:'normal',odak:'dengeli'};
+  G.tactics={tempo:'normal',odak:'dengeli',defensiveStyle:'adam',focusPlayerId:null,markStar:false};
   G.tutorialDone=false;
   bootstrapAppUi();
   applyAutosaveSetting();
