@@ -32,6 +32,88 @@ function clearMatchCourt(){
   if(layer) layer.innerHTML='';
   const b=document.getElementById('liveBall');
   if(b) b.style.opacity='0';
+  clearMatchPlayers();
+}
+
+/* ── Sahadaki 5v5 oyuncu jetonları (canlı hareket) ───────────────────────────
+   İç saha SVG'sinde (viewBox 0 0 940 500) 10 jeton; her olayda ofans/defans
+   şablonuna göre kayar. Ev sol potaya (~102,250), rakip sağ potaya (~837,250)
+   hücum eder — gerçek basket gibi iki takım da aynı yarı sahada toplanır. */
+function _tokShort(name){ const a=String(name||'').trim().split(/\s+/); return a[a.length-1]||String(name||''); }
+function _tokSet(g,x,y){ if(g) g.setAttribute('transform',`translate(${x.toFixed(1)},${y.toFixed(1)})`); }
+function clearMatchPlayers(){
+  const l=document.getElementById('playersLayer');
+  if(l) l.remove();
+  if(typeof mState!=='undefined'&&mState) mState._tokens=null;
+}
+function initMatchPlayers(lu,rakip){
+  try{
+    const ball=document.getElementById('liveBall');
+    const svg=ball&&ball.parentNode;
+    if(!svg) return;
+    clearMatchPlayers();
+    const layer=document.createElementNS('http://www.w3.org/2000/svg','g');
+    layer.setAttribute('id','playersLayer');
+    svg.insertBefore(layer,ball); /* top jetonların üstünde kalsın */
+    const homeCol=(G.team&&G.team.renk)||'#f97316';
+    const awayCol='#16a34a';
+    const mk=(num,label,fill)=>{
+      const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+      g.setAttribute('class','court-token');
+      g.style.transition='transform 0.7s cubic-bezier(.4,.05,.3,1)';
+      const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('r','16'); c.setAttribute('fill',fill);
+      c.setAttribute('stroke','rgba(0,0,0,0.6)'); c.setAttribute('stroke-width','2.5');
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('text-anchor','middle'); t.setAttribute('dy','5.5');
+      t.setAttribute('font-size','17'); t.setAttribute('font-weight','800');
+      t.setAttribute('fill','#fff'); t.setAttribute('pointer-events','none'); t.textContent=num;
+      const nm=document.createElementNS('http://www.w3.org/2000/svg','text');
+      nm.setAttribute('text-anchor','middle'); nm.setAttribute('dy','31');
+      nm.setAttribute('font-size','13'); nm.setAttribute('font-weight','700');
+      nm.setAttribute('fill','rgba(255,255,255,0.95)'); nm.setAttribute('stroke','rgba(0,0,0,0.5)');
+      nm.setAttribute('stroke-width','0.4'); nm.setAttribute('pointer-events','none'); nm.textContent=label;
+      g.appendChild(c); g.appendChild(t); g.appendChild(nm);
+      layer.appendChild(g);
+      return g;
+    };
+    const homeP=(lu&&lu.onCourt)?lu.onCourt.slice(0,5):[];
+    mState._tokens={home:[],away:[]};
+    for(let i=0;i<5;i++){ const p=homeP[i]; mState._tokens.home.push(mk(String(i+1),p?_tokShort(p.isim):('Ev'+(i+1)),homeCol)); }
+    const rk=(rakip&&rakip.isim)?_tokShort(rakip.isim):'Rakip';
+    for(let i=0;i<5;i++){ mState._tokens.away.push(mk(String(i+1),rk,awayCol)); }
+    mState._lastAttackHome=true;
+    /* tip-off: orta sahada karşılıklı diz */
+    const hs=[[430,150],[430,350],[405,250],[360,185],[360,315]];
+    const as=[[510,150],[510,350],[535,250],[580,185],[580,315]];
+    mState._tokens.home.forEach((g,i)=>_tokSet(g,hs[i][0],hs[i][1]));
+    mState._tokens.away.forEach((g,i)=>_tokSet(g,as[i][0],as[i][1]));
+  }catch(e){}
+}
+function movePlayersForEvent(ev){
+  try{
+    if(typeof mState==='undefined'||!mState||!mState._tokens) return;
+    let attackHome=mState._lastAttackHome!==false;
+    let shot=null;
+    if(ev&&ev.shot){ attackHome=!!ev.shot.isHome; shot={x:ev.shot.x,y:ev.shot.y}; }
+    else if(ev&&ev.isHome!=null){ attackHome=!!ev.isHome; }
+    mState._lastAttackHome=attackHome;
+    const jit=n=>n+(Math.random()*2-1)*14;
+    const mir=([x,y])=>[940-x,y];
+    /* sol yarı şablonu (sol potaya hücum) */
+    const offL=[[shot?shot.x:185,shot?shot.y:250],[245,120],[245,380],[340,195],[340,305]];
+    const defL=[[150,185],[150,315],[210,250],[118,150],[118,350]];
+    let off,def;
+    if(attackHome){ off=offL; def=defL; }
+    else{
+      off=offL.map((p,i)=> i===0 ? [shot?shot.x:755, shot?shot.y:250] : mir(p));
+      def=defL.map(mir);
+    }
+    const offTok=attackHome?mState._tokens.home:mState._tokens.away;
+    const defTok=attackHome?mState._tokens.away:mState._tokens.home;
+    offTok.forEach((g,i)=>{ const c=off[i]||off[0]; _tokSet(g, i===0?c[0]:jit(c[0]), i===0?c[1]:jit(c[1])); });
+    defTok.forEach((g,i)=>{ const c=def[i]||def[0]; _tokSet(g, jit(c[0]), jit(c[1])); });
+  }catch(e){}
 }
 /** Madde 18 (temel hareket animasyonu): top hücum yarısından şut noktasına akar; girerse potaya, kaçarsa yakınına. */
 function animateBall(x,y,isHome,made){

@@ -2,11 +2,13 @@
 function startNextMatchNow(){
   if(!G.team){ showNotif('Önce takım oluştur.'); return; }
   gotoMacPage();
-  if(mState.running){ requestAnimationFrame(()=>scrollToMacLive()); return; }
-  if(!G.season||!G.season.active){ requestAnimationFrame(()=>scrollToMacLive()); showNotif('Önce Lig’den sezonu başlat.'); return; }
+  if(mState.running){ setTimeout(()=>scrollToMacLive(),80); return; }
+  if(!G.season||!G.season.active){ setTimeout(()=>scrollToMacLive(false),80); showNotif('Önce Lig’den sezonu başlat.'); return; }
   const m=findNextUserSeasonMatch();
   if(!m){ showNotif(seasonAllMatchesPlayed()?'Bu sezonun maçların bitti.':'Sıradaki maç bulunamadı.'); return; }
-  requestAnimationFrame(()=>{ scrollToMacLive(); startMatch(); });
+  /* Önce maçı başlat (panel içeriği dolsun, .live-on gelsin), sonra panele kaydır. */
+  startMatch();
+  setTimeout(()=>scrollToMacLive(),90);
 }
 function startPlayoffMatch(){
   const m=userPlayoffMatch();
@@ -68,6 +70,8 @@ function startMatch(playoff){
   document.querySelectorAll('input[name="shotQ"]').forEach(r=>{ if(r.value==='all') r.checked=true; });
   clearMatchEventTimer();
   clearMatchCourt();
+  initMatchPlayers(lu,rakip);          /* sahaya 5v5 oyuncu jetonları koy */
+  const _ml=document.getElementById('macLiveAnchor'); if(_ml) _ml.classList.add('live-on');
   renderBoxScore(emptyBox(),emptyBox(),G.team.isim,rakip.isim);
   document.getElementById('commentary').innerHTML='';
   document.getElementById('liveScoreHome').textContent='0';
@@ -125,6 +129,7 @@ function startMatch(playoff){
         if(f==='all'||String(sh.q)===String(f)) drawShotMark(sh);
       });
     }
+    movePlayersForEvent(ev);   /* oyuncu jetonlarını olaya göre hareket ettir */
 
     addComment(ev.text,ev.type);
     if(ev.type==='score3'||ev.type==='score2') sfx('score');
@@ -153,6 +158,7 @@ function startMatch(playoff){
       document.getElementById('liveStatus').style.background='rgba(34,197,94,0.2)';
       document.getElementById('liveStatus').style.color='#4ade80';
       document.getElementById('liveBadge').style.display='none';
+      const _mle=document.getElementById('macLiveAnchor'); if(_mle) _mle.classList.remove('live-on');
       applyMatchResult(ev,{seasonMatchIx:mState.seasonMatchIx,isPlayoff:mState.isPlayoff,playoffMatch:mState.playoffMatch,rakipName:mState.rakipName,userIsHome:mState.userIsHome});
       return;
     }

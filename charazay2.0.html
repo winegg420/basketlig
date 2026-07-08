@@ -411,6 +411,12 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .lu-ghost b{font-size:12px;color:var(--text);}
 .lu-hint{font-size:11px;color:var(--text2);margin:2px 0 12px;line-height:1.5;}
 
+/* MAÇLAR — canlı panel en üstte olsun (kaydırma sorunu yaşanmasın) */
+#page-mac .match-layout{order:-2;}
+#page-mac #macUpcomingCard{order:-1;}
+/* Canlı maç oynanırken panel vurgulansın */
+.match-layout.live-on{box-shadow:0 0 0 2px var(--accent),0 10px 30px rgba(249,115,22,0.25);border-radius:16px;}
+
 /* ANA PANEL — Sonraki maç kartı (pro) */
 .dash-next{position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(249,115,22,0.14),rgba(59,130,246,0.12));border:1px solid var(--border);border-radius:16px;padding:16px;cursor:pointer;transition:transform .14s,box-shadow .14s,border-color .14s;}
 .dash-next:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,0.4);border-color:var(--accent);}
@@ -777,7 +783,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
       <!-- MAÇLAR -->
       <div class="page" id="page-mac">
-        <div class="card" style="margin-bottom:14px;">
+        <div class="card" style="margin-bottom:14px;" id="macUpcomingCard">
           <div class="card-title">🔜 Önümüzdeki maçlar</div>
           <p style="font-size:12px;color:var(--text2);margin:0 0 12px;">Tarihler <strong>bugünden</strong> itibaren gösterilir (her yüklemede güncellenir). Yalnızca <strong>sıradaki</strong> maçta <strong>Taktik ayarla</strong> açıktır (sim test); sonrakiler sırayı bekler.</p>
           <div id="fixtureUpcomingGrid" class="mac-fixture-grid"></div>
@@ -1139,16 +1145,16 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 <div class="notif" id="notif"></div>
 
-<script src="js/state.js"></script>
-<script src="js/economy.js"></script>
-<script src="js/persistence.js"></script>
-<script src="js/portraits.js"></script>
-<script src="js/roster-gen.js"></script>
-<script src="js/league.js"></script>
-<script src="js/match-prep.js"></script>
-<script src="js/render.js"></script>
-<script src="js/match-engine.js"></script>
-<script src="js/main.js"></script>
+<script src="js/state.js?v=8"></script>
+<script src="js/economy.js?v=8"></script>
+<script src="js/persistence.js?v=8"></script>
+<script src="js/portraits.js?v=8"></script>
+<script src="js/roster-gen.js?v=8"></script>
+<script src="js/league.js?v=8"></script>
+<script src="js/match-prep.js?v=8"></script>
+<script src="js/render.js?v=8"></script>
+<script src="js/match-engine.js?v=8"></script>
+<script src="js/main.js?v=8"></script>
 
 
 </body></html>

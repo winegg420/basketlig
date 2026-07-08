@@ -359,10 +359,27 @@ function fixtureRowsHtml(rows){
   }).join('');
 }
 
-function scrollToMacLive(){
+/** Maçlar sayfasının kaydırılabilir konteynerini bulur (#page-mac veya en yakın overflow'lu ata). */
+function _macScrollContainer(){
+  let el=document.getElementById('page-mac');
+  while(el){
+    const s=getComputedStyle(el);
+    if(/(auto|scroll)/.test(s.overflowY)&&el.scrollHeight>el.clientHeight+4) return el;
+    el=el.parentElement;
+  }
+  return document.getElementById('page-mac');
+}
+function scrollToMacLive(notify){
   const el=document.getElementById('macLiveAnchor');
-  if(el) try{ el.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){ el.scrollIntoView(); }
-  showNotif('Aşağıda canlı maç paneli — Maçı Başlat ile devam et.');
+  const cont=_macScrollContainer();
+  try{
+    if(cont&&el){
+      // Canlı panel artık en üstte (order:-2) — konteyneri panelin hizasına kaydır.
+      const target=Math.max(0,el.offsetTop-8);
+      cont.scrollTo({top:target,behavior:'smooth'});
+    } else if(el){ el.scrollIntoView({behavior:'smooth',block:'start'}); }
+  }catch(e){ try{ if(el) el.scrollIntoView(); }catch(_){} }
+  if(notify!==false) showNotif('🔴 Canlı maç paneli açıldı — aşağıda maçı izle.');
 }
 
 function renderFixture(){
