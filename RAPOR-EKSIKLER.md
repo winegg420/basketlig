@@ -56,10 +56,10 @@ Scouting var ama izci ağı, akademi maçları, pozisyon antrenmanı (oyuncuyu f
 
 ## C · DENGE & İKİNCİL MANTIK SORUNLARI
 
-### C1. Maçı durdurup sonucu kaydetmeme (save-scum açığı)
-`stopMatch` maçı "DURDURULDU" yapıp bitiriyor ama **sonuç/ekonomi/tablo işlenmiyor**; `sm.played` false kalıyor. Kullanıcı kaybederken durdurup maçı yeniden başlatarak sonucu değiştirebilir.
-- Konum: `stopMatch` 5680-5685.
-- Düzeltme: durdurulan maçı "hükmen/geçersiz" say ya da yeniden başlatmayı engelle.
+### C1. Maçı durdurup sonucu kaydetmeme (save-scum açığı) — ✅ GERÇEKTEN DOĞRULANDI (7. oturum, Faz 1.1)
+Sonuç artık **maç başında** üretilip `G.pendingMatch={sig,ev}` olarak kilitlenip kaydediliyor (`startMatch`, `js/main.js`). Durdurup/yenileyip yeniden başlatınca **aynı kilitli sonuç** uygulanır, yeniden üretilmez. `pendingMatch` save/load'a dahil; sonuç işlenince kilit kalkar (`applyMatchResult`).
+- **7. oturum eklentisi:** Durdurulan maç takılı kalmasın diye "▶ Maçı Başlat" butonu durdurulunca "▶ Maçı sonuçlandır"a döner (kilitli sonuç açıkça uygulanır).
+- **Gerçek tarayıcı harness testi (12/12 geçti):** durdur→sayfa yenile→"Devam Et"→sonuçlandır ⇒ skor birebir aynı; sıradaki maç farklı ⇒ yeniden oynanamıyor; kilit yenilemeden sonra da kalıcı.
 
 ### C2. Manuel koçlukta ilk yarı istatistik kaybı
 Manuel değişiklik sonrası kalan maç yeniden üretilirken ilk yarı oyuncu istatistikleri kısmen kayboluyor (PROGRESS'te "kabul edildi" notu var, ama tam sürümde göze batar).

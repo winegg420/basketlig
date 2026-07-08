@@ -597,6 +597,7 @@ function applyMatchResult(ev,ctx){
     updateStandingsFromResult(sm.home,sm.away,sm.hs,sm.as);
     const playedSet=new Set(ev.lineupIds||[]);
     (ev.subIds||[]).forEach(id=>playedSet.add(id));
+    updateChronicFatigue(playedSet); /* Faz 1.2: yorgunluk düşmeden önce sayacı güncelle */
     applyMatchFatigueToRoster(playedSet.size?playedSet:undefined);
     const prevDay=G.gameDay||1;
     const roundDays=G.season.matches.filter(x=>x.round===sm.round).map(x=>x.day);
@@ -634,6 +635,7 @@ function applyMatchResult(ev,ctx){
     if(uPts===oPts) m.winner=G.team.isim;
     const playedSet=new Set(ev.lineupIds||[]);
     (ev.subIds||[]).forEach(id=>playedSet.add(id));
+    updateChronicFatigue(playedSet); /* Faz 1.2: yorgunluk düşmeden önce sayacı güncelle */
     applyMatchFatigueToRoster(playedSet.size?playedSet:undefined);
     const prevDay=G.gameDay||1;
     G.gameDay=(G.gameDay||1)+2;

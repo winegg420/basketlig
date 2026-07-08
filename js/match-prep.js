@@ -191,6 +191,23 @@ function clearResolvedInjuries(){
   });
 }
 
+/* Faz 1.2: Kronik yorgunluk sayacı — bu maçta gerçekten oynayan (playedSet) ve maç ÖNCESİ
+   enerjisi <68 olan oyuncunun sayacı artar (üst sınır 6); iyi enerjiyle oynayan ya da dinlenip
+   enerjisi normale dönen oyuncunun sayacı sıfırlanır. Enerji HENÜZ düşürülmeden çağrılmalı. */
+function updateChronicFatigue(playedSet){
+  if(!(playedSet instanceof Set)||playedSet.size===0) return; /* güvenli: kadro bilinmiyorsa dokunma */
+  if(!G.players) return;
+  G.players.forEach(p=>{
+    const pre=Number(p.enerji!=null?p.enerji:100);
+    if(playedSet.has(p.id)){
+      if(pre<68) p.kronikYorgunlukSayisi=Math.min(6,(Number(p.kronikYorgunlukSayisi)||0)+1);
+      else p.kronikYorgunlukSayisi=0;
+    } else if(pre>=68){
+      p.kronikYorgunlukSayisi=0;
+    }
+  });
+}
+
 /** Şiddet ağırlıklı sakatlık seçimi — hafif sakatlıklar daha sık. */
 function pickInjury(){
   const total=INJURIES.reduce((s,x)=>s+x.w,0);
@@ -209,6 +226,10 @@ function rollInjuriesAfterUserMatch(){
     const enerji=Number(p.enerji||100);
     let risk=yas>=36?0.17:yas>=33?0.11:yas>=30?0.078:yas>=27?0.052:0.034;
     if(enerji<52) risk*=1.58; else if(enerji<68) risk*=1.24;
+    /* Faz 1.2: kronik yorgunluk — art arda düşük enerjiyle sahaya çıkan oyuncuda risk kademeli artar.
+       Her ardışık yorgun maç +%15 ek risk, üst sınır +%60 (dengeyi bozmayacak makul tavan). */
+    const kron=Number(p.kronikYorgunlukSayisi)||0;
+    if(kron>0) risk*=1+Math.min(0.6,kron*0.15);
     /* Yeni dönen oyuncu tam form değil → daha yüksek yeniden-sakatlanma ihtimali. */
     const returning=Number(p.formReturnMatches||0)>0;
     if(returning) risk*=1.7;

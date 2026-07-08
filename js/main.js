@@ -8,6 +8,9 @@ function startPlayoffMatch(){
 function startMatch(playoff){
   if(mState.running) return;
   if(!G.team){ showNotif('Önce takım oluştur.'); return; }
+  /* C1: buton "sonuçlandır" durumundaysa normale döndür. */
+  const _smBtn=document.getElementById('startMatchBtn');
+  if(_smBtn){ _smBtn.textContent='▶ Maçı Başlat'; _smBtn.removeAttribute('title'); }
   const isPlayoff=!!(playoff&&playoff.matchup);
   let match=null,rakip,userIsHome;
   if(isPlayoff){
@@ -152,8 +155,17 @@ function startMatch(playoff){
 function stopMatch(){
   clearMatchEventTimer();
   mState.running=false;
-  document.getElementById('liveStatus').textContent='DURDURULDU';
-  document.getElementById('liveBadge').style.display='none';
+  const st=document.getElementById('liveStatus');
+  if(st) st.textContent='DURDURULDU';
+  const badge=document.getElementById('liveBadge'); if(badge) badge.style.display='none';
+  /* C1: durdurulan maç takılı kalmasın — sonuç maç başında kilitliydi; kullanıcı
+     "Maçı sonuçlandır" ile hükmen bitirebilir (yeniden oynanamaz, farklı sonuç üretilmez). */
+  const btn=document.getElementById('startMatchBtn');
+  if(btn && G.pendingMatch && mState.sig && G.pendingMatch.sig===mState.sig){
+    btn.textContent='▶ Maçı sonuçlandır';
+    btn.title='Sonuç maç başında kilitlendi; bu maç yeniden oynanamaz. Basınca kilitli sonuç uygulanır.';
+    showNotif('⏸ Maç durduruldu. Sonuç kilitli — “Maçı sonuçlandır” ile bitir (yeniden oynanamaz).',{critical:true});
+  }
 }
 
 /* ── Manuel koçluk / canlı müdahale (Madde 12) ── */
