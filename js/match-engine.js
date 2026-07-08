@@ -281,7 +281,7 @@ const SPIKER_LINES={
     miss3:['%S üçlüğü KAÇTI, çemberden döndü!','%S uzaktan ıskaladı, olmadı!','%S bombayı boşa harcadı!','%S yay dışından vuramadı!'],
     block:['%B MUAZZAM BLOK! %S geri döndü!','%B ŞAPKAYI TAKTI! İnanılmaz savunma!','%B topu SİLİP ATTI, ne blok ama!','%B duvar gibi, %S durduruldu!'],
     steal:['%C TOPU KAPTI, hızlı hücum geliyoo!','%C pas arasını OKUDU, çaldı!','%C elini uzattı ve ALDI!','%C müthiş bir top çalma, koşuyor!'],
-    tactic:['MOLA! Kenarda tansiyon yükseliyor!','Teknik mola, koçlar KAYNIYOR!','Mola anı, taktik tahtası ateş!','Ara verildi, tribün coşuyor!']
+    tactic:['Ritim değişiyor — tempo yükseliyoo!','Savunma kilitlendi, enerji tavanda!','Baskı artıyor, tribün ayakta!','Hücumda yeni varyasyon geliyoo!']
   },
   bilge:{
     score2:['%S doğru okumayla iki sayı buldu. %SC','%S pick-and-roll sonrası temiz bitiriş. %SC','%S ayak oyunuyla pozisyon aldı, iki. %SC','%S orta mesafe jump shot, mekanik kusursuz. %SC','%S savunmanın açığını görüp bitirdi. %SC','%S sabırlı hücum, yüksek yüzdeli şut. %SC'],
@@ -290,7 +290,7 @@ const SPIKER_LINES={
     miss3:['%S ayakları hazır değildi, kısa.','%S kontestli üçlük, düşük yüzde.','%S ritim tutmadı, ıskaladı.','%S seçim tartışılır, kaçtı.'],
     block:['%B iyi zamanlama, temiz blok — %S durdu.','%B rotasyonu erken geldi, blokladı.','%B dikey savunma, kurallı blok.','%B okuma harika, %S engellendi.'],
     steal:['%C pas hattını kesti, kontrol onda.','%C anticipation üst düzey, çaldı.','%C ellerini aktif kullandı, top kaybı.','%C savunma disiplini, topu aldı.'],
-    tactic:['Mola — koç set oyunu düzenliyor.','Zamanlama molası, ritmi kesmek için.','Taktik ara: savunma ayarı geliyor.','Mola, momentumu durdurma hamlesi.']
+    tactic:['Set oyunu düzenleniyor, sabırlı hücum.','Savunma rotasyonu yeniden ayarlanıyor.','Tempo kontrolü — doğru karar.','Spacing yeniden kuruluyor, akıllı oyun.']
   },
   cem:{
     score2:['%S potaya "merhaba" dedi, iki sayı! %SC','%S öyle bir bitirdi ki savunma özür diledi. %SC','%S turnikeyi servis etti, afiyet olsun! %SC','%S iki sayıyı cebe attı, kolay para! %SC','%S pota ile anlaştı, iki! %SC','%S savunmaya "pardon" bile demedi! %SC'],
@@ -299,7 +299,7 @@ const SPIKER_LINES={
     miss3:['%S üçlüğü uzaya gönderdi!','%S ıskaladı, yay bugün sağır!','%S bombayı ekti, filiz vermedi!','%S kaçtı, çember diyet yapıyor!'],
     block:['%B "buraya giremezsin" dedi — blok!','%B topu iade etti, kargo bedava!','%B şapkayı taktı, %S şok!','%B kapıyı yüzüne kapadı!'],
     steal:['%C topu "ödünç" aldı, geri vermez!','%C cebe attı, hırsız değil ama!','%C pası dinledi, çaldı gitti!','%C eli değdi, top el değiştirdi!'],
-    tactic:['Mola! Koç muhabbete başladı.','Ara verildi, çaycı bayram ediyor!','Mola, tahtaya karalama zamanı!','Teknik mola — kahveler tazeleniyor!']
+    tactic:['Koç tahtaya bir şeyler karalıyor!','Taktik değişti, çaycı bile merak etti!','Yeni varyasyon — umarım işe yarar!','Hücumda plan B devreye giriyor!']
   },
   reha:{
     score2:['%S iki sayıyı buldu. %SC','%S pota altında tamamladı. %SC','%S orta mesafeden isabet kaydetti. %SC','%S basket, iki sayı hanesine. %SC','%S turnikeyi tamamladı. %SC','%S sağduyulu bir bitiriş. %SC'],
@@ -308,14 +308,41 @@ const SPIKER_LINES={
     miss3:['%S üçlükte isabet yok.','%S dış atış tuttu değil.','%S uzaktan kaçırdı.','%S üç sayı denemesi boşa.'],
     block:['%B bloke etti; %S durduruldu.','%B temiz bir blok gerçekleştirdi.','%B savunmada blok kaydetti.','%B şutu engelledi.'],
     steal:['%C topu ele geçirdi.','%C top çalma kaydetti.','%C pası kesti.','%C savunmada topu aldı.'],
-    tactic:['Mola talebi geldi.','Teknik mola kullanıldı.','Oyun molayla durdu.','Mola: taktik değerlendirmesi.']
+    tactic:['Taktik düzenleme yapılıyor.','Oyun temposu ayarlanıyor.','Savunma organizasyonu gözden geçiriliyor.','Set oyun kuruluyor.']
   }
 };
+/* Renkli hamle betimleri — isabetli (kendi yaratımı) şutlardan ÖNCE serpiştirilir.
+   Şut cümlesi oyuncu adıyla başladığından bu girişler AD İÇERMEZ; tireyle şut metnine bağlanır. */
+const MOVE_LINES=[
+  'Tereyağından kıl çeker gibi rakibini uyuttu —',
+  'Art arda çalım (crossover) savunmayı çözdü —',
+  'İnanılmaz güzel bir sahte çalım (fake), savunmacı dondu —',
+  'Geriye çekilerek (step-back) alanı açtı —',
+  'Dönerek (spin move) savunmadan sıyrıldı —',
+  'Çift krosover sonrası rakibini adeta pazara yolladı —',
+  'Yıldırım gibi ilk adımla dibe indi —',
+  'Beklet-yükle ile savunmayı ters ayak yakaladı —',
+  'Hesitasyon (bekletme) çalımıyla geçti —',
+  'Çaprazdan sert bir çalım attı, savunma dağıldı —'
+];
+const REB_OFF_LINES=[
+  '%R hücum ribaundunu çok yükseklerden çekti — ikinci şans bizde!',
+  'Muhteşem box-out; %R rakibini pazara yolladı, top yeniden bizde!',
+  '%R camlara asıldı ve hücum ribaundunu kaptı!',
+  '%R topu adeta tavandan indirdi, ekstra hücum!'
+];
+const REB_DEF_LINES=[
+  '%R savunma ribaundunu güçlü aldı, cam tertemiz!',
+  'Sağlam box-out; %R ribaundu topladı.',
+  '%R yükseldi ve defansif camı kapattı.',
+  '%R ribaundu çekti, hızlı geçişe çıkıyor!'
+];
 function spikerLine(spId,kind,v){
   const set=SPIKER_LINES[spId]||SPIKER_LINES.reha;
   const pool=set[kind]||SPIKER_LINES.reha[kind]||[''];
   v=v||{};
-  return ch(pool).replace(/%S/g,v.s||'').replace(/%B/g,v.b||'').replace(/%C/g,v.c||'').replace(/%SC/g,v.sc||'');
+  /* %SC (skor) önce değiştirilmeli; yoksa %S onun içindeki "%S"i yiyip skoru "AdC"ye çevirir. */
+  return ch(pool).replace(/%SC/g,v.sc||'').replace(/%S/g,v.s||'').replace(/%B/g,v.b||'').replace(/%C/g,v.c||'');
 }
 
 function generateMatchEvents(rakip, opts){
@@ -572,23 +599,32 @@ function generateMatchEvents(rakip, opts){
       /* Blok / ribaund (kaçan şutlarda) */
       let blocked=false, blk=null;
       if(!made&&Math.random()<0.10){ blocked=true; blk=userPos?oAny():uAny(); D.blk++; }
+      let rebounder=null, rebOff=false;
       if(!made){
-        const offReb=Math.random()<0.26;
+        rebOff=Math.random()<0.26;
         /* Ribaund kutuya ve doğru takımın somut oyuncusuna yazılır (kullanıcı + rakip simetrik). */
-        if(offReb){ B.reb++; if(userPos) bumpP(uAny(),'reb',1); else bumpO(oAny(),'reb',1); }
-        else { D.reb++; if(userPos) bumpO(oAny(),'reb',1); else bumpP(uAny(),'reb',1); }
+        rebounder=rebOff?(userPos?uAny():oAny()):(userPos?oAny():uAny());
+        if(rebOff){ B.reb++; if(userPos) bumpP(rebounder,'reb',1); else bumpO(rebounder,'reb',1); }
+        else { D.reb++; if(userPos) bumpO(rebounder,'reb',1); else bumpP(rebounder,'reb',1); }
       }
       let txt;
       if(made){
-        if(is3){ const pasTxt=passer?`${passer.isim}'in pasında `:''; txt=pasTxt+spikerLine(SP.id,'score3',{s:shooter.isim,sc:sc()}); }
+        /* Kendi yaratımı (passız) isabetlerde ~%34 renkli hamle girişi serpiştir. */
+        const mv=(!passer&&Math.random()<0.34)?(ch(MOVE_LINES)+' '):'';
+        if(is3){ const pasTxt=passer?`${passer.isim}'in pasında `:''; txt=mv+pasTxt+spikerLine(SP.id,'score3',{s:shooter.isim,sc:sc()}); }
         else if(and1){ txt=`${shooter.isim} faule rağmen turnikeyi bitirdi — ${and1Made?'AND-1 tamam!':'ek atış kaçtı.'} ${sc()}`; }
-        else { const pasTxt=passer?`${passer.isim} buldu; `:''; txt=pasTxt+spikerLine(SP.id,'score2',{s:shooter.isim,sc:sc()}); }
+        else { const pasTxt=passer?`${passer.isim} buldu; `:''; txt=mv+pasTxt+spikerLine(SP.id,'score2',{s:shooter.isim,sc:sc()}); }
       } else if(blocked){
         txt=spikerLine(SP.id,'block',{s:shooter.isim,b:blk.isim});
       } else {
         txt=spikerLine(SP.id,is3?'miss3':'miss2',{s:shooter.isim});
       }
       events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      /* Kaçan şutlarda ~%22 renkli ribaund anlatımı (hücum/savunma). */
+      if(!made&&rebounder&&Math.random()<0.22){
+        const rl=(rebOff?ch(REB_OFF_LINES):ch(REB_DEF_LINES)).replace('%R',rebounder.isim);
+        events.push({type:'reb',text:rl,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      }
 
     } else if(roll<0.90){
       /* Şut faulü — çizgide 2 serbest atış */
@@ -676,7 +712,7 @@ function generateMatchEvents(rakip, opts){
     if(q<4){
       events.push({
         type:'quarter_end',
-        text:`Çeyrek kapandı: ${G.team.isim} ${homeScore} - ${awayScore} ${rname}. Taktik masasına dönülüyor.`,
+        text:`Çeyrek bitti: ${G.team.isim} ${homeScore} - ${awayScore} ${rname}. Taktik masasına dönülüyor.`,
         q,t:0,home:homeScore,away:awayScore,
         box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
       });

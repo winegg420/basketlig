@@ -81,6 +81,9 @@ function startMatch(playoff){
     benchIds:(lu.bench||[]).map(p=>p.id),
     subbedIds:new Set(),
     subsLeft:3,
+    timeoutsLeft:5,          /* mola hakkı (FIBA benzeri) */
+    paused:false,            /* mola/dead-ball duraklatması */
+    restBonus:{},            /* mola ile tazelenen enerji (göstergeye eklenir) */
     energyStart:Object.fromEntries((G.players||[]).map(p=>[p.id,Number(p.enerji!=null?p.enerji:100)]))};
   /* C1: Sonucu maç başında kilitle ve kalıcı kaydet. Canlı izleme sadece görselleştirmedir;
      yarıda durdurup/yenileyip yeniden başlatınca aynı kilitli sonuç uygulanır. */
@@ -89,6 +92,7 @@ function startMatch(playoff){
   saveGameNow(false);
 
   document.querySelectorAll('input[name="shotQ"]').forEach(r=>{ r.checked=(r.value==='live'); });
+  updateTimeoutBtn();
   clearMatchEventTimer();
   clearMatchCourt();
   updateCourtBranding(rakip);          /* parkeye arena/takım/amblem işle */
@@ -171,9 +175,11 @@ function startMatch(playoff){
       else if(i>=0) mState.userCourtIds.splice(i,1);
     }
     if(ev.type==='quarter_start'){ mState.subsLeft=3; }
-    /* Manuel koçluk açıksa mola/çeyrek arasında duraklat, değişiklik penceresini göster. */
+    /* Manuel koçluk açıksa çeyrek/ölü top arasında duraklat, değişiklik penceresini göster. */
     if(mState.manualCoach && (ev.type==='quarter_end' || (ev.type==='tactic'&&ev.t<=320)) && ev.q<=4 && mState.idx<mState.events.length){
       clearMatchEventTimer();
+      clearBallTimers();
+      mState.paused=true;
       renderCoachingPanel(true);
       return;
     }
@@ -237,17 +243,22 @@ function toggleManualCoach(){
 }
 function liveEnergyOf(id){
   const start=(mState.energyStart&&mState.energyStart[id]!=null)?mState.energyStart[id]:100;
-  if(!mState.userCourtIds.includes(id)) return Math.round(start);
+  const bonus=(mState.restBonus&&mState.restBonus[id])||0;   /* mola tazelemesi */
+  if(!mState.userCourtIds.includes(id)) return Math.max(0,Math.min(100,Math.round(start+bonus)));
   const ev=mState.events[Math.max(0,mState.idx-1)]||{};
   const q=ev.q||1, t=ev.t!=null?ev.t:600;
   const elapsed=(Math.min(4,q)-1)*600+(600-Math.min(600,t))+(q>4?(q-4)*300:0);
   const frac=Math.max(0,Math.min(1,elapsed/2400));
-  return Math.max(0,Math.round(start-frac*22));
+  return Math.max(0,Math.min(100,Math.round(start-frac*22+bonus)));
 }
+/** Mola/dead-ball duraklatmasında panel açılır; manuel koçlukta da görünür. */
+function _coachPanelVisible(){ return mState.manualCoach||mState.paused; }
 function renderCoachingPanel(atBreak){
   const el=document.getElementById('coachingPanel');
   if(!el) return;
-  if(!mState.manualCoach){ el.innerHTML=''; return; }
+  if(!_coachPanelVisible()){ el.innerHTML=''; return; }
+  /* Duraklatma (mola / dead-ball) sırasında değişiklik her zaman açık (basketbol: ölü topta serbest). */
+  const canSub=atBreak||mState.paused;
   const g=id=>(G.players||[]).find(p=>p.id===id);
   const onCourt=(mState.userCourtIds||[]).map(g).filter(Boolean);
   const bench=(mState.benchIds||[]).map(g).filter(p=>p&&!mState.userCourtIds.includes(p.id)&&!playerIsInjured(p));
@@ -256,7 +267,7 @@ function renderCoachingPanel(atBreak){
   const onList=onCourt.map(p=>{
     const {en,col}=enRow(p);
     const fouls=Number(p.matchFouls||0);
-    const swap=(atBreak&&mState.subsLeft>0&&bench.length)
+    const swap=(canSub&&bench.length)
       ? `<select id="sub_${p.id}" style="font-size:10px;padding:2px;max-width:120px;">${benchOpts}</select><button type="button" class="btn-sm" style="padding:3px 7px;font-size:10px;" onclick="substituteLive('${p.id}',document.getElementById('sub_${p.id}').value)">↔</button>`
       : '';
     return `<div style="display:flex;align-items:center;gap:6px;padding:4px 6px;background:var(--bg3);border-radius:6px;margin-bottom:3px;">
@@ -264,18 +275,46 @@ function renderCoachingPanel(atBreak){
       <span style="font-size:10px;color:${col};font-weight:700;">⚡${en}%</span>${swap}
     </div>`;
   }).join('');
+  const paused=mState.paused;
   el.innerHTML=`<div style="padding:9px 11px;background:var(--bg2);border:1px solid var(--accent);border-radius:10px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-      <strong style="font-size:12px;">🎧 Sahadaki 5 · canlı enerji</strong>
-      <span style="font-size:10px;color:var(--text2);">Bu periyot değişiklik: ${mState.subsLeft}</span>
+      <strong style="font-size:12px;">${paused?'⏸ Mola / Değişiklik':'🎧 Sahadaki 5 · canlı enerji'}</strong>
+      <span style="font-size:10px;color:var(--text2);">Mola hakkı: ${mState.timeoutsLeft!=null?mState.timeoutsLeft:0}</span>
     </div>
     ${onList}
-    ${atBreak?`<button type="button" class="btn-p" style="width:100%;padding:8px;margin-top:6px;" onclick="continueMatchAfterBreak()">▶ Devam et</button>`:'<div style="font-size:10px;color:var(--text2);margin-top:4px;">Değişiklik hakkı mola/çeyrek aralarında açılır.</div>'}
+    ${canSub?'<div style="font-size:10px;color:var(--text2);margin-top:4px;">Ölü topta değişiklik serbest — yedek seç ve ↔ ile değiştir.</div>':'<div style="font-size:10px;color:var(--text2);margin-top:4px;">Değişiklik için ⏸ Mola al ya da çeyrek arasını bekle.</div>'}
+    ${paused?`<button type="button" class="btn-p" style="width:100%;padding:8px;margin-top:6px;" onclick="continueMatchAfterBreak()">▶ Devam et</button>`:''}
   </div>`;
+}
+/** Mola al: maçı duraklatır, sahadaki oyuncuların enerjisini biraz tazeler, değişiklik penceresi açar. */
+function callTimeout(){
+  if(!mState.running){ showNotif('Mola için önce maçı başlat.'); return; }
+  if(mState.paused){ showNotif('Zaten mola/duraklatma açık.'); return; }
+  if((mState.timeoutsLeft==null?0:mState.timeoutsLeft)<=0){ showNotif('Mola hakkın kalmadı.'); return; }
+  mState.timeoutsLeft--;
+  mState.paused=true;
+  clearMatchEventTimer();
+  clearBallTimers();
+  /* Enerji tazele: sahadaki oyunculara dinlenme bonusu (göstergede görünür) + gerçek enerjiye hafif katkı. */
+  const boost=9;
+  mState.restBonus=mState.restBonus||{};
+  (mState.userCourtIds||[]).forEach(id=>{
+    mState.restBonus[id]=(mState.restBonus[id]||0)+boost;
+    const p=(G.players||[]).find(x=>x.id===id);
+    if(p&&p.enerji!=null) p.enerji=Math.min(100,Number(p.enerji)+Math.round(boost*0.5));
+  });
+  addComment(`⏸ MOLA! ${G.team.isim} molasını kullandı — oyuncular nefeslendi, enerji tazelendi. (Kalan mola: ${mState.timeoutsLeft})`,'tactic');
+  updateTimeoutBtn();
+  renderCoachingPanel(true);
+  showNotif('⏸ Mola alındı — enerji tazelendi. Dilersen değişiklik yap, sonra "Devam et".');
+}
+function updateTimeoutBtn(){
+  const b=document.getElementById('timeoutBtn');
+  if(b) b.textContent=`⏸ Mola (${mState.timeoutsLeft!=null?mState.timeoutsLeft:0})`;
 }
 function substituteLive(outId,inId){
   if(!inId){ showNotif('Yedek oyuncu seç.'); return; }
-  if(mState.subsLeft<=0){ showNotif('Bu periyot değişiklik hakkın kalmadı.'); return; }
+  if(!mState.paused&&mState.subsLeft<=0){ showNotif('Değişiklik için ⏸ Mola al ya da çeyrek arasını bekle.'); return; }
   if(!mState.userCourtIds.includes(outId)){ showNotif('Bu oyuncu sahada değil.'); return; }
   if(mState.userCourtIds.includes(inId)){ showNotif('Oyuncu zaten sahada.'); return; }
   const inP=(G.players||[]).find(p=>p.id===inId);
@@ -286,7 +325,7 @@ function substituteLive(outId,inId){
   mState.benchIds=(mState.benchIds||[]).filter(id=>id!==inId);
   if(!mState.benchIds.includes(outId)) mState.benchIds.unshift(outId);
   mState.subbedIds.add(inId);
-  mState.subsLeft--;
+  if(!mState.paused) mState.subsLeft--;   /* çeyrek arası hakkı; molada/dead-ball serbest */
   addComment(`🔁 Değişiklik (koç kararı): ${outP?outP.isim:'?'} çıktı, ${inP.isim} girdi.`,'tactic');
   regenerateMatchRemainder();
   renderCoachingPanel(true);
@@ -318,8 +357,9 @@ function regenerateMatchRemainder(){
   }catch(e){ dbg('regen',e); }
 }
 function continueMatchAfterBreak(){
+  mState.paused=false;
   renderCoachingPanel(false);
-  if(mState.running && mState.step){ matchEventTimer=setTimeout(mState.step,700); }
+  if(mState.running && mState.step && !matchEventTimer){ matchEventTimer=setTimeout(mState.step,700); }
 }
 
 function addComment(txt,type=''){

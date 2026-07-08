@@ -945,10 +945,11 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                 <span style="font-size:11px;color:var(--text2);"><b style="color:#4ade80;font-size:13px;">O</b> Rakip — isabet &nbsp; <b style="color:#4ade80;font-size:13px;">X</b> Rakip — kaçan</span>
               </div>
 
-              <div style="display:flex;gap:8px;margin-bottom:8px;">
-                <button class="btn-p" id="startMatchBtn" onclick="startMatch()" style="flex:1;padding:9px;font-size:13px;">▶ Maçı Başlat</button>
-                <button class="btn-sm" onclick="stopMatch()" style="flex:1;">⏹ Durdur</button>
-                <button class="btn-sm" id="manualCoachBtn" onclick="toggleManualCoach()" style="flex:1;">🎧 Manuel Koçluk</button>
+              <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+                <button class="btn-p" id="startMatchBtn" onclick="startMatch()" style="flex:1;min-width:130px;padding:9px;font-size:13px;">▶ Maçı Başlat</button>
+                <button class="btn-sm" onclick="stopMatch()" style="flex:1;min-width:90px;">⏹ Durdur</button>
+                <button class="btn-sm" id="timeoutBtn" onclick="callTimeout()" style="flex:1;min-width:110px;" title="Mola al — oyuncular nefeslenir, enerji tazelenir; molada değişiklik serbest">⏸ Mola (5)</button>
+                <button class="btn-sm" id="manualCoachBtn" onclick="toggleManualCoach()" style="flex:1;min-width:130px;">🎧 Manuel Koçluk</button>
               </div>
               <div id="coachingPanel" style="margin-bottom:12px;"></div>
               <div class="commentary" id="commentary">
@@ -1179,16 +1180,16 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 <div class="notif" id="notif"></div>
 
-<script src="js/state.js?v=9"></script>
-<script src="js/economy.js?v=9"></script>
-<script src="js/persistence.js?v=9"></script>
-<script src="js/portraits.js?v=9"></script>
-<script src="js/roster-gen.js?v=9"></script>
-<script src="js/league.js?v=9"></script>
-<script src="js/match-prep.js?v=9"></script>
-<script src="js/render.js?v=9"></script>
-<script src="js/match-engine.js?v=9"></script>
-<script src="js/main.js?v=9"></script>
+<script src="js/state.js?v=10"></script>
+<script src="js/economy.js?v=10"></script>
+<script src="js/persistence.js?v=10"></script>
+<script src="js/portraits.js?v=10"></script>
+<script src="js/roster-gen.js?v=10"></script>
+<script src="js/league.js?v=10"></script>
+<script src="js/match-prep.js?v=10"></script>
+<script src="js/render.js?v=10"></script>
+<script src="js/match-engine.js?v=10"></script>
+<script src="js/main.js?v=10"></script>
 
 
 </body></html>
