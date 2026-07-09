@@ -96,9 +96,9 @@ function startMatch(playoff){
   clearMatchEventTimer();
   clearMatchCourt();
   updateCourtBranding(rakip);          /* parkeye arena/takım/amblem işle */
-  let oppNames=[];
-  try{ const prof=getBotClubProfile(rakip.isim,(G.team&&G.team.tblKey)||'tbl'); oppNames=(prof.roster||[]).slice().sort((a,b)=>(b.genel||0)-(a.genel||0)).slice(0,5).map(p=>p.isim); }catch(e){}
-  initMatchPlayers(lu,rakip,oppNames); /* sahaya 5v5 oyuncu jetonları (rakip gerçek isimleri) koy */
+  let oppFive=[];
+  try{ const prof=getBotClubProfile(rakip.isim,(G.team&&G.team.tblKey)||'tbl'); oppFive=(prof.roster||[]).slice().sort((a,b)=>(b.genel||0)-(a.genel||0)).slice(0,5); }catch(e){}
+  initMatchPlayers(lu,rakip,oppFive); /* sahaya 5v5 jeton — rakibin TAM oyuncu nesneleri (isim+hiz+enerji) */
   const _ml=document.getElementById('macLiveAnchor'); if(_ml) _ml.classList.add('live-on');
   renderBoxScore(emptyBox(),emptyBox(),G.team.isim,rakip.isim);
   document.getElementById('commentary').innerHTML='';

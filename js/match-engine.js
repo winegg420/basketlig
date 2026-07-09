@@ -58,10 +58,18 @@ function clearMatchCourt(){
      sağda, oyuncular soldaydı).
    ═════════════════════════════════════════════════════════════════════════ */
 
-const _PL_MAXV=320;          /* px/sn — normal koşu */
-const _PL_SPRINT=540;        /* şutör/ribaundcu: pozisyonuna yetişmek için hızlanır */
+const _PL_MAXV=320;          /* px/sn — hız stat'ı yoksa yedek koşu hızı */
 const _PL_ACC=8.5;           /* hedefe yaklaşma sertliği */
 const _PL_R=25;              /* çarpışma yarıçapı */
+
+/* Oyuncunun gerçek koşu hızı: `hiz` stat'ı (0-99) → 260-400 px/sn bandı; düşük enerji
+   %13'e kadar yavaşlatır. Sprint (şutöre/ribaunda/topa yetişme) bunun 1.55 katı. */
+function _tokBaseV(pl){
+  const hiz=(pl&&pl.hiz!=null)?Number(pl.hiz):60;
+  const en=(pl&&pl.enerji!=null)?Number(pl.enerji):100;
+  const fat=1-0.13*Math.max(0,Math.min(1,(100-en)/100));
+  return (260+Math.max(0,Math.min(99,hiz))/99*140)*fat;
+}
 
 function _tokShort(name){ const a=String(name||'').trim().split(/\s+/); return a[a.length-1]||String(name||''); }
 function _tokSet(g,x,y){ if(g) g.setAttribute('transform',`translate(${x.toFixed(1)},${y.toFixed(1)})`); }
@@ -77,7 +85,7 @@ function clearMatchPlayers(){
   if(typeof mState!=='undefined'&&mState){ mState._tokens=null; mState._sim=null; }
 }
 
-function initMatchPlayers(lu,rakip,oppNames){
+function initMatchPlayers(lu,rakip,oppPlayers){
   try{
     const ball=document.getElementById('liveBall');
     const svg=ball&&ball.parentNode;
@@ -120,16 +128,20 @@ function initMatchPlayers(lu,rakip,oppNames){
     /* tip-off: orta yuvarlağın iki yanında karşılıklı diz */
     const hs=[[428,250],[400,150],[400,350],[352,196],[352,308]];
     const as=[[512,250],[540,150],[540,350],[588,196],[588,308]];
-    const mkP=(g,x,y,team,slot)=>({g,x,y,vx:0,vy:0,tx:x,ty:y,team,slot,maxV:_PL_MAXV,ph:Math.random()*6.283,side:Math.random()<0.5?-1:1});
+    const mkP=(g,x,y,team,slot,pl)=>{
+      const bv=_tokBaseV(pl);
+      return {g,x,y,vx:0,vy:0,tx:x,ty:y,team,slot,pl:pl||null,baseV:bv,sprintV:bv*1.55,maxV:bv,ph:Math.random()*6.283,side:Math.random()<0.5?-1:1};
+    };
 
     const home=[],away=[];
     for(let i=0;i<5;i++){
       const p=homeP[i];
-      home.push(mkP(mk(String(i+1),p?_tokShort(p.isim):('Ev'+(i+1)),homeCol),hs[i][0],hs[i][1],'h',i));
+      home.push(mkP(mk(String(i+1),p?_tokShort(p.isim):('Ev'+(i+1)),homeCol),hs[i][0],hs[i][1],'h',i,p));
     }
     for(let i=0;i<5;i++){
-      const on=(oppNames&&oppNames[i])?_tokShort(oppNames[i]):rk;
-      away.push(mkP(mk(String(i+1),on,awayCol),as[i][0],as[i][1],'a',i));
+      const op=(oppPlayers&&oppPlayers[i])||null;
+      const on=op?_tokShort(op.isim||op):rk;   /* nesne ya da (eski çağrı) düz isim */
+      away.push(mkP(mk(String(i+1),on,awayCol),as[i][0],as[i][1],'a',i,(op&&typeof op==='object')?op:null));
     }
     mState._tokens={home:home.map(p=>p.g),away:away.map(p=>p.g)};
     mState._sim={
@@ -219,7 +231,13 @@ function _simStep(dt){
 
 /* ── Top: durum makinesi ─────────────────────────────────────────────────── */
 function _ball(){ return mState._sim.ball; }
-function _ballHold(p){ const b=_ball(); if(!p) return; b.mode='held'; b.carrier=p; b.t=0; }
+function _ballHold(p){
+  const b=_ball(); if(!p) return;
+  /* top oyuncudan uzaktaysa ışınlanmasın — kısa sıçrayışla eline gelsin */
+  const d=Math.hypot(b.x-p.x,b.y-p.y);
+  if(d>26){ _ballPass(p,Math.max(0.12,Math.min(0.30,d/700))); return; }
+  b.mode='held'; b.carrier=p; b.t=0;
+}
 function _ballPass(to,dur){
   const b=_ball(); if(!to) return;
   const d=Math.hypot(to.x-b.x,to.y-b.y);
@@ -331,33 +349,92 @@ const FT_DEF_L=[[150,178],[150,322],[204,178],[204,322],[262,250]];
 function _rim(left){ return left?RIM_L.slice():RIM_R.slice(); }
 function _jit(n,a){ return n+(Math.random()*2-1)*(a||10); }
 
-/** Hücum + savunma hedeflerini kur. shot verilirse şutör o noktaya gider. */
+/* 2-3 bölge savunması bölge merkezleri (sol pota): 2 üstte yay dirseklerinde, 3 boya hattında. */
+const ZONE_23_L=[[240,190],[240,310],[152,158],[152,342],[126,250]];
+
+/** Hücum + savunma hedeflerini kur. shot verilirse şutör o noktaya gider.
+    Taktikler (G.tactics) yalnız kullanıcı tarafına işlenir: hücumda `odak` dizilimi
+    hafifçe şekillendirir; savunmada `defensiveStyle` (adam/bolge/pres) ve `markStar`. */
 function _setFormation(offLeft,offPlayers,defPlayers,shot){
   const S=mState._sim;
   const rim=_rim(offLeft);
-  const base=OFF_BASE_L.map(p=>offLeft?p.slice():_mir(p));
+  const tac=G.tactics||{};
+  const offIsUser=S.offIsUser!==false;
+  const base=OFF_BASE_L.map(p=>p.slice());
+  /* Hücum odağı (kullanıcı hücumdaysa): dış şutta kanatlar yaydan açılır,
+     içeri odakta uzunlar boyaya sokulur. Ayna yansımasından ÖNCE uygulanır. */
+  if(offIsUser){
+    if(tac.odak==='dis'){ base[0][0]+=10; base[1][0]+=18; base[2][0]+=18; }
+    else if(tac.odak==='ic'){ base[1][0]-=8; base[2][0]-=8; base[3][0]-=14; base[3][1]+=6; base[4][0]-=10; }
+  }
+  const B=base.map(p=>offLeft?p:_mir(p));
   let shooter=null;
   if(shot){
     /* şut noktasına en yakın slotu şutör yap — dizilim şuta göre kurulur */
     let bi=0,bd=1e9;
-    base.forEach((p,i)=>{ const d=Math.hypot(p[0]-shot.x,p[1]-shot.y); if(d<bd){bd=d;bi=i;} });
+    B.forEach((p,i)=>{ const d=Math.hypot(p[0]-shot.x,p[1]-shot.y); if(d<bd){bd=d;bi=i;} });
     shooter=offPlayers[bi];
-    base[bi]=[shot.x,shot.y];
+    B[bi]=[shot.x,shot.y];
   }
   /* Şutör noktasına yetişmek için sprint atar (top elden çıkarken orada olmalı). */
   offPlayers.forEach((p,i)=>{
-    const c=base[i];
+    const c=B[i];
     p.tx=_jit(c[0],p===shooter?0:12); p.ty=_jit(c[1],p===shooter?0:12);
-    p.maxV=(p===shooter)?_PL_SPRINT:_PL_MAXV;
+    p.maxV=(p===shooter)?p.sprintV:p.baseV;
   });
-  /* savunma: adamını çemberle arasında tutar (şutörü daha yakından kapatır) */
+  /* ── Savunma ── kullanıcı savunuyorsa seçtiği stil, rakip savunuyorsa adam adama. */
+  const defIsUser=!offIsUser;
+  const style=defIsUser?(tac.defensiveStyle||'adam'):'adam';
+
+  if(style==='bolge'){
+    /* 2-3 bölge: herkes bölgesinde durur; bölgesine giren en yakın hücumcuya doğru
+       kayar (%45), hücumcu çıkınca bölge merkezine döner. Şutörün bölgesindeki
+       savunmacı şutörü yakın kapatır. */
+    const zones=ZONE_23_L.map(p=>offLeft?p.slice():_mir(p));
+    let closeIdx=-1;
+    if(shooter){
+      let bd=1e9;
+      zones.forEach((z,i)=>{ const d=Math.hypot(z[0]-shooter.tx,z[1]-shooter.ty); if(d<bd){bd=d;closeIdx=i;} });
+    }
+    defPlayers.forEach((p,i)=>{
+      const z=zones[i%zones.length];
+      if(i===closeIdx&&shooter){
+        const dx=rim[0]-shooter.tx, dy=rim[1]-shooter.ty, d=Math.hypot(dx,dy)||1;
+        p.tx=_jit(shooter.tx+dx/d*26,5); p.ty=_jit(shooter.ty+dy/d*26,5);
+        p.maxV=p.sprintV*0.92;
+      } else {
+        /* bölgeye en yakın hücumcu 80px içindeyse ona doğru kay */
+        let nm=null,nd=80;
+        offPlayers.forEach(o=>{ if(o===shooter)return; const d=Math.hypot(o.tx-z[0],o.ty-z[1]); if(d<nd){nd=d;nm=o;} });
+        const gx=nm?z[0]+(nm.tx-z[0])*0.45:z[0];
+        const gy=nm?z[1]+(nm.ty-z[1])*0.45:z[1];
+        p.tx=_jit(gx,6); p.ty=_jit(gy,6);
+        p.maxV=p.baseV;
+      }
+    });
+    S.shooter=shooter;
+    return shooter;
+  }
+
+  /* Adam adama / pres: savunmacı i adamı offPlayers[i]'yi çemberle arasında tutar.
+     markStar: en iyi savunmacı rakip yıldızına (offPlayers[0], genel sıralı) yapışır. */
+  const assign=[0,1,2,3,4];
+  if(defIsUser&&tac.markStar){
+    let bd=-1,bi=-1;
+    defPlayers.forEach((p,i)=>{ const sv=(p.pl&&p.pl.savunma!=null)?p.pl.savunma:0; if(sv>bd){bd=sv;bi=i;} });
+    if(bi>0){ const j=assign.indexOf(0); assign[j]=assign[bi]; assign[bi]=0; }
+  }
+  const press=(style==='pres');
   defPlayers.forEach((p,i)=>{
-    const m=offPlayers[i]||offPlayers[0];
+    const m=offPlayers[assign[i]]||offPlayers[0];
     const dx=rim[0]-m.tx, dy=rim[1]-m.ty;
     const d=Math.hypot(dx,dy)||1;
-    const gap=(m===shooter)?26:40;   /* jeton çapı 32 — daha azında jetonlar üst üste biner */
-    p.tx=_jit(m.tx+dx/d*gap,6); p.ty=_jit(m.ty+dy/d*gap,6);
-    p.maxV=(m===shooter)?_PL_SPRINT*0.92:_PL_MAXV;
+    /* jeton çapı 32 — pres basar (26), yıldız markajı yapışır (18+26), adam standart (40) */
+    let gap=(m===shooter)?26:40;
+    if(press) gap=(m===shooter)?22:26;
+    if(defIsUser&&tac.markStar&&assign[i]===0&&m!==shooter) gap=26;
+    p.tx=_jit(m.tx+dx/d*gap,press?4:6); p.ty=_jit(m.ty+dy/d*gap,press?4:6);
+    p.maxV=(m===shooter)?p.sprintV*0.92:(press?p.baseV*1.12:p.baseV);
   });
   S.shooter=shooter;
   return shooter;
@@ -370,9 +447,9 @@ function _setFtFormation(offLeft,offPlayers,defPlayers,shooter){
   const others=offPlayers.filter(p=>p!==shooter);
   const of=FT_OFF_L.map(p=>offLeft?p.slice():_mir(p));
   const df=FT_DEF_L.map(p=>offLeft?p.slice():_mir(p));
-  shooter.maxV=_PL_SPRINT;
-  others.forEach((p,i)=>{ const c=of[i%of.length]; p.tx=_jit(c[0],5); p.ty=_jit(c[1],5); p.maxV=_PL_MAXV; });
-  defPlayers.forEach((p,i)=>{ const c=df[i%df.length]; p.tx=_jit(c[0],5); p.ty=_jit(c[1],5); p.maxV=_PL_MAXV; });
+  shooter.maxV=shooter.sprintV;
+  others.forEach((p,i)=>{ const c=of[i%of.length]; p.tx=_jit(c[0],5); p.ty=_jit(c[1],5); p.maxV=p.baseV; });
+  defPlayers.forEach((p,i)=>{ const c=df[i%df.length]; p.tx=_jit(c[0],5); p.ty=_jit(c[1],5); p.maxV=p.baseV; });
 }
 
 /** Bir olayın hücum sahibini çöz: true = kullanıcı takımı hücumda. */
@@ -410,12 +487,18 @@ function movePlayersForEvent(ev){
     const defP=off?S.away:S.home;
     S.offSide=offLeft;
     S.offP=offP; S.defP=defP;
+    S.offIsUser=off;                      /* taktikler yalnız kullanıcı tarafına uygulanır */
+    S.prevType=S.curType; S.curType=type; /* hücum türü seçimi (fast break) önceki olaya bakar */
 
     if(ev&&ev.shot){ _setFormation(offLeft,offP,defP,ev.shot); return; }   /* top: animateShotPossession */
 
-    /* Serbest atış: dizil, şutörü çizgiye koy, atışları canlandır. */
+    /* Serbest atış: dizil, şutörü çizgiye koy, atışları canlandır.
+       Şutör çizgiye EN YAKIN hücumcu (faul zaten onun üstündeydi) — uzaktan
+       seçilirse ilk atışa çizgiye yetişemiyor, top boş çizgiden fırlıyordu. */
     if(ev&&ev.shots&&ev.shots.length&&ev.shots[0].kind==='ft'){
-      const shooter=offP[rand(0,4)];
+      const line=offLeft?[214,250]:[726,250];
+      let shooter=offP[0],sd=1e9;
+      offP.forEach(p=>{ const d=Math.hypot(p.x-line[0],p.y-line[1]); if(d<sd){sd=d;shooter=p;} });
       _setFtFormation(offLeft,offP,defP,shooter);
       S.shooter=shooter;
       const rim=_rim(offLeft);
@@ -423,7 +506,7 @@ function movePlayersForEvent(ev){
       const steps=[{at:0,fn:()=>_ballHold(shooter)}];
       const shots=ev.shots.slice(0,2);
       shots.forEach((sh,i)=>{
-        const t0=0.30+i*0.62;
+        const t0=0.55+i*0.58;
         steps.push({at:t0,fn:()=>_ballShoot(rim,0.46,sh.made,()=>{
           if(!sh.made){ const a=Math.random()*6.283; _ballLoose(Math.cos(a)*90,Math.sin(a)*90,95); }
         })});
@@ -442,7 +525,7 @@ function movePlayersForEvent(ev){
       const b=S.ball;
       const a=Math.random()*6.283;
       _ballLoose(Math.cos(a)*140,Math.sin(a)*140,55);
-      thief.maxV=_PL_SPRINT; thief.tx=b.x; thief.ty=b.y;
+      thief.maxV=thief.sprintV; thief.tx=b.x; thief.ty=b.y;
       _script([{at:0.55,fn:()=>{ _ballHold(thief); }}]);
       return;
     }
@@ -486,34 +569,70 @@ function animateShotPossession(sh,onShoot,onResult){
     let pg=(b.carrier&&offP.indexOf(b.carrier)>=0)?b.carrier:offP[0];
     if(pg===shooter) pg=offP.find(p=>p!==shooter)||offP[0];
     const relay=offP.filter(p=>p!==shooter&&p!==pg);
-    const mid=relay.length?relay[rand(0,relay.length-1)]:pg;
+    const tac=G.tactics||{};
+    const userAtt=!!sh.isHome;
+    /* Top yükleme: kullanıcı hücumunda ara pas mümkünse odak oyuncusuna uğrar. */
+    let mid=relay.length?relay[rand(0,relay.length-1)]:pg;
+    if(userAtt&&tac.focusPlayerId){
+      const f=relay.find(p=>p.pl&&p.pl.id===tac.focusPlayerId);
+      if(f) mid=f;
+    }
+
+    /* Şut anı: iz top elden çıkarken, ses/ribaund top çembere varınca. */
+    const fire=()=>{
+      try{ if(typeof onShoot==='function') onShoot(); }catch(e){}
+      /* Top, izin çizildiği şut noktasından çıkar — şutör oraya koşarken kalsa bile
+         yay ile iz birbirini tutar (yoksa yarı sahadan atılmış gibi görünüyordu). */
+      b.x=sh.x; b.y=sh.y;
+      _ballShoot(rim,0.58,sh.made,()=>{
+        try{ if(typeof onResult==='function') onResult(); }catch(e){}
+        if(!sh.made){
+          /* çemberden seken top: ribaundcu üzerine koşar */
+          const a=(Math.random()*2-1)*1.2+(offLeft?0:Math.PI);
+          _ballLoose(Math.cos(a)*180,Math.sin(a)*170,110);
+          const pool=Math.random()<0.72?defP:offP;
+          const reb=pool[rand(3,4)];
+          const bb=S.ball;
+          reb.maxV=reb.sprintV;
+          reb.tx=bb.x+Math.cos(a)*40; reb.ty=bb.y+Math.sin(a)*36;
+        }
+      });
+    };
+
+    /* ── Hücum türü: 3 dal ──
+       1) Fast break: top çalma/ribaund sonrası + hızlı tempo/odak → tek uzun outlet
+          pas öne koşan şutöre, erken şut. 2) İzolasyon: top yükleme oyuncusu şutörse
+          tek pasla topu alır, diğerleri sahayı açar. 3) Set oyunu (varsayılan). */
+    const afterTurnover=(S.prevType==='steal'||S.prevType==='reb');
+    const fastBreak=userAtt&&afterTurnover&&(tac.tempo==='hizli'||tac.odak==='hizli');
+    const iso=userAtt&&tac.focusPlayerId&&shooter.pl&&shooter.pl.id===tac.focusPlayerId;
 
     /* Top karşı takımdaysa veya serbestse önce çıkış pasıyla topu getirene ulaşır (ışınlanma yok). */
     const d0=Math.hypot(b.x-pg.x,b.y-pg.y);
     if(d0>55) _ballPass(pg,Math.min(0.46,0.16+d0/900)); else _ballHold(pg);
-    const steps=[
-      {at:0.80,fn:()=>_ballPass(mid,0.26)},        /* topu getirdi, ilk pas */
-      {at:1.24,fn:()=>_ballPass(shooter,0.28)},    /* şutöre son pas */
-      {at:1.72,fn:()=>{
-        try{ if(typeof onShoot==='function') onShoot(); }catch(e){}
-        /* Top, izin çizildiği şut noktasından çıkar — şutör oraya koşarken kalsa bile
-           yay ile iz birbirini tutar (yoksa yarı sahadan atılmış gibi görünüyordu). */
-        b.x=sh.x; b.y=sh.y;
-        _ballShoot(rim,0.58,sh.made,()=>{
-          try{ if(typeof onResult==='function') onResult(); }catch(e){}
-          if(!sh.made){
-            /* çemberden seken top: ribaundcu üzerine koşar */
-            const a=(Math.random()*2-1)*1.2+(offLeft?0:Math.PI);
-            _ballLoose(Math.cos(a)*180,Math.sin(a)*170,110);
-            const pool=Math.random()<0.72?defP:offP;
-            const reb=pool[rand(3,4)];
-            const bb=S.ball;
-            reb.maxV=_PL_SPRINT;
-            reb.tx=bb.x+Math.cos(a)*40; reb.ty=bb.y+Math.sin(a)*36;
-          }
-        });
-      }}
-    ];
+
+    let steps;
+    if(fastBreak){
+      /* Herkes sprintle öne — top uzun havadan pasla direkt şutöre fırlar. */
+      offP.forEach(p=>{ p.maxV=p.sprintV; });
+      steps=[
+        {at:0.30,fn:()=>_ballPass(shooter,0.50)},
+        {at:1.00,fn:fire}
+      ];
+    } else if(iso){
+      /* Diğer hücumcular kenara çekilip alan açar; top tek pasla yıldıza. */
+      offP.forEach(p=>{ if(p!==shooter&&p!==pg) p.ty+=(p.ty<250?-26:26); });
+      steps=[
+        {at:0.70,fn:()=>_ballPass(shooter,0.30)},
+        {at:1.40,fn:fire}
+      ];
+    } else {
+      steps=[
+        {at:0.80,fn:()=>_ballPass(mid,0.26)},        /* topu getirdi, ilk pas */
+        {at:1.24,fn:()=>_ballPass(shooter,0.28)},    /* şutöre son pas */
+        {at:1.72,fn:fire}
+      ];
+    }
     _script(steps);
     return 2300;
   }catch(e){ return 0; }
