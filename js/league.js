@@ -695,8 +695,12 @@ function lineupSlotHtml(i){
   const p=_lineupPlayerById(id);
   if(!p){ _lineupEdit.slots[i]=null; return lineupSlotHtml(i); }
   const av=playerAvatar(p.seed,p.id,{});
+  /* Paket 3: uyum rozeti — doğal poz sessiz, ikincil poz mavi "2", yabancı poz sarı "!" (performans düşer). */
+  const fit=(p.poz===s.poz)?'':(p.ikincilPoz===s.poz
+    ?'<span style="position:absolute;top:-6px;right:-6px;background:var(--blue);color:#fff;font-size:9px;font-weight:800;border-radius:50%;width:15px;height:15px;display:flex;align-items:center;justify-content:center;" title="İkincil pozisyon (-%4)">2</span>'
+    :'<span style="position:absolute;top:-6px;right:-6px;background:var(--gold);color:#111;font-size:9px;font-weight:800;border-radius:50%;width:15px;height:15px;display:flex;align-items:center;justify-content:center;" title="Yabancı pozisyon (-%10)">!</span>');
   return `<div class="lu-slot filled" data-luslot="${i}" style="${pos}" onpointerdown="lineupPointerDown(event,'${id}','slot',${i})" onclick="lineupSlotTap(${i})" title="${escMatch(p.isim)} — sürükle ya da tıkla (yedeğe al)">
-    <span class="lu-slot-badge">${s.poz}</span>
+    ${fit}<span class="lu-slot-badge">${s.poz}</span>
     <img class="lu-av" src="${av}" ${playerAvatarImgAttrs(p.seed,p.id,{})} alt="">
     <span class="lu-nm">${escMatch(p.isim)}</span>
     <span class="lu-sub">OVR ${p.genel}</span>

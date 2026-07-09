@@ -259,5 +259,7 @@ const ACHV=[
   {id:'yenilmezSezon',ad:'Yenilmez Sezon',desc:'Düzenli sezonu hiç kaybetmeden bitir',ikon:'💎'},
   {id:'milyoner',ad:'Milyoner',desc:'1.000.000 KR bakiyeye ulaş',ikon:'🤑'},
   {id:'yuzMac',ad:'Yüz Maç Kulübü',desc:'Kariyerinde 100 maça çık',ikon:'💯'},
-  {id:'tamEkip',ad:'Tam Kadro Ekip',desc:'Teknik ekibi 5 koçla doldur',ikon:'📋'}
+  {id:'tamEkip',ad:'Tam Kadro Ekip',desc:'Teknik ekibi 5 koçla doldur',ikon:'📋'},
+  /* 14. oturum (Paket 1): ulusal kupa */
+  {id:'kupaSampiyon',ad:'Kupa Şampiyonu',desc:'Ulusal Kupayı kazan',ikon:'🏅'}
 ];

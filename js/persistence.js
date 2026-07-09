@@ -336,19 +336,19 @@ function serializeGameState(){
   return{
     v:5,
     savedAt:new Date().toISOString(),
-    coins:G.coins,wins:G.wins,losses:G.losses,points:G.points,chemistry:G.chemistry,winStreak:G.winStreak||0,careerMatches:G.careerMatches||0,
+    coins:G.coins,wins:G.wins,losses:G.losses,points:G.points,chemistry:G.chemistry,winStreak:G.winStreak||0,careerMatches:G.careerMatches||0,careerWins:G.careerWins||0,careerLosses:G.careerLosses||0,clubRecords:G.clubRecords||{},
     team:G.team,
     players:G.players,youth:G.youth,marketPlayers:G.marketPlayers,
     clubTransferPlayers:G.clubTransferPlayers||[],_ctSeq:G._ctSeq||0,
     coaches:G.coaches,coachMarket:G.coachMarket,
     scouts:G.scouts||[],scoutMarket:G.scoutMarket||[],
     ligTeams:pl,
-    arena:G.arena,youthFacility:G.youthFacility||{s:1},selectedColor:G.selectedColor,activeTrainings:G.activeTrainings||[],
+    arena:G.arena,youthFacility:G.youthFacility||{s:1},selectedColor:G.selectedColor,activeTrainings:G.activeTrainings||[],posTraining:G.posTraining||null,
     gameDay:G.gameDay,managerName:G.managerName,managerRep:G.managerRep||0,managerHistory:G.managerHistory||[],joinedAt:G.joinedAt,lastActive:new Date().toISOString(),
     marketPozFilter:G.marketPozFilter,marketSort:G.marketSort,marketSortDesc:G.marketSortDesc||{ovr:true,maas:true},
     kadroFilter:G.kadroFilter,kadroView:G.kadroView,youthView:G.youthView||'list',
     prepareMatchIx:G.prepareMatchIx!=null?G.prepareMatchIx:null,
-    season:G.season,seasonFixtures:G.seasonFixtures||[],playoff:G.playoff||null,
+    season:G.season,seasonFixtures:G.seasonFixtures||[],playoff:G.playoff||null,cup:G.cup||null,cupHistory:G.cupHistory||[],
     settings:G.settings||{sound:true,autosaveSec:12},
     achievements:G.achievements||{},
     ledger:G.ledger||[],
@@ -468,6 +468,8 @@ function applyGameState(d){
   G.coins=d.coins??START_KR;
   G.wins=d.wins??0;
   G.careerMatches=Number(d.careerMatches)||0; /* Paket B: kariyer maç sayacı */
+  G.careerWins=Number(d.careerWins)||0; G.careerLosses=Number(d.careerLosses)||0;
+  G.clubRecords=(d.clubRecords&&typeof d.clubRecords==='object')?d.clubRecords:{}; /* Paket 2: kulüp rekorları */
   G.losses=d.losses??0;
   G.points=d.points??0;
   G.chemistry=d.chemistry??75;
@@ -486,6 +488,7 @@ function applyGameState(d){
   G.youthFacility=d.youthFacility&&typeof d.youthFacility==='object'?d.youthFacility:{s:1};
   G.selectedColor=d.selectedColor||'#f97316';
   G.activeTrainings=Array.isArray(d.activeTrainings)?d.activeTrainings:[];
+  G.posTraining=(d.posTraining&&typeof d.posTraining==="object")?d.posTraining:null; /* Paket 3 */
   G.gameDay=d.gameDay??1;
   G.managerName=d.managerName||'Menajer';
   G.managerRep=Number(d.managerRep)||0;
@@ -501,6 +504,8 @@ function applyGameState(d){
   G.prepareMatchIx=d.prepareMatchIx!=null&&d.prepareMatchIx!==undefined?d.prepareMatchIx:null;
   G.season=d.season||null;
   G.playoff=d.playoff&&typeof d.playoff==='object'?d.playoff:null;
+  G.cup=d.cup&&typeof d.cup==='object'?d.cup:null; /* Paket 1: ulusal kupa durumu */
+  G.cupHistory=Array.isArray(d.cupHistory)?d.cupHistory:[];
   G.seasonFixtures=Array.isArray(d.seasonFixtures)?d.seasonFixtures:[];
   G.settings=Object.assign({sound:true,autosaveSec:12},d.settings||{});
   applyA11ySettings(); /* büyük yazı / yüksek kontrast kayıttan gelir gelmez uygulanır */

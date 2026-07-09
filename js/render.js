@@ -922,7 +922,43 @@ function renderPlayoffPanel(){
     ${roundBlocks}${action}
   </div>`;
 }
+/* Paket 1 (14. oturum): Ulusal Kupa kartı — playoff panelinin üstüne enjekte edilir. */
+function renderCupPanel(){
+  try{
+    const anchor=document.getElementById('playoffPanel');
+    if(!anchor) return;
+    let card=document.getElementById('cupPanel');
+    if(!card){
+      card=document.createElement('div');
+      card.id='cupPanel';
+      anchor.parentNode.insertBefore(card,anchor);
+    }
+    const c=G.cup;
+    if(!c){ card.innerHTML=''; return; }
+    const um=(typeof cupUserMatch==='function')?cupUserMatch():null;
+    const due=um&&c.round<_cupDueRounds();
+    const rName=CUP_ROUND_NAMES[c.round]||'Tur';
+    const rows=(c.rounds[c.round]||[]).map(m=>{
+      const mine=(m.home===G.team.isim||m.away===G.team.isim);
+      return `<div style="display:flex;justify-content:space-between;gap:8px;padding:6px 9px;background:var(--bg3);border-radius:7px;margin-bottom:4px;font-size:11px;${mine?'border:1px solid var(--gold);':''}">
+        <span>${escMatch(m.home)} — ${escMatch(m.away)}</span>
+        <span style="color:${m.played?'var(--text)':'var(--text2)'};font-weight:700;">${m.played?(m.hs+'-'+m.as):'—'}</span></div>`;
+    }).join('');
+    const head=c.done
+      ? `🏅 Ulusal Kupa ${c.year} — Şampiyon: <strong style="color:var(--gold);">${escMatch(c.champion||'—')}</strong>`
+      : `🏅 Ulusal Kupa ${c.year} — <strong>${rName}</strong>${c.byes&&c.round===0&&c.byes.includes(G.team.isim)?' (bu turda BYE geçtin)':''}`;
+    card.innerHTML=`<div class="card" style="margin-bottom:14px;">
+      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <span>${head}</span>
+        ${due?`<button type="button" class="btn-p" style="width:auto;padding:8px 18px;font-size:12px;" onclick="startCupMatch()">🏅 Kupa maçını oyna</button>`:''}
+      </div>
+      ${c.done?'':`<p style="font-size:10px;color:var(--text2);margin:4px 0 8px;">Tek eleme; kupa günleri lig turlarının arasındadır. Maçını 1 tur içinde oynamazsan otomatik simüle edilir.</p>`}
+      ${rows||'<p style="font-size:11px;color:var(--text2);">Eşleşme yok.</p>'}
+    </div>`;
+  }catch(e){ dbg('renderCupPanel',e); }
+}
 function renderLig(){
+  renderCupPanel();
   renderPlayoffPanel();
   const key=G.team&&G.team.tblKey||'tbl';
   const rows=buildLeagueRows(key);
@@ -985,6 +1021,39 @@ function renderAntrenman(){
   sel.innerHTML='<option value="">-- Oyuncu seç --</option>'+G.players.map(p=>`<option value="${p.id}">${p.isim} (${p.poz}) — Genel: ${p.genel}</option>`).join('');
 
   // Aktif antrenmanlar
+  /* Paket 3 (14. oturum): ikincil pozisyon eğitimi kartı — takım antrenmanlarının altına. */
+  try{
+    let posDiv=document.getElementById('posTrainCard');
+    if(!posDiv){
+      posDiv=document.createElement('div');
+      posDiv.id='posTrainCard';
+      document.getElementById('teamTrainingList').parentNode.appendChild(posDiv);
+    }
+    const pt=G.posTraining;
+    if(pt){
+      const p=(G.players||[]).find(x=>x.id===pt.playerId);
+      posDiv.innerHTML=`<div class="train-card" style="margin-top:8px;">
+        <div style="font-weight:700;font-size:13px;">🧭 İkincil Pozisyon Eğitimi</div>
+        <div style="font-size:12px;margin-top:6px;">${p?escMatch(p.isim):'?'} → <strong>${pt.poz}</strong> · <span style="color:var(--gold);">${pt.kalanGun} gün kaldı</span></div>
+        <div class="train-progress" style="margin-top:6px;"><div class="train-fill" style="width:${((pt.toplamGun-pt.kalanGun)/Math.max(1,pt.toplamGun)*100)}%;"></div></div>
+      </div>`;
+    } else {
+      const adaylar=(G.players||[]).filter(p=>!p.ikincilPoz);
+      const opts=adaylar.map(p=>(POS_NEIGHBORS[p.poz]||[]).map(n=>`<option value="${p.id}|${n}">${escMatch(p.isim)} (${p.poz}) → ${n}</option>`).join('')).join('');
+      posDiv.innerHTML=`<div class="train-card" style="margin-top:8px;">
+        <div style="font-weight:700;font-size:13px;">🧭 İkincil Pozisyon Eğitimi</div>
+        <div style="font-size:11px;color:var(--text2);margin:4px 0 8px;">Oyuncuya komşu bir pozisyon öğret (PG↔SG↔SF↔PF↔C) — 15 oyun günü · ${fmtn(ecoRound(500))} KR. İkincil pozisyonda hafif performans kaybıyla oynar.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <select id="posTrainSel" style="flex:1;min-width:180px;font-size:12px;padding:7px;border-radius:8px;background:var(--bg4);color:var(--text);border:1px solid var(--border);">
+            <option value="">-- Oyuncu ve hedef pozisyon seç --</option>${opts}
+          </select>
+          <button class="btn-train" onclick="startPosTrainingFromSel()">BAŞLAT</button>
+        </div>
+        ${(G.players||[]).some(p=>p.ikincilPoz)?`<div style="font-size:11px;color:var(--text2);margin-top:8px;">Eğitimli: ${(G.players||[]).filter(p=>p.ikincilPoz).map(p=>escMatch(p.isim)+' ('+p.poz+'+'+p.ikincilPoz+')').join(' · ')}</div>`:''}
+      </div>`;
+    }
+  }catch(e){ dbg('posTrainCard',e); }
+
   const activeDiv=document.getElementById('activeTrains');
   if(G.activeTrainings.length>0){
     activeDiv.innerHTML='<div style="font-size:11px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">Devam Eden Antrenmanlar</div>'+
@@ -1249,3 +1318,47 @@ function renderBilanço(){
 }
 
 // ===== MAÇ — şut haritası + kutu istatistik (anlatım ile senkron) =====
+
+// ===== Paket 2 (14. oturum): Kariyer Özeti — salt okunur onur listesi =====
+function openCareerModal(){
+  if(!G||!G.team){ showNotif('Önce takım oluştur.'); return; }
+  const yr=(G.season&&G.season.year)||1;
+  const cm=Number(G.careerMatches)||0;
+  const cw=Number(G.careerWins)||0, cl=Number(G.careerLosses)||0;
+  const wr=cm?Math.round(cw/Math.max(1,cw+cl)*100):0;
+  const achN=Object.keys(G.achievements||{}).length;
+  const rec=G.clubRecords||{};
+  const hist=Array.isArray(G.managerHistory)?G.managerHistory.slice():[];
+  hist.sort((a,b)=>(a.year||0)-(b.year||0));
+  const ligAd=(G.team.tblKey==='tbl')?'TBL (üst lig)':String(G.team.tblKey||'').toUpperCase();
+  const kutu=(ikon,lbl,val)=>`<div style="flex:1;min-width:120px;background:var(--bg3);border-radius:10px;padding:12px;text-align:center;">
+    <div style="font-size:22px;">${ikon}</div>
+    <div style="font-size:18px;font-weight:800;color:var(--accent);margin:2px 0;">${val}</div>
+    <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;">${lbl}</div></div>`;
+  const histHtml=hist.length
+    ? hist.map(h=>`<div style="display:flex;gap:10px;align-items:center;padding:7px 10px;background:var(--bg3);border-radius:8px;margin-bottom:5px;">
+        <span style="font-weight:800;color:var(--gold);min-width:64px;">Sezon ${h.year}</span>
+        <span style="font-size:12px;">🏆 ${escMatch(String(h.basari||''))}</span></div>`).join('')
+    : '<p style="font-size:12px;color:var(--text2);">Henüz kupa/şampiyonluk yok — ilk zafer seni bekliyor.</p>';
+  showAppModal(`<div class="modal-title">📜 Kariyer Özeti — ${escMatch(G.managerName||'Menajer')}</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:12px;">${escMatch(G.team.isim)} · ${ligAd} · ${yr}. sezon</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+      ${kutu('🗓️','Sezon',yr)}
+      ${kutu('🏀','Toplam maç',fmtn(cm))}
+      ${kutu('📈','G / M',cw+' / '+cl+' (%'+wr+')')}
+      ${kutu('⭐','Menajer itibarı',Number(G.managerRep)||0)}
+      ${kutu('🏆','Başarım',achN+' / '+ACHV.length)}
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:10px;margin-bottom:12px;">
+      <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Kulüp rekortmenleri</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        ${kutu('🎯','En skorer (kariyer)',rec.topScorer?escMatch(rec.topScorer.isim)+' · '+fmtn(rec.topScorer.pts)+' sayı':'—')}
+        ${kutu('🤝','En uzun süre kulüpte',rec.longest?escMatch(rec.longest.isim)+' · '+rec.longest.sezon+' sezon':'—')}
+      </div>
+      <p style="font-size:10px;color:var(--text2);margin-top:6px;">Rekorlar her sezon kapanışında güncellenir.</p>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:10px;">
+      <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Onur listesi</div>
+      <div style="max-height:220px;overflow-y:auto;">${histHtml}</div>
+    </div>`);
+}

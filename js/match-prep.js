@@ -406,6 +406,7 @@ function showSeasonAwardsModal(aw,yr){
 function endLeagueSeasonIfDone(){
   if(!G.season||!G.season.active||!seasonAllMatchesPlayed()) return false;
   G.season.active=false;
+  finishCupSeason(); /* Paket 1: kupa yarım kaldıysa kalan turları simüle et */
   unlockAchievement('sezonTamam');
   /* Paket B: kariyer başarımları — sezon kapanış anında değerlendirilir. */
   if((Number(G.season.year)||0)>=10) unlockAchievement('efsane10');
@@ -756,6 +757,14 @@ function startLeagueSeason(){
         txn('Sözleşme yenileme: '+p.isim,-imza);
         pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--gold);">✍️ <strong>${p.isim}</strong> sözleşme yeniledi — yeni maaş ${fmtn(yeniMaas)} KR/hf, imza bedeli ${fmtn(imza)} KR (${p.kontratSezon} sezon).</div>`);
       }
+      /* Paket 2 (14. oturum): sezon sıfırlanmadan kariyer toplamına ekle + kulüp rekorları. */
+      p.kariyerPts=(Number(p.kariyerPts)||0)+((p.sezon&&Number(p.sezon.pts))||0);
+      p.kariyerMac=(Number(p.kariyerMac)||0)+((p.sezon&&Number(p.sezon.mac))||0);
+      G.clubRecords=G.clubRecords||{};
+      if(!G.clubRecords.topScorer||p.kariyerPts>G.clubRecords.topScorer.pts)
+        G.clubRecords.topScorer={isim:p.isim,pts:p.kariyerPts};
+      if(!G.clubRecords.longest||(Number(p.kulupSezon)||0)+1>G.clubRecords.longest.sezon)
+        G.clubRecords.longest={isim:p.isim,sezon:(Number(p.kulupSezon)||0)+1};
       p.sezon={mac:0,pts:0,ast:0,reb:0};
       p.kulupSezon=(Number(p.kulupSezon)||0)+1; /* Paket B: kulüpte geçirilen sezon ("Ömür Boyu") */
       const y=Number(p.yas)||25;
@@ -835,6 +844,7 @@ function startLeagueSeason(){
   G.lastEcoDay=1;
   regenerateSeasonFixtures();
   syncUserRecordFromStandings();
+  startCupSeason(names); /* Paket 1 (14. oturum): ulusal kupa — lig ile paralel tek eleme */
   setPresidentTarget(); /* Faz 4.3: başkan sezon hedefi */
   applyBudgetPenaltyDecay(); /* Faz 4.3: geçen sezon hedef tutmadıysa bütçe kısıtı bu sezon işler, sonra azalır */
   updateStats();
@@ -903,3 +913,161 @@ function evaluatePresidentTarget(){
   }catch(e){ dbg('president eval',e); }
 }
 
+
+/* ═══ Paket 1 (14. oturum): ULUSAL KUPA — lig ile paralel, tek eleme yan yarışma ═══
+   Format: gruptaki 20 takım; 8 takım ön eleme (4 maç), 12 bye → son 16 → 8 → 4 → final.
+   Takvim: kupa turu k, lig turu CUP_AFTER_ROUNDS[k] tamamlanınca oynanır (lig fikstürüne
+   ve gün sayacına DOKUNMAZ). Kullanıcı maçı canlı oynanır; 2 lig turu ertelenirse ya da
+   kullanıcı elendiyse otomatik simüle edilir. Bot maçları playoffPickWinner ile anında. */
+const CUP_AFTER_ROUNDS=[4,7,10,13,16];
+const CUP_ROUND_NAMES=['Ön Eleme','Son 16','Çeyrek Final','Yarı Final','FİNAL'];
+function startCupSeason(names){
+  try{
+    if(!Array.isArray(names)||names.length!==LEAGUE_SIZE){ G.cup=null; return; }
+    /* Deterministik kura: sezon yılı + takım adı hash sırası. */
+    const yr=(G.season&&G.season.year)||1;
+    const seeded=names.slice().sort((a,b)=>hash32('kupa'+yr+'|'+a)-hash32('kupa'+yr+'|'+b));
+    const byes=seeded.slice(0,12);          /* ilk 12 → doğrudan Son 16 */
+    const prelim=seeded.slice(12);          /* 8 takım → ön eleme (4 maç) */
+    const r0=[];
+    for(let i=0;i<prelim.length;i+=2) r0.push({home:prelim[i],away:prelim[i+1],hs:0,as:0,winner:null,played:false});
+    G.cup={year:yr,round:0,rounds:[r0],byes,champion:null,done:false};
+    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--gold);">🏅 <strong>Ulusal Kupa ${yr}</strong> kuraları çekildi — ${byes.includes(G.team.isim)?'ön elemeyi BYE geçtin — Son 16 içindesin':'ön elemede oynayacaksın'}. Kupa günleri lig turları arasına serpiştirilir.</div>`);
+  }catch(e){ dbg('startCupSeason',e); G.cup=null; }
+}
+function cupUserMatch(){
+  const c=G.cup;
+  if(!c||c.done) return null;
+  const r=c.rounds[c.round]||[];
+  return r.find(m=>!m.played&&(m.home===G.team.isim||m.away===G.team.isim))||null;
+}
+/** Ligde tamamlanmış tur sayısı (kullanıcı+bot maçları oynanmış turlar). */
+function _leagueRoundsDone(){
+  try{
+    const ms=(G.season&&G.season.matches)||[];
+    let done=0;
+    for(let r=1;r<=totalRounds();r++){
+      const rm=ms.filter(m=>m.round===r);
+      if(rm.length&&rm.every(m=>m.played)) done=r; else break;
+    }
+    return done;
+  }catch(e){ return 0; }
+}
+/** Kupa turunun kaçıncısı "vadesi gelmiş" durumda? */
+function _cupDueRounds(){
+  const done=_leagueRoundsDone();
+  let n=0;
+  CUP_AFTER_ROUNDS.forEach(r=>{ if(done>=r) n++; });
+  return n;
+}
+/** Her lig maçı sonrası çağrılır: vadesi gelen kupa turlarını işletir. */
+function tickCup(){
+  try{
+    const c=G.cup;
+    if(!c||c.done||!G.season) return;
+    let guard=0;
+    while(!c.done&&c.round<_cupDueRounds()&&guard++<8){
+      const r=c.rounds[c.round];
+      const um=cupUserMatch();
+      /* Bot maçlarını anında simüle et. */
+      r.forEach(m=>{
+        if(m.played) return;
+        if(m===um){
+          /* Kullanıcının maçı: en fazla 1 tur beklet (bir sonraki kupa vadesi gelmişse
+             ya da kullanıcı eriştiğinde oynamadıysa otomatik simüle edilir). */
+          if(_cupDueRounds()-c.round>=2){ _cupSimMatch(m); }
+          return;
+        }
+        _cupSimMatch(m);
+      });
+      if(r.every(m=>m.played)) _cupAdvanceRound();
+      else break; /* kullanıcı maçı bekliyor */
+    }
+    const um2=cupUserMatch();
+    if(um2&&c.round<_cupDueRounds()&&!c._notified){
+      c._notified=true;
+      showNotif(`🏅 Kupa maçın hazır: ${um2.home} — ${um2.away} (${CUP_ROUND_NAMES[c.round]||'Tur'}). Lig ekranındaki kupa kartından oyna!`,{critical:true});
+    }
+  }catch(e){ dbg('tickCup',e); }
+}
+function _cupSimMatch(m){
+  const r=playoffPickWinner(m.home,m.away);
+  m.hs=r.hs; m.as=r.as; m.winner=r.winner; m.played=true;
+  if(m.home===G.team.isim||m.away===G.team.isim){
+    const won=m.winner===G.team.isim;
+    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid ${won?'var(--green)':'var(--red)'};">🏅 Kupa (oynanmadı, simüle): <strong>${m.home}</strong> ${m.hs}-${m.as} <strong>${m.away}</strong>${won?'':' — kupadan elendin.'}</div>`);
+  }
+}
+function _cupAdvanceRound(){
+  const c=G.cup;
+  const r=c.rounds[c.round];
+  let winners=r.map(m=>m.winner);
+  if(c.round===0) winners=c.byes.concat(winners);   /* Son 16 = 12 bye + 4 ön eleme kazananı */
+  if(winners.length<=1){
+    c.champion=winners[0]||null; c.done=true;
+    c._notified=false;
+    _cupCrown();
+    return;
+  }
+  /* Deterministik eşleme karıştırması (yıl+tur hash). */
+  const yr=c.year,rd=c.round+1;
+  winners.sort((a,b)=>hash32('kupaR'+yr+'_'+rd+'|'+a)-hash32('kupaR'+yr+'_'+rd+'|'+b));
+  const next=[];
+  for(let i=0;i<winners.length;i+=2) next.push({home:winners[i],away:winners[i+1],hs:0,as:0,winner:null,played:false});
+  c.rounds.push(next);
+  c.round++;
+  c._notified=false;
+}
+function _cupCrown(){
+  const c=G.cup;
+  if(!c||!c.champion) return;
+  /* Kupa tarihçesi (Kariyer Özeti + izlenebilirlik). */
+  G.cupHistory=Array.isArray(G.cupHistory)?G.cupHistory:[];
+  G.cupHistory.push({year:c.year,champion:c.champion});
+  if(G.cupHistory.length>60) G.cupHistory.shift();
+  const userWon=c.champion===G.team.isim;
+  pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--gold);">🏅 <strong>Ulusal Kupa ${c.year} şampiyonu: ${escMatch(c.champion)}</strong>${userWon?' — KUPA SENİN! 🎉':''}</div>`);
+  if(userWon){
+    const odul=ecoRound(3200);   /* lig şampiyonluğundan düşük, ekonomi bandını bozmaz */
+    txn('Kupa şampiyonluk ödülü',odul);
+    unlockAchievement('kupaSampiyon');
+    G.managerRep=(Number(G.managerRep)||0)+3;
+    G.managerHistory=Array.isArray(G.managerHistory)?G.managerHistory:[];
+    G.managerHistory.push({year:c.year,basari:'Ulusal Kupa şampiyonluğu'});
+    awardCoaches('Kupa şampiyonluğu',3);
+    showNotif(`🏅 ULUSAL KUPA ŞAMPİYONU! +${fmtn(odul)} KR ödül.`,{critical:true});
+  }
+}
+/** Sezon kapanırken kupa hâlâ bitmemişse kalanını komple simüle et. */
+function finishCupSeason(){
+  try{
+    const c=G.cup;
+    if(!c||c.done) return;
+    let guard=0;
+    while(!c.done&&guard++<8){
+      const r=c.rounds[c.round];
+      r.forEach(m=>{ if(!m.played) _cupSimMatch(m); });
+      _cupAdvanceRound();
+    }
+  }catch(e){ dbg('finishCup',e); }
+}
+/** Kullanıcının kupa maçı sonucunu işle (canlı maçtan — applyMatchResult çağırır). */
+function recordUserCupResult(uPts,oPts,rakipName,userIsHome){
+  const c=G.cup;
+  if(!c||c.done) return;
+  const m=cupUserMatch();
+  if(!m) return;
+  const uName=G.team.isim;
+  const uIsHomeInTie=(m.home===uName);
+  m.hs=uIsHomeInTie?uPts:oPts;
+  m.as=uIsHomeInTie?oPts:uPts;
+  /* Kupa beraberliği olmaz — canlı motor uzatmayla çözer; yine de emniyet. */
+  if(m.hs===m.as){ if(uPts>=oPts) m.hs++; else m.as++; }
+  m.winner=m.hs>m.as?m.home:m.away;
+  m.played=true;
+  const won=m.winner===uName;
+  pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid ${won?'var(--green)':'var(--red)'};">🏅 Kupa (${CUP_ROUND_NAMES[c.round]||'Tur'}): <strong>${m.home}</strong> ${m.hs}-${m.as} <strong>${m.away}</strong>${won?' — tur atladın!':' — kupadan elendin.'}</div>`);
+  const r=c.rounds[c.round];
+  if(r.every(x=>x.played)) _cupAdvanceRound();
+  tickCup();
+}

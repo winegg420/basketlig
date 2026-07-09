@@ -128,6 +128,12 @@ async function runViewport(browser, base, vp) {
      Amaç: bu ekranların hiçbirinde konsol hatası olmaması + görsel kayıt. Sıra önemli:
      draft en sonda (finalize yeni sezon başlatır). ── */
 
+  // 6b) Kariyer Özeti (Paket 2 — salt okunur onur listesi)
+  await page.evaluate(() => { try { openCareerModal(); } catch (e) {} });
+  await sleep(400);
+  await snap('kariyer-ozeti');
+  await page.evaluate(() => { try { closeAppModal(); } catch (e) {} });
+
   // 7) Transfer pazarlığı — kulüpten oyuncu alma teklif modalı
   await page.evaluate(() => {
     try {
@@ -168,6 +174,13 @@ async function runViewport(browser, base, vp) {
   await sleep(400);
   await snap('sezon-odulleri');
   await page.evaluate(() => { try { closeAppModal(); } catch (e) {} });
+
+  // 10b) Ulusal Kupa kartı (Paket 1 — lig ekranındaki bracket)
+  await page.evaluate(() => {
+    try { showPage('lig', document.querySelector('#sbNav button[data-page="lig"]')); renderLig(); } catch (e) {}
+  });
+  await sleep(400);
+  await snap('kupa-karti');
 
   // 11) Playoff serisi — bracket kur, lig ekranında seri paneli
   await page.evaluate(() => {

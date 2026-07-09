@@ -38,6 +38,17 @@ function startPlayoffMatch(){
   const userIsHome=m.home===G.team.isim;
   startMatch({opp,userIsHome,matchup:m});
 }
+/* Paket 1 (14. oturum): kullanıcının vadesi gelen kupa maçını canlı başlat. */
+function startCupMatch(){
+  const m=(typeof cupUserMatch==='function')?cupUserMatch():null;
+  if(!m){ showNotif('Oynanacak kupa maçın yok.'); return; }
+  if(G.cup.round>=_cupDueRounds()){ showNotif('Kupa maçının vakti gelmedi — önce sıradaki lig turunu tamamla.'); return; }
+  const userIsHome=m.home===G.team.isim;
+  const opp=userIsHome?m.away:m.home;
+  gotoMacPage();
+  startMatch({cup:true,opp,userIsHome});
+  setTimeout(()=>scrollToMacLive(),90);
+}
 function startMatch(playoff){
   if(mState.running) return;
   if(!G.team){ showNotif('Önce takım oluştur.'); return; }
@@ -45,8 +56,9 @@ function startMatch(playoff){
   const _smBtn=document.getElementById('startMatchBtn');
   if(_smBtn){ _smBtn.textContent='▶ Maçı Başlat'; _smBtn.removeAttribute('title'); }
   const isPlayoff=!!(playoff&&playoff.matchup);
+  const isCup=!!(playoff&&playoff.cup);   /* Paket 1: kupa modu — startCupMatch() geçirir */
   let match=null,rakip,userIsHome;
-  if(isPlayoff){
+  if(isPlayoff||isCup){
     rakip={isim:playoff.opp};
     userIsHome=!!playoff.userIsHome;
   } else {
@@ -57,13 +69,17 @@ function startMatch(playoff){
     userIsHome=match.home===G.team.isim;
   }
   /* C1: Maç imzası — durdurma/yenileme sonrası aynı maçı tanımak için. */
-  const sig=isPlayoff
+  const sig=isCup
+    ? ('kupa|'+((G.cup&&G.cup.year)||0)+'|r'+((G.cup&&G.cup.round)||0))
+    : isPlayoff
     ? ('po|'+((G.playoff&&G.playoff.round)||0)+'|'+playoff.matchup.home+'|'+playoff.matchup.away+'|g'+(playoff.matchup.gameNo||1))
     : ('lig|'+match.seasonMatchIx);
   /* C1: Bu maç daha önce başlatılıp sonucu kilitlenmişse (kaybederken durdurup çıkma / sayfa
      yenileme) YENİDEN ÜRETME — aynı kilitli sonucu uygula. Sonucu silip yeniden oynama açığı kapanır. */
   if(G.pendingMatch && G.pendingMatch.sig===sig && G.pendingMatch.ev){
-    const ctx=isPlayoff
+    const ctx=isCup
+      ? {seasonMatchIx:-1,isPlayoff:false,isCup:true,playoffMatch:null,rakipName:rakip.isim,userIsHome}
+      : isPlayoff
       ? {seasonMatchIx:-1,isPlayoff:true,playoffMatch:userPlayoffMatch(),rakipName:rakip.isim,userIsHome}
       : {seasonMatchIx:match.seasonMatchIx,isPlayoff:false,playoffMatch:null,rakipName:rakip.isim,userIsHome};
     showNotif('Bu maç zaten oynanmıştı — sonucu kilitliydi, aynı sonuç uygulandı.',{critical:true});
@@ -72,10 +88,10 @@ function startMatch(playoff){
   }
   const lu=matchLineup();
   if(!lu||lu.avail.length<5){ showNotif('Maça en az 5 sağlıklı oyuncu gerekli (sakatlar sahaya çıkmaz).'); return; }
-  if(isPlayoff){ recoverStaminaBetweenMatchdays((G.gameDay||1)-3,G.gameDay||1); }
+  if(isPlayoff||isCup){ recoverStaminaBetweenMatchdays((G.gameDay||1)-3,G.gameDay||1); }
   else { recoverStaminaBetweenMatchdays(G.season._lastRecoveryDay||0, match.day); G.season._lastRecoveryDay=match.day; }
   const events=generateMatchEvents(rakip,{userIsHome});
-  mState={running:true,events,idx:0,score:[0,0],quarter:1,time:MATCH_CLOCK_SEC,allShots:[],shotFilter:'live',_ballXY:[470,250],rakipName:rakip.isim,seasonMatchIx:isPlayoff?-1:match.seasonMatchIx,seasonRound:isPlayoff?0:match.round,userIsHome,isPlayoff,playoffMatch:isPlayoff?playoff.matchup:null,
+  mState={running:true,events,idx:0,score:[0,0],quarter:1,time:MATCH_CLOCK_SEC,allShots:[],shotFilter:'live',_ballXY:[470,250],rakipName:rakip.isim,seasonMatchIx:(isPlayoff||isCup)?-1:match.seasonMatchIx,seasonRound:(isPlayoff||isCup)?0:match.round,userIsHome,isPlayoff,isCup,playoffMatch:isPlayoff?playoff.matchup:null,
     manualCoach:false,spId:null,
     userCourtIds:(lu.onCourt||[]).map(p=>p.id),
     benchIds:(lu.bench||[]).map(p=>p.id),
@@ -124,11 +140,8 @@ function startMatch(playoff){
     const ev=mState.events[mState.idx];
     mState.idx++;
 
-    if(ev.home!==undefined){
-      mState.score=[ev.home,ev.away];
-      document.getElementById('liveScoreHome').textContent=ev.home;
-      document.getElementById('liveScoreAway').textContent=ev.away;
-    }
+    /* İç durum HEMEN güncellenir (duraklatma/kilit güvenliği için). */
+    if(ev.home!==undefined) mState.score=[ev.home,ev.away];
     if(ev.q){
       const qChanged=mState.quarter!==ev.q;
       mState.quarter=ev.q;
@@ -141,31 +154,37 @@ function startMatch(playoff){
       const ds=ev.t%60;
       document.getElementById('liveTime').textContent=`${dm}:${ds.toString().padStart(2,'0')}`;
     }
-    if(ev.box){
-      renderBoxScore(ev.box.h,ev.box.a,G.team.isim,mState.rakipName);
-    }
-    if(ev.qh&&ev.qa){
-      updateQuarterBoard(ev.qh,ev.qa,ev.home||0,ev.away||0);
-    }
+    /* SENKRON: skor tabelası + kutu skor + çeyrek panosu + ANLATIM tek pakette basılır.
+       Şutlu olaylarda bu paket topun ÇEMBERE VARDIĞI ana ertelenir — anlatım sahada
+       olan biteni önceden "ispiyonlamaz"; şutsuz olaylarda anında basılır. */
+    const paint=()=>{
+      if(ev.home!==undefined){
+        document.getElementById('liveScoreHome').textContent=ev.home;
+        document.getElementById('liveScoreAway').textContent=ev.away;
+      }
+      if(ev.box) renderBoxScore(ev.box.h,ev.box.a,G.team.isim,mState.rakipName);
+      if(ev.qh&&ev.qa) updateQuarterBoard(ev.qh,ev.qa,ev.home||0,ev.away||0);
+      addComment(ev.text,ev.type);
+    };
     /* Önce oyuncuları yerleştir (top bu GERÇEK konumlara paslanacak), sonra topu canlandır. */
     movePlayersForEvent(ev);
     if(ev.shot){
       const sh={...ev.shot};
       mState.allShots.push(sh);
       /* Gerçekçi hücum: top getirilir, paslaşılır, şutöre gelir.
-         İz top elden çıkarken; ses top çembere varınca (file sesi) çalar. */
+         İz top elden çıkarken; SKOR+ANLATIM+ses top çembere varınca (tam senkron). */
       animateShotPossession(sh,
         ()=>{ if(shotPassesFilter(sh)) drawShotMark(sh); },
-        ()=>{ if(sh.made) sfx('score'); });
+        ()=>{ paint(); if(sh.made) sfx('score'); });
+    } else {
+      if(ev.shots){
+        ev.shots.forEach(sh=>{
+          mState.allShots.push(sh);
+          if(shotPassesFilter(sh)) drawShotMark(sh);
+        });
+      }
+      paint();
     }
-    if(ev.shots){
-      ev.shots.forEach(sh=>{
-        mState.allShots.push(sh);
-        if(shotPassesFilter(sh)) drawShotMark(sh);
-      });
-    }
-
-    addComment(ev.text,ev.type);
     /* Saha-şutunun sesi top potaya varınca çalar (yukarıda); serbest atış vb. anında. */
     if((ev.type==='score3'||ev.type==='score2')&&!ev.shot) sfx('score');
     if(ev.type==='free') sfx('score');
@@ -206,12 +225,13 @@ function startMatch(playoff){
       document.getElementById('liveStatus').style.color='#4ade80';
       document.getElementById('liveBadge').style.display='none';
       const _mle=document.getElementById('macLiveAnchor'); if(_mle) _mle.classList.remove('live-on');
-      applyMatchResult(ev,{seasonMatchIx:mState.seasonMatchIx,isPlayoff:mState.isPlayoff,playoffMatch:mState.playoffMatch,rakipName:mState.rakipName,userIsHome:mState.userIsHome});
+      applyMatchResult(ev,{seasonMatchIx:mState.seasonMatchIx,isPlayoff:mState.isPlayoff,isCup:mState.isCup,playoffMatch:mState.playoffMatch,rakipName:mState.rakipName,userIsHome:mState.userIsHome});
       return;
     }
     /* Şutlu hücumlar top ayak-ayak aktığı için daha uzun sürer (anlatımla senkron);
        şutsuz olaylar (ribaund, top kaybı, mola) daha kısa geçer. */
-    const delay=ev.shot?2500:(ev.type==='free'?1700:(ev.type==='quarter_start'||ev.type==='quarter_end'||ev.type==='tactic'?1500:1200));
+    /* Şutlu hücum ~2.9 sn'de çözülür (gerçekçi koşu hızları) — olay 3.1 sn'de değişir. */
+    const delay=ev.shot?3100:(ev.type==='free'?1700:(ev.type==='quarter_start'||ev.type==='quarter_end'||ev.type==='tactic'?1500:1300));
     matchEventTimer=setTimeout(matchStep,delay);
   }
   mState.step=matchStep;
@@ -478,8 +498,41 @@ function afterTrainingComplete(){
 }
 
 /** Antrenmanlar gerçek oyun günleriyle işler: maçlar oynandıkça günler ilerler, süre dolunca etki uygulanır. */
+/* Paket 3 (14. oturum): komşu pozisyon eşlemesi — çapraz atlama yok. */
+const POS_NEIGHBORS={PG:['SG'],SG:['PG','SF'],SF:['SG','PF'],PF:['SF','C'],C:['PF']};
+function startPosTrainingFromSel(){
+  const el=document.getElementById('posTrainSel');
+  const v=el?el.value:'';
+  if(!v){ showNotif('Önce oyuncu/pozisyon seç.'); return; }
+  const a=v.split('|');
+  startPosTraining(a[0],a[1]);
+}
+function startPosTraining(pid,poz){
+  const p=(G.players||[]).find(x=>x.id===pid);
+  if(!p){ showNotif('Oyuncu bulunamadı.'); return; }
+  if(G.posTraining){ showNotif('Zaten bir pozisyon eğitimi sürüyor — önce o bitsin.'); return; }
+  if(p.ikincilPoz===poz){ showNotif('Bu oyuncu o pozisyonu zaten biliyor.'); return; }
+  if(!(POS_NEIGHBORS[p.poz]||[]).includes(poz)){ showNotif('Sadece komşu pozisyon öğrenilebilir.'); return; }
+  const bedel=ecoRound(500);
+  if(G.coins<bedel){ showNotif('❌ Yeterli KR yok! ('+fmtn(bedel)+' KR gerekli)'); return; }
+  txn('Pozisyon eğitimi: '+p.isim+' → '+poz,-bedel);
+  G.posTraining={playerId:pid,poz,kalanGun:15,toplamGun:15};
+  showNotif(`🧭 ${p.isim} ikincil pozisyon çalışıyor: ${poz} — 15 oyun günü sürecek.`);
+  renderAntrenman(); scheduleGameSave();
+}
 function advanceTrainingDays(days){
   const d=Math.max(0,Math.round(Number(days)||0));
+  /* Paket 3: pozisyon eğitimi ilerlemesi (takım antrenmanlarından bağımsız). */
+  if(d&&G.posTraining){
+    G.posTraining.kalanGun=Math.max(0,(Number(G.posTraining.kalanGun)||0)-d);
+    if(G.posTraining.kalanGun<=0){
+      const p=(G.players||[]).find(x=>x.id===G.posTraining.playerId);
+      if(p){ p.ikincilPoz=G.posTraining.poz; showNotif(`🧭 ${p.isim} artık ikincil pozisyonda oynayabilir: ${p.poz} + ${p.ikincilPoz}!`,{critical:true}); }
+      G.posTraining=null;
+      try{ renderAntrenman(); }catch(e){}
+      scheduleGameSave();
+    }
+  }
   if(!d||!Array.isArray(G.activeTrainings)||!G.activeTrainings.length) return;
   const biten=[];
   G.activeTrainings.forEach(t=>{

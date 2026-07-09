@@ -62,13 +62,16 @@ const _PL_MAXV=320;          /* px/sn — hız stat'ı yoksa yedek koşu hızı 
 const _PL_ACC=8.5;           /* hedefe yaklaşma sertliği */
 const _PL_R=25;              /* çarpışma yarıçapı */
 
-/* Oyuncunun gerçek koşu hızı: `hiz` stat'ı (0-99) → 260-400 px/sn bandı; düşük enerji
-   %13'e kadar yavaşlatır. Sprint (şutöre/ribaunda/topa yetişme) bunun 1.55 katı. */
+/* Oyuncunun gerçek koşu hızı — GERÇEK ÖLÇEK: saha 940px = 28m (1px ≈ 0.03m).
+   `hiz` stat'ı (0-99) → 130-210 px/sn ≈ 3.9-6.3 m/sn (normal koşu); sprint ×1.5 →
+   maks ~9.4 m/sn (insan üst sınırı). Eski değerler (260-400, sprint 620) 8-19 m/sn'ye
+   denk geliyordu — oyuncular sahada ışınlanır gibi görünüyordu. Düşük enerji %13'e
+   kadar yavaşlatır. */
 function _tokBaseV(pl){
   const hiz=(pl&&pl.hiz!=null)?Number(pl.hiz):60;
   const en=(pl&&pl.enerji!=null)?Number(pl.enerji):100;
   const fat=1-0.13*Math.max(0,Math.min(1,(100-en)/100));
-  return (260+Math.max(0,Math.min(99,hiz))/99*140)*fat;
+  return (130+Math.max(0,Math.min(99,hiz))/99*80)*fat;
 }
 
 function _tokShort(name){ const a=String(name||'').trim().split(/\s+/); return a[a.length-1]||String(name||''); }
@@ -130,7 +133,7 @@ function initMatchPlayers(lu,rakip,oppPlayers){
     const as=[[512,250],[540,150],[540,350],[588,196],[588,308]];
     const mkP=(g,x,y,team,slot,pl)=>{
       const bv=_tokBaseV(pl);
-      return {g,x,y,vx:0,vy:0,tx:x,ty:y,team,slot,pl:pl||null,baseV:bv,sprintV:bv*1.55,maxV:bv,ph:Math.random()*6.283,side:Math.random()<0.5?-1:1};
+      return {g,x,y,vx:0,vy:0,tx:x,ty:y,team,slot,pl:pl||null,baseV:bv,sprintV:bv*1.5,maxV:bv,ph:Math.random()*6.283,side:Math.random()<0.5?-1:1};
     };
 
     const home=[],away=[];
@@ -242,7 +245,8 @@ function _ballPass(to,dur){
   const b=_ball(); if(!to) return;
   const d=Math.hypot(to.x-b.x,to.y-b.y);
   b.mode='pass'; b.carrier=null; b.from=[b.x,b.y]; b.target=to;
-  b.t=0; b.dur=dur||Math.max(0.20,Math.min(0.42,d/620)); b.arc=8+d*0.045;
+  /* Pas hızı ~16 m/sn (520 px/sn); uzun paslar 0.9 sn'ye kadar havada kalır. */
+  b.t=0; b.dur=dur||Math.max(0.25,Math.min(0.90,d/520)); b.arc=8+d*0.045;
 }
 function _ballShoot(to,dur,made,onDone){
   const b=_ball();
@@ -370,9 +374,10 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot){
   const B=base.map(p=>offLeft?p:_mir(p));
   let shooter=null;
   if(shot){
-    /* şut noktasına en yakın slotu şutör yap — dizilim şuta göre kurulur */
+    /* Şutör = şut noktasına O AN en yakın hücumcu (şablon slotu değil) — gerçekçi
+       koşu hızlarında (130-315 px/sn) noktaya zamanında varması için en kısa yol. */
     let bi=0,bd=1e9;
-    B.forEach((p,i)=>{ const d=Math.hypot(p[0]-shot.x,p[1]-shot.y); if(d<bd){bd=d;bi=i;} });
+    offPlayers.forEach((p,i)=>{ const d=Math.hypot(p.x-shot.x,p.y-shot.y); if(d<bd){bd=d;bi=i;} });
     shooter=offPlayers[bi];
     B[bi]=[shot.x,shot.y];
   }
@@ -611,30 +616,32 @@ function animateShotPossession(sh,onShoot,onResult){
     const d0=Math.hypot(b.x-pg.x,b.y-pg.y);
     if(d0>55) _ballPass(pg,Math.min(0.46,0.16+d0/900)); else _ballHold(pg);
 
+    /* Zamanlama gerçekçi koşu hızlarına göre (oyuncular 130-315 px/sn): hücum ~2.9 sn'de
+       kurulur, şut ~2.3 sn'de çıkar (olay gecikmesi 3100 ms — bkz. matchStep delay). */
     let steps;
     if(fastBreak){
       /* Herkes sprintle öne — top uzun havadan pasla direkt şutöre fırlar. */
       offP.forEach(p=>{ p.maxV=p.sprintV; });
       steps=[
-        {at:0.30,fn:()=>_ballPass(shooter,0.50)},
-        {at:1.00,fn:fire}
+        {at:0.35,fn:()=>_ballPass(shooter,0.55)},
+        {at:1.30,fn:fire}
       ];
     } else if(iso){
       /* Diğer hücumcular kenara çekilip alan açar; top tek pasla yıldıza. */
       offP.forEach(p=>{ if(p!==shooter&&p!==pg) p.ty+=(p.ty<250?-26:26); });
       steps=[
-        {at:0.70,fn:()=>_ballPass(shooter,0.30)},
-        {at:1.40,fn:fire}
+        {at:0.90,fn:()=>_ballPass(shooter,0.32)},
+        {at:1.90,fn:fire}
       ];
     } else {
       steps=[
-        {at:0.80,fn:()=>_ballPass(mid,0.26)},        /* topu getirdi, ilk pas */
-        {at:1.24,fn:()=>_ballPass(shooter,0.28)},    /* şutöre son pas */
-        {at:1.72,fn:fire}
+        {at:1.00,fn:()=>_ballPass(mid,0.30)},        /* topu getirdi, ilk pas */
+        {at:1.60,fn:()=>_ballPass(shooter,0.32)},    /* şutöre son pas */
+        {at:2.30,fn:fire}
       ];
     }
     _script(steps);
-    return 2300;
+    return 2900;
   }catch(e){ return 0; }
 }
 
@@ -883,6 +890,16 @@ function generateMatchEvents(rakip, opts){
   /* ── Madde 2/3/4: kullanıcı şutörünün kendi statı + enerjisi + moral/kimya isabeti belirler ──
      Takım gücü (uMul) ikincil çarpan olarak kalır; genel skor bandı (~85-95) korunur. */
   const teamChem=Math.max(0,Math.min(100,Number(G.chemistry!=null?G.chemistry:75)));
+  /* Paket 3 (14. oturum): pozisyon uyumu — oynadığı yuva doğal pozuysa tam performans,
+     eğitimli İKİNCİL pozuysa küçük ceza (-%4), yabancı pozdaysa belirgin ceza (-%10).
+     matchLineup önce doğal poza atadığından normal kadrolarda çarpan hep 1'dir (davranış değişmez). */
+  const _playedPoz={};
+  [['PG',pg],['SG',sg],['SF',sf],['PF',pf],['C',c]].forEach(([poz,p])=>{ if(p&&p.id) _playedPoz[p.id]=poz; });
+  const pozFitMul=(p)=>{
+    const played=p&&_playedPoz[p.id];
+    if(!played||played===p.poz) return 1;
+    return (p.ikincilPoz===played)?0.96:0.90;
+  };
   const shooterAcc=(shooter,is3,base,clutch)=>{
     const s2=statN(shooter,'hucum')*0.5+statN(shooter,'sutIsabeti')*0.5;
     const s3=statN(shooter,'sutIsabeti')*0.7+statN(shooter,'hucum')*0.3;
@@ -895,7 +912,7 @@ function generateMatchEvents(rakip, opts){
     /* Madde 36: kritik anlarda (son 2 dk / uzatma) zekâsı yüksek oyuncu daha iyi karar verir. */
     let clutchMul=1;
     if(clutch){ clutchMul=Math.max(0.94,Math.min(1.08,1+(statN(shooter,'zeka')-70)/100*0.10)); }
-    return base*skillMul*enMul*psyMul*clutchMul*uMul;
+    return base*skillMul*enMul*psyMul*clutchMul*uMul*pozFitMul(shooter);
   };
   const ftMake=(shooter)=>{
     const sb=statN(shooter,'serbest');
@@ -1326,6 +1343,7 @@ function applyMatchResult(ev,ctx){
     regenerateSeasonFixtures();
     syncUserRecordFromStandings();
     if(typeof recordMatchAnalytics==='function') recordMatchAnalytics(sm,uPts,oPts); /* Faz 5.2: analiz verisi */
+    if(typeof tickCup==='function') tickCup(); /* Paket 1: vadesi gelen kupa turlarını işlet */
     if(ctx.userIsHome){
       const bilet=homeTicketIncome();
       txn('Bilet geliri',bilet);
@@ -1378,11 +1396,26 @@ function applyMatchResult(ev,ctx){
       : `seri ${uSeriesW}-${oSeriesW}`;
     pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid ${uPts>oPts?'var(--green)':'var(--red)'};">🏆 Playoff (${playoffRoundLabel(0,total)}) ${gd.gameNo}. maç: <strong>${G.team.isim}</strong> ${uPts}-${oPts} <strong>${ctx.rakipName}</strong> — ${seriesTxt}</div>`);
     maybeAdvancePlayoff();
+  } else if(ctx.isCup){
+    /* Paket 1 (14. oturum): ULUSAL KUPA maçı — sonuç kupa ağacına işlenir. Yorgunluk,
+       istatistik ve sakatlık normal işler; lig günü/ekonomi haftası İLERLEMEZ (kupa,
+       lig takvimine sıkıştırılmış ekstra maçtır). Küçük maç günü geliri aşağıdaki
+       ortak ödül bloğundan gelir. */
+    const playedSet=new Set(ev.lineupIds||[]);
+    (ev.subIds||[]).forEach(id=>playedSet.add(id));
+    updateChronicFatigue(playedSet);
+    applyMatchFatigueToRoster(playedSet.size?playedSet:undefined);
+    mergeMatchPlayerStats(ev);
+    clearResolvedInjuries();
+    rollInjuriesAfterUserMatch();
+    if(ctx.userIsHome){
+      const bilet=Math.round(homeTicketIncome()*0.6); /* kupa gecesi: daha düşük doluluk */
+      txn('Kupa maçı bilet geliri',bilet);
+    }
+    if(typeof recordUserCupResult==='function') recordUserCupResult(uPts,oPts,ctx.rakipName,ctx.userIsHome);
   } else {
-    /* C3: Erişilmez dal — startMatch sezon ya da playoff şart koşar; buraya düşen bir maç
-       fikstür/seri dışıdır ve tabloya işlenemez. Eski kod burada G.wins/G.points'i elle
-       artırıyordu (standings'e yansımayan "hayalet" kayıt, sonraki senkronda eziliyordu);
-       artık yalnız teşhis logu bırakılır — ödül/moral akışı (aşağıda) yine çalışır. */
+    /* C3: Erişilmez dal — startMatch sezon/playoff/kupa şart koşar; buraya düşen bir maç
+       bağlamsızdır ve tabloya işlenemez. Yalnız teşhis logu. */
     dbg('applyMatchResult','fikstür dışı maç sonucu (sezon pasif / bağlam yok): '+(ev.winner||'?'));
   }
   if(ev.winner==='home'){
@@ -1408,8 +1441,10 @@ function applyMatchResult(ev,ctx){
     const d=ev.winner==='home'?rand(2,8):ev.winner==='away'?rand(-8,-2):0;
     p.mood=Math.min(100,Math.max(0,p.mood+d));
   });
-  /* Paket B: kariyer maç sayacı ("Yüz Maç Kulübü"). */
+  /* Paket B: kariyer maç sayacı ("Yüz Maç Kulübü") + kariyer G/M (Kariyer Özeti). */
   G.careerMatches=(Number(G.careerMatches)||0)+1;
+  if(ev.winner==='home') G.careerWins=(Number(G.careerWins)||0)+1;
+  else if(ev.winner==='away') G.careerLosses=(Number(G.careerLosses)||0)+1;
   if(G.careerMatches>=100) unlockAchievement('yuzMac');
   const lead=teamLeadership();
   const chemNudge=lead>=85?3:lead>=75?2:lead>=65?1:0;
