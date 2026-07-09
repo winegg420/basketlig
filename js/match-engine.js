@@ -1331,7 +1331,8 @@ function applyMatchResult(ev,ctx){
       txn('Bilet geliri',bilet);
       pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">🎟️ Ev maçı bilet geliri: <strong>+${fmtn(bilet)} KR</strong> (${fmtn(G.arena.kap)} kapasite)</div>`);
     } else {
-      const seyahat=ecoRound(rand(300,700));
+      /* Paket A: seyahat da sezonla pahalanır (gider enflasyonu). */
+      const seyahat=Math.round(ecoRound(rand(300,700))*ecoInflationMul());
       txn('Deplasman seyahat masrafı',-seyahat);
       pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">✈️ Deplasman seyahat masrafı: <strong>-${fmtn(seyahat)} KR</strong></div>`);
     }
@@ -1385,7 +1386,9 @@ function applyMatchResult(ev,ctx){
     dbg('applyMatchResult','fikstür dışı maç sonucu (sezon pasif / bağlam yok): '+(ev.winner||'?'));
   }
   if(ev.winner==='home'){
-    const priz=ecoRound(rand(1500,3500));
+    /* Paket A: ödül bandı kırpıldı (1500-3500→1000-2400) — galibiyet geliri tek başına
+       tüm kulüp giderlerini ezmesin, uzun vadede kasa otomatik şişmesin (20 sezon ölçümüyle ayarlandı). */
+    const priz=ecoRound(rand(1000,2400));
     txn('Maç ödülü (galibiyet)',priz);
     sfx('win');
     G.winStreak=(Number(G.winStreak)||0)+1;
@@ -1394,7 +1397,7 @@ function applyMatchResult(ev,ctx){
   }
   else if(ev.winner==='away'){
     G.winStreak=0;
-    const cons=ecoRound(rand(400,900));
+    const cons=ecoRound(rand(320,720)); /* Paket A: %20 kırpma (400-900→320-720) */
     txn('Maç günü geliri',cons);
     sfx('lose');
     showNotif(`😔 Mağlup — +${fmtn(cons)} KR maç günü geliri.`);
@@ -1405,6 +1408,9 @@ function applyMatchResult(ev,ctx){
     const d=ev.winner==='home'?rand(2,8):ev.winner==='away'?rand(-8,-2):0;
     p.mood=Math.min(100,Math.max(0,p.mood+d));
   });
+  /* Paket B: kariyer maç sayacı ("Yüz Maç Kulübü"). */
+  G.careerMatches=(Number(G.careerMatches)||0)+1;
+  if(G.careerMatches>=100) unlockAchievement('yuzMac');
   const lead=teamLeadership();
   const chemNudge=lead>=85?3:lead>=75?2:lead>=65?1:0;
   if(chemNudge) G.chemistry=Math.min(100,G.chemistry+chemNudge);

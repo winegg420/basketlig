@@ -336,7 +336,7 @@ function serializeGameState(){
   return{
     v:5,
     savedAt:new Date().toISOString(),
-    coins:G.coins,wins:G.wins,losses:G.losses,points:G.points,chemistry:G.chemistry,winStreak:G.winStreak||0,
+    coins:G.coins,wins:G.wins,losses:G.losses,points:G.points,chemistry:G.chemistry,winStreak:G.winStreak||0,careerMatches:G.careerMatches||0,
     team:G.team,
     players:G.players,youth:G.youth,marketPlayers:G.marketPlayers,
     clubTransferPlayers:G.clubTransferPlayers||[],_ctSeq:G._ctSeq||0,
@@ -467,6 +467,7 @@ function applyGameState(d){
   if((d.v|0)<5) migrateEconomyV4ToV5(d);
   G.coins=d.coins??START_KR;
   G.wins=d.wins??0;
+  G.careerMatches=Number(d.careerMatches)||0; /* Paket B: kariyer maç sayacı */
   G.losses=d.losses??0;
   G.points=d.points??0;
   G.chemistry=d.chemistry??75;

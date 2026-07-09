@@ -6,6 +6,7 @@ function txn(label,amount){
   G.ledger.unshift({d:G.gameDay||1,l:String(label),a});
   if(G.ledger.length>220) G.ledger.length=220;
   if(G.coins>=100000) unlockAchievement('zengin');
+  if(G.coins>=1000000) unlockAchievement('milyoner');
   try{ updateCoins(); }catch(e){}
 }
 
@@ -50,7 +51,8 @@ function weeklyWageBill(){
   const oy=(G.players||[]).reduce((s,p)=>s+(Number(p.maas)||0),0);
   const ko=(G.coaches||[]).reduce((s,c)=>s+(Number(c.maas)||0),0);
   const iz=(G.scouts||[]).reduce((s,c)=>s+(Number(c.maas)||0),0); /* Faz 5.1: izci maaşları */
-  const ar=(G.arena&&Number(G.arena.bk))||0;
+  /* Paket A: arena bakımı sezonla pahalanır (yaşlanma + genel gider enflasyonu). */
+  const ar=Math.round(((G.arena&&Number(G.arena.bk))||0)*ecoInflationMul());
   return {oy,ko,iz,ar,top:oy+ko+iz+ar};
 }
 /* Faz 5.1: Her ekonomi haftası izciler atandıkları havuzda potansiyel keşfeder (kalite = keşif adedi). */
@@ -206,6 +208,7 @@ function forcedPlayerSale(){
 function processBankruptcy(){
   if(G.coins<0){
     G.bankruptWeeks=(Number(G.bankruptWeeks)||0)+1;
+    if(G.season) G.season.hadCrisis=true; /* Paket B: "Küllerinden" — bu sezon kriz görüldü */
     if(G.bankruptWeeks===1){
       showNotif('⚠️ Kulüp mali sıkıntıda — maaşlar tam ödenemiyor. Federasyon/başkan devreye giriyor. Toparlanmazsan zorunlu oyuncu satışı başlar.',{critical:true});
       pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">🏦 <strong>Mali uyarı:</strong> Kasa negatif (${fmtn(G.coins)} KR). Bir hafta içinde toparlanmazsa başkan zorunlu satışa başlayacak.</div>`);
@@ -246,5 +249,15 @@ const ACHV=[
   {id:'playoffSampiyon',ad:'Playoff Kralı',desc:'Playoff şampiyonu ol',ikon:'👑'},
   {id:'seri10',ad:'Yenilmezler',desc:'Üst üste 10 galibiyet serisi yakala',ikon:'🔥'},
   {id:'mvpOyuncu',ad:'Yıldız Doğuyor',desc:'Bir maçta MVP çıkar',ikon:'⭐'},
-  {id:'ustLig',ad:'Yükseliş',desc:'Bir üst lige çık',ikon:'📈'}
+  {id:'ustLig',ad:'Yükseliş',desc:'Bir üst lige çık',ikon:'📈'},
+  /* 13. oturum (Paket B): kariyerin farklı anlarını kutlayan 9 yeni başarım */
+  {id:'efsane10',ad:'10 Sezonluk Efsane',desc:'Aynı kulüpte 10 sezon tamamla',ikon:'🎖️'},
+  {id:'kullerinden',ad:'Küllerinden',desc:'Mali kriz yaşadığın sezonu artı kasayla bitir',ikon:'🕊️'},
+  {id:'omurBoyu',ad:'Ömür Boyu',desc:'Bir oyuncuyu emekli olana dek en az 8 sezon kadronda tut',ikon:'🤝'},
+  {id:'dogruSecim',ad:'Doğru Seçim',desc:'Draftta seçtiğin bir oyuncu maçın yıldızı (MVP) olsun',ikon:'🎯'},
+  {id:'tersineDonus',ad:'Tersine Dönüş',desc:'Playoff serisinde 0-2 geriden gelip seriyi kazan',ikon:'🔄'},
+  {id:'yenilmezSezon',ad:'Yenilmez Sezon',desc:'Düzenli sezonu hiç kaybetmeden bitir',ikon:'💎'},
+  {id:'milyoner',ad:'Milyoner',desc:'1.000.000 KR bakiyeye ulaş',ikon:'🤑'},
+  {id:'yuzMac',ad:'Yüz Maç Kulübü',desc:'Kariyerinde 100 maça çık',ikon:'💯'},
+  {id:'tamEkip',ad:'Tam Kadro Ekip',desc:'Teknik ekibi 5 koçla doldur',ikon:'📋'}
 ];

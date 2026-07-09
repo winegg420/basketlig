@@ -169,7 +169,11 @@ function startMatch(playoff){
     /* Saha-şutunun sesi top potaya varınca çalar (yukarıda); serbest atış vb. anında. */
     if((ev.type==='score3'||ev.type==='score2')&&!ev.shot) sfx('score');
     if(ev.type==='free') sfx('score');
-    if(ev.type==='mvp'){ unlockAchievement('mvpOyuncu'); sfx('achv'); }
+    if(ev.type==='mvp'){
+      unlockAchievement('mvpOyuncu'); sfx('achv');
+      /* Paket B: MVP, draftta seçilmiş bir kadro oyuncusuysa "Doğru Seçim". */
+      try{ const mp=ev.mvpId&&(G.players||[]).find(p=>p.id===ev.mvpId); if(mp&&mp.draftYili!=null) unlockAchievement('dogruSecim'); }catch(e){}
+    }
     /* Paket 3: atmosfer — faulde düdük, çeyrek başında düdük, çeyrek/maç sonunda korna. */
     if(ev.type==='foul'||ev.type==='quarter_start') sfx('whistle');
     if(ev.type==='quarter_end') sfx('buzzer');
@@ -676,6 +680,7 @@ function hireCoach(id){
   if((G.coaches||[]).some(x=>x.uzm===c.uzm)){ showNotif(`Zaten bir "${c.uzm}" koçun var — aynı uzmanlıktan ikincisi alınamaz (önce mevcut koçu kov).`); return; }
   if(G.coins<c.satisFiyat){showNotif('❌ Yeterli KR yok!');return;}
   txn('Koç transferi: '+c.ad,-c.satisFiyat);G.coaches.push(c);
+  if(G.coaches.length>=MAX_COACHES) unlockAchievement('tamEkip'); /* Paket B */
   G.coachMarket=G.coachMarket.filter(x=>x.id!==id);
   updateCoins();showNotif(`✅ ${c.ad} koç kadrosuna katıldı!`);renderAntrenman();
   scheduleGameSave();

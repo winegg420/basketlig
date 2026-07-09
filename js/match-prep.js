@@ -407,6 +407,14 @@ function endLeagueSeasonIfDone(){
   if(!G.season||!G.season.active||!seasonAllMatchesPlayed()) return false;
   G.season.active=false;
   unlockAchievement('sezonTamam');
+  /* Paket B: kariyer başarımları — sezon kapanış anında değerlendirilir. */
+  if((Number(G.season.year)||0)>=10) unlockAchievement('efsane10');
+  if(G.season.hadCrisis&&G.coins>0) unlockAchievement('kullerinden');
+  try{
+    const u=G.team.isim;
+    const ms=(G.season.matches||[]).filter(m=>(m.home===u||m.away===u)&&m.played);
+    if(ms.length>=10&&ms.every(m=>{const uh=m.home===u;return (uh?m.hs:m.as)>(uh?m.as:m.hs);})) unlockAchievement('yenilmezSezon');
+  }catch(e){}
   try{ announceSeasonAwards(); }catch(e){ dbg('season awards',e); } /* Faz 2.2 */
   try{ evaluatePresidentTarget(); }catch(e){ dbg('president eval',e); } /* Faz 4.3 */
   G.managerRep=(Number(G.managerRep)||0)+1;
@@ -458,6 +466,11 @@ function recordSeriesGame(s,g){
   if(g.winner===s.home) s.wins[0]++; else if(g.winner===s.away) s.wins[1]++;
   if(s.wins[0]>=PLAYOFF_SERIES_WIN){ s.done=true; s.winner=s.home; }
   else if(s.wins[1]>=PLAYOFF_SERIES_WIN){ s.done=true; s.winner=s.away; }
+  /* Paket B: "Tersine Dönüş" — kullanıcı seriyi ilk 2 maçı kaybetmişken kazandı. */
+  try{
+    if(s.done&&G.team&&s.winner===G.team.isim&&s.games.length>=2
+       &&s.games[0].winner!==G.team.isim&&s.games[1].winner!==G.team.isim) unlockAchievement('tersineDonus');
+  }catch(e){}
 }
 /* Kullanıcının oynayacağı SIRADAKI seri maçının tanımlayıcısı (home = bu maçın ev sahibi). */
 function userPlayoffMatch(){
@@ -744,6 +757,7 @@ function startLeagueSeason(){
         pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--gold);">✍️ <strong>${p.isim}</strong> sözleşme yeniledi — yeni maaş ${fmtn(yeniMaas)} KR/hf, imza bedeli ${fmtn(imza)} KR (${p.kontratSezon} sezon).</div>`);
       }
       p.sezon={mac:0,pts:0,ast:0,reb:0};
+      p.kulupSezon=(Number(p.kulupSezon)||0)+1; /* Paket B: kulüpte geçirilen sezon ("Ömür Boyu") */
       const y=Number(p.yas)||25;
       p.yas=y+1; /* oyuncular sezonla yaşlanır */
       /* Madde 22: yaşa bağlı gerileme — 32+ fiziksel statlarda küçük sezonluk düşüş. */
@@ -778,6 +792,7 @@ function startLeagueSeason(){
       if(rc>0&&Math.random()<rc) emekli.push(p);
     });
     if(emekli.length&&(G.players.length-emekli.length)>=8){
+      if(emekli.some(p=>(Number(p.kulupSezon)||0)>=8)) unlockAchievement('omurBoyu'); /* Paket B */
       emekli.forEach(p=>{
         G.players=G.players.filter(x=>x.id!==p.id);
         pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--purple);">🎓 <strong>${p.isim}</strong> (${p.yas}) basketbolu bıraktı — emekli oldu. Kadro slotu boşaldı.</div>`);

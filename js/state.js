@@ -28,6 +28,16 @@ const START_KR=50000;
 const ECO_REF_KR=2400;
 const ECO_MUL=START_KR/ECO_REF_KR;
 function ecoRound(x){ return Math.max(1, Math.round(Number(x)*ECO_MUL)); }
+/** Paket A (13. oturum): kulüp gider enflasyonu — sezonlar ilerledikçe maaş piyasası ve
+    arena bakımı pahalanır (+%4/sezon, tavan ×2.2 ≈ 31. sezon). Gelir kalemleri sabit kalır;
+    böylece uzun vadede kasa otomatik şişmez, iyi yönetim yine kâr eder. Yalnız YENİ
+    sözleşmelere/piyasaya işler — imzalı maaşlar sözleşme bitene dek değişmez. */
+function ecoInflationMul(){
+  try{
+    const y=(typeof G!=='undefined'&&G&&G.season&&Number(G.season.year))||1;
+    return Math.min(2.2,1+0.04*Math.max(0,y-1));
+  }catch(e){ return 1; }
+}
 let _gameSaveTimer=null;
 /** LS boşken girişte IDB’den okunan kayıt; resumeFromSavedGame bunu yedekler. */
 let _pendingResumeFromIdb=null;
@@ -85,7 +95,8 @@ function starFromGenel(g){
 function salaryKRFromGenel(genel){
   const g=Number(genel)||0;
   const hi=Math.max(0,g-78);
-  return Math.max(60, Math.round((24 + g*1.95 + (g*g)/115 + hi*14 + hi*hi*0.08)*1.7));
+  /* Paket A: piyasa maaşı sezon enflasyonuyla büyür (yalnız yeni sözleşmeler). */
+  return Math.max(60, Math.round((24 + g*1.95 + (g*g)/115 + hi*14 + hi*hi*0.08)*1.7*ecoInflationMul()));
 }
 /** Bonservis (KR) — 65 OVR ≈ 18K, 76 ≈ 25K, 90 ≈ 89K, 97 ≈ 134K: erken hedefler ulaşılır, yıldızlar birikimle. */
 function transferFeeKR(p){
