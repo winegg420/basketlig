@@ -151,11 +151,11 @@ function startMatch(playoff){
     if(ev.shot){
       const sh={...ev.shot};
       mState.allShots.push(sh);
-      /* Gerçekçi hücum: top oyuncudan oyuncuya, sonra şutöre; iz + ses top şutöre VARINCA (senkron). */
-      animateShotPossession(sh,()=>{
-        if(shotPassesFilter(sh)) drawShotMark(sh);
-        if(sh.made) sfx('score');
-      });
+      /* Gerçekçi hücum: top getirilir, paslaşılır, şutöre gelir.
+         İz top elden çıkarken; ses top çembere varınca (file sesi) çalar. */
+      animateShotPossession(sh,
+        ()=>{ if(shotPassesFilter(sh)) drawShotMark(sh); },
+        ()=>{ if(sh.made) sfx('score'); });
     }
     if(ev.shots){
       ev.shots.forEach(sh=>{
@@ -201,7 +201,7 @@ function startMatch(playoff){
     }
     /* Şutlu hücumlar top ayak-ayak aktığı için daha uzun sürer (anlatımla senkron);
        şutsuz olaylar (ribaund, top kaybı, mola) daha kısa geçer. */
-    const delay=ev.shot?2500:(ev.type==='quarter_start'||ev.type==='quarter_end'||ev.type==='tactic'?1500:1200);
+    const delay=ev.shot?2500:(ev.type==='free'?1700:(ev.type==='quarter_start'||ev.type==='quarter_end'||ev.type==='tactic'?1500:1200));
     matchEventTimer=setTimeout(matchStep,delay);
   }
   mState.step=matchStep;

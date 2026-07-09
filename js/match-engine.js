@@ -6,25 +6,28 @@ function emptyBox(){
 function cloneBox(b){return {...b};}
 function cloneQx(o){return {...o};}
 
-function randShotXY(isHome,is3,made){
-  if(isHome){
-    if(is3){
-      return made
-        ? {x:rand(125,455),y:rand(38,455)}
-        : {x:rand(70,455),y:rand(42,458)};
-    }
-    return made
-      ? {x:rand(95,340),y:rand(175,325)}
-      : {x:rand(85,380),y:rand(120,385)};
-  }
-  if(is3){
-    return made
-      ? {x:rand(485,815),y:rand(38,455)}
-      : {x:rand(485,870),y:rand(42,458)};
-  }
-  return made
-    ? {x:rand(600,850),y:rand(175,325)}
-    : {x:rand(560,855),y:rand(120,385)};
+/* ── Saha geometrisi (iç SVG viewBox 0 0 940 500) ──
+   Çember merkezleri, orta çizgi, serbest atış çizgileri. Tüm görsel/şut
+   koordinatları buradan türetilir ki harita ile parke birebir örtüşsün. */
+const RIM_L=[102.6,250], RIM_R=[837.4,250];
+const THREE_R=196;            /* 3 sayı yayı yarıçapı (çemberden) */
+const COURT_MID=470;
+
+/* Şut noktası çemberden mesafe+açı ile üretilir: 3'lükler yayın hemen dışında,
+   saha içi şutlar boya/orta mesafede kalır. Eski sürüm 3'lükleri orta sahaya
+   kadar dağıtıyordu (yay dışına taşan, gerçek dışı noktalar). */
+function randShotXY(isLeft,is3,made){
+  const rim=isLeft?RIM_L:RIM_R;
+  const dir=isLeft?1:-1;
+  const r=is3
+    ? (made?rand(THREE_R+5,THREE_R+34):rand(THREE_R+4,THREE_R+62))
+    : (made?rand(16,104):rand(24,156));
+  const a=rand(-82,82)*Math.PI/180;
+  let x=rim[0]+dir*Math.cos(a)*r;
+  let y=rim[1]+Math.sin(a)*r;
+  x=Math.max(66,Math.min(874,x));
+  y=Math.max(40,Math.min(460,y));
+  return {x,y};
 }
 
 function clearMatchCourt(){
@@ -37,23 +40,57 @@ function clearMatchCourt(){
   clearMatchPlayers();
 }
 
-/* ── Sahadaki 5v5 oyuncu jetonları (canlı hareket) ───────────────────────────
-   İç saha SVG'sinde (viewBox 0 0 940 500) 10 jeton; her olayda ofans/defans
-   şablonuna göre kayar. Ev sol potaya (~102,250), rakip sağ potaya (~837,250)
-   hücum eder — gerçek basket gibi iki takım da aynı yarı sahada toplanır. */
+/* ══════════════════════════════════════════════════════════════════════════
+   CANLI SAHA SİMÜLASYONU — sürekli akan 5v5 + fizikli top
+   ──────────────────────────────────────────────────────────────────────────
+   Eski sürümde jetonlar her olayda CSS transition ile sabit bir şablona
+   "ışınlanıyor", top da noktadan noktaya kayıyordu. Burada bunun yerine
+   requestAnimationFrame ile dönen gerçek bir simülasyon var:
+
+   • Oyuncular hedeflerine ivmelenerek koşar (yay-sönüm), birbirine girmez,
+     boşta ufak salınım yapar — hiçbir kare donuk durmaz.
+   • Savunma hücumcuyu adam adam markaja alır (hücumcu ile çember arasında).
+   • Top bir durum makinesidir: elde (dribble, sekerek), pas (alçak yay),
+     şut (yüksek parabol + çember yüksekliği), çemberden düşüş, serbest top
+     (zıplayarak yuvarlanır). Yükseklik gölge + ölçek ile gösterilir.
+   • Hücum yönü userIsHome'a göre belirlenir: kullanıcı takımı deplasmandaysa
+     sağ potaya hücum eder (eskiden hep sola hücum ediyordu — şut noktaları
+     sağda, oyuncular soldaydı).
+   ═════════════════════════════════════════════════════════════════════════ */
+
+const _PL_MAXV=320;          /* px/sn — normal koşu */
+const _PL_SPRINT=540;        /* şutör/ribaundcu: pozisyonuna yetişmek için hızlanır */
+const _PL_ACC=8.5;           /* hedefe yaklaşma sertliği */
+const _PL_R=25;              /* çarpışma yarıçapı */
+
 function _tokShort(name){ const a=String(name||'').trim().split(/\s+/); return a[a.length-1]||String(name||''); }
 function _tokSet(g,x,y){ if(g) g.setAttribute('transform',`translate(${x.toFixed(1)},${y.toFixed(1)})`); }
+function _mir(p){ return [940-p[0],p[1]]; }
+
 function clearMatchPlayers(){
+  const S=(typeof mState!=='undefined'&&mState)?mState._sim:null;
+  if(S&&S.raf){ cancelAnimationFrame(S.raf); S.raf=null; }
   const l=document.getElementById('playersLayer');
   if(l) l.remove();
-  if(typeof mState!=='undefined'&&mState) mState._tokens=null;
+  const sh=document.getElementById('ballShadow');
+  if(sh) sh.remove();
+  if(typeof mState!=='undefined'&&mState){ mState._tokens=null; mState._sim=null; }
 }
+
 function initMatchPlayers(lu,rakip,oppNames){
   try{
     const ball=document.getElementById('liveBall');
     const svg=ball&&ball.parentNode;
     if(!svg) return;
     clearMatchPlayers();
+    /* top gölgesi jetonların da altında (zemin katmanı) */
+    const shadow=document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+    shadow.setAttribute('id','ballShadow');
+    shadow.setAttribute('rx','9'); shadow.setAttribute('ry','3.6');
+    shadow.setAttribute('fill','rgba(0,0,0,0.38)'); shadow.setAttribute('opacity','0');
+    shadow.setAttribute('pointer-events','none');
+    svg.insertBefore(shadow,ball);
+
     const layer=document.createElementNS('http://www.w3.org/2000/svg','g');
     layer.setAttribute('id','playersLayer');
     svg.insertBefore(layer,ball); /* top jetonların üstünde kalsın */
@@ -62,7 +99,6 @@ function initMatchPlayers(lu,rakip,oppNames){
     const mk=(num,label,fill)=>{
       const g=document.createElementNS('http://www.w3.org/2000/svg','g');
       g.setAttribute('class','court-token');
-      g.style.transition='transform 0.7s cubic-bezier(.4,.05,.3,1)';
       const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
       c.setAttribute('r','16'); c.setAttribute('fill',fill);
       c.setAttribute('stroke','rgba(0,0,0,0.6)'); c.setAttribute('stroke-width','2.5');
@@ -80,103 +116,406 @@ function initMatchPlayers(lu,rakip,oppNames){
       return g;
     };
     const homeP=(lu&&lu.onCourt)?lu.onCourt.slice(0,5):[];
-    mState._tokens={home:[],away:[]};
-    for(let i=0;i<5;i++){ const p=homeP[i]; mState._tokens.home.push(mk(String(i+1),p?_tokShort(p.isim):('Ev'+(i+1)),homeCol)); }
     const rk=(rakip&&rakip.isim)?_tokShort(rakip.isim):'Rakip';
-    for(let i=0;i<5;i++){ const on=(oppNames&&oppNames[i])?_tokShort(oppNames[i]):rk; mState._tokens.away.push(mk(String(i+1),on,awayCol)); }
-    mState._lastAttackHome=true;
-    /* tip-off: orta sahada karşılıklı diz */
-    const hs=[[430,150],[430,350],[405,250],[360,185],[360,315]];
-    const as=[[510,150],[510,350],[535,250],[580,185],[580,315]];
-    mState._tokens.home.forEach((g,i)=>_tokSet(g,hs[i][0],hs[i][1]));
-    mState._tokens.away.forEach((g,i)=>_tokSet(g,as[i][0],as[i][1]));
+    /* tip-off: orta yuvarlağın iki yanında karşılıklı diz */
+    const hs=[[428,250],[400,150],[400,350],[352,196],[352,308]];
+    const as=[[512,250],[540,150],[540,350],[588,196],[588,308]];
+    const mkP=(g,x,y,team,slot)=>({g,x,y,vx:0,vy:0,tx:x,ty:y,team,slot,maxV:_PL_MAXV,ph:Math.random()*6.283,side:Math.random()<0.5?-1:1});
+
+    const home=[],away=[];
+    for(let i=0;i<5;i++){
+      const p=homeP[i];
+      home.push(mkP(mk(String(i+1),p?_tokShort(p.isim):('Ev'+(i+1)),homeCol),hs[i][0],hs[i][1],'h',i));
+    }
+    for(let i=0;i<5;i++){
+      const on=(oppNames&&oppNames[i])?_tokShort(oppNames[i]):rk;
+      away.push(mkP(mk(String(i+1),on,awayCol),as[i][0],as[i][1],'a',i));
+    }
+    mState._tokens={home:home.map(p=>p.g),away:away.map(p=>p.g)};
+    mState._sim={
+      home,away,players:home.concat(away),
+      shadow,
+      ball:{mode:'idle',x:COURT_MID,y:250,h:0,vx:0,vy:0,vh:0,carrier:null,t:0,dur:1,arc:0,from:[COURT_MID,250],to:[COURT_MID,250],onDone:null},
+      script:[],sIdx:0,sT:0,time:0,last:0,raf:null,idle:0,
+      shooter:null,offSide:null
+    };
+    mState._lastOff=null;
+    home.concat(away).forEach(p=>_tokSet(p.g,p.x,p.y));
+    const bEl=document.getElementById('liveBall');
+    if(bEl){ bEl.style.transition='none'; bEl.style.opacity='0.98'; }
+    _simStart();
   }catch(e){}
 }
+
+/* ── Ana döngü ───────────────────────────────────────────────────────────── */
+function _simStart(){
+  const S=mState._sim; if(!S||S.raf) return;
+  S.last=0;
+  const loop=(ts)=>{
+    const St=(typeof mState!=='undefined'&&mState)?mState._sim:null;
+    if(!St||St!==S){ return; }
+    if(!S.last) S.last=ts;
+    const dt=Math.min(0.05,(ts-S.last)/1000);   /* sekme arkaplandayken sıçramasın */
+    S.last=ts;
+    S.time+=dt;
+    /* maç bittikten ~3sn sonra döngüyü bırak (pil) */
+    if(typeof mState!=='undefined'&&mState&&mState.running===false&&!mState.paused){
+      S.idle+=dt; if(S.idle>3){ S.raf=null; return; }
+    } else S.idle=0;
+    try{ _simStep(dt); }catch(e){}
+    S.raf=requestAnimationFrame(loop);
+  };
+  S.raf=requestAnimationFrame(loop);
+}
+
+function _simStep(dt){
+  const S=mState._sim; if(!S) return;
+  /* zamanlanmış koreografi adımları */
+  if(S.script.length){
+    S.sT+=dt;
+    while(S.sIdx<S.script.length&&S.sT>=S.script[S.sIdx].at){
+      const st=S.script[S.sIdx]; S.sIdx++;
+      try{ st.fn(); }catch(e){}
+    }
+    if(S.sIdx>=S.script.length){ S.script=[]; S.sIdx=0; }
+  }
+  const P=S.players;
+  const carrier=S.ball.carrier;
+  /* 1) hedefe doğru ivmeli koşu + boşta mikro salınım */
+  for(const p of P){
+    const w=(p===carrier)?0:1;
+    const gx=p.tx+Math.sin(S.time*1.15+p.ph)*4.5*w;
+    const gy=p.ty+Math.cos(S.time*0.87+p.ph*1.7)*4.5*w;
+    let dx=gx-p.x, dy=gy-p.y;
+    const d=Math.hypot(dx,dy);
+    if(d>0.01){
+      const want=Math.min(p.maxV||_PL_MAXV,d*3.4);
+      p.vx+=((dx/d)*want-p.vx)*_PL_ACC*dt;
+      p.vy+=((dy/d)*want-p.vy)*_PL_ACC*dt;
+    } else { p.vx*=0.85; p.vy*=0.85; }
+    p.x+=p.vx*dt; p.y+=p.vy*dt;
+  }
+  /* 2) üst üste binmeyi çöz */
+  for(let i=0;i<P.length;i++){
+    for(let j=i+1;j<P.length;j++){
+      const a=P[i],b=P[j];
+      let dx=b.x-a.x, dy=b.y-a.y;
+      let d=Math.hypot(dx,dy);
+      if(d<_PL_R&&d>0.001){
+        const push=(_PL_R-d)/2; dx/=d; dy/=d;
+        a.x-=dx*push; a.y-=dy*push; b.x+=dx*push; b.y+=dy*push;
+      }
+    }
+  }
+  /* 3) sınırla + çiz */
+  for(const p of P){
+    p.x=Math.max(22,Math.min(918,p.x));
+    p.y=Math.max(24,Math.min(476,p.y));
+    _tokSet(p.g,p.x,p.y);
+  }
+  _ballStep(dt);
+  _ballRender();
+}
+
+/* ── Top: durum makinesi ─────────────────────────────────────────────────── */
+function _ball(){ return mState._sim.ball; }
+function _ballHold(p){ const b=_ball(); if(!p) return; b.mode='held'; b.carrier=p; b.t=0; }
+function _ballPass(to,dur){
+  const b=_ball(); if(!to) return;
+  const d=Math.hypot(to.x-b.x,to.y-b.y);
+  b.mode='pass'; b.carrier=null; b.from=[b.x,b.y]; b.target=to;
+  b.t=0; b.dur=dur||Math.max(0.20,Math.min(0.42,d/620)); b.arc=8+d*0.045;
+}
+function _ballShoot(to,dur,made,onDone){
+  const b=_ball();
+  const d=Math.hypot(to[0]-b.x,to[1]-b.y);
+  b.mode='shot'; b.carrier=null; b.from=[b.x,b.y]; b.to=[to[0],to[1]];
+  b.t=0; b.dur=dur||Math.max(0.42,Math.min(0.75,0.34+d/560)); b.arc=52+d*0.13;
+  b.made=!!made; b.onDone=onDone||null;
+}
+function _ballLoose(vx,vy,vh){
+  const b=_ball(); b.mode='loose'; b.carrier=null;
+  b.vx=vx; b.vy=vy; b.vh=vh!=null?vh:70;
+}
+function _ballStep(dt){
+  const S=mState._sim, b=S.ball;
+  switch(b.mode){
+    case 'held':{
+      const p=b.carrier;
+      if(!p){ b.mode='loose'; b.vx=b.vy=0; b.vh=0; break; }
+      const sp=Math.hypot(p.vx,p.vy);
+      const ux=sp>10?p.vx/sp:1, uy=sp>10?p.vy/sp:0;
+      /* topu gövdenin hafif önünde ve yan tarafında tut */
+      b.x=p.x+ux*10-uy*11*p.side;
+      b.y=p.y+uy*10+ux*11*p.side;
+      b.h=Math.abs(Math.sin(S.time*(8.5+sp*0.022)))*12;   /* yere sekerek dribbling */
+      break;
+    }
+    case 'pass':{
+      b.t+=dt/b.dur;
+      const t=Math.min(1,b.t);
+      const tx=b.target?b.target.x:b.from[0], ty=b.target?b.target.y:b.from[1];
+      b.x=b.from[0]+(tx-b.from[0])*t;
+      b.y=b.from[1]+(ty-b.from[1])*t;
+      b.h=Math.sin(Math.PI*t)*b.arc+10;
+      if(b.t>=1) _ballHold(b.target);
+      break;
+    }
+    case 'shot':{
+      b.t+=dt/b.dur;
+      const t=Math.min(1,b.t);
+      b.x=b.from[0]+(b.to[0]-b.from[0])*t;
+      b.y=b.from[1]+(b.to[1]-b.from[1])*t;
+      b.h=Math.sin(Math.PI*t)*b.arc+30*t;                 /* çember yüksekliğinde biter */
+      if(b.t>=1){
+        const cb=b.onDone; b.onDone=null;
+        b.mode='rim'; b.t=0; b.h=30;
+        if(cb) cb();
+      }
+      break;
+    }
+    case 'rim':{      /* fileden geçiş / çemberden düşüş */
+      b.t+=dt;
+      b.h=Math.max(0,30-b.t*95);
+      if(b.h<=0){ b.mode='loose'; b.vx=b.vy=0; b.vh=0; }
+      break;
+    }
+    case 'loose':{
+      b.x+=b.vx*dt; b.y+=b.vy*dt;
+      b.vx*=(1-2.2*dt); b.vy*=(1-2.2*dt);
+      b.h+=b.vh*dt; b.vh-=460*dt;
+      if(b.h<0){ b.h=0; b.vh=-b.vh*0.52; if(Math.abs(b.vh)<14) b.vh=0; }
+      b.x=Math.max(30,Math.min(910,b.x)); b.y=Math.max(28,Math.min(472,b.y));
+      break;
+    }
+    default: break;
+  }
+}
+function _ballRender(){
+  const S=mState._sim, b=S.ball;
+  const el=document.getElementById('liveBall');
+  if(!el) return;
+  const sc=1+b.h*0.0095;
+  el.setAttribute('transform',`translate(${b.x.toFixed(1)},${(b.y-b.h*0.62).toFixed(1)}) scale(${sc.toFixed(3)})`);
+  if(S.shadow){
+    const k=Math.max(0.30,1-b.h/95);
+    S.shadow.setAttribute('cx',b.x.toFixed(1));
+    S.shadow.setAttribute('cy',(b.y+4).toFixed(1));
+    S.shadow.setAttribute('rx',(9*k).toFixed(2));
+    S.shadow.setAttribute('ry',(3.6*k).toFixed(2));
+    S.shadow.setAttribute('opacity',(0.36*k).toFixed(2));
+  }
+  mState._ballXY=[b.x,b.y];
+}
+
+/* ── Koreografi zamanlayıcısı (rAF tabanlı; setTimeout yok) ──────────────── */
+function clearBallTimers(){
+  const S=(typeof mState!=='undefined'&&mState)?mState._sim:null;
+  if(S){ S.script=[]; S.sIdx=0; S.sT=0; S.ball.onDone=null; }
+}
+function _script(steps){
+  const S=mState._sim; if(!S) return 0;
+  S.script=steps.slice().sort((a,b)=>a.at-b.at);
+  S.sIdx=0; S.sT=0;
+  return Math.round((S.script.length?S.script[S.script.length-1].at:0)*1000);
+}
+
+/* ── Yerleşimler ─────────────────────────────────────────────────────────── */
+/* Sol potaya hücum eden takımın 5 nokta şablonu: 0=top(PG, yay üstü), 1/2=kanat (yay dışı),
+   3=forvet (orta mesafe/dirsek), 4=pivot (boya kenarı). Kanatlar çemberden >196px = 3 sayı yayı dışı. */
+const OFF_BASE_L=[[312,250],[258,114],[258,386],[190,166],[160,320]];
+/* Ribaund/serbest atış dizilimi (sol pota) */
+const FT_OFF_L=[[176,178],[176,322],[286,196],[286,304]];
+const FT_DEF_L=[[150,178],[150,322],[204,178],[204,322],[262,250]];
+
+function _rim(left){ return left?RIM_L.slice():RIM_R.slice(); }
+function _jit(n,a){ return n+(Math.random()*2-1)*(a||10); }
+
+/** Hücum + savunma hedeflerini kur. shot verilirse şutör o noktaya gider. */
+function _setFormation(offLeft,offPlayers,defPlayers,shot){
+  const S=mState._sim;
+  const rim=_rim(offLeft);
+  const base=OFF_BASE_L.map(p=>offLeft?p.slice():_mir(p));
+  let shooter=null;
+  if(shot){
+    /* şut noktasına en yakın slotu şutör yap — dizilim şuta göre kurulur */
+    let bi=0,bd=1e9;
+    base.forEach((p,i)=>{ const d=Math.hypot(p[0]-shot.x,p[1]-shot.y); if(d<bd){bd=d;bi=i;} });
+    shooter=offPlayers[bi];
+    base[bi]=[shot.x,shot.y];
+  }
+  /* Şutör noktasına yetişmek için sprint atar (top elden çıkarken orada olmalı). */
+  offPlayers.forEach((p,i)=>{
+    const c=base[i];
+    p.tx=_jit(c[0],p===shooter?0:12); p.ty=_jit(c[1],p===shooter?0:12);
+    p.maxV=(p===shooter)?_PL_SPRINT:_PL_MAXV;
+  });
+  /* savunma: adamını çemberle arasında tutar (şutörü daha yakından kapatır) */
+  defPlayers.forEach((p,i)=>{
+    const m=offPlayers[i]||offPlayers[0];
+    const dx=rim[0]-m.tx, dy=rim[1]-m.ty;
+    const d=Math.hypot(dx,dy)||1;
+    const gap=(m===shooter)?26:40;   /* jeton çapı 32 — daha azında jetonlar üst üste biner */
+    p.tx=_jit(m.tx+dx/d*gap,6); p.ty=_jit(m.ty+dy/d*gap,6);
+    p.maxV=(m===shooter)?_PL_SPRINT*0.92:_PL_MAXV;
+  });
+  S.shooter=shooter;
+  return shooter;
+}
+
+/** Serbest atış dizilimi: şutör çizgide, diğerleri boya kenarında. */
+function _setFtFormation(offLeft,offPlayers,defPlayers,shooter){
+  const line=offLeft?[214,250]:[726,250];
+  shooter.tx=line[0]; shooter.ty=line[1];
+  const others=offPlayers.filter(p=>p!==shooter);
+  const of=FT_OFF_L.map(p=>offLeft?p.slice():_mir(p));
+  const df=FT_DEF_L.map(p=>offLeft?p.slice():_mir(p));
+  shooter.maxV=_PL_SPRINT;
+  others.forEach((p,i)=>{ const c=of[i%of.length]; p.tx=_jit(c[0],5); p.ty=_jit(c[1],5); p.maxV=_PL_MAXV; });
+  defPlayers.forEach((p,i)=>{ const c=df[i%df.length]; p.tx=_jit(c[0],5); p.ty=_jit(c[1],5); p.maxV=_PL_MAXV; });
+}
+
+/** Bir olayın hücum sahibini çöz: true = kullanıcı takımı hücumda. */
+function _eventOff(ev){
+  if(!ev) return mState._lastOff!==false;
+  if(ev.off!=null) return !!ev.off;
+  if(ev.shot) return !!ev.shot.isHome;
+  if(ev.shots&&ev.shots[0]) return !!ev.shots[0].isHome;
+  return mState._lastOff!==false;
+}
+
+/** Olay geldiğinde oyuncuları yeniden konumla + şutsuz olayların top koreografisi. */
 function movePlayersForEvent(ev){
   try{
-    if(typeof mState==='undefined'||!mState||!mState._tokens) return;
-    let attackHome=mState._lastAttackHome!==false;
-    let shot=null;
-    if(ev&&ev.shot){ attackHome=!!ev.shot.isHome; shot={x:ev.shot.x,y:ev.shot.y}; }
-    else if(ev&&ev.isHome!=null){ attackHome=!!ev.isHome; }
-    mState._lastAttackHome=attackHome;
-    const jit=n=>n+(Math.random()*2-1)*14;
-    const mir=([x,y])=>[940-x,y];
-    /* sol yarı şablonu (sol potaya hücum) */
-    const offL=[[shot?shot.x:185,shot?shot.y:250],[245,120],[245,380],[340,195],[340,305]];
-    const defL=[[150,185],[150,315],[210,250],[118,150],[118,350]];
-    let off,def;
-    if(attackHome){ off=offL; def=defL; }
-    else{
-      off=offL.map((p,i)=> i===0 ? [shot?shot.x:755, shot?shot.y:250] : mir(p));
-      def=defL.map(mir);
+    const S=(typeof mState!=='undefined'&&mState)?mState._sim:null;
+    if(!S) return;
+    const type=ev&&ev.type;
+
+    /* Çeyrek başı/sonu ve maç başı: orta sahaya toplan, top havada */
+    if(type==='start'||type==='quarter_start'||type==='quarter_end'||type==='end'){
+      const hs=[[428,250],[400,150],[400,350],[352,196],[352,308]];
+      const as=[[512,250],[540,150],[540,350],[588,196],[588,308]];
+      S.home.forEach((p,i)=>{ p.tx=hs[i][0]; p.ty=hs[i][1]; });
+      S.away.forEach((p,i)=>{ p.tx=as[i][0]; p.ty=as[i][1]; });
+      clearBallTimers();
+      const b=S.ball; b.mode='loose'; b.carrier=null; b.x=COURT_MID; b.y=250; b.vx=0; b.vy=0; b.h=60; b.vh=90;
+      return;
     }
-    const offTok=attackHome?mState._tokens.home:mState._tokens.away;
-    const defTok=attackHome?mState._tokens.away:mState._tokens.home;
-    /* Uygulanan (jitter'lı) hücum konumlarını sakla — top bu GERÇEK noktalara paslanır. */
-    const finalOff=offTok.map((g,i)=>{ const c=off[i]||off[0]; const x=(i===0?c[0]:jit(c[0])); const y=(i===0?c[1]:jit(c[1])); _tokSet(g,x,y); return [x,y]; });
-    defTok.forEach((g,i)=>{ const c=def[i]||def[0]; _tokSet(g, jit(c[0]), jit(c[1])); });
-    mState._offPos=finalOff;
-    mState._attackHome=attackHome;
+
+    const off=_eventOff(ev);
+    mState._lastOff=off;
+    /* Yön: kullanıcı takımı evse sola, deplasmansa sağa hücum eder. */
+    const offLeft=(off===(mState.userIsHome!==false));
+    const offP=off?S.home:S.away;
+    const defP=off?S.away:S.home;
+    S.offSide=offLeft;
+    S.offP=offP; S.defP=defP;
+
+    if(ev&&ev.shot){ _setFormation(offLeft,offP,defP,ev.shot); return; }   /* top: animateShotPossession */
+
+    /* Serbest atış: dizil, şutörü çizgiye koy, atışları canlandır. */
+    if(ev&&ev.shots&&ev.shots.length&&ev.shots[0].kind==='ft'){
+      const shooter=offP[rand(0,4)];
+      _setFtFormation(offLeft,offP,defP,shooter);
+      S.shooter=shooter;
+      const rim=_rim(offLeft);
+      clearBallTimers();
+      const steps=[{at:0,fn:()=>_ballHold(shooter)}];
+      const shots=ev.shots.slice(0,2);
+      shots.forEach((sh,i)=>{
+        const t0=0.30+i*0.62;
+        steps.push({at:t0,fn:()=>_ballShoot(rim,0.46,sh.made,()=>{
+          if(!sh.made){ const a=Math.random()*6.283; _ballLoose(Math.cos(a)*90,Math.sin(a)*90,95); }
+        })});
+        if(i<shots.length-1) steps.push({at:t0+0.52,fn:()=>{ const b=S.ball; b.mode='held'; b.carrier=shooter; }});
+      });
+      _script(steps);
+      return;
+    }
+
+    _setFormation(offLeft,offP,defP,null);
+    clearBallTimers();
+
+    if(type==='steal'){
+      /* Top kaybı: top elden çıkar, karşı takımdan biri üzerine koşar ve alır. */
+      const thief=defP[rand(0,4)];
+      const b=S.ball;
+      const a=Math.random()*6.283;
+      _ballLoose(Math.cos(a)*140,Math.sin(a)*140,55);
+      thief.maxV=_PL_SPRINT; thief.tx=b.x; thief.ty=b.y;
+      _script([{at:0.55,fn:()=>{ _ballHold(thief); }}]);
+      return;
+    }
+    if(type==='reb'){
+      const reb=(Math.random()<0.5?offP:defP)[rand(0,4)];
+      _script([{at:0.15,fn:()=>_ballHold(reb)}]);
+      return;
+    }
+    if(type==='foul'){
+      /* Düdük: oyun durur, top yandan girer. */
+      const p=offP[0];
+      _script([{at:0.10,fn:()=>_ballHold(p)}]);
+      return;
+    }
+    /* tactic / diğer: set oyunu — top çevrede paslaşır. */
+    const b=S.ball;
+    if(!b.carrier||offP.indexOf(b.carrier)<0) _ballHold(offP[0]);
+    const a1=offP[rand(1,4)], a2=offP[rand(1,4)];
+    _script([
+      {at:0.30,fn:()=>_ballPass(a1)},
+      {at:0.75,fn:()=>_ballPass(a2!==a1?a2:offP[0])}
+    ]);
   }catch(e){}
 }
-/* ── Top hareketi (çok ayaklı, gerçekçi): topu getir → oyun kur → pas → şut ──
-   Tek "ışınlanma" yerine top hücum boyunca ayak ayak akar; taraf değişince
-   sahayı boydan boya geçer (ani geçiş yok). Anlatım/ses top vardığında tetiklenir. */
-let _ballLegTimer=null,_ballArriveTimer=null,_ballFadeTimer=null;
-function clearBallTimers(){
-  [_ballLegTimer,_ballArriveTimer,_ballFadeTimer].forEach(t=>{ if(t) clearTimeout(t); });
-  _ballLegTimer=_ballArriveTimer=_ballFadeTimer=null;
-}
-function _ballMove(x,y,ms){
-  const b=document.getElementById('liveBall'); if(!b) return;
-  b.style.transition='transform '+(ms/1000).toFixed(2)+'s cubic-bezier(.34,.02,.28,1),opacity 0.3s';
-  b.setAttribute('transform','translate('+x.toFixed(1)+','+y.toFixed(1)+')');
-  mState._ballXY=[x,y];
-}
-function _ballPath(legs){
-  const b=document.getElementById('liveBall'); if(!b) return;
-  if(_ballLegTimer){ clearTimeout(_ballLegTimer); _ballLegTimer=null; }
-  b.style.opacity='0.98';
-  let i=0;
-  const run=()=>{ if(i>=legs.length) return; const w=legs[i]; i++; _ballMove(w.x,w.y,w.ms); _ballLegTimer=setTimeout(run,w.ms); };
-  run();
-}
-/** Bir hücumu canlandır. sh:{x,y,isHome,made}. Top GERÇEK hücum oyuncularına paslanır,
-    şutöre (şut noktası) gelir, sonra (girerse) potaya. onArrive şut anında (top şutöre varınca) çağrılır. */
-function animateShotPossession(sh,onArrive){
-  const b=document.getElementById('liveBall'); if(!b) return;
+
+/** Şutlu hücum: topu getir → 2 pas → şut → çember/ribaund.
+    onShoot: top şutörün elinden çıktığı an (şut izi). onResult: top çembere vardığı an (ses). */
+function animateShotPossession(sh,onShoot,onResult){
   try{
+    const S=(typeof mState!=='undefined'&&mState)?mState._sim:null;
+    if(!S) return 0;
     clearBallTimers();
-    const home=!!sh.isHome;
-    const start=mState._ballXY||[470,250];
-    const off=(mState._offPos&&mState._offPos.length>=5)?mState._offPos:null;
-    const rim=home?[112,250]:[828,250];
-    const dist=(a,c)=>Math.hypot(a[0]-c[0],a[1]-c[1]);
-    /* 1) Oyun kurucu topu kendi yarısından karşıya YAVAŞÇA getirir (mesafeye göre süre). */
-    const bring=[home?430:510, 250+rand(-28,28)];
-    const ms1=Math.min(900,Math.max(560,Math.round(dist(start,bring)*1.3)));
-    const legs=[{x:bring[0],y:bring[1],ms:ms1}];
-    /* 2) 2 gerçek hücum oyuncusuna pas (şutör hariç, off[1..4] token konumları). */
-    let passers=[];
-    if(off){
-      const idxs=[1,2,3,4].filter(i=>off[i]);
-      for(let k=idxs.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); const tmp=idxs[k]; idxs[k]=idxs[j]; idxs[j]=tmp; }
-      passers=idxs.slice(0,2).map(i=>off[i]);
-    } else {
-      passers=[[home?300:640,250],[home?248:692,(sh.y<250?165:335)]];
-    }
-    passers.forEach(p=>legs.push({x:p[0],y:p[1],ms:400}));
-    /* 3) Son pas şutöre = şut noktası. */
-    legs.push({x:sh.x,y:sh.y,ms:400});
-    _ballPath(legs);
-    const arriveMs=legs.reduce((a,l)=>a+l.ms,0);
-    _ballArriveTimer=setTimeout(()=>{
-      try{ if(typeof onArrive==='function') onArrive(); }catch(e){}   /* şut izi + ses tam bu an */
-      if(sh.made) _ballMove(rim[0],rim[1],320);                       /* file: potaya */
-      _ballFadeTimer=setTimeout(()=>{ const bb=document.getElementById('liveBall'); if(bb) bb.style.opacity='0.30'; }, sh.made?900:680);
-    },arriveMs);
-    return arriveMs;
+    const offLeft=S.offSide!=null?S.offSide:(sh.isHome===(mState.userIsHome!==false));
+    const offP=S.offP||(sh.isHome?S.home:S.away);
+    const defP=S.defP||(sh.isHome?S.away:S.home);
+    const rim=_rim(offLeft);
+    const shooter=S.shooter||offP[0];
+    const b=S.ball;
+
+    /* Topu getiren: hâlihazırda hücum takımından biri tutuyorsa o, değilse PG. */
+    let pg=(b.carrier&&offP.indexOf(b.carrier)>=0)?b.carrier:offP[0];
+    if(pg===shooter) pg=offP.find(p=>p!==shooter)||offP[0];
+    const relay=offP.filter(p=>p!==shooter&&p!==pg);
+    const mid=relay.length?relay[rand(0,relay.length-1)]:pg;
+
+    /* Top karşı takımdaysa veya serbestse önce çıkış pasıyla topu getirene ulaşır (ışınlanma yok). */
+    const d0=Math.hypot(b.x-pg.x,b.y-pg.y);
+    if(d0>55) _ballPass(pg,Math.min(0.46,0.16+d0/900)); else _ballHold(pg);
+    const steps=[
+      {at:0.80,fn:()=>_ballPass(mid,0.26)},        /* topu getirdi, ilk pas */
+      {at:1.24,fn:()=>_ballPass(shooter,0.28)},    /* şutöre son pas */
+      {at:1.72,fn:()=>{
+        try{ if(typeof onShoot==='function') onShoot(); }catch(e){}
+        /* Top, izin çizildiği şut noktasından çıkar — şutör oraya koşarken kalsa bile
+           yay ile iz birbirini tutar (yoksa yarı sahadan atılmış gibi görünüyordu). */
+        b.x=sh.x; b.y=sh.y;
+        _ballShoot(rim,0.58,sh.made,()=>{
+          try{ if(typeof onResult==='function') onResult(); }catch(e){}
+          if(!sh.made){
+            /* çemberden seken top: ribaundcu üzerine koşar */
+            const a=(Math.random()*2-1)*1.2+(offLeft?0:Math.PI);
+            _ballLoose(Math.cos(a)*180,Math.sin(a)*170,110);
+            const pool=Math.random()<0.72?defP:offP;
+            const reb=pool[rand(3,4)];
+            const bb=S.ball;
+            reb.maxV=_PL_SPRINT;
+            reb.tx=bb.x+Math.cos(a)*40; reb.ty=bb.y+Math.sin(a)*36;
+          }
+        });
+      }}
+    ];
+    _script(steps);
+    return 2300;
   }catch(e){ return 0; }
 }
 
@@ -527,8 +866,17 @@ function generateMatchEvents(rakip, opts){
   /* ── Tek pozisyon simülasyonu (gerçekçi FIBA temposu) ──
      Pozisyonların çoğu saha içi şutla biter; ribaund/asist/blok/faul kutuya ve anlatıma gömülür.
      userPos=true → kullanıcı takımı (kutu hB, skor homeScore); değilse rakip (aB, awayScore). */
+  /* Canlı görselleştirme, hangi takımın hücumda olduğunu bilmek zorunda (yön + jetonlar).
+     runPossession'ın ürettiği her olaya `off` (true = kullanıcı takımı hücumda) damgalanır. */
+  let _lastOff=true;
+  function runPossessionV(q,t){
+    const s=events.length;
+    runPossession(q,t);
+    for(let i=s;i<events.length;i++) if(events[i].off===undefined) events[i].off=_lastOff;
+  }
   function runPossession(q,t){
     const userPos=Math.random()<(userIsHome?0.53:0.47);
+    _lastOff=userPos;
     const roll=Math.random();
     const B=userPos?hB:aB, D=userPos?aB:hB;
     const defenderIsUser=!userPos;
@@ -591,7 +939,7 @@ function generateMatchEvents(rakip, opts){
         else { if(Math.random()<0.74)nMade++; if(Math.random()<0.74)nMade++; }
         B.ftAtt+=2; B.ftMade+=nMade; D.foul++; recordFoul(defenderIsUser,q,t);
         addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
-        const lineX=userPos?208:732;
+        const lineX=(userPos===userIsHome)?210:730;
         events.push({type:'free',text:`${shooter.isim} şut çekerken faul aldı — ${ftLine(nMade,2,shooter.isim)} ${sc()}`,q,t,home:homeScore,away:awayScore,
           shots:[{x:lineX+rand(-10,10),y:242,made:nMade>=1,isHome:userPos,kind:'ft',q},{x:lineX+rand(-10,10),y:262,made:nMade===2,isHome:userPos,kind:'ft',q}],
           box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
@@ -603,7 +951,7 @@ function generateMatchEvents(rakip, opts){
         for(let k=0;k<3;k++){ if(userPos?ftMake(shooter):(Math.random()<0.74)) nMade++; }
         B.ftAtt+=3; B.ftMade+=nMade; D.foul++; recordFoul(defenderIsUser,q,t);
         addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
-        const lineX=userPos?200:740;
+        const lineX=(userPos===userIsHome)?204:736;
         events.push({type:'free',text:`${shooter.isim} üç sayı denerken faul aldı — 3 atış: ${ftLine(nMade,3,shooter.isim)} ${sc()}`,q,t,home:homeScore,away:awayScore,
           shots:[{x:lineX+rand(-8,8),y:236,made:nMade>=1,isHome:userPos,kind:'ft',q},{x:lineX+rand(-8,8),y:250,made:nMade>=2,isHome:userPos,kind:'ft',q},{x:lineX+rand(-8,8),y:264,made:nMade>=3,isHome:userPos,kind:'ft',q}],
           box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
@@ -646,7 +994,7 @@ function generateMatchEvents(rakip, opts){
       else { if(Math.random()<0.72)nMade++; if(Math.random()<0.72)nMade++; }
       B.ftAtt+=2; B.ftMade+=nMade; D.foul++; recordFoul(defenderIsUser,q,t);
       addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
-      const lineX=userPos?208:732;
+      const lineX=(userPos===userIsHome)?210:730;
       events.push({type:'free',text:`Faul düdüğü — ${shooter.isim} çizgide. ${ftLine(nMade,2,shooter.isim)} ${sc()}`,q,t,home:homeScore,away:awayScore,
         shots:[{x:lineX+rand(-10,10),y:242,made:nMade>=1,isHome:userPos,kind:'ft',q},{x:lineX+rand(-10,10),y:262,made:nMade===2,isHome:userPos,kind:'ft',q}],
         box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
@@ -661,7 +1009,7 @@ function generateMatchEvents(rakip, opts){
           else { if(Math.random()<0.72)nMade++; if(Math.random()<0.72)nMade++; }
           B.ftAtt+=2; B.ftMade+=nMade;
           addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
-          const lineX=userPos?208:732;
+          const lineX=(userPos===userIsHome)?210:730;
           events.push({type:'free',text:`🎯 Bonus! ${foulingTeamName(defenderIsUser)} çeyrek faul cezasında — ${shooter.isim} çizgide. ${ftLine(nMade,2,shooter.isim)} ${sc()}`,q,t,home:homeScore,away:awayScore,
             shots:[{x:lineX+rand(-10,10),y:242,made:nMade>=1,isHome:userPos,kind:'ft',q},{x:lineX+rand(-10,10),y:262,made:nMade===2,isHome:userPos,kind:'ft',q}],
             box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
@@ -718,7 +1066,7 @@ function generateMatchEvents(rakip, opts){
     while(t>0&&plays<playsMax){
       plays++;
       t=Math.max(0,t-rand(decLo,decHi));
-      runPossession(q,t);
+      runPossessionV(q,t);
       if(t===0) break;
     }
 
@@ -747,7 +1095,7 @@ function generateMatchEvents(rakip, opts){
     while(t>0 && step<40){
       step++;
       t=Math.max(0,t-rand(otDecLo,otDecHi));
-      runPossession(qq,t);
+      runPossessionV(qq,t);
       if(t===0) break;
     }
     events.push({type:'quarter_end',text:`Uzatma ${otRound} bitti: ${G.team.isim} ${homeScore} - ${awayScore} ${rname}${homeScore===awayScore?' — hâlâ berabere, bir uzatma daha!':'.'}`,q:qq,t:0,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
