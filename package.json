@@ -4,7 +4,10 @@
   "private": true,
   "description": "Charazay 2.0 — Türkçe tek-sayfa basketbol menajerlik oyunu. Oyun statik HTML+js/*.js; bu paket yalnızca geliştirme testleri içindir.",
   "scripts": {
-    "test": "node tools/visual-check.js"
+    "test": "node tools/visual-check.js",
+    "desktop:prep": "node tools/build-desktop.js",
+    "desktop:dev": "tauri dev",
+    "desktop:build": "tauri build"
   },
   "repository": {
     "type": "git",
@@ -13,6 +16,7 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4",
     "playwright": "^1.61.1"
   }
 }

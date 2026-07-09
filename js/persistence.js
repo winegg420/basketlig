@@ -21,26 +21,161 @@ function openAchievementsModal(){
   showAppModal(`<div class="modal-title">🏆 Başarımlar (${Object.keys(got).length}/${ACHV.length})</div>${rows}`);
 }
 
-// ===== SES EFEKTLERİ (WebAudio — dosya yok, ayarlardan kapatılabilir) =====
-let _audioCtx=null;
+// ===== SES EFEKTLERİ (WebAudio — dosya yok, prosedürel sentez; ayarlardan kapatılabilir) =====
+/* Paket 3: basit tek-osilatör bipler yerine çok katmanlı sentetik sesler (gürültü tabanlı
+   file/düdük/kalabalık + zarflı ton motifleri). Dosya indirilmez — tamamen Web Audio.
+   Efekt (sfxVol) ve kalabalık ambiyansı (ambVol) ayrı ses seviyeleriyle ayarlanır.
+   Herhangi bir katman kurulamazsa eski tek-ton yedeğe (_sfxBeep) düşülür. */
+let _audioCtx=null,_noiseBuf=null,_amb=null;
+function _sfxVol(){ const v=G&&G.settings&&G.settings.sfxVol; return (v==null?70:Number(v))/100; }
+function _ambVol(){ const v=G&&G.settings&&G.settings.ambVol; return (v==null?35:Number(v))/100; }
+function _ctx(){
+  _audioCtx=_audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+  if(_audioCtx.state==='suspended') _audioCtx.resume();
+  return _audioCtx;
+}
+function _noise(){
+  const c=_ctx();
+  if(_noiseBuf) return _noiseBuf;
+  const b=c.createBuffer(1,c.sampleRate*2,c.sampleRate);
+  const d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  _noiseBuf=b; return b;
+}
+/* Zarflı tek ton (eski davranışın iyileştirilmiş hali + genel yedek). */
+function _sfxBeep(freq,dur,vol,type){
+  const c=_ctx(),t=c.currentTime;
+  const o=c.createOscillator(),g=c.createGain();
+  o.type=type||'sine'; o.frequency.value=freq;
+  o.connect(g); g.connect(c.destination);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(Math.max(0.001,(vol||0.05)*_sfxVol()),t+0.012);
+  g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  o.start(t); o.stop(t+dur+0.03);
+}
+/* Kısa gürültü vuruşu (file hışırtısı, top teması) — bandpass'li. */
+function _sfxNoise(freq,q,dur,vol,delay){
+  const c=_ctx(),t=c.currentTime+(delay||0);
+  const s=c.createBufferSource(); s.buffer=_noise();
+  const f=c.createBiquadFilter(); f.type='bandpass'; f.frequency.value=freq; f.Q.value=q||1;
+  const g=c.createGain();
+  s.connect(f); f.connect(g); g.connect(c.destination);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(Math.max(0.001,(vol||0.05)*_sfxVol()),t+0.015);
+  g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  s.start(t); s.stop(t+dur+0.05);
+}
+/* Nota dizisi motifi (zafer/kayıp/başarım). */
+function _sfxMotif(notes,step,dur,vol,type){
+  notes.forEach((f,i)=>{
+    const c=_ctx(),t=c.currentTime+i*step;
+    const o=c.createOscillator(),g=c.createGain();
+    o.type=type||'triangle'; o.frequency.value=f;
+    o.connect(g); g.connect(c.destination);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.001,(vol||0.05)*_sfxVol()),t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+    o.start(t); o.stop(t+dur+0.04);
+  });
+}
 function sfx(kind){
   try{
     if(!G||!G.settings||G.settings.sound===false) return;
-    _audioCtx=_audioCtx||new (window.AudioContext||window.webkitAudioContext)();
-    if(_audioCtx.state==='suspended') _audioCtx.resume();
-    const cfg={notif:[660,0.06],score:[880,0.07],win:[523,0.3],lose:[220,0.25],achv:[988,0.22]}[kind]||[440,0.06];
-    const t=_audioCtx.currentTime;
-    const o=_audioCtx.createOscillator();
-    const g=_audioCtx.createGain();
-    o.connect(g); g.connect(_audioCtx.destination);
-    o.frequency.value=cfg[0];
-    g.gain.setValueAtTime(0.045,t);
-    g.gain.exponentialRampToValueAtTime(0.001,t+cfg[1]);
-    o.start(t); o.stop(t+cfg[1]+0.03);
+    if(_sfxVol()<=0) return;
+    switch(kind){
+      case 'score':      /* file sesi: tatlı "swish" hışırtısı + alçak çember teması */
+        _sfxNoise(3400,1.1,0.16,0.10);
+        _sfxNoise(900,2.5,0.09,0.045,0.02);
+        _crowdSwell(0.5);
+        return;
+      case 'whistle':{   /* hakem düdüğü: iki yakın frekans + titreşim (roll) */
+        const c=_ctx(),t=c.currentTime;
+        [2093,2217].forEach(fr=>{
+          const o=c.createOscillator(),g=c.createGain(),l=c.createOscillator(),lg=c.createGain();
+          o.type='square'; o.frequency.value=fr;
+          l.type='sine'; l.frequency.value=34; lg.gain.value=0.35;  /* pea-whistle titremesi */
+          l.connect(lg); lg.connect(g.gain);
+          o.connect(g); g.connect(c.destination);
+          g.gain.setValueAtTime(0.0001,t);
+          g.gain.exponentialRampToValueAtTime(0.030*_sfxVol(),t+0.02);
+          g.gain.setValueAtTime(0.030*_sfxVol(),t+0.24);
+          g.gain.exponentialRampToValueAtTime(0.001,t+0.32);
+          o.start(t); o.stop(t+0.36); l.start(t); l.stop(t+0.36);
+        });
+        return;
+      }
+      case 'bounce':     /* top sekmesi: alçak tok vuruş, hızlı sönüm */
+        _sfxNoise(180,1.6,0.07,0.07);
+        _sfxBeep(95,0.09,0.05,'sine');
+        return;
+      case 'buzzer':     /* çeyrek sonu kornası */
+        _sfxBeep(224,0.55,0.075,'sawtooth');
+        _sfxBeep(112,0.55,0.05,'square');
+        return;
+      case 'win':  _sfxMotif([523,659,784,1047],0.13,0.34,0.06); _crowdSwell(1.0); return;
+      case 'lose': _sfxMotif([392,330,262],0.16,0.38,0.05,'sine'); return;
+      case 'achv': _sfxMotif([988,1319],0.09,0.30,0.055); return;
+      case 'notif': _sfxBeep(660,0.09,0.045); return;
+      default: _sfxBeep(440,0.06,0.045);
+    }
+  }catch(e){
+    try{ _sfxBeep(440,0.06,0.045); }catch(_){}
+  }
+}
+/* ── Kalabalık ambiyansı: alçak geçirilmiş gürültü döngüsü; maç boyunca çalar,
+   sayı/zafer anında kısa coşku dalgası (_crowdSwell) yükselir. ── */
+function startCrowdAmbience(){
+  try{
+    if(!G||!G.settings||G.settings.sound===false) return;
+    if(_amb||_ambVol()<=0) return;
+    const c=_ctx();
+    const s=c.createBufferSource(); s.buffer=_noise(); s.loop=true;
+    const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value=750;
+    const g=c.createGain(); g.gain.value=0.0001;
+    const lfo=c.createOscillator(),lg=c.createGain();
+    lfo.type='sine'; lfo.frequency.value=0.17; lg.gain.value=0.006*_ambVol();  /* uğultu dalgalanması */
+    lfo.connect(lg); lg.connect(g.gain);
+    s.connect(f); f.connect(g); g.connect(c.destination);
+    s.start(); lfo.start();
+    g.gain.exponentialRampToValueAtTime(Math.max(0.001,0.022*_ambVol()),c.currentTime+1.2);
+    _amb={s,f,g,lfo};
+  }catch(e){}
+}
+function stopCrowdAmbience(){
+  try{
+    if(!_amb) return;
+    const c=_ctx(),a=_amb; _amb=null;
+    a.g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.8);
+    setTimeout(()=>{ try{ a.s.stop(); a.lfo.stop(); }catch(e){} },900);
+  }catch(e){ _amb=null; }
+}
+function _crowdSwell(k){
+  try{
+    if(!_amb||_ambVol()<=0) return;
+    const c=_ctx(),t=c.currentTime,base=0.022*_ambVol();
+    _amb.g.gain.cancelScheduledValues(t);
+    _amb.g.gain.setValueAtTime(Math.max(0.001,base),t);
+    _amb.g.gain.exponentialRampToValueAtTime(Math.max(0.001,base*(2.4+k)),t+0.25);
+    _amb.g.gain.exponentialRampToValueAtTime(Math.max(0.001,base),t+1.6);
+  }catch(e){}
+}
+function setAmbienceVolume(){
+  try{
+    if(!_amb) return;
+    if(_ambVol()<=0){ stopCrowdAmbience(); return; }
+    _amb.g.gain.setTargetAtTime(Math.max(0.001,0.022*_ambVol()),_ctx().currentTime,0.15);
   }catch(e){}
 }
 
 // ===== AYARLAR =====
+/* Erişilebilirlik: html köküne sınıf uygular (CSS: html.a11y-big / html.a11y-contrast). */
+function applyA11ySettings(){
+  try{
+    const s=(G&&G.settings)||{};
+    document.documentElement.classList.toggle('a11y-big',!!s.a11yBig);
+    document.documentElement.classList.toggle('a11y-contrast',!!s.a11yContrast);
+  }catch(e){}
+}
 let _autosaveTimer=null;
 function applyAutosaveSetting(){
   if(_autosaveTimer){ clearInterval(_autosaveTimer); _autosaveTimer=null; }
@@ -60,7 +195,25 @@ function openSettingsModal(){
     <div style="display:flex;flex-direction:column;gap:12px;">
       <label style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg3);border-radius:10px;cursor:pointer;">
         <span style="font-size:13px;">🔊 Ses efektleri</span>
-        <input type="checkbox" id="setSound" ${s.sound!==false?'checked':''} onchange="G.settings.sound=this.checked;scheduleGameSave();if(this.checked)sfx('notif');">
+        <input type="checkbox" id="setSound" ${s.sound!==false?'checked':''} onchange="G.settings.sound=this.checked;scheduleGameSave();if(this.checked)sfx('notif');else stopCrowdAmbience();">
+      </label>
+      <div style="padding:12px;background:var(--bg3);border-radius:10px;display:flex;flex-direction:column;gap:10px;">
+        <label style="display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;">
+          <span style="font-size:12px;white-space:nowrap;">🎚️ Efekt sesi</span>
+          <input type="range" min="0" max="100" step="5" value="${s.sfxVol!=null?s.sfxVol:70}" style="flex:1;max-width:170px;accent-color:var(--accent);" oninput="G.settings.sfxVol=Number(this.value);" onchange="scheduleGameSave();sfx('score');">
+        </label>
+        <label style="display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;">
+          <span style="font-size:12px;white-space:nowrap;">🏟️ Kalabalık ambiyansı</span>
+          <input type="range" min="0" max="100" step="5" value="${s.ambVol!=null?s.ambVol:35}" style="flex:1;max-width:170px;accent-color:var(--accent);" oninput="G.settings.ambVol=Number(this.value);setAmbienceVolume();" onchange="scheduleGameSave();">
+        </label>
+      </div>
+      <label style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg3);border-radius:10px;cursor:pointer;">
+        <span style="font-size:13px;">🔍 Büyük yazı</span>
+        <input type="checkbox" ${s.a11yBig?'checked':''} onchange="G.settings.a11yBig=this.checked;applyA11ySettings();scheduleGameSave();">
+      </label>
+      <label style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg3);border-radius:10px;cursor:pointer;">
+        <span style="font-size:13px;">🌓 Yüksek kontrast</span>
+        <input type="checkbox" ${s.a11yContrast?'checked':''} onchange="G.settings.a11yContrast=this.checked;applyA11ySettings();scheduleGameSave();">
       </label>
       <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg3);border-radius:10px;">
         <span style="font-size:13px;">💾 Otomatik kayıt sıklığı</span>
@@ -349,6 +502,7 @@ function applyGameState(d){
   G.playoff=d.playoff&&typeof d.playoff==='object'?d.playoff:null;
   G.seasonFixtures=Array.isArray(d.seasonFixtures)?d.seasonFixtures:[];
   G.settings=Object.assign({sound:true,autosaveSec:12},d.settings||{});
+  applyA11ySettings(); /* büyük yazı / yüksek kontrast kayıttan gelir gelmez uygulanır */
   G.achievements=d.achievements&&typeof d.achievements==='object'?d.achievements:{};
   G.ledger=Array.isArray(d.ledger)?d.ledger:[];
   G.lastEcoDay=d.lastEcoDay!=null?d.lastEcoDay:(d.gameDay||1);

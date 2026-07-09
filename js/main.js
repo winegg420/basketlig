@@ -99,6 +99,7 @@ function startMatch(playoff){
   let oppFive=[];
   try{ const prof=getBotClubProfile(rakip.isim,(G.team&&G.team.tblKey)||'tbl'); oppFive=(prof.roster||[]).slice().sort((a,b)=>(b.genel||0)-(a.genel||0)).slice(0,5); }catch(e){}
   initMatchPlayers(lu,rakip,oppFive); /* sahaya 5v5 jeton — rakibin TAM oyuncu nesneleri (isim+hiz+enerji) */
+  startCrowdAmbience();               /* Paket 3: salon uğultusu maç boyunca */
   const _ml=document.getElementById('macLiveAnchor'); if(_ml) _ml.classList.add('live-on');
   renderBoxScore(emptyBox(),emptyBox(),G.team.isim,rakip.isim);
   document.getElementById('commentary').innerHTML='';
@@ -169,6 +170,9 @@ function startMatch(playoff){
     if((ev.type==='score3'||ev.type==='score2')&&!ev.shot) sfx('score');
     if(ev.type==='free') sfx('score');
     if(ev.type==='mvp'){ unlockAchievement('mvpOyuncu'); sfx('achv'); }
+    /* Paket 3: atmosfer — faulde düdük, çeyrek başında düdük, çeyrek/maç sonunda korna. */
+    if(ev.type==='foul'||ev.type==='quarter_start') sfx('whistle');
+    if(ev.type==='quarter_end') sfx('buzzer');
 
     /* Madde 12: canlı kadro/foul takibi */
     if(ev.spId&&!mState.spId) mState.spId=ev.spId;
@@ -191,6 +195,8 @@ function startMatch(playoff){
     if(ev.type==='end'){
       clearMatchEventTimer();
       mState.running=false;
+      sfx('buzzer');
+      stopCrowdAmbience();
       document.getElementById('liveStatus').textContent='BİTTİ';
       document.getElementById('liveStatus').style.background='rgba(34,197,94,0.2)';
       document.getElementById('liveStatus').style.color='#4ade80';
@@ -211,6 +217,7 @@ function startMatch(playoff){
 function stopMatch(){
   clearMatchEventTimer();
   clearBallTimers();
+  stopCrowdAmbience();
   if(mState._toInterval){ clearInterval(mState._toInterval); mState._toInterval=null; }
   mState.running=false;
   const st=document.getElementById('liveStatus');
@@ -385,7 +392,13 @@ function regenerateMatchRemainder(){
     benchIds:(mState.benchIds||[]).slice(),
     subbedIds:[...mState.subbedIds],
     spId:mState.spId,
-    pstats:{},matchFouls:{},qFoulU:{},qFoulO:{}
+    /* C2: olayın taşıdığı oyuncu-bazlı anlık görüntü — ilk yarı istatistikleri,
+       faul sayaçları ve çeyrek takım faulleri yeniden üretimde korunur. */
+    pstats:(ev.box&&ev.box.ps)?ev.box.ps:{},
+    ostats:(ev.box&&ev.box.os)?ev.box.os:{},
+    matchFouls:(ev.box&&ev.box.mf)?ev.box.mf:{},
+    qFoulU:(ev.box&&ev.box.fu)?ev.box.fu:{},
+    qFoulO:(ev.box&&ev.box.fo)?ev.box.fo:{}
   };
   try{
     const rest=generateMatchEvents({isim:mState.rakipName},{userIsHome:mState.userIsHome,resume});

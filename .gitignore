@@ -25,3 +25,7 @@ Desktop.ini
 *.swp
 *.swo
 *~
+
+# --- Masaüstü (Tauri) derleme kalıntıları ---
+src-tauri/target/
+dist-desktop/

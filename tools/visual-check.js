@@ -124,6 +124,90 @@ async function runViewport(browser, base, vp) {
   await snap('ayarlar');
   await page.evaluate(() => { try { closeAppModal(); } catch (e) {} });
 
+  /* ── Genişletilmiş akışlar (Paket 6): durum hazırlanır, GERÇEK UI fonksiyonu çağrılır.
+     Amaç: bu ekranların hiçbirinde konsol hatası olmaması + görsel kayıt. Sıra önemli:
+     draft en sonda (finalize yeni sezon başlatır). ── */
+
+  // 7) Transfer pazarlığı — kulüpten oyuncu alma teklif modalı
+  await page.evaluate(() => {
+    try {
+      ensureClubTransferStock();
+      const p = (G.clubTransferPlayers || []).find(x => x.mode === 'sale');
+      if (p) openClubOfferModal(p.id);
+    } catch (e) {}
+  });
+  await sleep(400);
+  await snap('pazarlik-teklif');
+  await page.evaluate(() => { try { closeAppModal(); } catch (e) {} });
+
+  // 8) Gelen transfer teklifi modalı (kendi oyuncuna kulüp teklifi)
+  await page.evaluate(() => {
+    try {
+      const p = (G.players || [])[0];
+      if (p) {
+        G.pendingOffers = [{ playerId: p.id, playerName: p.isim, poz: p.poz, genel: p.genel,
+          club: 'Test Kulübü BK', offer: 25000, asking: 30000, wantsToGo: false, kisilik: p.kisilik }];
+        showIncomingOfferModal();
+      }
+    } catch (e) {}
+  });
+  await sleep(400);
+  await snap('gelen-teklif');
+  await page.evaluate(() => { try { closeAppModal(); G.pendingOffers = []; } catch (e) {} });
+
+  // 9) Başkan hedefi (sezon başında kurulur) + lig sayfası haber akışı
+  await page.evaluate(() => {
+    try { if (!G.presidentTarget) setPresidentTarget(); } catch (e) {}
+    try { showPage('lig', document.querySelector('#sbNav button[data-page="lig"]')); } catch (e) {}
+  });
+  await sleep(500);
+  await snap('lig-baskan-hedefi');
+
+  // 10) Sezon sonu ödül töreni (veriler kısmi olsa da modal hatasız açılmalı)
+  await page.evaluate(() => { try { announceSeasonAwards(); } catch (e) {} });
+  await sleep(400);
+  await snap('sezon-odulleri');
+  await page.evaluate(() => { try { closeAppModal(); } catch (e) {} });
+
+  // 11) Playoff serisi — bracket kur, lig ekranında seri paneli
+  await page.evaluate(() => {
+    try { startPlayoffs(); } catch (e) {}
+    try { closeAppModal(); } catch (e) {}
+    try { renderLig(); } catch (e) {}
+  });
+  await sleep(500);
+  await snap('playoff-seri');
+  await page.evaluate(() => { try { G.playoff = null; renderLig(); } catch (e) {} });
+
+  // 12) İflas / zorunlu satış senaryosu (1. hafta: uyarı, 2. hafta: satış)
+  await page.evaluate(() => {
+    try {
+      G._qaCoinsBackup = G.coins;
+      G.coins = -40000; G.bankruptWeeks = 0;
+      processBankruptcy();           /* uyarı haftası */
+      processBankruptcy();           /* zorunlu satış haftası */
+      showPage('bilanco', document.querySelector('#sbNav button[data-page="bilanco"]'));
+    } catch (e) {}
+  });
+  await sleep(500);
+  await snap('iflas-senaryosu');
+  await page.evaluate(() => {
+    try { G.coins = G._qaCoinsBackup || 50000; delete G._qaCoinsBackup; G.bankruptWeeks = 0; updateCoins(); } catch (e) {}
+  });
+
+  // 13) Draft ekranı (EN SON — finalize yeni sezon başlatabilir)
+  await page.evaluate(() => { try { startDraft(); } catch (e) {} });
+  await sleep(500);
+  await snap('draft');
+  await page.evaluate(() => {
+    try {
+      const av = (typeof draftAvailable === 'function') ? draftAvailable() : [];
+      if (G.draft && !G.draft.done && G.draft.order[G.draft.idx] === G.team.isim && av.length) draftPick(av[0].id);
+    } catch (e) {}
+    try { closeAppModal(); } catch (e) {}
+  });
+  await sleep(400);
+
   await context.close();
   return errors;
 }

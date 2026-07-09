@@ -15,6 +15,13 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{height:100%;}
+/* ── Erişilebilirlik toggle'ları (Ayarlar → uygulanır: html köküne sınıf) ── */
+html.a11y-big{zoom:1.18;}
+html.a11y-contrast{
+  --text:#ffffff;--text2:#cbd5e1;
+  --bg:#000006;--bg2:#0a0a12;--bg3:#14141f;--bg4:#1e1e2c;
+  --border:rgba(249,115,22,0.55);
+}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100%;overflow-x:hidden;}
 
 #loader{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.5s;pointer-events:none;}
@@ -1179,16 +1186,16 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 <div class="notif" id="notif"></div>
 
-<script src="js/state.js?v=13"></script>
-<script src="js/economy.js?v=13"></script>
-<script src="js/persistence.js?v=13"></script>
-<script src="js/portraits.js?v=13"></script>
-<script src="js/roster-gen.js?v=13"></script>
-<script src="js/league.js?v=13"></script>
-<script src="js/match-prep.js?v=13"></script>
-<script src="js/render.js?v=13"></script>
-<script src="js/match-engine.js?v=13"></script>
-<script src="js/main.js?v=13"></script>
+<script src="js/state.js?v=14"></script>
+<script src="js/economy.js?v=14"></script>
+<script src="js/persistence.js?v=14"></script>
+<script src="js/portraits.js?v=14"></script>
+<script src="js/roster-gen.js?v=14"></script>
+<script src="js/league.js?v=14"></script>
+<script src="js/match-prep.js?v=14"></script>
+<script src="js/render.js?v=14"></script>
+<script src="js/match-engine.js?v=14"></script>
+<script src="js/main.js?v=14"></script>
 
 
 </body></html>

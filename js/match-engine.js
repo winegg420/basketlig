@@ -974,7 +974,14 @@ function generateMatchEvents(rakip, opts){
   const qh=resume&&resume.qh?Object.assign({1:0,2:0,3:0,4:0},resume.qh):{1:0,2:0,3:0,4:0};
   const qa=resume&&resume.qa?Object.assign({1:0,2:0,3:0,4:0},resume.qa):{1:0,2:0,3:0,4:0};
   let homeScore=resume?Number(resume.homeScore)||0:0,awayScore=resume?Number(resume.awayScore)||0:0;
-  const snap=()=>({h:cloneBox(hB),a:cloneBox(aB)});
+  /* C2: Her olay, oyuncu-bazlı anlık görüntüyü de taşır — manuel koçlukta kalan maç
+     yeniden üretilirken (regenerateMatchRemainder) o ana kadarki oyuncu istatistikleri,
+     faul sayaçları ve takım çeyrek faulleri resume ile korunur (ilk yarı kaybolmaz). */
+  const _cloneStats=(o)=>{ const r={}; for(const k in o) r[k]={...o[k]}; return r; };
+  const snap=()=>({h:cloneBox(hB),a:cloneBox(aB),
+    ps:_cloneStats(pstats),os:_cloneStats(ostats),
+    mf:Object.fromEntries((lu.avail||[]).filter(p=>p&&p.id).map(p=>[p.id,p.matchFouls||0])),
+    fu:{...qFoulU},fo:{...qFoulO}});
 
   const rname=rakip&&rakip.isim||'Rakip';
 
@@ -1371,8 +1378,11 @@ function applyMatchResult(ev,ctx){
     pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid ${uPts>oPts?'var(--green)':'var(--red)'};">🏆 Playoff (${playoffRoundLabel(0,total)}) ${gd.gameNo}. maç: <strong>${G.team.isim}</strong> ${uPts}-${oPts} <strong>${ctx.rakipName}</strong> — ${seriesTxt}</div>`);
     maybeAdvancePlayoff();
   } else {
-    if(ev.winner==='home'){ G.wins++; G.points+=2; }
-    else if(ev.winner==='away') G.losses++;
+    /* C3: Erişilmez dal — startMatch sezon ya da playoff şart koşar; buraya düşen bir maç
+       fikstür/seri dışıdır ve tabloya işlenemez. Eski kod burada G.wins/G.points'i elle
+       artırıyordu (standings'e yansımayan "hayalet" kayıt, sonraki senkronda eziliyordu);
+       artık yalnız teşhis logu bırakılır — ödül/moral akışı (aşağıda) yine çalışır. */
+    dbg('applyMatchResult','fikstür dışı maç sonucu (sezon pasif / bağlam yok): '+(ev.winner||'?'));
   }
   if(ev.winner==='home'){
     const priz=ecoRound(rand(1500,3500));
