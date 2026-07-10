@@ -20,7 +20,8 @@ function randShotXY(isLeft,is3,made){
   const rim=isLeft?RIM_L:RIM_R;
   const dir=isLeft?1:-1;
   const r=is3
-    ? (made?rand(THREE_R+5,THREE_R+34):rand(THREE_R+4,THREE_R+62))
+    /* kaçan üçlük en fazla yayın ~1.1m gerisinden — daha derini "orta sahadan şut" gibi görünüyordu */
+    ? (made?rand(THREE_R+5,THREE_R+34):rand(THREE_R+4,THREE_R+38))
     : (made?rand(16,104):rand(24,156));
   const a=rand(-82,82)*Math.PI/180;
   let x=rim[0]+dir*Math.cos(a)*r;
@@ -591,8 +592,19 @@ function movePlayersForEvent(ev){
     }
     /* tactic / diğer: set oyunu — top çevrede paslaşır. */
     const b=S.ball;
-    if(!b.carrier||offP.indexOf(b.carrier)<0) _ballHold(offP[0]);
+    const needBall=(!b.carrier||offP.indexOf(b.carrier)<0);
     const a1=offP[rand(1,4)], a2=offP[rand(1,4)];
+    if(needBall&&(S.prevType==='score2'||S.prevType==='score3'||S.prevType==='free')){
+      /* Sayı sonrası: top dip çizgi gerisinden (kenardan) oyuna sokulur. */
+      _ballPass({x:offLeft?902:38,y:250+(Math.random()<0.5?-1:1)*rand(30,80),vx:0,vy:0,side:1},0.20);
+      _script([
+        {at:0.45,fn:()=>_ballPass(offP[0],0.32)},
+        {at:1.00,fn:()=>_ballPass(a1)},
+        {at:1.40,fn:()=>_ballPass(a2!==a1?a2:offP[0])}
+      ]);
+      return;
+    }
+    if(needBall) _ballHold(offP[0]);
     _script([
       {at:0.30,fn:()=>_ballPass(a1)},
       {at:0.75,fn:()=>_ballPass(a2!==a1?a2:offP[0])}
@@ -633,6 +645,19 @@ function animateShotPossession(sh,onShoot,onResult){
       /* Top, izin çizildiği şut noktasından çıkar; büyük fark kalmışsa köprü adımı
          (aşağıdaki 'bridge' script adımı) zaten kapattı — kalan ufak farkı hizala. */
       b.x=sh.x; b.y=sh.y;
+      if(sh.blk){
+        /* Blok: top çembere ULAŞMAZ — kısa yükselip çelinir, serbest kalır. */
+        const bx=sh.x+(rim[0]-sh.x)*0.22+rand(-18,18), by=sh.y+(rim[1]-sh.y)*0.22+rand(-18,18);
+        _ballShoot([bx,by],0.20,false,()=>{
+          try{ if(typeof onResult==='function') onResult(); }catch(e){}
+          const a2=Math.random()*6.283;
+          _ballLoose(Math.cos(a2)*170,Math.sin(a2)*160,90);
+          const pool=Math.random()<0.72?defP:offP;
+          const reb=pool[rand(3,4)];
+          reb.maxV=reb.sprintV; reb.tx=b.x; reb.ty=b.y;
+        });
+        return;
+      }
       const rimD=Math.hypot(sh.x-rim[0],sh.y-rim[1]);
       _ballShoot(rim,rimD<90?0:0.58,sh.made,()=>{
         try{ if(typeof onResult==='function') onResult(); }catch(e){}
@@ -649,17 +674,17 @@ function animateShotPossession(sh,onShoot,onResult){
       });
     };
 
-    /* ── Hücum türü: 3 dal ──
-       1) Fast break: top çalma/ribaund sonrası + hızlı tempo/odak → tek uzun outlet
-          pas öne koşan şutöre, erken şut. 2) İzolasyon: top yükleme oyuncusu şutörse
-          tek pasla topu alır, diğerleri sahayı açar. 3) Set oyunu (varsayılan). */
+    /* ── Hücum türü: 4 dal ──
+       1) Putback: hücum ribaundunu alan oyuncu pota dibinden hemen tekrar dener.
+       2) Fast break: çalma/savunma ribaundu sonrası (üretici sh.fb damgalar; kullanıcı
+          hızlı tempo/odak seçmişse eski koşul da korunur) → tek uzun outlet pas, erken şut.
+       3) İzolasyon: top yükleme oyuncusu şutörse tek pasla topu alır.
+       4) Set oyunu (varsayılan). */
     const afterTurnover=(S.prevType==='steal'||S.prevType==='reb');
-    const fastBreak=userAtt&&afterTurnover&&(tac.tempo==='hizli'||tac.odak==='hizli');
+    const fastBreak=!!sh.fb||(userAtt&&afterTurnover&&(tac.tempo==='hizli'||tac.odak==='hizli'));
     const iso=userAtt&&tac.focusPlayerId&&shooter.pl&&shooter.pl.id===tac.focusPlayerId;
-
-    /* Top karşı takımdaysa veya serbestse önce çıkış pasıyla topu getirene ulaşır (ışınlanma yok). */
-    const d0=Math.hypot(b.x-pg.x,b.y-pg.y);
-    if(d0>55) _ballPass(pg,Math.min(0.46,0.16+d0/900)); else _ballHold(pg);
+    const putback=!!sh.pb&&b.carrier&&offP.indexOf(b.carrier)>=0;
+    const afterMade=(S.prevType==='score2'||S.prevType==='score3'||S.prevType==='free');
 
     /* Köprü adımı: şuttan hemen önce top şut noktasından hâlâ uzaksa (şutör yetişememiş,
        çarpışma engeli vb.) kısa bir sıçrayışla oraya taşınır — fire'daki hizalama artık
@@ -669,10 +694,30 @@ function animateShotPossession(sh,onShoot,onResult){
       /* statik hedef: pas bitişindeki _ballHold, taşıyıcı alanlarını (vx/vy/side) okur */
       if(d>36) _ballPass({x:sh.x,y:sh.y,vx:0,vy:0,side:1},Math.max(0.12,Math.min(0.22,d/700)));
     };
-    /* Zamanlama gerçekçi koşu hızlarına göre (oyuncular 130-315 px/sn): hücum ~2.9 sn'de
-       kurulur, şut ~2.3 sn'de çıkar (olay gecikmesi 3100 ms — bkz. matchStep delay). */
-    let steps;
-    if(fastBreak){
+
+    /* Topu oyuna getirme: SAYI SONRASI dip çizgi gerisinden içeri sokulur (kenardan oyuna
+       sokma); putback'te top zaten ribauntçuda; diğer durumlarda çıkış pasıyla oyun kurucuya. */
+    let inbound=false;
+    if(putback){
+      /* top ribauntçunun elinde kalır */
+    } else if(afterMade){
+      _ballPass({x:offLeft?902:38,y:250+(Math.random()<0.5?-1:1)*rand(30,80),vx:0,vy:0,side:1},0.20);
+      inbound=true;
+    } else {
+      const d0=Math.hypot(b.x-pg.x,b.y-pg.y);
+      if(d0>55) _ballPass(pg,Math.min(0.46,0.16+d0/900)); else _ballHold(pg);
+    }
+
+    /* Zamanlama gerçekçi koşu hızlarına göre; dönen süre matchStep'in olay gecikmesini
+       belirler → hızlı hücum/putback GERÇEKTEN daha hızlı akar, set oyunu sakin kurulur. */
+    let steps, ret;
+    if(putback){
+      steps=[
+        {at:0.45,fn:bridge},
+        {at:0.65,fn:fire}
+      ];
+      ret=1500;
+    } else if(fastBreak){
       /* Herkes sprintle öne — top uzun havadan pasla direkt şutöre fırlar. */
       offP.forEach(p=>{ p.maxV=p.sprintV; });
       steps=[
@@ -680,6 +725,7 @@ function animateShotPossession(sh,onShoot,onResult){
         {at:1.05,fn:bridge},
         {at:1.30,fn:fire}
       ];
+      ret=2000;
     } else if(iso){
       /* Diğer hücumcular kenara çekilip alan açar; top tek pasla yıldıza. */
       offP.forEach(p=>{ if(p!==shooter&&p!==pg) p.ty+=(p.ty<250?-26:26); });
@@ -688,6 +734,7 @@ function animateShotPossession(sh,onShoot,onResult){
         {at:1.65,fn:bridge},
         {at:1.90,fn:fire}
       ];
+      ret=2550;
     } else {
       steps=[
         {at:1.00,fn:()=>_ballPass(mid,0.30)},        /* topu getirdi, ilk pas */
@@ -695,9 +742,11 @@ function animateShotPossession(sh,onShoot,onResult){
         {at:2.05,fn:bridge},
         {at:2.30,fn:fire}
       ];
+      ret=2900;
     }
+    if(inbound) steps.unshift({at:0.42,fn:()=>_ballPass(pg,0.32)}); /* dip çizgiden içeri pas */
     _script(steps);
-    return 2900;
+    return ret;
   }catch(e){ return 0; }
 }
 
@@ -1079,18 +1128,30 @@ function generateMatchEvents(rakip, opts){
   /* Canlı görselleştirme, hangi takımın hücumda olduğunu bilmek zorunda (yön + jetonlar).
      runPossession'ın ürettiği her olaya `off` (true = kullanıcı takımı hücumda) damgalanır. */
   let _lastOff=true;
+  /* ── Pozisyon akışı (gerçek basketbol): sayıdan sonra top RAKİBE geçer; kaçan şutta
+     ribaundu alan takım hücuma devam eder; top çalmada çalan takım hücuma çıkar; şutsuz
+     faul ve mola pozisyonu değiştirmez. posNext=null → rastgele (maç başı hava atışı).
+     Eski %53/%47 ev sahibi pozisyon payı kaldırıldı — ev avantajı isabet çarpanına taşındı. */
+  let posNext=null;
+  let shooterHint=null;   /* hücum ribaundu sonrası aynı oyuncunun tekrar vuruşu (putback) */
+  let fastNext=null;      /* 'steal' | 'reb' — sonraki hücum hızlı hücuma dönüşebilir */
   function runPossessionV(q,t){
     const s=events.length;
     runPossession(q,t);
     for(let i=s;i<events.length;i++) if(events[i].off===undefined) events[i].off=_lastOff;
   }
   function runPossession(q,t){
-    const userPos=Math.random()<(userIsHome?0.53:0.47);
+    const userPos=(posNext===null)?(Math.random()<0.5):posNext;
+    posNext=!userPos;                    /* varsayılan: pozisyon sonunda top rakibe geçer */
+    const fromTrans=fastNext; fastNext=null;
     _lastOff=userPos;
     const roll=Math.random();
     const B=userPos?hB:aB, D=userPos?aB:hB;
     const defenderIsUser=!userPos;
-    const shooter=userPos?uShooter():oShooter();
+    let shooter=null,putback=false;
+    if(shooterHint&&((userPos?userCourt:oppCourt).indexOf(shooterHint)>=0)){ shooter=shooterHint; putback=true; }
+    shooterHint=null;
+    if(!shooter) shooter=userPos?uShooter():oShooter();
     const sc=()=>`(${homeScore} - ${awayScore})`;
     const addU=(n)=>{ homeScore+=n; qh[q]+=n; };
     const addO=(n)=>{ awayScore+=n; qa[q]+=n; };
@@ -1100,6 +1161,7 @@ function generateMatchEvents(rakip, opts){
     if(!userPos && defPressTO>0 && Math.random()<defPressTO){
       const stealer=uAny();
       B.to++; D.stl++;
+      fastNext='steal';
       events.push({type:'steal',text:`🔥 Pres tuttu — ${stealer.isim} topu çaldı! ${sc()}`,q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:true,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       return;
     }
@@ -1107,21 +1169,36 @@ function generateMatchEvents(rakip, opts){
     if(userPos && offRushTO>0 && Math.random()<offRushTO){
       const stealer=oAny();
       B.to++; D.stl++;
+      fastNext='steal';
       events.push({type:'steal',text:`⚡ Erken hücumda hata — ${stealer.isim} topu kaptı. ${sc()}`,q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:false,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       return;
     }
 
     if(roll<0.80){
-      /* Saha içi şut denemesi */
-      const is3=Math.random()<(userPos?userIs3Oran:0.32);
+      /* Saha içi şut denemesi. Hızlı hücum: çalma/savunma ribaundu sonrası her iki takım
+         için doğal olarak tetiklenir; kullanıcının hızlı tempo/odak seçimi ihtimali artırır. */
+      let fbCh=fromTrans==='steal'?0.55:fromTrans==='reb'?0.25:0;
+      if(fbCh&&userPos&&(tempo==='hizli'||odak==='hizli')) fbCh=Math.min(0.9,fbCh*1.6);
+      if(fbCh&&userPos&&tempo==='yavas') fbCh*=0.5;
+      const fb=!putback&&Math.random()<fbCh;
+      const is3=putback?false:Math.random()<(userPos?userIs3Oran:0.32);
       const clutch=(q>=4 && t<=120);
       /* Faz 3 — rakip isabeti savunma stiline ve yıldız eşleştirmesine göre ayarlanır.
          Eşleştirmede rakip yıldızının isabeti belirgin düşer (o oyuncu için ×0.82). */
       const markMul=(markStar&&oppPool.length&&shooter===oppPool[0])?0.82:1;
       const oppAcc=(is3?0.35*defOppAcc3Mul:0.495*defOppAcc2Mul)*oMul*markMul;
       const acc=userPos?shooterAcc(shooter,is3,is3?0.355+acc3:0.505+acc2,clutch):oppAcc;
-      const made=Math.random()<Math.max(0.14,Math.min(0.72,acc));
-      const xy=randShotXY(userIsHome===userPos,is3,made);
+      /* Ev avantajı (eski %53 pozisyon payının yerine, isabete taşındı) + hızlı hücumda kolay sayı. */
+      let accF=acc*((userPos===userIsHome)?1.03:0.97);
+      if(fb&&!is3) accF+=0.07;
+      const made=Math.random()<Math.max(0.14,Math.min(0.72,accF));
+      /* Putback: pota dibinden ikinci şans — şut noktası çembere yapışık. */
+      let xy;
+      if(putback){
+        const rm=(userPos===userIsHome)?RIM_L:RIM_R, dr=(userPos===userIsHome)?1:-1;
+        const an=rand(-75,75)*Math.PI/180, rr=rand(14,58);
+        xy={x:rm[0]+dr*Math.cos(an)*rr,y:rm[1]+Math.sin(an)*rr};
+      } else xy=randShotXY(userIsHome===userPos,is3,made);
       const pts=is3?3:2;
       let passer=null;
       if(made){
@@ -1177,6 +1254,8 @@ function generateMatchEvents(rakip, opts){
         rebounder=rebOff?(userPos?uAny():oAny()):(userPos?oAny():uAny());
         if(rebOff){ B.reb++; if(userPos) bumpP(rebounder,'reb',1); else bumpO(rebounder,'reb',1); }
         else { D.reb++; if(userPos) bumpO(rebounder,'reb',1); else bumpP(rebounder,'reb',1); }
+        posNext=rebOff?userPos:!userPos;   /* ribaundu alan takım hücuma devam eder */
+        if(!rebOff) fastNext='reb';
       }
       /* Anlatım-geometri tutarlılığı: şut noktasının çembere uzaklığından sınıf çıkar.
          ≤90px (~2.7m) = "yakin" (turnike/smaç dili serbest); üstü = "orta" (turnike dili YASAK). */
@@ -1198,13 +1277,17 @@ function generateMatchEvents(rakip, opts){
       } else {
         txt=spikerLine(SP.id,is3?'miss3':'miss2',{s:shooter.isim,cls});
       }
-      events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      if(fb) txt='⚡ Hızlı hücum! '+txt;
+      else if(putback) txt='İkinci şans! '+txt;
+      events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q,fb:fb||undefined,pb:putback||undefined,blk:blocked||undefined},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       /* Kaçan şutlarda ~%22 renkli ribaund anlatımı (hücum/savunma). */
       if(!made&&rebounder&&Math.random()<0.22){
         const rl=(rebOff?ch(REB_OFF_LINES):ch(REB_DEF_LINES)).replace('%R',rebounder.isim);
         /* Sahnedeki jeton anlatımdaki oyuncuyla eşleşsin: kimlik + taraf event'e yazılır. */
         const rebIsUser=rebOff?userPos:!userPos;
         events.push({type:'reb',text:rl,q,t,home:homeScore,away:awayScore,rebId:rebounder.id,rebIsUser,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+        /* Hücum ribaundu + anlatım basıldıysa: ~%55 aynı oyuncu pota dibinden tekrar dener (putback). */
+        if(rebOff&&rebounder.id!=null&&Math.random()<0.55) shooterHint=rebounder;
       }
 
     } else if(roll<0.90){
@@ -1235,6 +1318,7 @@ function generateMatchEvents(rakip, opts){
             box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         } else {
           const cnt=defenderIsUser?(qFoulU[q]||0):(qFoulO[q]||0);
+          posNext=userPos;   /* şutsuz faul: top hücum eden takımda kalır (yandan devam) */
           events.push({type:'foul',text:`Faul — ${foulingTeamName(defenderIsUser)} bu çeyrek ${cnt}. faulünü yaptı (5'te bonus başlar). Top yandan.`,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         }
       } else {
@@ -1244,15 +1328,18 @@ function generateMatchEvents(rakip, opts){
         if(keep>=1||Math.random()<keep){
           const stealer=userPos?oAny():uAny();
           B.to++; D.stl++;
+          fastNext='steal';
           events.push({type:'steal',text:spikerLine(SP.id,'steal',{c:stealer.isim}),q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         } else {
           /* Top kaybı savuşturuldu — sabırlı/kontrollü pozisyon, top el değiştirmedi (sayı yok). */
+          posNext=userPos;
           events.push({type:'tactic',text:spikerLine(SP.id,'tactic',{})+(userPos&&offStealKeep<1?' — sabırlı set oyunu.':''),q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         }
       }
 
     } else {
-      /* Renk — mola/taktik vurgusu */
+      /* Renk — mola/taktik vurgusu (pozisyon değişmez, oyun aynı topla sürer) */
+      posNext=userPos;
       events.push({type:'tactic',text:spikerLine(SP.id,'tactic',{})+` (${ch(['pick-and-roll','el presi','2-3 bölge','erken tempo'])})`,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
     }
   }

@@ -173,9 +173,9 @@ function startMatch(playoff){
       mState.allShots.push(sh);
       /* Gerçekçi hücum: top getirilir, paslaşılır, şutöre gelir.
          İz top elden çıkarken; SKOR+ANLATIM+ses top çembere varınca (tam senkron). */
-      animateShotPossession(sh,
+      mState._animMs=animateShotPossession(sh,
         ()=>{ if(shotPassesFilter(sh)) drawShotMark(sh); },
-        ()=>{ paint(); if(sh.made) sfx('score'); });
+        ()=>{ paint(); if(sh.made) sfx('score'); })||2900;
     } else {
       if(ev.shots){
         ev.shots.forEach(sh=>{
@@ -235,10 +235,10 @@ function startMatch(playoff){
       applyMatchResult(ev,{seasonMatchIx:mState.seasonMatchIx,isPlayoff:mState.isPlayoff,isCup:mState.isCup,playoffMatch:mState.playoffMatch,rakipName:mState.rakipName,userIsHome:mState.userIsHome});
       return;
     }
-    /* Şutlu hücumlar top ayak-ayak aktığı için daha uzun sürer (anlatımla senkron);
-       şutsuz olaylar (ribaund, top kaybı, mola) daha kısa geçer. */
-    /* Şutlu hücum ~2.9 sn'de çözülür (gerçekçi koşu hızları) — olay 3.1 sn'de değişir. */
-    const delay=ev.shot?3100:(ev.type==='free'?1700:(ev.type==='quarter_start'||ev.type==='quarter_end'||ev.type==='tactic'?1500:1300));
+    /* Şutlu hücumun süresi hücum türüne göre değişir: putback ~1.7sn, hızlı hücum ~2.2sn,
+       izolasyon ~2.8sn, set oyunu ~3.1sn (animateShotPossession'ın döndürdüğü süre + pay).
+       Şutsuz olaylar (ribaund, top kaybı, mola) daha kısa geçer. */
+    const delay=ev.shot?((mState._animMs||2900)+220):(ev.type==='free'?1700:(ev.type==='quarter_start'||ev.type==='quarter_end'||ev.type==='tactic'?1500:1300));
     matchEventTimer=setTimeout(matchStep,delay);
   }
   mState.step=matchStep;
