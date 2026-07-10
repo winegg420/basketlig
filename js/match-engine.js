@@ -492,6 +492,34 @@ function _eventOff(ev){
   return mState._lastOff!==false;
 }
 
+/* ── Kenardan oyuna sokma ─────────────────────────────────────────────────
+   Gerçek maç akışı: sayı/faul sonrası top KENDİ KENDİNE oyuna girmez — bir
+   hücumcu topu alıp çizgi gerisine çıkar, içeri pası O atar, sonra sahaya
+   geri koşar. _inboundSetup sokucuyu seçer (spot'a en yakın, hariç listesi
+   dışında), topu ona verir ve çizgi dışına yollar; _inboundPass içeri pası
+   atar ve sokucuyu saklanan formasyon hedefine geri döndürür. */
+function _inboundSetup(spot,offP,exclude){
+  let inb=null,bd=1e9;
+  offP.forEach(p=>{
+    if(exclude&&exclude.indexOf(p)>=0) return;
+    const d=Math.hypot(p.x-spot.x,p.y-spot.y);
+    if(d<bd){bd=d;inb=p;}
+  });
+  if(!inb) inb=offP[offP.length-1];
+  inb._retTx=inb.tx; inb._retTy=inb.ty;               /* formasyon hedefini sakla */
+  inb.maxV=inb.sprintV; inb.tx=spot.x; inb.ty=spot.y; /* çizgi gerisine koş */
+  _ballHold(inb);                                     /* top ona gelir, taşırken elinde */
+  return inb;
+}
+function _inboundPass(inb,to,dur){
+  _ballPass(to,dur||0.32);
+  if(inb){                                            /* pası attı → sahaya geri dön */
+    if(inb._retTx!=null){ inb.tx=inb._retTx; inb.ty=inb._retTy; }
+    inb._retTx=inb._retTy=null;
+    inb.maxV=inb.baseV;
+  }
+}
+
 /** Olay geldiğinde oyuncuları yeniden konumla + şutsuz olayların top koreografisi. */
 function movePlayersForEvent(ev){
   try{
@@ -585,9 +613,12 @@ function movePlayersForEvent(ev){
       return;
     }
     if(type==='foul'){
-      /* Düdük: oyun durur, top yandan girer. */
-      const p=offP[0];
-      _script([{at:0.10,fn:()=>_ballHold(p)}]);
+      /* Düdük: oyun durur, top EN YAKIN yan çizgiden bir hücumcu eliyle oyuna sokulur. */
+      const bl=S.ball;
+      const spot={x:Math.max(70,Math.min(870,bl.x)),y:bl.y<250?30:470};
+      const recv=offP[0];
+      const inb=_inboundSetup(spot,offP,[recv]);
+      _script([{at:0.55,fn:()=>_inboundPass(inb,recv,0.28)}]);
       return;
     }
     /* tactic / diğer: set oyunu — top çevrede paslaşır. */
@@ -595,12 +626,13 @@ function movePlayersForEvent(ev){
     const needBall=(!b.carrier||offP.indexOf(b.carrier)<0);
     const a1=offP[rand(1,4)], a2=offP[rand(1,4)];
     if(needBall&&(S.prevType==='score2'||S.prevType==='score3'||S.prevType==='free')){
-      /* Sayı sonrası: top dip çizgi gerisinden (kenardan) oyuna sokulur. */
-      _ballPass({x:offLeft?902:38,y:250+(Math.random()<0.5?-1:1)*rand(30,80),vx:0,vy:0,side:1},0.20);
+      /* Sayı sonrası: bir hücumcu topu dip çizgi GERİSİNE taşır, içeri pası O atar. */
+      const spot={x:offLeft?902:38,y:250+(Math.random()<0.5?-1:1)*rand(30,80)};
+      const inb=_inboundSetup(spot,offP,[offP[0]]);
       _script([
-        {at:0.45,fn:()=>_ballPass(offP[0],0.32)},
-        {at:1.00,fn:()=>_ballPass(a1)},
-        {at:1.40,fn:()=>_ballPass(a2!==a1?a2:offP[0])}
+        {at:0.60,fn:()=>_inboundPass(inb,offP[0],0.30)},
+        {at:1.10,fn:()=>_ballPass(a1)},
+        {at:1.45,fn:()=>_ballPass(a2!==a1?a2:offP[0])}
       ]);
       return;
     }
@@ -695,13 +727,15 @@ function animateShotPossession(sh,onShoot,onResult){
       if(d>36) _ballPass({x:sh.x,y:sh.y,vx:0,vy:0,side:1},Math.max(0.12,Math.min(0.22,d/700)));
     };
 
-    /* Topu oyuna getirme: SAYI SONRASI dip çizgi gerisinden içeri sokulur (kenardan oyuna
-       sokma); putback'te top zaten ribauntçuda; diğer durumlarda çıkış pasıyla oyun kurucuya. */
-    let inbound=false;
+    /* Topu oyuna getirme: SAYI SONRASI bir hücumcu topu alıp dip çizgi gerisine çıkar,
+       içeri pası O atar (kenardan sokma); putback'te top zaten ribauntçuda; diğer
+       durumlarda çıkış pasıyla oyun kurucuya. */
+    let inbound=false, inb=null;
     if(putback){
       /* top ribauntçunun elinde kalır */
     } else if(afterMade){
-      _ballPass({x:offLeft?902:38,y:250+(Math.random()<0.5?-1:1)*rand(30,80),vx:0,vy:0,side:1},0.20);
+      const spot={x:offLeft?902:38,y:250+(Math.random()<0.5?-1:1)*rand(30,80)};
+      inb=_inboundSetup(spot,offP,[pg,shooter]);
       inbound=true;
     } else {
       const d0=Math.hypot(b.x-pg.x,b.y-pg.y);
@@ -744,7 +778,13 @@ function animateShotPossession(sh,onShoot,onResult){
       ];
       ret=2900;
     }
-    if(inbound) steps.unshift({at:0.42,fn:()=>_ballPass(pg,0.32)}); /* dip çizgiden içeri pas */
+    if(inbound){
+      /* Sokucunun çizgi gerisine varması için pay: içeri pas 0.60'ta, hücumun
+         kalan adımları 0.25sn ötelenir (süre matchStep gecikmesine yansır). */
+      steps.forEach(s=>{ s.at+=0.25; });
+      steps.unshift({at:0.60,fn:()=>_inboundPass(inb,pg,0.30)});
+      ret+=250;
+    }
     _script(steps);
     return ret;
   }catch(e){ return 0; }
