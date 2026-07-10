@@ -203,7 +203,14 @@ function startMatch(playoff){
       const i=mState.userCourtIds.indexOf(ev.subOut);
       if(ev.subIn){ if(i>=0) mState.userCourtIds[i]=ev.subIn; else mState.userCourtIds.push(ev.subIn); mState.subbedIds.add(ev.subIn); }
       else if(i>=0) mState.userCourtIds.splice(i,1);
+      /* Saha jetonu da yeni oyuncuya geçsin (isim etiketi + hız). */
+      if(ev.subIn){
+        const inP=(G.players||[]).find(pp=>pp.id===ev.subIn);
+        if(inP) swapCourtToken(ev.subOut,inP);
+      }
     }
+    /* Rakip tarafı: bot oyuncular G.players'ta yok, event nesneyi doğrudan taşır. */
+    if(ev.subOutObj&&ev.subInObj) swapCourtToken(ev.subOutObj.id,ev.subInObj);
     if(ev.type==='quarter_start'){ mState.subsLeft=3; }
     /* Manuel koçluk açıksa çeyrek/ölü top arasında duraklat, değişiklik penceresini göster. */
     if(mState.manualCoach && (ev.type==='quarter_end' || (ev.type==='tactic'&&ev.t<=320)) && ev.q<=4 && mState.idx<mState.events.length){

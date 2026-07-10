@@ -162,6 +162,22 @@ function initMatchPlayers(lu,rakip,oppPlayers){
   }catch(e){}
 }
 
+/** 5 faulle çıkan oyuncunun saha jetonunu yerine giren oyuncuya devret (görsel senkron). */
+function swapCourtToken(outId,inPlayer){
+  try{
+    const S=(typeof mState!=='undefined'&&mState)?mState._sim:null;
+    if(!S||!inPlayer||outId==null) return;
+    const all=S.home.concat(S.away);
+    const tok=all.find(p=>p.pl&&p.pl.id===outId);
+    if(!tok) return;
+    tok.pl=inPlayer;
+    const bv=_tokBaseV(inPlayer);
+    tok.baseV=bv; tok.sprintV=bv*1.5; tok.maxV=bv;
+    const nm=tok.g&&tok.g.querySelector('text:last-child');
+    if(nm) nm.textContent=_tokShort(inPlayer.isim);
+  }catch(e){}
+}
+
 /* ── Ana döngü ───────────────────────────────────────────────────────────── */
 function _simStart(){
   const S=mState._sim; if(!S||S.raf) return;
@@ -530,22 +546,41 @@ function movePlayersForEvent(ev){
       return;
     }
 
+    /* Ribaund: önceki şutun devamı — yeniden diziliş YOK (formasyon, ribauna koşan
+       oyuncunun hedefini siliyordu). Anlatımdaki oyuncu (rebId) topu alır. */
+    if(type==='reb'){
+      let reb=null;
+      if(ev.rebId!=null){
+        const pool=(ev.rebIsUser!=null)?(ev.rebIsUser?S.home:S.away):S.players;
+        reb=pool.find(p=>p.pl&&p.pl.id===ev.rebId)||null;
+      }
+      if(!reb) reb=(Math.random()<0.5?offP:defP)[rand(0,4)];
+      clearBallTimers();
+      _script([{at:0.15,fn:()=>_ballHold(reb)}]);
+      return;
+    }
+
     _setFormation(offLeft,offP,defP,null);
     clearBallTimers();
 
     if(type==='steal'){
-      /* Top kaybı: top elden çıkar, karşı takımdan biri üzerine koşar ve alır. */
-      const thief=defP[rand(0,4)];
+      /* Top kaybı: top elden çıkar, anlatımdaki oyuncu (stealId) üzerine koşar ve alır. */
+      let thief=null;
+      if(ev.stealId!=null){
+        const pool=(ev.stealIsUser!=null)?(ev.stealIsUser?S.home:S.away):defP;
+        thief=pool.find(p=>p.pl&&p.pl.id===ev.stealId)||null;
+      }
+      if(!thief) thief=defP[rand(0,4)];
       const b=S.ball;
       const a=Math.random()*6.283;
       _ballLoose(Math.cos(a)*140,Math.sin(a)*140,55);
       thief.maxV=thief.sprintV; thief.tx=b.x; thief.ty=b.y;
-      _script([{at:0.55,fn:()=>{ _ballHold(thief); }}]);
-      return;
-    }
-    if(type==='reb'){
-      const reb=(Math.random()<0.5?offP:defP)[rand(0,4)];
-      _script([{at:0.15,fn:()=>_ballHold(reb)}]);
+      /* Top loose modda sürtünmeyle kaymaya devam ediyor — hedefi ara adımlarla tazele. */
+      _script([
+        {at:0.15,fn:()=>{ thief.tx=b.x; thief.ty=b.y; }},
+        {at:0.35,fn:()=>{ thief.tx=b.x; thief.ty=b.y; }},
+        {at:0.55,fn:()=>{ _ballHold(thief); }}
+      ]);
       return;
     }
     if(type==='foul'){
@@ -992,7 +1027,8 @@ function generateMatchEvents(rakip, opts){
     const ix=oppCourt.indexOf(p);
     if(sub){ if(ix>=0) oppCourt[ix]=sub; else oppCourt.push(sub); }
     else if(ix>=0) oppCourt.splice(ix,1);
-    events.push({type:'foul',text:`⚠️ ${rname} — ${p.isim} 5. faulüne ulaştı ve oyundan atıldı${sub?` — yerine ${sub.isim} girdi.`:' — rakibin yedeği kalmadı, eksik oynuyor.'} (${homeScore} - ${awayScore})`,q,t:t||0,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+    /* Rakip bot havuzu G.players'ta yok — id yerine oyuncu nesnesi taşınır (saha jetonu değişimi için). */
+    events.push({type:'foul',text:`⚠️ ${rname} — ${p.isim} 5. faulüne ulaştı ve oyundan atıldı${sub?` — yerine ${sub.isim} girdi.`:' — rakibin yedeği kalmadı, eksik oynuyor.'} (${homeScore} - ${awayScore})`,q,t:t||0,home:homeScore,away:awayScore,subOutObj:p,subInObj:sub||null,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
   }
   /* Savunma faulü kaydı — defenderIsUser=!userPos. Faul yapan takımın somut oyuncusuna yüklenir. */
   function recordFoul(defenderIsUser,q,t){
@@ -1064,14 +1100,14 @@ function generateMatchEvents(rakip, opts){
     if(!userPos && defPressTO>0 && Math.random()<defPressTO){
       const stealer=uAny();
       B.to++; D.stl++;
-      events.push({type:'steal',text:`🔥 Pres tuttu — ${stealer.isim} topu çaldı! ${sc()}`,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      events.push({type:'steal',text:`🔥 Pres tuttu — ${stealer.isim} topu çaldı! ${sc()}`,q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:true,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       return;
     }
     /* Faz 3 — Hızlı hücum: acele şutta kullanıcı pozisyonunda ekstra top kaybı riski. */
     if(userPos && offRushTO>0 && Math.random()<offRushTO){
       const stealer=oAny();
       B.to++; D.stl++;
-      events.push({type:'steal',text:`⚡ Erken hücumda hata — ${stealer.isim} topu kaptı. ${sc()}`,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      events.push({type:'steal',text:`⚡ Erken hücumda hata — ${stealer.isim} topu kaptı. ${sc()}`,q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:false,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       return;
     }
 
@@ -1166,7 +1202,9 @@ function generateMatchEvents(rakip, opts){
       /* Kaçan şutlarda ~%22 renkli ribaund anlatımı (hücum/savunma). */
       if(!made&&rebounder&&Math.random()<0.22){
         const rl=(rebOff?ch(REB_OFF_LINES):ch(REB_DEF_LINES)).replace('%R',rebounder.isim);
-        events.push({type:'reb',text:rl,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+        /* Sahnedeki jeton anlatımdaki oyuncuyla eşleşsin: kimlik + taraf event'e yazılır. */
+        const rebIsUser=rebOff?userPos:!userPos;
+        events.push({type:'reb',text:rl,q,t,home:homeScore,away:awayScore,rebId:rebounder.id,rebIsUser,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       }
 
     } else if(roll<0.90){
@@ -1206,7 +1244,7 @@ function generateMatchEvents(rakip, opts){
         if(keep>=1||Math.random()<keep){
           const stealer=userPos?oAny():uAny();
           B.to++; D.stl++;
-          events.push({type:'steal',text:spikerLine(SP.id,'steal',{c:stealer.isim}),q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+          events.push({type:'steal',text:spikerLine(SP.id,'steal',{c:stealer.isim}),q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         } else {
           /* Top kaybı savuşturuldu — sabırlı/kontrollü pozisyon, top el değiştirmedi (sayı yok). */
           events.push({type:'tactic',text:spikerLine(SP.id,'tactic',{})+(userPos&&offStealKeep<1?' — sabırlı set oyunu.':''),q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
