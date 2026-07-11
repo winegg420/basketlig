@@ -332,7 +332,12 @@ function _ballStep(dt){
       b.x+=b.vx*dt; b.y+=b.vy*dt;
       b.vx*=(1-2.2*dt); b.vy*=(1-2.2*dt);
       b.h+=b.vh*dt; b.vh-=460*dt;
-      if(b.h<0){ b.h=0; b.vh=-b.vh*0.52; if(Math.abs(b.vh)<14) b.vh=0; }
+      if(b.h<0){
+        const impact=Math.abs(b.vh);   /* zemine çarpma hızı (sönümden ÖNCE) — sesin şiddetini bu belirler */
+        b.h=0; b.vh=-b.vh*0.52; if(Math.abs(b.vh)<14) b.vh=0;
+        /* Görsel sekme ile senkron tok ses: yalnız belirgin sekmelerde (ilk 1-2), mikro-sekmeler sessiz. */
+        if(impact>30&&typeof sfx==='function') sfx('bounce');
+      }
       b.x=Math.max(30,Math.min(910,b.x)); b.y=Math.max(28,Math.min(472,b.y));
       break;
     }
@@ -922,13 +927,13 @@ const SPIKER_LINES={
     tactic:['Set oyunu düzenleniyor, sabırlı hücum.','Savunma rotasyonu yeniden ayarlanıyor.','Tempo kontrolü — doğru karar.','Spacing yeniden kuruluyor, akıllı oyun.']
   },
   cem:{
-    score2:['%S potaya "merhaba" dedi, iki sayı! %SC','%S öyle bir bitirdi ki savunma özür diledi. %SC','%S turnikeyi servis etti, afiyet olsun! %SC','%S iki sayıyı cebe attı, kolay para! %SC','%S pota ile anlaştı, iki! %SC','%S savunmaya "pardon" bile demedi! %SC'],
-    score3:['%S üçlüğü fırına verdi, kıptı! %SC','%S o kadar uzaktı ki bilet kesildi — üç! %SC','%S yayı gördü, "neden olmasın" dedi! %SC','%S bombayı bıraktı, GPS bile şaşırdı! %SC','%S üçlükte usta, file yandı! %SC','%S köşeden selam gönderdi — üç! %SC'],
-    miss2:['%S kaçırdı, pota bugün nazlı!','%S ıskaladı, olur böyle şeyler!','%S turnike geri geldi, "hayır" dedi!','%S bu sefer file küstü!','%S kaçırdı, kahve molası lazım!'],
-    miss3:['%S üçlüğü uzaya gönderdi!','%S ıskaladı, yay bugün sağır!','%S bombayı ekti, filiz vermedi!','%S kaçtı, çember diyet yapıyor!'],
-    block:['%B "buraya giremezsin" dedi — blok!','%B topu iade etti, kargo bedava!','%B şapkayı taktı, %S şok!','%B kapıyı yüzüne kapadı!'],
-    steal:['%C topu "ödünç" aldı, geri vermez!','%C cebe attı, hırsız değil ama!','%C pası dinledi, çaldı gitti!','%C eli değdi, top el değiştirdi!'],
-    tactic:['Koç tahtaya bir şeyler karalıyor!','Taktik değişti, çaycı bile merak etti!','Yeni varyasyon — umarım işe yarar!','Hücumda plan B devreye giriyor!']
+    score2:['%S potaya "merhaba" dedi, iki sayı! %SC','%S öyle bir bitirdi ki savunma özür diledi. %SC','%S turnikede savunmayı seyirci bıraktı, iki! %SC','%S savunma daha dönmeden sayıyı yazdırdı! %SC','%S pota ile anlaştı, iki! %SC','%S savunmaya "pardon" bile demedi! %SC'],
+    score3:['%S yayın gerisinden fileyi dalgalandırdı — üç! %SC','%S neredeyse tribünden attı — üçlük! %SC','%S yayı gördü, "neden olmasın" dedi! %SC','%S bombayı bıraktı, file "şşşt" diye cevap verdi! %SC','%S üçlükte usta, file yandı! %SC','%S köşeden selam gönderdi — üç! %SC'],
+    miss2:['%S kaçırdı, pota bugün nazlı!','%S ıskaladı, olur böyle şeyler!','%S turnike geri geldi, "hayır" dedi!','%S bu sefer file küstü!','%S kaçırdı, top çemberi turladı ve çıktı!'],
+    miss3:['%S üçlük denedi, top fileye bile uğramadı — hava topu!','%S ıskaladı, yay bugün sağır!','%S bombayı ateşledi, top demire çarpıp geri döndü!','%S kaçırdı, çember bugün kimseyi içeri almıyor!'],
+    block:['%B "buraya giremezsin" dedi — blok!','%B topu geldiği yere geri yolladı — blok!','%B şapkayı taktı, %S şok!','%B boyalı alanın kapısını kapadı — blok!'],
+    steal:['%C pası havada okudu — top artık onun!','%C elini araya soktu, hücum ters döndü!','%C pası dinledi, çaldı gitti!','%C eli değdi, top el değiştirdi!'],
+    tactic:['Koç tahtaya bir şeyler karalıyor!','Taktik değişti, yedek kulübesi ayaklandı!','Yeni varyasyon — umarım işe yarar!','Hücumda plan B devreye giriyor!']
   },
   reha:{
     score2:['%S iki sayıyı buldu. %SC','%S pota altında tamamladı. %SC','%S orta mesafeden isabet kaydetti. %SC','%S basket, iki sayı hanesine. %SC','%S turnikeyi tamamladı. %SC','%S sağduyulu bir bitiriş. %SC'],
