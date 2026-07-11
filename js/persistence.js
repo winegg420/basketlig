@@ -461,8 +461,43 @@ function migrateEconomyV4ToV5(d){
 
 const SAVE_VERSIONS=[2,3,4,5];
 
+/* Güvenlik (18. oturum): kayıt verisi state'e yazılmadan önce işaretleme karakterlerinden
+   arındırılır. İsim alanları (takım/oyuncu/arena/menajer + lig/fikstür/kupa/koç/izci adları)
+   onlarca yerde escMatch'siz innerHTML'e gömülüyor — elle düzenlenip paylaşılan bir .json
+   kayıt dosyası içe aktarıldığında saklı XSS çalıştırabilirdi. Kayıt formatında meşru HTML
+   taşıyan alan yok (haber satırları sessionStorage'da, olay metinleri düz metin), bu yüzden
+   TÜM string alanlardan <>"'` güvenle temizlenir; & URL'leri (logoUrl) bozmamak için korunur —
+   tag açmak/attribute kırmak bu karakterler olmadan mümkün değil. Temiz kayıtta no-op. */
+function _stripSaveMarkup(o,depth){
+  if(o==null||depth>12) return o;
+  if(typeof o!=='object') return o;
+  if(Array.isArray(o)){
+    for(let i=0;i<o.length;i++){
+      const v=o[i];
+      if(typeof v==='string') o[i]=v.replace(/[<>"'`]/g,'');
+      else if(v&&typeof v==='object') _stripSaveMarkup(v,depth+1);
+    }
+    return o;
+  }
+  for(const k in o){
+    const v=o[k];
+    if(typeof v==='string') o[k]=v.replace(/[<>"'`]/g,'');
+    else if(v&&typeof v==='object') _stripSaveMarkup(v,depth+1);
+  }
+  return o;
+}
+function _sanitizeImportedSave(d){
+  _stripSaveMarkup(d,0);
+  /* UI giriş noktalarıyla aynı kurallar (& temizliği + trim + 40 karakter) ana ad alanlarına da: */
+  if(d.team&&typeof d.team==='object'&&d.team.isim!=null) d.team.isim=sanitizeTeamName(d.team.isim);
+  if(d.managerName!=null) d.managerName=sanitizeTeamName(d.managerName);
+  if(d.arena&&typeof d.arena==='object'&&d.arena.isim!=null) d.arena.isim=sanitizeTeamName(d.arena.isim);
+  return d;
+}
+
 function applyGameState(d){
   if(!d||!SAVE_VERSIONS.includes(d.v|0)) return false;
+  d=_sanitizeImportedSave(d); /* içe aktarma + normal yükleme tek noktadan temizlenir (idempotent) */
   if((d.v|0)<4) migrateEconomyV3ToV4(d);
   if((d.v|0)<5) migrateEconomyV4ToV5(d);
   G.coins=d.coins??START_KR;

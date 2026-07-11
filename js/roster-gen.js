@@ -314,8 +314,13 @@ function makeSubTemplate(){
 }
 
 function ensureTblState(){
-  const legacy=localStorage.getItem('charazay_tbl_v1');
-  let raw=localStorage.getItem(TBL_STORAGE_KEY)||localStorage.getItem('charazay_tbl_v3')||localStorage.getItem('charazay_tbl_v2')||legacy;
+  /* localStorage engellenebilir (gizli sekme/kurumsal politika/kota) — okuma başarısızsa
+     boş state'ten üret, yazma başarısızsa bellek-içi devam et (projedeki genel desen). */
+  let legacy=null,raw=null;
+  try{
+    legacy=localStorage.getItem('charazay_tbl_v1');
+    raw=localStorage.getItem(TBL_STORAGE_KEY)||localStorage.getItem('charazay_tbl_v3')||localStorage.getItem('charazay_tbl_v2')||legacy;
+  }catch(e){ legacy=null; raw=null; }
   let st=null;
   if(raw){ try{ st=JSON.parse(raw); }catch(e){ st=null; } }
   if(!st||!st.subs){
@@ -326,7 +331,7 @@ function ensureTblState(){
         st.subs[`${d}.${g}`]=makeSubTemplate();
       }
     }
-    localStorage.setItem(TBL_STORAGE_KEY,JSON.stringify(st));
+    try{ localStorage.setItem(TBL_STORAGE_KEY,JSON.stringify(st)); }catch(e){}
     return st;
   }
   let changed=false;
@@ -369,7 +374,7 @@ function ensureTblState(){
       }
     }
   }
-  if(changed||(legacy&&raw===legacy)) localStorage.setItem(TBL_STORAGE_KEY,JSON.stringify(st));
+  if(changed||(legacy&&raw===legacy)){ try{ localStorage.setItem(TBL_STORAGE_KEY,JSON.stringify(st)); }catch(e){} }
   return st;
 }
 
@@ -385,11 +390,11 @@ function assignUserToTblSlot(userTeamName){
     const sub=st.subs[k];
     if(!sub||!sub.teams||sub.teams.length!==LEAGUE_SIZE) continue;
     if(sub.teams.includes(userTeamName)){
-      localStorage.setItem(TBL_STORAGE_KEY,JSON.stringify(st));
+      try{ localStorage.setItem(TBL_STORAGE_KEY,JSON.stringify(st)); }catch(e){}
       return k;
     }
     sub.teams[LEAGUE_SIZE-1]=userTeamName;
-    localStorage.setItem(TBL_STORAGE_KEY,JSON.stringify(st));
+    try{ localStorage.setItem(TBL_STORAGE_KEY,JSON.stringify(st)); }catch(e){}
     return k;
   }
   return 'tbl';
@@ -539,7 +544,7 @@ function applyPromotionRelegation(){
     fillFirstNullWithAi(st,key);
     st.subs[slot.key].teams[slot.ix]=un;
     G.team.tblKey=slot.key;
-    localStorage.setItem(TBL_STORAGE_KEY,JSON.stringify(st));
+    try{ localStorage.setItem(TBL_STORAGE_KEY,JSON.stringify(st)); }catch(e){}
     G.ligTeams=genLigTeams();
     G.season=null;
     G.seasonFixtures=[];
