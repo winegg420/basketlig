@@ -505,9 +505,12 @@ function _inboundSetup(spot,offP,exclude){
     const d=Math.hypot(p.x-spot.x,p.y-spot.y);
     if(d<bd){bd=d;inb=p;}
   });
-  if(!inb) inb=offP[offP.length-1];
+  if(!inb){ inb=offP[offP.length-1]; bd=Math.hypot(inb.x-spot.x,inb.y-spot.y); }
   inb._retTx=inb.tx; inb._retTy=inb.ty;               /* formasyon hedefini sakla */
   inb.maxV=inb.sprintV; inb.tx=spot.x; inb.ty=spot.y; /* çizgi gerisine koş */
+  /* Çizgiye varış süresi (ivmelenme payı dahil): içeri pas bundan önce atılmasın —
+     uzaktan seçilen sokucu sabit 0.55-0.60sn'de yetişemiyor, pas saha içinden çıkıyordu. */
+  inb._inbEta=Math.min(1.5,bd/Math.max(120,inb.sprintV||_PL_MAXV)+0.20);
   _ballHold(inb);                                     /* top ona gelir, taşırken elinde */
   return inb;
 }
@@ -618,7 +621,7 @@ function movePlayersForEvent(ev){
       const spot={x:Math.max(70,Math.min(870,bl.x)),y:bl.y<250?30:470};
       const recv=offP[0];
       const inb=_inboundSetup(spot,offP,[recv]);
-      _script([{at:0.55,fn:()=>_inboundPass(inb,recv,0.28)}]);
+      _script([{at:Math.max(0.55,inb._inbEta||0),fn:()=>_inboundPass(inb,recv,0.28)}]);
       return;
     }
     /* tactic / diğer: set oyunu — top çevrede paslaşır. */
@@ -629,10 +632,11 @@ function movePlayersForEvent(ev){
       /* Sayı sonrası: bir hücumcu topu dip çizgi GERİSİNE taşır, içeri pası O atar. */
       const spot={x:offLeft?902:38,y:250+(Math.random()<0.5?-1:1)*rand(30,80)};
       const inb=_inboundSetup(spot,offP,[offP[0]]);
+      const t0=Math.max(0.60,inb._inbEta||0), dl=t0-0.60; /* sokucu çizgiye varmadan pas yok */
       _script([
-        {at:0.60,fn:()=>_inboundPass(inb,offP[0],0.30)},
-        {at:1.10,fn:()=>_ballPass(a1)},
-        {at:1.45,fn:()=>_ballPass(a2!==a1?a2:offP[0])}
+        {at:t0,fn:()=>_inboundPass(inb,offP[0],0.30)},
+        {at:1.10+dl,fn:()=>_ballPass(a1)},
+        {at:1.45+dl,fn:()=>_ballPass(a2!==a1?a2:offP[0])}
       ]);
       return;
     }
@@ -779,11 +783,13 @@ function animateShotPossession(sh,onShoot,onResult){
       ret=2900;
     }
     if(inbound){
-      /* Sokucunun çizgi gerisine varması için pay: içeri pas 0.60'ta, hücumun
-         kalan adımları 0.25sn ötelenir (süre matchStep gecikmesine yansır). */
-      steps.forEach(s=>{ s.at+=0.25; });
-      steps.unshift({at:0.60,fn:()=>_inboundPass(inb,pg,0.30)});
-      ret+=250;
+      /* Sokucunun çizgi gerisine varması için pay: içeri pas onun varış süresinden (ETA)
+         önce atılmaz; hücumun kalan adımları aynı payla ötelenir (süre matchStep
+         gecikmesine yansır) — uzaktan seçilen sokucu artık saha içinden pas atmaz. */
+      const t0=Math.max(0.60,(inb&&inb._inbEta)||0), shift=0.25+(t0-0.60);
+      steps.forEach(s=>{ s.at+=shift; });
+      steps.unshift({at:t0,fn:()=>_inboundPass(inb,pg,0.30)});
+      ret+=Math.round(shift*1000);
     }
     _script(steps);
     return ret;
