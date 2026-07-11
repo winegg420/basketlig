@@ -29,3 +29,6 @@ Desktop.ini
 # --- Masaüstü (Tauri) derleme kalıntıları ---
 src-tauri/target/
 dist-desktop/
+
+# --- Ortam değişkenleri / gizli anahtarlar ---
+.env
