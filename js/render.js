@@ -516,7 +516,7 @@ function renderPlayerCard(p,showBuy=false,price=0,showPromote=false,showList=fal
     <div class="sgrid">
       ${STAT_KEYS.map(k=>`<div class="sitem"><span class="sname">${STAT_LABELS[k]}</span><span class="sval ${sv(p[k])}">${p[k]}</span></div>`).join('')}
     </div>
-    <div style="margin-top:8px;font-size:11px;color:var(--text2);">Maaş: <span style="color:var(--gold);">${fmtn(p.maas)} KR/hafta</span>${p.kontratSezon!=null?` · 📄 ${p.kontratSezon} sezon`:''}</div>
+    <div style="margin-top:8px;font-size:11px;color:var(--text2);">Maaş: <span style="color:var(--gold);">${fmtn(p.maas)} KR/hafta</span>${p.kontratSezon!=null?` · 📄 ${p.kontratSezon} sezon`:''}${showList?` · ${enerjiRozetHtml(p)}`:''}</div>
     ${p.sezon&&p.sezon.mac?`<div style="margin-top:4px;font-size:10px;color:var(--blue);">📊 Sezon: ${p.sezon.mac} maç · ${(p.sezon.pts/p.sezon.mac).toFixed(1)} sayı · ${(p.sezon.ast/p.sezon.mac).toFixed(1)} asist ort.</div>`:''}
     ${showBuy?`<button class="btn-bid" onclick="buyFromMarket('${p.id}')">TEKLİF VER — ${fmtn(price)} KR</button>`:''}
     ${showPromote?`<button class="btn-p" onclick="promoteYouth('${p.id}')" style="padding:7px;font-size:11px;margin-top:8px;">KADROYA AL</button>`:''}
@@ -618,7 +618,7 @@ function renderRosterListRow(p){
           <span style="font-size:11px;">⚔️${p.hucum}</span><span style="font-size:11px;">🛡️${p.savunma}</span>
           <span style="font-size:11px;">🏀${p.ribaund}</span><span style="font-size:11px;">✋${p.topCalma}</span>
         </div>
-        <div style="font-size:10px;color:var(--text2);margin-top:3px;">Maaş: ${fmtn(p.maas)} KR/hf</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:3px;">Maaş: ${fmtn(p.maas)} KR/hf · ${enerjiRozetHtml(p)}</div>
       </div>
       <div class="mprice">
         <button type="button" class="btn-bid" onclick="event.stopPropagation();listPlayerToMarket('${p.id}')">MARKETE KOY</button>

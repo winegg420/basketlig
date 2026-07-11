@@ -124,6 +124,46 @@ async function runViewport(browser, base, vp) {
   await snap('ayarlar');
   await page.evaluate(() => { try { closeAppModal(); } catch (e) {} });
 
+  // 6a) 20. oturum — Kadro sayfası enerji/yorgunluk rozetleri (⚡ / 🥵 / 🩹)
+  await page.evaluate(() => {
+    try {
+      const ps = G.players || [];
+      if (ps[0]) { ps[0].enerji = 30; ps[0].kronikYorgunlukSayisi = 3; }  /* kırmızı + 🥵×3 */
+      if (ps[1]) { ps[1].enerji = 55; ps[1].formReturnMatches = 2; }      /* sarı + 🩹 */
+      showPage('kadro', document.querySelector('#sbNav button[data-page="kadro"]'));
+    } catch (e) {}
+  });
+  await sleep(500);
+  await snap('kadro-enerji');
+
+  // 6a-2) İlk 5 editörü — yuva + yedek rozetleri; ardından riskli kaydetme uyarısı (20.5)
+  await page.evaluate(() => {
+    try {
+      openLineupEditor();
+      const id = _lineupEdit && _lineupEdit.slots[0];
+      const p = id ? _lineupPlayerById(id) : null;
+      if (p) { p.enerji = 30; p.kronikYorgunlukSayisi = 3; renderLineupEditor(); }
+    } catch (e) {}
+  });
+  await sleep(500);
+  await snap('ilk5-editor');
+  await page.evaluate(() => { try { saveLineup(); } catch (e) {} }); /* riskli ilk 5 → onay modalı açılmalı */
+  await sleep(400);
+  await snap('ilk5-risk-uyari');
+  await page.evaluate(() => {
+    try {
+      closeAppModal();
+      (G.players || []).forEach(p => { p.enerji = 100; p.kronikYorgunlukSayisi = 0; p.formReturnMatches = 0; });
+      G.lineup = null; _lineupEdit = null;
+    } catch (e) {}
+  });
+
+  // 6a-3) Öğretici — yeni ⚡ enerji/sakatlık riski adımı
+  await page.evaluate(() => { try { showTutorial(5); } catch (e) {} });
+  await sleep(400);
+  await snap('tutorial-enerji');
+  await page.evaluate(() => { try { closeAppModal(); } catch (e) {} });
+
   /* ── Genişletilmiş akışlar (Paket 6): durum hazırlanır, GERÇEK UI fonksiyonu çağrılır.
      Amaç: bu ekranların hiçbirinde konsol hatası olmaması + görsel kayıt. Sıra önemli:
      draft en sonda (finalize yeni sezon başlatır). ── */

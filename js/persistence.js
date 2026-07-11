@@ -299,6 +299,7 @@ const TUT_STEPS=[
   {ikon:'💰',baslik:'Ekonomi',metin:'Her hafta oyuncu maaşları, koç maaşları ve arena bakımı kasandan düşer. Ev maçlarında <strong>bilet geliri</strong> kazanırsın — galibiyetler tribünü doldurur. Detaylar <strong>Bilanço</strong> sayfasında.'},
   {ikon:'👥',baslik:'Kadro ve transfer',metin:'<strong>Kadro</strong>da oyuncularını incele; <strong>Transfer Market</strong>ten yenilerini al, ihtiyaç fazlasını sat (bonservisin %85\'i kasaya girer). <strong>Altyapı</strong>daki gençleri yükseltmeyi unutma — bazıları ham elmas!'},
   {ikon:'💪',baslik:'Gelişim',metin:'<strong>Antrenman</strong> sayfasından takım veya bireysel antrenman başlat; birkaç oyun günü sonra gelişim işlenir. Koçlar her hafta zayıf oyunculara küçük bonuslar verir.'},
+  {ikon:'⚡',baslik:'Enerji ve sakatlık riski',metin:'Oyuncuların enerjisi maç oynadıkça düşer. Düşük enerjiyle — özellikle art arda — sahaya sürdüğün oyuncularda <strong>sakatlanma riski artar</strong>. Kadro ve İlk 5 ekranlarındaki ⚡ göstergesini takip et; 🥵 art arda yorgun oynayanı, 🩹 sakatlıktan yeni döneni işaretler. Riskli oyuncuları dinlendir.'},
   {ikon:'🏆',baslik:'Hedef',metin:'İlk 5\'te bitir, üst lige yüksel, başarımları topla (sağ üstteki 🏆). Ayarlara ⚙️ simgesinden ulaşabilirsin. Bol şans!'}
 ];
 function showTutorial(step){

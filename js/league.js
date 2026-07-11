@@ -670,6 +670,16 @@ function openLineupEditor(){
   }catch(e){ dbg('openLineupEditor',e); showNotif('İlk 5 ekranı açılamadı.'); }
 }
 function _lineupPlayerById(id){ return (G.players||[]).find(p=>p.id===id); }
+/** 20. oturum: enerji + birikmiş yorgunluk rozetleri — salt görüntü katmanı, risk mantığına dokunmaz.
+ *  compact=true dar alanlar için (saha yuvası); renk eşikleri lineupBenchCardHtml ile aynı. */
+function enerjiRozetHtml(p,compact){
+  const en=Math.round(Number(p.enerji==null?100:p.enerji));
+  const enCol=en>=70?'var(--green)':en>=45?'var(--gold)':'var(--red)';
+  const kron=Number(p.kronikYorgunlukSayisi)||0;
+  const kronIk=kron>=2?`<span title="Art arda ${kron} maçtır yorgun oynadı — birikmiş sakatlık riski">${compact?'🥵':` 🥵×${kron}`}</span>`:'';
+  const donIk=(Number(p.formReturnMatches)||0)>0?`<span title="Sakatlıktan yeni döndü — sakatlık riski yüksek">${compact?'🩹':' 🩹 Yeni döndü'}</span>`:'';
+  return `<span style="color:${enCol};" title="Enerji ${en}/100 — düşük enerjiyle oynamak sakatlık riskini artırır">⚡${en}%</span>${kronIk}${donIk}`;
+}
 /** Yarı saha SVG'si (pota üstte) — yuvaların arkasına çizilir. */
 function lineupCourtSvg(){
   return `<svg viewBox="0 0 100 120" preserveAspectRatio="none">
@@ -704,16 +714,15 @@ function lineupSlotHtml(i){
     <img class="lu-av" src="${av}" ${playerAvatarImgAttrs(p.seed,p.id,{})} alt="">
     <span class="lu-nm">${escMatch(p.isim)}</span>
     <span class="lu-sub">OVR ${p.genel}</span>
+    <span class="lu-sub">${enerjiRozetHtml(p,true)}</span>
   </div>`;
 }
 function lineupBenchCardHtml(id){
   const p=_lineupPlayerById(id); if(!p) return '';
-  const en=Math.round(Number(p.enerji||100));
-  const enCol=en>=70?'var(--green)':en>=45?'var(--gold)':'var(--red)';
   const av=playerAvatar(p.seed,p.id,{});
   return `<div class="lu-card" data-lucard="${id}" onpointerdown="lineupPointerDown(event,'${id}','bench',-1)" onclick="lineupBenchTap('${id}')" title="Sürükle sahaya ya da tıkla">
     <img class="lu-av" src="${av}" ${playerAvatarImgAttrs(p.seed,p.id,{})} alt="">
-    <span class="lu-info"><b>${escMatch(p.isim)}</b><small>${p.poz} · OVR ${p.genel} · <span style="color:${enCol};">⚡${en}%</span></small></span>
+    <span class="lu-info"><b>${escMatch(p.isim)}</b><small>${p.poz} · OVR ${p.genel} · ${enerjiRozetHtml(p,true)}</small></span>
   </div>`;
 }
 function renderLineupEditor(){
@@ -838,10 +847,27 @@ function lineupPointerUp(ev){
   // tıklama olayının drag sonrası tetiklenmemesi için bayrağı bir tik sonra sıfırla
   setTimeout(()=>{ _luDragMoved=false; },0);
 }
-function saveLineup(){
+function saveLineup(force){
   if(!_lineupEdit) return;
   const starters=_lineupEdit.slots.filter(Boolean);
   if(starters.length<5){ showNotif('İlk 5 tam olmalı — 5 yuvayı da doldur.'); return; }
+  /* 20. oturum: proaktif risk uyarısı — düşük enerji (<45) veya art arda 3+ yorgun maç varsa kaydetmeden önce onay iste. */
+  if(!force){
+    const riskli=starters.map(id=>_lineupPlayerById(id))
+      .filter(p=>p&&(Math.round(Number(p.enerji==null?100:p.enerji))<45||(Number(p.kronikYorgunlukSayisi)||0)>=3));
+    if(riskli.length){
+      const list=riskli.map(p=>`<li style="margin:4px 0;font-size:12px;"><strong>${escMatch(p.isim)}</strong> — ${enerjiRozetHtml(p)}</li>`).join('');
+      showAppModal(`<div class="modal-title">⚠️ Riskli İlk 5</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.6;">Bu oyuncular yüksek sakatlık riskiyle sahaya çıkacak:</p>
+        <ul style="list-style:none;padding:0;margin:10px 0;">${list}</ul>
+        <p style="font-size:11px;color:var(--text2);line-height:1.5;">Düşük enerjiyle — özellikle art arda — oynayan oyuncularda sakatlanma ihtimali belirgin şekilde artar. Yine de sahaya sürmek istiyor musun?</p>
+        <div style="display:flex;gap:8px;margin-top:14px;">
+          <button type="button" class="btn-sm" style="flex:1;" onclick="renderLineupEditor()">↩ Geri dön</button>
+          <button type="button" class="btn-p" style="flex:1;padding:10px;" onclick="saveLineup(true)">Yine de kaydet</button>
+        </div>`);
+      return;
+    }
+  }
   G.lineup={starters:starters.slice(),bench:_lineupEdit.bench.slice()};
   scheduleGameSave();
   closeAppModal();
