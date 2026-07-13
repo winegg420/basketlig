@@ -166,8 +166,10 @@ function startMatch(playoff){
       if(ev.qh&&ev.qa) updateQuarterBoard(ev.qh,ev.qa,ev.home||0,ev.away||0);
       addComment(ev.text,ev.type);
     };
-    /* Önce oyuncuları yerleştir (top bu GERÇEK konumlara paslanacak), sonra topu canlandır. */
-    movePlayersForEvent(ev);
+    /* Önce oyuncuları yerleştir (top bu GERÇEK konumlara paslanacak), sonra topu canlandır.
+       Dönen süre (ms) koreografinin uzunluğu — olay gecikmesi buna uyum sağlar (hava atışı,
+       uzaktan gelen serbest atış şutörü vb. yarıda kesilmez). */
+    const mvMs=movePlayersForEvent(ev)||0;
     if(ev.shot){
       const sh={...ev.shot};
       mState.allShots.push(sh);
@@ -235,10 +237,12 @@ function startMatch(playoff){
       applyMatchResult(ev,{seasonMatchIx:mState.seasonMatchIx,isPlayoff:mState.isPlayoff,isCup:mState.isCup,playoffMatch:mState.playoffMatch,rakipName:mState.rakipName,userIsHome:mState.userIsHome});
       return;
     }
-    /* Şutlu hücumun süresi hücum türüne göre değişir: putback ~1.7sn, hızlı hücum ~2.2sn,
-       izolasyon ~2.8sn, set oyunu ~3.1sn (animateShotPossession'ın döndürdüğü süre + pay).
-       Şutsuz olaylar (ribaund, top kaybı, mola) daha kısa geçer. */
-    const delay=ev.shot?((mState._animMs||2900)+220):(ev.type==='free'?1700:(ev.type==='quarter_start'||ev.type==='quarter_end'||ev.type==='tactic'?1500:1300));
+    /* Şutlu hücumun süresi hücum türüne ve oyuncuların GERÇEK varış sürelerine göre değişir:
+       putback ~1.7sn, hızlı hücum ~2-3sn, set oyunu ~3-5sn (animateShotPossession döndürür).
+       Şutsuz olaylarda taban gecikme ile koreografi süresinin (mvMs) büyüğü kullanılır —
+       hava atışı, çeyrek başı yandan sokma ve serbest atış dizisi asla yarıda kesilmez. */
+    const base=ev.shot?((mState._animMs||2900)+220):(ev.type==='free'?1700:(ev.type==='quarter_start'||ev.type==='quarter_end'||ev.type==='tactic'?1500:1300));
+    const delay=ev.shot?base:Math.max(base,mvMs+240);
     matchEventTimer=setTimeout(matchStep,delay);
   }
   mState.step=matchStep;
