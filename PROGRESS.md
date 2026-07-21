@@ -2,6 +2,48 @@
 
 Tek dosyalık basketbol menajerlik oyunu (`charazay2.0.html`). Steam yayınına hazırlık.
 
+## 2026-07-21 (24. oturum) — Canlı maçı GERÇEKTEN İZLEYEREK saha akışı düzeltmesi (spacing + fast-break + sakin oyun kurma)
+
+Kullanıcı (haklı) şikâyeti: "kenardan sokup sakince oyun kurmak yok, sürekli orta sahadaki
+oyuncuya pas, sürekli hızlı hücum gibi, anlatım maçla senkron değil." 23. oturumda harness/konsol
+doğruladım ama maçı gerçek tarayıcıda İZLEMEDİM — kök neden görülmeden düzeltilemezdi.
+
+### Teşhis: gerçek Chrome'da canlı maç enstrümantasyonu + ekran görüntüsü analizi
+- Playwright gözlem harness'leri (scratchpad) sim'i sardı: pozisyon dalları, top izi, fast-break
+  oranı, ve **anlatım-top senkronu** ölçüldü + saha ekran görüntüleri alınıp gözle incelendi.
+- **Bulgu 1 (asıl sorun):** `OFF_BASE_L` formasyonu potaya çok sıkışıktı (x160-312/y114-386, ~150px
+  bant) → 10 oyuncu (5 hücum + 5 savunma markajı) sol çeyrekte ÜST ÜSTE yığılıyordu; sağ 2/3 boş.
+  Ekran görüntüsünde "basketbol değil, ragbi skrumu" görüntüsü. Bu "sürekli tek yere pas" hissinin kaynağı.
+- **Bulgu 2:** Fast break oranı yüksekti (çalma 0.55 / ribaund 0.25) → "sürekli hızlı hücum".
+- **Bulgu 3 (yanlış hipotez düzeltildi):** Anlatım senkronu MEKANİK OLARAK DOĞRU — 15/15 örnekte
+  şut anlatımı düştüğünde top tam çemberde (mode='rim'). Algılanan desenkron aslında spacing/blok
+  kaosundan kaynaklanıyordu.
+
+### Düzeltmeler (js/match-engine.js)
+- **Gerçek yarı saha açılımı:** `OFF_BASE_L` simetrik spread'e çekildi `[[320,250],[236,96],[236,404],
+  [150,178],[150,322]]` (PG top, kanatlar geniş y96/404, iki büyük boyada dikey ayrık) → min oyuncu
+  aralığı ~119px, dikey açılım y96-404. Ekran görüntüsü doğrulaması: oyuncular artık frontcourt'a
+  yayılıyor, eski tek-blok gitti.
+- **Sakin bring-up görünür:** topsuz hücumcular spacing'e HIZLA açılır (baseV×1.25 → sprintV×0.85),
+  savunma da geçişte yetişir (baseV×1.4 / pres sprintV×0.9) → tüm saha geçişinde blok halinde
+  kümelenmek yerine erken yayılır; top izinde artık net bring-up + paslaşma + şut ritmi var
+  (log: 749→671→630→519→357→158 karşı potaya taşınıp paslaşma → şut).
+- **Fast break seyrekleşti:** çalma sonrası 0.55→0.32, ribaund sonrası 0.25→0.12 (hızlı tempo/odak
+  çarpanı 1.6→1.7, tavan 0.9→0.75). Çoğu pozisyon artık sakin yarı saha hücumu.
+
+### Test
+- Gerçek Chrome ekran görüntüsü analizi (öncesi/sonrası): blok→yayılmış set ✔, sakin bring-up ✔.
+- VM band harness 200 maç: 92.1/85.8 (fast break azaldığı için deplasman hafif düştü, bant ~85-95
+  sağlam, ev avantajı +6.3), 0 istisna, play 24.251/24.251, 0 zone/tekrar ihlali.
+- Animasyon harness 7/7 hatasız. `node tools/visual-check.js` masaüstü+mobil 0 konsol hatası exit 0.
+- Cache-bust v25→v26.
+
+### Açık (dürüst not)
+Zaman-sıkıştırmalı 2D sim'de (10 dk çeyrek ~35sn'de oynanır, pozisyon ~3sn) NBA seviyesi mükemmel
+spacing + uzun yerleşik set daha büyük bir iş; bu oturum blok-kaosunu belirgin biçimde düzeltti ama
+kimi bring-up karelerinde hâlâ geçici yakınlaşma olabilir. İleride: pozisyon-içi daha çok pas,
+rol tabanlı topsuz döngü derinleştirilebilir.
+
 ## 2026-07-21 (23. oturum) — Canlı maç gerçekçilik revizyonu TAMAM (Faz 0-6): tek "play" tanımlayıcısı + bağlam + anti-tekrar anlatım + animasyon senkronu (perde/step-back/closeout/box-out) + pas sesi
 
 Kullanıcı prompt'u (canlı maç gerçekçilik revizyonu): anlatım tekrara düşüyor, bağlamdan

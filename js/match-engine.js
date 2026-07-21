@@ -404,9 +404,11 @@ function _script(steps){
 }
 
 /* ── Yerleşimler ─────────────────────────────────────────────────────────── */
-/* Sol potaya hücum eden takımın 5 nokta şablonu: 0=top(PG, yay üstü), 1/2=kanat (yay dışı),
-   3=forvet (orta mesafe/dirsek), 4=pivot (boya kenarı). Kanatlar çemberden >196px = 3 sayı yayı dışı. */
-const OFF_BASE_L=[[312,250],[258,114],[258,386],[190,166],[160,320]];
+/* Sol potaya hücum eden takımın 5 nokta şablonu — GERÇEK YARI SAHA AÇILIMI (4 dış + 1 post):
+   0=PG top (yay üstü), 1/2=kanat (yay dışı, geniş), 3=köşe (dip), 4=pivot (düşük post).
+   Eski şablon x160-312/y114-386 dar banda sıkışıp 10 oyuncuyu üst üste yığıyordu; artık
+   dikey açılım y95-405, köşe dibe, post boyada → "5 kişi sahaya yayılmış" gerçek görüntü. */
+const OFF_BASE_L=[[320,250],[236,96],[236,404],[150,178],[150,322]];
 /* Ribaund/serbest atış dizilimi (sol pota) */
 const FT_OFF_L=[[176,178],[176,322],[286,196],[286,304]];
 const FT_DEF_L=[[150,178],[150,322],[204,178],[204,322],[262,250]];
@@ -446,11 +448,15 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot){
     shooter=offPlayers[bi];
     B[bi]=[shot.x,shot.y];
   }
-  /* Şutör noktasına yetişmek için sprint atar (top elden çıkarken orada olmalı). */
+  /* Şutör noktasına yetişmek için sprint atar (top elden çıkarken orada olmalı).
+     Topsuz oyuncular spacing noktalarına biraz daha hızlı açılır (baseV×1.25) — bring-up
+     sırasında topun etrafında kümelenmek yerine sahaya yayılır. */
   offPlayers.forEach((p,i)=>{
     const c=B[i];
     p.tx=_jit(c[0],p===shooter?0:12); p.ty=_jit(c[1],p===shooter?0:12);
-    p.maxV=(p===shooter)?p.sprintV:p.baseV;
+    /* Topsuz oyuncular spacing noktalarına HIZLA açılır (~sprint): tüm saha geçişinde
+       blok halinde kümelenmek yerine erkenden yayılır → yerleşik yarı saha seti görünür olur. */
+    p.maxV=(p===shooter)?p.sprintV:p.sprintV*0.85;
   });
   /* ── Savunma ── kullanıcı savunuyorsa seçtiği stil, rakip bot savunuyorsa maç başında
      seçilen bot kimliği (çoğunlukla adam adama, bazen 2-3 bölge). */
@@ -507,7 +513,9 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot){
     /* markaj kaydedilir; _simStep her karede adamın GÜNCEL konumuna göre takip ettirir */
     p._mark=m; p._gap=gap;
     p.tx=_jit(m.tx+dx/d*gap,press?4:6); p.ty=_jit(m.ty+dy/d*gap,press?4:6);
-    p.maxV=(m===shooter)?p.sprintV*0.92:(press?p.baseV*1.12:p.baseV);
+    /* Savunma da geçişte adamına yetişecek hızda (hücum sprintle açılırken geride kalıp
+       "kaçış" görüntüsü vermesin) — yayılınca canlı takip (_simStep) devralır. */
+    p.maxV=(m===shooter)?p.sprintV*0.92:(press?p.sprintV*0.9:p.baseV*1.4);
   });
   S.shooter=shooter;
   return shooter;
@@ -1471,8 +1479,11 @@ function generateMatchEvents(rakip, opts){
     if(roll<0.80){
       /* Saha içi şut denemesi. Hızlı hücum: çalma/savunma ribaundu sonrası her iki takım
          için doğal olarak tetiklenir; kullanıcının hızlı tempo/odak seçimi ihtimali artırır. */
-      let fbCh=fromTrans==='steal'?0.55:fromTrans==='reb'?0.25:0;
-      if(fbCh&&userPos&&(tempo==='hizli'||odak==='hizli')) fbCh=Math.min(0.9,fbCh*1.6);
+      /* Hızlı hücum GERÇEK basketboldaki gibi seyrek: çoğu top çalma/savunma ribaundu
+         SAKİN yarı saha hücumuna döner. Eski oranlar (0.55/0.25) "sürekli hızlı hücum"
+         hissi veriyordu; düşürüldü (çalma sonrası ~0.32, ribaund sonrası ~0.12). */
+      let fbCh=fromTrans==='steal'?0.32:fromTrans==='reb'?0.12:0;
+      if(fbCh&&userPos&&(tempo==='hizli'||odak==='hizli')) fbCh=Math.min(0.75,fbCh*1.7);
       if(fbCh&&userPos&&tempo==='yavas') fbCh*=0.5;
       const fb=!putback&&Math.random()<fbCh;
       const is3=putback?false:Math.random()<(userPos?userIs3Oran:0.32);
