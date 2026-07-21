@@ -1016,8 +1016,12 @@ function animateShotPossession(sh,onShoot,onResult){
         steps.push({at:Math.max(0.12,_fireAt-0.14),fn:()=>{ shooter.tx=sh.x; shooter.ty=sh.y; }});
       } else if(mv==='drive'){
         steps.push({at:Math.max(0.1,_fireAt-0.5),fn:()=>{ shooter.maxV=shooter.sprintV; }});
+      } else if(mv==='crossover'||mv==='hesitation'){
+        /* FAZ 5: crossover/hesitation artık SAHADA da oynar — şutör yana kısa bir aldatma (juke)
+           yapıp gerçek şut noktasına döner. Metinde "crossover/aldatma" varken alan boş kalmasın. */
+        steps.push({at:Math.max(0.1,_fireAt-0.42),fn:()=>{ shooter.tx=sh.x+(offLeft?18:-18); shooter.ty=sh.y+(sh.y<250?12:-12); shooter.maxV=shooter.sprintV; }});
+        steps.push({at:Math.max(0.12,_fireAt-0.15),fn:()=>{ shooter.tx=sh.x; shooter.ty=sh.y; }});
       }
-      /* crossover/hesitation: top taşıyıcı hamlesi — salt kozmetik, hedef değişmez. */
     }
     if(inbound){
       /* Sokucunun çizgi gerisine varması için pay: içeri pas onun varış süresinden (ETA)
