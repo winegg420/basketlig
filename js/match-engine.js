@@ -66,7 +66,7 @@ function clearMatchCourt(){
 
 const _PL_MAXV=320;          /* px/sn — hız stat'ı yoksa yedek koşu hızı */
 const _PL_ACC=8.5;           /* hedefe yaklaşma sertliği */
-const _PL_R=25;              /* çarpışma yarıçapı */
+const _PL_R=42;              /* çarpışma yarıçapı — jetonlar bu mesafeden yakın durmaz (avgNN↑, overlap↓) */
 
 /* Oyuncunun gerçek koşu hızı — GERÇEK ÖLÇEK: saha 940px = 28m (1px ≈ 0.03m).
    `hiz` stat'ı (0-99) → 130-210 px/sn ≈ 3.9-6.3 m/sn (normal koşu); sprint ×1.5 →
@@ -267,7 +267,7 @@ function _simStep(dt){
       let dx=b.x-a.x, dy=b.y-a.y;
       let d=Math.hypot(dx,dy);
       if(d<_PL_R&&d>0.001){
-        const push=Math.min((_PL_R-d)/2,1.3); dx/=d; dy/=d;
+        const push=Math.min((_PL_R-d)/2,3.0); dx/=d; dy/=d;
         if(a===shooterTok){ b.x+=dx*push*2; b.y+=dy*push*2; }
         else if(b===shooterTok){ a.x-=dx*push*2; a.y-=dy*push*2; }
         else { a.x-=dx*push; a.y-=dy*push; b.x+=dx*push; b.y+=dy*push; }
@@ -404,11 +404,11 @@ function _script(steps){
 }
 
 /* ── Yerleşimler ─────────────────────────────────────────────────────────── */
-/* Sol potaya hücum eden takımın 5 nokta şablonu — GERÇEK YARI SAHA AÇILIMI (4 dış + 1 post):
-   0=PG top (yay üstü), 1/2=kanat (yay dışı, geniş), 3=köşe (dip), 4=pivot (düşük post).
-   Eski şablon x160-312/y114-386 dar banda sıkışıp 10 oyuncuyu üst üste yığıyordu; artık
-   dikey açılım y95-405, köşe dibe, post boyada → "5 kişi sahaya yayılmış" gerçek görüntü. */
-const OFF_BASE_L=[[320,250],[236,96],[236,404],[150,178],[150,322]];
+/* Sol potaya hücum eden takımın 5 nokta şablonu — TÜM ÖN SAHAYA YAYILMIŞ (x104-332, y66-434):
+   0=PG yay tepesi (330,250), 1/2=iki DİP KÖŞE üçlüğü (104, y66/434), 3=yüksek forvet/slot
+   (250,150), 4=pivot post (132,312). Eski dar bant (x150-320) 10 jetonu üst üste yığıyordu
+   ("skrum"); artık köşeler ve tüm genişlik kullanılıyor → gerçek basketbol spacing'i. */
+const OFF_BASE_L=[[394,250],[58,50],[58,450],[242,128],[112,298]];
 /* Ribaund/serbest atış dizilimi (sol pota) */
 const FT_OFF_L=[[176,178],[176,322],[286,196],[286,304]];
 const FT_DEF_L=[[150,178],[150,322],[204,178],[204,322],[262,250]];
@@ -453,10 +453,10 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot){
      sırasında topun etrafında kümelenmek yerine sahaya yayılır. */
   offPlayers.forEach((p,i)=>{
     const c=B[i];
-    p.tx=_jit(c[0],p===shooter?0:12); p.ty=_jit(c[1],p===shooter?0:12);
-    /* Topsuz oyuncular spacing noktalarına HIZLA açılır (~sprint): tüm saha geçişinde
-       blok halinde kümelenmek yerine erkenden yayılır → yerleşik yarı saha seti görünür olur. */
-    p.maxV=(p===shooter)?p.sprintV:p.sprintV*0.85;
+    p.tx=_jit(c[0],p===shooter?0:10); p.ty=_jit(c[1],p===shooter?0:10);
+    /* Topsuz oyuncular spacing noktalarına TAM SPRINT'le açılır: geçişte blok halinde
+       kümelenmez, erken yayılıp geniş köşe/kanat çapalarını tutar → xSpread/avgNN yüksek kalır. */
+    p.maxV=p.sprintV;
   });
   /* ── Savunma ── kullanıcı savunuyorsa seçtiği stil, rakip bot savunuyorsa maç başında
      seçilen bot kimliği (çoğunlukla adam adama, bazen 2-3 bölge). */
@@ -506,10 +506,12 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot){
     const m=offPlayers[assign[i]]||offPlayers[0];
     const dx=rim[0]-m.tx, dy=rim[1]-m.ty;
     const d=Math.hypot(dx,dy)||1;
-    /* jeton çapı 32 — pres basar (26), yıldız markajı yapışır (18+26), adam standart (40) */
-    let gap=(m===shooter)?26:40;
-    if(press) gap=(m===shooter)?22:26;
-    if(defIsUser&&tac.markStar&&assign[i]===0&&m!==shooter) gap=26;
+    /* Off-ball savunmacılar adamlarından GERÇEKÇİ mesafede sag atar (yardım pozisyonu ~60px);
+       top oyuncusu/şutör yakın markaja alınır (34). Böylece jetonlar üst üste binmez (avgNN↑),
+       savunma da hücum spacing'iyle birlikte tüm sahaya yayılır. Pres daha basar. */
+    let gap=(m===shooter)?42:84;
+    if(press) gap=(m===shooter)?30:46;
+    if(defIsUser&&tac.markStar&&assign[i]===0&&m!==shooter) gap=42;
     /* markaj kaydedilir; _simStep her karede adamın GÜNCEL konumuna göre takip ettirir */
     p._mark=m; p._gap=gap;
     p.tx=_jit(m.tx+dx/d*gap,press?4:6); p.ty=_jit(m.ty+dy/d*gap,press?4:6);
@@ -859,7 +861,7 @@ function animateShotPossession(sh,onShoot,onResult){
         if(!sh.contest||sh.contest==='open'||!defP||!defP.length) return;
         let dmin=1e9,dfn=null;
         for(const p of defP){ const d=Math.hypot(p.x-sh.x,p.y-sh.y); if(d<dmin){dmin=d;dfn=p;} }
-        if(dfn){ const dx=rim[0]-sh.x,dy=rim[1]-sh.y,dd=Math.hypot(dx,dy)||1; const g=sh.contest==='heavy'?16:24;
+        if(dfn){ const dx=rim[0]-sh.x,dy=rim[1]-sh.y,dd=Math.hypot(dx,dy)||1; const g=sh.contest==='heavy'?34:42;
           dfn._mark=null; dfn._zone=null; dfn.tx=sh.x+dx/dd*g; dfn.ty=sh.y+dy/dd*g; dfn.maxV=dfn.sprintV; }
       }catch(e){}
     };
@@ -935,7 +937,9 @@ function animateShotPossession(sh,onShoot,onResult){
       const t1=carryT+0.15;
       const t2=t1+0.65;
       const tFire=Math.max(t2+0.55,Math.min(carryT+3.0,etaTok(shooter,sh.x,sh.y)+0.25));
-      const cutter=relay.find(p=>p!==mid)||null;
+      /* Kesici tercihen BÜYÜK (C/PF): köşe/kanattaki guard'lar spot-up çapası olarak DURUR,
+         boyadan kesen büyük olur — köşeler boşalmaz, spread (xSpread) sabit yüksek kalır. */
+      const cutter=relay.find(p=>p!==mid&&p.pl&&(p.pl.poz==='C'||p.pl.poz==='PF'))||relay.find(p=>p!==mid)||null;
       steps=[];
       /* Faz 4: pick-and-roll — perdeci topu kurana gelir, ~0.5sn sabit perde kurar,
          sonra pota/boşluğa açılır (roll). Perdeci cutter'dan ayrık seçilir. */
@@ -945,12 +949,12 @@ function animateShotPossession(sh,onShoot,onResult){
         steps.push({at:t2+0.02,fn:()=>{ screener.tx=rim[0]+(offLeft?1:-1)*rand(28,62); screener.ty=250+rand(-30,30); screener.maxV=screener.sprintV; }});
       }
       if(cutter){
-        steps.push({at:carryT*0.6,fn:()=>{ cutter.tx=rim[0]+(offLeft?1:-1)*rand(55,85); cutter.ty=250+rand(-42,42); }});
-        steps.push({at:t2+0.05,fn:()=>{ cutter.tx=offLeft?rand(108,150):rand(790,832); cutter.ty=cutter.ty<250?rand(390,430):rand(70,110); }});
+        /* Zayıf taraf kesmesi: boyaya dalar, sonra GERİ KÖŞEYE (geniş) açılır — spacing korunur. */
+        steps.push({at:carryT*0.6,fn:()=>{ cutter.tx=rim[0]+(offLeft?1:-1)*rand(55,85); cutter.ty=250+rand(-40,40); }});
+        steps.push({at:t2+0.05,fn:()=>{ cutter.tx=offLeft?rand(70,100):rand(840,870); cutter.ty=cutter.ty<250?rand(414,450):rand(50,86); }});
       }
-      /* Faz 5: bir diğer topsuz oyuncu da zayıf tarafa açılır (spacing) — sahne "5 kişi çalışıyor". */
-      const spacer=relay.find(p=>p!==mid&&p!==cutter&&p!==screener)||null;
-      if(spacer) steps.push({at:Math.max(0.2,carryT*0.4),fn:()=>{ spacer.tx=offLeft?rand(150,214):rand(726,790); spacer.ty=spacer.ty<250?rand(88,140):rand(360,412); }});
+      /* Faz 5: diğer topsuz oyuncular (spacer) KÖŞE/KANAT çapalarında DURUR — spread bozulmaz
+         (spot-up tehdidi olarak geniş kalırlar, orta banda çekilmezler). */
       if(mid!==pg) steps.push({at:t1,fn:()=>_ballPass(mid,0.34)});   /* topu getirdi, ilk pas */
       /* Faz 6: asistçi (sh.pid) son pası atınca hafif pas sesi — görsel pasla senkron. */
       steps.push({at:t2,fn:()=>{ _ballPass(shooter,0.34); if(sh.pid!=null&&typeof sfx==='function') sfx('pass'); }});
@@ -1095,44 +1099,60 @@ const SPIKERS=[
   {id:'cem',ad:'Esprili Cem',stil:'Esprili',emoji:'😄'},
   {id:'reha',ad:'Klasik Reha',stil:'Resmî',emoji:'🎙️'}
 ];
+/* İŞ 4: havuzlar ~2 katına çıkarıldı (özellikle score2/miss2/score3/miss3) ve hamle/şema
+   kelimeleri (step-back, çalım, spin, pick-and-roll, transition, "dibe indi") core'lardan
+   TEMİZLENDİ — bu diller yalnız play.move/scheme dolduğunda MOVE_BY/ASSIST_PHRASES'ten gelir,
+   böylece söz sahada gerçekten olanla çelişmez. Bölge filtreleri (_NEAR/_MID) için her
+   score2/miss2 havuzunda yakın + orta + nötr kalıplar dengeli tutuldu. */
 const SPIKER_LINES={
   cosku:{
-    score2:['%S POTAYA ASILDI, İKİ SAYI! %SC','%S BOYALI ALANI YIKTI! %SC','%S DURDURULAMIYOR, kolay iki! %SC','%S ORTA MESAFEDEN VURDU, muhteşem! %SC','%S pota altında CANAVAR gibi! %SC','%S turnikeyi PATLATTI! %SC'],
-    score3:['%S DERİNDEN BOMBAYI PATLATTI — ÜÇLÜK! %SC','%S ÜÇLÜĞÜ GÖMDÜ, tribün ayakta! %SC','%S köşeden NİŞANCI gibi, üç! %SC','%S UZAKTAN VURDU, inanılmaz! %SC','%S yaydan ATEŞ etti — SWISH! %SC','%S logodan denedi ve GİRDİ! %SC'],
-    miss2:['%S kaçırdı, POTA İZİN VERMEDİ!','%S turnikede tökezledi!','%S bu sefer olmadı, çember reddetti!','%S yakındaydı ama SEKTİ!','%S iki sayıyı kaçırdı, yazık!'],
-    miss3:['%S üçlüğü KAÇTI, çemberden döndü!','%S uzaktan ıskaladı, olmadı!','%S bombayı boşa harcadı!','%S yay dışından vuramadı!'],
-    block:['%B MUAZZAM BLOK! %S geri döndü!','%B ŞAPKAYI TAKTI! İnanılmaz savunma!','%B topu SİLİP ATTI, ne blok ama!','%B duvar gibi, %S durduruldu!'],
-    steal:['%C TOPU KAPTI, hızlı hücum geliyoo!','%C pas arasını OKUDU, çaldı!','%C elini uzattı ve ALDI!','%C müthiş bir top çalma, koşuyor!'],
-    tactic:['Ritim değişiyor — tempo yükseliyoo!','Savunma kilitlendi, enerji tavanda!','Baskı artıyor, tribün ayakta!','Hücumda yeni varyasyon geliyoo!']
+    score2:['%S POTAYA ASILDI, İKİ SAYI! %SC','%S BOYALI ALANI YIKTI! %SC','%S turnikeyi PATLATTI! %SC','%S pota altında CANAVAR gibi, iki! %SC','%S ORTA MESAFEDEN VURDU, muhteşem! %SC','%S orta mesafeden soğukkanlı, iki! %SC','%S orta mesafe şutunu tutturdu! %SC','%S DURDURULAMIYOR, iki sayı! %SC','%S sayıyı yazdırdı, tribün ayakta! %SC','%S buz gibi bitirdi! %SC','%S coştu, iki daha geldi! %SC'],
+    score3:['%S DERİNDEN BOMBAYI PATLATTI — ÜÇLÜK! %SC','%S ÜÇLÜĞÜ GÖMDÜ, tribün ayakta! %SC','%S köşeden NİŞANCI gibi, üç! %SC','%S UZAKTAN VURDU, inanılmaz! %SC','%S yaydan ATEŞ etti — SWISH! %SC','%S logodan denedi ve GİRDİ! %SC','%S kanattan bombayı bıraktı! %SC','%S tereddütsüz çekti, üç geldi! %SC','%S file sallandı, muhteşem üçlük! %SC','%S yay dışından acımadı! %SC','%S üçlükte ateş hattında! %SC'],
+    miss2:['%S turnikede tökezledi!','%S POTA İZİN VERMEDİ, kaçtı!','%S yakındaydı ama SEKTİ!','%S orta mesafeden kaçırdı!','%S orta mesafe şutu kısa kaldı!','%S uzaktan denedi, olmadı!','%S çember reddetti!','%S bu sefer olmadı, yazık!','%S demire takıldı!','%S ıskaladı, seyirci sustu!'],
+    miss3:['%S üçlüğü KAÇTI, çemberden döndü!','%S uzaktan ıskaladı, olmadı!','%S bombayı boşa harcadı!','%S yay dışından vuramadı!','%S köşe üçlüğü havada kaldı!','%S demir dedi, girmedi!','%S üçlük kısa düştü!','%S file yerine demiri buldu!','%S dış atış tutmadı!'],
+    block:['%B MUAZZAM BLOK! %S geri döndü!','%B ŞAPKAYI TAKTI, inanılmaz savunma!','%B topu SİLİP ATTI!','%B duvar gibi, %S durduruldu!','%B kapağı kapadı, %S şaşkın!','%B uzun topu geri çevirdi!','%B savunmada devleşti!'],
+    steal:['%C TOPU KAPTI, koşuyoo!','%C pas arasını OKUDU, çaldı!','%C elini uzattı ve ALDI!','%C müthiş bir top çalma!','%C çizgiyi okudu, top bizde!','%C hücumu ters çevirdi!','%C aktif eller, çaldı gitti!'],
+    tactic:['Ritim değişiyor — tempo yükseliyoo!','Savunma kilitlendi, enerji tavanda!','Baskı artıyor, tribün ayakta!','Hücumda yeni varyasyon geliyoo!','Koç kenardan bağırıyor, tempo!']
   },
   bilge:{
-    score2:['%S doğru okumayla iki sayı buldu. %SC','%S pick-and-roll sonrası temiz bitiriş. %SC','%S ayak oyunuyla pozisyon aldı, iki. %SC','%S orta mesafe jump shot, mekanik kusursuz. %SC','%S savunmanın açığını görüp bitirdi. %SC','%S sabırlı hücum, yüksek yüzdeli şut. %SC'],
-    score3:['%S ayakları hazır, ritimli üçlük. %SC','%S spacing mükemmeldi, açık üç. %SC','%S catch-and-shoot, ders gibi. %SC','%S savunmayı yaydı ve cezalandırdı. %SC','%S transition üçlüğü, doğru karar. %SC','%S step-back ile alan yarattı, üç. %SC'],
-    miss2:['%S zorlama şut seçti, isabetsiz.','%S dengesi bozuktu, kaçtı.','%S savunma baskısında yüzde düştü.','%S bitiriş açısı kapalıydı.','%S acele etti, olmadı.'],
-    miss3:['%S ayakları hazır değildi, kısa.','%S kontestli üçlük, düşük yüzde.','%S ritim tutmadı, ıskaladı.','%S seçim tartışılır, kaçtı.'],
-    block:['%B iyi zamanlama, temiz blok — %S durdu.','%B rotasyonu erken geldi, blokladı.','%B dikey savunma, kurallı blok.','%B okuma harika, %S engellendi.'],
-    steal:['%C pas hattını kesti, kontrol onda.','%C anticipation üst düzey, çaldı.','%C ellerini aktif kullandı, top kaybı.','%C savunma disiplini, topu aldı.'],
-    tactic:['Set oyunu düzenleniyor, sabırlı hücum.','Savunma rotasyonu yeniden ayarlanıyor.','Tempo kontrolü — doğru karar.','Spacing yeniden kuruluyor, akıllı oyun.']
+    score2:['%S doğru okumayla pota altında bitirdi. %SC','%S boyalı alanda yüksek yüzdeli bitiriş. %SC','%S turnikeyi sakin tamamladı. %SC','%S pota altı pozisyonunu iyi kullandı. %SC','%S orta mesafe şutu, mekanik kusursuz. %SC','%S orta mesafeden yüksek yüzde. %SC','%S uzaktan dengeli bir jumper, iki. %SC','%S savunmanın açığını görüp bitirdi. %SC','%S sabırlı hücum, temiz iki. %SC','%S pozisyonu iyi okudu, iki. %SC','%S soğukkanlı bir bitiriş. %SC'],
+    score3:['%S ayakları hazır, ritimli üçlük. %SC','%S spacing mükemmeldi, açık üç. %SC','%S kusursuz mekanikle üç. %SC','%S savunmayı yaydı ve cezalandırdı. %SC','%S yüksek yüzdeli konumdan üç. %SC','%S dengeli çıkış, temiz üçlük. %SC','%S köşe üçlüğünü değerlendirdi. %SC','%S kanattan isabetli üç. %SC','%S sabırlı organizasyon, açık üçlük. %SC','%S doğru karar, yay dışından üç. %SC','%S ritmini buldu, üç sayı. %SC'],
+    miss2:['%S zorlama şut seçti, isabetsiz.','%S dengesi bozuktu, kaçtı.','%S savunma baskısında yüzde düştü.','%S bitiriş açısı kapalıydı.','%S acele etti, olmadı.','%S orta mesafeden kısa kaldı.','%S turnikede denge kaybı, kaçtı.','%S seçim hatalıydı, isabet yok.','%S ritim bozuldu, ıskaladı.','%S kontrolsüz şut, girmedi.'],
+    miss3:['%S ayakları hazır değildi, kısa.','%S kontestli üçlük, düşük yüzde.','%S ritim tutmadı, ıskaladı.','%S seçim tartışılır, kaçtı.','%S dengesiz çıkış, isabet yok.','%S zorlama üçlük, girmedi.','%S yay dışından yüzde düşük, kaçtı.','%S erken şut, demire geldi.','%S kapalı pozisyondan zorladı, olmadı.'],
+    block:['%B iyi zamanlama, temiz blok — %S durdu.','%B rotasyonu erken geldi, blokladı.','%B dikey savunma, kurallı blok.','%B okuma harika, %S engellendi.','%B yardım geldi ve blokladı.','%B pozisyonu tuttu, temiz blok.','%B disiplinli savunma, %S durduruldu.'],
+    steal:['%C pas hattını kesti, kontrol onda.','%C okuması üst düzey, çaldı.','%C ellerini aktif kullandı, top kaybı.','%C savunma disiplini, topu aldı.','%C pasör hatasını cezalandırdı.','%C boşluğu okudu, top bizde.','%C erken rotasyonla topu kaptı.'],
+    tactic:['Set oyunu düzenleniyor, sabırlı hücum.','Savunma rotasyonu yeniden ayarlanıyor.','Tempo kontrolü — doğru karar.','Spacing yeniden kuruluyor, akıllı oyun.','Hücum organizasyonu netleşiyor.']
   },
   cem:{
-    score2:['%S potaya "merhaba" dedi, iki sayı! %SC','%S öyle bir bitirdi ki savunma özür diledi. %SC','%S turnikede savunmayı seyirci bıraktı, iki! %SC','%S savunma daha dönmeden sayıyı yazdırdı! %SC','%S pota ile anlaştı, iki! %SC','%S savunmaya "pardon" bile demedi! %SC'],
-    score3:['%S yayın gerisinden fileyi dalgalandırdı — üç! %SC','%S neredeyse tribünden attı — üçlük! %SC','%S yayı gördü, "neden olmasın" dedi! %SC','%S bombayı bıraktı, file "şşşt" diye cevap verdi! %SC','%S üçlükte usta, file yandı! %SC','%S köşeden selam gönderdi — üç! %SC'],
-    miss2:['%S kaçırdı, pota bugün nazlı!','%S ıskaladı, olur böyle şeyler!','%S turnike geri geldi, "hayır" dedi!','%S bu sefer file küstü!','%S kaçırdı, top çemberi turladı ve çıktı!'],
-    miss3:['%S üçlük denedi, top fileye bile uğramadı — hava topu!','%S ıskaladı, yay bugün sağır!','%S bombayı ateşledi, top demire çarpıp geri döndü!','%S kaçırdı, çember bugün kimseyi içeri almıyor!'],
-    block:['%B "buraya giremezsin" dedi — blok!','%B topu geldiği yere geri yolladı — blok!','%B şapkayı taktı, %S şok!','%B boyalı alanın kapısını kapadı — blok!'],
-    steal:['%C pası havada okudu — top artık onun!','%C elini araya soktu, hücum ters döndü!','%C pası dinledi, çaldı gitti!','%C eli değdi, top el değiştirdi!'],
-    tactic:['Koç tahtaya bir şeyler karalıyor!','Taktik değişti, yedek kulübesi ayaklandı!','Yeni varyasyon — umarım işe yarar!','Hücumda plan B devreye giriyor!']
+    score2:['%S potaya "merhaba" dedi, iki sayı! %SC','%S turnikede savunmayı seyirci bıraktı! %SC','%S pota ile anlaştı, iki! %SC','%S boyalı alanı ziyaret etti, iki! %SC','%S orta mesafeden "bu benden" dedi! %SC','%S orta mesafe şutunu fileye ısmarladı! %SC','%S uzaktan göz kırptı, iki! %SC','%S öyle bitirdi ki savunma özür diledi. %SC','%S savunma dönmeden yazdırdı! %SC','%S savunmaya "pardon" demedi! %SC','%S file ile tokalaştı, iki! %SC'],
+    score3:['%S yayın gerisinden fileyi dalgalandırdı — üç! %SC','%S neredeyse tribünden attı — üçlük! %SC','%S yayı gördü, "neden olmasın" dedi! %SC','%S bombayı bıraktı, file "şşşt" dedi! %SC','%S üçlükte usta, file yandı! %SC','%S köşeden selam gönderdi — üç! %SC','%S logodan "niye olmasın" dedi, girdi! %SC','%S yay dışından fileye davetiye! %SC','%S üçlüğü postaladı, adrese teslim! %SC','%S kanattan bombayı gömdü! %SC','%S file ağladı, üçlük! %SC'],
+    miss2:['%S kaçırdı, pota bugün nazlı!','%S ıskaladı, olur böyle şeyler!','%S turnike geri geldi, "hayır" dedi!','%S bu sefer file küstü!','%S top çemberi turladı ve çıktı!','%S orta mesafeden selam gitti, karşılıksız!','%S pota kapıyı yüzüne kapadı!','%S demir "olmaz" dedi!','%S şut çemberde tur attı, çıktı!','%S bugün file uykuda!'],
+    miss3:['%S üçlük denedi, fileye bile uğramadı — hava topu!','%S ıskaladı, yay bugün sağır!','%S bombayı ateşledi, demir geri yolladı!','%S çember bugün kimseyi içeri almıyor!','%S köşe üçlüğü tribünü selamladı!','%S yay dışından mektup kayıp!','%S demir "yanlış numara" dedi!','%S üçlük havada asılı kaldı!','%S file bugün kapıyı açmıyor!'],
+    block:['%B "buraya giremezsin" dedi — blok!','%B topu geldiği yere geri yolladı!','%B şapkayı taktı, %S şok!','%B boyalı alanın kapısını kapadı!','%B "iade" damgası bastı — blok!','%B topa "dur" dedi, %S kaldı!','%B kapıcılık yaptı, blok!'],
+    steal:['%C pası havada okudu — top artık onun!','%C elini araya soktu, hücum ters döndü!','%C pası dinledi, çaldı gitti!','%C eli değdi, top el değiştirdi!','%C pas hattına daldı, top bizde!','%C hücumu cebe attı — çalma!','%C topu kibarca ödünç aldı, geri vermez!'],
+    tactic:['Koç tahtaya bir şeyler karalıyor!','Taktik değişti, yedek kulübesi ayaklandı!','Yeni varyasyon — umarım işe yarar!','Hücumda plan B devreye giriyor!','Koç zaman istedi, beyaz tahta doldu!']
   },
   reha:{
-    score2:['%S iki sayıyı buldu. %SC','%S pota altında tamamladı. %SC','%S orta mesafeden isabet kaydetti. %SC','%S basket, iki sayı hanesine. %SC','%S turnikeyi tamamladı. %SC','%S sağduyulu bir bitiriş. %SC'],
-    score3:['%S üç sayılık isabet kaydetti. %SC','%S dış atıştan başarılı. %SC','%S üçlük çizgisinden buldu. %SC','%S uzak mesafeden isabet. %SC','%S üç sayı, skora katkı. %SC','%S yay dışından tamamladı. %SC'],
-    miss2:['%S isabet bulamadı.','%S şutu kısa kaldı.','%S turnikede başarısız.','%S sayı üretemedi.','%S bu denemede isabetsiz.'],
-    miss3:['%S üçlükte isabet yok.','%S dış atış tuttu değil.','%S uzaktan kaçırdı.','%S üç sayı denemesi boşa.'],
-    block:['%B bloke etti; %S durduruldu.','%B temiz bir blok gerçekleştirdi.','%B savunmada blok kaydetti.','%B şutu engelledi.'],
-    steal:['%C topu ele geçirdi.','%C top çalma kaydetti.','%C pası kesti.','%C savunmada topu aldı.'],
-    tactic:['Taktik düzenleme yapılıyor.','Oyun temposu ayarlanıyor.','Savunma organizasyonu gözden geçiriliyor.','Set oyun kuruluyor.']
+    score2:['%S pota altında tamamladı. %SC','%S turnikeyi tamamladı. %SC','%S boyalı alandan iki sayı. %SC','%S pota dibinden bitirdi. %SC','%S orta mesafeden isabet kaydetti. %SC','%S orta mesafe şutunu geçti. %SC','%S uzaktan iki sayı buldu. %SC','%S iki sayıyı buldu. %SC','%S basket, iki sayı hanesine. %SC','%S sağduyulu bir bitiriş. %SC','%S skora iki ekledi. %SC'],
+    score3:['%S üç sayılık isabet kaydetti. %SC','%S dış atıştan başarılı. %SC','%S üçlük çizgisinden buldu. %SC','%S uzak mesafeden isabet. %SC','%S üç sayı, skora katkı. %SC','%S yay dışından tamamladı. %SC','%S köşeden üç sayı. %SC','%S kanattan isabetli üçlük. %SC','%S dış atışta net isabet. %SC','%S üç sayılık şutu geçti. %SC','%S yay ötesinden skora üç. %SC'],
+    miss2:['%S isabet bulamadı.','%S şutu kısa kaldı.','%S turnikede başarısız.','%S sayı üretemedi.','%S bu denemede isabetsiz.','%S orta mesafeden kaçırdı.','%S pota altında tamamlayamadı.','%S şutu çemberden döndü.','%S iki sayı denemesi boşa.','%S isabetsiz bir deneme.'],
+    miss3:['%S üçlükte isabet yok.','%S dış atış tuttu değil.','%S uzaktan kaçırdı.','%S üç sayı denemesi boşa.','%S köşe üçlüğü isabetsiz.','%S yay dışından kaçırdı.','%S üçlük çemberden döndü.','%S dış atışta başarısız.','%S üç sayı bulamadı.'],
+    block:['%B bloke etti; %S durduruldu.','%B temiz bir blok gerçekleştirdi.','%B savunmada blok kaydetti.','%B şutu engelledi.','%B bloğu tamamladı, %S durdu.','%B savunmada müdahale etti.','%B şutu geri çevirdi.'],
+    steal:['%C topu ele geçirdi.','%C top çalma kaydetti.','%C pası kesti.','%C savunmada topu aldı.','%C pas hattına müdahale etti.','%C topu kazandı.','%C hücumu kesti, top onda.'],
+    tactic:['Taktik düzenleme yapılıyor.','Oyun temposu ayarlanıyor.','Savunma organizasyonu gözden geçiriliyor.','Set oyun kuruluyor.','Hücum düzeni yeniden kuruluyor.']
   }
 };
+/* İŞ 4: her spikerin şut havuzlarına ORTAK NÖTR (bölge-bağımsız, _NEAR/_MID içermez) ek
+   kalıplar — yapısal çeşitliliği artırıp tek maçtaki tekrarı düşürür (patternReuse↓). */
+(function(){
+  const extra={
+    score2:['%S skora iki yazdırdı. %SC','%S sakin bir bitirişle iki. %SC','%S iki sayıyı ekledi. %SC','%S net bir bitiriş, iki sayı. %SC','%S skoru büyüttü, iki. %SC'],
+    miss2:['%S bu kez isabet yok.','%S şansını değerlendiremedi.','%S bitiremedi, top dışarı.','%S iki sayıyı bulamadı.','%S denemesi boşa gitti.'],
+    score3:['%S üç sayıyı buldu. %SC','%S dıştan isabetli, üç. %SC','%S skora üç ekledi. %SC','%S dış şutu geçti, üç. %SC'],
+    miss3:['%S dıştan isabet yok.','%S üç sayıyı bulamadı.','%S dış şut girmedi.','%S dıştan şansı yaver gitmedi.']
+  };
+  try{ for(const k in SPIKER_LINES){ for(const t in extra){ if(SPIKER_LINES[k][t]) SPIKER_LINES[k][t]=SPIKER_LINES[k][t].concat(extra[t]); } } }catch(e){}
+})();
 /* Renkli hamle betimleri — isabetli (kendi yaratımı) şutlardan ÖNCE serpiştirilir.
    Şut cümlesi oyuncu adıyla başladığından bu girişler AD İÇERMEZ; tireyle şut metnine bağlanır. */
 const MOVE_LINES=[
@@ -1151,13 +1171,21 @@ const REB_OFF_LINES=[
   '%R hücum ribaundunu çok yükseklerden çekti — ikinci şans bizde!',
   'Muhteşem box-out; %R rakibini pazara yolladı, top yeniden bizde!',
   '%R camlara asıldı ve hücum ribaundunu kaptı!',
-  '%R topu adeta tavandan indirdi, ekstra hücum!'
+  '%R topu adeta tavandan indirdi, ekstra hücum!',
+  '%R kaçan topu boyada avladı — ikinci şans!',
+  '%R pota altında hükmetti, hücum ribaundu!',
+  '%R sıçradı ve topu ikinci kez kazandı!',
+  '%R rakibi arkasında bıraktı, top yine bizde!'
 ];
 const REB_DEF_LINES=[
   '%R savunma ribaundunu güçlü aldı, cam tertemiz!',
   'Sağlam box-out; %R ribaundu topladı.',
   '%R yükseldi ve defansif camı kapattı.',
-  '%R ribaundu çekti, hızlı geçişe çıkıyor!'
+  '%R ribaundu çekti, hızlı geçişe çıkıyor!',
+  '%R camı süpürdü, top güvende.',
+  '%R pozisyonu tuttu ve ribaundu aldı.',
+  '%R rakibi bloklayıp topu topladı.',
+  '%R defansif ribaundu kaptı, hücuma dönüyor.'
 ];
 /* Anlatım-geometri tutarlılığı: yakın mesafe (turnike/smaç/pota altı) kalıpları yalnız
    pota dibindeki şutlarda, orta mesafe kalıpları yalnız uzak şutlarda kullanılır. */
@@ -1206,14 +1234,35 @@ const MOVE_BY={
   postup:['Sırtı dönük pivot oyunuyla pozisyon aldı —','Düşük postta savunmacısını sırtlayıp döndü —']
 };
 
-/* Anti-tekrar seçici: bir havuzdan art arda aynı kalıbı seçmez (memo, kalıp metnini tutar). */
+/* Anti-tekrar seçici: bir havuzdan SON ~8 kalıbı (havuz küçükse daha az) tekrar seçmez.
+   memo[key] = son seçilenlerin kuyruğu; kapasite havuz boyutunun altında tutulur ki hep taze
+   bir seçenek kalsın. Böylece tek maçta aynı kalıbın üst üste dönmesi belirgin azalır. */
 function pickLine(pool,pr,memo,key){
   if(!pool||!pool.length) return '';
-  if(pool.length<2){ if(memo) memo[key]=pool[0]; return pool[0]; }
-  let i=Math.floor(pr()*pool.length);
-  if(memo&&memo[key]===pool[i]) i=(i+1)%pool.length;
-  if(memo) memo[key]=pool[i];
-  return pool[i];
+  if(pool.length<2) return pool[0];
+  const recent=(memo&&memo[key])||[];
+  let pick=pool[Math.floor(pr()*pool.length)];
+  for(let tries=0;tries<7&&recent.indexOf(pick)>=0;tries++){ pick=pool[Math.floor(pr()*pool.length)]; }
+  if(memo){
+    recent.push(pick);
+    const cap=Math.min(8,pool.length-1);
+    while(recent.length>cap) recent.shift();
+    memo[key]=recent;
+  }
+  return pick;
+}
+/* İŞ 4: asist ibareleri şemayla uyumlu ve ÇEŞİTLİ (eski monoton "X buldu; Y…" bitti). */
+const ASSIST_PHRASES={
+  spotup:['%A dış çevrede boşta bıraktı; ','%A servisini yaptı, ','%A kenara aktardı, ','%A pas trafiğini çözüp gördü; '],
+  pnr:['%A pick&roll sonrası servis etti; ','%A ikili oyunla ortağını kullandı, ','%A perde arkasından buldu; ','%A blok sonrası dağıttı, '],
+  cut:['%A kes-geç pasıyla buldu; ','%A boşalan adamı gördü; ','%A savunma arasından geçirdi, ','%A zamanlı pasla ulaştırdı; '],
+  postup:['%A posttan dışarı çıkardı; ','%A çift savunmayı bölüp gördü; '],
+  transition:['%A hızlı çıkışta koşan adama attı, ','%A geçiş hücumunda gördü; '],
+  def:['%A buldu; ','%A drive edip dağıttı, ','%A servisinde ','%A boşta bıraktı; ']
+};
+function assistPhrase(name,scheme,pr,memo){
+  const pool=(ASSIST_PHRASES[scheme]||[]).concat(ASSIST_PHRASES.def);
+  return pickLine(pool,pr,memo,'ast'+(scheme||'')).replace('%A',name);
 }
 
 /* spikerLine'ın deterministik-üreteç + anti-tekrar sürümü (sonuç randomunu kirletmez). */
@@ -1543,7 +1592,7 @@ function generateMatchEvents(rakip, opts){
         B.ftAtt+=2; B.ftMade+=nMade; D.foul++; recordFoul(defenderIsUser,q,t);
         addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
         const lineX=(userPos===userIsHome)?210:730;
-        events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,text:`${shooter.isim} şut anında faul aldı — 2 serbest atış kullanacak. ${ftLine(nMade,2,shooter.isim)} ${sc()}`,q,t,home:homeScore,away:awayScore,
+        events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,text:`${pickLine([`${shooter.isim} şut anında faul aldı — 2 serbest atış kullanacak.`,`${shooter.isim} şuttayken faul çaldı, çizgiye gidiyor.`,`Şut faulü — ${shooter.isim} 2 atış kullanacak.`,`${shooter.isim} bindirmede faul kazandı, 2 atış.`],pr,narr.recent,'ftsf')} ${ftLine(nMade,2,shooter.isim)} ${sc()}`,q,t,home:homeScore,away:awayScore,
           shots:[{x:lineX+rand(-10,10),y:242,made:nMade>=1,isHome:userPos,kind:'ft',q},{x:lineX+rand(-10,10),y:262,made:nMade===2,isHome:userPos,kind:'ft',q}],
           box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         return;
@@ -1581,17 +1630,32 @@ function generateMatchEvents(rakip, opts){
       /* Faz 1: bölge gerçek şut noktasından; cls (yakın/orta/uzak) buradan türetilir. */
       const zone=putback?'rim':classifyZone(xy,rimIsLeft,is3);
       const cls=is3?'uzak':(zone==='midrange'?'orta':'yakin');
-      /* Faz 1: tek yapısal senaryo (scheme/move/contest) — anlatım + animasyon aynı play'i okur. */
+      /* İŞ 2: GERÇEKÇİ şema dağılımı (SUNUM etiketi — sonucu/isabeti DEĞİŞTİRMEZ, pr'den seçilir).
+         iso yalnız top yükleme/yıldız veya süre azken; çoğunluk spot-up + pick&roll + kesme +
+         post. Böylece "her pozisyon izolasyon" görüntüsü biter. */
+      const bigInside=(shooter.poz==='C'||shooter.poz==='PF')&&(zone==='rim'||zone==='paint');
+      const focusStar=userPos&&focusPlayerId&&shooter.id===focusPlayerId;
       let scheme;
       if(putback) scheme='putback';
       else if(fb) scheme='transition';
-      else if(passer) scheme=is3?'spotup':'pnr';
-      else scheme=((shooter.poz==='C'||shooter.poz==='PF')&&(zone==='rim'||zone==='paint'))?'postup':'iso';
+      else {
+        const r=pr();
+        if(focusStar&&r<0.62) scheme='iso';
+        else if(clutch&&r<0.34) scheme='iso';
+        else if(bigInside&&r<0.50) scheme='postup';
+        else if(passer) scheme=(r<0.60?'spotup':r<0.85?'pnr':'cut');
+        else scheme=(r<0.42?'spotup':r<0.64?'pnr':r<0.85?'cut':(!is3&&bigInside?'postup':'iso'));
+      }
+      /* postup yalnız içeri 2'lik olabilir — üçlükte asla (yoksa "dibe indi" gibi hamle 3'lüğe düşer). */
+      if(is3&&scheme==='postup') scheme='spotup';
+      /* İŞ 3: play.move DOLDURULUR (on-ball şemalarda) — AYNI karar hem metne hem animasyona
+         gider (shot.move'a kopyalanır). move bölgeyle uyumlu: step-back orta/üçlük, drive dibe,
+         spin/drive post-forvet. spot-up/transition/putback = catch&shoot, self-create yok. */
       let move=null;
-      if(!passer&&!putback&&scheme!=='transition'){
-        if(is3||zone==='midrange') move=prCh(['stepback','crossover','hesitation']);
-        else if(scheme==='postup') move=prChance(0.5)?'spin':null;
-        else move=prCh(['drive','crossover']);
+      if(!putback&&scheme!=='transition'&&scheme!=='spotup'){
+        if(is3||zone==='midrange') move=prCh(['stepback','crossover','hesitation']);   /* is3 ÖNCE — asla drive/spin */
+        else if(scheme==='postup') move=prChance(0.6)?'spin':'drive';
+        else move=prCh(['drive','crossover','hesitation']);
       }
       const contest=blocked?'heavy':(made?(prChance(0.42)?'contested':'open'):(prChance(0.5)?'contested':'heavy'));
       const play={scheme,zone,is3:!!is3,shooterId:shooter.id!=null?shooter.id:undefined,passerId:(passer&&passer.id!=null)?passer.id:undefined,move,contest,result:blocked?'block':and1?'and1':made?'make':'miss'};
@@ -1606,13 +1670,14 @@ function generateMatchEvents(rakip, opts){
         if(clutch&&mg<=4) cand.push('Kritik anlar, başa baş!');
         if(cand.length&&narr.ctxCd<=0){ ctxPre=prCh(cand)+' '; narr.ctxCd=rand(3,6); }
       }
-      /* Hamle ibaresi yalnız gerçekten yapılan hamleye uygun; ~%42 serpiştirilir. */
-      const movePhrase=(move&&MOVE_BY[move]&&prChance(0.42))?(pickLine(MOVE_BY[move],pr,narr.recent,'mv')+' '):'';
+      /* Hamle ibaresi yalnız gerçekten yapılan (play.move) hamleye uygun; move dolu değilse
+         asla move ibaresi çıkmaz (söz/görüntü tutarlı). */
+      const movePhrase=(move&&MOVE_BY[move]&&prChance(0.5))?(pickLine(MOVE_BY[move],pr,narr.recent,'mv')+' '):'';
       let txt;
       if(made){
-        if(is3){ const pasTxt=passer?`${passer.isim}'in pasında `:''; txt=movePhrase+pasTxt+spikerLinePR(SP.id,'score3',{s:shooter.isim,sc:sc()},pr,narr.recent); }
+        if(is3){ const pasTxt=passer?assistPhrase(passer.isim,scheme,pr,narr.recent):''; txt=movePhrase+pasTxt+spikerLinePR(SP.id,'score3',{s:shooter.isim,sc:sc(),zone},pr,narr.recent); }
         else if(and1){ txt=`${shooter.isim} faule rağmen ${cls==='yakin'?'turnikeyi bitirdi':'şutu soktu'} — ${and1Made?'AND-1 tamam!':'ek atış kaçtı.'} ${sc()}`; }
-        else { const pasTxt=passer?`${passer.isim} buldu; `:''; txt=movePhrase+pasTxt+spikerLinePR(SP.id,'score2',{s:shooter.isim,sc:sc(),cls},pr,narr.recent); }
+        else { const pasTxt=passer?assistPhrase(passer.isim,scheme,pr,narr.recent):''; txt=movePhrase+pasTxt+spikerLinePR(SP.id,'score2',{s:shooter.isim,sc:sc(),cls,zone},pr,narr.recent); }
       } else if(blocked){
         txt=spikerLinePR(SP.id,'block',{s:shooter.isim,b:blk.isim},pr,narr.recent);
       } else {
@@ -1626,10 +1691,10 @@ function generateMatchEvents(rakip, opts){
         if(narr.runOff!==userPos){ narr.runOff=userPos; narr.run=pts; } else narr.run+=pts;
         narr.heat[shooter.id]=(narr.heat[shooter.id]||0)+1;
       } else { narr.heat[shooter.id]=0; }
-      events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,play,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q,fb:fb||undefined,pb:putback||undefined,blk:blocked||undefined,scheme,zone,contest,sid:shooter.id!=null?shooter.id:undefined,pid:(passer&&passer.id!=null)?passer.id:undefined},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,play,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q,fb:fb||undefined,pb:putback||undefined,blk:blocked||undefined,scheme,zone,move:move||undefined,contest,sid:shooter.id!=null?shooter.id:undefined,pid:(passer&&passer.id!=null)?passer.id:undefined},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       /* Kaçan şutlarda ~%22 renkli ribaund anlatımı (hücum/savunma). */
       if(!made&&rebounder&&Math.random()<0.22){
-        const rl=(rebOff?ch(REB_OFF_LINES):ch(REB_DEF_LINES)).replace('%R',rebounder.isim);
+        const rl=pickLine(rebOff?REB_OFF_LINES:REB_DEF_LINES,pr,narr.recent,rebOff?'rebO':'rebD').replace('%R',rebounder.isim);
         /* Sahnedeki jeton anlatımdaki oyuncuyla eşleşsin: kimlik + taraf event'e yazılır. */
         const rebIsUser=rebOff?userPos:!userPos;
         events.push({type:'reb',text:rl,q,t,home:homeScore,away:awayScore,rebId:rebounder.id,rebIsUser,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
@@ -1645,7 +1710,7 @@ function generateMatchEvents(rakip, opts){
       B.ftAtt+=2; B.ftMade+=nMade; D.foul++; recordFoul(defenderIsUser,q,t);
       addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
       const lineX=(userPos===userIsHome)?210:730;
-      events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,text:`Faul düdüğü — ${shooter.isim} çizgide. ${ftLine(nMade,2,shooter.isim)} ${sc()}`,q,t,home:homeScore,away:awayScore,
+      events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,text:`${pickLine(['Faul düdüğü — %S çizgide.','Faul var; %S serbest atış çizgisinde.','Savunma faulü — %S çizgiye gidiyor.','%S faul kazandı, çizgide.','Düdük çaldı; %S çizgide.'],pr,narr.recent,'ftpx').replace('%S',shooter.isim)} ${ftLine(nMade,2,shooter.isim)} ${sc()}`,q,t,home:homeScore,away:awayScore,
         shots:[{x:lineX+rand(-10,10),y:242,made:nMade>=1,isHome:userPos,kind:'ft',q},{x:lineX+rand(-10,10),y:262,made:nMade===2,isHome:userPos,kind:'ft',q}],
         box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
 
@@ -1676,18 +1741,18 @@ function generateMatchEvents(rakip, opts){
           const stealer=userPos?oAny():uAny();
           B.to++; D.stl++;
           fastNext='steal';
-          events.push({type:'steal',text:spikerLine(SP.id,'steal',{c:stealer.isim}),q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+          events.push({type:'steal',text:spikerLinePR(SP.id,'steal',{c:stealer.isim},pr,narr.recent),q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         } else {
           /* Top kaybı savuşturuldu — sabırlı/kontrollü pozisyon, top el değiştirmedi (sayı yok). */
           posNext=userPos;
-          events.push({type:'tactic',text:spikerLine(SP.id,'tactic',{})+(userPos&&offStealKeep<1?' — sabırlı set oyunu.':''),q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+          events.push({type:'tactic',text:spikerLinePR(SP.id,'tactic',{},pr,narr.recent)+(userPos&&offStealKeep<1?' — sabırlı set oyunu.':''),q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         }
       }
 
     } else {
       /* Renk — mola/taktik vurgusu (pozisyon değişmez, oyun aynı topla sürer) */
       posNext=userPos;
-      events.push({type:'tactic',text:spikerLine(SP.id,'tactic',{})+` (${ch(['pick-and-roll','el presi','2-3 bölge','erken tempo'])})`,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      events.push({type:'tactic',text:spikerLinePR(SP.id,'tactic',{},pr,narr.recent)+` (${prCh(['pick-and-roll','el presi','2-3 bölge','erken tempo','yayılma hücumu','çift perde'])})`,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
     }
   }
 

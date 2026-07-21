@@ -2,6 +2,56 @@
 
 Tek dosyalık basketbol menajerlik oyunu (`charazay2.0.html`). Steam yayınına hazırlık.
 
+## 2026-07-21 (25. oturum) — Canlı ölçüm hedefli "skrum" düzeltmesi: tüm ön saha spacing + şema dağılımı + play.move + anlatım derinliği (İŞ 1-5)
+
+Kullanıcı canlı ölçümle 4 kusur saptadı (10 jeton 235 kez, 185 olay): (A) spacing çökmüş
+(yatay yayılım ~164px, en yakın komşu ~26px, 8-10 jeton iç içe, köşeler kullanılmıyor);
+(B) şemalar gerçek dışı (iso %47); (C) play.move hiç dolmuyor (metin "step-back" diyor, alan boş);
+(D) anlatım tekrarı %51. Hedefler: xSpread≥280, avgNN≥55, overlaps≤2, iso≤%15, spotup≥%20,
+moveFilled>0, patternReuse≤0.30. **Her iş sonrası gerçek Chrome'da ölçüm scriptiyle doğrulandı.**
+
+### İŞ 1 — Spacing tüm ön sahaya yayıldı
+- `OFF_BASE_L` tüm ön sahaya dağıtıldı: `[[394,250],[58,50],[58,450],[242,128],[112,298]]` — PG yay
+  tepesi (deep top/safety), iki DİP KÖŞE (x58, y50/450), yüksek forvet/slot, düşük post. x58-394.
+- Off-ball savunma "sag"ı gerçekçileştirildi (40→**84px** yardım pozisyonu), çarpışma yarıçapı
+  25→**42** + itme gücü 1.3→3.0 → jetonlar üst üste binmez.
+- Topsuz hücumcular TAM SPRINT'le geniş çapalara açılır; set oyununda köşe guard'ları çapada
+  DURUR, kesici tercihen BÜYÜK (C/PF) — köşeler boşalmaz, spread sabit yüksek. closeout gevşetildi
+  (üst üste binme yok). **Ölçüm 6/6: xSpread 292-359, avgNN 57-63, overlaps 0.**
+
+### İŞ 2 — Şema dağılımı gerçekçileşti (SUNUM etiketi, sonuç DEĞİŞMEZ)
+- `runPossession`'da scheme ayrı `pr` üretecinden ağırlıklı seçilir: iso yalnız top yükleme/yıldız
+  veya süre azken; çoğunluk spot-up + pnr + kesme + post. **Ölçüm: iso %7-13 (≤15), spotup %30-38
+  (≥20).**
+
+### İŞ 3 — play.move dolduruldu ve animasyona bağlandı
+- **Kök bug:** `move` yalnız `play.move`'a yazılıyordu, `shot.move`'a KOPYALANMIYORDU → animasyon
+  (`sh.move`) hiç okumuyordu, moveFilled=0. `shot`'a `move` eklendi. Ayrıca asistsiz dalda scheme=
+  postup is3 şutlara düşüp move=drive üretiyordu ("3'lükte dibe indi") — is3'te postup engellendi,
+  move'da is3 önceliklendirildi. **Ölçüm: moveFilled ~80/120, metinMoveVarAlanBoş=0.**
+
+### İŞ 4 — Anlatım derinleşti
+- `SPIKER_LINES` havuzları ~2 katına çıkarıldı + move/şema kelimeleri (step-back/çalım/spin/
+  pick-and-roll/"dibe indi") core'lardan TEMİZLENDİ (bu dil yalnız play.move/scheme dolunca
+  MOVE_BY/ASSIST_PHRASES'ten gelir → söz-görüntü tutarlı). Ortak nötr ek kalıplar eklendi.
+- Asist ibaresi çeşitlendi (ASSIST_PHRASES, şema uyumlu: "servisinde/kes-geç pasıyla/boşta
+  bıraktı…" — eski monoton "X buldu; Y…" bitti). Anti-tekrar hafızası son ~8 kalıba genişledi.
+  steal/tactic/reb/FT metinleri de anti-tekrarlı havuza taşındı. **Ölçüm: patternReuse 0.23-0.29
+  (≤0.30).**
+
+### İŞ 5 — Topsuz hareket + savunma (cila)
+- Set oyununda zayıf taraf kesmesi (büyük kesici, geri köşeye açılır), pnr perdeci roll, köşe
+  spot-up çapaları; contest→closeout (gevşetildi), kaçan şutta box-out (mevcut). 7/7 anim senaryosu.
+
+### Test (hepsi geçti)
+- **Gerçek Chrome ölçüm scripti 6/6 GEÇTİ** (kullanıcının verdiği hedeflerle): xSpread≥280 ✓,
+  avgNN≥55 ✓, overlaps≤2 ✓, iso≤%15 ✓, spotup≥%20 ✓, moveFilled>0 ✓, metinMoveVarAlanBoş=0 ✓,
+  patternReuse≤0.30 ✓, 0 konsol hatası.
+- **Kırmızı çizgi:** VM band harness 200 maç skor bandı korundu (92.9/86.9, 0 istisna,
+  24.278/24.278 geçerli play, **zone tutarsız 0** — "İYİ OLAN KORU" sağlandı, bitişik tekrar 0).
+- Animasyon harness 7/7 hatasız. `node --check` temiz. `node tools/visual-check.js` masaüstü+mobil
+  0 konsol hatası exit 0. Ekran görüntüsü: oyuncular sahaya yayılıyor, "skrum" gitti. Cache-bust v26→v27.
+
 ## 2026-07-21 (24. oturum) — Canlı maçı GERÇEKTEN İZLEYEREK saha akışı düzeltmesi (spacing + fast-break + sakin oyun kurma)
 
 Kullanıcı (haklı) şikâyeti: "kenardan sokup sakince oyun kurmak yok, sürekli orta sahadaki
