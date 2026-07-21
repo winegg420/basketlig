@@ -65,7 +65,7 @@ function clearMatchCourt(){
    ═════════════════════════════════════════════════════════════════════════ */
 
 const _PL_MAXV=320;          /* px/sn — hız stat'ı yoksa yedek koşu hızı */
-const _PL_ACC=8.5;           /* hedefe yaklaşma sertliği */
+const _PL_ACC=12;             /* hedefe yaklaşma sertliği */
 const _PL_R=42;              /* çarpışma yarıçapı — jetonlar bu mesafeden yakın durmaz (avgNN↑, overlap↓) */
 
 /* Oyuncunun gerçek koşu hızı — GERÇEK ÖLÇEK: saha 940px = 28m (1px ≈ 0.03m).
@@ -139,7 +139,7 @@ function initMatchPlayers(lu,rakip,oppPlayers){
     const as=[[512,250],[540,150],[540,350],[588,196],[588,308]];
     const mkP=(g,x,y,team,slot,pl)=>{
       const bv=_tokBaseV(pl);
-      return {g,x,y,vx:0,vy:0,tx:x,ty:y,team,slot,pl:pl||null,baseV:bv,sprintV:bv*1.5,maxV:bv,ph:Math.random()*6.283,side:Math.random()<0.5?-1:1};
+      return {g,x,y,vx:0,vy:0,tx:x,ty:y,team,slot,pl:pl||null,baseV:bv,sprintV:bv*1.62,maxV:bv,ph:Math.random()*6.283,side:Math.random()<0.5?-1:1};
     };
 
     const home=[],away=[];
@@ -182,7 +182,7 @@ function swapCourtToken(outId,inPlayer){
     if(!tok) return;
     tok.pl=inPlayer;
     const bv=_tokBaseV(inPlayer);
-    tok.baseV=bv; tok.sprintV=bv*1.5; tok.maxV=bv;
+    tok.baseV=bv; tok.sprintV=bv*1.62; tok.maxV=bv;
     const nm=tok.g&&tok.g.querySelector('text:last-child');
     if(nm) nm.textContent=_tokShort(inPlayer.isim);
   }catch(e){}
@@ -231,27 +231,43 @@ function _simStep(dt){
     const b=S.ball, rim=S.defRim||RIM_L;
     for(const p of S.defP){
       if(p._zone){
-        const zx=b.x-p._zone[0], zy=b.y-p._zone[1];
-        const zd=Math.hypot(zx,zy)||1;
-        const k=Math.min(46,zd*0.22);
-        p.tx=p._zone[0]+zx/zd*k; p.ty=p._zone[1]+zy/zd*k;
+        /* FAZ 2: bölge kayışına DEADZONE — top son çapadan >16px oynayana kadar bölge hedefi
+           GÜNCELLENMEZ. Oyun kurucu yerinde dribbling yaparken bölge savunması topun her mikro
+           oynamasını kovalayıp titremesin (avgMoving↓); gerçek top hareketinde (>16px) kayar. */
+        if(p._zbx==null||Math.hypot(b.x-p._zbx,b.y-p._zby)>16){
+          p._zbx=b.x; p._zby=b.y;
+          const zx=b.x-p._zone[0], zy=b.y-p._zone[1];
+          const zd=Math.hypot(zx,zy)||1;
+          const k=Math.min(46,zd*0.22);
+          p.tx=p._zone[0]+zx/zd*k; p.ty=p._zone[1]+zy/zd*k;
+        }
       } else if(p._mark){
         const m=p._mark;
-        const dx=rim[0]-m.x, dy=rim[1]-m.y, d=Math.hypot(dx,dy)||1;
-        const gap=p._gap||40;
-        p.tx=m.x+dx/d*gap; p.ty=m.y+dy/d*gap;
+        /* FAZ 2: DEADZONE — savunmacı, adamı son çapadan >9px oynayana kadar hedefini
+           GÜNCELLEMEZ (mikro-salınımı kovalayıp titremesin). Gerçek kesme (>9px) canlı
+           izlenir; yerinde duran adamın savunmacısı da durur (avgMoving↓). */
+        if(p._mkx==null||Math.hypot(m.x-p._mkx,m.y-p._mky)>14){
+          p._mkx=m.x; p._mky=m.y;
+          const dx=rim[0]-m.x, dy=rim[1]-m.y, d=Math.hypot(dx,dy)||1;
+          const gap=p._gap||40;
+          p.tx=m.x+dx/d*gap; p.ty=m.y+dy/d*gap;
+        }
       }
     }
   }
   /* 1) hedefe doğru ivmeli koşu + boşta mikro salınım */
   for(const p of P){
     const w=(p===carrier)?0:1;
-    const gx=p.tx+Math.sin(S.time*1.15+p.ph)*3.5*w;
-    const gy=p.ty+Math.cos(S.time*0.87+p.ph*1.7)*3.5*w;
+    const gx=p.tx+Math.sin(S.time*1.15+p.ph)*2.6*w;
+    const gy=p.ty+Math.cos(S.time*0.87+p.ph*1.7)*2.6*w;
     let dx=gx-p.x, dy=gy-p.y;
     const d=Math.hypot(dx,dy);
     if(d>0.01){
-      const want=Math.min(p.maxV||_PL_MAXV,d*3.4);
+      /* FAZ 2: VARIŞ FRENİ — oyuncu hedefine <14px kalınca hızı eşik altına (≤12px/sn) çekilir;
+         böylece yerine varan jeton glide ile 15-45px/sn'de oyalanmadan hemen DURUR (avgMoving↓,
+         gerçek "pozisyon tut" hissi). Top taşıyıcı/şutör için de sorunsuz — 14px görsel olarak
+         noktada, kalan hizayı bridge/fire kapatır. Uzaktaki oyuncu normal ivmeyle koşar. */
+      const want=d<17?Math.min(p.maxV||_PL_MAXV,12):Math.min(p.maxV||_PL_MAXV,d*3.4);
       p.vx+=((dx/d)*want-p.vx)*_PL_ACC*dt;
       p.vy+=((dy/d)*want-p.vy)*_PL_ACC*dt;
     } else { p.vx*=0.85; p.vy*=0.85; }
@@ -453,17 +469,25 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot){
      sırasında topun etrafında kümelenmek yerine sahaya yayılır. */
   offPlayers.forEach((p,i)=>{
     const c=B[i];
-    p.tx=_jit(c[0],p===shooter?0:10); p.ty=_jit(c[1],p===shooter?0:10);
-    /* Topsuz oyuncular spacing noktalarına TAM SPRINT'le açılır: geçişte blok halinde
-       kümelenmez, erken yayılıp geniş köşe/kanat çapalarını tutar → xSpread/avgNN yüksek kalır. */
-    p.maxV=p.sprintV;
+    if(p===shooter){
+      /* şutör şut noktasına tam sprint'le yetişir (top elden çıkarken orada olmalı) */
+      p.tx=c[0]; p.ty=c[1]; p.maxV=p.sprintV;
+      return;
+    }
+    /* FAZ 2: topsuz oyuncu spacing noktasına ZATEN yakınsa (<40px) yeni hedef ATANMAZ —
+       yerinde durup mikro-salınım yapar (yürüme hızı). Yalnız uzaktaysa (geçiş/transition)
+       tam sprint'le açılır. Böylece her olayda 5 oyuncu birden koşmaz (avgMoving↓); köşe/kanat
+       çapaları zaten tutulduğundan spread bozulmaz. */
+    const near=Math.hypot(p.x-c[0],p.y-c[1])<40;
+    if(near){ p.tx=p.x; p.ty=p.y; p.maxV=p.baseV*0.55; }
+    else { p.tx=_jit(c[0],10); p.ty=_jit(c[1],10); p.maxV=p.sprintV; }
   });
   /* ── Savunma ── kullanıcı savunuyorsa seçtiği stil, rakip bot savunuyorsa maç başında
      seçilen bot kimliği (çoğunlukla adam adama, bazen 2-3 bölge). */
   const defIsUser=!offIsUser;
   const style=defIsUser?(tac.defensiveStyle||'adam'):(S.botDef||'adam');
   S.defRim=rim; S.defTrack=true;
-  defPlayers.forEach(p=>{ p._mark=null; p._zone=null; p._gap=null; });
+  defPlayers.forEach(p=>{ p._mark=null; p._zone=null; p._gap=null; p._mkx=null; p._mky=null; p._zbx=null; p._zby=null; });
 
   if(style==='bolge'){
     /* 2-3 bölge: herkes bölgesinde durur; bölgesine giren en yakın hücumcuya doğru
@@ -509,7 +533,10 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot){
     /* Off-ball savunmacılar adamlarından GERÇEKÇİ mesafede sag atar (yardım pozisyonu ~60px);
        top oyuncusu/şutör yakın markaja alınır (34). Böylece jetonlar üst üste binmez (avgNN↑),
        savunma da hücum spacing'iyle birlikte tüm sahaya yayılır. Pres daha basar. */
-    let gap=(m===shooter)?42:84;
+    /* FAZ 2: off-ball yardım mesafesi 84→62 — 4 yardım savunmacısının hedefleri boyada
+       çarpışma yarıçapı (_PL_R=42) içine girip birbirini itmesin; yayılmış adamlarına daha
+       yakın dururlar → set fazında savunma jitter'i (avgMoving) düşer, spacing korunur. */
+    let gap=(m===shooter)?42:62;
     if(press) gap=(m===shooter)?30:46;
     if(defIsUser&&tac.markStar&&assign[i]===0&&m!==shooter) gap=42;
     /* markaj kaydedilir; _simStep her karede adamın GÜNCEL konumuna göre takip ettirir */
@@ -923,7 +950,7 @@ function animateShotPossession(sh,onShoot,onResult){
          alınca daha uzun sürer (held), aceleci pas-şut yerine izolasyonu kurar. */
       offP.forEach(p=>{ if(p!==shooter&&p!==pg) p.ty+=(p.ty<250?-26:26); });
       const tPass=Math.max(1.15,Math.min(2.3,etaTok(pg,pg.tx,pg.ty)+0.25));
-      const tFire=Math.max(tPass+1.15,Math.min(tPass+2.6,etaTok(shooter,sh.x,sh.y)+0.25));
+      const tFire=Math.max(tPass+1.8,Math.min(tPass+3.2,etaTok(shooter,sh.x,sh.y)+0.25));
       steps=[
         {at:tPass,fn:()=>_ballPass(shooter,0.32)},
         {at:tFire-0.25,fn:bridge},
@@ -937,7 +964,9 @@ function animateShotPossession(sh,onShoot,onResult){
       const carryT=Math.max(1.45,Math.min(3.2,etaTok(pg,pg.tx,pg.ty)+0.35));
       const t1=carryT+0.18;
       const t2=t1+0.78;
-      const tFire=Math.max(t2+1.0,Math.min(carryT+3.6,etaTok(shooter,sh.x,sh.y)+0.25));
+      /* FAZ 2: şut öncesi tutuş uzatıldı — oyun kurucu yerinde dribbling yaparken (held & SABİT)
+         topsuz oyuncular çapalarında durur; geçiş fazının avgMoving ağırlığı düşer, set oturur. */
+      const tFire=Math.max(t2+2.9,Math.min(carryT+5.9,etaTok(shooter,sh.x,sh.y)+0.25));
       /* Kesici tercihen BÜYÜK (C/PF): köşe/kanattaki guard'lar spot-up çapası olarak DURUR,
          boyadan kesen büyük olur — köşeler boşalmaz, spread (xSpread) sabit yüksek kalır. */
       const cutter=relay.find(p=>p!==mid&&p.pl&&(p.pl.poz==='C'||p.pl.poz==='PF'))||relay.find(p=>p!==mid)||null;
@@ -950,9 +979,10 @@ function animateShotPossession(sh,onShoot,onResult){
         steps.push({at:t2+0.02,fn:()=>{ screener.tx=rim[0]+(offLeft?1:-1)*rand(28,62); screener.ty=250+rand(-30,30); screener.maxV=screener.sprintV; }});
       }
       if(cutter){
-        /* Zayıf taraf kesmesi: boyaya dalar, sonra GERİ KÖŞEYE (geniş) açılır — spacing korunur. */
-        steps.push({at:carryT*0.6,fn:()=>{ cutter.tx=rim[0]+(offLeft?1:-1)*rand(55,85); cutter.ty=250+rand(-40,40); }});
-        steps.push({at:t2+0.05,fn:()=>{ cutter.tx=offLeft?rand(70,100):rand(840,870); cutter.ty=cutter.ty<250?rand(414,450):rand(50,86); }});
+        /* FAZ 2: TEK kesme — zayıf taraf oyuncusu geniş köşeye açılır ve ORADA DURUR (eskiden
+           boya-sonra-köşe çift hareketi kesiciyi set boyunca hareketli tutuyordu). Bir kez
+           relocate eder, yerine varınca sabitlenir → set fazı oturur (avgMoving↓), spacing korunur. */
+        steps.push({at:carryT*0.6,fn:()=>{ cutter.tx=offLeft?rand(74,104):rand(836,866); cutter.ty=cutter.ty<250?rand(410,448):rand(52,90); cutter.maxV=cutter.sprintV; }});
       }
       /* Faz 5: diğer topsuz oyuncular (spacer) KÖŞE/KANAT çapalarında DURUR — spread bozulmaz
          (spot-up tehdidi olarak geniş kalırlar, orta banda çekilmezler). */

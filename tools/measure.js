@@ -20,8 +20,8 @@ const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
 const BASELINE = path.join(__dirname, '.measure-baseline.json');
-const SEED = 987654321;
 const args = process.argv.slice(2);
+const SEED = (() => { const a = args.find(x => x.startsWith('--seed=')); return a ? parseInt(a.slice(7), 10) : 987654321; })();
 const SAVE = args.includes('--save');
 const SECS = (() => { const a = args.find(x => x.startsWith('--secs=')); return a ? parseInt(a.slice(7), 10) : 30; })();
 
@@ -185,6 +185,8 @@ async function main() {
   if (SAVE) {
     fs.writeFileSync(BASELINE, JSON.stringify({ hash, score: result.score, winner: result.winner, nEvents: result.nEvents }, null, 2));
     console.log('\n>>> BAZ KAYDEDİLDİ:', hash);
+  } else if (SEED !== 987654321) {
+    console.log('\n(seed kanonik değil — değişmezlik kontrolü atlandı)');
   } else if (fs.existsSync(BASELINE)) {
     const b = JSON.parse(fs.readFileSync(BASELINE, 'utf8'));
     if (b.hash === hash) {
