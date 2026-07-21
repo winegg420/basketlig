@@ -822,6 +822,9 @@ function animateShotPossession(sh,onShoot,onResult){
           const bb=S.ball;
           reb.maxV=reb.sprintV;
           reb.tx=bb.x+Math.cos(a)*40; reb.ty=bb.y+Math.sin(a)*36;
+          /* Faz 5: karşı taraftan bir oyuncu da ribaunda yüklenir (box-out/çekişme) — cam boş kalmaz. */
+          const opp=(pool===defP?offP:defP)[rand(3,4)];
+          if(opp){ opp.maxV=opp.sprintV; opp.tx=bb.x+Math.cos(a)*72; opp.ty=bb.y+Math.sin(a)*66; }
         }
       });
     };
@@ -837,6 +840,21 @@ function animateShotPossession(sh,onShoot,onResult){
     const iso=userAtt&&tac.focusPlayerId&&shooter.pl&&shooter.pl.id===tac.focusPlayerId;
     const putback=!!sh.pb&&b.carrier&&offP.indexOf(b.carrier)>=0;
     const afterMade=(S.prevType==='score2'||S.prevType==='score3'||S.prevType==='free');
+    /* ── Faz 4-5: animasyon artık ev.play senaryosunu okur (scheme/move/contest) ── */
+    const scheme=sh.scheme||null;
+    const mv=sh.move||null;
+    const isPnr=(scheme==='pnr'||scheme==='handoff')&&!fastBreak&&!putback&&!iso;
+    /* Contest → kapama (closeout): en yakın savunmacı şutöre çıkıp önünü keser (el kaldırır).
+       _mark/_zone temizlenir ki _simStep bu son-an hedefini üzerine yazmasın. */
+    const closeout=()=>{
+      try{
+        if(!sh.contest||sh.contest==='open'||!defP||!defP.length) return;
+        let dmin=1e9,dfn=null;
+        for(const p of defP){ const d=Math.hypot(p.x-sh.x,p.y-sh.y); if(d<dmin){dmin=d;dfn=p;} }
+        if(dfn){ const dx=rim[0]-sh.x,dy=rim[1]-sh.y,dd=Math.hypot(dx,dy)||1; const g=sh.contest==='heavy'?16:24;
+          dfn._mark=null; dfn._zone=null; dfn.tx=sh.x+dx/dd*g; dfn.ty=sh.y+dy/dd*g; dfn.maxV=dfn.sprintV; }
+      }catch(e){}
+    };
 
     /* Köprü adımı: şuttan hemen önce top şut noktasından hâlâ uzaksa (şutör yetişememiş,
        çarpışma engeli vb.) kısa bir sıçrayışla oraya taşınır — fire'daki hizalama artık
@@ -881,7 +899,7 @@ function animateShotPossession(sh,onShoot,onResult){
       const tFire=Math.max(passerTok?1.65:1.35,Math.min(2.6,etaTok(shooter,sh.x,sh.y)+0.20));
       steps=passerTok?[
         {at:0.30,fn:()=>_ballPass(passerTok,0.42)},
-        {at:Math.max(0.85,tFire-0.75),fn:()=>_ballPass(shooter,0.40)},
+        {at:Math.max(0.85,tFire-0.75),fn:()=>{ _ballPass(shooter,0.40); if(typeof sfx==='function') sfx('pass'); }},
         {at:tFire-0.25,fn:bridge},
         {at:tFire,fn:fire}
       ]:[
@@ -911,15 +929,43 @@ function animateShotPossession(sh,onShoot,onResult){
       const tFire=Math.max(t2+0.55,Math.min(carryT+3.0,etaTok(shooter,sh.x,sh.y)+0.25));
       const cutter=relay.find(p=>p!==mid)||null;
       steps=[];
+      /* Faz 4: pick-and-roll — perdeci topu kurana gelir, ~0.5sn sabit perde kurar,
+         sonra pota/boşluğa açılır (roll). Perdeci cutter'dan ayrık seçilir. */
+      const screener=isPnr?(relay.find(p=>p!==mid&&p!==cutter)||relay.find(p=>p!==mid)||null):null;
+      if(screener){
+        steps.push({at:Math.max(0.2,carryT*0.55),fn:()=>{ screener.tx=pg.x+(offLeft?20:-20); screener.ty=pg.y-16; screener.maxV=screener.baseV; }});
+        steps.push({at:t2+0.02,fn:()=>{ screener.tx=rim[0]+(offLeft?1:-1)*rand(28,62); screener.ty=250+rand(-30,30); screener.maxV=screener.sprintV; }});
+      }
       if(cutter){
         steps.push({at:carryT*0.6,fn:()=>{ cutter.tx=rim[0]+(offLeft?1:-1)*rand(55,85); cutter.ty=250+rand(-42,42); }});
         steps.push({at:t2+0.05,fn:()=>{ cutter.tx=offLeft?rand(108,150):rand(790,832); cutter.ty=cutter.ty<250?rand(390,430):rand(70,110); }});
       }
+      /* Faz 5: bir diğer topsuz oyuncu da zayıf tarafa açılır (spacing) — sahne "5 kişi çalışıyor". */
+      const spacer=relay.find(p=>p!==mid&&p!==cutter&&p!==screener)||null;
+      if(spacer) steps.push({at:Math.max(0.2,carryT*0.4),fn:()=>{ spacer.tx=offLeft?rand(150,214):rand(726,790); spacer.ty=spacer.ty<250?rand(88,140):rand(360,412); }});
       if(mid!==pg) steps.push({at:t1,fn:()=>_ballPass(mid,0.34)});   /* topu getirdi, ilk pas */
-      steps.push({at:t2,fn:()=>_ballPass(shooter,0.34)});            /* şutöre son pas */
+      /* Faz 6: asistçi (sh.pid) son pası atınca hafif pas sesi — görsel pasla senkron. */
+      steps.push({at:t2,fn:()=>{ _ballPass(shooter,0.34); if(sh.pid!=null&&typeof sfx==='function') sfx('pass'); }});
       steps.push({at:tFire-0.24,fn:bridge});
       steps.push({at:tFire,fn:fire});
       ret=Math.round((tFire+0.75)*1000);
+    }
+    /* ── Faz 4-5: fire beat'ine hizalı contest closeout + şutör mikro-hareketi ──
+       fire her dalda son eklenen adımdır (at=tFire); ona göreli ekleriz. */
+    const _fireAt=steps.length?steps[steps.length-1].at:0;
+    if(sh.contest&&sh.contest!=='open') steps.push({at:Math.max(0.05,_fireAt-0.22),fn:closeout});
+    if(shooter&&mv&&!putback){
+      if(mv==='stepback'){
+        /* önce pota yönüne bir tık girer, sonra GERİ adımla gerçek şut noktasına açılır. */
+        steps.push({at:Math.max(0.1,_fireAt-0.55),fn:()=>{ const dx=rim[0]-sh.x,dy=rim[1]-sh.y,dd=Math.hypot(dx,dy)||1; shooter.tx=sh.x+dx/dd*32; shooter.ty=sh.y+dy/dd*32; shooter.maxV=shooter.sprintV; }});
+        steps.push({at:Math.max(0.12,_fireAt-0.16),fn:()=>{ shooter.tx=sh.x; shooter.ty=sh.y; }});
+      } else if(mv==='spin'){
+        steps.push({at:Math.max(0.1,_fireAt-0.4),fn:()=>{ shooter.tx=sh.x+(offLeft?-15:15); shooter.ty=sh.y+13; }});
+        steps.push({at:Math.max(0.12,_fireAt-0.14),fn:()=>{ shooter.tx=sh.x; shooter.ty=sh.y; }});
+      } else if(mv==='drive'){
+        steps.push({at:Math.max(0.1,_fireAt-0.5),fn:()=>{ shooter.maxV=shooter.sprintV; }});
+      }
+      /* crossover/hesitation: top taşıyıcı hamlesi — salt kozmetik, hedef değişmez. */
     }
     if(inbound){
       /* Sokucunun çizgi gerisine varması için pay: içeri pas onun varış süresinden (ETA)
@@ -1122,6 +1168,59 @@ function spikerLine(spId,kind,v){
   return ch(pool).replace(/%SC/g,v.sc||'').replace(/%S/g,v.s||'').replace(/%B/g,v.b||'').replace(/%C/g,v.c||'');
 }
 
+/* ══ Faz 1-3 (23. oturum): tek "play" tanımlayıcısı + bağlam + anti-tekrar anlatım ══
+   Amaç: spikerin söylediği sahada birebir yaşansın, cümleler tekrara düşmesin, bağlam
+   (seri/fark/sıcaklık/kritik an) anlatıma yansısın. SUNUM KATMANIDIR — maç sonucu
+   matematiği DEĞİŞMEZ: tüm anlatım/senaryo rastgeleliği ayrı, deterministik bir üreteçten
+   (`pr`, generateMatchEvents içinde) beslenir; sonuç randomu global Math.random'da kalır. */
+function _mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+/* Şut bölgesi GERÇEK şut noktasından (çember uzaklığı+açı) türetilir → metin, iz ve
+   animasyon aynı yeri gösterir. 3'lük: köşe/kanat/tepe; 2'lik: pota dibi/boya/orta mesafe. */
+function classifyZone(xy,rimIsLeft,is3){
+  const rim=rimIsLeft?RIM_L:RIM_R;
+  const dx=Math.abs(xy.x-rim[0]), dy=Math.abs(xy.y-rim[1]);
+  const d=Math.hypot(dx,dy);
+  if(is3){ const ang=Math.atan2(dy,Math.max(1,dx))*180/Math.PI; return ang>=52?'corner3':ang>=26?'wing3':'top3'; }
+  if(d<=44) return 'rim';
+  if(d<=112) return 'paint';
+  return 'midrange';
+}
+
+/* Hamle (self-create) ibareleri — hamle türüne göre; sahada gerçekten olan eyleme uygun
+   olanı seçilir. Şut cümlesi oyuncu adıyla başladığından bunlar AD İÇERMEZ, tireyle bağlanır. */
+const MOVE_BY={
+  crossover:['Art arda çalım (crossover) savunmayı çözdü —','Çaprazdan sert bir çalım attı, savunma dağıldı —','Çift krosover sonrası rakibini adeta pazara yolladı —'],
+  stepback:['Geriye çekilerek (step-back) alanı açtı —','Bir adım geri çekildi, savunmayla arasına mesafe koydu —'],
+  spin:['Dönerek (spin move) savunmadan sıyrıldı —'],
+  hesitation:['Beklet-yükle ile savunmayı ters ayak yakaladı —','Hesitasyon (bekletme) çalımıyla geçti —'],
+  drive:['Yıldırım gibi ilk adımla dibe indi —','Sert bir hücumla boyalı alana daldı —'],
+  postup:['Sırtı dönük pivot oyunuyla pozisyon aldı —','Düşük postta savunmacısını sırtlayıp döndü —']
+};
+
+/* Anti-tekrar seçici: bir havuzdan art arda aynı kalıbı seçmez (memo, kalıp metnini tutar). */
+function pickLine(pool,pr,memo,key){
+  if(!pool||!pool.length) return '';
+  if(pool.length<2){ if(memo) memo[key]=pool[0]; return pool[0]; }
+  let i=Math.floor(pr()*pool.length);
+  if(memo&&memo[key]===pool[i]) i=(i+1)%pool.length;
+  if(memo) memo[key]=pool[i];
+  return pool[i];
+}
+
+/* spikerLine'ın deterministik-üreteç + anti-tekrar sürümü (sonuç randomunu kirletmez). */
+function spikerLinePR(spId,kind,v,pr,memo){
+  const set=SPIKER_LINES[spId]||SPIKER_LINES.reha;
+  let pool=set[kind]||SPIKER_LINES.reha[kind]||[''];
+  v=v||{};
+  if(v.cls&&(kind==='score2'||kind==='miss2')){
+    const f=pool.filter(t=>v.cls==='yakin'?!_MID_WORDS.test(t):!_NEAR_WORDS.test(t));
+    if(f.length) pool=f;
+  }
+  const line=pickLine(pool,pr,memo,spId+kind);
+  return line.replace(/%SC/g,v.sc||'').replace(/%S/g,v.s||'').replace(/%B/g,v.b||'').replace(/%C/g,v.c||'');
+}
+
 function generateMatchEvents(rakip, opts){
   opts=opts||{};
   const userIsHome=opts.userIsHome!==undefined?!!opts.userIsHome:true;
@@ -1302,6 +1401,16 @@ function generateMatchEvents(rakip, opts){
 
   const rname=rakip&&rakip.isim||'Rakip';
 
+  /* Faz 1-3: sunum (anlatım/senaryo) rastgeleliği için AYRI deterministik üreteç.
+     Böylece bağlam/hamle/anti-tekrar seçimleri global Math.random akışını (maç sonucu)
+     kirletmez. Seed maça özgü ama deterministik → resume tutarlı üretir. */
+  const _seedBase=(Math.abs((G.wins||0)*131+(G.losses||0)*17)+(oppName?oppName.length*7:0)+(userIsHome?3:1))>>>0;
+  const pr=_mulberry32(_seedBase||0x9E3779B9);
+  const prCh=a=>a[Math.floor(pr()*a.length)];
+  const prChance=x=>pr()<x;
+  /* Bağlam durumu: seri (cevapsız sayı), oyuncu sıcaklığı (art arda isabet), öneki throttle. */
+  const narr={runOff:null,run:0,heat:{},recent:{},ctxCd:0};
+
   /* Serbest atış metni AÇIKÇA "serbest atış" der — saha şutuyla karışmasın. */
   const ftLine=(nMade,nAtt,who)=> nMade===nAtt?`${who} serbest atışlarda ${nMade}/${nAtt} — hepsi içeride.`
     : nMade===0?`${who} serbest atışlarda ${nMade}/${nAtt}; seyirci sustu.`
@@ -1455,27 +1564,58 @@ function generateMatchEvents(rakip, opts){
       }
       /* Anlatım-geometri tutarlılığı: şut noktasının çembere uzaklığından sınıf çıkar.
          ≤90px (~2.7m) = "yakin" (turnike/smaç dili serbest); üstü = "orta" (turnike dili YASAK). */
-      const _rim=(userPos===userIsHome)?RIM_L:RIM_R;
+      const rimIsLeft=(userPos===userIsHome);
+      const _rim=rimIsLeft?RIM_L:RIM_R;
       const _rd=Math.hypot(xy.x-_rim[0],xy.y-_rim[1]);
-      const cls=is3?'uzak':(_rd<=90?'yakin':'orta');
+      /* Faz 1: bölge gerçek şut noktasından; cls (yakın/orta/uzak) buradan türetilir. */
+      const zone=putback?'rim':classifyZone(xy,rimIsLeft,is3);
+      const cls=is3?'uzak':(zone==='midrange'?'orta':'yakin');
+      /* Faz 1: tek yapısal senaryo (scheme/move/contest) — anlatım + animasyon aynı play'i okur. */
+      let scheme;
+      if(putback) scheme='putback';
+      else if(fb) scheme='transition';
+      else if(passer) scheme=is3?'spotup':'pnr';
+      else scheme=((shooter.poz==='C'||shooter.poz==='PF')&&(zone==='rim'||zone==='paint'))?'postup':'iso';
+      let move=null;
+      if(!passer&&!putback&&scheme!=='transition'){
+        if(is3||zone==='midrange') move=prCh(['stepback','crossover','hesitation']);
+        else if(scheme==='postup') move=prChance(0.5)?'spin':null;
+        else move=prCh(['drive','crossover']);
+      }
+      const contest=blocked?'heavy':(made?(prChance(0.42)?'contested':'open'):(prChance(0.5)?'contested':'heavy'));
+      const play={scheme,zone,is3:!!is3,shooterId:shooter.id!=null?shooter.id:undefined,passerId:(passer&&passer.id!=null)?passer.id:undefined,move,contest,result:blocked?'block':and1?'and1':made?'make':'miss'};
+      /* Faz 3: bağlam öneki (seri/fark/sıcaklık/kritik) — seçili ve throttled (spam değil). */
+      let ctxPre='';
+      if(made){
+        narr.ctxCd=(narr.ctxCd||0)-1;
+        const mg=Math.abs(homeScore-awayScore), hh=narr.heat[shooter.id]||0, cand=[];
+        if(narr.run>=8) cand.push(`🔥 ${narr.run}-0'lık seri!`);
+        else if(mg>=18) cand.push(`Fark açıldı — ${mg} sayı.`);
+        if(hh>=3) cand.push(`${shooter.isim} kızıştı — üst üste ${hh}. isabet!`);
+        if(clutch&&mg<=4) cand.push('Kritik anlar, başa baş!');
+        if(cand.length&&narr.ctxCd<=0){ ctxPre=prCh(cand)+' '; narr.ctxCd=rand(3,6); }
+      }
+      /* Hamle ibaresi yalnız gerçekten yapılan hamleye uygun; ~%42 serpiştirilir. */
+      const movePhrase=(move&&MOVE_BY[move]&&prChance(0.42))?(pickLine(MOVE_BY[move],pr,narr.recent,'mv')+' '):'';
       let txt;
       if(made){
-        /* Kendi yaratımı (passız) isabetlerde ~%34 renkli hamle girişi serpiştir — sınıf uyumlu. */
-        let mvPool=MOVE_LINES;
-        if(cls==='orta') mvPool=MOVE_LINES.filter(l=>!/dibe indi/i.test(l));
-        else if(cls==='yakin') mvPool=MOVE_LINES.filter(l=>!/step-back|Geriye çekilerek/i.test(l));
-        const mv=(!passer&&Math.random()<0.34)?(ch(mvPool)+' '):'';
-        if(is3){ const pasTxt=passer?`${passer.isim}'in pasında `:''; txt=mv+pasTxt+spikerLine(SP.id,'score3',{s:shooter.isim,sc:sc()}); }
+        if(is3){ const pasTxt=passer?`${passer.isim}'in pasında `:''; txt=movePhrase+pasTxt+spikerLinePR(SP.id,'score3',{s:shooter.isim,sc:sc()},pr,narr.recent); }
         else if(and1){ txt=`${shooter.isim} faule rağmen ${cls==='yakin'?'turnikeyi bitirdi':'şutu soktu'} — ${and1Made?'AND-1 tamam!':'ek atış kaçtı.'} ${sc()}`; }
-        else { const pasTxt=passer?`${passer.isim} buldu; `:''; txt=mv+pasTxt+spikerLine(SP.id,'score2',{s:shooter.isim,sc:sc(),cls}); }
+        else { const pasTxt=passer?`${passer.isim} buldu; `:''; txt=movePhrase+pasTxt+spikerLinePR(SP.id,'score2',{s:shooter.isim,sc:sc(),cls},pr,narr.recent); }
       } else if(blocked){
-        txt=spikerLine(SP.id,'block',{s:shooter.isim,b:blk.isim});
+        txt=spikerLinePR(SP.id,'block',{s:shooter.isim,b:blk.isim},pr,narr.recent);
       } else {
-        txt=spikerLine(SP.id,is3?'miss3':'miss2',{s:shooter.isim,cls});
+        txt=spikerLinePR(SP.id,is3?'miss3':'miss2',{s:shooter.isim,cls},pr,narr.recent);
       }
+      txt=ctxPre+txt;
       if(fb) txt='⚡ Hızlı hücum! '+txt;
       else if(putback) txt='İkinci şans! '+txt;
-      events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q,fb:fb||undefined,pb:putback||undefined,blk:blocked||undefined,sid:shooter.id!=null?shooter.id:undefined,pid:(passer&&passer.id!=null)?passer.id:undefined},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      /* Faz 3: seri + sıcaklık takibi (yalnız karşılaştırma/sayaç — sonuç randomu değişmez). */
+      if(made){
+        if(narr.runOff!==userPos){ narr.runOff=userPos; narr.run=pts; } else narr.run+=pts;
+        narr.heat[shooter.id]=(narr.heat[shooter.id]||0)+1;
+      } else { narr.heat[shooter.id]=0; }
+      events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,play,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q,fb:fb||undefined,pb:putback||undefined,blk:blocked||undefined,scheme,zone,contest,sid:shooter.id!=null?shooter.id:undefined,pid:(passer&&passer.id!=null)?passer.id:undefined},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       /* Kaçan şutlarda ~%22 renkli ribaund anlatımı (hücum/savunma). */
       if(!made&&rebounder&&Math.random()<0.22){
         const rl=(rebOff?ch(REB_OFF_LINES):ch(REB_DEF_LINES)).replace('%R',rebounder.isim);

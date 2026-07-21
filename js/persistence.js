@@ -108,6 +108,9 @@ function sfx(kind){
         _sfxNoise(180,1.6,0.07,0.07);
         _sfxBeep(95,0.09,0.05,'sine');
         return;
+      case 'pass':       /* asist pası: çok kısa/kısık "vuuş" — görsel pasla senkron, yormaz */
+        _sfxNoise(1500,0.8,0.035,0.05);
+        return;
       case 'buzzer':     /* çeyrek sonu kornası */
         _sfxBeep(224,0.55,0.075,'sawtooth');
         _sfxBeep(112,0.55,0.05,'square');
