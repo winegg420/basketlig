@@ -65,7 +65,7 @@ function clearMatchCourt(){
    ═════════════════════════════════════════════════════════════════════════ */
 
 const _PL_MAXV=320;          /* px/sn — hız stat'ı yoksa yedek koşu hızı */
-const _PL_ACC=12;             /* hedefe yaklaşma sertliği */
+const _PL_ACC=13;             /* hedefe yaklaşma sertliği */
 const _PL_R=42;              /* çarpışma yarıçapı — jetonlar bu mesafeden yakın durmaz (avgNN↑, overlap↓) */
 
 /* Oyuncunun gerçek koşu hızı — GERÇEK ÖLÇEK: saha 940px = 28m (1px ≈ 0.03m).
@@ -258,8 +258,8 @@ function _simStep(dt){
   /* 1) hedefe doğru ivmeli koşu + boşta mikro salınım */
   for(const p of P){
     const w=(p===carrier)?0:1;
-    const gx=p.tx+Math.sin(S.time*1.15+p.ph)*2.6*w;
-    const gy=p.ty+Math.cos(S.time*0.87+p.ph*1.7)*2.6*w;
+    const gx=p.tx+Math.sin(S.time*1.15+p.ph)*1.9*w;
+    const gy=p.ty+Math.cos(S.time*0.87+p.ph*1.7)*1.9*w;
     let dx=gx-p.x, dy=gy-p.y;
     const d=Math.hypot(dx,dy);
     if(d>0.01){
@@ -267,7 +267,7 @@ function _simStep(dt){
          böylece yerine varan jeton glide ile 15-45px/sn'de oyalanmadan hemen DURUR (avgMoving↓,
          gerçek "pozisyon tut" hissi). Top taşıyıcı/şutör için de sorunsuz — 14px görsel olarak
          noktada, kalan hizayı bridge/fire kapatır. Uzaktaki oyuncu normal ivmeyle koşar. */
-      const want=d<17?Math.min(p.maxV||_PL_MAXV,12):Math.min(p.maxV||_PL_MAXV,d*3.4);
+      const want=d<24?Math.min(p.maxV||_PL_MAXV,12):Math.min(p.maxV||_PL_MAXV,d*3.4);
       p.vx+=((dx/d)*want-p.vx)*_PL_ACC*dt;
       p.vy+=((dy/d)*want-p.vy)*_PL_ACC*dt;
     } else { p.vx*=0.85; p.vy*=0.85; }
@@ -955,7 +955,7 @@ function animateShotPossession(sh,onShoot,onResult){
          alınca daha uzun sürer (held), aceleci pas-şut yerine izolasyonu kurar. */
       offP.forEach(p=>{ if(p!==shooter&&p!==pg) p.ty+=(p.ty<250?-26:26); });
       const tPass=Math.max(1.15,Math.min(2.3,etaTok(pg,pg.tx,pg.ty)+0.25));
-      const tFire=Math.max(tPass+1.8,Math.min(tPass+3.2,etaTok(shooter,sh.x,sh.y)+0.25));
+      const tFire=Math.max(tPass+2.5,Math.min(tPass+3.9,etaTok(shooter,sh.x,sh.y)+0.25));
       steps=[
         {at:tPass,fn:()=>_ballPass(shooter,0.32)},
         {at:tFire-0.25,fn:bridge},
@@ -971,7 +971,7 @@ function animateShotPossession(sh,onShoot,onResult){
       const t2=t1+0.78;
       /* FAZ 2: şut öncesi tutuş uzatıldı — oyun kurucu yerinde dribbling yaparken (held & SABİT)
          topsuz oyuncular çapalarında durur; geçiş fazının avgMoving ağırlığı düşer, set oturur. */
-      const tFire=Math.max(t2+3.2,Math.min(carryT+6.2,etaTok(shooter,sh.x,sh.y)+0.25));
+      const tFire=Math.max(t2+3.9,Math.min(carryT+6.9,etaTok(shooter,sh.x,sh.y)+0.25));
       /* Kesici tercihen BÜYÜK (C/PF): köşe/kanattaki guard'lar spot-up çapası olarak DURUR,
          boyadan kesen büyük olur — köşeler boşalmaz, spread (xSpread) sabit yüksek kalır. */
       const cutter=relay.find(p=>p!==mid&&p.pl&&(p.pl.poz==='C'||p.pl.poz==='PF'))||relay.find(p=>p!==mid)||null;

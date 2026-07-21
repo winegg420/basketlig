@@ -92,3 +92,10 @@ Anlatım/haberlerde `/19` elle yazılmış (satır 5607, 3835). 20 takım için 
 3. **C1** (save-scum) — rekabet bütünlüğü.
 4. **B1, B2, B3** (transfer pazarlığı, playoff derinliği, rakip sakatlık) — tam sürüm hissi.
 5. Kalanlar (B4-B6, C2-C5, D) — cila.
+
+---
+## 26. oturum notu — Canlı maç gerçekçilik (çözüldü)
+Canlı maçın "top hep havada / herkes hep koşuyor / orta saha kalabalık" hissi canlı Chrome ölçümüyle (Playwright,
+seedli deterministik maç) teşhis edilip düzeltildi: top oturur (held %47→67), oyuncular yerine varınca durur
+(avgMoving 7.3→4.7), set oyununda orta saha boşalır (avgMid 2.7→1.4). Sonuç matematiği değişmedi (kanonik hash +
+200-maç band birebir korundu). Ölçüm harness'leri: `tools/measure.js`, `tools/band.js`. Detay: PROGRESS.md 26. oturum.

@@ -1286,3 +1286,66 @@ Ekonomi zaten bağlıydı; denge doğrulandı ve iyileştirildi:
 ### Test
 - JS syntax temiz, konsol hatasız. Tam maç akışı (skorboard, saha, şut haritası, kutu skor, uzatma, maç sonu
   ekonomi/tablo) sorunsuz. Skorlar tutarlı biçimde 80-100+ bandında; tempo taktiği skoru anlamlı etkiliyor.
+
+## 26. oturum — Canlı maç gerçekçilik: TAM revizyon (FAZ 0-6, otonom, canlı ölçümle)
+
+**Amaç:** Canlı maçı gerçek bir basketbol maçı gibi göstermek — top oturmalı (sürekli pas-pas değil),
+oyuncular yerine varınca durmalı, orta saha set oyununda boşalmalı. Tümü **canlı Chrome ölçümüyle**
+(Playwright + seedli deterministik maç) faz faz doğrulandı.
+
+### Ölçüm altyapısı (yeni)
+- `tools/measure.js` — Playwright + sistem Chrome; `addInitScript` ile Math.random tohumlanır →
+  kariyer kurulumu + maç sonucu **deterministik**. DİNAMİK (top modu, hareket, orta saha; zaman-ortalamalı
+  konumsal metrikler) + STATİK (şema/move/reuse) ölçer; **DEĞİŞMEZLİK** için sonuç imzası (skor/kutu skor hash).
+  `--seed`, `--secs`, `--save`.
+- `tools/band.js` — 200 maç skor bandı harness'i (canlı animasyon olmadan `generateMatchEvents`), tohumlu
+  skor dizisi hash'i ile revizyon öncesi/sonrası karşılaştırma.
+
+### Kırmızı çizgi (kanıtlandı): SONUÇ matematiği DEĞİŞMEDİ
+- Kanonik tohumda skor/kazanan/kutu skor hash `db4799f0` **her fazda birebir aynı**.
+- 200 maç band skor-dizisi hash'i `46daaec2` revizyon öncesi (HEAD~4) ile **birebir aynı** → sunum-only
+  değişiklikler sonucu hiç bozmadı. Tüm dokunuşlar `js/match-engine.js`'te, yalnız canlı oynatım fonksiyonları.
+
+### Fazlar ve ölçüm (önce → sonra, kanonik seed 987654321)
+
+| Metrik | Baz (v27) | Final (v28) | Hedef | Faz |
+|---|---|---|---|---|
+| pass % | 15 | **9** | ≤20 | FAZ 1 |
+| held % | 47 | **67** | ≥55 | FAZ 1 |
+| avgMoving | 7.3 | **4.7** | ≤5 | FAZ 2 |
+| avgMid | 2.7 | **1.4** | ≤1.5 | FAZ 3 |
+| xSpread | 334 | **340** | ≥280 | korundu |
+| avgNN | 64 | **63** | ≥55 | korundu |
+| overlap | 0 | **0** | ≤2 | korundu |
+| iso % | 8.5 | **8.5** | ≤15 | korundu |
+| spotup % | 37 | **37** | ≥20 | korundu |
+| moveFilled | 68/118 | **68/118** | >0 | korundu |
+| reuse | 0.24 | **0.24** | ≤0.30 | korundu |
+
+- **FAZ 1 (topu oturt):** SET/iso dallarında dribbling (held) süresi uzatıldı; asistsiz/kaçan şutlarda ara
+  (swing) pası kaldırıldı (pg topu sürerek doğrudan şutöre verir) — asistli sayıda swing korunur (anlatım-saha
+  senkronu). held %47→~59, pass %15→~11.
+- **FAZ 2 (oyuncuları oturt):** `_simStep` **varış freni** (hedefe <24px kalınca hız eşik-altı 12px/sn → varan
+  jeton hemen durur); adam-adama + 2-3 bölge savunmasına **hareket deadzone'u** (adam/top mikro-oynamasını
+  kovalamaz); off-ball yardım gap 84→62 (boyada kümelenme/çarpışma jitter'i); tek kesme; geçiş hızlandırıldı
+  (ivme 8.5→13, sprint ×1.5→1.62; tavan hız gerçekçi kalır); mikro-salınım 3.5→1.9. avgMoving 7.3→4.7.
+- **FAZ 3 (yarı sahaya çıpala):** OFF_BASE PG noktası 394→356 (orta bant x380-560 dışına); hava atışında
+  sıçramayan 8 oyuncu kendi yarı sahasına (2 pivot çemberde) — orta saha yığılması kalktı. Derin set fazında
+  **avgMid=0**. avgMid 2.7→1.4.
+- **FAZ 4 (regresyon kalkanı):** xSpread/avgNN/overlap/iso/spotup/moveFilled/reuse tümü korundu — onarım gerekmedi.
+- **FAZ 5 (anlatım-görüntü senkron):** crossover/hesitation artık sahada oynanır (yanal aldatma) — move değeri
+  olan HER şutun karşılığı var. Tarama: 3'lükte turnike/dibe 0, asistli şutta pasör=atan 0, tüm şutlarda şema.
+- **FAZ 6 (final):** 30sn tam maç ölçümü tüm hedefleri tek seferde geçti; 200 maç band birebir korundu;
+  `visual-check` masaüstü+mobil 0 hata; `node --check` temiz; cache-bust `?v=27`→`?v=28`.
+
+### Karar / gözlem
+- v27'nin "hep pas / hep koşu / orta saha kalabalık" hissi **canlı ölçümle** teşhis edildi: kök neden her
+  pozisyon başında 10 oyuncunun karşı yarı sahaya koşması (full-court transition) ve savunmanın top/adam
+  mikro-oynamasını kovalaması. Set fazı zaten iyiydi; kalabalık **geçiş** ve **savunma jitter'ı** kaynaklıydı.
+- En etkili tek dokunuş: **varış freni** (oyuncu yerine varınca net durur) + **savunma deadzone** + **tip-off
+  dağıtımı**. Skor matematiğine hiç dokunulmadı; determinizm hem kanonik hem 200-maç band ile kanıtlandı.
+
+### Test edilmesi gerekenler (kullanıcı)
+- Bir sezon maçı izle: top oyun kurucuda **sürülerek** ilerlemeli (sürekli pas değil), oyuncular köşe/kanat
+  çapalarında **durup** kesme/perde yapmalı, orta saha set oyununda **boş** olmalı, hava atışında takımlar
+  kendi yarı sahasına dizilmeli. Anlatımdaki asist/çalım sahada birebir oynanmalı.
