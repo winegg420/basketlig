@@ -424,7 +424,9 @@ function _script(steps){
    0=PG yay tepesi (330,250), 1/2=iki DİP KÖŞE üçlüğü (104, y66/434), 3=yüksek forvet/slot
    (250,150), 4=pivot post (132,312). Eski dar bant (x150-320) 10 jetonu üst üste yığıyordu
    ("skrum"); artık köşeler ve tüm genişlik kullanılıyor → gerçek basketbol spacing'i. */
-const OFF_BASE_L=[[394,250],[58,50],[58,450],[242,128],[112,298]];
+/* FAZ 3: PG "point" noktası 394→356 — orta bandın (x380-560) DIŞINA çekildi (ayna sağ:584>560);
+   set oyununda orta saha boşalır (avgMid↓). 356, yay tepesinin hemen üstü — gerçekçi bir point. */
+const OFF_BASE_L=[[356,250],[58,50],[58,450],[242,128],[112,298]];
 /* Ribaund/serbest atış dizilimi (sol pota) */
 const FT_OFF_L=[[176,178],[176,322],[286,196],[286,304]];
 const FT_DEF_L=[[150,178],[150,322],[204,178],[204,322],[262,250]];
@@ -634,8 +636,11 @@ function movePlayersForEvent(ev){
       const ac=S.away.find(p=>p.pl&&p.pl.poz==='C')||S.away[S.away.length-1];
       hc.tx=451; hc.ty=250; hc.maxV=hc.baseV;
       ac.tx=489; ac.ty=250; ac.maxV=ac.baseV;
-      const hSpots=[[404,172],[404,328],[330,250],[218,250]];
-      const aSpots=[[536,172],[536,328],[610,250],[722,250]];
+      /* FAZ 3: sıçramayan 8 oyuncu orta bandın (x380-560) DIŞINA, kendi yarı sahalarına dizilir
+         (yalnız 2 pivot çemberde karşı karşıya). Gerçek hava atışı görüntüsü korunur, orta saha
+         yığılması kalkar (avgMid↓). */
+      const hSpots=[[360,176],[360,324],[300,250],[212,250]];
+      const aSpots=[[580,176],[580,324],[640,250],[728,250]];
       S.home.filter(p=>p!==hc).forEach((p,i)=>{ const s=hSpots[i%4]; p.tx=_jit(s[0],6); p.ty=_jit(s[1],6); p.maxV=p.baseV; });
       S.away.filter(p=>p!==ac).forEach((p,i)=>{ const s=aSpots[i%4]; p.tx=_jit(s[0],6); p.ty=_jit(s[1],6); p.maxV=p.baseV; });
       /* top hakemin elinde, orta noktada bekler */
@@ -966,7 +971,7 @@ function animateShotPossession(sh,onShoot,onResult){
       const t2=t1+0.78;
       /* FAZ 2: şut öncesi tutuş uzatıldı — oyun kurucu yerinde dribbling yaparken (held & SABİT)
          topsuz oyuncular çapalarında durur; geçiş fazının avgMoving ağırlığı düşer, set oturur. */
-      const tFire=Math.max(t2+2.9,Math.min(carryT+5.9,etaTok(shooter,sh.x,sh.y)+0.25));
+      const tFire=Math.max(t2+3.2,Math.min(carryT+6.2,etaTok(shooter,sh.x,sh.y)+0.25));
       /* Kesici tercihen BÜYÜK (C/PF): köşe/kanattaki guard'lar spot-up çapası olarak DURUR,
          boyadan kesen büyük olur — köşeler boşalmaz, spread (xSpread) sabit yüksek kalır. */
       const cutter=relay.find(p=>p!==mid&&p.pl&&(p.pl.poz==='C'||p.pl.poz==='PF'))||relay.find(p=>p!==mid)||null;
