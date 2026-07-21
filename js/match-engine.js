@@ -919,10 +919,11 @@ function animateShotPossession(sh,onShoot,onResult){
       ];
       ret=Math.round((tFire+0.75)*1000);
     } else if(iso){
-      /* Diğer hücumcular kenara çekilip alan açar; top tek pasla yıldıza. */
+      /* Diğer hücumcular kenara çekilip alan açar; top tek pasla yıldıza. FAZ 1: yıldız topu
+         alınca daha uzun sürer (held), aceleci pas-şut yerine izolasyonu kurar. */
       offP.forEach(p=>{ if(p!==shooter&&p!==pg) p.ty+=(p.ty<250?-26:26); });
-      const tPass=Math.max(0.90,Math.min(2.0,etaTok(pg,pg.tx,pg.ty)+0.10));
-      const tFire=Math.max(tPass+0.85,Math.min(tPass+2.2,etaTok(shooter,sh.x,sh.y)+0.25));
+      const tPass=Math.max(1.15,Math.min(2.3,etaTok(pg,pg.tx,pg.ty)+0.25));
+      const tFire=Math.max(tPass+1.15,Math.min(tPass+2.6,etaTok(shooter,sh.x,sh.y)+0.25));
       steps=[
         {at:tPass,fn:()=>_ballPass(shooter,0.32)},
         {at:tFire-0.25,fn:bridge},
@@ -930,13 +931,13 @@ function animateShotPossession(sh,onShoot,onResult){
       ];
       ret=Math.round((tFire+0.70)*1000);
     } else {
-      /* SET OYUNU: oyun kurucu topu GERÇEK hızında öne taşır (carryT), iki pas döner;
-         bu sırada topsuz bir oyuncu boyaya kesme (cut) yapıp köşeye açılır — savunma
-         canlı takip modunda kesmeyi gerçekten izler. */
-      const carryT=Math.max(0.95,Math.min(2.3,etaTok(pg,pg.tx,pg.ty)+0.10));
-      const t1=carryT+0.15;
-      const t2=t1+0.65;
-      const tFire=Math.max(t2+0.55,Math.min(carryT+3.0,etaTok(shooter,sh.x,sh.y)+0.25));
+      /* SET OYUNU: oyun kurucu topu GERÇEK hızında öne taşırken SÜRER (held) — FAZ 1: dribbling
+         süresi uzatıldı, top oturur; sonra TEK kilit pas + şut. Bu sırada topsuz bir oyuncu
+         boyaya kesme (cut) yapıp köşeye açılır — savunma canlı takip modunda kesmeyi izler. */
+      const carryT=Math.max(1.45,Math.min(3.2,etaTok(pg,pg.tx,pg.ty)+0.35));
+      const t1=carryT+0.18;
+      const t2=t1+0.78;
+      const tFire=Math.max(t2+1.0,Math.min(carryT+3.6,etaTok(shooter,sh.x,sh.y)+0.25));
       /* Kesici tercihen BÜYÜK (C/PF): köşe/kanattaki guard'lar spot-up çapası olarak DURUR,
          boyadan kesen büyük olur — köşeler boşalmaz, spread (xSpread) sabit yüksek kalır. */
       const cutter=relay.find(p=>p!==mid&&p.pl&&(p.pl.poz==='C'||p.pl.poz==='PF'))||relay.find(p=>p!==mid)||null;
@@ -955,7 +956,11 @@ function animateShotPossession(sh,onShoot,onResult){
       }
       /* Faz 5: diğer topsuz oyuncular (spacer) KÖŞE/KANAT çapalarında DURUR — spread bozulmaz
          (spot-up tehdidi olarak geniş kalırlar, orta banda çekilmezler). */
-      if(mid!==pg) steps.push({at:t1,fn:()=>_ballPass(mid,0.34)});   /* topu getirdi, ilk pas */
+      /* FAZ 1: ara (swing) pası YALNIZ gerçek bir asistçi varken (sh.pid) atılır — asistli
+         sayıda topu asistçi getirip dağıtır (anlatım-saha senkronu). Asistsiz/kaçan şutlarda
+         pg topu SÜRER (held) ve doğrudan şutöre verir; gereksiz "top çevrede paslaşır" kalkar. */
+      const doMid=(mid!==pg)&&(sh.pid!=null);
+      if(doMid) steps.push({at:t1,fn:()=>_ballPass(mid,0.34)});   /* topu getirdi, kilit öncesi swing */
       /* Faz 6: asistçi (sh.pid) son pası atınca hafif pas sesi — görsel pasla senkron. */
       steps.push({at:t2,fn:()=>{ _ballPass(shooter,0.34); if(sh.pid!=null&&typeof sfx==='function') sfx('pass'); }});
       steps.push({at:tFire-0.24,fn:bridge});
