@@ -100,6 +100,9 @@ function startMatch(playoff){
     timeoutsLeft:5,          /* mola hakkı (FIBA benzeri) */
     paused:false,            /* mola/dead-ball duraklatması */
     restBonus:{},            /* mola ile tazelenen enerji (göstergeye eklenir) */
+    rate:_matchRate,           /* izleme hızı — hem animasyon hem olay temposu */
+    _clkNow:MATCH_CLOCK_SEC,   /* akan maç saati (sn, kesirli) */
+    _scOff:null,_scAnchor:MATCH_CLOCK_SEC,
     energyStart:Object.fromEntries((G.players||[]).map(p=>[p.id,Number(p.enerji!=null?p.enerji:100)]))};
   /* C1: Sonucu maç başında kilitle ve kalıcı kaydet. Canlı izleme sadece görselleştirmedir;
      yarıda durdurup/yenileyip yeniden başlatınca aynı kilitli sonuç uygulanır. */
@@ -121,8 +124,11 @@ function startMatch(playoff){
   document.getElementById('commentary').innerHTML='';
   document.getElementById('liveScoreHome').textContent='0';
   document.getElementById('liveScoreAway').textContent='0';
-  document.getElementById('liveQuarter').textContent='1. Periyot (10:00)';
+  document.getElementById('liveQuarter').textContent='1. Periyot';
   document.getElementById('liveTime').textContent='10:00';
+  stopClockTween();
+  setMatchRate(_matchRate);
+  { const _sc=document.getElementById('liveShotClock'); if(_sc) _sc.textContent=''; }
   document.getElementById('liveStatus').textContent='CANLI';
   document.getElementById('liveStatus').style.background='rgba(239,68,68,0.2)';
   document.getElementById('liveStatus').style.color='#f87171';
@@ -145,47 +151,52 @@ function startMatch(playoff){
     if(ev.q){
       const qChanged=mState.quarter!==ev.q;
       mState.quarter=ev.q;
-      document.getElementById('liveQuarter').textContent=ev.q<=4?`${ev.q}. Periyot (10:00)`:`Uzatma ${ev.q-4} (5:00)`;
+      document.getElementById('liveQuarter').textContent=ev.q<=4?`${ev.q}. Periyot`:`Uzatma ${ev.q-4}`;
       /* Çeyrek değişince canlı şut haritası sıfırlanır (filtre 'live' ise yeni çeyrek boş başlar). */
       if(qChanged) redrawAllShots();
     }
-    if(ev.t!==undefined){
-      const dm=Math.floor(ev.t/60);
-      const ds=ev.t%60;
-      document.getElementById('liveTime').textContent=`${dm}:${ds.toString().padStart(2,'0')}`;
-    }
-    /* SENKRON: skor tabelası + kutu skor + çeyrek panosu + ANLATIM tek pakette basılır.
-       Şutlu olaylarda bu paket topun ÇEMBERE VARDIĞI ana ertelenir — anlatım sahada
-       olan biteni önceden "ispiyonlamaz"; şutsuz olaylarda anında basılır. */
-    const paint=()=>{
+    /* SENKRON: skor tabelası + kutu skor + çeyrek panosu + ANLATIM tek pakette basılır ve
+       olayın SAHADA gerçekleştiği kareye bağlanır (şut → top çemberde, çalma → topun
+       kapıldığı an, ribaund → topun alındığı an, faul → düdük). Serbest atışta metin
+       ikiye ayrılır: düdük cümlesi hemen, "x/y" sonucu son atış çemberden geçince. */
+    let _scorePainted=false;
+    const paintScore=()=>{
+      if(_scorePainted) return; _scorePainted=true;
       if(ev.home!==undefined){
         document.getElementById('liveScoreHome').textContent=ev.home;
         document.getElementById('liveScoreAway').textContent=ev.away;
       }
       if(ev.box) renderBoxScore(ev.box.h,ev.box.a,G.team.isim,mState.rakipName);
       if(ev.qh&&ev.qa) updateQuarterBoard(ev.qh,ev.qa,ev.home||0,ev.away||0);
+    };
+    const paint=(mode)=>{
+      if(mode==='pre'){ addComment(ev.ftPre||ev.text,ev.type); return; }   /* faul düdüğü — sonuç YOK */
+      if(mode==='res'){ paintScore(); if(ev.ftRes) addComment(ev.ftRes,ev.type); return; }
+      paintScore();
       addComment(ev.text,ev.type);
     };
     /* Önce oyuncuları yerleştir (top bu GERÇEK konumlara paslanacak), sonra topu canlandır.
-       Dönen süre (ms) koreografinin uzunluğu — olay gecikmesi buna uyum sağlar (hava atışı,
-       uzaktan gelen serbest atış şutörü vb. yarıda kesilmez). */
-    const mvMs=movePlayersForEvent(ev)||0;
-    if(ev.shot){
+       Dönen süre (sim-ms) koreografinin uzunluğu; izleme hızına bölünerek gerçek gecikmeye
+       çevrilir (hava atışı, serbest atış dizisi vb. asla yarıda kesilmez). */
+    const isShot=!!ev.shot;
+    const mvMs=movePlayersForEvent(ev,isShot?null:paint)||0;
+    const _h=mState._evH||{paint:false,marks:false};
+    if(isShot){
       const sh={...ev.shot};
       mState.allShots.push(sh);
-      /* Gerçekçi hücum: top getirilir, paslaşılır, şutöre gelir.
+      /* Gerçekçi hücum: top oyuna sokulur, geçiş, set, şut.
          İz top elden çıkarken; SKOR+ANLATIM+ses top çembere varınca (tam senkron). */
       mState._animMs=animateShotPossession(sh,
         ()=>{ if(shotPassesFilter(sh)) drawShotMark(sh); },
         ()=>{ paint(); if(sh.made) sfx('score'); })||2900;
     } else {
-      if(ev.shots){
+      if(ev.shots&&!_h.marks){
         ev.shots.forEach(sh=>{
           mState.allShots.push(sh);
           if(shotPassesFilter(sh)) drawShotMark(sh);
         });
       }
-      paint();
+      if(!_h.paint) paint();
     }
     /* Saha-şutunun sesi top potaya varınca çalar (yukarıda); serbest atış vb. anında. */
     if((ev.type==='score3'||ev.type==='score2')&&!ev.shot) sfx('score');
@@ -227,6 +238,8 @@ function startMatch(playoff){
     if(ev.type==='end'){
       clearMatchEventTimer();
       mState.running=false;
+      stopClockTween();
+      { const _sc=document.getElementById('liveShotClock'); if(_sc) _sc.textContent=''; }
       sfx('buzzer');
       stopCrowdAmbience();
       document.getElementById('liveStatus').textContent='BİTTİ';
@@ -241,20 +254,76 @@ function startMatch(playoff){
        putback ~1.7sn, hızlı hücum ~2-3sn, set oyunu ~3-5sn (animateShotPossession döndürür).
        Şutsuz olaylarda taban gecikme ile koreografi süresinin (mvMs) büyüğü kullanılır —
        hava atışı, çeyrek başı yandan sokma ve serbest atış dizisi asla yarıda kesilmez. */
-    const base=ev.shot?((mState._animMs||2900)+220):(ev.type==='free'?1700:(ev.type==='quarter_start'||ev.type==='quarter_end'||ev.type==='tactic'?1500:1300));
-    const delay=ev.shot?base:Math.max(base,mvMs+240);
+    const simBase=ev.shot?((mState._animMs||2900)+240):(ev.type==='free'?1700:(ev.type==='quarter_start'||ev.type==='quarter_end'||ev.type==='tactic'?1500:1300));
+    const simMs=ev.shot?simBase:Math.max(simBase,mvMs+260);
+    const rate=Math.max(0.5,Math.min(4,mState.rate||1));
+    const delay=Math.max(140,simMs/rate);
+    /* Maç saati olaylar arasında GERÇEK ZAMANDA akar (eskiden 10-20 sn'lik sıçramalar);
+       şut saati de aynı akıştan beslenir. */
+    if(ev.t!==undefined) startClockTween(ev.t,delay,ev.type);
     matchEventTimer=setTimeout(matchStep,delay);
   }
   mState.step=matchStep;
   matchStep();
 }
 
+/* ── İzleme hızı ──────────────────────────────────────────────────────────
+   Tüm canlı sahne "sim-saniyesi" cinsinden kurulur; rate hem rAF adımını
+   (js/match-engine.js `_simStep`) hem olaylar arası gecikmeyi ölçekler.
+   Böylece 2×'te oyun hızlanır ama hareketin/anlatımın uyumu bozulmaz. */
+let _matchRate=1.5;
+function setMatchRate(r,btn){
+  _matchRate=Math.max(0.5,Math.min(4,Number(r)||1));
+  if(typeof mState!=='undefined'&&mState) mState.rate=_matchRate;
+  try{
+    document.querySelectorAll('.match-rate').forEach(b=>{
+      const on=Math.abs(Number(b.dataset.rate)-_matchRate)<0.01;
+      b.style.background=on?'var(--accent)':'';
+      b.style.color=on?'#111':'';
+      b.style.fontWeight=on?'800':'';
+    });
+  }catch(e){}
+}
+/* ── Akan maç saati + şut saati ─────────────────────────────────────────── */
+let _clkTimer=null;
+function stopClockTween(){ if(_clkTimer){ clearInterval(_clkTimer); _clkTimer=null; } }
+function _fmtClock(sec){ const s=Math.max(0,Math.ceil(sec)); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
+function startClockTween(targetT,durMs,type){
+  const el=document.getElementById('liveTime');
+  const scEl=document.getElementById('liveShotClock');
+  if(!el) return;
+  stopClockTween();
+  const from=(mState._clkNow!=null&&mState._clkNow>=targetT)?mState._clkNow:targetT;
+  /* şut saati: pozisyon değişince / ölü topta 24'e döner (FIBA) */
+  const off=mState._lastOff;
+  if(mState._scOff!==off||type==='quarter_start'||type==='start'||type==='foul'||type==='free'||type==='reb'){
+    mState._scOff=off; mState._scAnchor=from;
+  }
+  const t0=Date.now();
+  const tick=()=>{
+    const k=Math.max(0,Math.min(1,(Date.now()-t0)/Math.max(1,durMs)));
+    const now=from+(targetT-from)*k;
+    mState._clkNow=now;
+    el.textContent=_fmtClock(now);
+    if(scEl){
+      const used=Math.max(0,(mState._scAnchor!=null?mState._scAnchor:now)-now);
+      const left=Math.max(0,24-used);
+      scEl.textContent=(mState.running&&left>0.5)?('ŞUT '+Math.ceil(left)):'';
+    }
+    if(k>=1) stopClockTween();
+  };
+  tick();
+  _clkTimer=setInterval(tick,100);
+}
+
 function stopMatch(){
   clearMatchEventTimer();
   clearBallTimers();
+  stopClockTween();
   stopCrowdAmbience();
   if(mState._toInterval){ clearInterval(mState._toInterval); mState._toInterval=null; }
   mState.running=false;
+  const _sc=document.getElementById('liveShotClock'); if(_sc) _sc.textContent='';
   const st=document.getElementById('liveStatus');
   if(st) st.textContent='DURDURULDU';
   const badge=document.getElementById('liveBadge'); if(badge) badge.style.display='none';
@@ -1185,6 +1254,7 @@ window.onload=()=>{
     setTimeout(()=>{
       document.getElementById('loader').style.display='none';
       wireAppNav();
+      try{ setMatchRate(_matchRate); }catch(e){}   /* izleme hızı butonu işaretli başlasın */
       const appEl=document.getElementById('app');
       if(!appEl||appEl.style.display!=='block')
         document.getElementById('loginPage').style.display='flex';

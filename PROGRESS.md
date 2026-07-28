@@ -2,6 +2,92 @@
 
 Tek dosyalık basketbol menajerlik oyunu (`charazay2.0.html`). Steam yayınına hazırlık.
 
+## 2026-07-28 (27. oturum) — CANLI MAÇ SUNUMU BAŞTAN YAZILDI (v3): gerçek basketbol akışı + tam anlatım senkronu
+
+**Kullanıcı şikâyeti:** "Canlı maç gerçek basketbol gibi değil; top saçma hareketler ediyor,
+oyuncular saçma hareketler ediyor, top kenardan sokulurken oyuncu dip çizginin dışına çıkmıyor,
+görüntü ile mesaj senkron değil." → Sunum katmanı (js/match-engine.js'in canlı bölümü ~1000 satır)
+**baştan yazıldı**; main.js oynatım döngüsü ve saha SVG geometrisi buna göre yenilendi.
+
+### Teşhis (ölçümle, tahminle değil)
+Yeni `tools/realism-check.js` (Playwright + sistem Chrome, tohumlu maç) yazıldı: her karede
+saha-dışı ihlali, ışınlanma, insanüstü hız, üst üste binme, topun sahipsiz kalması, anlatım-görüntü
+gecikmesi ölçülür; `--fire` şut anının, `--inb` kenardan sokma anının ekran görüntüsünü alır;
+`--full` tam maçı uçtan uca koşturur. İlk tarama kök nedenleri gösterdi:
+1. **Dizilim kadro sırasına bağlıydı** (rol değil) — rakip 5'i "genel"e göre sıralı geldiğinden
+   pivot köşede üçlük bekliyor, guard boyada duruyordu.
+2. **Geçiş geç başlıyordu:** ribaund/çalma/sayı sonrası herkes 1-2 sn eski yarı sahada donuyor,
+   sonra topluca koşuya kalkıyordu → 10 jeton orta sahada tek yumak.
+3. **Çizgi dışı alan YOKTU:** iç viewBox saha çizgileriyle bitiyordu; "sokucu" çizginin üstünde
+   duruyordu. Yan çizgi payı 30px (≈0.9m) idi.
+4. **Anlatım yalnız saha şutlarında senkrondu**; faul/çalma/ribaund cümleleri olay başında,
+   serbest atış metni ise **atış yapılmadan sonucu söyleyerek** basılıyordu ("2/2 — hepsi içeride").
+5. Serbest top rastgele yöne kayıp çizgi dışına çıkabiliyor, ribaundu "alan" oyuncuya top
+   zamanlayıcıyla ışınlanıyordu.
+
+### Yapılanlar
+- **Saha geometrisi (charazay2.0.html):** iç viewBox `0 0 940 500` → `-26.3 -14 992.6 528`.
+  En-boy oranı birebir korundu (992.6/528 = 940/500), tüm koordinatlar geçerli kaldı; saha
+  çizgilerinin dışında **gerçek bir out-of-bounds alanı** oluştu (dip 82.7px, yan 44px). Parke
+  zemini bu alana genişletildi.
+- **Rol tabanlı dizilim:** `_assignRoles` jetonları PG/SG/SF/PF/C rolüne çapalar (değişiklikte
+  yeniden hesaplanır). 4 set şablonu (`SET_SPREAD` 4-out-1-in, `SET_HORNS`, `SET_POST`,
+  `SET_MOTION`) + güçlü taraf için y-aynalama; pozisyon başına rastgele seçilir.
+- **Üç fazlı pozisyon:** (a) kenardan sokma → (b) GEÇİŞ (hücum üç kulvar, kanatlar önce
+  `_wp` ara noktasıyla KENARA açılıp sonra öne koşar; savunma ortadan potaya döner) →
+  (c) SET (perde/roll, tek kesme, kilit pas, şut). Pozisyon el değiştirir değiştirmez
+  `_startBreak` ile geçiş **o karede** başlar (ribaund/çalma/sayı anında).
+- **Kenardan sokma gerçek kurala göre:** sokucu topu potanın altından alır (`_chase`),
+  **dip/yan çizginin tamamen dışına** çıkar (tek OOB izni onda; ölçüm: çizgi dışı **27px**),
+  içeri pası atar ve sahaya döner. Kalıntı izinler `_clearOob` ile temizlenir.
+- **Top fizik motoru:** dribbling (yere sekerek, ölü topta sekmez), göğüs/yerden pas, mesafeye
+  bağlı parabolik şut + el yüksekliğinden çıkış, fileden düşüş, **çemberden gerçekçi karambol**
+  (~2-3m), sürtünmeli serbest top + yuvarlanma dönüşü, çizgi dışına **asla** çıkmama.
+  Serbest topun peşine gerçekten koşulur ve **yetişilince** alınır (ışınlanma yok).
+- **Savunma:** top-sen-adam ilkesi (top tutanı 27px'te kapatır, topsuz adamın savunmacısı
+  `_defGap` ile ≤56px sarkar), deadzone'lu canlı takip, 2-3 bölge genişletildi, contest→closeout.
+- **Anlatım-görüntü senkronu:** `movePlayersForEvent(ev,paint)` cümleyi sahnedeki doğru kareye
+  bağlar — çalma topun kapıldığı an, ribaund topun alındığı an, faul düdükte, şut top çembere
+  varınca. **Serbest atış metni ikiye ayrıldı** (`ftPre` düdükte, `ftRes` son atış çemberden
+  geçince) — sonuç artık önceden söylenmiyor. `text` alanı birebir korundu (kayıt uyumu).
+- **İzleme hızı (yeni):** 1× / 1.5× / 2× / 3× butonları; `mState.rate` hem rAF adımını hem
+  olaylar arası gecikmeyi ölçekler (varsayılan 1.5×). **Akan maç saati** (eskiden 10-20 sn'lik
+  sıçramalar) + **şut saati** göstergesi eklendi.
+- **Okunabilirlik:** top sahibinin altında sarı halka, isabette çember efekti, şut/ribaundda
+  sıçrama "pop", isim etiketleri ev=alt / deplasman=üst (üst üste binmiyor), dar ekranda
+  isimler gizlenir (sadece forma numarası).
+
+### Ölçüm (önce → sonra; seed 987654321)
+| Metrik | Önce | Sonra |
+|---|---|---|
+| oyuncu saha çizgisi dışında | (ölçülmüyordu) | **0 kare** |
+| top saha dışında | 94 kare (maks 22px) | **0 kare** |
+| ışınlanma (>30px/kare) | 0-2 | **0** |
+| top taşıyıcıdan kopuk | 0 | **0** |
+| sahipsiz serbest top | 92 kare | **≈30 kare** (sayı sonrası top fileden düşerken) |
+| sokucunun çizgi dışına adımı | **0px (çizgi üstünde)** | **27px (tamamen dışarıda)** |
+| anlatım senkronu | yalnız şutlarda | **tüm olaylarda** (çalma +90ms, ribaund +151ms, faul +0ms) |
+| tam maç süresi | ~11-22 dk | **~8.5 dk (1.5×)**, 3×'te ~4.5 dk |
+
+### KIRMIZI ÇİZGİ: sonuç matematiği DEĞİŞMEDİ (kanıtlı)
+- `tools/measure.js` kanonik tohum imzası **db4799f04a613d8e** — değişiklik öncesiyle birebir aynı.
+- `tools/band.js` 200 maç skor dizisi hash'i **bf5cfc9887738c63** — HEAD (değişiklik öncesi) ile
+  ayrı bir git worktree'de çalıştırılıp **birebir aynı** çıktı.
+- Tüm dokunuşlar sunum katmanında; serbest atış metni bölünürken `text` alanı harfi harfine korundu.
+
+### Test
+- `node --check` (match-engine, main) temiz.
+- `node tools/visual-check.js` → masaüstü + mobil, **0 konsol hatası**, çıkış kodu 0.
+- `node tools/realism-check.js --full` → tam maç (193 olay) uçtan uca, **0 konsol hatası**.
+- Mola + manuel koçluk + canlı oyuncu değişikliği + hız değiştirme akışı ayrı test edildi (0 hata).
+
+### Kullanıcının test etmesi gerekenler
+Bir maç izle: (1) sayı sonrası rakip oyuncu topu alıp **dip çizginin dışına çıkmalı**, pası oradan
+atmalı; (2) geçişte iki takım orta sahada yumak olmamalı — kanatlar kenardan koşmalı, savunma
+ortadan potaya dönmeli; (3) set kurulunca köşe/kanat/post dolu olmalı; (4) spikerin cümlesi sahada
+o an olan şeyi anlatmalı (serbest atış sonucu **atış yapılmadan** söylenmemeli); (5) hız butonları
+(1×–3×) hareketle anlatımı birlikte hızlandırmalı.
+
 ## 2026-07-21 (25. oturum) — Canlı ölçüm hedefli "skrum" düzeltmesi: tüm ön saha spacing + şema dağılımı + play.move + anlatım derinliği (İŞ 1-5)
 
 Kullanıcı canlı ölçümle 4 kusur saptadı (10 jeton 235 kez, 185 olay): (A) spacing çökmüş

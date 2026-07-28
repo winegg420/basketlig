@@ -6,6 +6,7 @@ scratch_s*.js
 node_modules/
 package-lock.json
 tools/visual-check-output/
+tools/realism-shots/
 
 # --- Python araç kalıntıları (tools/generate-portraits.py) ---
 __pycache__/

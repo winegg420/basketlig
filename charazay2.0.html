@@ -274,6 +274,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 /* BASKETBALL COURT - NBA STANDART */
 .court-container{background:#c49a3c;border-radius:12px;padding:10px;margin-bottom:14px;box-shadow:inset 0 0 20px rgba(0,0,0,0.3);}
 .court-svg{width:100%;height:auto;display:block;}
+/* Dar ekranda saha küçülünce oyuncu isimleri okunmaz bir bulanıklığa dönüşüyor —
+   sadece forma numaraları kalsın (jetonlar net görünür). */
+@media (max-width:900px){ .court-svg text.tok-name{display:none;} }
 
 /* SCOREBOARD */
 .scoreboard{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border-radius:10px;padding:14px 18px;margin-bottom:12px;}
@@ -823,6 +826,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                 <div class="score-mid">
                   <div class="qlabel" id="liveQuarter">1. Periyot</div>
                   <div class="qtime" id="liveTime">10:00</div>
+                  <div id="liveShotClock" style="font-size:11px;font-weight:800;color:var(--accent);letter-spacing:1px;margin-bottom:2px;min-height:14px;"></div>
                   <span class="status-badge" id="liveStatus" style="background:rgba(100,100,100,0.2);color:var(--text2);">BEKLEMEDE</span>
                 </div>
                 <div class="score-side">
@@ -849,7 +853,10 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                 <svg id="courtSvg" viewBox="0 0 3200 1900" class="court-svg" preserveAspectRatio="xMidYMid meet" style="border-radius:6px;">
                   <rect width="3200" height="1900" fill="#111118"/>
                   <rect x="200" y="200" width="2800" height="1500" fill="none" stroke="rgba(249,115,22,0.18)" stroke-width="3"/>
-                  <svg x="200" y="200" width="2800" height="1500" viewBox="0 0 940 500" preserveAspectRatio="none">
+                  <!-- viewBox, saha çizgilerinin (x 56.4-883.6, y 30-470) DIŞINDA gerçek bir
+                     "çizgi dışı" alan bırakır: topu kenardan sokan oyuncu dip/yan çizginin
+                     dışına gerçekten çıkabilsin. En-boy oranı korunur (992.6/528 = 940/500). -->
+                <svg x="200" y="200" width="2800" height="1500" viewBox="-26.3 -14 992.6 528" preserveAspectRatio="none">
                   <defs>
                     <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0" stop-color="#d69a40"></stop>
@@ -866,8 +873,8 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                       <stop offset="1" stop-color="rgba(0,0,0,0.30)"></stop>
                     </radialGradient>
                   </defs>
-                  <rect width="940" height="500" fill="url(#planks)"></rect>
-                  <rect width="940" height="500" fill="url(#courtVign)" pointer-events="none"></rect>
+                  <rect x="-40" y="-30" width="1020" height="560" fill="url(#planks)"></rect>
+                  <rect x="-40" y="-30" width="1020" height="560" fill="url(#courtVign)" pointer-events="none"></rect>
                   <!-- Merkez saha markası: arena adı + takım amblemi + takım adı -->
                   <g id="courtBrand" pointer-events="none">
                     <text id="courtArenaName" x="470" y="24" text-anchor="middle" font-size="14" font-weight="700" letter-spacing="4" fill="rgba(255,255,255,0.20)"></text>
@@ -957,6 +964,14 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                 <button class="btn-sm" onclick="stopMatch()" style="flex:1;min-width:90px;">⏹ Durdur</button>
                 <button class="btn-sm" id="timeoutBtn" onclick="callTimeout()" style="flex:1;min-width:110px;" title="Mola al — oyuncular nefeslenir, enerji tazelenir; molada değişiklik serbest">⏸ Mola (5)</button>
                 <button class="btn-sm" id="manualCoachBtn" onclick="toggleManualCoach()" style="flex:1;min-width:130px;">🎧 Manuel Koçluk</button>
+              </div>
+              <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+                <span style="font-size:11px;color:var(--text2);">İzleme hızı:</span>
+                <button type="button" class="btn-sm match-rate" data-rate="1" onclick="setMatchRate(1,this)" style="padding:3px 10px;font-size:11px;">1×</button>
+                <button type="button" class="btn-sm match-rate" data-rate="1.5" onclick="setMatchRate(1.5,this)" style="padding:3px 10px;font-size:11px;">1.5×</button>
+                <button type="button" class="btn-sm match-rate" data-rate="2" onclick="setMatchRate(2,this)" style="padding:3px 10px;font-size:11px;">2×</button>
+                <button type="button" class="btn-sm match-rate" data-rate="3" onclick="setMatchRate(3,this)" style="padding:3px 10px;font-size:11px;">3×</button>
+                <span style="font-size:10px;color:var(--text2);">— hareketin ve anlatımın hızını birlikte ölçekler</span>
               </div>
               <div id="coachingPanel" style="margin-bottom:12px;"></div>
               <div class="commentary" id="commentary">
@@ -1187,16 +1202,16 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 <div class="notif" id="notif"></div>
 
-<script src="js/state.js?v=28"></script>
-<script src="js/economy.js?v=28"></script>
-<script src="js/persistence.js?v=28"></script>
-<script src="js/portraits.js?v=28"></script>
-<script src="js/roster-gen.js?v=28"></script>
-<script src="js/league.js?v=28"></script>
-<script src="js/match-prep.js?v=28"></script>
-<script src="js/render.js?v=28"></script>
-<script src="js/match-engine.js?v=28"></script>
-<script src="js/main.js?v=28"></script>
+<script src="js/state.js?v=29"></script>
+<script src="js/economy.js?v=29"></script>
+<script src="js/persistence.js?v=29"></script>
+<script src="js/portraits.js?v=29"></script>
+<script src="js/roster-gen.js?v=29"></script>
+<script src="js/league.js?v=29"></script>
+<script src="js/match-prep.js?v=29"></script>
+<script src="js/render.js?v=29"></script>
+<script src="js/match-engine.js?v=29"></script>
+<script src="js/main.js?v=29"></script>
 
 
 </body></html>
