@@ -14,12 +14,22 @@ function showAppModal(html,opts){
   if(r) r.style.display='flex';
 }
 
+/* F7-20: kulüp önbelleği bellekte tutulur — her çağrıda ~300 KB JSON.parse ediliyordu ve
+   buildSeasonPlayerPool bunu 19 akran takım için arka arkaya yapıyordu (~6 MB / kare).
+   YAZMA senkron kalır: economy.js ve match-prep.js aynı anahtara doğrudan yazıyor; onlar
+   yazdıktan sonra invalidateClubCacheMem() ile bellek tazelenir. */
+let _clubCacheMem=null;
+function invalidateClubCacheMem(){ _clubCacheMem=null; }
 function getBotClubProfile(teamName,ligKey){
   if(G.team&&teamName===G.team.isim&&ligKey===G.team.tblKey){
     return {human:true,teamName,ligKey,logoUrl:G.team.logoUrl||'',arena:G.arena.isim,renk:G.team.renk||'#f97316',roster:G.players.slice()};
   }
-  let cache={};
-  try{ cache=JSON.parse(localStorage.getItem(CLUB_CACHE_KEY)||'{}'); }catch(e){ cache={}; }
+  /* F7-20: bellek içi önbellek — her çağrıda ~300 KB JSON.parse ediliyordu. */
+  let cache=_clubCacheMem;
+  if(!cache){
+    try{ cache=JSON.parse(localStorage.getItem(CLUB_CACHE_KEY)||'{}'); }catch(e){ cache={}; }
+    _clubCacheMem=cache;
+  }
   const ck=ligKey+'||'+teamName;
   /* FAZ A: eski önbellekteki bot kadrolarına rol/eğilim geriye dönük doldurulur (seed'den deterministik). */
   if(cache[ck]){ const hit=Object.assign({human:false},cache[ck]); ensureRoles(hit.roster); return hit; }
@@ -46,6 +56,7 @@ function getBotClubProfile(teamName,ligKey){
     const overflow=keys.length-60;
     evictable.slice(0,Math.min(overflow,evictable.length)).forEach(k=>{ delete cache[k]; });
   }
+  _clubCacheMem=cache;
   try{ localStorage.setItem(CLUB_CACHE_KEY,JSON.stringify(cache)); }catch(e){}
   return row;
 }

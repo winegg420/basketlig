@@ -1104,6 +1104,10 @@ function charazayGetActivePageSlug(){
   return p.id.slice('page-'.length);
 }
 function charazayRunLayoutCalibration(navPage){
+  /* F7-18: yalnızca geliştirme modunda — her navigasyonda 3 yazma + 6 okuma karışık
+     yapılıp zorunlu senkron layout tetikleniyor, ardından 11 DOM sorgusu ve bir
+     localStorage yazması geliyordu. Yayın derlemesinde çalışmaz. */
+  if(!window.CHARAZAY_DEBUG) return;
   window.__CHARAZAY_LAYOUT_OK=true;
   window.__CHARAZAY_CONTENT_GAP_PX=0;
   window.__CHARAZAY_STRUCT_SHIFT_PX=0;

@@ -125,6 +125,7 @@ function botClubTransfer(teamName,ligKey){
     ensureUniquePlayerNames(roster);
     cache[ck]=row;
     try{ localStorage.setItem(CLUB_CACHE_KEY,JSON.stringify(cache)); }catch(e){}
+    if(typeof invalidateClubCacheMem==='function') invalidateClubCacheMem();   /* F7-20 */
     return {inP:np,outP:eski,poz:needPoz||eski.poz||null};
   }catch(e){ dbg('botClubTransfer',e); return null; }
 }

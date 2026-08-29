@@ -629,7 +629,8 @@ function rollInjuriesForBotClub(teamName,ligKey){
         changed=true;
       }
     });
-    if(changed){ cache[ck]=row; try{ localStorage.setItem(CLUB_CACHE_KEY,JSON.stringify(cache)); }catch(e){} }
+    if(changed){ cache[ck]=row; try{ localStorage.setItem(CLUB_CACHE_KEY,JSON.stringify(cache)); }catch(e){}
+      if(typeof invalidateClubCacheMem==='function') invalidateClubCacheMem(); }   /* F7-20 */
   }catch(e){ dbg('opp injury',e); }
 }
 

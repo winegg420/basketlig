@@ -1393,7 +1393,7 @@ function renderAnalytics(){
     </div>
     <div class="card" style="margin-top:14px;">
       <div class="card-title">📈 Oyuncu Gelişimi</div>
-      <select id="analiticPlayerSel" onchange="G._analiticPlayerId=this.value;renderAnalytics();" style="width:100%;max-width:340px;padding:8px;border-radius:9px;background:var(--bg3);color:var(--text);border:1px solid var(--border);font-size:12px;margin-bottom:10px;">${playerOpts}</select>
+      <select id="analiticPlayerSel" onchange="G._analiticPlayerId=this.value;{const _b=document.getElementById('analiticPlayerBody'); if(_b) _b.innerHTML=renderAnalyticsPlayerBody(this.value); else renderAnalytics();}" style="width:100%;max-width:340px;padding:8px;border-radius:9px;background:var(--bg3);color:var(--text);border:1px solid var(--border);font-size:12px;margin-bottom:10px;">${playerOpts}</select>
       <div id="analiticPlayerBody">${renderAnalyticsPlayerBody(sel)}</div>
     </div>`;
 }
