@@ -2084,3 +2084,78 @@ Düzeltildikten sonra 6/6.
 **`band.js` hash DEĞİŞTİ** (`e429f6c091168315` → **`dc984289dee3c29d`**). Bu beklenen: M20 sunum
 değil **mekanik** bir değişiklik. Rakip ortalaması 71,9 → 73,9; kullanıcı 92,1 → 92,6; tüm denge
 bantları tutuyor. Yeni hash bundan sonraki sunum değişiklikleri için referanstır.
+
+### 32. oturum — EK 4: FAZ 8 (oynanış testi paketi, 14 madde + 8 kabul kriteri)
+
+Girdi: `REVIZE-PAKETI-FAZ8.md` — kod denetimi değil, **oyunu oynayarak** yapılmış gözlemler.
+
+#### F8-2 · Piyasa dengesi (paketin en büyük oynanış sorunu)
+Serbest piyasa sabit 60-97 bandından üretiliyordu: 1. gün piyasada 96 OVR oyuncu, piyasa
+ortalaması (75) kadro ortalamasından (71) **yüksek**. Rastgele bir serbest oyuncu senin ortalama
+oyuncundan iyiydi — menajerlik oyununun gerilimi kıtlıktan gelir, kıtlık yoktu.
+`marketQualityBand()`: taban = kadro ort − 18, tavan = kadro en iyisi + 6; üs 1.7 dağılımı düşük
+OVR'a yığılır. Ölçüm: kadro ort 70,9 / tavan 74 → **piyasa ort 62,6 / tavan 80**.
+
+#### F8-5 / F8-6 / F8-7 · İngilizce
+**Kök neden (F8-5):** sözlük tam-dize anahtarlı olduğu için `🆓 Serbest Oyuncular` gibi emoji
+ön ekli metinler hiç çevrilmiyordu. Her emoji varyantını sözlüğe eklemek yerine kalıcı çözüm:
+`_splitIconPrefix()` ile önek ayrılıp **gövde** çevriliyor, önek korunuyor.
+
+**F8-7 — araç kör noktası, asıl sebep emoji değilmiş.** `i18n-scan.js` yalnız Türkçe'ye özgü
+harf (`çğıöşü`) veya dar bir sözcük listesi arıyordu; `Asist`, `Faul`, `Menajer`, `Bakiye:`,
+`Serbest Oyuncular` gibi **salt ASCII harfli** Türkçe metinleri hiç göremiyordu. Araç "kalan
+Türkçe yalnız özel isim" raporlarken gerçek EN oturumunda 9 dize ekranda duruyordu.
+Sözcük listesi genişletildi (İngilizce'de aynı yazılanlar — arena, transfer, moral, tempo —
+bilinçli olarak **dışarıda** bırakıldı, yoksa çevrilmiş metinler yanlış pozitif olur), önek
+soyulup gövdeye de bakılıyor ve **kapsam** çıktıya yazılıyor (22 ekran · ~44.400 düğüm).
+
+Araç düzeltilince **yeni eksikler** çıktı: `Oyuncular`, `izci kalitene`, `· serbest`.
+
+**Ders:** vurgu etiketi (`<strong>`) cümleyi metin düğümlerine **böler** ve ifade kalıbı
+eşleşmez. Çevrilecek cümleler tek düğümde tutulmalı — haber şablonları buna göre düzeltildi.
+
+#### F8-1 · Eski kayıt migrasyonu (v7)
+`migrateV6ToV7`: boy/kilo mevki aralığına çekilir (deterministik, seed'den — kayıt her açılışta
+oynamaz), aynı soyadı en fazla 2 oyuncuda kalır (isim–ülke uyumu korunarak yenilenir).
+**Yalnız kozmetik alanlar**; id, statlar, potansiyel, sözleşme, sakatlık, sezon/kariyer verisi
+aynen korunur — oyuncunun "kim olduğu" değişmez.
+Ölçüm: ÖNCE C 198 cm / SG 205 cm / aynı soyadı 10 oyuncuda → SONRA **C 213 cm / SG 198 cm / 2**.
+
+#### F8-3 · Lig kutuplaşması
+Skor formülü `cpuMatchScore()` olarak ayrı saf fonksiyona çıkarıldı — testin formülü
+kopyalaması, motor değişince sessizce eskimesi demekti. Güç etkisi `diff×0.6` → **`×0.26`**,
+maça özgü gün formu ve daha geniş gürültü eklendi.
+
+| Ölçüm (200 sezon × 20 takım) | Önce | Sonra | Hedef |
+|---|---|---|---|
+| 8-0 yapan takım | — | **%2,8** | < %5 |
+| 0-8 yapan takım | — | **%2,08** | < %5 |
+| Galibiyet std sapması | 2,61 | **1,87** | 1,7-2,1 |
+
+#### Kalanlar
+- **F8-13** script sürümü `?v=37` → `?v=38` (13 etiket).
+- **F8-4** şehir havuzu 10 → 24 şehir (İstanbul/Ankara/Antalya dahil); `genUniqueClubName`
+  artık şehir başına ≤2, sonek başına ≤3 takım uyguluyor (kademeli gevşetmeli, kilitlenmez).
+- **F8-11** haberler: 8 farklı şablon (transfer, sakatlık, form serisi, başkan açıklaması,
+  taraftar tepkisi, arena/bilet, altyapı çıkışı, takas); iç grup kimliği (`tb1`) sızıntısı
+  kaldırıldı, okunabilir lig adı yazılıyor.
+- **F8-8** sakatlık etiketi karttan taşmıyor · **F8-9** "Görünüm:" etiketi butonlarıyla
+  birlikte kayıyor · **F8-10** mobilde Kadro varsayılanı **Liste** (kart ~1,5 ekran; 15 kişi =
+  20+ ekran kaydırma) · **F8-12** Ana Panel boş alanına **Durum Özeti** (son 5 maç formu,
+  sıradaki 3 maç, kadro uyarıları, başkan hedefi ilerlemesi) · **F8-14** eski mentor telemetri
+  anahtarları açılışta bir kez temizleniyor.
+
+#### YENİ ARAÇ — `tools/faz8-check.js`
+8 kabul kriterini fiilen çalıştırır. **Ölçüm kurgusunda iki kusur kendi testimde çıktı:**
+1. Kriter **takım** oranıdır, "en az bir takım" değil — 20 takımlı ligde saf şansta bile bir
+   sezonun ~%7'sinde biri 8-0 yapar. İlk ölçümüm bu yüzden %41 gösteriyordu.
+2. Ev/deplasman turlara göre dönüşümlü olmalı; tamamen rastgele ev sahipliği bazı takımları
+   8 maçın çoğunda deplasmana düşürüp yapay olarak daha çok 0-8 üretiyordu.
+
+#### Doğrulama
+`faz8-check` **6/6** · `i18n-scan` kalan Türkçe yalnız özel isim (kapsam 22 ekran / 44.4k düğüm)
+· `box-band --n=200` 11/11 · `visual-check` 0 hata · `faz7-check` 8/8 · `m20-check` 6/6 ·
+`sunum-check` 3/3 · `live-metrics` tüm hedefler (orphan 0 · kimlik %100 · ışınlanma 0 kare).
+
+`band.js` hash `dc984289dee3c29d` → **`ec630b3a512bb3b2`** — beklenen: piyasa ve şehir üretimi
+RNG akışını kaydırdı (mekanik değişiklik, sunum değil).
