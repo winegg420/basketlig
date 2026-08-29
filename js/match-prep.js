@@ -93,7 +93,13 @@ function matchLineup(){
   /* 2) Eksik slotları kullanıcının yedek sırasından doldur */
   const benchOrder=(G.lineup&&Array.isArray(G.lineup.bench))?G.lineup.bench:[];
   benchOrder.forEach(id=>addP(byId(id)));
-  /* 3) Hâlâ eksikse en iyi genelden doldur (fallback / geriye dönük uyum) */
+  /* 3) FAZ C: hâlâ eksikse ÖNCE pozisyon dengesi kur — otomatik ilk 5 artık "en iyi 5 OVR"
+     değil, her mevkiden en iyi sağlıklı oyuncu. (Kullanıcı ilk 5'i seçtiyse buraya hiç girilmez.) */
+  ['PG','SG','SF','PF','C'].forEach(poz=>{
+    if(onCourt.length>=5) return;
+    const cand=avail.find(p=>p.poz===poz&&!used.has(p.id));
+    if(cand) addP(cand);
+  });
   avail.forEach(p=>addP(p));
   /* Pozisyonlara ata: önce doğal pozisyona, sonra kalanları sırayla */
   const slots={pg:null,sg:null,sf:null,pf:null,c:null};
@@ -252,6 +258,45 @@ function playbookFitPct(pb,court){
   const f=playbookFit(pb,court);
   return Math.round((f-0.90)/0.20*100);
 }
+/* ══════════════════════════════════════════════════════════════════════════════════════
+   FAZ C (30. oturum) — BOT MENAJER ZEKÂSI
+   Rakip kulüpler artık "sabit en iyi 5 + hiç müdahale etmeyen koç" değil. Her bot takımın
+   adından DETERMİNİSTİK bir koç profili türer: tercih ettiği hücum seti, savunma anlayışı,
+   sinir katsayısı (mola eşiği) ve rotasyon derinliği. Maç içinde bu profil;
+     • seri yediğinde MOLA alır (kullanıcının serisini keser),
+     • geriye düşerse devre arasında SET DEĞİŞTİRİR (agresifleşir),
+     • yorulan/faul yüklenen oyuncusunu YEDEĞİYLE değiştirir.
+   Tümü anlatıma yansır — kullanıcı rakip koçun kararlarını görür.
+   ══════════════════════════════════════════════════════════════════════════════════════ */
+const BOT_PB_POOL=['pnr','horns','motion','postUp','driveKick','flex','dipKose','transition'];
+const BOT_DEF_POOL=['adam','bolge','pres','switch','pack'];
+function botCoachProfile(teamName){
+  /* Her özellik AYRI tuzlu hash'ten türer — tek hash'in bit kaydırmaları benzer isimlerde
+     aynı değerleri üretiyordu (tüm botlar aynı koç oluyordu). */
+  const n=String(teamName||'');
+  /* hash32 (djb2) benzer dizelerde yakın değerler üretiyor; avalanche karıştırması eklenir. */
+  const _mix=v=>{ v=(v^(v>>>16))>>>0; v=Math.imul(v,2246822507)>>>0; v=(v^(v>>>13))>>>0; v=Math.imul(v,3266489909)>>>0; return (v^(v>>>16))>>>0; };
+  const H=(salt)=>_mix(hash32(salt+'|'+n));
+  const h=H('coach');
+  const pb=BOT_PB_POOL[H('pb')%BOT_PB_POOL.length];
+  const def=BOT_DEF_POOL[H('def')%BOT_DEF_POOL.length];
+  /* Agresif koç erken mola alır ve geriye düşünce hemen sete girer; sakin koç bekler. */
+  const aggro=(H('aggro')%100)/100;
+  return {
+    pb, def, aggro,
+    /* Mola eşiği: agresif koç 6 sayılık seriye bile molayla cevap verir, sakin koç 12'ye kadar bekler. */
+    toRun: Math.round(5+(1-aggro)*5),
+    /* Geriye düşünce set değiştirme eşiği (sayı farkı). */
+    switchGap: Math.round(6+(1-aggro)*10),
+    /* Rotasyon derinliği: kaç oyuncu süre alır (7-10). */
+    depth: 7+(H('depth')%4),
+    /* Yorgunluk toleransı: kaç pozisyon sonra ilk 5'ten birini dinlendirir. */
+    restEvery: 16+(H('rest')%10),
+    /* Geriye düşünce seçtiği agresif set. */
+    panicPb: (H('panic')%2)?'transition':'dipKose'
+  };
+}
+
 function pseudoTeamStrength(isim,tblKey){
   /* Madde 9: bot menajerin itibarı (hazır geçmiş) takıma küçük bir güç katkısı sağlar. */
   return 58+(seqFromName(String(isim),tblKey||'tbl')%4200)/100+botManagerTitles(isim)*0.4;

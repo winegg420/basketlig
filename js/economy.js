@@ -97,9 +97,26 @@ function botClubTransfer(teamName,ligKey){
     const row=cache[ck];
     if(!row||!Array.isArray(row.roster)||!row.roster.length) return null;
     const roster=row.roster;
-    let wi=0; for(let i=1;i<roster.length;i++){ if((roster[i].genel||0)<(roster[wi].genel||0)) wi=i; }
+    /* FAZ C: bot menajer artık "en zayıfı sat" değil, MEVKİ İHTİYACINA göre transfer yapar.
+       Her mevkinin en iyi oyuncusuna bakılır; en zayıf kalan mevki hedeflenir ve o mevkideki
+       en düşük oyuncu değiştirilir. Hedef kalite takımın gücüne oranlı (zengin kulüp daha iyisini alır). */
+    const POZ5=['PG','SG','SF','PF','C'];
+    let needPoz=null,needBest=999;
+    POZ5.forEach(pz=>{
+      const at=roster.filter(p=>p&&p.poz===pz);
+      const best=at.length?Math.max.apply(null,at.map(p=>Number(p.genel)||0)):0;
+      if(best<needBest){ needBest=best; needPoz=pz; }
+    });
+    let wi=-1;
+    if(needPoz){
+      roster.forEach((p,i)=>{ if(p&&p.poz===needPoz&&(wi<0||(p.genel||0)<(roster[wi].genel||0))) wi=i; });
+    }
+    if(wi<0){ wi=0; for(let i=1;i<roster.length;i++){ if((roster[i].genel||0)<(roster[wi].genel||0)) wi=i; } }
     const eski=roster[wi];
-    const target=Math.min(95,(eski.genel||65)+rand(3,11));
+    let güç=68; try{ güç=pseudoTeamStrength(teamName,ligKey); }catch(e){}
+    /* Güçlü kulüp daha iddialı transfer yapar; zayıf kulüp mütevazı kalır. */
+    const iddia=Math.max(2,Math.round((güç-58)*0.55))+rand(1,7);
+    const target=Math.min(95,Math.max(52,(eski.genel||65)+iddia));
     const np=genPlayerBounded(eski.poz||ch(POZLAR),Math.max(50,target-2),target+2);
     np.id='b'+hash32(ck+wi+Date.now())+'_'+wi;
     np.seed='bt'+ck+wi+(Date.now()%100000);
@@ -108,7 +125,7 @@ function botClubTransfer(teamName,ligKey){
     ensureUniquePlayerNames(roster);
     cache[ck]=row;
     try{ localStorage.setItem(CLUB_CACHE_KEY,JSON.stringify(cache)); }catch(e){}
-    return {inP:np,outP:eski};
+    return {inP:np,outP:eski,poz:needPoz||eski.poz||null};
   }catch(e){ dbg('botClubTransfer',e); return null; }
 }
 /* ── Faz 4.1: Transfer pazarlığı — kararı OYUNCU verir (kulüp değil), kişiliğine göre. ──
@@ -169,7 +186,9 @@ function aiWeeklyLeagueActivity(){
         const fee=rand(4000,80000);
         const tr=botClubTransfer(t,G.team.tblKey);
         const isim=tr?tr.inP.isim:`${ch(ILK)} ${ch(SY)}`;
-        const detay=tr?` (OVR ${tr.inP.genel}, ${tr.outP.isim} yerine)`:'';
+        /* FAZ C: haber artık kulübün MEVKİ İHTİYACINI da anlatıyor. */
+        const POZ_AD={PG:'oyun kurucu',SG:'şutör guard',SF:'kısa forvet',PF:'uzun forvet',C:'pivot'};
+        const detay=tr?` (OVR ${tr.inP.genel}${tr.poz?`, ${POZ_AD[tr.poz]||tr.poz} ihtiyacı`:''}, ${tr.outP.isim} yerine)`:'';
         pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--blue);">💰 <strong>${escMatch(t)}</strong> kadrosunu güçlendirdi: <strong>${escMatch(isim)}</strong>${detay} — ${fmtn(fee)} KR</div>`);
       }
     }

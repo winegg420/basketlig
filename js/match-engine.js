@@ -1832,8 +1832,14 @@ function generateMatchEvents(rakip, opts){
   oppPool.forEach(p=>{ if(p) p.matchFouls=0; });
   let oppCourt=oppPool.slice(0,5);
   const oppBench=oppPool.slice(5);
+  /* ── FAZ C: rakip koç ── Bot artık kendi setini seçer, mola alır, rotasyon yapar. */
+  const botC=(typeof botCoachProfile==='function')?botCoachProfile(oppName):{pb:'dengeli',def:'adam',toRun:8,switchGap:10,depth:8,restEvery:20,panicPb:'transition'};
+  let botPb=(typeof playbookOf==='function')?playbookOf(botC.pb):{is3:0,acc2:0,acc3:0,ast:0,to:0,roleW:{}};
+  const botState={run:0,to:5,posCount:0,switched:false,dampen:0,restCd:0};
+  const _botRoleW=()=>((botPb&&botPb.roleW)||{});
   const oFallback={isim:oppName+' oyuncusu'};
-  const oShooter=()=>oppCourt.length?(wPick(oppCourt,usageW)||ch(oppCourt)):(oppPool[0]||oFallback);
+  const usageWO=(p)=>usageW(p)*(_botRoleW()[(p&&p.rol)||'']||1);
+  const oShooter=()=>oppCourt.length?(wPick(oppCourt,usageWO)||ch(oppCourt)):(oppPool[0]||oFallback);
   const oAny=()=>oppCourt.length?ch(oppCourt):(oppPool[0]||oFallback);
   const oBenchNext=()=>{ while(oppBench.length){ const nx=oppBench.shift(); if(nx&&(nx.matchFouls||0)<foulLimit) return nx; } return null; };
   const foulingTeamName=(defenderIsUser)=>defenderIsUser?G.team.isim:rname;
@@ -1923,6 +1929,50 @@ function generateMatchEvents(rakip, opts){
   let posNext=null;
   let shooterHint=null;   /* hücum ribaundu sonrası aynı oyuncunun tekrar vuruşu (putback) */
   let fastNext=null;      /* 'steal' | 'reb' — sonraki hücum hızlı hücuma dönüşebilir */
+  /* ── FAZ C: rakip koçun pozisyon-sonu kararları ──
+     userGain: bu pozisyonda kullanıcının aldığı sayı · oppGain: rakibin aldığı sayı.
+     Kararlar olay akışına gerçek olaylar olarak yazılır; kullanıcı canlı anlatımda görür. */
+  function botCoachTick(q,t,userGain,oppGain){
+    botState.posCount++;
+    if(botState.dampen>0) botState.dampen--;
+    if(oppGain>0) botState.run=0; else botState.run+=userGain;
+    /* (a) MOLA — kullanıcı seri yaptıysa rakip koç oyunu keser. */
+    if(botState.run>=botC.toRun && botState.to>0 && q>=1 && t>20){
+      botState.to--; botState.run=0; botState.dampen=3;
+      events.push({type:'tactic',off:false,
+        text:`⏸ ${rname} MOLA aldı — ${G.team.isim} serisini kesmek istiyor. (Rakip mola hakkı: ${botState.to}) (${homeScore} - ${awayScore})`,
+        q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      return;
+    }
+    /* (b) SET DEĞİŞİMİ — belirgin geriye düştüyse (2. çeyrek sonrası) agresif sete geçer. */
+    if(!botState.switched && q>=3 && (homeScore-awayScore)>=botC.switchGap){
+      botState.switched=true;
+      botPb=(typeof playbookOf==='function')?playbookOf(botC.panicPb):botPb;
+      events.push({type:'tactic',off:false,
+        text:`🔁 ${rname} taktik değiştirdi — ${botPb.ikon||'📋'} ${botPb.ad||'yeni set'} setine geçiyor, farkı kapatmak istiyor. (${homeScore} - ${awayScore})`,
+        q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      return;
+    }
+    /* (c) ROTASYON — yorulan ya da faul yüklenen oyuncusunu dinlendirir (kullanıcıyla simetrik). */
+    if(botState.restCd>0){ botState.restCd--; return; }
+    if(botState.posCount>=8 && oppBench.length && oppCourt.length>=5){
+      const tired=oppCourt.filter(p=>p&&((p.matchFouls||0)>=3||(botState.posCount%botC.restEvery===0)));
+      if(tired.length){
+        const out=tired.sort((a,b)=>((b.matchFouls||0)-(a.matchFouls||0))||((a.genel||0)-(b.genel||0)))[0];
+        const inP=oBenchNext();
+        if(out&&inP){
+          const ix=oppCourt.indexOf(out);
+          if(ix>=0) oppCourt[ix]=inP;
+          oppBench.push(out);              /* dinlenen oyuncu yedeğe döner (rotasyon derinliği) */
+          botState.restCd=6;
+          const why=(out.matchFouls||0)>=3?`${out.matchFouls} faulle`:'dinlenmek için';
+          events.push({type:'sub',off:false,
+            text:`🔄 ${rname} değişiklik: ${out.isim} ${why} kenara, yerine ${inP.isim} girdi. (${homeScore} - ${awayScore})`,
+            q,t,home:homeScore,away:awayScore,subOutObj:out,subInObj:inP,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+        }
+      }
+    }
+  }
   function runPossessionV(q,t){
     const s=events.length;
     runPossession(q,t);
@@ -1977,7 +2027,7 @@ function generateMatchEvents(rakip, opts){
          normalize edildiği için TAKIMIN üçlük payı (userIs3Oran / 0.32) korunur; değişen,
          o denemeyi kimin yaptığı — şutör rolü dışarıdan, pivot boyalı alandan oynar. */
       const _court3=userPos?userCourt:oppCourt;
-      let _is3p=userPos?userIs3Oran:Math.max(0.08,Math.min(0.62,0.32*(dset.opp3Rate!=null?dset.opp3Rate:1)));
+      let _is3p=userPos?userIs3Oran:Math.max(0.08,Math.min(0.62,(0.32+(botPb.is3||0))*(dset.opp3Rate!=null?dset.opp3Rate:1)));
       if(!putback&&_court3.length){
         const _avgUc=_court3.reduce((q,p)=>q+_eg(p,'uc'),0)/_court3.length;
         if(_avgUc>0) _is3p=Math.max(0.03,Math.min(0.74,_is3p*(_eg(shooter,'uc')/_avgUc)));
@@ -1998,10 +2048,12 @@ function generateMatchEvents(rakip, opts){
       /* Faz 3 — rakip isabeti savunma stiline ve yıldız eşleştirmesine göre ayarlanır.
          Eşleştirmede rakip yıldızının isabeti belirgin düşer (o oyuncu için ×0.82). */
       const markMul=(markStar&&oppPool.length&&shooter===oppPool[0])?0.82:1;
-      const oppAcc=(is3?0.35*defOppAcc3Mul:0.495*defOppAcc2Mul)*oMul*markMul;
+      /* FAZ C: rakip koçun seti kendi isabetini de etkiler (kullanıcınınkiyle simetrik). */
+      const oppAcc=(is3?(0.35+(botPb.acc3||0))*defOppAcc3Mul:(0.495+(botPb.acc2||0))*defOppAcc2Mul)*oMul*markMul;
       const acc=userPos?shooterAcc(shooter,is3,is3?0.355+acc3:0.505+acc2,clutch):oppAcc;
       /* Ev avantajı (eski %53 pozisyon payının yerine, isabete taşındı) + hızlı hücumda kolay sayı. */
       let accF=acc*((userPos===userIsHome)?1.03:0.97);
+      if(userPos&&botState.dampen>0) accF*=0.93;   /* FAZ C: rakip molası kullanıcının serisini keser */
       if(fb&&!is3) accF+=0.07;
       const made=Math.random()<Math.max(0.14,Math.min(0.72,accF));
       /* Putback: pota dibinden ikinci şans — şut noktası çembere yapışık. */
@@ -2015,7 +2067,7 @@ function generateMatchEvents(rakip, opts){
       let passer=null;
       if(made){
         if(userPos){ const pp=userCourt.filter(p=>p&&p.id!==shooter.id); if(pp.length&&Math.random()<(0.60+offAstBonus)) passer=wPick(pp,astW)||ch(pp);   /* FAZ A: asist oyun kurucudan */ }
-        else { const op=oppCourt.filter(p=>p&&p.id!==shooter.id); if(op.length&&Math.random()<0.55) passer=wPick(op,astW)||ch(op); }
+        else { const op=oppCourt.filter(p=>p&&p.id!==shooter.id); if(op.length&&Math.random()<Math.max(0.25,Math.min(0.85,0.55+(botPb.ast||0)))) passer=wPick(op,astW)||ch(op); }
         if(passer&&passer.isim===shooter.isim) passer=null;
       }
       if(is3){ B.thrAtt++; if(made) B.thrMade++; } else { B.twoAtt++; if(made) B.twoMade++; }
@@ -2236,7 +2288,9 @@ function generateMatchEvents(rakip, opts){
     while(t>0&&plays<playsMax){
       plays++;
       t=Math.max(0,t-rand(decLo,decHi));
+      const _bh=homeScore,_ba=awayScore;
       runPossessionV(q,t);
+      botCoachTick(q,t,homeScore-_bh,awayScore-_ba);   /* FAZ C: rakip koç kararı */
       if(t===0) break;
     }
 
@@ -2265,7 +2319,9 @@ function generateMatchEvents(rakip, opts){
     while(t>0 && step<40){
       step++;
       t=Math.max(0,t-rand(otDecLo,otDecHi));
+      const _bh2=homeScore,_ba2=awayScore;
       runPossessionV(qq,t);
+      botCoachTick(qq,t,homeScore-_bh2,awayScore-_ba2);
       if(t===0) break;
     }
     events.push({type:'quarter_end',text:`Uzatma ${otRound} bitti: ${G.team.isim} ${homeScore} - ${awayScore} ${rname}${homeScore===awayScore?' — hâlâ berabere, bir uzatma daha!':'.'}`,q:qq,t:0,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
