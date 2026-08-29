@@ -597,7 +597,7 @@ function wireAppNav(){
     const btn=ev.target.closest('button[data-page]');
     if(!btn) return;
     const slug=btn.getAttribute('data-page');
-    if(!slug||!/^(dashboard|takim|kadro|mac|lig|market|altyapi|antrenman|arena|bilanco)$/.test(slug)) return;
+    if(!slug||!/^(dashboard|takim|kadro|mac|lig|market|altyapi|antrenman|arena|bilanco|analiz)$/.test(slug)) return;
     if(!btn.closest('#sbNav')) return;
     ev.preventDefault();
     const sideBtn=document.querySelector('#sbNav button[data-page="'+slug+'"]');

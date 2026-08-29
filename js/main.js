@@ -49,6 +49,23 @@ function startCupMatch(){
   startMatch({cup:true,opp,userIsHome});
   setTimeout(()=>scrollToMacLive(),90);
 }
+/* Madde 7: maç canlıyken "Maçı Başlat" butonları (Maçlar sayfası + Ana Panel kartı)
+   pasif ve etiketli olsun — tekrar tıklama zaten startMatch() içinde engelli, bu UX cilası. */
+function setMatchButtonsRunning(running){
+  const b=document.getElementById('startMatchBtn');
+  if(b){
+    b.disabled=!!running;
+    if(running){ b.textContent='⏳ Maç Devam Ediyor'; b.title='Maç canlı oynanıyor.'; }
+  }
+  const card=document.getElementById('dashNextCard');
+  if(card){
+    const db=card.querySelector('.dn-play');
+    if(db){
+      db.disabled=!!running;
+      if(running) db.textContent='⏳ Maç Devam Ediyor';
+    }
+  }
+}
 function startMatch(playoff){
   if(mState.running) return;
   if(!G.team){ showNotif('Önce takım oluştur.'); return; }
@@ -136,6 +153,7 @@ function startMatch(playoff){
   document.getElementById('liveAway').textContent=rakip.isim;
   document.getElementById('liveBadge').style.display='inline-block';
   updateQuarterBoard({1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0},0,0);
+  setMatchButtonsRunning(true);
 
   function matchStep(){
     if(!mState.running)return;
@@ -247,6 +265,7 @@ function startMatch(playoff){
       document.getElementById('liveStatus').style.color='#4ade80';
       document.getElementById('liveBadge').style.display='none';
       const _mle=document.getElementById('macLiveAnchor'); if(_mle) _mle.classList.remove('live-on');
+      setMatchButtonsRunning(false);
       applyMatchResult(ev,{seasonMatchIx:mState.seasonMatchIx,isPlayoff:mState.isPlayoff,isCup:mState.isCup,playoffMatch:mState.playoffMatch,rakipName:mState.rakipName,userIsHome:mState.userIsHome});
       return;
     }
@@ -323,6 +342,7 @@ function stopMatch(){
   stopCrowdAmbience();
   if(mState._toInterval){ clearInterval(mState._toInterval); mState._toInterval=null; }
   mState.running=false;
+  setMatchButtonsRunning(false);   /* Madde 7: butonlar tekrar aktif — kilitli sonuç etiketi aşağıda yazılır */
   const _sc=document.getElementById('liveShotClock'); if(_sc) _sc.textContent='';
   const st=document.getElementById('liveStatus');
   if(st) st.textContent='DURDURULDU';

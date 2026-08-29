@@ -121,6 +121,8 @@ function genDraftProspect(i){
   p.enerji=100;
   return p;
 }
+/* Pozisyona göre gerçekçi boy (cm) / kilo (kg) aralıkları — Madde 4 */
+const HW_RANGE={PG:[[178,196],[75,92]],SG:[[188,203],[82,98]],SF:[[196,208],[88,105]],PF:[[201,213],[95,115]],C:[[206,223],[100,130]]};
 function genPlayer(poz=null,tr=false){
   const ulke=tr?TR_ULKE:ch(ULKELER);
   const p=poz||ch(POZLAR);
@@ -141,7 +143,9 @@ function genPlayer(poz=null,tr=false){
   const mood=rand(60,90);
   const id=Math.random().toString(36).substr(2,11);
   const seed='pl'+id+hash32(isim+yas);
-  return {id,isim,poz:p,yas,ulke:ulke.ad,bayrak:ulke.b,boy:rand(185,220),kilo:rand(80,120),seed,maas,...stats,genel,mood,enerji:100,potansiyel:rand(genel,Math.min(99,genel+20)),formDay:0,kontratSezon:rand(1,3),kisilik:ch(KISILIK_KEYS),sezon:{mac:0,pts:0,ast:0,reb:0}};
+  /* Madde 4: boy/kilo pozisyonla uyumlu üretilir (önceden tüm pozisyonlar için 185-220cm/80-120kg sabitti). */
+  const [hR,wR]=HW_RANGE[p]||[[185,220],[80,120]];
+  return {id,isim,poz:p,yas,ulke:ulke.ad,bayrak:ulke.b,boy:rand(hR[0],hR[1]),kilo:rand(wR[0],wR[1]),seed,maas,...stats,genel,mood,enerji:100,potansiyel:rand(genel,Math.min(99,genel+20)),formDay:0,kontratSezon:rand(1,3),kisilik:ch(KISILIK_KEYS),sezon:{mac:0,pts:0,ast:0,reb:0}};
 }
 
 /** Aynı grupta (kadro / market listesi) iki oyuncu aynı ADA ya da aynı FOTOĞRAF index'ine denk gelmesin.

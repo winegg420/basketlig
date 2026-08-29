@@ -1435,3 +1435,51 @@ oyuncular yerine varınca durmalı, orta saha set oyununda boşalmalı. Tümü *
 - Bir sezon maçı izle: top oyun kurucuda **sürülerek** ilerlemeli (sürekli pas değil), oyuncular köşe/kanat
   çapalarında **durup** kesme/perde yapmalı, orta saha set oyununda **boş** olmalı, hava atışında takımlar
   kendi yarı sahasına dizilmeli. Anlatımdaki asist/çalım sahada birebir oynanmalı.
+
+---
+
+## 29. Oturum — 2026-08-29 · RAPOR-2 revizyonu (Madde 1/2/4/6/7)
+
+### Yapılanlar
+- **Madde 1 — "Analiz" sekmesi ölüydü (KÖK NEDEN):** `js/persistence.js:600` `wireAppNav()` içindeki
+  slug whitelist regex'inde `analiz` yoktu; tıklama olayı elenip `showPage` hiç çağrılmıyordu (bu yüzden
+  konsolda hata da yoktu). Regex'e `|analiz` eklendi. Doğrulandı: gerçek nav tıklamasıyla `page-analiz`
+  `active` oluyor, `#analiz-body` 3911 karakterle doluyor, 0 konsol hatası.
+- **Madde 7 — "Maçı Başlat" butonu maç canlıyken aktif görünüyordu:** `js/main.js`'e
+  `setMatchButtonsRunning(running)` eklendi; `startMatch()` kurulumu bitince `true`, maç bitişinde
+  (`ev.type==='end'`) ve `stopMatch()` başında `false` çağrılıyor. `js/render.js:40`
+  (`renderDashboardNextMatch`) artık maç canlıyken butonu yeniden aktifleştirmiyor. Kart tıklaması
+  bilinçli olarak açık bırakıldı — canlı maçta `startNextMatchNow()` maça kaydırıyor.
+  Ölçüm: öncesi `disabled=false/"▶ Maçı Başlat"` → canlı `disabled=true/"⏳ Maç Devam Ediyor"` (her iki
+  buton) → sonrası normal / kilitli-sonuç etiketi korunuyor.
+- **Madde 4 — boy/kilo pozisyondan bağımsızdı:** `js/roster-gen.js`'e `HW_RANGE` eklendi
+  (PG 178-196/75-92 · SG 188-203/82-98 · SF 196-208/88-105 · PF 201-213/95-115 · C 206-223/100-130);
+  `genPlayer` artık bu aralıklardan üretiyor. 500 oyunculuk örneklemde tüm pozisyonlar bandında.
+- **Madde 2 — galibiyet ödülü ekonomiyi eziyordu (rapor DOĞRU, sebep farklı):** ödül `ecoRound()` ile
+  `ECO_MUL = START_KR/ECO_REF_KR = 50000/2400 ≈ 20.83` çarpanından geçiyordu → görünen "1000-2400" band
+  gerçekte **20.833-50.000 KR/galibiyet**. Rapordaki 28 günde +682.690 KR bununla birebir örtüşüyor.
+  Bilet geliri (~4.350 KR/maç) ve haftalık maaş (~6.676 KR) KR-yerel ölçekte olduğu için maç günü nakit
+  akışı ekonominin geri kalanından ~21x kopuktu. Düzeltme: maç günü kalemleri KR-yerel ölçeğe alındı —
+  galibiyet `rand(1400,2600)`, mağlubiyet `rand(420,900)`, deplasman seyahati `rand(300,700)*enflasyon`
+  (seyahat de ecoRound'lu olduğundan 6.2K-14.6K idi; sadece geliri kısmak ekonomiyi eksiye çevirirdi).
+  Ölçüm (19 maçlık sezon, 10 iç saha, 4 hafta): gelir 69.440 / gider 31.204 / **net +38.236 KR**;
+  ödülün gelir içindeki payı **%37** (önce ~%90). Kasa 50.000 KR ile başlıyor.
+- **Cache-bust:** `?v=29` → `?v=30`.
+
+### Doğrulanan ama değişiklik GEREKTİRMEYEN maddeler
+- **Madde 2 deploy kontrolü:** `https://winegg420.github.io/basketlig/` **tamamen 404** (root, index.html,
+  js/match-engine.js hepsi) — GitHub Pages yayında değil. Yani canlı sürüm sorunu ayrı bir konu; ödül
+  hatası zaten yerel HEAD'de gerçek olduğu için düzeltme yapıldı.
+- **Madde 6 (portreler):** `window.__charazaySvgPortraits` hiçbir yerde set edilmiyor → varsayılan
+  **zaten yerel dosya havuzu** (`playerPortraitFile`, 201 JPEG). pollinations.ai yalnızca yedek zincirinin
+  2. adımında (birincil + komşu yerel dosya da yüklenemezse) devreye giriyor. 201 dosyanın tamamı mevcut,
+  2 KB altı/bozuk dosya yok. Kod değişikliği yapılmadı — tutarsızlık görülürse sebebi `file://` açılışı
+  veya tarayıcı cache'i olabilir, yerel sunucu ile açılmalı.
+
+### Test edilmesi gerekenler (kullanıcı)
+- Sol menü → **Analiz** sekmesi açılıyor mu (grafikler + oyuncu seçimi).
+- Maç başlat: hem Maçlar sayfasındaki hem Ana Panel kartındaki buton "⏳ Maç Devam Ediyor" ve pasif mi;
+  maç bitince normale dönüyor mu.
+- Kadro/Market'te uzun oyuncuların pivot, kısa olanların oyun kurucu olduğunu gör (boy/kilo tutarlılığı).
+- Birkaç maç oyna: galibiyet bildiriminde ödül artık ~1.4K-2.6K KR olmalı; kasanın maç başına şişmediğini
+  Bilanço'dan doğrula.

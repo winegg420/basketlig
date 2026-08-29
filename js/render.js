@@ -35,7 +35,9 @@ function renderDashboardNextMatch(){
     }
     return;
   }
-  if(card){ card.style.opacity=''; card.style.pointerEvents=''; const btn=card.querySelector('.dn-play'); if(btn){ btn.textContent='▶ Maçı Başlat'; btn.disabled=false; } }
+  /* Madde 7: maç canlıyken yeniden render olsa da buton pasif kalsın */
+  const _live=(typeof mState!=='undefined'&&mState&&mState.running);
+  if(card){ card.style.opacity=''; card.style.pointerEvents=''; const btn=card.querySelector('.dn-play'); if(btn){ btn.textContent=_live?'⏳ Maç Devam Ediyor':'▶ Maçı Başlat'; btn.disabled=!!_live; } }
   nh.textContent=m.home;
   na.textContent=m.away;
   if(homeRec) homeRec.textContent=_teamRecordLabel(m.home);

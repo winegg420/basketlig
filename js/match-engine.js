@@ -2311,8 +2311,10 @@ function applyMatchResult(ev,ctx){
       txn('Bilet geliri',bilet);
       pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">🎟️ Ev maçı bilet geliri: <strong>+${fmtn(bilet)} KR</strong> (${fmtn(G.arena.kap)} kapasite)</div>`);
     } else {
-      /* Paket A: seyahat da sezonla pahalanır (gider enflasyonu). */
-      const seyahat=Math.round(ecoRound(rand(300,700))*ecoInflationMul());
+      /* Paket A: seyahat da sezonla pahalanır (gider enflasyonu).
+         Madde 2: ecoRound kaldırıldı — maç günü nakit akışı (bilet/ödül/seyahat) artık tek
+         ölçekte (KR-yerel); önceden seyahat 6.2K-14.6K ile kapı hasılatını (~4K) eziyordu. */
+      const seyahat=Math.round(rand(300,700)*ecoInflationMul());
       txn('Deplasman seyahat masrafı',-seyahat);
       pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">✈️ Deplasman seyahat masrafı: <strong>-${fmtn(seyahat)} KR</strong></div>`);
     }
@@ -2382,8 +2384,12 @@ function applyMatchResult(ev,ctx){
   }
   if(ev.winner==='home'){
     /* Paket A: ödül bandı kırpıldı (1500-3500→1000-2400) — galibiyet geliri tek başına
-       tüm kulüp giderlerini ezmesin, uzun vadede kasa otomatik şişmesin (20 sezon ölçümüyle ayarlandı). */
-    const priz=ecoRound(rand(1000,2400));
+       tüm kulüp giderlerini ezmesin, uzun vadede kasa otomatik şişmesin (20 sezon ölçümüyle ayarlandı).
+       Madde 2 (29. oturum): band ecoRound() ile ×ECO_MUL (≈20.8) ölçekleniyordu → gerçekte
+       20.833-50.000 KR/galibiyet. Bilet geliri (~4-5K/maç) ve haftalık maaş (~5K) KR-yerel
+       ölçekte olduğu için tek galibiyet bir haftalık tüm ekonomiyi eziyordu. Artık ödül de
+       KR-yerel: bir iç saha kapı hasılatının yaklaşık yarısı kadar. */
+    const priz=rand(1400,2600);
     txn('Maç ödülü (galibiyet)',priz);
     sfx('win');
     G.winStreak=(Number(G.winStreak)||0)+1;
@@ -2392,7 +2398,7 @@ function applyMatchResult(ev,ctx){
   }
   else if(ev.winner==='away'){
     G.winStreak=0;
-    const cons=ecoRound(rand(320,720)); /* Paket A: %20 kırpma (400-900→320-720) */
+    const cons=rand(420,900); /* Madde 2: ecoRound kaldırıldı (6.7K-15K → 420-900 KR, KR-yerel ölçek) */
     txn('Maç günü geliri',cons);
     sfx('lose');
     showNotif(`😔 Mağlup — +${fmtn(cons)} KR maç günü geliri.`);
