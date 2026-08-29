@@ -40,6 +40,7 @@ Oyun ilerlemesi tarayıcıda **localStorage + IndexedDB** ile saklanır (otomati
 | `tools/visual-check.js` | **Otomatik görsel/konsol testi** (Playwright + sistem Chrome, masaüstü+mobil). Her değişiklikten sonra çalıştır. |
 | `tools/realism-check.js` | **Canlı maç gerçekçilik denetimi**: saha-dışı/ışınlanma/üst üste binme/sahipsiz top ihlalleri + anlatım-görüntü senkron gecikmesi. `--fire` şut anı, `--inb` kenardan sokma anı ekran görüntüsü, `--full` tam maç, `--rate=` izleme hızı. |
 | `tools/faz7-check.js` | **FAZ 7 kabul kriteri denetçisi** — playoff yenileme, kota/IndexedDB tazeliği, kayıt silme kalıcılığı, arena bakımı, koç reroll istismarı, çevrimdışı font (ağ kesilerek), mobil ilk-5 kaydırma. Kayıt/ekonomi/başlangıç durumu değişince çalıştır. |
+| `tools/season-loop.js` | **Çok sezonlu döngü ölçümü** — N sezonu uçtan uca sürer (lig→playoff→draft→yeni sezon); kadro OVR, kasa, yaşlanma, kadro mevcudu, şampiyon üretimi. Tohumlu, `--runs` ile çok koşulu ortalama. **Uzun vadeli denge değişikliklerinden sonra çalıştır.** |
 | `tools/faz6-check.js` | **FAZ 6 denetimi** — sezon ödülleri, zorluk seviyesi çarpanları, manuel koçluk istatistik koruması, kayıt bütünlüğü, mobil uçtan uca, masaüstü paketi. |
 | `tools/faz8-check.js` | **FAZ 8 kabul kriterleri** — piyasa dengesi, şehir dağılımı, v7 migrasyonu, 200 sezonluk lig kutuplaşması, script sürümü, mobil varsayılan görünüm. |
 | `tools/m20-check.js` | **Rakip kadro kalıcılığı denetçisi** — kimlik · derinlik · sezon istatistiği · yorgunluk · isabet yolu · sakatlık. Bot kulüp/rakip mekaniği değişince çalıştır. |
@@ -82,6 +83,8 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
 - **Kullanıcı girdileri** (takım/arena/menajer adı) `sanitizeTeamName` ile temizlenir (XSS).
 - **Para birimi KR** (kullanıcı kararı — USDT'ye dönme).
 - **Oyuncular hep erkek** (portre havuzu buna göre).
+- **Uzun vadeli denge (FAZ 9):** kadro gelişimi `match-prep.js` sezon geçişi bloğunda (potansiyel boşluğuna bağlı), ekonomi dengesi `salaryKRFromGenel` çarpanı + `weeklyWageBill` + maç ödülleri. Değiştirince `season-loop --runs=3` ile ölç — tek koşu yargı için yetersizdir.
+- **Kadro üst sınırı** `ROSTER_MAX` (`state.js`); yeni bir katılım yolu eklersen `rosterHasRoom()` ile koru.
 - **Zorluk seviyesi (B5):** çarpanlar YALNIZ `js/state.js` içindeki `DIFFICULTY` tablosunda; koda dağıtma, `difficultyCfg()` ile oku. NORMAL tüm çarpanları 1/0'dır — yeni bir çarpan eklerken normalin nötr kalmasına dikkat et, yoksa mevcut denge ve `band.js` hash'i kayar.
 
 ## Bilinen eksikler

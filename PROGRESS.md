@@ -2240,3 +2240,77 @@ Böylece kurulum yapıldığında ilk denemede yapılandırma hatasıyla vakit k
 
 `faz6-check` artık **7/7**. Kurulum komutları ve derleme adımları `KALDIGIM-YER.md` içindeki
 yeni **"Masaüstü derlemesi (Tauri) — durum ve kurulum"** bölümüne yazıldı.
+
+---
+
+## 33. Oturum — 2026-08-30 · FAZ 9: UZUN VADELİ OYUN DÖNGÜSÜ
+
+Girdi: `REVIZE-PAKETI-FAZ9.md` — ilk kez **sezonlar arası** davranışa bakan paket.
+Belge kendi harness'ının üç kez yanlış alarm verdiğini dürüstçe işaretlemişti (draft'ın
+"takılması", "hiç çalışmaması", "yeni sezonun başlamaması") — üçü de gerçek değildi.
+
+### YENİ ARAÇ — `tools/season-loop.js`
+Belgenin önerdiği kalıcı çözüm. N sezonu uçtan uca sürer (lig → playoff → draft → yeni sezon)
+ve 6 kriteri ölçer. Üç harness tuzağı bilerek ele alındı: draft kullanıcı sırasında **bekler**
+(hata değil) → `autoDraftPick()` ile ilerletilir; `G.playoff` her adımda **taze** okunur.
+
+**İlk sürümü tohumsuzdu ve aynı kodla kasayı 2,09× ve 4,65× ölçtü** — `band.js` ile birebir
+aynı ders. Tohum + `--runs` eklendi; artık 3 tohumun **ortalaması** yargılanıyor.
+
+### F9-1 · Kadro her sezon zayıflıyordu (71 → 68,7)
+Kök neden: yaşlanma bloğunda 32+ için gerileme vardı ama **18-31 bandında sezonluk doğal
+gelişim hiç yoktu** — oyuncular yalnız antrenmanla büyüyordu. F8-2 ile piyasa da kısıtlanınca
+güçlenme yolu kalmamıştı. Gelişim potansiyel **boşluğuna** bağlı (boşluk kapandıkça yavaşlar),
+yaşla azalır, altyapı tesisi hızlandırır. **Ölçüm: 3 koşu ortalaması +1,27 OVR.**
+
+### F9-2 · Para birikiyor, harcanacak yer yok (3 sezonda 5,8×)
+Önce döküm alındı: haftalık gider 5.958 KR, bilet 4.350/maç, sezon neti **+44.000 KR**.
+70 OVR oyuncunun haftalık maaşı bir iç saha kapı hasılatının **%8'i** kadardı.
+
+| Değişiklik | |
+|---|---|
+| `salaryKRFromGenel` çarpanı | 1,7 → **2,9** |
+| Enflasyon kapsamı | yalnız arena bakımı → **tüm işletme giderleri** |
+| Akademi işletme gideri | yeni (seviyeyle artar) |
+| Galibiyet ödülü | 1400-2600 → **850-1550** |
+| Mağlubiyet geliri | 420-900 → **300-650** |
+
+**Ölçüm: 2,67× → 1,58×.** Ara denemede 3,2 çarpanı çok sıkıydı (1,26×, bir koşuda kasa
+küçülüyordu) — oyuncu transfer için para biriktiremezse de oyun bozulur.
+
+### F9-3 · Kadro şişiyor, kimse ayrılmıyor
+Otomatik altyapı terfisinde `<18` sınırı **vardı** ama elle terfi, serbest piyasa alımı ve
+kulüp transferinde **yoktu**. Tek sabit: `ROSTER_MAX=18` + `rosterHasRoom()` — dolu ise
+"önce birini gönder" der, karar kullanıcıda kalır.
+
+### F9-4 ve F9-5 · Belgenin "kesin değil" dediği iki madde — ikisi de harness hatasıymış
+- **F9-4:** `startPlayoffs` her çağrıda yeni nesne kuruyor; ölçüm her sezon için ayrı playoff
+  yılı (1/2/3) ve ayrı şampiyon üretildiğini gösterdi. Yine de `startLeagueSeason` artık geçen
+  sezonun bitmiş playoff'unu temizliyor (`G.playoff=null`) — bayat `champion` arayüzü ve
+  testleri yanıltmasın.
+- **F9-5:** aynı oyuncu id'leri izlendi, yaşlanma çalışıyor. Ortalamanın sabit görünmesi
+  drafttan gelen gençlerin ortalamayı aşağı çekmesinden.
+
+### MOTOR ÇÖKMESİ — `season-loop` buldu, FAZ 9 belgesinde yok
+Sağlıklı oyuncu 5'ten azsa `matchLineup` **null slot** döndürüyordu ve `generateMatchEvents`
+bunu denetlemeden `${c.isim}` okuyup **çöküyordu** (`TypeError: Cannot read properties of
+null`). Sakatlık dalgasında maç hiç başlamıyor. `matchLineup` artık en hafif sakatlarla
+kadroyu tamamlıyor; motorda ikinci savunma katmanı var.
+
+### ARAÇ KUSURU — `tools/box-band.js` tohumsuzdu
+Denge yargısının **tek yetkili aracı** olduğu hâlde aynı kodla ribaund **29,9** ve **30,9**
+ölçtü (bant sınırı 30): bir bandın tutup tutmadığı çalıştırmaya göre değişiyordu.
+`band.js` ile aynı PRNG ve tohum eklendi; iki çalıştırma artık aynı sonucu veriyor.
+**Bu oturumda düzeltilen ikinci tohumsuz araç** (birincisi `band.js`, 32. oturum).
+
+### Doğrulama
+`season-loop` **6/6** (3 sezon × 3 tohum) · `box-band` 11/11 (artık deterministik) ·
+`faz6-check` 7/7 · `faz7-check` 8/8 · `faz8-check` 6/6 · `m20-check` 6/6 ·
+`sunum-check` 3/3 (motor kararı 138/138) · `visual-check` 0 hata · `live-metrics` tüm hedefler ·
+`i18n-scan` kalan Türkçe yalnız özel isim · **`band.js` hash değişmedi** (`ec630b3a512bb3b2`
+— ekonomi ve gelişim değişiklikleri maç motorunu etkilemedi).
+
+### Ders
+Bu oturumda **üçüncü kez** bir ölçüm aracının kendisi yanlış sonuç verdi (`band.js` tohumu →
+`i18n-scan` kör noktası → `box-band` tohumu). Yeni bir denge aracı yazarken ilk soru
+"deterministik mi?" olmalı; değilse yapılan her ayar tesadüfe dayanır.

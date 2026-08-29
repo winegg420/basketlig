@@ -1,20 +1,23 @@
 # KALDIĞIM YER
-Son güncelleme: 2026-08-29 · 32. oturum — **açık iş yok, tüm testler yeşil**
+Son güncelleme: 2026-08-30 · 33. oturum — **açık iş yok, tüm testler yeşil**
 
 Talep belgeleri: `REVIZE-PAKETI.md` (FAZ 1-6) · `REVIZE-PAKETI-FAZ7.md` (maç dışı) ·
-`REVIZE-PAKETI-FAZ8.md` (oynanış testi) — **üçü de baştan sona uygulandı ve ölçülerek doğrulandı**.
-Protokol: `DEVAM-ET.md` · Oturum günlüğü: `PROGRESS.md` (32. oturum + beş ek)
+`REVIZE-PAKETI-FAZ8.md` (oynanış testi) · `REVIZE-PAKETI-FAZ9.md` (uzun vadeli döngü) —
+**dördü de baştan sona uygulandı ve ölçülerek doğrulandı**.
+Protokol: `DEVAM-ET.md` · Oturum günlüğü: `PROGRESS.md` (32. oturum + altı ek, 33. oturum)
 
 ## Durum: TEMİZ
 
-**FAZ 1-8'in tamamı bitti.** M9, M12, M14, M20 kapatıldı; a11y sürükleme hatası düzeltildi;
-B5 zorluk seviyesi eklendi. Talep belgelerinde açık madde kalmadı.
+**FAZ 1-9'un tamamı bitti.** M9, M12, M14, M20 kapatıldı; a11y sürükleme hatası düzeltildi;
+B5 zorluk seviyesi eklendi; uzun vadeli sezon döngüsü dengelendi. Talep belgelerinde açık
+madde kalmadı.
 Her madde **ölçülerek** doğrulandı — "uyguladım" beyanına dayanan açık iş yok.
 
 ## Doğrulama komutları (hepsi geçiyor)
 
 | Komut | Ne sınar | Sonuç |
 |---|---|---|
+| `node tools/season-loop.js --n=3 --runs=3` | çok sezonlu döngü (kadro OVR, kasa, yaşlanma, kadro sınırı, playoff) | ✓ **6/6** |
 | `node tools/faz6-check.js` | FAZ 6 (ödüller, zorluk, koçluk istatistiği, kayıt bütünlüğü, mobil uçtan uca, masaüstü paketi, Tauri ön koşulları) | ✓ **7/7** |
 | `node tools/faz8-check.js` | FAZ 8 kabul kriterleri (piyasa, şehir, v7, kutuplaşma, sürüm, mobil) | ✓ **6/6** |
 | `node tools/faz7-check.js` | FAZ 7 kabul kriterleri + a11y zoom hayaleti | ✓ **8/8** |
@@ -42,6 +45,11 @@ Her madde **ölçülerek** doğrulandı — "uyguladım" beyanına dayanan açı
 - **FAZ 8 (F8-1…F8-14):** tamamı + 8 kabul kriteri.
 - **FAZ 6:** B5 zorluk seviyesi (kolay/normal/zor) + B4 "en gelişen" ödülü; A1/B3/C2/C3/D1/D3
   ve Steam ek maddelerinin zaten kapandığı **ölçülerek** doğrulandı (`faz6-check`).
+- **FAZ 9:** sezonluk doğal gelişim (kadro artık büyüyor: +1,27 OVR), ekonomi dengesi
+  (kasa 5,8× → 1,58×), kadro üst sınırı 18, playoff/yaşlanma doğrulaması, "Transfer Bedeli".
+- **Motor çökmesi:** sağlıklı oyuncu 5'ten azken `matchLineup` null slot döndürüp maçı
+  çökertiyordu — `season-loop` buldu, düzeltildi.
+- **Üçüncü araç kusuru:** `box-band.js` tohumsuzdu (aynı kodla ribaund 29,9 / 30,9).
 - **İki araç kusuru:** `band.js` tohumu hiç kurmuyordu; `i18n-scan.js` salt ASCII harfli Türkçe
   metinleri göremiyordu. İkisi de düzeltildi — düzeltilince yeni gerçek eksikler ortaya çıktı.
 
@@ -58,6 +66,9 @@ Talep belgelerinde **açık madde kalmadı**. Sıradakiler kapsam kararı gerekt
    Ayrıntı ve kurulum adımları aşağıdaki **"Masaüstü derlemesi"** bölümünde.
 2. **Gerçek cihazda dokunma testi** — Playwright emülasyonu geçiyor; fiziksel telefon denenmedi.
 3. **B6** — akademi maçları, pozisyon antrenmanı derinliği (`RAPOR-EKSIKLER.md`, kapsam kararı).
+   FAZ 9 notu: paraya **anlamlı hedefler** (arena basamakları, akademi seviyeleri, izci ağı,
+   kulüp transferinde gerçek yıldızlar) hâlâ genişletilebilir — kasa artık şişmiyor ama
+   harcama kanalları da zengin değil.
 4. **Steam Deck / gamepad** desteği — kapsam kararı bekliyor (FAZ 6 belgesinde açık bırakılmış).
 5. FAZ 8 notu: 7 dokunma hedefi 38-39 px (eşik 40) — sınırda, istenirse kapatılır.
 
@@ -113,7 +124,7 @@ sıfırdan derlenir); sonrakiler önbellekten hızlanır.
   eklerken `botClubEnsureDepth` içindeki geriye dönük doldurmaya da ekle. `BOT_ROSTER_DIST`
   başındaki İLK 7 SIRA tarihseldir — id/seed'ler ona bağlı, değiştirme.
 - **`cpuMatchScore()` tek kaynaktır** — bot-bot skor formülünü test de oradan çağırır.
-- **Script sürüm etiketi** her yayın öncesi artırılmalı — şu an **`?v=39`**; `faz8-check` A7 sınıyor.
+- **Script sürüm etiketi** her yayın öncesi artırılmalı — şu an **`?v=40`**; `faz8-check` A7 sınıyor.
 - **Fontlar yerel** (`assets/fonts/`) — yeni Google Fonts `<link>` eklenmemeli.
 - **`S._dbgOutlet`** yalnız `sunum-check` için bırakılmış teşhis damgasıdır, silme.
 - **`js/league.js` CRLF**, `charazay2.0.html` KARIŞIK (CRLF+LF), diğer modüller LF. Toplu
