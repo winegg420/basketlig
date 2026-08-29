@@ -1304,6 +1304,19 @@ function createTeam(){
   G.analytics={teamMatches:[],playerDev:{}};
   G.draft=null;
   G.tutorialDone=false;
+  /* F7-8: kalıcı kariyer alanları da sıfırlanır — aynı oturumda kayıt yükleyip yeni takım
+     kuran oyuncu eskisinin Mega Arena'sı, Elit Akademi'si, kulüp rekorları ve artık var
+     olmayan oyuncu id'lerini gösteren lineup'ı ile başlıyordu. */
+  G.arena={s:1,kap:ARENA_LVL[0].kap,bk:ARENA_LVL[0].bk,isim:'Başlangıç Arena'};
+  G.youthFacility={s:1};
+  G.cup=null; G.cupHistory=[];
+  G.clubRecords={}; G.managerHistory=[]; G.managerRep=0;
+  G.careerMatches=0; G.careerWins=0; G.careerLosses=0;
+  G.posTraining={}; G.bankruptWeeks=0;
+  G.lineup=null; G.pendingMatch=null; G.prepareMatchIx=null;
+  G.ticketPrice=2; G.winStreak=0; G._ctSeq=0;
+  G.clubTransferPlayers=[]; G.playoff=null;
+  G._crisisPid=null; G._crisisDay=null;
   bootstrapAppUi();
   applyAutosaveSetting();
   const dashNav=document.querySelector('#sbNav button[data-page="dashboard"]');

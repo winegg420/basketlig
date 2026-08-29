@@ -578,7 +578,8 @@ function applyGameState(d){
   G.tutorialDone=!!d.tutorialDone;
   G.pendingMatch=d.pendingMatch&&typeof d.pendingMatch==='object'?d.pendingMatch:null; /* C1: kilitli maç sonucu */
   G.scouts=Array.isArray(d.scouts)?d.scouts:[]; /* Faz 5.1: izci ağı */
-  G.scoutMarket=Array.isArray(d.scoutMarket)&&d.scoutMarket.length?d.scoutMarket:(typeof genScoutMarket==='function'?genScoutMarket():[]);
+  /* F7-7: aynı reroll deseni izci pazarında da vardı. */
+  G.scoutMarket=Array.isArray(d.scoutMarket)?d.scoutMarket:((d.scoutMarket===undefined&&typeof genScoutMarket==='function')?genScoutMarket():[]);
   G.pendingOffers=Array.isArray(d.pendingOffers)?d.pendingOffers:[]; /* Faz 4.1: kullanıcı oyuncularına gelen teklifler */
   G.presidentTarget=d.presidentTarget&&typeof d.presidentTarget==='object'?d.presidentTarget:null; /* Faz 4.3 */
   G.budgetPenalty=Number(d.budgetPenalty)||0; /* Faz 4.3: hedef tutmayınca bütçe kısıtı */
@@ -595,8 +596,11 @@ function applyGameState(d){
   });
   ensureMarketStock();
   if(G.team) ensureYouthStock();
-  if(!G.coaches.length) G.coaches=genCoaches();
-  if(!G.coachMarket.length) G.coachMarket=genCoachMarket();
+  /* F7-7 (istismar): "boşsa üret" kuralı ücretsiz reroll kapısıydı — tüm koçları kov,
+     sayfayı yenile, 3 koç BEDAVA gelir; seviyeler beğenilmezse tekrar kov + yenile.
+     Artık yalnızca alan kaydın KENDİSİNDE yoksa (eski/ilk kayıt) üretilir. */
+  if(d.coaches===undefined&&!G.coaches.length) G.coaches=genCoaches();
+  if(d.coachMarket===undefined&&!G.coachMarket.length) G.coachMarket=genCoachMarket();
   return !!G.team;
 }
 

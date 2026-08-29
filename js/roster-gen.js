@@ -41,7 +41,7 @@ let G={
   team:null,players:[],youth:[],marketPlayers:[],
   clubTransferPlayers:[],marketTab:'free',clubTransferFilter:'all',
   coaches:[],coachMarket:[],ligTeams:[],
-  arena:{s:1,kap:5000,bk:ecoRound(45),isim:'Başlangıç Arena'},
+  arena:{s:1,kap:ARENA_LVL[0].kap,bk:ARENA_LVL[0].bk,isim:'Başlangıç Arena'},   /* F7-6: ham KR (ecoRound DEĞİL) — ARENA_LVL ile aynı ölçek */
   youthFacility:{s:1},
   selectedColor:'#f97316',
   activeTrainings:[],

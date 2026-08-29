@@ -559,7 +559,10 @@ function openMatchTactics(seasonMatchIx){
   G.prepareMatchIx=seasonMatchIx;
   scheduleGameSave();
   const op=m.home===u?m.away:m.home;
-  const tac=G.tactics||{tempo:'normal',odak:'dengeli'};
+  /* F7-5: 'İlk 5 seç'e basıp dönen kullanıcının KAYDEDİLMEMİŞ taktik seçimleri, modalın
+     innerHTML'i değiştiği için siliniyordu. Taslak varsa onu göster, sonra tüket. */
+  const tac=_tacDraft||G.tactics||{tempo:'normal',odak:'dengeli'};
+  _tacDraft=null;
   const radio=(name,val,cur,label,desc)=>`<label style="display:flex;gap:8px;align-items:flex-start;padding:9px 10px;background:var(--bg3);border:1px solid ${val===cur?'var(--accent)':'var(--border)'};border-radius:10px;cursor:pointer;margin-bottom:6px;">
     <input type="radio" name="${name}" value="${val}" ${val===cur?'checked':''} style="margin-top:2px;">
     <span><strong style="font-size:12px;">${label}</strong><br><span style="font-size:11px;color:var(--text2);">${desc}</span></span>
@@ -703,9 +706,36 @@ const LINEUP_SLOTS=[
   {poz:'PF',x:32,y:38,label:'Güç Forveti'},
   {poz:'C', x:68,y:38,label:'Pivot'}
 ];
+/* F7-5: taktik modalından İlk 5 düzenleyicisine geçerken kaydedilmemiş seçimler burada
+   tutulur; geri dönüşte openMatchTactics bunları yeniden basar. */
+let _tacDraft=null;
+let _tacReturnIx=null;
+function _captureTacticInputs(){
+  try{
+    const tempo=document.querySelector('input[name="tacTempo"]:checked');
+    const odak=document.querySelector('input[name="tacOdak"]:checked');
+    const def=document.querySelector('input[name="tacDef"]:checked');
+    if(!tempo&&!odak&&!def) return false;      /* taktik formu açık değil */
+    const focusEl=document.getElementById('tacFocus');
+    const markEl=document.getElementById('tacMark');
+    const cur=G.tactics||{};
+    _tacDraft={
+      tempo:tempo?tempo.value:(cur.tempo||'normal'),
+      odak:odak?odak.value:(cur.odak||'dengeli'),
+      defensiveStyle:def?def.value:(cur.defensiveStyle||'adam'),
+      focusPlayerId:(focusEl&&focusEl.value)||null,
+      markStar:!!(markEl&&markEl.checked),
+      playbook:_pbPick.off,
+      defSet:_pbPick.def
+    };
+    return true;
+  }catch(e){ return false; }
+}
 function openLineupEditor(){
   try{
     if(!G.team){ showNotif('Önce takım oluştur.'); return; }
+    /* Taktik formundan geliniyorsa seçimleri sakla ve dönüş adresini not et. */
+    _tacReturnIx=_captureTacticInputs()?(G.prepareMatchIx!=null?G.prepareMatchIx:null):null;
     const healthy=(G.players||[]).filter(p=>!playerIsInjured(p));
     if(healthy.length<5){ showNotif('İlk 5 seçmek için en az 5 sağlıklı oyuncu gerekli.'); return; }
     const byOvr=healthy.slice().sort((a,b)=>(b.genel||0)-(a.genel||0));
@@ -925,6 +955,7 @@ function saveLineup(force){
   scheduleGameSave();
   closeAppModal();
   showNotif('🏀 İlk 5 kaydedildi.');
+  _returnToTacticsIfNeeded();
 }
 function resetLineup(){
   G.lineup=null;
@@ -932,6 +963,13 @@ function resetLineup(){
   scheduleGameSave();
   closeAppModal();
   showNotif('Rotasyon otomatiğe alındı (en iyi 5).');
+  _returnToTacticsIfNeeded();
+}
+/* F7-5: İlk 5 işlemi bitince taktik formuna geri dön — kaydedilmemiş seçimler korunur. */
+function _returnToTacticsIfNeeded(){
+  if(_tacReturnIx==null) return;
+  const ix=_tacReturnIx; _tacReturnIx=null;
+  setTimeout(()=>{ try{ openMatchTactics(ix); }catch(e){} },60);
 }
 
 function gotoMacPage(){
