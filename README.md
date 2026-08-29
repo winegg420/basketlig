@@ -17,6 +17,8 @@ Kendi bilgisayarında **hemen oynamak** için tarayıcıda aç: `charazay2.0.htm
 ### Ana adres (kısa)
 **https://winegg420.github.io/basketlig/**
 
+> ✅ **YAYINDA** — GitHub Pages 29.08.2026 tarihinde açıldı (kaynak: `master` / kök). Depo public; her `git push` sonrası site 1-2 dakika içinde kendini günceller. Aşağıdaki kurulum adımları yalnızca sıfırdan kuranlar içindir.
+
 *(GitHub kullanıcı adın veya repo adın farklıysa: `https://KULLANICI_ADI.github.io/REPO_ADI/`)*
 
 ### Dorudan oyun dosyası

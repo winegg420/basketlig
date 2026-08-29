@@ -15,7 +15,7 @@ Derleme/kurulum **yok** — statik bir HTML dosyası.
 
 - **En hızlı:** `charazay2.0.html` dosyasına çift tıkla (tarayıcıda açılır) veya `Charazay-2.0-Chrome.bat` çalıştır.
 - **Yerel sunucu ile** (portrelerin/asset'lerin sorunsuz yüklenmesi için önerilir): `Charazay-2.0-YEREL-SUNUCU.bat`.
-- **Canlı (GitHub Pages):** https://winegg420.github.io/basketlig/charazay2.0.html — kurulum için `README.md`'ye bak.
+- **Canlı (GitHub Pages):** https://winegg420.github.io/basketlig/charazay2.0.html — **yayında** (depo public, kaynak `master` / kök; push sonrası ~1-2 dk içinde güncellenir). Yayın sonrası doğrulama: `node tools/live-check.js`.
 
 Oyun ilerlemesi tarayıcıda **localStorage + IndexedDB** ile saklanır (otomatik kayıt + 3 manuel slot). Sunucu/veritabanı yoktur.
 

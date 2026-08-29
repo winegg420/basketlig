@@ -1603,3 +1603,9 @@ görsel önizleme** · **sıra = oyun derinliği önce, I18N en son**.
    yine oynatma → güvenin çöktüğünü gör. Kadro sayfasındaki Soyunma Odası panelini incele.
 6. **Draft:** Sezonu bitir → draft gecesi kurulu açılmalı, rakipler tek tek seçmeli, sıra sana gelince
    taban/tavan ve izci raporuna göre seç.
+
+### Yayın — GitHub Pages açıldı (30. oturum sonu)
+- Depo **private** olduğu için Pages hiç kurulmamıştı (`has_pages:false`, site 404). Ücretsiz hesapta private depodan Pages yayınlanamadığı için kullanıcı onayıyla depo **public** yapıldı, ardından Pages `master` / kök kaynağıyla etkinleştirildi.
+- Public yapmadan önce sır taraması yapıldı: çalışma ağacı ve **tüm git geçmişi** token/anahtar/özel anahtar kalıplarına karşı tarandı — temiz. (Not: commit yazarı e-postası geçmişte görünür, bu GitHub'da olağandır.)
+- Doğrulama: tüm dosyalar 200 (HTML, 13 js modülü, portreler, manifest); canlı sürüm yerel HEAD ile aynı (`?v=37`); `tools/live-check.js` gerçek yayında kariyer kurdu, 11 sayfayı gezdi, playbook kurulunu (11 kart) açtı, canlı maç oynattı ve EN diline geçti — **0 konsol hatası, 0 kırık istek**.
+- Yeni araç: `tools/live-check.js` — canlı yayını uçtan uca denetler (`LIVE_URL` ile başka adres de verilebilir).
