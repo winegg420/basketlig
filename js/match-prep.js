@@ -971,24 +971,187 @@ function startDraft(){
   }catch(e){ dbg('startDraft',e); proceedToNewSeason(); }
 }
 function draftAvailable(){ const d=G.draft; return d?d.pool.filter(p=>!d.picks.some(x=>x.prospectId===p.id)):[]; }
+/* ══════════════════════════════════════════════════════════════════════════════════════
+   FAZ E (30. oturum) — DRAFT GECESİ + POTANSİYEL TAVANI / TABANI
+   Önceden draft sessiz bir listeydi: botlar anında seçiyor, kullanıcı yalnız kendi sırasında
+   bir liste görüyordu. Artık gerçek bir ETKİNLİK:
+     • Sıralı draft kurulu (board) — her seçim canlı işlenir, aday listesi gözle görülür incelir.
+     • Rakip seçimleri tek tek akar (ticker), kimin kimi aldığı görünür.
+     • Kullanıcının sırası geldiğinde kurul "SIRA SENDE" moduna geçer.
+     • Her adayın TABAN (floor) ve TAVAN (ceiling) tahmini gösterilir; izci kalitesi bandı
+       daraltır ve scouting raporu ekler. İzcisiz menajer neredeyse kör seçim yapar.
+   ══════════════════════════════════════════════════════════════════════════════════════ */
+
+/** Adayın gelişim TABANI ve TAVANI — gerçek potansiyel gizli, gösterilen tahmin izciye bağlı.
+ *  q=0 (izci yok) → çok geniş ve kaydırılmış band · q=5 → gerçeğe çok yakın dar band. */
+function prospectRange(p,q){
+  const gerçek=Number(p&&p.potansiyel)||60;
+  const ovr=Number(p&&p.genel)||50;
+  const h=Math.abs(hash32(String((p&&p.id)||'')+'|range'));
+  const belirsizlik=Math.max(1,10-((Number(q)||0)*2));      /* 10 (izcisiz) → 2 (5★ izci) */
+  const kayma=((h%(belirsizlik*2+1))-belirsizlik);           /* izcisizken tahmin sapar */
+  const merkez=Math.max(ovr+2,Math.min(99,gerçek+kayma));
+  /* Tavan 99'a dayanınca bandı daraltmak yanıltıcı olurdu (izcisiz tahmin dar görünürdü);
+     bunun yerine band aşağı KAYDIRILIR — belirsizlik hep izci kalitesiyle ters orantılı kalır. */
+  let taban=Math.round(merkez-belirsizlik*1.3);
+  let tavan=Math.round(merkez+belirsizlik*1.1);
+  if(tavan>99){ const d=tavan-99; tavan=99; taban-=d; }
+  taban=Math.max(ovr,taban);
+  return {taban,tavan,belirsizlik};
+}
+/** Kısa izci raporu — statlardan türer, izci kalitesi arttıkça netleşir. */
+function prospectReport(p,q){
+  if(!p) return '';
+  const g=k=>Number(p[k])||0;
+  const arti=[],eksi=[];
+  const bak=[['hiz','atletizm'],['sutIsabeti','dış atış'],['ribaund','ribaund'],['pas','oyun kurma'],['savunma','savunma'],['blok','pota koruma'],['topSurme','top kullanımı'],['zeka','oyun zekâsı']];
+  const ort=bak.reduce((s,[k])=>s+g(k),0)/bak.length;
+  bak.forEach(([k,ad])=>{ if(g(k)>=ort+7) arti.push(ad); else if(g(k)<=ort-7) eksi.push(ad); });
+  if(!(Number(q)||0)) return 'İzci raporu yok — kör seçim.';
+  const a=arti.slice(0,(Number(q)>=3?2:1)).join(' + ')||'belirgin bir kozu yok';
+  const e=eksi.slice(0,(Number(q)>=3?2:1)).join(', ');
+  const yas=Number(p.yas)||19;
+  const tip=yas<=18?'uzun vadeli proje':(Number(p.potansiyel)||0)-(Number(p.genel)||0)>=20?'ham yetenek':'hazıra yakın';
+  return `${tip} · güçlü: ${a}${e?` · gelişmeli: ${e}`:''}`;
+}
+/** Taban–tavan çubuğu (görsel). */
+function prospectRangeBar(p,q){
+  const r=prospectRange(p,q);
+  const ovr=Number(p.genel)||50;
+  const x=v=>Math.max(0,Math.min(100,((v-40)/59)*100));   /* 40-99 aralığını çubuğa oturt */
+  const l=x(r.taban), w=Math.max(3,x(r.tavan)-x(r.taban)), c=x(ovr);
+  const net=r.belirsizlik<=4;
+  return `<div style="position:relative;height:8px;border-radius:5px;background:var(--bg2);border:1px solid var(--border);margin:4px 0 3px;">
+      <span style="position:absolute;left:${l}%;width:${w}%;top:0;bottom:0;border-radius:5px;background:${net?'var(--blue)':'var(--gold)'};opacity:.75;"></span>
+      <span style="position:absolute;left:${c}%;top:-3px;width:2px;height:14px;background:var(--text);"></span>
+    </div>
+    <div style="font-size:10px;color:var(--text2);">Taban <strong style="color:var(--text);">${r.taban}</strong> · Tavan <strong style="color:${net?'var(--blue)':'var(--gold)'};">${r.tavan}</strong> ${net?'(net rapor)':'(geniş band — daha iyi izci gerek)'}</div>`;
+}
+
+/* ── Draft gecesi akışı ──────────────────────────────────────────────────────────────── */
+let _draftTimer=null;
+function clearDraftTimer(){ if(_draftTimer){ clearTimeout(_draftTimer); _draftTimer=null; } }
+
 function processDraftPicks(){
   const d=G.draft;
   if(!d||d.done) return;
-  while(d.idx<d.order.length){
-    const team=d.order[d.idx];
-    if(team===G.team.isim){ openDraftModal(); return; } /* kullanıcı sırası → seçim bekle */
+  clearDraftTimer();
+  if(d.idx>=d.order.length){ finalizeDraft(); return; }
+  renderDraftBoard();
+  const team=d.order[d.idx];
+  if(team===G.team.isim) return;      /* kullanıcı sırası — kurul "SIRA SENDE" gösterir, seçim beklenir */
+  /* Rakip seçimi: kurul görünür kalsın diye gecikmeli işlenir (draft gecesi hissi). */
+  _draftTimer=setTimeout(()=>{
     botDraftPick(team);
     d.idx++;
-  }
-  finalizeDraft();
+    scheduleGameSave();
+    processDraftPicks();
+  },620);
 }
 function botDraftPick(team){
   const d=G.draft;
   const avail=draftAvailable();
   if(!avail.length) return;
-  avail.sort((a,b)=>(Number(b.potansiyel)||0)-(Number(a.potansiyel)||0)); /* bot gerçek potansiyeli görür */
+  /* Bot menajerler de artık ihtiyaca bakar: potansiyel ana ölçüt, mevki ihtiyacı ikinci ölçüt. */
+  const alinan={};
+  d.picks.filter(x=>x.team===team).forEach(x=>{ const pp=d.pool.find(y=>y.id===x.prospectId); if(pp) alinan[pp.poz]=(alinan[pp.poz]||0)+1; });
+  avail.sort((a,b)=>{
+    const sa=(Number(a.potansiyel)||0)-((alinan[a.poz]||0)*6);
+    const sb=(Number(b.potansiyel)||0)-((alinan[b.poz]||0)*6);
+    return sb-sa;
+  });
   d.picks.push({team,prospectId:avail[0].id});
 }
+
+/** Draft kurulu — seçim sırası, akan seçimler ve aday listesi tek ekranda. */
+function renderDraftBoard(){
+  const d=G.draft; if(!d||typeof showAppModal!=='function') return;
+  const q=draftScoutQuality();
+  const benim=d.order[d.idx]===G.team.isim;
+  const avail=draftAvailable().slice().sort((a,b)=>(Number(b.genel)||0)-(Number(a.genel)||0));
+  /* Sıra listesi */
+  const sira=d.order.map((t,i)=>{
+    const pick=d.picks[i];
+    const pp=pick?d.pool.find(x=>x.id===pick.prospectId):null;
+    const me=t===G.team.isim;
+    const aktif=i===d.idx;
+    const renk=aktif?'var(--accent)':me?'var(--blue)':'var(--border)';
+    return `<div style="display:flex;gap:7px;align-items:center;padding:4px 7px;border-radius:7px;background:var(--bg3);border:1px solid ${renk};margin-bottom:3px;${aktif?'box-shadow:0 0 0 1px var(--accent) inset;':''}">
+      <span style="font-size:10px;color:var(--text2);width:20px;">${i+1}.</span>
+      <span style="font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;${me?'color:var(--blue);font-weight:700;':''}">${escMatch(t)}</span>
+      <span style="font-size:10px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${pp?'var(--text)':'var(--text2)'};">${pp?escMatch(pp.isim)+' ('+pp.poz+')':(aktif?'⏳ seçiyor…':'—')}</span>
+    </div>`;
+  }).join('');
+  /* Aday kartları */
+  const kartlar=avail.slice(0,benim?18:8).map(p=>`<div style="padding:8px 10px;background:var(--bg3);border-radius:9px;margin-bottom:6px;">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <div style="flex:1 1 150px;min-width:0;">
+          <div style="font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.bayrak||''} ${escMatch(p.isim)}</div>
+          <div style="color:var(--text2);font-size:11px;">${p.poz} · ${p.yas} yaş · OVR ${p.genel}</div>
+          <div style="font-size:10px;color:var(--text2);margin-top:2px;">${rolInfo(p.rol).ikon} ${rolInfo(p.rol).ad} · ${kisilikInfo(p.kisilik).ikon} ${kisilikInfo(p.kisilik).ad}</div>
+        </div>
+        ${benim?`<button type="button" class="btn-p" style="padding:6px 14px;font-size:11px;white-space:nowrap;flex:0 0 auto;width:auto;margin-top:0;align-self:center;" onclick="draftPick('${p.id}')">Seç</button>`:''}
+      </div>
+      ${prospectRangeBar(p,q)}
+      <div style="font-size:10px;color:var(--text2);margin-top:2px;">📋 ${prospectReport(p,q)}</div>
+    </div>`).join('');
+  const bas=benim
+    ? `<div style="padding:8px 11px;border-radius:9px;background:var(--accent);color:#fff;font-weight:800;font-size:13px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">⏰ SIRA SENDE — ${d.idx+1}. seçim <button type="button" class="btn-sm" style="padding:5px 10px;font-size:11px;" onclick="autoDraftPick()">⏭ Otomatik seç</button></div>`
+    : `<div style="padding:8px 11px;border-radius:9px;background:var(--bg3);border:1px solid var(--border);font-size:12px;margin-bottom:10px;">🎬 <strong>${escMatch(d.order[d.idx]||'')}</strong> seçim yapıyor… (senin sıran: ${d.order.indexOf(G.team.isim)+1}.)</div>`;
+  showAppModal(`<div class="modal-title">🎓 Draft Gecesi ${d.year}</div>
+    ${bas}
+    <p style="font-size:10px;color:var(--text2);margin:0 0 10px;">Ligi altta bitiren önce seçer. Taban/tavan tahminleri <strong>izci kalitene</strong> bağlıdır${q?` — en iyi izcin ${q}★`:' — izcin yok, band çok geniş'}.</p>
+    <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;">
+      <div style="flex:1 1 230px;min-width:0;">
+        <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">Seçim sırası</div>
+        <div style="max-height:320px;overflow-y:auto;">${sira}</div>
+      </div>
+      <div style="flex:1.6 1 300px;min-width:0;">
+        <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">Adaylar (${avail.length} kaldı)</div>
+        <div style="max-height:320px;overflow-y:auto;">${kartlar||'<p style="font-size:12px;color:var(--text2);">Aday kalmadı.</p>'}</div>
+      </div>
+    </div>`,{xl:true});
+}
+/** Eski çağrı adı korunur (geriye dönük uyum). */
+function openDraftModal(){ renderDraftBoard(); }
+
+/** Draft bitince gecenin özeti — kimin kimi aldığı ve senin seçimin. */
+/** Kullanıcı seçim yapmak istemezse (ya da kurulu kapattıysa) en yüksek tahmini tavanlı adayı alır. */
+function autoDraftPick(){
+  const d=G.draft; if(!d) return;
+  const q=draftScoutQuality();
+  const avail=draftAvailable();
+  if(!avail.length){ finalizeDraft(); return; }
+  const best=avail.slice().sort((x,y)=>prospectRange(y,q).tavan-prospectRange(x,q).tavan)[0];
+  draftPick(best.id);
+}
+function showDraftSummary(){
+  const d=G.draft; if(!d||typeof showAppModal!=='function') return;
+  const q=draftScoutQuality();
+  const benimPick=d.picks.find(x=>x.team===G.team.isim);
+  const benim=benimPick?d.pool.find(x=>x.id===benimPick.prospectId):null;
+  const satirlar=d.picks.map((x,i)=>{
+    const p=d.pool.find(y=>y.id===x.prospectId);
+    const me=x.team===G.team.isim;
+    return `<div style="display:flex;gap:8px;align-items:center;padding:5px 8px;border-radius:7px;background:var(--bg3);margin-bottom:3px;${me?'border:1px solid var(--blue);':''}">
+      <span style="font-size:10px;color:var(--text2);width:22px;">${i+1}.</span>
+      <span style="font-size:11px;flex:1;${me?'color:var(--blue);font-weight:700;':''}">${escMatch(x.team)}</span>
+      <span style="font-size:11px;">${p?escMatch(p.isim)+' <span style="color:var(--text2);">('+p.poz+'·OVR '+p.genel+')</span>':'—'}</span>
+    </div>`;
+  }).join('');
+  showAppModal(`<div class="modal-title">🎓 Draft ${d.year} — Gece Özeti</div>
+    ${benim?`<div style="padding:10px 12px;border-radius:10px;background:var(--bg3);border:1px solid var(--blue);margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:3px;">Senin seçimin: ${benim.bayrak||''} ${escMatch(benim.isim)}</div>
+      <div style="font-size:11px;color:var(--text2);">${benim.poz} · ${benim.yas} yaş · OVR ${benim.genel} · ${rolInfo(benim.rol).ikon} ${rolInfo(benim.rol).ad}</div>
+      ${prospectRangeBar(benim,q)}
+      <div style="font-size:10px;color:var(--text2);">📋 ${prospectReport(benim,q)}</div>
+      <div style="font-size:11px;color:var(--green);margin-top:5px;">Altyapına katıldı — Altyapı sayfasından kadroya alabilirsin.</div>
+    </div>`:'<p style="font-size:12px;color:var(--text2);">Bu draftta seçim yapmadın.</p>'}
+    <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">Tüm seçimler</div>
+    <div style="max-height:280px;overflow-y:auto;">${satirlar}</div>
+    <button type="button" class="btn-p" style="width:100%;padding:10px;margin-top:12px;" onclick="closeAppModal();proceedToNewSeason();">Yeni sezona geç</button>`,{xl:true});
+}
+
 function draftPick(prospectId){
   const d=G.draft; if(!d) return;
   const p=d.pool.find(x=>x.id===prospectId);
@@ -1006,31 +1169,13 @@ function draftPick(prospectId){
 }
 function finalizeDraft(){
   if(G.draft) G.draft.done=true;
+  clearDraftTimer();
   scheduleGameSave();
-  proceedToNewSeason();
+  /* FAZ E: gece bitince özet ekranı — kullanıcı "Yeni sezona geç" ile devam eder. */
+  try{ showDraftSummary(); }catch(e){ dbg("draftSummary",e); proceedToNewSeason(); }
 }
 /* Kullanıcının en iyi izcisinin kalitesi draft ipuçlarını netleştirir (scouting'e bağlı). */
 function draftScoutQuality(){ return (G.scouts||[]).reduce((m,s)=>Math.max(m,Number(s.kalite)||0),0); }
-function openDraftModal(){
-  if(typeof showAppModal!=='function'){ finalizeDraft(); return; }
-  const d=G.draft; if(!d) return;
-  const pickNo=d.idx+1;
-  const q=draftScoutQuality();
-  const avail=draftAvailable().slice().sort((a,b)=>(Number(b.genel)||0)-(Number(a.genel)||0));
-  const potHint=p=>{
-    if(q>=4) return `<span style="color:var(--blue);">⭐ Pot ${p.potansiyel}</span>`; /* güçlü izci → net */
-    const spread=6+(hash32(String(p.id||p.seed||''))%7);
-    const lo=Math.max(Number(p.genel)||0,(Number(p.potansiyel)||60)-spread), hi=Math.min(99,(Number(p.potansiyel)||60)+Math.floor(spread/2));
-    return `<span style="color:var(--gold);">🔍 Pot ${lo}–${hi}${q>=2?'':' (izci yok — belirsiz)'}</span>`;
-  };
-  const rows=avail.slice(0,16).map(p=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 9px;background:var(--bg3);border-radius:8px;margin-bottom:5px;">
-      <div style="flex:1;"><strong style="font-size:12px;">${escMatch(p.isim)}</strong> <span style="color:var(--text2);font-size:11px;">${p.poz}·${p.yas}y·OVR ${p.genel}</span><br><span style="font-size:10px;">${potHint(p)} · ${kisilikInfo(p.kisilik).ikon} ${kisilikInfo(p.kisilik).ad}</span></div>
-      <button type="button" class="btn-p" style="padding:6px 12px;font-size:11px;" onclick="draftPick('${p.id}')">Seç</button>
-    </div>`).join('');
-  showAppModal(`<div class="modal-title">🎓 Draft ${d.year} — ${pickNo}. sıra senin</div>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Ligi ${d.order.length}. sırada bitirdin; draft sıran geldi. Bir genç yetenek seç (potansiyel ipucu izci kalitene bağlı${q?` — en iyi izci ${q}★`:' — izcin yok'}).</p>
-    <div style="max-height:340px;overflow-y:auto;">${rows}</div>`);
-}
 
 function ensureLeagueSeasonOrStart(){
   if(!G.team||!G.team.tblKey) return;
