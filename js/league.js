@@ -78,7 +78,7 @@ function openPlayerInspectModal(pid){
   const p=G.players.find(x=>x.id===pid);
   if(!p) return;
   const stats=STAT_KEYS.map(k=>`<div class="sitem"><span class="sname">${STAT_LABELS[k]}</span><span class="sval ${sv(p[k])}">${p[k]}</span></div>`).join('');
-  showAppModal(`<div class="modal-title">${p.isim}</div><div style="display:flex;gap:14px;flex-wrap:wrap;"><div class="pimg-wrap"><img src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} style="width:90px;height:112px;border-radius:10px;border:2px solid var(--accent);object-fit:cover;"><div class="pimg-cap">OVR ${p.genel}</div></div><div style="flex:1;min-width:200px;font-size:13px;line-height:1.55;"><p style="margin:0 0 6px;">${p.bayrak} ${p.ulke} · ${p.yas} yaş · ${p.boy}cm / ${p.kilo}kg</p><p style="margin:0 0 6px;"><span class="pbadge pos-${p.poz.toLowerCase()}">${p.poz}</span> · <strong style="color:var(--accent);font-family:'Bebas Neue',sans-serif;font-size:20px;">OVR ${p.genel}</strong> · ${starFromGenel(p.genel)}★</p><p style="margin:0 0 6px;">Potansiyel: ${p.potansiyel||'—'}</p><p style="margin:0 0 6px;">Enerji (maç yorgunluğu): <strong>${Math.round(Number(p.enerji)||100)}</strong>/100</p><p style="margin:0 0 6px;">Maaş: <strong style="color:var(--gold);">${fmtn(p.maas)}</strong> KR/hf${p.kontratSezon!=null?` · 📄 ${p.kontratSezon} sezon`:''}</p>${p.sezon&&p.sezon.mac?`<p style="margin:0 0 6px;color:var(--blue);">📊 Sezon: ${p.sezon.mac} maç · ${(p.sezon.pts/p.sezon.mac).toFixed(1)} sayı · ${(p.sezon.ast/p.sezon.mac).toFixed(1)} asist ort.</p>`:''}<p style="margin:0;">Psikoloji: <span style="color:${moodColor(p.mood)};">${moodText(p.mood)}</span></p></div></div><div class="sgrid" style="margin-top:14px;">${stats}</div>`);
+  showAppModal(`<div class="modal-title">${p.isim}</div><div style="display:flex;gap:14px;flex-wrap:wrap;"><div class="pimg-wrap"><img src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} style="width:90px;height:112px;border-radius:10px;border:2px solid var(--accent);object-fit:cover;"><div class="pimg-cap">OVR ${p.genel}</div></div><div style="flex:1;min-width:200px;font-size:13px;line-height:1.55;"><p style="margin:0 0 6px;">${p.bayrak} ${p.ulke} · ${p.yas} yaş · ${p.boy}cm / ${p.kilo}kg</p><p style="margin:0 0 6px;"><span class="pbadge pos-${p.poz.toLowerCase()}">${p.poz}</span> · <strong style="color:var(--accent);font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:20px;">OVR ${p.genel}</strong> · ${starFromGenel(p.genel)}★</p><p style="margin:0 0 6px;">Potansiyel: ${p.potansiyel||'—'}</p><p style="margin:0 0 6px;">Enerji (maç yorgunluğu): <strong>${Math.round(Number(p.enerji)||100)}</strong>/100</p><p style="margin:0 0 6px;">Maaş: <strong style="color:var(--gold);">${fmtn(p.maas)}</strong> KR/hf${p.kontratSezon!=null?` · 📄 ${p.kontratSezon} sezon`:''}</p>${p.sezon&&p.sezon.mac?`<p style="margin:0 0 6px;color:var(--blue);">📊 Sezon: ${p.sezon.mac} maç · ${(p.sezon.pts/p.sezon.mac).toFixed(1)} sayı · ${(p.sezon.ast/p.sezon.mac).toFixed(1)} asist ort.</p>`:''}<p style="margin:0;">Psikoloji: <span style="color:${moodColor(p.mood)};">${moodText(p.mood)}</span></p></div></div><div class="sgrid" style="margin-top:14px;">${stats}</div>`);
 }
 
 function pushLeagueNewsLine(html){
@@ -533,7 +533,7 @@ function fixtureFullSeasonGridHtml(rows){
       return `<div class="mac-fx-card" style="opacity:.88;">
         <div class="mac-fx-teams">
           <div class="mac-fx-name">${escMatch(r.t1)}</div>
-          <div class="mac-fx-vs" style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--text);">${r.s1}-${r.s2}</div>
+          <div class="mac-fx-vs" style="font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:18px;color:var(--text);">${r.s1}-${r.s2}</div>
           <div class="mac-fx-name">${escMatch(r.t2)}</div>
         </div>
         <div class="mac-fx-meta">Gün ${r.dayNum} · Tur ${r.round}/${totalRounds()} · Tamamlandı</div>
@@ -803,7 +803,10 @@ function lineupSlotHtml(i){
 function lineupBenchCardHtml(id){
   const p=_lineupPlayerById(id); if(!p) return '';
   const av=playerAvatar(p.seed,p.id,{});
-  return `<div class="lu-card" data-lucard="${id}" onpointerdown="lineupPointerDown(event,'${id}','bench',-1)" onclick="lineupBenchTap('${id}')" title="Sürükle sahaya ya da tıkla">
+  /* F7-10: sürükleme yalnız tutamaktan başlar; kartın kalanı dikey kaydırmaya açık
+     (eskiden .lu-card touch-action:none olduğu için mobilde yedek listesi kaydırılamıyordu). */
+  return `<div class="lu-card" data-lucard="${id}" onclick="lineupBenchTap('${id}')" title="Tutamaktan sürükle ya da tıkla">
+    <span class="lu-grip" onpointerdown="lineupPointerDown(event,'${id}','bench',-1)" aria-hidden="true">⠿</span>
     <img class="lu-av" src="${av}" ${playerAvatarImgAttrs(p.seed,p.id,{})} alt="">
     <span class="lu-info"><b>${escMatch(p.isim)}</b><small>${p.poz} · OVR ${p.genel} · ${enerjiRozetHtml(p,true)}</small></span>
   </div>`;

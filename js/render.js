@@ -137,7 +137,7 @@ function renderClubTransfers(){
       <div class="pimg-cap" style="margin-top:2px;">OVR ${p.genel}</div>
       </div>
       <div style="min-width:36px;text-align:center;">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${p.genel>=75?'var(--green)':p.genel>=60?'var(--gold)':'var(--red)'};">${p.genel}</div>
+        <div style="font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:24px;color:${p.genel>=75?'var(--green)':p.genel>=60?'var(--gold)':'var(--red)'};">${p.genel}</div>
         <span class="pbadge pos-${p.poz.toLowerCase()}" style="font-size:9px;">${p.poz}</span>
         <div style="font-size:9px;color:var(--text2);">${st}★</div>
       </div>
@@ -352,7 +352,7 @@ function fixtureRowsHtml(rows){
     <div ${ona} style="display:flex;align-items:center;gap:10px;padding:9px 10px;background:var(--bg3);border-radius:10px;border:1px solid var(--border);${hlt}">
       <div style="flex:1;font-size:12px;font-weight:600;">${escMatch(m.t1)}</div>
       <div style="text-align:center;min-width:90px;">
-        ${m.done?`<div style="font-family:'Bebas Neue',sans-serif;font-size:17px;">${m.s1}-${m.s2}</div>`:`<div style="font-size:10px;color:var(--text2);">${m.gun}</div>`}
+        ${m.done?`<div style="font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:17px;">${m.s1}-${m.s2}</div>`:`<div style="font-size:10px;color:var(--text2);">${m.gun}</div>`}
         ${subMeta}
         <span style="display:inline-block;margin-top:2px;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:700;${m.done?'background:rgba(34,197,94,0.2);color:#4ade80;':'background:rgba(59,130,246,0.2);color:#60a5fa;'}">${m.done?'BİTTİ':'YAKINDA'}</span>
         ${clickRow?`<div style="font-size:9px;color:var(--accent);margin-top:3px;font-weight:600;">Sıradaki${hint}</div>`:''}
@@ -643,7 +643,7 @@ function openPlayerModal(pid){
     <div style="flex:0 0 min(42vw,240px);">
       <img class="player-modal-hero" src="${bigImg}" ${playerAvatarImgAttrs(p.seed,salt,av)} alt="">
       ${injBannerHtml(p)}
-      <div style="text-align:center;margin-top:8px;font-family:'Bebas Neue',sans-serif;font-size:32px;color:${oc};">${p.genel} <span style="font-size:13px;color:var(--text2);font-weight:600;font-family:system-ui;">OVR · ${st}★</span></div>
+      <div style="text-align:center;margin-top:8px;font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:32px;color:${oc};">${p.genel} <span style="font-size:13px;color:var(--text2);font-weight:600;font-family:system-ui;">OVR · ${st}★</span></div>
     </div>
     <div style="flex:1;min-width:240px;">
       <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">Maaş: <span style="color:var(--gold);font-weight:600;">${fmtn(p.maas)} KR/hafta</span>${p.kontratSezon!=null?` · 📄 Sözleşme: ${p.kontratSezon} sezon`:''}</div>
@@ -667,7 +667,7 @@ function renderRosterListRow(p){
       <div class="pimg-cap" style="margin-top:2px;">OVR ${p.genel}</div>
       </div>
       <div style="min-width:36px;text-align:center;">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${p.genel>=75?'var(--green)':p.genel>=65?'var(--gold)':'var(--red)'};">${p.genel}</div>
+        <div style="font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:24px;color:${p.genel>=75?'var(--green)':p.genel>=65?'var(--gold)':'var(--red)'};">${p.genel}</div>
         <span class="pbadge pos-${p.poz.toLowerCase()}" style="font-size:9px;">${p.poz}</span>
         <div style="font-size:9px;color:var(--text2);">${st}★</div>
       </div>
@@ -697,7 +697,7 @@ function renderYouthListRow(p){
       <div class="pimg-cap" style="margin-top:2px;">OVR ${p.genel}</div>
       </div>
       <div style="min-width:36px;text-align:center;">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${p.genel>=75?'var(--green)':p.genel>=65?'var(--gold)':'var(--red)'};">${p.genel}</div>
+        <div style="font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:24px;color:${p.genel>=75?'var(--green)':p.genel>=65?'var(--gold)':'var(--red)'};">${p.genel}</div>
         <span class="pbadge pos-${p.poz.toLowerCase()}" style="font-size:9px;">${p.poz}</span>
         <div style="font-size:9px;color:var(--text2);">${st}★</div>
       </div>
@@ -988,7 +988,7 @@ function renderMarket(){
       <div class="pimg-cap" style="margin-top:2px;">OVR ${p.genel}</div>
       </div>
       <div style="min-width:36px;text-align:center;">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${p.genel>=75?'var(--green)':p.genel>=60?'var(--gold)':'var(--red)'};">${p.genel}</div>
+        <div style="font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:24px;color:${p.genel>=75?'var(--green)':p.genel>=60?'var(--gold)':'var(--red)'};">${p.genel}</div>
         <span class="pbadge pos-${p.poz.toLowerCase()}" style="font-size:9px;">${p.poz}</span>
         <div style="font-size:9px;color:var(--text2);">${st}★</div>
       </div>
@@ -1067,7 +1067,7 @@ function renderPlayoffPanel(){
       return `<div style="padding:5px 8px;background:var(--bg3);border-radius:7px;margin-bottom:4px;${uHere?'border:1px solid var(--accent);':''}">
         <div style="display:flex;align-items:center;gap:6px;">
           <span style="flex:1;font-size:11px;${hw?'font-weight:800;color:var(--green);':''}">${escMatch(s.home)}</span>
-          <span style="font-size:13px;font-family:'Bebas Neue',sans-serif;min-width:34px;text-align:center;">${wh}-${wa}</span>
+          <span style="font-size:13px;font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;min-width:34px;text-align:center;">${wh}-${wa}</span>
           <span style="flex:1;font-size:11px;text-align:right;${aw?'font-weight:800;color:var(--green);':''}">${escMatch(s.away)}</span>
         </div>${lead}
       </div>`;
@@ -1161,7 +1161,7 @@ function renderLig(){
       <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${t.renk};margin-right:8px;vertical-align:middle;"></span><strong>${escMatch(t.isim)}${t.isUser?' ⭐':''}</strong></td>
       <td>${t.o}</td><td class="tw-win">${t.g}</td><td class="tw-lose">${t.m}</td>
       <td>${t.sf}</td><td>${t.sa}</td><td style="font-size:12px;">${avDisp}</td>
-      <td style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--accent);">${t.puan}</td>
+      <td style="font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:18px;color:var(--accent);">${t.puan}</td>
     </tr>`;
   }).join('');
   const uix=rows.findIndex(t=>t.isUser);
