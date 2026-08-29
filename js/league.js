@@ -602,11 +602,61 @@ function openMatchTactics(seasonMatchIx){
         </label>
       </div>
     </div>
+    ${playbookPickerHtml(tac)}
     <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
       <button type="button" class="btn-p" style="flex:1;padding:10px;" onclick="saveMatchTactics()">Taktiği kaydet</button>
       <button type="button" class="btn-sm" style="flex:1;" onclick="openLineupEditor()">🏀 İlk 5 seç</button>
     </div>
     <p style="font-size:10px;color:var(--text2);margin-top:10px;">İlk 5 seçmezsen sağlıklı oyunculardan en iyi 5 otomatik oynar. Taktik ve ilk 5 sonraki maçlarda da geçerli kalır.</p>`);
+}
+
+/* ── FAZ B: Playbook seçici (taktik modalı içinde) ─────────────────────────────────────
+   Seçim anında `_pbPick`e yazılır, "Taktiği kaydet" ile G.tactics'e işlenir. Modal yeniden
+   çizilmez — yalnız seçili kartın çerçevesi ve özet satırı güncellenir (girdi kaybı olmasın). */
+let _pbPick={off:'dengeli',def:'adam'};
+function _pbCourt(){
+  try{ const lu=matchLineup(); return lu?[lu.pg,lu.sg,lu.sf,lu.pf,lu.c].filter(Boolean):[]; }catch(e){ return []; }
+}
+function playbookPickerHtml(tac){
+  tac=tac||{};
+  _pbPick={off:tac.playbook||'dengeli',def:tac.defSet||tac.defensiveStyle||'adam'};
+  const court=_pbCourt();
+  const offCards=PLAYBOOKS.map(pb=>playbookCardHtml(pb,_pbPick.off,court,'off')).join('');
+  const defCards=DEF_SETS.map(d=>playbookCardHtml(d,_pbPick.def,court,'def')).join('');
+  return `<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+    <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">📋 Hücum seti (Playbook)</div>
+    <p style="font-size:10px;color:var(--text2);margin:0 0 8px;">Her set motorda gerçekten oynanır: şut seçimi, asist, top kaybı ve kimin yükleneceği değişir. <strong>Kadro uyumu</strong> düşükse set tutmaz.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--text2);margin-bottom:7px;">
+      <span><span style="display:inline-block;width:16px;border-top:2px dashed var(--gold);vertical-align:middle;"></span> pas</span>
+      <span><span style="display:inline-block;width:16px;border-top:2px solid var(--green);vertical-align:middle;"></span> kesme/koşu</span>
+      <span><span style="display:inline-block;width:16px;border-top:2px solid var(--blue);vertical-align:middle;"></span> top sürme</span>
+      <span><span style="display:inline-block;width:16px;border-top:3px solid var(--red);vertical-align:middle;"></span> perde</span>
+    </div>
+    <div class="pb-grid" id="pbOffGrid">${offCards}</div>
+    <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin:14px 0 6px;">🛡️ Savunma seti</div>
+    <div class="pb-grid" id="pbDefGrid">${defCards}</div>
+  </div>`;
+}
+function _pbMarkSelected(gridId,key){
+  const grid=document.getElementById(gridId);
+  if(!grid) return;
+  const cards=Array.from(grid.querySelectorAll('.pb-card'));
+  cards.forEach(c=>c.classList.remove('sel'));
+  const list=gridId==='pbOffGrid'?PLAYBOOKS:DEF_SETS;
+  const ix=list.findIndex(x=>x.key===key);
+  if(ix>=0&&cards[ix]) cards[ix].classList.add('sel');
+}
+function selectPlaybook(key){
+  _pbPick.off=key;
+  _pbMarkSelected('pbOffGrid',key);
+  const pb=playbookOf(key);
+  showNotif(`📋 Hücum seti: ${pb.ikon} ${pb.ad}`);
+}
+function selectDefSet(key){
+  _pbPick.def=key;
+  _pbMarkSelected('pbDefGrid',key);
+  const d=defSetOf(key);
+  showNotif(`🛡️ Savunma seti: ${d.ikon} ${d.ad}`);
 }
 
 function saveMatchTactics(){
@@ -620,7 +670,9 @@ function saveMatchTactics(){
     odak:odak?odak.value:'dengeli',
     defensiveStyle:def?def.value:'adam',
     focusPlayerId:(focusEl&&focusEl.value)||null,
-    markStar:!!(markEl&&markEl.checked)
+    markStar:!!(markEl&&markEl.checked),
+    playbook:_pbPick.off,   /* FAZ B: seçili hücum seti */
+    defSet:_pbPick.def      /* FAZ B: seçili savunma seti */
   };
   scheduleGameSave();
   closeAppModal();

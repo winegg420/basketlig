@@ -105,6 +105,153 @@ function matchLineup(){
   const bench=avail.filter(p=>!onCourtIds.has(p.id));
   return{pg:slots.pg,sg:slots.sg,sf:slots.sf,pf:slots.pf,c:slots.c,avail,onCourt,bench};
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════════════
+   FAZ B (30. oturum) — PLAYBOOK: hücum setleri + savunma setleri
+   Menajerlik oyunlarında en çok şikayet edilen konu "hazır taktikler"di. Artık kullanıcı
+   somut basketbol setleri seçiyor; her set motorda GERÇEK etkiye sahip:
+     • is3      : üçlük denemesi payına eklenir
+     • acc2/3   : iki/üç sayı isabetine eklenir
+     • ast      : asist olasılığına eklenir
+     • to       : ekstra top kaybı riski
+     • fbMul    : hızlı hücum çarpanı
+     • roleW    : setin beslediği ROL'lerin top kullanım payı çarpanı (FAZ A usageW ile çarpılır)
+     • uyum     : setin işlemesi için sahadaki 5'te aranan özellik — kadro uymazsa isabet düşer
+   `dia` alanı görsel önizleme (yarı saha şeması) için nokta/ok verisidir; render.js çizer.
+   Koordinat sistemi: 0-200 (x, dip çizgi → orta saha), 0-190 (y). Pota (18,95).
+   ══════════════════════════════════════════════════════════════════════════════════════ */
+const PLAYBOOKS=[
+  {key:'dengeli', ad:'Serbest Akış', ikon:'⚖️',
+   ozet:'Belirli bir set yok — oyuncular doğal eğilimlerine göre oynar. Nötr.',
+   is3:0, acc2:0, acc3:0, ast:0, to:0, fbMul:1, roleW:{}, uyum:null,
+   dia:{spots:[{l:'1',x:150,y:95},{l:'2',x:110,y:26},{l:'3',x:110,y:164},{l:'4',x:56,y:44},{l:'5',x:44,y:146}],arrows:[]}},
+
+  {key:'pnr', ad:'Pick & Roll', ikon:'🔩',
+   ozet:'Kurucu-pivot ikilisi. Perde sonrası pivot potaya dalar: iki sayı ve asist artar, üçlük azalır.',
+   is3:-0.06, acc2:0.035, acc3:0, ast:0.09, to:-0.01, fbMul:1,
+   roleW:{oyunKurucu:1.25, karartici:1.20, ribaundcu:1.15, sutor:0.90},
+   uyum:{eg:'pas', hedef:52, ad:'pas dağıtımı'},
+   dia:{spots:[{l:'1',x:150,y:95},{l:'5',x:112,y:95},{l:'2',x:104,y:22},{l:'3',x:104,y:168},{l:'4',x:44,y:150}],
+        arrows:[{t:'screen',f:[112,95],to:[138,95]},{t:'cut',f:[112,95],to:[40,104]},{t:'dribble',f:[150,95],to:[104,80]}]}},
+
+  {key:'horns', ad:'Horns (Boynuz)', ikon:'🐂',
+   ozet:'İki uzun serbest atış çizgisinde, iki şutör köşede. Her seçeneği açar: asist ve isabet dengeli artar.',
+   is3:0.03, acc2:0.02, acc3:0.012, ast:0.10, to:-0.02, fbMul:0.9,
+   roleW:{oyunKurucu:1.18, sutor:1.10, karartici:1.08},
+   uyum:{eg:'pas', hedef:50, ad:'pas dağıtımı'},
+   dia:{spots:[{l:'1',x:152,y:95},{l:'4',x:104,y:64},{l:'5',x:104,y:126},{l:'2',x:30,y:18},{l:'3',x:30,y:172}],
+        arrows:[{t:'screen',f:[104,64],to:[132,80]},{t:'screen',f:[104,126],to:[132,110]},{t:'pass',f:[152,95],to:[36,24]}]}},
+
+  {key:'dipKose', ad:'Dip Köşe Üçlüsü', ikon:'🏹',
+   ozet:'Top içeri, pas köşeye. Üçlük denemesi belirgin artar — şutör rolündekiler yüklenir.',
+   is3:0.13, acc2:-0.015, acc3:0.02, ast:0.07, to:0.005, fbMul:0.95,
+   roleW:{sutor:1.45, slasher:1.05, karartici:0.80, ribaundcu:0.85},
+   uyum:{eg:'uc', hedef:58, ad:'üçlük eğilimi'},
+   dia:{spots:[{l:'1',x:150,y:95},{l:'5',x:40,y:82},{l:'2',x:22,y:16},{l:'3',x:22,y:174},{l:'4',x:112,y:150}],
+        arrows:[{t:'pass',f:[150,95],to:[46,84]},{t:'pass',f:[40,82],to:[26,22]},{t:'cut',f:[112,150],to:[30,168]}]}},
+
+  {key:'motion', ad:'Motion (Sürekli Hareket)', ikon:'🔄',
+   ozet:'Beş oyuncu da hareket eder, perdeler zincirlenir. Top kaybı düşer, asist ve isabet artar; tempo yavaşlar.',
+   is3:0.01, acc2:0.025, acc3:0.015, ast:0.13, to:-0.035, fbMul:0.7,
+   roleW:{oyunKurucu:1.12, sutor:1.10, cokYonlu:1.15},
+   uyum:{stat:'zeka', hedef:70, ad:'zekâ'},
+   dia:{spots:[{l:'1',x:150,y:95},{l:'2',x:112,y:34},{l:'3',x:112,y:156},{l:'4',x:56,y:52},{l:'5',x:56,y:138}],
+        arrows:[{t:'cut',f:[112,34],to:[46,72]},{t:'screen',f:[56,52],to:[86,40]},{t:'pass',f:[150,95],to:[116,40]},{t:'cut',f:[112,156],to:[120,110]}]}},
+
+  {key:'iso', ad:'Yıldıza İzolasyon', ikon:'👤',
+   ozet:'Top yüklenen oyuncuya alan açılır. Asist düşer, top kaybı azalır; yıldız yoksa isabet düşer.',
+   is3:0.02, acc2:0.01, acc3:0, ast:-0.16, to:-0.03, fbMul:0.8,
+   roleW:{skorer:1.60, slasher:1.30, sutor:1.05, oyunKurucu:0.85, karartici:0.70, ribaundcu:0.70},
+   uyum:{stat:'hucum', hedef:76, ad:'hücum gücü'},
+   dia:{spots:[{l:'1',x:120,y:95},{l:'2',x:26,y:18},{l:'3',x:26,y:172},{l:'4',x:150,y:34},{l:'5',x:150,y:156}],
+        arrows:[{t:'dribble',f:[120,95],to:[52,95]}]}},
+
+  {key:'postUp', ad:'Pota Altı Yükleme', ikon:'🏋️',
+   ozet:'Top boyalı alanda pivota. İki sayı ve faul kazanımı artar, üçlük belirgin azalır.',
+   is3:-0.14, acc2:0.05, acc3:-0.01, ast:0.03, to:0.01, fbMul:0.65,
+   roleW:{karartici:1.55, ribaundcu:1.45, skorer:1.05, sutor:0.70},
+   uyum:{stat:'ribaund', hedef:72, ad:'pota altı gücü'},
+   dia:{spots:[{l:'5',x:44,y:118},{l:'1',x:150,y:95},{l:'2',x:26,y:18},{l:'3',x:110,y:170},{l:'4',x:96,y:40}],
+        arrows:[{t:'pass',f:[150,95],to:[50,116]},{t:'dribble',f:[44,118],to:[26,102]}]}},
+
+  {key:'transition', ad:'Erken Hücum', ikon:'🚀',
+   ozet:'Ribaund sonrası koşu. Hızlı hücum katlanır, kolay sayı gelir ama top kaybı riski artar.',
+   is3:-0.02, acc2:0.02, acc3:-0.02, ast:-0.03, to:0.045, fbMul:2.2,
+   roleW:{slasher:1.40, oyunKurucu:1.10, karartici:0.85},
+   uyum:{stat:'hiz', hedef:74, ad:'hız'},
+   dia:{spots:[{l:'1',x:170,y:95},{l:'2',x:140,y:20},{l:'3',x:140,y:170},{l:'4',x:96,y:60},{l:'5',x:180,y:130}],
+        arrows:[{t:'dribble',f:[170,95],to:[80,95]},{t:'cut',f:[140,20],to:[36,52]},{t:'cut',f:[140,170],to:[36,140]}]}},
+
+  {key:'driveKick', ad:'Kır ve Dağıt', ikon:'💥',
+   ozet:'Potaya dalış, savunma toplanınca dışarı pas. Üçlük ve asist birlikte artar.',
+   is3:0.09, acc2:0.01, acc3:0.018, ast:0.11, to:0.015, fbMul:1.05,
+   roleW:{slasher:1.35, sutor:1.25, oyunKurucu:1.10, ribaundcu:0.85},
+   uyum:{eg:'pota', hedef:60, ad:'potaya dalma'},
+   dia:{spots:[{l:'1',x:140,y:95},{l:'2',x:26,y:20},{l:'3',x:26,y:170},{l:'4',x:120,y:44},{l:'5',x:60,y:140}],
+        arrows:[{t:'dribble',f:[140,95],to:[54,88]},{t:'pass',f:[54,88],to:[30,26]},{t:'pass',f:[54,88],to:[124,48]}]}},
+
+  {key:'fiveOut', ad:'Beş Dışarı', ikon:'🌐',
+   ozet:'Beş oyuncu da çember dışında. Boyalı alan boşalır: üçlük patlar, ribaund zayıflar.',
+   is3:0.16, acc2:0.005, acc3:0.01, ast:0.06, to:0.01, fbMul:1.15,
+   roleW:{sutor:1.40, slasher:1.20, oyunKurucu:1.05, ribaundcu:0.65, karartici:0.65},
+   uyum:{eg:'uc', hedef:62, ad:'üçlük eğilimi'},
+   dia:{spots:[{l:'1',x:158,y:95},{l:'2',x:120,y:26},{l:'3',x:120,y:164},{l:'4',x:40,y:16},{l:'5',x:40,y:174}],
+        arrows:[{t:'pass',f:[158,95],to:[124,32]},{t:'pass',f:[120,26],to:[46,20]},{t:'cut',f:[40,174],to:[70,120]}]}},
+
+  {key:'flex', ad:'Flex Ofans', ikon:'🧩',
+   ozet:'Dip çizgi perdeleri döngüsü. Sabırlı, düşük riskli: top kaybı en aza iner, isabet artar.',
+   is3:-0.03, acc2:0.04, acc3:0.01, ast:0.08, to:-0.05, fbMul:0.6,
+   roleW:{cokYonlu:1.20, oyunKurucu:1.10, karartici:1.10, skorer:0.95},
+   uyum:{stat:'zeka', hedef:68, ad:'zekâ'},
+   dia:{spots:[{l:'1',x:150,y:95},{l:'2',x:100,y:22},{l:'3',x:34,y:172},{l:'4',x:70,y:150},{l:'5',x:60,y:44}],
+        arrows:[{t:'screen',f:[70,150],to:[44,168]},{t:'cut',f:[34,172],to:[30,110]},{t:'pass',f:[150,95],to:[64,48]}]}}
+];
+const PLAYBOOK_MAP=(()=>{ const m={}; PLAYBOOKS.forEach(p=>m[p.key]=p); return m; })();
+function playbookOf(key){ return PLAYBOOK_MAP[key]||PLAYBOOK_MAP.dengeli; }
+
+/* ── Savunma setleri — mevcut adam/bölge/pres üçlüsü korunur, iki set eklendi. ──
+   opp2/opp3 : rakip iki/üç sayı isabet çarpanı · stealKeep: rakip top kaybı payı
+   pressTO   : pres tipi ekstra çalma · foul: faul riski çarpanı */
+const DEF_SETS=[
+  {key:'adam',  ad:'Adam Adama',       ikon:'🧍', ozet:'Dengeli, risksiz temel savunma.',
+   opp2:1.00, opp3:1.00, opp3Rate:1.00, stealKeep:1.00, pressTO:0,    foul:1.00,
+   dia:{spots:[{l:'X1',x:130,y:95},{l:'X2',x:96,y:34},{l:'X3',x:96,y:156},{l:'X4',x:52,y:60},{l:'X5',x:44,y:120}],arrows:[]}},
+  {key:'bolge', ad:'2-3 Bölge',        ikon:'🛡️', ozet:'Boyalı alanı kapatır; rakip dışarıdan daha çok deneme yapar.',
+   opp2:0.94, opp3:1.05, opp3Rate:1.22, stealKeep:0.78, pressTO:0,    foul:0.92,
+   dia:{spots:[{l:'X1',x:98,y:66},{l:'X2',x:98,y:124},{l:'X3',x:44,y:28},{l:'X4',x:36,y:95},{l:'X5',x:44,y:162}],arrows:[]}},
+  {key:'pres',  ad:'Tam Saha Pres',    ikon:'🔥', ozet:'Çok top çalar; faul ve kolay sayı riski yüksek.',
+   opp2:1.03, opp3:1.02, opp3Rate:0.95, stealKeep:1.00, pressTO:0.06, foul:1.22,
+   dia:{spots:[{l:'X1',x:186,y:95},{l:'X2',x:160,y:40},{l:'X3',x:160,y:150},{l:'X4',x:110,y:70},{l:'X5',x:60,y:110}],
+        arrows:[{t:'cut',f:[186,95],to:[160,60]},{t:'cut',f:[160,150],to:[178,120]}]}},
+  {key:'switch',ad:'Her Perdede Değişim', ikon:'🔀', ozet:'Perde arkasından üçlük vermez — rakip içeri girmeye zorlanır.',
+   opp2:1.05, opp3:0.90, opp3Rate:0.80, stealKeep:0.95, pressTO:0,    foul:1.05,
+   dia:{spots:[{l:'X1',x:124,y:70},{l:'X2',x:124,y:120},{l:'X3',x:80,y:34},{l:'X4',x:80,y:156},{l:'X5',x:48,y:95}],
+        arrows:[{t:'screen',f:[124,70],to:[124,120]},{t:'screen',f:[80,34],to:[80,156]}]}},
+  {key:'pack',  ad:'Boyalıyı Kapat',   ikon:'🧱', ozet:'Beş oyuncu da içeri çöker: turnike yok, ama rakip üçlük yağdırır.',
+   opp2:0.88, opp3:1.10, opp3Rate:1.42, stealKeep:0.85, pressTO:0,    foul:0.85,
+   dia:{spots:[{l:'X1',x:86,y:95},{l:'X2',x:60,y:56},{l:'X3',x:60,y:134},{l:'X4',x:34,y:76},{l:'X5',x:34,y:114}],arrows:[]}}
+];
+const DEF_SET_MAP=(()=>{ const m={}; DEF_SETS.forEach(d=>m[d.key]=d); return m; })();
+function defSetOf(key){ return DEF_SET_MAP[key]||DEF_SET_MAP.adam; }
+
+/** Setin kadroya UYUMU: aranan özelliğin sahadaki 5 ortalaması hedefin altındaysa isabet düşer.
+ *  Dönüş 0.90 (hiç uymuyor) .. 1.10 (birebir kadro). Bu, "her sete her kadro yaramaz" kuralıdır. */
+function playbookFit(pb,court){
+  try{
+    if(!pb||!pb.uyum||!Array.isArray(court)||!court.length) return 1;
+    const u=pb.uyum;
+    let tot=0,n=0;
+    court.forEach(p=>{ if(!p) return; n++; tot+=u.eg?(typeof egOf==='function'?egOf(p,u.eg):50):(Number(p[u.stat])||0); });
+    if(!n) return 1;
+    const avg=tot/n;
+    return Math.max(0.90,Math.min(1.10,1+((avg-u.hedef)/Math.max(1,u.hedef))*0.55));
+  }catch(e){ return 1; }
+}
+/** Uyum yüzdesi (arayüzde gösterilir) — 0-100. */
+function playbookFitPct(pb,court){
+  const f=playbookFit(pb,court);
+  return Math.round((f-0.90)/0.20*100);
+}
 function pseudoTeamStrength(isim,tblKey){
   /* Madde 9: bot menajerin itibarı (hazır geçmiş) takıma küçük bir güç katkısı sağlar. */
   return 58+(seqFromName(String(isim),tblKey||'tbl')%4200)/100+botManagerTitles(isim)*0.4;

@@ -1158,6 +1158,71 @@ function renderAntrenman(){
   renderScouts();
 }
 /* ── Faz 5.2: Gelişmiş istatistik / analiz ekranı ── */
+
+/* ── FAZ B: playbook görsel önizlemesi (yarı saha şeması) ────────────────────────────
+   Setler `dia` verisiyle tanımlı: spots = oyuncu noktaları, arrows = hareketler.
+   Ok tipleri: pass (kesik çizgi) · cut (düz ok) · dribble (zikzak) · screen (T uçlu perde).
+   Tamamı inline SVG — dış bağımlılık yok, tema renklerini (var(--…)) kullanır. */
+function _pbArrow(a,i){
+  const [x1,y1]=a.f,[x2,y2]=a.to;
+  const col=a.t==='pass'?'var(--gold)':a.t==='screen'?'var(--red)':a.t==='dribble'?'var(--blue)':'var(--green)';
+  if(a.t==='screen'){
+    /* Perde: hedefte çizgiye dik kısa bar */
+    const dx=x2-x1,dy=y2-y1,len=Math.max(1,Math.hypot(dx,dy));
+    const nx=-dy/len*7,ny=dx/len*7;
+    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="${x2-nx}" y1="${y2-ny}" x2="${x2+nx}" y2="${y2+ny}" stroke="${col}" stroke-width="2.8" stroke-linecap="round"/>`;
+  }
+  if(a.t==='dribble'){
+    /* Top sürme: zikzak */
+    const dx=x2-x1,dy=y2-y1,len=Math.max(1,Math.hypot(dx,dy)),steps=Math.max(3,Math.round(len/13));
+    const nx=-dy/len,ny=dx/len;
+    let d=`M${x1},${y1}`;
+    for(let k=1;k<=steps;k++){
+      const t=k/steps, bx=x1+dx*t, by=y1+dy*t, s=(k%2?1:-1)*4.5;
+      d+=` L${(bx+nx*s).toFixed(1)},${(by+ny*s).toFixed(1)}`;
+    }
+    return `<path d="${d}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" marker-end="url(#pbArrowB)"/>`;
+  }
+  const dash=a.t==='pass'?' stroke-dasharray="5 4"':'';
+  const mk=a.t==='pass'?'pbArrowG':'pbArrowGr';
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="2"${dash} stroke-linecap="round" marker-end="url(#${mk})"/>`;
+}
+function playbookSvg(dia,opts){
+  opts=opts||{};
+  const h=opts.h||118;
+  const d=dia||{spots:[],arrows:[]};
+  const spots=(d.spots||[]).map(s=>`<g>
+      <circle cx="${s.x}" cy="${s.y}" r="10" fill="var(--bg2)" stroke="var(--accent)" stroke-width="2"/>
+      <text x="${s.x}" y="${s.y+3.6}" text-anchor="middle" font-size="10" font-weight="700" fill="var(--text)">${s.l}</text>
+    </g>`).join('');
+  const arrows=(d.arrows||[]).map(_pbArrow).join('');
+  const mk=(id,col)=>`<marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 z" fill="${col}"/></marker>`;
+  return `<svg viewBox="0 0 200 190" style="width:100%;height:${h}px;display:block;" role="img" aria-label="Set şeması">
+    <defs>${mk('pbArrowG','var(--gold)')}${mk('pbArrowGr','var(--green)')}${mk('pbArrowB','var(--blue)')}</defs>
+    <rect x="1" y="1" width="198" height="188" rx="4" fill="var(--bg3)" stroke="var(--border)" stroke-width="1.5"/>
+    <rect x="1" y="65" width="62" height="60" fill="none" stroke="var(--border)" stroke-width="1.5"/>
+    <circle cx="63" cy="95" r="21" fill="none" stroke="var(--border)" stroke-width="1.5"/>
+    <line x1="10" y1="80" x2="10" y2="110" stroke="var(--text2)" stroke-width="2.5"/>
+    <circle cx="18" cy="95" r="5.5" fill="none" stroke="var(--accent)" stroke-width="2"/>
+    <path d="M1,18 L38,18 A79.6,79.6 0 0 1 38,172 L1,172" fill="none" stroke="var(--border)" stroke-width="1.5"/>
+    <line x1="199" y1="1" x2="199" y2="189" stroke="var(--border)" stroke-width="2"/>
+    ${arrows}${spots}
+  </svg>`;
+}
+/** Set seçim kartı — şema + isim + özet + kadro uyumu. */
+function playbookCardHtml(pb,cur,court,kind){
+  const sel=pb.key===cur;
+  const fitPct=(kind==='off'&&pb.uyum)?playbookFitPct(pb,court):null;
+  const fitCol=fitPct==null?'':(fitPct>=66?'var(--green)':fitPct>=40?'var(--gold)':'var(--red)');
+  const fn=kind==='off'?'selectPlaybook':'selectDefSet';
+  return `<button type="button" class="pb-card${sel?' sel':''}" onclick="${fn}('${pb.key}')" title="${pb.ozet}">
+    ${playbookSvg(pb.dia,{h:96})}
+    <div class="pb-name">${pb.ikon} ${pb.ad}</div>
+    <div class="pb-sum">${pb.ozet}</div>
+    ${fitPct!=null?`<div class="pb-fit">Kadro uyumu: <strong style="color:${fitCol};">%${fitPct}</strong> <span style="opacity:.7;">(${pb.uyum.ad})</span></div>`:''}
+  </button>`;
+}
 function svgLineChart(vals,opts){
   opts=opts||{};
   const w=opts.w||560,h=opts.h||150,pad=opts.pad||26;

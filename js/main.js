@@ -436,14 +436,35 @@ function _liveTacticsHtml(){
       <select style="${selStyle}" onchange="setLiveTactic('odak',this.value)">${o(tac.odak,'ic','🏀 İçeri')}${o(tac.odak,'dis','🎯 Dış şut')}${o(tac.odak,'hizli','⚡ Hızlı hücum')}${o(tac.odak,'set','📋 Set oyun')}${o(tac.odak||'dengeli','dengeli','⚖️ Dengeli hücum')}</select>
       <select style="${selStyle}" onchange="setLiveTactic('defensiveStyle',this.value)">${o(tac.defensiveStyle||'adam','adam','🧍 Adam adama')}${o(tac.defensiveStyle,'bolge','🛡️ Bölge sav.')}${o(tac.defensiveStyle,'pres','🔥 Pres sav.')}</select>
     </div>
+    <div style="font-size:10px;color:var(--accent);font-weight:700;margin:8px 0 5px;">📋 Set değişimi (maç içi)</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+      <select style="${selStyle}" onchange="setLiveTactic('playbook',this.value)">${PLAYBOOKS.map(pb=>o(tac.playbook||'dengeli',pb.key,pb.ikon+' '+pb.ad)).join('')}</select>
+      <select style="${selStyle}" onchange="setLiveTactic('defSet',this.value)">${DEF_SETS.map(d=>o(tac.defSet||tac.defensiveStyle||'adam',d.key,d.ikon+' '+d.ad)).join('')}</select>
+    </div>
+    ${_liveFitHtml(tac)}
   </div>`;
 }
+/** FAZ B: canlı panelde seçili setin kadro uyumu — koç maç içinde "bu set tutmuyor" görebilsin. */
+function _liveFitHtml(tac){
+  try{
+    const pb=playbookOf(tac.playbook);
+    if(!pb||!pb.uyum) return '';
+    const court=(mState.userCourtIds||[]).map(id=>(G.players||[]).find(p=>p.id===id)).filter(Boolean);
+    if(!court.length) return '';
+    const pct=playbookFitPct(pb,court);
+    const col=pct>=66?'var(--green)':pct>=40?'var(--gold)':'var(--red)';
+    return '<div style="font-size:10px;color:var(--text2);margin-top:6px;">Sahadaki 5 ile <strong>'+pb.ad+'</strong> uyumu: <strong style="color:'+col+';">%'+pct+'</strong> ('+pb.uyum.ad+')</div>';
+  }catch(e){ return ''; }
+}
+
 function setLiveTactic(key,val){
   if(!mState.running){ return; }
   G.tactics=G.tactics||{tempo:'normal',odak:'dengeli',defensiveStyle:'adam'};
   G.tactics[key]=val;
-  const nm={tempo:'Tempo',odak:'Hücum odağı',defensiveStyle:'Savunma'}[key]||key;
-  const vl={yavas:'Yavaş',normal:'Normal',hizli:(key==='odak'?'Hızlı hücum':'Hızlı'),ic:'İçeri',dis:'Dış şut',set:'Set oyun',dengeli:'Dengeli',adam:'Adam adama',bolge:'Bölge',pres:'Pres'}[val]||val;
+  const nm={tempo:'Tempo',odak:'Hücum odağı',defensiveStyle:'Savunma',playbook:'Hücum seti',defSet:'Savunma seti'}[key]||key;
+  let vl={yavas:'Yavaş',normal:'Normal',hizli:(key==='odak'?'Hızlı hücum':'Hızlı'),ic:'İçeri',dis:'Dış şut',set:'Set oyun',dengeli:'Dengeli',adam:'Adam adama',bolge:'Bölge',pres:'Pres'}[val]||val;
+  if(key==='playbook'){ const pb=playbookOf(val); vl=pb.ikon+' '+pb.ad; }
+  if(key==='defSet'){ const d=defSetOf(val); vl=d.ikon+' '+d.ad; }
   addComment(`🎯 Taktik değişti — ${nm}: ${vl} (koç kararı).`,'tactic');
   regenerateMatchRemainder();      /* kalan maç yeni taktikle yeniden simüle edilir */
   if(typeof scheduleGameSave==='function') scheduleGameSave();

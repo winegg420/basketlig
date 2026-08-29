@@ -1705,20 +1705,28 @@ function generateMatchEvents(rakip, opts){
   const playsMax=tempo==='hizli'?56:tempo==='yavas'?40:48;
   const tempoAcc=(tempo==='yavas'?0.02:tempo==='hizli'?-0.01:0);
   /* Hücum odağı: içeri / dış şut / hızlı hücum / set oyun (+ eski "dengeli" varsayılanı). */
-  const userIs3Oran=odak==='dis'?0.42:odak==='ic'?0.18:odak==='hizli'?0.26:odak==='set'?0.30:0.30;
-  const acc2=(odak==='ic'?0.03:odak==='set'?0.02:odak==='hizli'?-0.02:0)+tempoAcc;
-  const acc3=(odak==='dis'?-0.01:odak==='set'?0.01:odak==='hizli'?-0.02:0)+tempoAcc;
-  const offAstBonus=odak==='set'?0.10:odak==='hizli'?-0.05:0;  /* set oyun asist ↑, hızlı hücum ↓ */
+  /* ── FAZ B: PLAYBOOK — seçilen hücum seti odak/tempo katmanının ÜSTÜNE biner. ──
+     Set etkileri (is3/acc/ast/to/fbMul/roleW) motorun mevcut düğmelerine eklenir; 'dengeli'
+     (Serbest Akış) seçiliyken tüm ekler 0 olduğu için eski davranış birebir korunur.
+     pbFit: setin sahadaki 5'e uyumu — uymayan sette isabet düşer (şutörsüz köşe üçlüğü tutmaz). */
+  const pb=(typeof playbookOf==='function')?playbookOf(tac.playbook):{is3:0,acc2:0,acc3:0,ast:0,to:0,fbMul:1,roleW:{}};
+  const dset=(typeof defSetOf==='function')?defSetOf(tac.defSet||tac.defensiveStyle):{opp2:1,opp3:1,stealKeep:1,pressTO:0,foul:1};
+  const pbFit=(typeof playbookFit==='function')?playbookFit(pb,[pg,sg,sf,pf,c].filter(Boolean)):1;
+  const pbAccAdd=(pbFit-1)*0.09;   /* uyum ±%10 → isabete ±0.009 (küçük ama hissedilir) */
+  const userIs3Oran=Math.max(0.05,Math.min(0.66,(odak==='dis'?0.42:odak==='ic'?0.18:odak==='hizli'?0.26:odak==='set'?0.30:0.30)+(pb.is3||0)));
+  const acc2=(odak==='ic'?0.03:odak==='set'?0.02:odak==='hizli'?-0.02:0)+tempoAcc+(pb.acc2||0)+pbAccAdd;
+  const acc3=(odak==='dis'?-0.01:odak==='set'?0.01:odak==='hizli'?-0.02:0)+tempoAcc+(pb.acc3||0)+pbAccAdd;
+  const offAstBonus=(odak==='set'?0.10:odak==='hizli'?-0.05:0)+(pb.ast||0);  /* set oyun asist ↑, hızlı hücum ↓ (+ playbook) */
   /* Top kaybı — VARSAYILANI (dengeli/adam) tam korumak için: azaltma çarpanla (set/bölge, keep<1),
      artırma additive pre-blokla (hızlı hücum/pres). Nötr seçimlerde keep=1 → eski davranış birebir. */
   const offStealKeep=odak==='set'?0.70:1.0;   /* set oyun: kullanıcı top kaybı azalır */
-  const offRushTO=odak==='hizli'?0.05:0;       /* hızlı hücum: kullanıcı ekstra top kaybı riski */
+  const offRushTO=Math.max(0,(odak==='hizli'?0.05:0)+(pb.to||0));  /* hızlı hücum + playbook risk */
   /* Savunma stili → RAKİP isabeti + top kaybı (kullanıcı savunurken, userPos=false).
      adam: nötr; bölge: 2'lik ↓ / 3'lük ↑ / çalma ↓; pres: çalma ↑ / isabet hafif ↑ (risk-ödül). */
-  const defOppAcc2Mul=defStyle==='bolge'?0.94:defStyle==='pres'?1.03:1.0;
-  const defOppAcc3Mul=defStyle==='bolge'?1.05:defStyle==='pres'?1.02:1.0;
-  const defStealKeep=defStyle==='bolge'?0.78:1.0;  /* bölge: rakip top kaybı yaptırma azalır */
-  const defPressTO=defStyle==='pres'?0.06:0;         /* pres: rakip pozisyonunda ekstra top kaybı riski */
+  const defOppAcc2Mul=(dset.opp2!=null?dset.opp2:(defStyle==='bolge'?0.94:defStyle==='pres'?1.03:1.0));
+  const defOppAcc3Mul=(dset.opp3!=null?dset.opp3:(defStyle==='bolge'?1.05:defStyle==='pres'?1.02:1.0));
+  const defStealKeep=(dset.stealKeep!=null?dset.stealKeep:(defStyle==='bolge'?0.78:1.0));
+  const defPressTO=(dset.pressTO!=null?dset.pressTO:(defStyle==='pres'?0.06:0));
   /* A1: Rakip takım artık "soyut" değil. Kalıcı (localStorage önbelleğindeki) gerçek kadrodan
      sabit bir 5 + yedek kurulur; kullanıcı takımıyla AYNI derinlikte maç istatistiği, faul sayacı
      ve oyundan atılma işler. Sakat rakip oyuncular sahaya çıkmaz (kalıcı sakatlık takibi). */
@@ -1765,6 +1773,10 @@ function generateMatchEvents(rakip, opts){
     const sk=(statN(p,'hucum')*0.6+statN(p,'sutIsabeti')*0.4);
     return Math.max(0.20,rolMul*(0.62+sk/150));
   };
+  /* FAZ B: seçilen hücum seti bazı ROLLERİ besler (Pick&Roll → kurucu+pivot, Dip Köşe → şutör).
+     Yalnız KULLANICI takımına uygulanır; rakip kendi setini FAZ C'de seçecek. */
+  const _pbRoleW=(pb&&pb.roleW)||{};
+  const usageWU=(p)=>usageW(p)*(_pbRoleW[(p&&p.rol)||'']||1);
   const astW=(p)=>Math.max(0.12,(_eg(p,'pas')/100)*1.5+statN(p,'pas')/140+(p&&p.rol==='oyunKurucu'?0.55:0));
   const rebW=(p)=>Math.max(0.12,statN(p,'ribaund')/70+((Number(p&&p.boy)||200)-198)/40+(p&&p.rol==='ribaundcu'?0.8:0));
   const blkW=(p)=>Math.max(0.08,statN(p,'blok')/60+(p&&p.rol==='karartici'?1.1:0));
@@ -1810,7 +1822,7 @@ function generateMatchEvents(rakip, opts){
   /* Faz 3: top yükleme — seçili oyuncu sahadaysa daha sık şut/pas alır (yorgunluk maliyeti maç sonu artar). */
   const uShooter=()=>{
     if(focusPlayerId){ const fp=userCourt.find(p=>p&&p.id===focusPlayerId); if(fp&&Math.random()<0.42) return fp; }
-    return userCourt.length?(wPick(userCourt,usageW)||ch(userCourt)):(pg||sg||sf||pf||c);
+    return userCourt.length?(wPick(userCourt,usageWU)||ch(userCourt)):(pg||sg||sf||pf||c);
   };
   const uAny=()=>userCourt.length?ch(userCourt):(pg||sg||sf||pf||c);
   const benchNext=()=>{ while(benchQueue.length){ const nx=benchQueue.shift(); if(nx&&(nx.matchFouls||0)<foulLimit) return nx; } return null; };
@@ -1959,12 +1971,13 @@ function generateMatchEvents(rakip, opts){
       let fbCh=fromTrans==='steal'?0.32:fromTrans==='reb'?0.12:0;
       if(fbCh&&userPos&&(tempo==='hizli'||odak==='hizli')) fbCh=Math.min(0.75,fbCh*1.7);
       if(fbCh&&userPos&&tempo==='yavas') fbCh*=0.5;
+      if(fbCh&&userPos&&pb.fbMul) fbCh=Math.min(0.85,fbCh*pb.fbMul);   /* FAZ B: Erken Hücum seti */
       const fb=!putback&&Math.random()<fbCh;
       /* FAZ A: üçlük denemesi artık ŞUTÖRÜN eğilimine bağlı. Sahadaki 5'in ortalamasına
          normalize edildiği için TAKIMIN üçlük payı (userIs3Oran / 0.32) korunur; değişen,
          o denemeyi kimin yaptığı — şutör rolü dışarıdan, pivot boyalı alandan oynar. */
       const _court3=userPos?userCourt:oppCourt;
-      let _is3p=userPos?userIs3Oran:0.32;
+      let _is3p=userPos?userIs3Oran:Math.max(0.08,Math.min(0.62,0.32*(dset.opp3Rate!=null?dset.opp3Rate:1)));
       if(!putback&&_court3.length){
         const _avgUc=_court3.reduce((q,p)=>q+_eg(p,'uc'),0)/_court3.length;
         if(_avgUc>0) _is3p=Math.max(0.03,Math.min(0.74,_is3p*(_eg(shooter,'uc')/_avgUc)));
@@ -2013,13 +2026,14 @@ function generateMatchEvents(rakip, opts){
       }
       /* And-1 (yalnızca isabetli 2 sayıda) */
       let and1=false, and1Made=false;
-      if(made&&!is3&&Math.random()<0.12){
+      const _dFoulMul=defenderIsUser?(dset.foul!=null?dset.foul:1):1;   /* FAZ B: pres faul riski ↑, pack ↓ */
+      if(made&&!is3&&Math.random()<0.12*_dFoulMul){
         and1=true; B.ftAtt++; D.foul++; recordFoul(defenderIsUser,q,t);
         and1Made=userPos?ftMake(shooter):(Math.random()<0.74);
         if(and1Made){ B.ftMade++; addPts(1); if(userPos) bumpP(shooter,'pts',1); else bumpO(shooter,'pts',1); }
       }
       /* Kaçan turnikede savunma faulü → 2 serbest atış */
-      if(!made&&!is3&&Math.random()<0.15){
+      if(!made&&!is3&&Math.random()<0.15*_dFoulMul){
         let nMade=0;
         if(userPos){ if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++; }
         else { if(Math.random()<0.74)nMade++; if(Math.random()<0.74)nMade++; }
@@ -2032,7 +2046,7 @@ function generateMatchEvents(rakip, opts){
         return;
       }
       /* Madde 20: kaçan 3 sayı denemesinde savunma faulü → 3 serbest atış */
-      if(!made&&is3&&Math.random()<0.08){
+      if(!made&&is3&&Math.random()<0.08*_dFoulMul){
         let nMade=0;
         for(let k=0;k<3;k++){ if(userPos?ftMake(shooter):(Math.random()<0.74)) nMade++; }
         B.ftAtt+=3; B.ftMade+=nMade; D.foul++; recordFoul(defenderIsUser,q,t);
@@ -2210,7 +2224,8 @@ function generateMatchEvents(rakip, opts){
     if(!isResumeQ){
       events.push({
         type:'quarter_start',
-        text:`🔔 ${q}. çeyrek başladı — ${G.team.isim} ${homeScore} - ${awayScore} ${rname}.`,
+        /* FAZ B: çeyrek başında hangi setle oynandığı anlatıma girer (koçun kararı görünür olsun). */
+        text:`🔔 ${q}. çeyrek başladı — ${G.team.isim} ${homeScore} - ${awayScore} ${rname}.${pb&&pb.key!=='dengeli'?` ${G.team.isim} ${pb.ikon} ${pb.ad} setiyle çıkıyor.`:''}`,
         q,t:MATCH_CLOCK_SEC,home:homeScore,away:awayScore,
         box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
       });
