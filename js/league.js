@@ -1,8 +1,16 @@
+/* F7-22: modalda Escape dinleyicisi ve odak yönetimi yoktu — klavye kullanıcısı Tab ile
+   arka plandaki butonlarda dolaşıyordu. */
+let _modalEscHandler=null;
+let _modalPrevFocus=null;
 function closeAppModal(){
   const r=document.getElementById('appModalRoot');
   if(r) r.style.display='none';
   const sheet=r&&r.querySelector('.modal-sheet');
   if(sheet) sheet.classList.remove('xl');
+  if(_modalEscHandler){ document.removeEventListener('keydown',_modalEscHandler); _modalEscHandler=null; }
+  /* Odağı modalı açan öğeye geri ver. */
+  try{ if(_modalPrevFocus&&document.contains(_modalPrevFocus)) _modalPrevFocus.focus(); }catch(e){}
+  _modalPrevFocus=null;
 }
 function showAppModal(html,opts){
   opts=opts||{};
@@ -12,6 +20,17 @@ function showAppModal(html,opts){
   if(sheet) sheet.classList.toggle('xl',!!opts.xl);
   if(b) b.innerHTML=html;
   if(r) r.style.display='flex';
+  if(!_modalPrevFocus){ try{ _modalPrevFocus=document.activeElement; }catch(e){} }
+  if(sheet){
+    sheet.setAttribute('role','dialog');
+    sheet.setAttribute('aria-modal','true');
+    if(!sheet.hasAttribute('tabindex')) sheet.setAttribute('tabindex','-1');
+    try{ sheet.focus({preventScroll:true}); }catch(e){}
+  }
+  if(!_modalEscHandler){
+    _modalEscHandler=(e)=>{ if(e.key==='Escape'){ e.preventDefault(); closeAppModal(); } };
+    document.addEventListener('keydown',_modalEscHandler);
+  }
 }
 
 /* F7-20: kulüp önbelleği bellekte tutulur — her çağrıda ~300 KB JSON.parse ediliyordu ve
@@ -501,7 +520,9 @@ function formatFixtureDayLabel(dayNum){
 }
 
 function escMatch(s){
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  /* F7-26: > ve ' de kaçırılır. Bugün sanitizeTeamName + _stripSaveMarkup iki katman
+     olduğu için istismar edilemiyor; bu katman tek başına kaldığında da güvenli olsun. */
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 function getUpcomingUserMatches(limit){

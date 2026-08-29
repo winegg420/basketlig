@@ -571,16 +571,30 @@ function buildLeagueRows(ligKey){
     const aSc=m.home===an?m.hs:m.as, bSc=m.home===an?m.as:m.hs;
     return aSc>bSc?1:bSc>aSc?-1:0;
   };
+  /* F7-21: eşit puanlı grubun BÜYÜKLÜĞÜ önce sayılır; h2h yalnız grup tam iki takımken
+     uygulanır (geçişli kalır). Üç ve daha fazla takım eşitse doğrudan averaj → sayı. */
+  const puanOf=x=>Number(x.puan)||0;
+  /* F7-21: puanı '—' olan (sezon tablosunda kaydı olmayan) satır Number('—')||0 ile gerçek
+     0 puanlılara karışıyordu; artık ayrı tutulup sona alınır. */
+  const puanYok=x=>!x.bos&&String(x.puan)==='—';
+  const esitAdet={};
+  rows.forEach(r=>{ if(r.bos||puanYok(r)) return; const k=puanOf(r); esitAdet[k]=(esitAdet[k]||0)+1; });
   rows.sort((a,b)=>{
     if(a.bos&&!b.bos) return 1;
     if(!a.bos&&b.bos) return -1;
+    if(puanYok(a)&&!puanYok(b)) return 1;
+    if(!puanYok(a)&&puanYok(b)) return -1;
     if(useSea){
-      const pa=Number(a.puan)||0, pb=Number(b.puan)||0;
+      const pa=puanOf(a), pb=puanOf(b);
       if(pb!==pa) return pb-pa;
-      const hh=h2h(a.isim,b.isim);
-      if(hh!==0) return -hh;
+      if(esitAdet[pa]===2){
+        const hh=h2h(a.isim,b.isim);
+        if(hh!==0) return -hh;
+      }
       const ava=parseInt(String(a.av).replace('+',''),10)||0, avb=parseInt(String(b.av).replace('+',''),10)||0;
       if(avb!==ava) return avb-ava;
+      const sa=Number(a.sf)||0, sb=Number(b.sf)||0;   /* attığı sayı */
+      if(sb!==sa) return sb-sa;
     }
     return String(a.isim).localeCompare(String(b.isim),'tr');
   });

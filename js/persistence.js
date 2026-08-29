@@ -522,8 +522,24 @@ function _sanitizeImportedSave(d){
   return d;
 }
 
+/* F7-14: applyGameState 80 satır boyunca doğrudan G'ye yazıyor ve sonunda ensureRoles /
+   genLigTeams / genCoaches gibi üretim çağrıları yapıyordu. Biri atarsa G YARI yüklenmiş
+   kalıyor, çağıranlar yakalamadığı için oyun boş ekranda kilitleniyor ve kullanıcıya ne
+   olduğu söylenmiyordu. Artık uygulama öncesi anlık görüntü alınır, hata olursa geri sarılır. */
 function applyGameState(d){
   if(!d||!SAVE_VERSIONS.includes(d.v|0)) return false;
+  let snap=null;
+  try{ snap=(typeof structuredClone==='function')?structuredClone(G):JSON.parse(JSON.stringify(G)); }catch(e){ snap=null; }
+  try{
+    return _applyGameStateInner(d);
+  }catch(err){
+    dbg('applyGameState',err);
+    if(snap) G=snap;                     /* yarım uygulanmış durum geri alınır */
+    showNotif('Kayıt bozuk — yüklenemedi. Ayarlar → “Dışa aktar” ile yedek alıp kaydı silebilirsin.',{critical:true});
+    return false;
+  }
+}
+function _applyGameStateInner(d){
   d=_sanitizeImportedSave(d); /* içe aktarma + normal yükleme tek noktadan temizlenir (idempotent) */
   if((d.v|0)<4) migrateEconomyV3ToV4(d);
   if((d.v|0)<5) migrateEconomyV4ToV5(d);
