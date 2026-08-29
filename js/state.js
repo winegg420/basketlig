@@ -95,6 +95,18 @@ function difficultyCfg(){
     return DIFFICULTY[k]||DIFFICULTY.normal;
   }catch(e){ return DIFFICULTY.normal; }
 }
+/* F9-3: A takım kadro üst sınırı. Sınır dolduğunda yeni katılım engellenir ve kullanıcı
+   karar vermeye zorlanır (kimi göndereceksin?) — bu aynı zamanda zayıf oyuncuyu gönderip
+   ortalamayı yükseltme baskısı yaratır. */
+const ROSTER_MAX=18;
+/** Kadroya yeni oyuncu eklenebilir mi? Engelliyse kullanıcıya sebebini söyler. */
+function rosterHasRoom(uyar){
+  const n=((typeof G!=='undefined'&&G&&G.players)||[]).length;
+  if(n<ROSTER_MAX) return true;
+  if(uyar!==false&&typeof showNotif==='function')
+    showNotif(`👥 Kadro dolu (${ROSTER_MAX} oyuncu) — önce birini gönder ya da sat.`,{critical:true});
+  return false;
+}
 const START_KR=50000;
 const ECO_REF_KR=2400;
 const ECO_MUL=START_KR/ECO_REF_KR;
@@ -177,7 +189,9 @@ function salaryKRFromGenel(genel){
   const g=Number(genel)||0;
   const hi=Math.max(0,g-78);
   /* Paket A: piyasa maaşı sezon enflasyonuyla büyür (yalnız yeni sözleşmeler). */
-  return Math.max(60, Math.round((24 + g*1.95 + (g*g)/115 + hi*14 + hi*hi*0.08)*1.7*ecoInflationMul()));
+  /* F9-2: çarpan 1,7 → 2,9. Maaş yükü artık gelirle aynı büyüklük mertebesinde; kadro
+     genişletmek ve yıldız tutmak gerçek bir bütçe kararı (eskiden kasa kendiliğinden şişiyordu). */
+  return Math.max(60, Math.round((24 + g*1.95 + (g*g)/115 + hi*14 + hi*hi*0.08)*2.9*ecoInflationMul()));
 }
 /** Bonservis (KR) — 65 OVR ≈ 18K, 76 ≈ 25K, 90 ≈ 89K, 97 ≈ 134K: erken hedefler ulaşılır, yıldızlar birikimle. */
 function transferFeeKR(p){

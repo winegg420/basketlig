@@ -281,6 +281,7 @@ function buyClubPlayer(id,price){
   const st=starFromGenel(p.genel);
   txn('Transfer (kulüpten): '+p.isim,-bedel);
   unlockAchievement('transfer');
+  if(!rosterHasRoom()) return;   /* F9-3 */
   const np={...p};
   ['mode','fiyat','kiralik','fromClub','sure','teklifler','freeAgent','hiddenPot'].forEach(k=>delete np[k]);
   np.scouted=true;

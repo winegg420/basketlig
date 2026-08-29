@@ -81,7 +81,16 @@ function computeRosterOfrDef(){
 /** Maç anlatımı için — sadece sakat olmayanlar. Kullanıcı ilk 5'i seçtiyse (G.lineup) o kullanılır;
  *  seçilmeyen/sakat kalan slotlar için yedek sırası (bench) ve en iyi genel fallback devreye girer. */
 function matchLineup(){
-  const avail=(G.players||[]).filter(p=>!playerIsInjured(p)).sort((a,b)=>(b.genel||0)-(a.genel||0));
+  let avail=(G.players||[]).filter(p=>!playerIsInjured(p)).sort((a,b)=>(b.genel||0)-(a.genel||0));
+  /* Sağlıklı 5 kişi yoksa kadro tamamlanır: en yakın dönüşe sahip (en hafif) sakatlar
+     sıraya girer. Aksi halde slotlar null kalıyor ve maç motoru çöküyordu. */
+  if(avail.length<5){
+    const gd=G.gameDay||1;
+    const sakatlar=(G.players||[]).filter(p=>p&&playerIsInjured(p))
+      .sort((a,b)=>((Number(a.injReturnDay)||gd)-(Number(b.injReturnDay)||gd))
+                 ||((b.genel||0)-(a.genel||0)));
+    avail=avail.concat(sakatlar).slice(0,Math.max(5,avail.length));
+  }
   if(!avail.length) return null;
   const byId=id=>avail.find(p=>p.id===id);
   const used=new Set();
@@ -1395,8 +1404,33 @@ function startLeagueSeason(){
       p.kulupSezon=(Number(p.kulupSezon)||0)+1; /* Paket B: kulüpte geçirilen sezon ("Ömür Boyu") */
       const y=Number(p.yas)||25;
       p.yas=y+1; /* oyuncular sezonla yaşlanır */
-      /* Madde 22: yaşa bağlı gerileme — 32+ fiziksel statlarda küçük sezonluk düşüş. */
+      /* F9-1: SEZONLUK DOĞAL GELİŞİM. Eskiden yalnız 32+ gerileme vardı; 18-31 yaş bandında
+         sezon geçişinde hiçbir gelişim yoktu, oyuncular sadece antrenmanla büyüyordu. Sonuç:
+         kadro OVR ortalaması her sezon düşüyor (ölçüm: 3 sezonda 71 → 68,7) ve menajer
+         "takımım eriyor" hissi yaşıyordu — F8-2 ile piyasa da kısıtlandığı için güçlenme
+         yolu kalmamıştı. Gelişim POTANSİYEL BOŞLUĞUNA bağlıdır: boşluk kapandıkça yavaşlar,
+         yaş ilerledikçe azalır. Altyapı tesisi seviyesi hızlandırır. */
       const na=p.yas;
+      if(na<32){
+        const pot=Math.max(Number(p.genel)||0,Number(p.potansiyel)||0);
+        const bosluk=Math.max(0,pot-(Number(p.genel)||0));
+        if(bosluk>0){
+          const yasMul=na<=21?1.00:na<=24?0.78:na<=27?0.46:0.22;
+          const tesis=1+0.09*Math.max(0,((G.youthFacility&&Number(G.youthFacility.s))||1)-1);
+          const kazanc=Math.round(bosluk*0.23*yasMul*tesis*(0.70+Math.random()*0.60));
+          if(kazanc>0){
+            STAT_KEYS.forEach(k=>{
+              const v=Number(p[k])||50;
+              /* Stat tavanı potansiyeli aşmasın; zaten tavandakiler yerinde kalır. */
+              p[k]=Math.max(30,Math.min(99,Math.min(pot+6,v+kazanc)));
+            });
+            p.genel=Math.round(STAT_KEYS.reduce((a,k)=>a+(Number(p[k])||0),0)/STAT_KEYS.length);
+            if(p.genel>pot) p.genel=pot;
+            p.maas=salaryKRFromGenel(p.genel);
+            if(typeof refreshRole==='function'){ try{ refreshRole(p); }catch(e){} }
+          }
+        }
+      }
       if(na>=32){
         const decl=na>=37?rand(2,4):na>=35?rand(1,3):rand(1,2);
         ['hiz','kondisyon','dayaniklilik','topSurme','blok','topCalma'].forEach(k=>{ p[k]=Math.max(30,(Number(p[k])||50)-decl); });
@@ -1440,7 +1474,7 @@ function startLeagueSeason(){
     const grads=(G.youth||[]).filter(p=>(Number(p.yas)||17)>=21);
     grads.forEach(p=>{
       G.youth=G.youth.filter(x=>x.id!==p.id);
-      if((G.players||[]).length<18){
+      if(rosterHasRoom(false)){
         p.maas=salaryKRFromGenel(p.genel);
         if(p.enerji==null||p.enerji==='') p.enerji=100;
         p.kontratSezon=rand(2,3);
@@ -1467,6 +1501,7 @@ function startLeagueSeason(){
   G.losses=0;
   G.points=0;
   G.winStreak=0; /* A4: galibiyet serisi her yeni sezon başında sıfırlanır (seri sezona devretmez). */
+  if(prevY>0) G.playoff=null; /* F9-4: geçen sezonun bitmiş playoff'u yeni sezona taşınmaz */
   /* M20: bot kulüpler de yaşlanır/gelişir ve sezon istatistikleri sıfırlanır. Kullanıcı
      kadrosu yukarıdaki blokta işleniyor; rakipler artık aynı sezon döngüsüne girer. */
   if(prevY>0&&typeof ageAllPeerClubs==='function') ageAllPeerClubs();

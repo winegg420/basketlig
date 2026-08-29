@@ -50,12 +50,17 @@ function ticketDemandFactor(){
 }
 
 function weeklyWageBill(){
-  const oy=(G.players||[]).reduce((s,p)=>s+(Number(p.maas)||0),0);
-  const ko=(G.coaches||[]).reduce((s,c)=>s+(Number(c.maas)||0),0);
-  const iz=(G.scouts||[]).reduce((s,c)=>s+(Number(c.maas)||0),0); /* Faz 5.1: izci maaşları */
-  /* Paket A: arena bakımı sezonla pahalanır (yaşlanma + genel gider enflasyonu). */
-  const ar=Math.round(((G.arena&&Number(G.arena.bk))||0)*ecoInflationMul());
-  return {oy,ko,iz,ar,top:oy+ko+iz+ar};
+  /* F9-2: enflasyon eskiden YALNIZ arena bakımına uygulanıyordu; maaşlar sezonlar boyunca
+     sabit kalınca gelir gideri kolayca aşıyor, kasa hiçbir transfer yapılmadan sezon başına
+     ~45.000 KR büyüyordu (3 sezonda 5,8×). Artık tüm işletme giderleri sezonla artar ve
+     akademinin süregelen bir işletme bedeli var. */
+  const enf=ecoInflationMul();
+  const oy=Math.round((G.players||[]).reduce((s,p)=>s+(Number(p.maas)||0),0)*enf);
+  const ko=Math.round((G.coaches||[]).reduce((s,c)=>s+(Number(c.maas)||0),0)*enf);
+  const iz=Math.round((G.scouts||[]).reduce((s,c)=>s+(Number(c.maas)||0),0)*enf); /* Faz 5.1 */
+  const ar=Math.round(((G.arena&&Number(G.arena.bk))||0)*enf);
+  const ay=Math.round(ecoRound(14)*Math.max(1,((G.youthFacility&&Number(G.youthFacility.s))||1))*enf);
+  return {oy,ko,iz,ar,ay,top:oy+ko+iz+ar+ay};
 }
 /* Faz 5.1: Her ekonomi haftası izciler atandıkları havuzda potansiyel keşfeder (kalite = keşif adedi). */
 function processScoutingWeek(){
@@ -211,7 +216,7 @@ function processEconomyWeeks(){
     applyWeeklyCoachBonuses();
     processScoutingWeek(); /* Faz 5.1: izci ağı otomatik keşif */
     aiWeeklyLeagueActivity();
-    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">🧾 Haftalık gider: <strong>-${fmtn(w.top)} KR</strong> (oyuncu ${fmtn(w.oy)} · koç ${fmtn(w.ko)}${w.iz?' · izci '+fmtn(w.iz):''} · arena ${fmtn(w.ar)})</div>`);
+    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">🧾 Haftalık gider: <strong>-${fmtn(w.top)} KR</strong> (oyuncu ${fmtn(w.oy)} · koç ${fmtn(w.ko)}${w.iz?' · izci '+fmtn(w.iz):''} · arena ${fmtn(w.ar)}${w.ay?' · akademi '+fmtn(w.ay):''})</div>`);
     processBankruptcy();
   }
 }

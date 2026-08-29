@@ -797,3 +797,9 @@ I18N_PHRASES.unshift(
   [/şampiyonluk yarışı — ilk (\d+)/g,'title race — top $1'],
   [/playoff \(ilk (\d+)\)/g,'playoffs (top $1)']
 );
+
+/* F9-6: FAZ 8'den kalan tek çeviri eksiği (Antrenman sayfası). */
+Object.assign(I18N_TR_EN,{
+'Transfer Bedeli':'Transfer Fee',
+'Transfer bedeli':'Transfer fee'
+});

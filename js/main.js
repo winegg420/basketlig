@@ -809,6 +809,7 @@ function startIndividualTrain(){
 function buyFromMarket(id){
   ensureMarketStock();
   const p=G.marketPlayers.find(x=>x.id===id);if(!p)return;
+  if(!rosterHasRoom()) return;   /* F9-3 */
   const st=starFromGenel(p.genel);
   if(G.players.length>=18){ showNotif('Kadro dolu (en fazla 18). Önce bir oyuncu gönder.'); return; }
   if(G.coins<p.fiyat){showNotif('❌ Yeterli KR yok!');return;}
@@ -937,6 +938,7 @@ function listPlayerToMarket(id){
 
 function promoteYouth(id){
   const p=G.youth.find(x=>x.id===id);if(!p)return;
+  if(!rosterHasRoom()) return;   /* F9-3 */
   p.maas=salaryKRFromGenel(p.genel);
   p.scouted=true; delete p.hiddenPot;
   if(p.enerji==null||p.enerji==='') p.enerji=100;

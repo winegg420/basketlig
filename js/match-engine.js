@@ -1836,7 +1836,7 @@ function generateMatchEvents(rakip, opts){
       box:{h:emptyBox(),a:emptyBox()},qh:cloneQx(emptyQ),qa:cloneQx(emptyQ)
     }];
   }
-  const {pg,sg,sf,pf,c}=lu;
+  let {pg,sg,sf,pf,c}=lu;   /* let: aşağıdaki boş-slot savunması yeniden atayabilsin */
   /* Takım gücü etkisi: kadro OFR/DEF ↔ rakip sanal gücü → şut isabet çarpanı (±%16 sınırlı).
      Böylece güçlü kadro kurmanın maç sonucuna gerçek etkisi olur; rastgelelik korunur. */
   const rrStr=computeRosterOfrDef();
@@ -2482,6 +2482,16 @@ function generateMatchEvents(rakip, opts){
     }
   }
 
+  /* Savunma katmanı: ilk 5'te boş slot kalırsa (kadro çok eksikse) anlatım çökmesin. */
+  if(!pg||!sg||!sf||!pf||!c){
+    const _yedekler=(lu&&lu.avail)||(G.players||[]);
+    const _ilk=_yedekler[0]||{isim:(G.team&&G.team.isim)||'Oyuncu'};
+    if(!pg) pg=_yedekler[0]||_ilk;
+    if(!sg) sg=_yedekler[1]||_ilk;
+    if(!sf) sf=_yedekler[2]||_ilk;
+    if(!pf) pf=_yedekler[3]||_ilk;
+    if(!c)  c =_yedekler[4]||_ilk;
+  }
   if(!resume){
     events.push({
       type:'start',spId:SP.id,
@@ -2752,7 +2762,9 @@ function applyMatchResult(ev,ctx){
        20.833-50.000 KR/galibiyet. Bilet geliri (~4-5K/maç) ve haftalık maaş (~5K) KR-yerel
        ölçekte olduğu için tek galibiyet bir haftalık tüm ekonomiyi eziyordu. Artık ödül de
        KR-yerel: bir iç saha kapı hasılatının yaklaşık yarısı kadar. */
-    const priz=rand(1400,2600);
+    /* F9-2: 1400-2600 → 900-1700. Sezonda ~15 galibiyet × 2000 ≈ 30.000 KR ile ödül, bilet
+       gelirine yakın ikinci bir gelir kalemi oluyordu; kasa pasif oyuncuda bile şişiyordu. */
+    const priz=rand(850,1550);
     txn('Maç ödülü (galibiyet)',priz);
     sfx('win');
     G.winStreak=(Number(G.winStreak)||0)+1;
@@ -2761,7 +2773,7 @@ function applyMatchResult(ev,ctx){
   }
   else if(ev.winner==='away'){
     G.winStreak=0;
-    const cons=rand(420,900); /* Madde 2: ecoRound kaldırıldı (6.7K-15K → 420-900 KR, KR-yerel ölçek) */
+    const cons=rand(300,650); /* Madde 2 + F9-2: KR-yerel ölçek, mağlubiyet geliri de kısıldı */
     txn('Maç günü geliri',cons);
     sfx('lose');
     showNotif(`😔 Mağlup — +${fmtn(cons)} KR maç günü geliri.`);

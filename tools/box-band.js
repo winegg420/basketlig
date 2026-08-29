@@ -13,6 +13,11 @@ const ROOT=path.resolve(__dirname,'..');
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.css':'text/css; charset=utf-8','.jpg':'image/jpeg','.png':'image/png','.svg':'image/svg+xml'};
 const arg=n=>{const a=process.argv.find(x=>x.startsWith('--'+n));return a?(a.split('=')[1]||true):null;};
 const N=Number(arg('n')||160), JSONONLY=!!arg('json');
+/* Denge yargısının TEK yetkili aracı bu — o hâlde deterministik olmalı. Tohumsuzken aynı
+   kodla ribaund 29,9 ve 30,9 ölçüldü (bant sınırı 30): bir bandın tutup tutmadığı çalıştırmaya
+   göre değişiyordu. band.js ile aynı PRNG ve aynı varsayılan tohum. */
+const SEED=(()=>{const a=process.argv.find(x=>x.startsWith('--seed='));return a?(parseInt(a.slice(7),10)|0):987654321;})();
+const SEED_FN=(seed)=>{let a=seed>>>0;Math.random=function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};};
 
 /* Oyunun kendi ölçeği: takım başına ~85-95 sayı. Bantlar bu skor seviyesine göre. */
 const BANT={
@@ -40,6 +45,7 @@ const BANT={
   const errs=[];
   page.on('pageerror',e=>errs.push(e.message));
   page.on('console',m=>{if(m.type()==='error')errs.push(m.text());});
+  await page.addInitScript('('+SEED_FN.toString()+')('+SEED+');');
   await page.goto(base+'charazay2.0.html',{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForSelector('#loginPage',{state:'visible',timeout:30000});
   await page.click('#loginPage button.btn-p');
