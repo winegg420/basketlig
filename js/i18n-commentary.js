@@ -439,3 +439,27 @@ I18N_PHRASES.unshift(
   [/\(yayılma hücumu\)/g,'(spread offense)'],
   [/\(çift perde\)/g,'(double screen)']
 );
+
+/* ── M17 (31. oturum): top kaybı türlerine ayrılan yeni anlatım satırları ──────────────
+   Satırlar `pickLine` ile ÜRETİLİR (oyuncu adları gömülü), bu yüzden sözlük değil kalıp
+   katmanına girer. Baştaki isim olduğu gibi bırakılır; cümlenin ortasındaki ikinci isim
+   yakalanıp yerine konur. */
+I18N_PHRASES.unshift(
+  [/ pasını kontrol edemedi — topu (.+?) aldı\./g,' loses control of his own pass and $1 takes it.'],
+  [/ kötü bir pas attı, (.+?) topu aldı\./g,' throws a bad pass and $1 collects it.'],
+  [/ pasına (.+?) araya girdi; hücum bitti\./g,' sees his pass picked off by $1; the possession is over.'],
+  [/ pasında iletişim koptu — topu (.+?) topladı\./g,' and his teammate are not on the same page — $1 picks the ball up.'],
+  [/ adım attı — düdük çaldı, topu (.+?) kullanacak\./g,' travels — the whistle blows and $1 will take the ball.'],
+  [/ çift top yaptı; hücum bitti, topu (.+?) kullanacak\./g,' double dribbles; the possession is over and $1 will take the ball.'],
+  [/ topu çizgi dışına kaçırdı — (.+?) sokacak\./g,' knocks the ball out of bounds — $1 will inbound.'],
+  [/ hücum faulü yaptı; top (.+?) tarafına geçti\./g,' commits an offensive foul; the ball goes over to $1.']
+);
+
+/* Öncelik düzeltmesi: daha genel kalıplar (`grubun`, `hedefi:`) bu üç cümleyi yarıda
+   çevirip "Senin group:" / "Başkanın goal:" gibi karma metinler bırakıyordu. En sondaki
+   unshift dizinin başına geçtiği için bunlar artık ÖNCE uygulanır. */
+I18N_PHRASES.unshift(
+  [/Senin grubun:/g,'Your group:'],
+  [/Başkanın hedefi:/g,'The chairman’s goal:'],
+  [/orta sıra — en fazla (\d+)\. sıra/g,(m,n)=>'mid-table — no worse than '+n+(n.slice(-1)==='1'&&n!=='11'?'st':n.slice(-1)==='2'&&n!=='12'?'nd':n.slice(-1)==='3'&&n!=='13'?'rd':'th')+' place']
+);
