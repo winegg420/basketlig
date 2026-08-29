@@ -2217,3 +2217,26 @@ Sonuç: **6/6**. Mobil taramada 16 ekranda **0 yatay taşma, 0 JS hatası, 36 px
 
 `sunum-check` bir turda M9'da düştü (o pencerede yalnız 1-2 örnek vardı); daha uzun pencerede
 %100 ve motor kararı 104/107. Düşük örneklemde yayılım gürültülüdür — araç zaten uyarıyor.
+
+### 32. oturum — EK 6: Tauri derlemesi denendi (araç zinciri eksik)
+
+Kullanıcı `tauri build` çalıştırılmasını istedi. Ortam denetimi (`npx tauri info`):
+
+| Bileşen | Durum |
+|---|---|
+| WebView2 151.0.4129.107 · Node 24.18 · npm 11.16 · Tauri CLI 2.11.4 | ✓ kurulu |
+| **Rust (rustup/rustc/cargo)** | ✗ yok |
+| **MSVC Build Tools + Windows SDK** | ✗ yok |
+
+Derleme bu iki bileşen olmadan başlayamıyor. Kurulum ~4-6 GB indirme, MSVC tarafı **UAC/yönetici**
+onayı istediği için otomatik yapılamaz (tool oturumu `-NonInteractive`, stdin null). Kullanıcıya
+üç seçenek sunuldu; **"şimdilik kurma"** seçildi — kurulum yapılmadı.
+
+**Bunun yerine derleme öncesi hazırlık kalıcı olarak doğrulandı.** `faz6-check`'e **F7** eklendi:
+`src-tauri` dosya bütünlüğü (Cargo.toml, build.rs, main.rs, tauri.conf.json, ikonlar),
+`frontendDist` yolunun gerçekten var olması, bundle hedefleri ve identifier. Araç zinciri durumu
+**bilgi olarak** raporlanır — Rust yoksa madde düşmez, çünkü depo içeriğiyle ilgili değildir.
+Böylece kurulum yapıldığında ilk denemede yapılandırma hatasıyla vakit kaybedilmez.
+
+`faz6-check` artık **7/7**. Kurulum komutları ve derleme adımları `KALDIGIM-YER.md` içindeki
+yeni **"Masaüstü derlemesi (Tauri) — durum ve kurulum"** bölümüne yazıldı.

@@ -90,6 +90,33 @@ async function main() {
       eksik.length === 0 && fontlar.length >= 4 && disBag.length === 0 && jsSayi >= 13,
       `eksik dosya: ${eksik.length ? eksik.join(', ') : 'yok'} · js modülü: ${jsSayi} · yerel font: ${fontlar.length}` +
       ` · dış src/href: ${disBag.length ? disBag.slice(0, 2).join(' | ') : 'yok'}`);
+
+    // F7 — Tauri derleme ön koşulları (PROJE tarafı). Araç zinciri ayrı raporlanır:
+    // Rust/MSVC yoksa bu madde DÜŞMEZ, çünkü depo içeriğiyle ilgili değildir.
+    const T = path.join(ROOT, 'src-tauri');
+    const tEksik = ['Cargo.toml', 'build.rs', 'tauri.conf.json', 'src/main.rs', 'icons/icon.ico', 'icons/icon.png']
+      .filter(f => !fs.existsSync(path.join(T, f)));
+    let conf = null, confHata = null;
+    try { conf = JSON.parse(fs.readFileSync(path.join(T, 'tauri.conf.json'), 'utf8')); }
+    catch (e) { confHata = e.message; }
+    const frontDist = conf && conf.build ? conf.build.frontendDist : null;
+    const frontVar = frontDist ? fs.existsSync(path.resolve(T, frontDist)) : false;
+    const hedefler = (conf && conf.bundle && conf.bundle.targets) || [];
+    const ident = conf ? conf.identifier : null;
+    kayit('F7', 'D3 · Tauri derleme ön koşulları (proje tarafı) hazır',
+      tEksik.length === 0 && !confHata && frontVar && hedefler.length > 0 && !!ident,
+      confHata ? ('tauri.conf.json okunamadı: ' + confHata) :
+        `eksik dosya: ${tEksik.length ? tEksik.join(', ') : 'yok'} · frontendDist "${frontDist}" ${frontVar ? 'var' : 'YOK'}` +
+        ` · bundle hedefleri: ${hedefler.join(', ') || 'yok'} · identifier: ${ident || 'yok'}`);
+
+    // Araç zinciri durumu — bilgi amaçlı (kurulu değilse madde düşmez, sadece raporlanır).
+    const { execSync } = require('child_process');
+    const varMi = (cmd) => { try { execSync(cmd, { stdio: 'pipe' }); return true; } catch (e) { return false; } };
+    const rustVar = varMi('rustc --version');
+    const cargoVar = varMi('cargo --version');
+    console.log(`       ↳ araç zinciri: rustc ${rustVar ? 'var' : 'YOK'} · cargo ${cargoVar ? 'var' : 'YOK'}` +
+      (rustVar && cargoVar ? ' → "npm run desktop:build" çalıştırılabilir'
+        : ' → derleme için Rust + MSVC Build Tools gerekli (bkz. KALDIGIM-YER.md)'));
   }
 
   // ── F1, F2, F3, F4: masaüstü bağlamı ────────────────────────────────────

@@ -15,7 +15,7 @@ Her madde **ölçülerek** doğrulandı — "uyguladım" beyanına dayanan açı
 
 | Komut | Ne sınar | Sonuç |
 |---|---|---|
-| `node tools/faz6-check.js` | FAZ 6 (ödüller, zorluk, koçluk istatistiği, kayıt bütünlüğü, mobil uçtan uca, masaüstü paketi) | ✓ **6/6** |
+| `node tools/faz6-check.js` | FAZ 6 (ödüller, zorluk, koçluk istatistiği, kayıt bütünlüğü, mobil uçtan uca, masaüstü paketi, Tauri ön koşulları) | ✓ **7/7** |
 | `node tools/faz8-check.js` | FAZ 8 kabul kriterleri (piyasa, şehir, v7, kutuplaşma, sürüm, mobil) | ✓ **6/6** |
 | `node tools/faz7-check.js` | FAZ 7 kabul kriterleri + a11y zoom hayaleti | ✓ **8/8** |
 | `node tools/m20-check.js` | rakip kadro kalıcılığı | ✓ **6/6** |
@@ -53,12 +53,47 @@ Yok.
 
 Talep belgelerinde **açık madde kalmadı**. Sıradakiler kapsam kararı gerektirir:
 
-1. **Gerçek Tauri derlemesi** — `npm run desktop:build` bu makinede hiç çalıştırılmadı
-   (Rust araç zinciri gerekir). `dist-desktop` hazır ve doğrulandı; kalan iş derleme + imzalama.
+1. **Gerçek Tauri derlemesi** — `npm run desktop:build` bu makinede **çalıştırılamadı**:
+   Rust ve MSVC Build Tools kurulu değil (2026-08-30'da denendi, kullanıcı kurulumu erteledi).
+   Ayrıntı ve kurulum adımları aşağıdaki **"Masaüstü derlemesi"** bölümünde.
 2. **Gerçek cihazda dokunma testi** — Playwright emülasyonu geçiyor; fiziksel telefon denenmedi.
 3. **B6** — akademi maçları, pozisyon antrenmanı derinliği (`RAPOR-EKSIKLER.md`, kapsam kararı).
 4. **Steam Deck / gamepad** desteği — kapsam kararı bekliyor (FAZ 6 belgesinde açık bırakılmış).
 5. FAZ 8 notu: 7 dokunma hedefi 38-39 px (eşik 40) — sınırda, istenirse kapatılır.
+
+## Masaüstü derlemesi (Tauri) — durum ve kurulum
+
+**Proje tarafı hazır, eksik olan yalnız araç zinciri.** `faz6-check` F6/F7 bunu sınıyor:
+
+| Bileşen | Durum |
+|---|---|
+| `dist-desktop` (13 js modülü, 4 yerel font, dış src/href yok) | ✓ hazır |
+| `src-tauri`: Cargo.toml · build.rs · main.rs · tauri.conf.json · ikonlar | ✓ hazır |
+| `frontendDist` yolu · bundle hedefleri (msi, nsis) · identifier | ✓ doğrulandı |
+| WebView2 · Node · npm · Tauri CLI 2.11.4 | ✓ kurulu |
+| **Rust (rustup/rustc/cargo)** | ✗ **kurulu değil** |
+| **MSVC Build Tools + Windows SDK** | ✗ **kurulu değil** |
+
+Kurulum (yaklaşık 4-6 GB indirme, 20-40 dk):
+
+```
+winget install Rustlang.Rustup          # yönetici GEREKMEZ (~300 MB)
+winget install Microsoft.VisualStudio.2022.BuildTools ^
+  --override "--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+```
+
+> İkinci komut **UAC/yönetici onayı** ister — bu yüzden otomatik çalıştırılamıyor, terminale
+> `!` ön ekiyle sen başlatmalısın. Kurulumdan sonra yeni bir terminal aç (PATH tazelensin).
+
+Sonra:
+
+```
+node tools/faz6-check.js     # F7 satırında "araç zinciri: rustc var · cargo var" görünmeli
+npm run desktop:build        # dist hazırlığı + Rust derlemesi + msi/nsis paketleme
+```
+
+Çıktı: `src-tauri/target/release/bundle/{msi,nsis}/`. İlk derleme uzun sürer (Rust bağımlılıkları
+sıfırdan derlenir); sonrakiler önbellekten hızlanır.
 
 ## Dikkat
 
