@@ -1181,6 +1181,11 @@ function ensureLeagueSeasonOrStart(){
   if(!G.team||!G.team.tblKey) return;
   const s=G.season;
   if(s&&s.active&&!seasonAllMatchesPlayed()) return;
+  /* F7-1: duzenli sezon bitmis olabilir AMA playoff ya da draft surüyor olabilir.
+     Bunlara bakmadan startLeagueSeason() cagirmak brackete/drafti siler, oyunculari
+     yaslandirir, sozlesmeleri eksiltir — ilerleme sessizce kaybolurdu. */
+  if(G.playoff&&!G.playoff.champion) return;
+  if(G.draft&&!G.draft.done) return;
   startLeagueSeason();
 }
 

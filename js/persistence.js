@@ -384,18 +384,31 @@ function saveGameNow(showToast){
   /* Değişiklik yoksa yazma — diğer sekmelerde gereksiz "güncellendi" bildirimi tetiklenmesin. */
   const fp=JSON.stringify({...state,savedAt:0,lastActive:0});
   if(!showToast&&fp===_lastSavedFingerprint) return;
-  _lastSavedFingerprint=fp;
+  /* F7-4: parmak izi eskiden try'dan ONCE guncelleniyordu — yazma hata verse bile
+     'kaydedildi' sayiliyor, durum degismedigi surece bir daha DENENMIYORDU. */
+  let lsOk=false;
   try{
     localStorage.setItem(GAME_SAVE_KEY,raw);
+    lsOk=true;
+    _lastSavedFingerprint=fp;
     const el=document.getElementById('saveStatusLine');
     if(el) el.textContent='Son kayıt: '+new Date().toLocaleString('tr-TR');
     if(showToast) showNotif('Oyun kaydedildi.');
   }catch(e){
     dbg('localStorage save failed',e);
-    if(e&&(e.code===22||e.name==='QuotaExceededError')) showNotif('localStorage dolu — IndexedDB yedek deneniyor; gerekirse dışa aktar.');
-    else showNotif('Kayıt yazılamadı.');
+    _lastSavedFingerprint='';       /* sonraki otomatik kayit yeniden denesin */
+    if(e&&(e.code===22||e.name==='QuotaExceededError')) showNotif('localStorage dolu — IndexedDB yedeğine yazılıyor; gerekirse dışa aktar.',{critical:true});
+    else showNotif('Kayıt yazılamadı — IndexedDB yedeği deneniyor.',{critical:true});
   }
-  idbPutString(raw).catch(err=>dbg('IndexedDB save failed',err));
+  idbPutString(raw).then(()=>{
+    /* IDB yazdiysa parmak izi guvenle guncellenebilir (acilista savedAt ile karsilastirilir). */
+    if(!lsOk) _lastSavedFingerprint=fp;
+  }).catch(err=>{
+    dbg('IndexedDB save failed',err);
+    _lastSavedFingerprint='';
+    /* Her iki depo da basarisiz: sessiz kalma — kullanici disa aktarabilsin. */
+    if(!lsOk) showNotif('KAYIT YAZILAMADI (localStorage + IndexedDB). Ayarlar → Dışa aktar ile yedek al.',{critical:true});
+  });
 }
 
 function loadGameFromStorage(){
@@ -641,8 +654,9 @@ function bootstrapAppUi(){
 }
 
 function resumeFromSavedGame(){
-  let d=loadGameFromStorage();
-  if(!d&&_pendingResumeFromIdb) d=_pendingResumeFromIdb;
+  /* F7-2: acilis karsilastirmasi IndexedDB kopyasini SECTIYSE (savedAt daha yeni ya da LS
+     kullanilamaz) onu kullan; aksi halde localStorage. */
+  let d=_pendingResumeFromIdb||loadGameFromStorage();
   if(!d||!applyGameState(d)){ showNotif('Geçerli kayıt yok.'); return; }
   _pendingResumeFromIdb=null;
   bootstrapAppUi();
@@ -654,8 +668,16 @@ function resumeFromSavedGame(){
   showPage('dashboard',dashBtn);
   showNotif('Kayıt yüklendi — '+G.team.isim);
   saveGameNow(false);
-  /* Faz 6: yarım kalan draft varsa kaldığı yerden devam ettir. */
+  /* F7-1: yarim kalan draft/playoff varsa ilgili ekrani ac (aksi halde kullanici
+     bracketin/draftin durdugunu goremiyordu). Draft oncelikli — sezon o sirada bekler. */
   if(G.draft&&!G.draft.done&&typeof processDraftPicks==='function') setTimeout(processDraftPicks,600);
+  else if(G.playoff&&!G.playoff.champion) setTimeout(()=>{
+    try{
+      const b=document.querySelector('#sbNav button[data-page="lig"]');
+      showPage('lig',b);                          /* playoff bracketi lig sayfasindaki panelde */
+      showNotif('Playoff devam ediyor — seri durumu lig sayfasında.',{critical:true});
+    }catch(e){}
+  },600);
 }
 
 function exportGameJson(){
@@ -698,6 +720,9 @@ function importGameJson(ev){
 
 function clearSavedGame(){
   try{ localStorage.removeItem(GAME_SAVE_KEY); }catch(e){}
+  /* F7-3: IndexedDB kopyasi da silinir; yoksa silinen kariyer sonraki acilista geri gelir. */
+  try{ if(typeof idbDeleteString==='function') idbDeleteString(); }catch(e){}
+  _lastSavedFingerprint='';
   _pendingResumeFromIdb=null;
   const sl=document.getElementById('saveStatusLine');
   if(sl) sl.textContent='Kayıt silindi.';

@@ -1391,12 +1391,27 @@ window.onload=()=>{
       try{
         (async ()=>{
           _pendingResumeFromIdb=null;
-          let d=loadGameFromStorage();
-          if(!d){
-            const s=await idbGetString();
-            if(s){ try{ d=JSON.parse(s); }catch(e){ d=null; } }
-            if(d&&SAVE_VERSIONS.includes(d.v|0)&&d.team) _pendingResumeFromIdb=d;
-          }
+          /* F7-2 / F7-9: eskiden IndexedDB'ye YALNIZCA localStorage tamamen bossa bakiliyordu.
+             Kota dolduktan sonra LS bayat kalip IDB guncellendigi icin acilista BAYAT kayit
+             kazaniyor, saatlerce ilerleme sessizce geri sariliyordu. Ayrica LS'te gecerli JSON
+             ama DESTEKLENMEYEN surum varsa saglam IDB yedegi hic sorgulanmiyordu.
+             Artik iki kaynak da okunur ve savedAt'e gore YENI olan secilir. */
+          const _gecerli=x=>!!(x&&x.team&&SAVE_VERSIONS.includes(x.v|0));
+          const _zaman=x=>{ const t=Date.parse((x&&x.savedAt)||0); return isFinite(t)?t:0; };
+          let ls=loadGameFromStorage();
+          let idb=null;
+          try{
+            const raw=await idbGetString();
+            if(raw){ try{ idb=JSON.parse(raw); }catch(e){ idb=null; } }
+          }catch(e){ idb=null; }
+          const lsOk=_gecerli(ls), idbOk=_gecerli(idb);
+          let d=null;
+          if(lsOk&&idbOk) d=(_zaman(idb)>_zaman(ls))?idb:ls;
+          else if(lsOk) d=ls;
+          else if(idbOk) d=idb;
+          else d=ls||idb;
+          /* IDB kazandiysa (ya da LS kullanilamiyorsa) resumeFromSavedGame o kopyayi kullanmali. */
+          if(idbOk&&(!lsOk||d===idb)) _pendingResumeFromIdb=idb;
           const rb=document.getElementById('resumeBlock');
           const rn=document.getElementById('resumeTeamName');
           if(d&&d.team&&SAVE_VERSIONS.includes(d.v|0)&&rb&&rn){

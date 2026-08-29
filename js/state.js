@@ -98,6 +98,16 @@ function idbPutString(s){
     tx.onerror=()=>rej(tx.error);
   }));
 }
+/* F7-3: kayit silinince IndexedDB kopyasi da silinmeli — yoksa sonraki acilista
+   LS bos oldugu icin IDB okunur ve SILINEN kariyer geri gelir. */
+function idbDeleteString(){
+  return openIdb().then(db=>new Promise((res,rej)=>{
+    const tx=db.transaction(IDB_STORE_G,'readwrite');
+    tx.objectStore(IDB_STORE_G).delete('save');
+    tx.oncomplete=()=>{ db.close(); res(); };
+    tx.onerror=()=>rej(tx.error);
+  })).catch(()=>null);
+}
 function idbGetString(){
   return openIdb().then(db=>new Promise((res,rej)=>{
     const tx=db.transaction(IDB_STORE_G,'readonly');
