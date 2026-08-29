@@ -1483,3 +1483,23 @@ oyuncular yerine varınca durmalı, orta saha set oyununda boşalmalı. Tümü *
 - Kadro/Market'te uzun oyuncuların pivot, kısa olanların oyun kurucu olduğunu gör (boy/kilo tutarlılığı).
 - Birkaç maç oyna: galibiyet bildiriminde ödül artık ~1.4K-2.6K KR olmalı; kasanın maç başına şişmediğini
   Bilanço'dan doğrula.
+
+### Madde 5 — ülkeye özgü isim havuzları (aynı oturum, kullanıcı onayıyla)
+- Kullanıcı kapsamı onayladı: **26 ülkenin hepsi, ülke başına 16 ad + 16 soyad** (≈832 isim).
+- `js/state.js`'e `NAME_POOLS` (26 ülke) + `randomNameFor(ulkeAd)` eklendi. `genPlayer` artık
+  `randomNameFor(ulke.ad)` kullanıyor; `ensureUniquePlayerNames` çakışmada yeniden ad üretirken de
+  oyuncunun ülkesine sadık kalıyor. Genel `ILK/SY` havuzu koç/izci/haber isimleri (bayraksız bağlam)
+  için olduğu gibi bırakıldı — mevcut davranış bozulmadı.
+- Ölçüm: 3000 oyuncu örnekleminde **0 uyumsuzluk**, 26/26 ülke kapsandı, 2412 benzersiz isim (%80),
+  15 kişilik kadroda 15 benzersiz ad. Örnek: 🇯🇵 Kenji Ito (PG, 194cm) · 🇧🇪 Thijs Van Rossom (SG).
+
+### Madde 3 — bulut kayıt (kod değişikliği YOK, kullanıcı kararı)
+- Kullanıcı "şimdilik dokunma, plan çıkar" dedi. `PLAN-BULUT-KAYIT.md` yazıldı: mevcut durum,
+  Supabase / Firebase / Steam Cloud / yalnız-JSON karşılaştırması, önerilen offline-first mimari
+  (yerel kayıt tek gerçek kaynak + debounce'lu bulut push + çakışma modalı), 7 maddelik iş kırılımı
+  ve karar bekleyen 3 soru. **Öneri: Supabase** (anonim→hesap yükseltme, statik HTML'e tek script,
+  ücretsiz katman, Steam/Tauri ile de çalışır).
+
+### Değişiklik yapılmayanlar (rapor doğrulaması)
+- Madde 9 (kulüp logosu): `pickTeamLogoFile`/`onTeamLogoFileChange` zaten çalışıyor — dokunulmadı.
+- Madde 8 (mobil), 10 (test verisi), 11 (çoklu lig), 12 (tooltip): kod değişikliği gerekmedi/ertelendi.

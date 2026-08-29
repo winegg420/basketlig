@@ -127,7 +127,7 @@ function genPlayer(poz=null,tr=false){
   const ulke=tr?TR_ULKE:ch(ULKELER);
   const p=poz||ch(POZLAR);
   const yas=rand(18,36);
-  const isim=tr?`${ch(TR_ILK)} ${ch(TR_SY)}`:`${ch(ILK)} ${ch(SY)}`;
+  const isim=randomNameFor(ulke.ad); /* Madde 5: isim artık oyuncunun ülkesiyle uyumlu */
   const base={PG:[55,80],SG:[60,85],SF:[58,82],PF:[58,82],C:[55,80]};
   const stats={};
   STAT_KEYS.forEach(k=>{
@@ -156,7 +156,8 @@ function ensureUniquePlayerNames(players){
   (players||[]).forEach(p=>{
     if(!p) return;
     let g=0;
-    while(takenNames.has(p.isim)&&g++<400){ p.isim=`${ch(ILK)} ${ch(SY)}`; }
+    /* Madde 5: yeniden ad üretirken de oyuncunun ülkesine sadık kal (bayrak-isim uyumu bozulmasın). */
+    while(takenNames.has(p.isim)&&g++<400){ p.isim=randomNameFor(p.ulke); }
     takenNames.add(p.isim);
     /* Foto index seed+id'den türer; grup içinde benzersiz kalması için seed'i kaydır. */
     try{
