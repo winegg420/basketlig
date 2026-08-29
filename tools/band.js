@@ -12,13 +12,17 @@ const N = (() => { const a = process.argv.find(x => x.startsWith('--n=')); retur
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json', '.css': 'text/css', '.jpg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon' };
 function srv() { return new Promise(r => { const s = http.createServer((q, e) => { try { let u = decodeURIComponent(q.url.split('?')[0]); if (u === '/') u = '/charazay2.0.html'; const f = path.join(ROOT, path.normalize(u).replace(/^(\.\.[/\\])+/, '')); if (!f.startsWith(ROOT) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { e.writeHead(404); e.end(); return; } e.writeHead(200, { 'Content-Type': MIME[path.extname(f).toLowerCase()] || 'application/octet-stream' }); fs.createReadStream(f).pipe(e); } catch (x) { e.writeHead(500); e.end(); } }); s.listen(0, '127.0.0.1', () => r(s)); }); }
 const sleep = m => new Promise(r => setTimeout(r, m));
-const SEED = (() => { const a = process.argv.find(x => x.startsWith('--seed=')); return a ? parseInt(a.slice(7), 10) : 0; })();
+/* Varsayılan tohum measure.js ile aynı. ESKİDEN varsayılan 0 idi ve aşağıdaki uygulama
+   "if (SEED)" ile korunuyordu — 0 falsy olduğu için tohum HİÇ kurulmuyordu: araç "seed=0"
+   yazdığı hâlde her çalıştırmada farklı hash üretiyordu, yani "sonuç değişmezliği"
+   güvencesi fiilen çalışmıyordu. */
+const SEED = (() => { const a = process.argv.find(x => x.startsWith('--seed=')); return a ? (parseInt(a.slice(7), 10) | 0) : 987654321; })();
 const SEED_FN = (seed) => { let a = seed >>> 0; Math.random = function () { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
 (async () => {
   const s = await srv(); const b = await chromium.launch({ channel: 'chrome', headless: true });
   const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
   const errs = []; p.on('pageerror', e => errs.push(e.message));
-  if (SEED) await p.addInitScript('(' + SEED_FN.toString() + ')(' + SEED + ');');
+  await p.addInitScript('(' + SEED_FN.toString() + ')(' + SEED + ');');   /* koşulsuz: seed=0 da geçerli bir tohumdur */
   await p.goto(`http://127.0.0.1:${s.address().port}/charazay2.0.html`, { waitUntil: 'domcontentloaded' });
   await p.waitForSelector('#loginPage', { state: 'visible' }); await p.click('#loginPage button.btn-p');
   await p.waitForSelector('#setupPage', { state: 'visible' }); await p.fill('#teamName', 'Band FK'); await p.click('#setupPage button.btn-p');

@@ -1194,7 +1194,24 @@ function animateShotPossession(sh,onShoot,onResult){
 
     /* Topu getiren: hâlihazırda hücum takımından biri tutuyorsa o, değilse oyun kurucu. */
     let pg=(b.carrier&&offP.indexOf(b.carrier)>=0)?b.carrier:offR[0];
-    if(pg===shooter) pg=offR.find(p=>p!==shooter)||offR[0];
+    /* M9: savunma ribaundundan sonra top uzunda (PF/C) kalıyordu ve PİVOT topu tek başına
+       karşı sahaya sürüyordu — oyun kurucu topa hiç dokunmuyordu. Gerçek basketbolda
+       ribaundun ardından ilk iş ÇIKIŞ (outlet) PASIDIR. Uzun topu alırsa topu guard'a
+       çıkarır, hücumu kurucu getirir. (İkinci şans şutunda outlet yok — top zaten potada.)
+       Karar, aşağıdaki "pg===shooter" düzeltmesinden ÖNCE verilir: uzun hem ribaundu alıp
+       hem şutu atacaksa pg guard'a çevriliyor, top yine uzunda kalıyor ve çıkış pası hiç
+       kurulmuyordu (ölçüm: %71 → bu sıra düzeltilince ~%100). */
+    let outletTok=null;
+    if(!sh.pb&&pg&&(pg.role===3||pg.role===4)){
+      const guard=offR.find(p=>p!==pg&&p!==shooter&&(p.role===0||p.role===1))
+                ||offR.find(p=>p!==pg&&(p.role===0||p.role===1))
+                ||offR.find(p=>p!==pg&&p!==shooter)
+                ||offR.find(p=>p!==pg);
+      if(guard){ outletTok=pg; pg=guard; }
+    }
+    if(pg===shooter) pg=offR.find(p=>p!==shooter&&p!==outletTok)||offR.find(p=>p!==shooter)||offR[0];
+    /* Sunum denetimi damgası (tools/sunum-check.js okur) — davranışı etkilemez. */
+    try{ S._dbgOutlet={tasiyiciRol:(b.carrier&&b.carrier.role!=null)?b.carrier.role:null,pb:!!sh.pb,outlet:!!outletTok,pgRol:pg?pg.role:null}; }catch(e){}
     const relay=offP.filter(p=>p!==shooter&&p!==pg);
     const tac=G.tactics||{};
     const userAtt=!!sh.isHome;
@@ -1246,8 +1263,12 @@ function animateShotPossession(sh,onShoot,onResult){
       }
       const rimD=Math.hypot(sh.x-rim[0],sh.y-rim[1]);
       _ballShoot(rim,rimD<90?0:0.58,sh.made,()=>{
-        _res();
         _rimFlash(rim[0],rim[1],sh.made);
+        /* M12: AND-1 — saha şutu girdi + faul. Eskiden çizgide kimse görünmezken tabela
+           3 artıyor, spiker "AND-1 tamam!" diyordu. Artık ek atış canlandırılır; anlatım
+           cümlesi (sonucu söylediği için) atışın sonucuyla aynı karede basılır. */
+        if(sh.made&&sh.and1){ _and1Sequence(sh,shooter,offP,defP,offLeft,rim,_res); return; }
+        _res();
         if(sh.made){
           /* Sayı: top fileden geçer, potanın altına düşer. Rakip HEMEN topu almaya gider,
              çizgi dışına çıkar; sayı atan takım savunmaya döner (ölü bekleme yok). */
@@ -1370,8 +1391,21 @@ function animateShotPossession(sh,onShoot,onResult){
 
     /* geçiş: hücum kulvarlarda öne, savunma potaya (yumak yok) */
     steps.push({at:tOff,fn:()=>{ _setFormation(offLeft,offP,defP,null,{phase:'trans'}); }});
-    /* topu getiren gerçekten sürerek gelir */
-    const bringT=fastBreak?0.85:Math.max(1.05,Math.min(2.2,etaTok(pg,_pt(TRANS_OFF[0],offLeft,false)[0],250)));
+    /* M9: çıkış pası — uzun topu kanattaki/çemberdeki guard'a çıkarır, hücum ondan sonra kurulur. */
+    if(outletTok&&pg&&outletTok!==pg){
+      steps.push({at:tOff+0.15,fn:()=>{
+        const d=Math.hypot(outletTok.x-pg.x,outletTok.y-pg.y);
+        _ballPass(pg,Math.max(0.18,Math.min(0.62,d/520)));
+        if(typeof sfx==='function') sfx('pass');
+      }});
+    }
+    /* topu getiren gerçekten sürerek gelir.
+       M9: ETA, topu getirenin GERÇEKTEN gittiği kulvara göre hesaplanır — eskiden her zaman
+       TRANS_OFF[0] (PG kulvarı) alınıyordu, pivot topu getirdiğinde gitmediği bir noktaya
+       göre süre biçiliyordu. Outlet varsa pasın süresi de eklenir. */
+    const bringHedef=_pt(TRANS_OFF[Math.max(0,Math.min(TRANS_OFF.length-1,pg.role|0))],offLeft,false);
+    const outletPay=outletTok?0.45:0;
+    const bringT=fastBreak?0.85:Math.max(1.05,Math.min(2.4,outletPay+etaTok(pg,bringHedef[0],bringHedef[1])));
     const tSet=tOff+bringT;
     steps.push({at:tSet,fn:()=>{ _setFormation(offLeft,offP,defP,sh,{phase:'set',keepNear:true}); }});
 
@@ -1444,8 +1478,49 @@ function animateShotPossession(sh,onShoot,onResult){
     steps.push({at:tFire,fn:fire});
 
     _script(steps);
-    return Math.round((tFire+0.85)*1000);
+    /* M12: AND-1'de ek atış koreografisi şuttan SONRA geliyor; gecikme bütçesine eklenir. */
+    return Math.round((tFire+0.85)*1000)+((sh.made&&sh.and1)?2100:0);
   }catch(e){ return 0; }
+}
+
+/** M12: AND-1 ek atışı — şutör çizgiye gider, tek serbest atış, sonra oyun devam eder.
+    res(): şut cümlesini basan geri çağrı; ek atışın SONUCUYLA aynı karede çalıştırılır. */
+function _and1Sequence(sh,shooter,offP,defP,offLeft,rim,res){
+  const S=(typeof mState!=='undefined'&&mState)?mState._sim:null;
+  if(!S||!shooter){ try{ res(); }catch(e){} return; }
+  const made=!!(sh.and1&&sh.and1.made);
+  try{
+    const line=_pt([FT_LINE_X,250],offLeft,false);
+    offP.concat(defP).forEach(p=>{ p._oob=false; });
+    _setFtFormation(offLeft,offP,defP,shooter);
+    S.shooter=shooter;
+    S.defTrack=false;                 /* ölü top — savunma çizgi dizilişinde */
+    S.inb=null;
+    const eta=Math.hypot(shooter.x-line[0],shooter.y-line[1])/Math.max(120,shooter.sprintV||_PL_MAXV)+0.35;
+    const tAt=Math.max(0.95,Math.min(2.0,eta))+0.45;
+    _script([
+      {at:0.12,fn:()=>{ _ballHold(shooter); }},          /* hakem topu atıcıya verir */
+      {at:tAt-0.18,fn:()=>{ _ballHold(shooter); }},      /* çizgiye varınca hizalan */
+      {at:tAt,fn:()=>{
+        shooter.pop=0.8;
+        _ballShoot(rim,0.50,made,()=>{
+          _rimFlash(rim[0],rim[1],made);
+          try{ res(); }catch(e){}                        /* cümle: sonuçla senkron */
+          if(typeof sfx==='function'&&made) sfx('score');
+          if(made){
+            _setupInbound(!sh.isHome,250+(Math.random()<0.5?-1:1)*rand(24,74));
+          } else {
+            /* Kaçan ek atış canlı toptur — ribaund mücadelesi başlar. */
+            const a=Math.random()*6.283;
+            _ballLoose(Math.cos(a)*110,Math.sin(a)*100,105);
+            const pool=Math.random()<0.72?defP:offP;
+            const reb=_rolesOrder(pool)[4]||pool[0];
+            _chase(reb,null,2.6);
+          }
+        });
+      }}
+    ]);
+  }catch(e){ try{ res(); }catch(e2){} }
 }
 
 /** Şut izi: isabet "O", kaçan "X" — takım rengiyle. */
@@ -2294,13 +2369,13 @@ function generateMatchEvents(rakip, opts){
         if(narr.runOff!==userPos){ narr.runOff=userPos; narr.run=pts; } else narr.run+=pts;
         narr.heat[shooter.id]=(narr.heat[shooter.id]||0)+1;
       } else { narr.heat[shooter.id]=0; }
-      events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,play,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q,fb:fb||undefined,pb:putback||undefined,blk:blocked||undefined,scheme,zone,move:move||undefined,contest,sid:shooter.id!=null?shooter.id:undefined,pid:(passer&&passer.id!=null)?passer.id:undefined},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,play,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q,fb:fb||undefined,pb:putback||undefined,blk:blocked||undefined,scheme,zone,move:move||undefined,contest,sid:shooter.id!=null?shooter.id:undefined,pid:(passer&&passer.id!=null)?passer.id:undefined,and1:and1?{made:and1Made}:undefined},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       /* Kaçan şutlarda ~%22 renkli ribaund anlatımı (hücum/savunma). */
       if(!made&&rebounder&&Math.random()<0.22){
         const rl=pickLine(rebOff?REB_OFF_LINES:REB_DEF_LINES,pr,narr.recent,rebOff?'rebO':'rebD').replace('%R',rebounder.isim);
         /* Sahnedeki jeton anlatımdaki oyuncuyla eşleşsin: kimlik + taraf event'e yazılır. */
         const rebIsUser=rebOff?userPos:!userPos;
-        events.push({type:'reb',text:rl,q,t,home:homeScore,away:awayScore,rebId:rebounder.id,rebIsUser,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+        events.push({type:'reb',text:rl,q,t,home:homeScore,away:awayScore,rebId:rebounder.id,rebIsUser,rebOff:!!rebOff,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});   /* M14: hücum ribaundunda şut saati 24 değil 14 */
         /* Hücum ribaundu + anlatım basıldıysa: ~%55 aynı oyuncu pota dibinden tekrar dener (putback). */
         if(rebOff&&rebounder.id!=null&&Math.random()<0.55) shooterHint=rebounder;
       }

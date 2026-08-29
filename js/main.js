@@ -291,7 +291,7 @@ function startMatch(playoff){
     const delay=Math.max(140,Math.max(simMs,dtMs)/rate);
     /* Maç saati olaylar arasında GERÇEK ZAMANDA akar (eskiden 10-20 sn'lik sıçramalar);
        şut saati de aynı akıştan beslenir. */
-    if(ev.t!==undefined) startClockTween(ev.t,delay,ev.type);
+    if(ev.t!==undefined) startClockTween(ev.t,delay,ev);
     /* M11: hız değişince kalan süre yeniden ölçeklenebilsin diye zamanlayıcı damgalanır. */
     mState._stepAt=Date.now(); mState._stepDelay=delay; mState._stepRate=rate;
     /* M3 (tamamlayıcı): şutlu olayda sonuç cümlesi top çembere varınca basılır. Kare
@@ -385,17 +385,29 @@ if(typeof document!=='undefined'&&document.addEventListener){
 let _clkTimer=null;
 function stopClockTween(){ if(_clkTimer){ clearInterval(_clkTimer); _clkTimer=null; } }
 function _fmtClock(sec){ const s=Math.max(0,Math.ceil(sec)); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
-function startClockTween(targetT,durMs,type){
+function startClockTween(targetT,durMs,ev){
   const el=document.getElementById('liveTime');
   const scEl=document.getElementById('liveShotClock');
   if(!el) return;
   stopClockTween();
+  const type=(ev&&typeof ev==='object')?ev.type:ev;   /* eski çağrı biçimi (tip dizesi) de çalışsın */
   const from=(mState._clkNow!=null&&mState._clkNow>=targetT)?mState._clkNow:targetT;
-  /* şut saati: pozisyon değişince / ölü topta 24'e döner (FIBA) */
-  const off=mState._lastOff;
-  if(mState._scOff!==off||type==='quarter_start'||type==='start'||type==='foul'||type==='free'||type==='reb'){
-    mState._scOff=off; mState._scAnchor=from;
+  /* M14: şut saati eskiden mState._lastOff'a bakıyordu; o değer _startBreak/_setupInbound
+     tarafından ANİMASYON ORTASINDA değiştiği için sıfırlama güvenilmezdi. Artık hücum
+     sahibi olayın kendisinden türetilir (motordaki _eventOff ile aynı kaynak). */
+  let off=mState._lastOff;
+  try{
+    if(ev&&typeof ev==='object'&&typeof _eventOff==='function') off=_eventOff(ev);
+  }catch(e){}
+  /* FIBA: hücum ribaundunda saat 14'e döner (24'e değil). */
+  const hucumReb=!!(ev&&typeof ev==='object'&&ev.type==='reb'&&ev.rebOff);
+  const sifirla=(mState._scOff!==off)||type==='quarter_start'||type==='start'||type==='foul'||type==='free'||type==='reb';
+  if(sifirla){
+    mState._scOff=off;
+    mState._scAnchor=from;
+    mState._scLimit=hucumReb?14:24;
   }
+  if(mState._scLimit==null) mState._scLimit=24;
   const t0=Date.now();
   const tick=()=>{
     const k=Math.max(0,Math.min(1,(Date.now()-t0)/Math.max(1,durMs)));
@@ -404,8 +416,13 @@ function startClockTween(targetT,durMs,type){
     el.textContent=_fmtClock(now);
     if(scEl){
       const used=Math.max(0,(mState._scAnchor!=null?mState._scAnchor:now)-now);
-      const left=Math.max(0,24-used);
-      scEl.textContent=(mState.running&&left>0.5)?('ŞUT '+Math.ceil(left)):'';
+      const limit=mState._scLimit||24;
+      /* M14: hücum ribaundu her zaman 'reb' olayı üretmediği için saat bazen hiç
+         sıfırlanmıyor, used limiti aşınca gösterge boşalıyordu. Aşım halinde saat
+         sıfırdan devam eder (pozisyon yeni başlamış sayılır) — gösterge kaybolmaz. */
+      let left=limit-used;
+      if(left<0){ mState._scAnchor=now; mState._scLimit=24; left=24; }
+      scEl.textContent=mState.running?('ŞUT '+Math.max(0,Math.ceil(left))):'';
     }
     if(k>=1) stopClockTween();
   };
