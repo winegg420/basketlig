@@ -294,9 +294,27 @@ function startMatch(playoff){
     if(ev.t!==undefined) startClockTween(ev.t,delay,ev.type);
     /* M11: hız değişince kalan süre yeniden ölçeklenebilsin diye zamanlayıcı damgalanır. */
     mState._stepAt=Date.now(); mState._stepDelay=delay; mState._stepRate=rate;
-    matchEventTimer=setTimeout(matchStep,delay);
+    /* M3 (tamamlayıcı): şutlu olayda sonuç cümlesi top çembere varınca basılır. Kare
+       düşmesi / arka plan yüzünden koreografi tahmini süreden GEÇ biterse, sıradaki
+       olaya geçmeden önce sonucun basılmasını bekle (sınırlı süre). Böylece cümle ne
+       kaybolur (orphan) ne de erken basılır (kimlik uyuşmazlığı). */
+    mState._waitRes=isShot?(Date.now()+delay+Math.max(600,Math.min(2200,delay*0.9))):0;
+    matchEventTimer=setTimeout(stepGuarded,delay);
   }
-  mState.step=matchStep;
+  /* Sonuç cümlesi hâlâ bekliyorsa kısa aralıklarla yeniden dene; süre aşımında ilerle
+     (kilitlenme yok). setMatchRate ve visibilitychange de bu sarmalayıcıyı kullanır. */
+  function stepGuarded(){
+    try{
+      const S=(typeof mState!=='undefined'&&mState)?mState._sim:null;
+      if(mState._waitRes&&S&&typeof S.pendingPaint==='function'&&Date.now()<mState._waitRes){
+        matchEventTimer=setTimeout(stepGuarded,60);
+        return;
+      }
+    }catch(e){}
+    mState._waitRes=0;
+    matchStep();
+  }
+  mState.step=stepGuarded;
   matchStep();
 }
 

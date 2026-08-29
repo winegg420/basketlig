@@ -1167,11 +1167,13 @@ function animateShotPossession(sh,onShoot,onResult){
   /* Sonuç cümlesi tek noktadan basılır; bir kez basıldıysa tekrar basılmaz. */
   const _S0=(typeof mState!=='undefined'&&mState)?mState._sim:null;
   const _res=()=>{ if(_S0) _S0.pendingPaint=null; try{ if(typeof onResult==='function') onResult(); }catch(e){} };
-  if(_S0) _S0.pendingPaint=_res;
   try{
     const S=(typeof mState!=='undefined'&&mState)?mState._sim:null;
     if(!S) return 0;
     clearBallTimers();
+    /* pendingPaint YALNIZCA clearBallTimers'tan SONRA kurulur: onceki sirada kurulunca
+       bu satirdaki flush cumleyi pozisyonun BASINDA bastiriyordu (kimlik %64'e dusuyordu). */
+    S.pendingPaint=_res;
     const offLeft=S.offSide!=null?S.offSide:(sh.isHome===(mState.userIsHome!==false));
     const offP=S.offP||(sh.isHome?S.home:S.away);
     const defP=S.defP||(sh.isHome?S.away:S.home);
