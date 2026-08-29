@@ -13,6 +13,7 @@
  *  K6  İnternetsiz aç → yazı tipleri yerel yükleniyor, tabela taşmıyor
  *  K7  390×844'te İlk 5 ekranında yedeklerin hepsine erişilebiliyor (kart kaydırılabilir)
  *  K8  node tools/visual-check.js çıkış kodu 0   (ayrı çalıştırılır — burada kontrol edilmez)
+ *  K9  a11y büyütme (zoom 1.18) açıkken sürükleme hayaleti imlecin altında kalıyor
  *
  * Çıkış kodu: 0 = tüm kriterler geçti, 1 = en az biri düştü.
  * Çalıştırma:  node tools/faz7-check.js
@@ -308,6 +309,66 @@ async function main() {
       k7,
       `yedek kartı: ${lu.kartSayisi} · kart touch-action: ${lu.kartTouchAction} (pan-y olmalı) · tutamak: ${lu.gripVar} (touch-action: ${lu.gripTouchAction})` +
       ` · liste kaydırılabilir: ${lu.kaydirilabilir} · en alta kaydırınca son kart görünür: ${lu.sonKartGorunur}`);
+    await ctx.close();
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // K9 — Erişilebilirlik büyütmesi (html.a11y-big{zoom:1.18}) açıkken sürükleme
+  //      hayaleti imlecin ALTINDA kalmalı. zoom + position:fixed birlikte left/top
+  //      değerlerini ölçekliyor, clientX/clientY ise ölçeklenmiyor → hayalet kayıyordu.
+  // ───────────────────────────────────────────────────────────────────────────
+  console.log('\n── K9: a11y büyütme açıkken sürükleme hayaleti ──');
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const page = await ctx.newPage();
+    page.on('pageerror', e => konsolHatalari.push('[K9] ' + e.message));
+    await yeniKariyer(page, base, 'Zoom Testi');
+
+    /** Verilen a11y ayarıyla İlk 5'i açar, bir yedek kartını sürükler, hayalet↔imleç sapmasını döner. */
+    const olc = async (buyutmeAcik) => {
+      return await page.evaluate(async (acik) => {
+        const bekle = (ms) => new Promise(r => setTimeout(r, ms));
+        G.settings = Object.assign({}, G.settings, { a11yBig: !!acik });
+        applyA11ySettings();
+        try { closeAppModal(); } catch (e) {}
+        await bekle(150);
+        openLineupEditor();
+        await bekle(350);
+        const kart = document.querySelector('.lu-bench .lu-card');
+        if (!kart) return { hata: 'yedek kartı yok' };
+        const grip = kart.querySelector('.lu-grip') || kart;
+        const gr = grip.getBoundingClientRect();
+        const bas = { x: Math.round(gr.left + gr.width / 2), y: Math.round(gr.top + gr.height / 2) };
+        grip.dispatchEvent(new PointerEvent('pointerdown', { clientX: bas.x, clientY: bas.y, bubbles: true, pointerId: 1 }));
+        const hedef = { x: bas.x + 160, y: bas.y - 120 };   // >5px eşiğini aşan gerçek sürükleme
+        document.dispatchEvent(new PointerEvent('pointermove', { clientX: hedef.x, clientY: hedef.y, bubbles: true, pointerId: 1 }));
+        await bekle(80);
+        const ghost = document.querySelector('.lu-ghost');
+        if (!ghost) {
+          document.dispatchEvent(new PointerEvent('pointerup', { clientX: hedef.x, clientY: hedef.y, bubbles: true, pointerId: 1 }));
+          return { hata: 'hayalet oluşmadı' };
+        }
+        const g = ghost.getBoundingClientRect();
+        const sapma = Math.round(Math.hypot((g.left + g.width / 2) - hedef.x, (g.top + g.height / 2) - hedef.y));
+        ghost.style.display = 'none';
+        const alt = document.elementFromPoint(hedef.x, hedef.y);   // bırakma hedefi hâlâ bulunuyor mu?
+        ghost.style.display = '';
+        document.dispatchEvent(new PointerEvent('pointerup', { clientX: hedef.x, clientY: hedef.y, bubbles: true, pointerId: 1 }));
+        await bekle(120);
+        try { closeAppModal(); } catch (e) {}
+        return { sapma, zoom: parseFloat(getComputedStyle(document.documentElement).zoom) || 1, hedefBulundu: !!alt };
+      }, buyutmeAcik);
+    };
+
+    const kapali = await olc(false);
+    const acik = await olc(true);
+    const esik = 8;   // px — "imlecin altında" sayılması için tolerans
+    const k9 = !kapali.hata && !acik.hata && kapali.sapma <= esik && acik.sapma <= esik && acik.hedefBulundu;
+    kayit('K9', 'a11y büyütme (zoom 1.18) açıkken hayalet imlecin altında',
+      k9,
+      'zoom kapalı: sapma ' + (kapali.hata || kapali.sapma + ' px') + ' (zoom ' + kapali.zoom + ') · ' +
+      'zoom açık: sapma ' + (acik.hata || acik.sapma + ' px') + ' (zoom ' + acik.zoom + ') · ' +
+      'bırakma hedefi bulunuyor: ' + acik.hedefBulundu + ' · tolerans ' + esik + ' px');
     await ctx.close();
   }
 

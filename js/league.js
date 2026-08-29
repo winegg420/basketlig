@@ -968,7 +968,23 @@ function lineupPointerDown(ev,id,from,slotIx){
   document.addEventListener('pointerup',lineupPointerUp);
   try{ if(ev.target&&ev.target.setPointerCapture) ev.target.setPointerCapture(ev.pointerId); }catch(e){}
 }
-function _luPositionGhost(x,y){ if(_luDrag&&_luDrag.ghost){ _luDrag.ghost.style.left=x+'px'; _luDrag.ghost.style.top=y+'px'; } }
+/** Erişilebilirlik büyütmesi (html.a11y-big{zoom:1.18}) açıkken position:fixed hayaletin
+    left/top değerleri zoom ile ÇARPILIYOR, oysa pointer'ın clientX/clientY'si çarpılmıyor —
+    hayalet imleçten kayıyordu (ölçüm: zoom kapalı 0 px, açık 147 px sapma).
+    elementFromPoint zoom'suz koordinatla doğru çalıştığı için yalnız çizim düzeltilir. */
+function _uiZoom(){
+  try{
+    const z=parseFloat(getComputedStyle(document.documentElement).zoom);
+    if(isFinite(z)&&z>0) return z;
+  }catch(e){}
+  return 1;
+}
+function _luPositionGhost(x,y){
+  if(!_luDrag||!_luDrag.ghost) return;
+  const z=_uiZoom();
+  _luDrag.ghost.style.left=(x/z)+'px';
+  _luDrag.ghost.style.top=(y/z)+'px';
+}
 function _luClearHot(){ document.querySelectorAll('.drop-hot').forEach(e=>e.classList.remove('drop-hot')); }
 function lineupPointerMove(ev){
   if(!_luDrag) return;
