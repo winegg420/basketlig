@@ -2,18 +2,20 @@
 Son güncelleme: 2026-08-29 · 32. oturum — **açık iş yok, tüm testler yeşil**
 
 Talep belgeleri: `REVIZE-PAKETI.md` (FAZ 1-6) · `REVIZE-PAKETI-FAZ7.md` (maç dışı) ·
-`REVIZE-PAKETI-FAZ8.md` (oynanış testi) — **üçü de uygulandı ve ölçülerek doğrulandı**.
+`REVIZE-PAKETI-FAZ8.md` (oynanış testi) — **üçü de baştan sona uygulandı ve ölçülerek doğrulandı**.
 Protokol: `DEVAM-ET.md` · Oturum günlüğü: `PROGRESS.md` (32. oturum + dört ek)
 
 ## Durum: TEMİZ
 
-FAZ 1-5, FAZ 7, FAZ 8 tamamlandı; M9, M12, M14, M20 kapatıldı; a11y sürükleme hatası düzeltildi.
+**FAZ 1-8'in tamamı bitti.** M9, M12, M14, M20 kapatıldı; a11y sürükleme hatası düzeltildi;
+B5 zorluk seviyesi eklendi. Talep belgelerinde açık madde kalmadı.
 Her madde **ölçülerek** doğrulandı — "uyguladım" beyanına dayanan açık iş yok.
 
 ## Doğrulama komutları (hepsi geçiyor)
 
 | Komut | Ne sınar | Sonuç |
 |---|---|---|
+| `node tools/faz6-check.js` | FAZ 6 (ödüller, zorluk, koçluk istatistiği, kayıt bütünlüğü, mobil uçtan uca, masaüstü paketi) | ✓ **6/6** |
 | `node tools/faz8-check.js` | FAZ 8 kabul kriterleri (piyasa, şehir, v7, kutuplaşma, sürüm, mobil) | ✓ **6/6** |
 | `node tools/faz7-check.js` | FAZ 7 kabul kriterleri + a11y zoom hayaleti | ✓ **8/8** |
 | `node tools/m20-check.js` | rakip kadro kalıcılığı | ✓ **6/6** |
@@ -38,6 +40,8 @@ Her madde **ölçülerek** doğrulandı — "uyguladım" beyanına dayanan açı
 - **a11y-big zoom 1.18:** sürükleme hayaleti 147 px kayıyordu → `_uiZoom()`.
 - **M9** outlet pası · **M12** and-1 ek atışı · **M14** şut saati 14 · **M20** rakip kadro kalıcılığı.
 - **FAZ 8 (F8-1…F8-14):** tamamı + 8 kabul kriteri.
+- **FAZ 6:** B5 zorluk seviyesi (kolay/normal/zor) + B4 "en gelişen" ödülü; A1/B3/C2/C3/D1/D3
+  ve Steam ek maddelerinin zaten kapandığı **ölçülerek** doğrulandı (`faz6-check`).
 - **İki araç kusuru:** `band.js` tohumu hiç kurmuyordu; `i18n-scan.js` salt ASCII harfli Türkçe
   metinleri göremiyordu. İkisi de düzeltildi — düzeltilince yeni gerçek eksikler ortaya çıktı.
 
@@ -47,10 +51,14 @@ Yok.
 
 ## Sıradaki adım (öncelik sırasıyla)
 
-1. **FAZ 6** — B4 sezon ödülleri, B5 zorluk seviyesi, C2/C3 (`REVIZE-PAKETI.md`).
-2. **Steam paketleme** — Tauri derlemesi (`src-tauri/`), gerçek cihazda dokunma testi.
-3. `RAPOR-EKSIKLER.md` içindeki B1-B6 (büyük yeni özellikler).
-4. FAZ 8 notu: dokunma hedeflerinde 7 öğe hâlâ 38-39 px (eşik 40) — sınırda, istenirse kapatılır.
+Talep belgelerinde **açık madde kalmadı**. Sıradakiler kapsam kararı gerektirir:
+
+1. **Gerçek Tauri derlemesi** — `npm run desktop:build` bu makinede hiç çalıştırılmadı
+   (Rust araç zinciri gerekir). `dist-desktop` hazır ve doğrulandı; kalan iş derleme + imzalama.
+2. **Gerçek cihazda dokunma testi** — Playwright emülasyonu geçiyor; fiziksel telefon denenmedi.
+3. **B6** — akademi maçları, pozisyon antrenmanı derinliği (`RAPOR-EKSIKLER.md`, kapsam kararı).
+4. **Steam Deck / gamepad** desteği — kapsam kararı bekliyor (FAZ 6 belgesinde açık bırakılmış).
+5. FAZ 8 notu: 7 dokunma hedefi 38-39 px (eşik 40) — sınırda, istenirse kapatılır.
 
 ## Dikkat
 

@@ -2159,3 +2159,61 @@ maça özgü gün formu ve daha geniş gürültü eklendi.
 
 `band.js` hash `dc984289dee3c29d` → **`ec630b3a512bb3b2`** — beklenen: piyasa ve şehir üretimi
 RNG akışını kaydırdı (mekanik değişiklik, sunum değil).
+
+### 32. oturum — EK 5: FAZ 6 (kalan eksikler + Steam hazırlığı)
+
+FAZ 6 tablosunun büyük kısmı önceki fazlarda kapanmıştı. Bu oturumda **hangilerinin gerçekten
+kapandığı ölçülerek** doğrulandı, açık kalan tek büyük madde (B5) uygulandı.
+
+#### B5 · Zorluk seviyesi — asıl yeni özellik
+`state.js`'te **tek kaynak**: `DIFFICULTY` tablosu + `difficultyCfg()`. Çarpanlar koda dağılmıyor.
+
+| | bütçe | gelir | rakip | sakatlık | piyasa tavanı | başkan hedefi |
+|---|---|---|---|---|---|---|
+| Kolay | ×1,50 | ×1,15 | ×0,94 | ×0,60 | +2 | +2 sıra |
+| Normal | ×1,00 | ×1,00 | ×1,00 | ×1,00 | 0 | 0 |
+| Zor | ×0,70 | ×0,90 | ×1,06 | ×1,40 | −2 | −1 sıra |
+
+**Tasarım kısıtı:** NORMAL'in tüm çarpanları 1/0'dır, yani davranış FAZ 6 öncesiyle **birebir
+aynıdır** — `band.js` hash'i değişmedi (`ec630b3a512bb3b2`). Bu kasıtlıydı: yeni bir ayar,
+mevcut dengeyi bozmadan eklendi.
+
+Bağlantı noktaları: başlangıç bütçesi (`createTeam`), bilet geliri (`economy.js`), rakip güç
+çarpanı `oMul` (`match-engine.js`), kullanıcı sakatlık riski + başkan hedefi (`match-prep.js`),
+serbest piyasa tavanı (`roster-gen.js`).
+Arayüz: kurulum ekranında seçilir, Ayarlar'dan değiştirilebilir (ortak `diff-picker` bileşeni).
+Kayıt sürümü **v8** + `migrateV7ToV8` — eski kayıtlar NORMAL'de devam eder.
+
+#### B4 · Sezon ödülleri tamamlandı
+MVP, en skorer/asistçi/ribaundçu, ideal beşli, yılın genci **zaten vardı** (Faz 2.2).
+Eksik olan "en gelişen"di: yılın genci performansa göre seçiliyordu. `G.analytics.playerDev`
+sezon boyu OVR anlık görüntüsü tuttuğu için ilk/son farkı en büyük oyuncu artık ayrı ödül alıyor.
+
+#### Zaten kapandığı ÖLÇÜLEREK doğrulanan maddeler
+Bu oturumun dersi gereği hiçbiri "kod okuyarak" onaylanmadı:
+
+| Madde | Durum | Kanıt |
+|---|---|---|
+| A1 / B3 rakip kadro + sakatlık | M20'de kapandı | `m20-check` T6: 40 günde 35 turda sakat |
+| C2 manuel koçlukta istatistik kaybı | `resume.pstats` koruyor | yeniden üretim öncesi 37 sayı → sonrasında 91, kayıp yok |
+| C3 `startMatch` ölü else dalı | artık yok | mevcut `else` lig maçı yolu — geçerli dal |
+| Çevrimdışı font | F7-11'de kapandı | `faz7-check` K6 (ağ kesilerek) |
+| Kota/hata yönetimi | F7-4'te kapandı | `faz7-check` K2/K3 |
+| Kayıt bütünlüğü (soyunma odası) | risk yok | `sit`/`mood`/`söz`/`oynadı` kayıt turunu atlatıyor |
+| D3 Tauri paketleme | hazır | `dist-desktop`: 13 js modülü, 4 yerel font, **dış src/href yok** |
+
+#### YENİ ARAÇ — `tools/faz6-check.js`
+F1 ödül üretimi · F2 zorluk çarpanlarının **fiilen** etkisi (kolay/normal/zor farkı ölçülüyor,
+kayıt turu dahil) · F3 manuel koçluk istatistik koruması · F4 soyunma odası alanlarının kayıt
+bütünlüğü · F5 **D1 mobil uçtan uca** (16 ekran: 11 sayfa + 5 modal; yatay taşma, JS hatası,
+36 px altı dokunma hedefi) · F6 masaüstü paketi.
+
+Sonuç: **6/6**. Mobil taramada 16 ekranda **0 yatay taşma, 0 JS hatası, 36 px altı hedef yok**.
+
+#### Doğrulama
+`faz6-check` 6/6 · `faz8-check` 6/6 · `faz7-check` 8/8 · `m20-check` 6/6 · `sunum-check` 3/3 ·
+`box-band --n=200` 11/11 · `visual-check` 0 hata · `live-metrics` orphan 0 / kimlik %100 /
+ışınlanma 0 kare · `i18n-scan` kalan Türkçe yalnız özel isim · **`band.js` hash değişmedi**.
+
+`sunum-check` bir turda M9'da düştü (o pencerede yalnız 1-2 örnek vardı); daha uzun pencerede
+%100 ve motor kararı 104/107. Düşük örneklemde yayılım gürültülüdür — araç zaten uyarıyor.

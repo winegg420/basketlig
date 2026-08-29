@@ -40,6 +40,7 @@ Oyun ilerlemesi tarayıcıda **localStorage + IndexedDB** ile saklanır (otomati
 | `tools/visual-check.js` | **Otomatik görsel/konsol testi** (Playwright + sistem Chrome, masaüstü+mobil). Her değişiklikten sonra çalıştır. |
 | `tools/realism-check.js` | **Canlı maç gerçekçilik denetimi**: saha-dışı/ışınlanma/üst üste binme/sahipsiz top ihlalleri + anlatım-görüntü senkron gecikmesi. `--fire` şut anı, `--inb` kenardan sokma anı ekran görüntüsü, `--full` tam maç, `--rate=` izleme hızı. |
 | `tools/faz7-check.js` | **FAZ 7 kabul kriteri denetçisi** — playoff yenileme, kota/IndexedDB tazeliği, kayıt silme kalıcılığı, arena bakımı, koç reroll istismarı, çevrimdışı font (ağ kesilerek), mobil ilk-5 kaydırma. Kayıt/ekonomi/başlangıç durumu değişince çalıştır. |
+| `tools/faz6-check.js` | **FAZ 6 denetimi** — sezon ödülleri, zorluk seviyesi çarpanları, manuel koçluk istatistik koruması, kayıt bütünlüğü, mobil uçtan uca, masaüstü paketi. |
 | `tools/faz8-check.js` | **FAZ 8 kabul kriterleri** — piyasa dengesi, şehir dağılımı, v7 migrasyonu, 200 sezonluk lig kutuplaşması, script sürümü, mobil varsayılan görünüm. |
 | `tools/m20-check.js` | **Rakip kadro kalıcılığı denetçisi** — kimlik · derinlik · sezon istatistiği · yorgunluk · isabet yolu · sakatlık. Bot kulüp/rakip mekaniği değişince çalıştır. |
 | `tools/sunum-check.js` | **Canlı sunum davranış denetçisi** (M9 çıkış pası · M12 AND-1 ek atışı · M14 şut saati). Bu maddeler maç sonucunu değiştirmediği için `band`/`box-band` onları göremez — sunum değişikliğinden sonra çalıştır. |
@@ -81,6 +82,7 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
 - **Kullanıcı girdileri** (takım/arena/menajer adı) `sanitizeTeamName` ile temizlenir (XSS).
 - **Para birimi KR** (kullanıcı kararı — USDT'ye dönme).
 - **Oyuncular hep erkek** (portre havuzu buna göre).
+- **Zorluk seviyesi (B5):** çarpanlar YALNIZ `js/state.js` içindeki `DIFFICULTY` tablosunda; koda dağıtma, `difficultyCfg()` ile oku. NORMAL tüm çarpanları 1/0'dır — yeni bir çarpan eklerken normalin nötr kalmasına dikkat et, yoksa mevcut denge ve `band.js` hash'i kayar.
 
 ## Bilinen eksikler
 
