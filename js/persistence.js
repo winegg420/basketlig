@@ -343,7 +343,7 @@ function serializeGameState(){
     galibiyet:t.galibiyet,maglubiyet:t.maglubiyet,sayiFor:t.sayiFor,sayiAg:t.sayiAg
   }));
   return{
-    v:5,
+    v:6,   /* F7-17: v5'ten sonra rol/eğilim, playbook, soyunma odası, izci ağı, draft ve başkan hedefi eklendi */
     savedAt:new Date().toISOString(),
     coins:G.coins,wins:G.wins,losses:G.losses,points:G.points,chemistry:G.chemistry,winStreak:G.winStreak||0,careerMatches:G.careerMatches||0,careerWins:G.careerWins||0,careerLosses:G.careerLosses||0,clubRecords:G.clubRecords||{},
     team:G.team,
@@ -486,7 +486,29 @@ function migrateEconomyV4ToV5(d){
   if(d.lastEcoDay==null) d.lastEcoDay=d.gameDay||1;
 }
 
-const SAVE_VERSIONS=[2,3,4,5];
+const SAVE_VERSIONS=[2,3,4,5,6];
+/* F7-17: v5 → v6 normalizasyonu. v5'ten sonra eklenen alanlar (rol/eğilim, playbook,
+   izci ağı, draft, başkan hedefi, soyunma odası krizi) boşluklarını '||' varsayılanlarıyla
+   kapatıyordu; artık sürüm damgası hangi kaydın neyi içerdiğini ayırt ediyor ve eksik
+   alanlar tek noktada normalleştiriliyor. */
+function migrateV5ToV6(d){
+  if(!d) return;
+  if(!Array.isArray(d.scouts)) d.scouts=[];
+  if(!d.tactics||typeof d.tactics!=='object') d.tactics={tempo:'normal',odak:'dengeli'};
+  if(!d.tactics.playbook) d.tactics.playbook='dengeli';
+  if(!d.tactics.defSet) d.tactics.defSet=d.tactics.defensiveStyle||'adam';
+  if(!d.analytics||typeof d.analytics!=='object') d.analytics={teamMatches:[],playerDev:{}};
+  if(d._crisisPid===undefined) d._crisisPid=null;
+  if(d._crisisDay===undefined) d._crisisDay=null;
+  /* Arena bakımı ham KR ölçeğinde olmalı (F7-6): ecoRound'lanmış eski değerler seviyeye göre düzeltilir. */
+  try{
+    if(d.arena&&typeof d.arena==='object'){
+      const lv=ARENA_LVL[Math.max(0,Math.min(ARENA_LVL.length-1,(Number(d.arena.s)||1)-1))];
+      if(lv&&Number(d.arena.bk)>lv.bk*2) d.arena.bk=lv.bk;
+    }
+  }catch(e){}
+  d.v=6;
+}
 
 /* Güvenlik (18. oturum): kayıt verisi state'e yazılmadan önce işaretleme karakterlerinden
    arındırılır. İsim alanları (takım/oyuncu/arena/menajer + lig/fikstür/kupa/koç/izci adları)
@@ -543,6 +565,7 @@ function _applyGameStateInner(d){
   d=_sanitizeImportedSave(d); /* içe aktarma + normal yükleme tek noktadan temizlenir (idempotent) */
   if((d.v|0)<4) migrateEconomyV3ToV4(d);
   if((d.v|0)<5) migrateEconomyV4ToV5(d);
+  if((d.v|0)<6) migrateV5ToV6(d);
   G.coins=d.coins??START_KR;
   G.wins=d.wins??0;
   G.careerMatches=Number(d.careerMatches)||0; /* Paket B: kariyer maç sayacı */
@@ -557,8 +580,6 @@ function _applyGameStateInner(d){
   G.youth=Array.isArray(d.youth)?d.youth:[];
   G.marketPlayers=Array.isArray(d.marketPlayers)?d.marketPlayers:[];
   G.clubTransferPlayers=Array.isArray(d.clubTransferPlayers)?d.clubTransferPlayers:[];
-  /* FAZ A (30. oturum): eski kayıtlarda rol/eğilim yok — statlardan deterministik doldurulur. */
-  try{ ensureRoles(G.players); ensureRoles(G.youth); ensureRoles(G.marketPlayers); ensureRoles(G.clubTransferPlayers); }catch(e){}
   G._ctSeq=d._ctSeq||0;
   G.marketTab='free';G.clubTransferFilter='all';
   G.coaches=Array.isArray(d.coaches)?d.coaches:[];
@@ -617,6 +638,10 @@ function _applyGameStateInner(d){
       p.seed='legacy'+String(p.id||i)+hash32((p.isim||'')+(p.yas||'')+(p.poz||''));
     });
   });
+  /* FAZ A (30. oturum): eski kayıtlarda rol/eğilim yok — statlardan deterministik doldurulur.
+     F7-17: bu çağrı SEED doldurma bloğundan SONRA olmalı; seed'siz oyuncularda eğilimler
+     ilk refreshRole() çağrısında bir kez zıplıyordu. */
+  try{ ensureRoles(G.players); ensureRoles(G.youth); ensureRoles(G.marketPlayers); ensureRoles(G.clubTransferPlayers); }catch(e){}
   ensureMarketStock();
   if(G.team) ensureYouthStock();
   /* F7-7 (istismar): "boşsa üret" kuralı ücretsiz reroll kapısıydı — tüm koçları kov,

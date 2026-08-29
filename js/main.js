@@ -678,8 +678,7 @@ function applyTeamTrainingEffect(etki){
       p[etki]=Math.min(Math.min(99,p.potansiyel||99),p[etki]+add);
     }
     p.genel=Math.round(STAT_KEYS.reduce((s,k)=>s+p[k],0)/STAT_KEYS.length);
-  refreshRole(p); /* FAZ A */
-    refreshRole(p); /* FAZ A */
+    refreshRole(p); /* FAZ A — F7-27: çift çağrının biri kaldırıldı */
     /* Maaş sözleşme boyunca sabit — gelişimin maaşa yansıması sözleşme yenilemesinde olur. */
   });
 }
@@ -691,6 +690,10 @@ function applyIndividualTrainingEffect(pid,stat){
   const artis=Math.max(1,Math.min(14,Math.round(rand(1,4)*mult)));
   p[stat]=Math.min(Math.min(99,p.potansiyel||99),p[stat]+artis);
   p.genel=Math.round(STAT_KEYS.reduce((s,k)=>s+p[k],0)/STAT_KEYS.length);
+  /* F7-27: bireysel antrenmanda rol/eğilim tazelenmiyordu — sutIsabeti 14 puan yükselip
+     Şutör'e dönmesi gereken oyuncunun p.rol/p.eg eski kalıyor, maç motoru bayat
+     eğilimlerle çalışıyordu. */
+  try{ refreshRole(p); }catch(e){}
   return artis;
 }
 
@@ -1316,7 +1319,7 @@ function createTeam(){
   G.cup=null; G.cupHistory=[];
   G.clubRecords={}; G.managerHistory=[]; G.managerRep=0;
   G.careerMatches=0; G.careerWins=0; G.careerLosses=0;
-  G.posTraining={}; G.bankruptWeeks=0;
+  G.posTraining=null; G.bankruptWeeks=0;   /* null = eğitim yok; {} truthy olduğu için boş kart basılıyordu */
   G.lineup=null; G.pendingMatch=null; G.prepareMatchIx=null;
   G.ticketPrice=2; G.winStreak=0; G._ctSeq=0;
   G.clubTransferPlayers=[]; G.playoff=null;

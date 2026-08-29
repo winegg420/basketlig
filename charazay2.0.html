@@ -471,6 +471,10 @@ body.theater-open{overflow:hidden;}
 .dash-next{position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(249,115,22,0.14),rgba(59,130,246,0.12));border:1px solid var(--border);border-radius:16px;padding:16px;cursor:pointer;transition:transform .14s,box-shadow .14s,border-color .14s;}
 .dash-next:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,0.4);border-color:var(--accent);}
 .dash-next:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+/* F7-25: odak halkası tüm kod tabanında TEK kuraldaydı; klavye kullanıcısı nerede olduğunu
+   göremiyordu. Genel kural + .fg alanlarının outline:none telafisi. */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.fg input:focus-visible,.fg select:focus-visible,.fg textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent);}
 .dash-next .dn-tag{position:absolute;top:12px;right:12px;font-size:9px;font-weight:800;letter-spacing:1px;background:rgba(239,68,68,0.22);color:#fca5a5;padding:3px 9px;border-radius:20px;}
 .dn-meta{font-size:11px;color:var(--text2);margin-bottom:12px;font-weight:600;}
 .dn-teams{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:14px;}
@@ -578,6 +582,19 @@ tr:hover td{background:rgba(255,255,255,0.02);}
   .app-layout{position:relative;z-index:10;}
 }
 
+/* F7-24: dokunma hedeflerinin çoğu 22-30px idi (eşik 44px) — kadro filtresi, market
+   sıralaması, sidebar lig ağacı, modal kapatma ve arena ekonomisi ana etkileşimleri. */
+@media(max-width:768px){
+  .fbtn,.btn-sm,.btn-bid,.upbtn,.tb-icon,.league-slot,.lt-h{min-height:44px;padding-top:11px;padding-bottom:11px;}
+  .modal-close{padding:10px;top:4px;right:6px;min-width:44px;min-height:44px;}
+  /* F7-30: lig tablosu 720px genişlikte + kendi max-height'i olan sarmalayıcı = iç içe iki
+     eksenli kaydırıcı; 390px'te sıralama sütunları ekran dışında kalıyordu. Mobilde
+     attığı/yediği sayı sütunları gizlenir (Av ve Puan kalır) ve dikey kaydırma sayfaya bırakılır. */
+  #ligTableWrap table{min-width:520px;}
+  #ligTableWrap th:nth-child(6),#ligTableWrap td:nth-child(6),
+  #ligTableWrap th:nth-child(7),#ligTableWrap td:nth-child(7){display:none;}
+  #ligTableWrap.lig-standings-wrap{max-height:none;}
+}
 @media(max-width:768px){
   .app-layout{
     display:block;

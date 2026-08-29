@@ -192,7 +192,9 @@ function playerAvatar(seed,salt,opts){
 function playerAvatarImgAttrs(seed,salt,opts){
   const o=typeof opts==='object'&&opts?opts:{};
   const esc=v=>String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-  return `data-av-seed="${esc(seed)}" data-av-salt="${esc(salt??'')}" data-av-opts="${esc(JSON.stringify(o))}" onerror="playerAvatarSvgFallback(this)"`;
+  /* F7-30: alt yoktu — ekran okuyucu dosya adını okuyordu. Portre dekoratif olduğu için
+     boş alt doğrusu (isim zaten yanındaki metinde geçiyor); çağıran alt verirse ezmez. */
+  return `alt="" data-av-seed="${esc(seed)}" data-av-salt="${esc(salt??'')}" data-av-opts="${esc(JSON.stringify(o))}" onerror="playerAvatarSvgFallback(this)"`;
 }
 /** Koç portresi: oyuncu havuzunu paylaşır (ayrı havuz üretmeye gerek yok).
  *  Koç-özel seed ile foto stabil ve oyunculardan farklı bir index'e düşer. */

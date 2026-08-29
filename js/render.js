@@ -131,7 +131,7 @@ function renderClubTransfers(){
       ?`<button class="btn-bid" onclick="event.stopPropagation();loanClubPlayer('${p.id}')" style="background:var(--blue);">KİRALA</button>`
       :`<button class="btn-bid" onclick="event.stopPropagation();openClubOfferModal('${p.id}')">TEKLİF VER</button>`;
     return `
-    <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openPlayerModal('${p.id}')">
+    <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openPlayerModal('${p.id}');}">
       <div class="mavatar-wrap">
       <img class="mavatar" src="${playerAvatar(p.seed,p.id,{market:true})}" ${playerAvatarImgAttrs(p.seed,p.id,{market:true})} alt="${p.isim}">
       <div class="pimg-cap" style="margin-top:2px;">OVR ${p.genel}</div>
@@ -342,7 +342,7 @@ function fixtureGroupedHtml(rows){
 function fixtureRowsHtml(rows){
   return rows.map((m,i)=>{
     const clickRow=m._click===true;
-    const ona=clickRow?`onclick="scrollToMacLive()" role="button" tabindex="0" onkeydown="if(event.key==='Enter')scrollToMacLive()"`:'';
+    const ona=clickRow?`onclick="scrollToMacLive()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scrollToMacLive();}"`:'';
     const hlt=clickRow?'border-color:rgba(239,68,68,0.5);background:rgba(239,68,68,0.06);cursor:pointer;':'';
     const hint=clickRow?' · tıkla → canlı panel':'';
     const subMeta=!m.done&&m.saat&&m.saat!=='—'
@@ -641,7 +641,7 @@ function openPlayerModal(pid){
   ${potBlock}
   <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
     <div style="flex:0 0 min(42vw,240px);">
-      <img class="player-modal-hero" src="${bigImg}" ${playerAvatarImgAttrs(p.seed,salt,av)} alt="">
+      <img class="player-modal-hero" src="${bigImg}" ${playerAvatarImgAttrs(p.seed,salt,av)}>
       ${injBannerHtml(p)}
       <div style="text-align:center;margin-top:8px;font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:32px;color:${oc};">${p.genel} <span style="font-size:13px;color:var(--text2);font-weight:600;font-family:system-ui;">OVR · ${st}★</span></div>
     </div>
@@ -660,7 +660,7 @@ function openPlayerModal(pid){
 function renderRosterListRow(p){
   const st=starFromGenel(p.genel);
   return `
-    <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openPlayerModal('${p.id}')">
+    <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openPlayerModal('${p.id}');}">
     ${injBannerHtml(p)}
       <div class="mavatar-wrap">
       <img class="mavatar" src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} alt="${p.isim}">
@@ -690,7 +690,7 @@ function renderRosterListRow(p){
 function renderYouthListRow(p){
   const st=starFromGenel(p.genel);
   return `
-    <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openPlayerModal('${p.id}')">
+    <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openPlayerModal('${p.id}');}">
     ${injBannerHtml(p)}
       <div class="mavatar-wrap">
       <img class="mavatar" src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} alt="${p.isim}">
@@ -982,7 +982,7 @@ function renderMarket(){
     const st=starFromGenel(p.genel);
     const tag=p.listedFromUser?'<span style="font-size:9px;color:var(--gold);"> · oyuncu ilanı</span>':'<span style="font-size:9px;color:var(--text2);"> · serbest</span>';
     return `
-    <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openPlayerModal('${p.id}')">
+    <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openPlayerModal('${p.id}');}">
       <div class="mavatar-wrap">
       <img class="mavatar" src="${playerAvatar(p.seed,p.marketIdx,{market:true})}" ${playerAvatarImgAttrs(p.seed,p.marketIdx,{market:true})} alt="${p.isim}">
       <div class="pimg-cap" style="margin-top:2px;">OVR ${p.genel}</div>
@@ -1193,7 +1193,7 @@ function renderAntrenman(){
       document.getElementById('teamTrainingList').parentNode.appendChild(posDiv);
     }
     const pt=G.posTraining;
-    if(pt){
+    if(pt&&pt.poz&&Number(pt.kalanGun)>0){
       const p=(G.players||[]).find(x=>x.id===pt.playerId);
       posDiv.innerHTML=`<div class="train-card" style="margin-top:8px;">
         <div style="font-weight:700;font-size:13px;">🧭 İkincil Pozisyon Eğitimi</div>
@@ -1342,8 +1342,11 @@ function svgLineChart(vals,opts){
   opts=opts||{};
   const w=opts.w||560,h=opts.h||150,pad=opts.pad||26;
   if(!vals||vals.length<1) return '<div style="color:var(--text2);font-size:12px;padding:16px;text-align:center;">Veri yok — birkaç maç oyna, grafikler burada oluşur.</div>';
-  const min=opts.min!=null?opts.min:Math.min(...vals);
-  const max=opts.max!=null?opts.max:Math.max(...vals);
+  let min=opts.min!=null?opts.min:Math.min(...vals);
+  let max=opts.max!=null?opts.max:Math.max(...vals);
+  /* F7-30: tüm değerler eşitse çizgi tabana yapışıyor ve üst/alt etiket aynı sayıyı
+     gösteriyordu — bandı simetrik aç, çizgi ortada dursun. */
+  if(max===min){ min=max-1; max=max+1; }
   const rng=(max-min)||1;
   const X=i=>pad+(vals.length<=1?0:(i/(vals.length-1))*(w-2*pad));
   const Y=v=>h-pad-((v-min)/rng)*(h-2*pad);

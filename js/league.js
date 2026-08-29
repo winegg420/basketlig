@@ -403,7 +403,7 @@ function renderTeamRosterMini(){
   w.innerHTML=list.map(p=>`
     <div class="team-rmini" data-pid="${p.id}">
       <div class="mavatar-wrap" style="align-items:center;">
-      <img src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} alt="" width="52" height="64" loading="lazy" style="border-radius:8px;border:2px solid var(--accent);object-fit:cover;">
+      <img src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} width="52" height="64" loading="lazy" style="border-radius:8px;border:2px solid var(--accent);object-fit:cover;">
       <span style="font-size:9px;font-weight:800;color:var(--accent);margin-top:2px;">OVR ${p.genel}</span>
       </div>
       <div style="min-width:0;">
@@ -698,13 +698,22 @@ function saveMatchTactics(){
   const tempo=document.querySelector('input[name="tacTempo"]:checked');
   const odak=document.querySelector('input[name="tacOdak"]:checked');
   const def=document.querySelector('input[name="tacDef"]:checked');
+  /* F7-29: üç seçim de yoksa taktik formu açık değildir; eskiden G.tactics VARSAYILANA
+     eziliyor ve kullanıcı "kaydedildi" bildirimini görüp kaydettiğini sanıyordu. */
+  if(!tempo&&!odak&&!def){ showNotif('Taktik formu açık değil — kayıt yapılmadı.'); return; }
   const focusEl=document.getElementById('tacFocus');
   const markEl=document.getElementById('tacMark');
+  /* Odak oyuncusu kadroda ve sağlıklı olmalı. */
+  let _focusId=(focusEl&&focusEl.value)||null;
+  if(_focusId){
+    const fp=(G.players||[]).find(x=>x.id===_focusId);
+    if(!fp||playerIsInjured(fp)) _focusId=null;
+  }
   G.tactics={
     tempo:tempo?tempo.value:'normal',
     odak:odak?odak.value:'dengeli',
     defensiveStyle:def?def.value:'adam',
-    focusPlayerId:(focusEl&&focusEl.value)||null,
+    focusPlayerId:_focusId,
     markStar:!!(markEl&&markEl.checked),
     playbook:_pbPick.off,   /* FAZ B: seçili hücum seti */
     defSet:_pbPick.def      /* FAZ B: seçili savunma seti */
@@ -826,7 +835,7 @@ function lineupSlotHtml(i){
     :'<span style="position:absolute;top:-6px;right:-6px;background:var(--gold);color:#111;font-size:9px;font-weight:800;border-radius:50%;width:15px;height:15px;display:flex;align-items:center;justify-content:center;" title="Yabancı pozisyon (-%10)">!</span>');
   return `<div class="lu-slot filled" data-luslot="${i}" style="${pos}" onpointerdown="lineupPointerDown(event,'${id}','slot',${i})" onclick="lineupSlotTap(${i})" title="${escMatch(p.isim)} — sürükle ya da tıkla (yedeğe al)">
     ${fit}<span class="lu-slot-badge">${s.poz}</span>
-    <img class="lu-av" src="${av}" ${playerAvatarImgAttrs(p.seed,p.id,{})} alt="">
+    <img class="lu-av" src="${av}" ${playerAvatarImgAttrs(p.seed,p.id,{})}>
     <span class="lu-nm">${escMatch(p.isim)}</span>
     <span class="lu-sub">OVR ${p.genel}</span>
     <span class="lu-sub">${enerjiRozetHtml(p,true)}</span>
@@ -839,7 +848,7 @@ function lineupBenchCardHtml(id){
      (eskiden .lu-card touch-action:none olduğu için mobilde yedek listesi kaydırılamıyordu). */
   return `<div class="lu-card" data-lucard="${id}" onclick="lineupBenchTap('${id}')" title="Tutamaktan sürükle ya da tıkla">
     <span class="lu-grip" onpointerdown="lineupPointerDown(event,'${id}','bench',-1)" aria-hidden="true">⠿</span>
-    <img class="lu-av" src="${av}" ${playerAvatarImgAttrs(p.seed,p.id,{})} alt="">
+    <img class="lu-av" src="${av}" ${playerAvatarImgAttrs(p.seed,p.id,{})}>
     <span class="lu-info"><b>${escMatch(p.isim)}</b><small>${p.poz} · OVR ${p.genel} · ${enerjiRozetHtml(p,true)}</small></span>
   </div>`;
 }
@@ -886,7 +895,7 @@ function lineupPlaceInSlot(id,i){
     if(occ) _lineupEdit.bench.unshift(occ);
   }
   _lineupEdit.slots[i]=id;
-  renderLineupEditor();
+  refreshLineupEditor();
 }
 function lineupMoveToBench(id){
   if(!_lineupEdit) return;
@@ -894,7 +903,34 @@ function lineupMoveToBench(id){
   if(s>=0) _lineupEdit.slots[s]=null;
   _luRemoveFromBench(id);
   _lineupEdit.bench.unshift(id);
-  renderLineupEditor();
+  refreshLineupEditor();
+}
+/* F7-19: modalı yeniden kurmadan sahayı ve yedek listesini tazele — mobilde her hamleden
+   sonra kaydırma konumu en üste sıçrıyordu. Modal kapalıysa tam çizime düşer. */
+function refreshLineupEditor(){
+  if(!_lineupEdit) return;
+  const court=document.getElementById('luCourt');
+  const benchWrap=document.getElementById('luBench');
+  if(!court||!benchWrap){ renderLineupEditor(); return; }
+  const list=benchWrap.querySelector('.lu-bench');
+  const st=list?list.scrollTop:0;
+  court.innerHTML=lineupCourtSvg()+LINEUP_SLOTS.map((x,i)=>lineupSlotHtml(i)).join('');
+  const filled=_lineupEdit.slots.filter(Boolean).length;
+  const title=benchWrap.querySelector('.lu-bench-title');
+  if(title) title.textContent=`Yedekler (${_lineupEdit.bench.length}) · İlk 5: ${filled}/5`;
+  if(list){
+    list.innerHTML=_lineupEdit.bench.length
+      ? _lineupEdit.bench.map(id=>lineupBenchCardHtml(id)).join('')
+      : '<p style="font-size:11px;color:var(--text2);padding:6px;">Tüm oyuncular sahada.</p>';
+    list.scrollTop=st;                       /* kaydırma konumu korunur */
+  }
+  /* Kaydet butonu 5 oyuncu dolunca etkinleşir. */
+  const save=document.querySelector('#appModalBody button.btn-p');
+  if(save){
+    const full=filled>=5;
+    save.disabled=!full;
+    save.style.opacity=full?'':'.5';
+  }
 }
 /* ── Tıklama (drag olmadan) ── */
 function lineupBenchTap(id){

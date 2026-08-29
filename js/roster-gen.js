@@ -423,7 +423,11 @@ function makeSubTemplate(){
   return {teams};
 }
 
+let _tblStateMem=null;
+let _tblStorageWarned=false;
+function invalidateTblStateMem(){ _tblStateMem=null; }
 function ensureTblState(){
+  if(_tblStateMem) return _tblStateMem;
   /* localStorage engellenebilir (gizli sekme/kurumsal politika/kota) — okuma başarısızsa
      boş state'ten üret, yazma başarısızsa bellek-içi devam et (projedeki genel desen). */
   let legacy=null,raw=null;
@@ -441,7 +445,15 @@ function ensureTblState(){
         st.subs[`${d}.${g}`]=makeSubTemplate();
       }
     }
-    try{ localStorage.setItem(TBL_STORAGE_KEY,JSON.stringify(st)); }catch(e){}
+    let yazildi=false;
+    try{ localStorage.setItem(TBL_STORAGE_KEY,JSON.stringify(st)); yazildi=true; }catch(e){}
+    /* Depolama kapalıysa (gizli sekme / kurumsal politika / kota) lig bellekte tutulur;
+       yoksa her çağrıda yeniden üretilip rakip adları değişirdi. */
+    if(!yazildi&&!_tblStorageWarned){
+      _tblStorageWarned=true;
+      try{ if(typeof showNotif==='function') showNotif('Tarayıcı depolaması kapalı — ilerleme kaydedilemeyecek. Ayarlar → “Dışa aktar” ile yedek al.',{critical:true}); }catch(e2){}
+    }
+    _tblStateMem=st;
     return st;
   }
   let changed=false;
@@ -485,6 +497,7 @@ function ensureTblState(){
     }
   }
   if(changed||(legacy&&raw===legacy)){ try{ localStorage.setItem(TBL_STORAGE_KEY,JSON.stringify(st)); }catch(e){} }
+  _tblStateMem=st;
   return st;
 }
 

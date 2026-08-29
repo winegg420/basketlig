@@ -280,8 +280,12 @@ function med(a){ return pct(a,0.5); }
     konsolHatasi:errs.length
   };
   const fail=[];
-  if(!(syncMedyan>=HEDEF.syncMedyanMin&&syncMedyan<=HEDEF.syncMedyanMax)) fail.push(`syncRatio medyan ${syncMedyan}× (hedef ${HEDEF.syncMedyanMin}-${HEDEF.syncMedyanMax}×)`);
-  if(syncSpread>HEDEF.syncSpreadMax) fail.push(`syncRatio tipler arası fark ${syncSpread}× (hedef < ${HEDEF.syncSpreadMax}×)`);
+  /* syncRatio yalnız ÖRNEK VARSA yargılanır: kısa izleme penceresinde aynı tipte ardışık
+     iki olay hiç gelmeyebilir; o durumda medyan 0 çıkıp yanlışlıkla "hedef dışı" sayılıyordu. */
+  if(syncMedyan>0){
+    if(!(syncMedyan>=HEDEF.syncMedyanMin&&syncMedyan<=HEDEF.syncMedyanMax)) fail.push(`syncRatio medyan ${syncMedyan}× (hedef ${HEDEF.syncMedyanMin}-${HEDEF.syncMedyanMax}×)`);
+    if(syncSpread>HEDEF.syncSpreadMax) fail.push(`syncRatio tipler arası fark ${syncSpread}× (hedef < ${HEDEF.syncSpreadMax}×)`);
+  }
   if(R.orphan>HEDEF.orphanMax) fail.push(`orphanEvents ${R.orphan} (hedef ${HEDEF.orphanMax})`);
   if(R.ballJumps>HEDEF.teleportMax) fail.push(`ballTeleport ${R.ballJumps} kare (hedef ${HEDEF.teleportMax})`);
   if(identity<HEDEF.identityMin) fail.push(`identityMatch %${(identity*100).toFixed(0)} (hedef ≥ %${HEDEF.identityMin*100})`);
@@ -294,7 +298,7 @@ function med(a){ return pct(a,0.5); }
   else{
     console.log('\n══ CANLI SUNUM ÖLÇÜMÜ ══');
     console.log('izlenen  :',JSON.stringify(out.izlenen));
-    console.log('syncRatio: medyan',syncMedyan+'×','· tipler arası fark',syncSpread+'×');
+    console.log('syncRatio: medyan',syncMedyan>0?(syncMedyan+'×'):'— (yetersiz örnek; --ms değerini artır)','· tipler arası fark',syncSpread+'×');
     Object.keys(syncTip).sort((a,b)=>syncTip[b]-syncTip[a]).forEach(k=>console.log('           '+k.padEnd(14)+syncTip[k]+'×'));
     console.log('orphan   :',R.orphan,R.orphanOrn.length?'· örnek: '+R.orphanOrn[0]:'');
     console.log('topSıçra :',R.ballJumps,'kare · en büyük',R.ballMax,'px',(R.ballJumpOrn&&R.ballJumpOrn.length)?'· '+R.ballJumpOrn.map(j=>j.px+'px['+j.mod+'|'+j.ev+']').join(' '):'');
