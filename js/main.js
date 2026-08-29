@@ -132,8 +132,14 @@ function startMatch(playoff){
   clearMatchEventTimer();
   clearMatchCourt();
   updateCourtBranding(rakip);          /* parkeye arena/takım/amblem işle */
+  /* M7: rakip beşli MOTORDAN gelir (sakat filtresi + rotasyon motorda yapılır).
+     Motor damgalamadıysa eski yönteme düşülür (geriye dönük güvenlik). */
   let oppFive=[];
-  try{ const prof=getBotClubProfile(rakip.isim,(G.team&&G.team.tblKey)||'tbl'); oppFive=(prof.roster||[]).slice().sort((a,b)=>(b.genel||0)-(a.genel||0)).slice(0,5); }catch(e){}
+  try{
+    const stamped=(events&&events[0]&&Array.isArray(events[0].oppFive))?events[0].oppFive:null;
+    if(stamped&&stamped.length) oppFive=stamped.slice(0,5);
+    else { const prof=getBotClubProfile(rakip.isim,(G.team&&G.team.tblKey)||'tbl'); oppFive=(prof.roster||[]).slice().sort((a,b)=>(b.genel||0)-(a.genel||0)).slice(0,5); }
+  }catch(e){}
   initMatchPlayers(lu,rakip,oppFive); /* sahaya 5v5 jeton — rakibin TAM oyuncu nesneleri (isim+hiz+enerji) */
   startCrowdAmbience();               /* Paket 3: salon uğultusu maç boyunca */
   const _ml=document.getElementById('macLiveAnchor'); if(_ml) _ml.classList.add('live-on');
@@ -276,10 +282,18 @@ function startMatch(playoff){
     const simBase=ev.shot?((mState._animMs||2900)+240):(ev.type==='free'?1700:(ev.type==='quarter_start'||ev.type==='quarter_end'||ev.type==='tactic'?1500:1300));
     const simMs=ev.shot?simBase:Math.max(simBase,mvMs+260);
     const rate=Math.max(0.5,Math.min(4,mState.rate||1));
-    const delay=Math.max(140,simMs/rate);
+    /* FAZ 1 / M1+M2: gecikmenin ASIL kaynağı, pozisyonun tükettiği maç saatidir (ev.dt).
+       MATCH_TIME_SCALE = izleme sıkıştırması: 12 sn'lik pozisyon 12×0.30 = 3,6 gerçek sn oynanır.
+       Koreografi süresi (simMs) yalnız ALT SINIRDIR — hava atışı/serbest atış dizisi kesilmesin.
+       Böylece faul/taktik/çalma gibi "ucuz" olaylar da saatten yedikleri kadar sürer;
+       eskiden sabit 1300-1700 ms taban yüzünden 20-44× hızlanma oluyordu. */
+    const dtMs=(Number(ev.dt)>0?Number(ev.dt):12)*1000*MATCH_TIME_SCALE;
+    const delay=Math.max(140,Math.max(simMs,dtMs)/rate);
     /* Maç saati olaylar arasında GERÇEK ZAMANDA akar (eskiden 10-20 sn'lik sıçramalar);
        şut saati de aynı akıştan beslenir. */
     if(ev.t!==undefined) startClockTween(ev.t,delay,ev.type);
+    /* M11: hız değişince kalan süre yeniden ölçeklenebilsin diye zamanlayıcı damgalanır. */
+    mState._stepAt=Date.now(); mState._stepDelay=delay; mState._stepRate=rate;
     matchEventTimer=setTimeout(matchStep,delay);
   }
   mState.step=matchStep;
@@ -290,10 +304,28 @@ function startMatch(playoff){
    Tüm canlı sahne "sim-saniyesi" cinsinden kurulur; rate hem rAF adımını
    (js/match-engine.js `_simStep`) hem olaylar arası gecikmeyi ölçekler.
    Böylece 2×'te oyun hızlanır ama hareketin/anlatımın uyumu bozulmaz. */
-let _matchRate=1.5;
+/* FAZ 1 / M16: varsayılan izleme hızı 1×. Oyun eskiden kullanıcı hiçbir şey seçmeden
+   %50 hızlandırılmış başlıyordu; "çok hızlı" şikâyetinin bir kısmı doğrudan buydu. */
+let _matchRate=1;
+/* Maç saati → gerçek zaman sıkıştırma katsayısı (M1). 0.30 ≈ 3,3× izleme hızı. */
+const MATCH_TIME_SCALE=0.30;
 function setMatchRate(r,btn){
+  const _prev=_matchRate;
   _matchRate=Math.max(0.5,Math.min(4,Number(r)||1));
   if(typeof mState!=='undefined'&&mState) mState.rate=_matchRate;
+  /* M11: gecikme olay BAŞLARKEN o anki hızla hesaplanıp setTimeout'a veriliyordu; sahne
+     canlı hızı okuduğu için 3×→1× yapınca koreografi yarıda kesiliyordu. Kalan süreyi
+     yeni hıza göre yeniden ölçekleyip zamanlayıcıyı tazeliyoruz. */
+  try{
+    if(typeof mState!=='undefined'&&mState&&mState.running&&!mState.paused&&matchEventTimer&&mState._stepAt){
+      const gecen=Date.now()-mState._stepAt;
+      const kalan=Math.max(0,(mState._stepDelay||0)-gecen);
+      const yeni=Math.max(60,kalan*((mState._stepRate||_prev)/_matchRate));
+      clearTimeout(matchEventTimer);
+      mState._stepAt=Date.now(); mState._stepDelay=yeni; mState._stepRate=_matchRate;
+      matchEventTimer=setTimeout(mState.step,yeni);
+    }
+  }catch(e){}
   try{
     document.querySelectorAll('.match-rate').forEach(b=>{
       const on=Math.abs(Number(b.dataset.rate)-_matchRate)<0.01;
@@ -303,6 +335,34 @@ function setMatchRate(r,btn){
     });
   }catch(e){}
 }
+/* ── M10: sekme görünürlüğü ─────────────────────────────────────────────────
+   Arka plana alınan sekmede requestAnimationFrame durur ama setTimeout ~1 sn'de bir
+   tetiklenmeye devam eder: sahne donmuşken olay kuyruğu ilerler ve o süredeki bütün
+   anlatım satırları kaybolur. Sekme gizlenince kuyruğu duraklatıp dönüşte sürdürüyoruz. */
+let _hiddenPause=false;
+if(typeof document!=='undefined'&&document.addEventListener){
+  document.addEventListener('visibilitychange',function(){
+    try{
+      if(typeof mState==='undefined'||!mState||!mState.running) return;
+      if(document.hidden){
+        if(matchEventTimer){
+          const gecen=Date.now()-(mState._stepAt||Date.now());
+          mState._stepRemain=Math.max(60,(mState._stepDelay||600)-gecen);
+          clearTimeout(matchEventTimer); matchEventTimer=null;
+          _hiddenPause=true;
+        }
+      } else if(_hiddenPause){
+        _hiddenPause=false;
+        if(!mState.paused&&mState.step){
+          const d=Math.max(60,mState._stepRemain||300);
+          mState._stepAt=Date.now(); mState._stepDelay=d;
+          matchEventTimer=setTimeout(mState.step,d);
+        }
+      }
+    }catch(e){}
+  });
+}
+
 /* ── Akan maç saati + şut saati ─────────────────────────────────────────── */
 let _clkTimer=null;
 function stopClockTween(){ if(_clkTimer){ clearInterval(_clkTimer); _clkTimer=null; } }

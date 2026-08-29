@@ -1609,3 +1609,121 @@ görsel önizleme** · **sıra = oyun derinliği önce, I18N en son**.
 - Public yapmadan önce sır taraması yapıldı: çalışma ağacı ve **tüm git geçmişi** token/anahtar/özel anahtar kalıplarına karşı tarandı — temiz. (Not: commit yazarı e-postası geçmişte görünür, bu GitHub'da olağandır.)
 - Doğrulama: tüm dosyalar 200 (HTML, 13 js modülü, portreler, manifest); canlı sürüm yerel HEAD ile aynı (`?v=37`); `tools/live-check.js` gerçek yayında kariyer kurdu, 11 sayfayı gezdi, playbook kurulunu (11 kart) açtı, canlı maç oynattı ve EN diline geçti — **0 konsol hatası, 0 kırık istek**.
 - Yeni araç: `tools/live-check.js` — canlı yayını uçtan uca denetler (`LIVE_URL` ile başka adres de verilebilir).
+
+---
+
+## 31. Oturum — 2026-08-29 · BÜYÜK REVİZE PAKETİ (FAZ 5→1→2→3→4, oturum ortasında durduruldu)
+
+Girdi: kullanıcının kanıt + kabul kriteri içeren revize paketi (`REVIZE-PAKETI.md`), çalışma
+protokolü `DEVAM-ET.md`. Sıra: FAZ 5 (ölçüm) → 1 (senkron) → 2 (kimlik) → 3 (top) → 4 (denge).
+
+### FAZ 5 — Ölçüm altyapısı (regresyon kalkanı)
+- **`tools/live-metrics.js` (YENİ):** canlı maçı tarayıcıda izleyip 6 metriği ölçer — `syncRatio`
+  (olay tipine göre maç saati / duvar saati), `orphanEvents` (anlatımsız olay), `ballTeleport`
+  (kare başına >60 px top sıçraması), `identityMatch` (anlatımdaki oyuncu = topu tutan jeton),
+  `tokenSpeedP99`, box-score. `--rate= --ms= --full --url= --json`. Hedefler tutmazsa çıkış kodu 1.
+- **`tools/box-band.js` (YENİ):** N maçı animasyonsuz simüle edip takım başına box-score
+  ortalamalarını gerçekçi bantlarla karşılaştırır. **Denge kararlarının tek yetkili aracı** —
+  canlı ölçüm tek çeyreklik örnekle yanıltıcıydı.
+
+**Kritik gözlem — enstrümanın kendisi hatalıydı.** Ölçüm aracında 5 ayrı kusur bulunup düzeltildi:
+1. Kimlik referansı "topa en yakın jeton"du; isabetli şut satırı basılırken top POTADA olduğu için
+   en yakın jeton şutör değil pota altındaki oyuncu çıkıyordu → referans motorun `_sim.ball.carrier`'ı
+   yapıldı.
+2. Taşıyıcı rAF ile bir kare geriden örnekleniyordu → satırın basıldığı anda canlı okunuyor.
+3. Top havadayken (`mode==='pass'`) taşıyıcı null; referans artık pas HEDEFİ.
+4. Jetonlar isim etiketine göre indeksleniyordu; oyuncu değişikliğinde etiket değişince sahte
+   ışınlanma hızları üretiyordu (p99 3572 px/sn!) → DOM sırasına göre indeksleme.
+5. `orphan` sayacı HTML etiketli metni ve serbest atışın iki parçalı basımını (`ftPre`/`ftRes`)
+   hesaba katmıyordu.
+
+**Sonuç:** Revize paketindeki "%87 anlatım-jeton uyuşmazlığı" rakamının büyük kısmı ölçüm kusuruymuş;
+düzeltilmiş enstrümanla başlangıç değeri %61-79 bandındaydı ve gerçek kusurlar ayıklanınca %100'e çıktı.
+**Ders: sayıyı kovalamadan önce enstrümanı doğrula.**
+
+### FAZ 1 — Zaman senkronu
+- **M1:** `runPossessionV(q,t,dt)` — pozisyonun tükettiği maç saati olaylara `ev.dt` olarak damgalanır
+  (çeyrek ve uzatma döngülerinde hesaplanır).
+- **M1+M2:** `matchStep` gecikmeyi artık `ev.dt`'den türetiyor: `dtMs=ev.dt*1000*MATCH_TIME_SCALE`,
+  `delay=max(140, max(simMs,dtMs)/rate)`. Sabit 1300/1500/1700 ms taban yalnız ALT SINIR — faul/taktik/
+  çalma gibi "ucuz" olaylar da saatten yedikleri kadar sürüyor (eskiden 20-44× hızlanıyordu).
+- **M16:** varsayılan izleme hızı `1.5` → **`1`** (oyun kullanıcı hiçbir şey seçmeden %50 hızlı başlıyordu).
+- **M10:** `visibilitychange` — sekme arka plandayken rAF durup `setTimeout` ilerlediği için anlatım
+  satırları yutuluyordu; kuyruk artık duraklayıp dönüşte kalan süreyle sürüyor.
+- **M11:** `setMatchRate` aktif zamanlayıcıyı iptal edip kalan süreyi yeni hıza göre yeniden kuruyor
+  (3×→1× yapınca koreografi yarıda kesiliyordu).
+- **M13:** set fazı aralıkları ~2,2 katına çıkarıldı, `sprintV` çarpanı 1.62→1.35, `keepNear:true`.
+
+**Ölçüm:** jeton hızı p99 **332 → 274 px/sn** (hedef < 340) ✓ · p50 152 → ~20-40 (oyuncular yerlerine
+oturuyor, sürekli titremiyor).
+
+### FAZ 2 — Kimlik tutarlılığı (anlatımdaki oyuncu = sahadaki jeton)
+- **M3:** `_flushPending(S)` — `clearBallTimers()` silmeden önce bekleyen `ball.onDone` ve `chase.fn`'i
+  çalıştırıyor; flush sırasında top takipçiye veriliyor.
+- **M4:** chase zaman aşımı artık **her modda** denetleniyor; mod uyuşmazlığında geri çağrı çağrılıp
+  temizleniyor (pas bitince chase sessizce null'lanıyor, sayı sonrası topu sokacak oyuncu topu
+  almadan çizgiye yürüyordu).
+- **M7:** **rakip ilk 5 tek doğruluk kaynağı** — motor kullandığı `oppCourt`'u `events[0].oppFive`
+  olarak damgalıyor, `startMatch` onu kullanıyor. Eskiden sahne "en iyi 5 OVR", motor "sakat filtreli 5"
+  kuruyordu; rakipte tek sakat varsa `sid` sahada bulunamıyor ve şutu/serbest atışı en yakın jeton
+  "üstleniyordu".
+- **M8:** bot koç duyuruları (`sub`, `tactic`+`botCoach:true`) `movePlayersForEvent` başında kısa devre —
+  `off:false` damgası yüzünden 10 jetonu ters yöne dizip topu rakip kurucusuna uçuruyorlardı.
+- `reb` dalında spiker cümlesi topu ALMADAN ÖNCE basılıyordu → script adımının içine taşındı.
+- Serbest atışta düdük anında top, atışı kullanacak oyuncuya veriliyor.
+
+**Ölçüm:** identityMatch **%100** (29 eşleşen / 0 uyuşmayan), orphanEvents 0.
+
+### FAZ 3 — Top fiziği
+- **M6:** `_ballHold` uzun mesafeyi 0,30 sn'lik "pas"a sıkıştırıyordu (≈40 m/sn ışınlanma) →
+  `min(0.90, d/520)`.
+- **M5:** `_inboundPass` topu dip çizgiye ışınlıyordu ("görünmez düzeltme" yorumuna rağmen 150-250 px) →
+  uzaksa görünür toparlama pası, sokma pası `onDone`'da. Şut öncesi `bridge` adımı da sabit 0,22 sn
+  yerine `min(0.55, d/520)`.
+
+**Ölçüm:** ışınlanma 5 kare → **1-2 kare**, en büyük sıçrama 777 px → ~130 px. Hedef 0'a ulaşılmadı.
+
+### FAZ 4 — Denge (200 maçlık bant testi, **tüm bantlar tuttu**)
+- **M17 top kaybı ekonomisi:** ölçümde takım başına 3,3 idi (gerçekçi 9-15) — basketbolun temel
+  istatistiği fiilen yoktu, pres/çalma taktikleri ve playbook `to` parametresi anlamsızdı. Pozisyon
+  dağılımı yeniden bölündü (`roll<0.745` şut · `<0.805` şut faulü · `<0.985` karma · kalan renk);
+  karma dalda faul %34,5 / top kaybı %65,5. Top kaybı **türlere** ayrıldı: çalma %55 (savunmacıya
+  `stl`), pas hatası %31, adım/çift top/hücum faulü %14 (bunun %34'ü faul hanesine de yazılır).
+  Kaybeden oyuncu `topSurme` statına göre ağırlıklı seçiliyor; anlatım hem kaybedeni hem topu alanı
+  söylüyor (sahneyle tutarlı).
+- **M18 serbest atış enflasyonu:** sayıların %24'ü çizgidendi (gerçekçi %12-20). and-1 %12→%8,5 ·
+  kaçan turnikede faul %15→%9,5 · üçlükte faul %8→%5 · şut faulü pozisyon payı %10→%6.
+- **M19 ribaund:** `ftRebound()` — kaçan SON serbest atış canlı toptur (hücum ribaundu %19, mücadelede
+  %9 sarkma faulü); 5 serbest atış bloğuna bağlandı.
+- **Skor bandı telafisi:** `playsMax` 48→54 (hızlı 62 / yavaş 46), isabet 0.505→0.545 (2sy) ve
+  0.355→0.372 (3sy); rakip tarafı simetrik.
+
+| Metrik (takım/maç) | ÖNCE | SONRA | Bant |
+|---|---|---|---|
+| Sayı | 92,4 | 84,0 | 82-100 ✓ |
+| Top kaybı | **3,3** | **9,6** | 9-15 ✓ |
+| Serbest atış denemesi | 29,5 | 17,9 | 14-26 ✓ |
+| Sayıların FT payı | 0,241 | 0,162 | 0,12-0,20 ✓ |
+| Ribaund | 29,5 | 31,0 | 30-46 ✓ |
+| Asist | 19,0 | 18,8 | 16-28 ✓ |
+| Faul | 16,9 | 14,9 | 14-24 ✓ |
+| Saha içi şut denemesi | 64,3 | 60,4 | 60-85 ✓ |
+| Üçlük deneme payı | 0,351 | 0,344 | 0,22-0,44 ✓ |
+| Blok | 2,9 | 2,8 | 1,5-6,5 ✓ |
+| Top çalma | 3,3 | 5,3 | 4-12 ✓ |
+
+### AÇIK REGRESYON (oturum bu noktada durduruldu)
+`orphanEvents` 1 kalmıştı; kaynağı şutlu olaylarda spiker cümlesinin `onResult` ile koreografi
+script'inin sonunda basılması, sıradaki olay erken gelince `clearBallTimers()`'ın script'i
+çalıştırmadan silmesiydi. `S.pendingPaint` eklenip flush'ta bastırıldı → **orphan 0 oldu ama
+identityMatch %100 → %64 düştü** (cümle top çembere varmadan, sıradaki pozisyon başlarken basılıyor).
+Yani "hiç basılmama" sorunu "yanlış anda basılma"ya dönüştü. Ayrıntı ve önerilen çözüm:
+`KALDIGIM-YER.md`.
+
+### Kararlar / gözlemler
+- Denge yargısı **`box-band.js`'e** ait; `live-metrics.js` box değerlerini yalnız bilgi olarak
+  raporluyor (tek çeyreklik canlı örnek yanıltıcıydı).
+- Pozisyon sayısını `playsMax` değil **maç saati** sınırlıyor (600 sn / ~15 sn ≈ 40 pozisyon/çeyrek);
+  top kaybı/faul/şut bantları bu sabit bütçe içinde birbiriyle takas ediliyor.
+- Bu oturumda `visual-check.js` ve `i18n-scan.js` FAZ 1-4 sonrası **çalıştırılmadı**; yeni top kaybı
+  anlatım satırlarının İngilizce karşılıkları `js/i18n-dict.js`'e **eklenmedi**.
