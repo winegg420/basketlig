@@ -2012,3 +2012,75 @@ uygulama koşulsuz hâle getirildi. Artık aynı kod aynı hash'i veriyor — ve
 **Ders (bu oturumda üç kez tekrarlandı):** ölçmediğin düzeltme çalışmıyor olabilir. 31. oturumun
 teşhisi, kendi FAZ 7 "uyguladım" beyanım ve M9'un ilk hâli — üçü de test karşısında düzeltildi.
 Ayrıca iki ölçüm aracı (orphan sayacı, band.js tohumu) sessizce yanlış sonuç veriyordu.
+
+### 32. oturum — EK 3: M20 / A1 rakip kadro kalıcılığı
+
+M20'nin talebi: *"Lig takımlarına kalıcı kadro nesnesi ver; maç istatistiği, bireysel faul,
+sakatlık ve yorgunluk **iki taraf için de aynı kod yolundan** geçsin."*
+
+#### Mevcut durum incelemesi (neyin zaten var olduğu)
+Kod okununca kalıcılığın bir kısmı zaten vardı: kulüp önbelleği (`CLUB_CACHE_KEY`) kadroyu
+saklıyor, `rollInjuriesForBotClub` sakatlık işliyor, `p.matchFouls` + `oBenchNext` bireysel
+faul limitini uyguluyor, `ostats`/`bumpO` maç istatistiği topluyor, MVP iki taraftan seçiliyor.
+
+#### En önemli bulgu — rakip şut isabeti SABİTTİ
+```js
+const oppAcc = (is3 ? (0.366+botPb.acc3)*defOppAcc3Mul
+                    : (0.534+botPb.acc2)*defOppAcc2Mul) * oMul * markMul;
+```
+Rakip oyuncunun **statı, enerjisi, morali, clutch'ı motorda hiç kullanılmıyordu**. Kadro nesnesi
+kalıcıydı ama motor onu soyut işliyordu — A1'in "rakip takımlar soyut" tespitinin teknik karşılığı
+tam olarak buydu. Artık iki taraf da `shooterAcc()`'ten geçiyor (takım çarpanı ve pozisyon uyumu
+kullanıcıya özel kalır; bot tarafında kendi çarpanı base'e katılır). Serbest atışlar da aynı
+yoldan: rakip sabit %72-74 yerine kendi `serbest` statından atıyor.
+
+| Rakip kadro | Ortalama rakip skoru |
+|---|---|
+| tüm statlar 40 | **69** |
+| tüm statlar 95 | **92** |
+| fark | **23 sayı** (eskiden ≈ 0) |
+
+#### Diğer değişiklikler
+- **Kadro derinliği 7 → 10** (`league.js`). Yeni oyuncular dizinin **sonuna** eklenir; mevcut
+  `id`/`seed` değerleri korunur, eski kayıtlar `botClubEnsureDepth` ile tamamlanır ve eksik
+  alanlar (`enerji`, `sezon`) geriye dönük doldurulur.
+- **Kalıcı durum fonksiyonları** (`match-prep.js`): `withBotClubRoster`,
+  `mergeBotClubMatchStats`, `recoverBotClubEnergy`, `ageBotClubRoster`, `ageAllPeerClubs`.
+  Rakip kadro artık `p.sezon` ve `p.enerji` biriktiriyor — kullanıcı tarafıyla **aynı alanlar**.
+- **Maç sonu bağlantısı** (`match-engine.js`): `end` olayı `oplayers` + `oppPlayedIds` taşıyor;
+  maç sonrası rakip kadroya sezon istatistiği ve yorgunluk işleniyor, geçen gün kadar toparlanma
+  uygulanıyor. Playoff maçlarında da aynı yol.
+- **Sezon geçişi**: bot kadrolar da yaşlanıyor/gelişiyor, sezon istatistiği sıfırlanıyor.
+  Kalıcı kadronun anlamı budur — eskiden bot oyuncular sonsuza dek aynı yaşta/statta kalıyordu.
+- **İlk 5 seçimi** artık OVR + güncel enerjiye bakıyor (yorgun oyuncu geri düşer, yedeği başlar).
+- **Sezon ödülleri**: rakip için gerçek maç verisi kullanılıyor. Ama bot oyuncu yalnız kullanıcıyla
+  oynadığı maçlarda veri topluyor (tek devrede ~1 maç) ve ödül karşılaştırması **toplam** üzerinden
+  yapılıyor — ham veriyi koymak rakipleri yarıştan tümüyle düşürürdü. Bu yüzden gerçek veri maç
+  başına indirgenip sezona ölçekleniyor ve örnek azken sentetikle harmanlanıyor (6+ maçta tamamen
+  gerçeğe döner). Tek maçlık uç performans sezonu domine etmesin diye.
+
+#### Kenar durum — ölçüm buldu
+Top **çeyrek sonunda orta sahaya ışınlanıyordu** (`b.x=COURT_MID` doğrudan atama; ölçüm 245 px
+tek kare sıçrama, mod `loose`). FAZ 3'ün kaçırdığı bir nokta; artık görünür şekilde taşınıyor.
+`ballTeleport` 1 → **0 kare**.
+
+#### YENİ ARAÇ — `tools/m20-check.js`
+Kalıcılık tek maçta görülmez. Araç 5 maç oynatıyor (biri **aynı rakiple tekrar**) ve kulüp
+önbelleğindeki kadro nesnesinin üzerinde durum birikip birikmediğini ölçüyor:
+T1 kimlik · T2 derinlik · T3 sezon istatistiği · T4 yorgunluk + toparlanma · T5 isabet yolu ·
+T6 sakatlık.
+
+İlk çalıştırmada **T1/T3/T4 düştü — testin kusuruydu**: her maç farklı rakiple oynanıyor ve
+kadro maçtan önce henüz oluşmadığı için "öncesi" `null` kalıyor, karşılaştırma hiç yapılamıyordu.
+Düzeltildikten sonra 6/6.
+
+#### Doğrulama
+- `m20-check`: **6/6** (T3: 50 oyuncunun maç sayacı arttı, 466 sayı birikti · T4: 29 oyuncunun
+  enerjisi düştü, 3 günde toparlandı · T6: 40 günde 35 turda sakat oyuncu görüldü)
+- `box-band --n=200`: **11/11 bant** · `visual-check`: 0 hata · `faz7-check`: 8/8
+- `sunum-check`: M9/M12/M14 geçti · `live-metrics`: orphan 0 · kimlik %100 · **ışınlanma 0 kare**
+- `i18n-scan`: kalan Türkçe yalnız özel isim
+
+**`band.js` hash DEĞİŞTİ** (`e429f6c091168315` → **`dc984289dee3c29d`**). Bu beklenen: M20 sunum
+değil **mekanik** bir değişiklik. Rakip ortalaması 71,9 → 73,9; kullanıcı 92,1 → 92,6; tüm denge
+bantları tutuyor. Yeni hash bundan sonraki sunum değişiklikleri için referanstır.
