@@ -1503,3 +1503,103 @@ oyuncular yerine varınca durmalı, orta saha set oyununda boşalmalı. Tümü *
 ### Değişiklik yapılmayanlar (rapor doğrulaması)
 - Madde 9 (kulüp logosu): `pickTeamLogoFile`/`onTeamLogoFileChange` zaten çalışıyor — dokunulmadı.
 - Madde 8 (mobil), 10 (test verisi), 11 (çoklu lig), 12 (tooltip): kod değişikliği gerekmedi/ertelendi.
+
+---
+
+## 30. Oturum — 2026-08-29 · ÇIKIŞ PAKETİ: 6 faz (roller → playbook → bot AI → soyunma odası → draft → I18N)
+
+Kullanıcı isteği: uluslararası pazara açılım (dil), bot AI derinliği, maç içi müdahale/taktik derinliği
+(set çizimi), oyuncu rolü ve eğilimleri, kulüp içi krizler + kimya, interaktif draft.
+Kapsam kararları (kullanıcı onayı): **I18N = TR+EN tam kapsam** · **Playbook = hazır set kütüphanesi +
+görsel önizleme** · **sıra = oyun derinliği önce, I18N en son**.
+
+### FAZ A — Oyuncu rolleri ve eğilimleri
+- `roster-gen.js`: 8 rol (Şutör/Skorer/Oyun Kurucu/Potaya Dalan/Kilit Savunmacı/Pota Altı Karartıcı/
+  Cam Süpürücü/Çok Yönlü). `computeRole` **normalize ağırlıklı uzmanlaşma** ile hesaplanır (rolün stat
+  karışımı − oyuncunun kendi ortalaması + mevki düzeltmesi, eşik 3.5).
+- 5 eğilim (0-100): üçlük · potaya dalma · pas · **soğukkanlılık** · faul disiplini. Seed'den deterministik.
+- `match-engine.js`: `wPick` ağırlıklı seçim — şutör (usage), üçlük kararı (şutörün eğilimi, takım payı
+  korunur), asist (pas), ribaund (ribaund+boy), blok, çalma, faul (disiplin). Clutch anlarda soğukkanlılık
+  isabeti ×0.86–×1.12 etkiler ("baskı altında el titremesi").
+- Arayüz: kadro/market/altyapı kartlarında rol rozeti, oyuncu modalinde 5 eğilim çubuğu.
+- Ölçüm: 2000 oyuncuda 8 rol dengeli; 40 maçta ort. 92-83, üçlük payı 0.34.
+
+### FAZ B — Playbook (set kütüphanesi) + maç içi müdahale
+- `match-prep.js`: **10 hücum seti** (Serbest Akış, Pick&Roll, Horns, Dip Köşe Üçlüsü, Motion, İzolasyon,
+  Pota Altı Yükleme, Erken Hücum, Kır ve Dağıt, Beş Dışarı, Flex) ve **5 savunma seti** (Adam Adama,
+  2-3 Bölge, Tam Saha Pres, Her Perdede Değişim, Boyalıyı Kapat). Her set motorda gerçek etkiye sahip:
+  is3 / acc2 / acc3 / ast / to / fbMul / **roleW** (setin beslediği roller yük alır) / **uyum**.
+- `playbookFit`: setin sahadaki 5'e uyumu (şutörü olmayan takımda köşe üçlüğü seti tutmaz) — arayüzde %.
+- `render.js` `playbookSvg`: inline SVG yarı saha şeması (pas/kesme/top sürme/perde okları), efsane ile.
+- `main.js`: mola/ölü topta **maç içi set değişimi** + canlı kadro uyumu göstergesi.
+- Ölçüm: üçlük payı 0.135 (Pota Altı) – 0.491 (Beş Dışarı); asist 15.7 (İzolasyon) – 26.7 (Motion);
+  savunmada Boyalıyı Kapat rakip 2 sayısını 19.9→13.5 düşürüyor ama 3 sayısını 6.3→11.2 açıyor
+  (bedava üstünlük yok — gerçek takas).
+
+### FAZ C — Bot menajer zekâsı
+- `botCoachProfile(takımAdı)`: tercih ettiği hücum/savunma seti, agresiflik, mola eşiği, rotasyon
+  derinliği, panik seti — hepsi ayrı tuzlu + avalanche karıştırmalı hash'ten (djb2 benzer isimlerde
+  yakın değer üretiyordu, tüm botlar aynı koç oluyordu).
+- `botCoachTick` her pozisyon sonunda: (a) kullanıcı seri yapınca **MOLA** (kullanıcı isabeti ×0.93),
+  (b) geriye düşünce **set değişimi**, (c) yorulan/3+ faullü oyuncuyu **yedekle değiştirir**.
+  Rakip artık kendi setinin üçlük payını, isabetini, asistini ve top yükünü kullanıyor.
+- Otomatik ilk 5 artık **pozisyon dengeli** (önce her mevkiden en iyi, sonra OVR).
+- Bot transferi **mevki ihtiyacına** göre + takım gücüne orantılı hedef kalite.
+- Ölçüm (40 maç): mola 2.73/maç, set değişimi 0.72/maç, rotasyon 11.7/maç; 5 botun profili farklı.
+
+### FAZ D — Soyunma odası: süre huzursuzluğu, kriz, ilişkiler, gerçek kimya
+- `processPlayingTime`: süre alamayan oyuncunun morali kadro sırasına ve **kişiliğine** göre düşer.
+- `maybeLockerRoomCrisis` + `openLockerRoomModal`: **Söz ver / Sert konuş / Görmezden gel** — sonuç
+  kişiliğe bağlı. `checkPromises`: söz tutulmazsa moral ve kimya çöker.
+- `relationScore`/`rosterRelations`: ülke/kişilik/yaş → dostluk; aynı mevki+rol+yüksek OVR → sürtüşme.
+- `chemistryTarget` + `driftChemistry`: kimya artık moral ortalaması, liderlik, huzursuz sayısı, dost
+  çiftleri ve rol çakışmalarından hesaplanan HEDEFE maç başına en fazla ±3 yaklaşır.
+- Kadro sayfasında **Soyunma Odası paneli** (kimya nedenleri, dostluk/sürtüşme, süre bekleyenler, sözler).
+- Ölçüm: 12 maç aynı 5 oynatılınca kimya 78→89→79; 3. adam 12 maç kenarda kalınca moral 30 → kriz;
+  söz verilip tutulmayınca moral 43→30, kimya 78→75.
+
+### FAZ E — Draft gecesi + potansiyel tavanı/tabanı
+- `prospectRange`: izci kalitesi bandı daraltır (0★ ~19 puan → 5★ ~2 puan). Tavan 99'a dayanınca band
+  **kaydırılır**, daraltılmaz (izcisiz tahmin dar görünmesin).
+- `prospectReport`: statlardan izci raporu ("ham yetenek · güçlü: pota koruma · gelişmeli: oyun kurma").
+- `renderDraftBoard`: seçim sırası + canlı akan rakip seçimleri (0.62 sn arayla) + aday kurulu;
+  kullanıcının sırası "SIRA SENDE" olarak vurgulanır, "Otomatik seç" ile kilitlenme olmaz.
+- `showDraftSummary`: gece özeti + "Yeni sezona geç".
+- Test: 20 takımlık draft uçtan uca (20/20 seçim), aday altyapıya katıldı, 0 konsol hatası.
+
+### FAZ F — I18N (TR + EN tam kapsam)
+- **Mimari kararı:** 1.300+ dize tek tek `t()` ile sarmak yerine **kaynak-dize anahtarlı** üç katman:
+  (1) birebir sözlük, (2) ifade (regex) katmanı — çalışma anında birleştirilmiş metinler için,
+  (3) **MutationObserver** ile üretilen tüm DOM metinlerinin anında çevrilmesi.
+  Ek olarak `localizeCatalogs()` veri tablolarını (mevki/stat/rol/eğilim/set/kişilik/sakatlık/arena/
+  koç/izci/spiker + **anlatım havuzları**) boot'ta YERİNDE çevirir — yüzlerce çağrı noktasına dokunulmadı.
+- `js/i18n.js` (çekirdek), `js/i18n-dict.js` (~450 birebir + ~140 kalıp), `js/i18n-commentary.js`
+  (272 spiker şablonu + ribaund/hamle havuzları + maç akışı kalıpları).
+- `pickLine` çıktısı sözlükten geçer → fonksiyon içi anlatım havuzları da çevrilir.
+- Dil seçici giriş ekranında ve Ayarlar'da; seçim localStorage'da, değişimde sayfa yeniden yüklenir
+  (ilerleme korunur). İlk açılışta tarayıcı diline göre seçilir. Tarih/sayı biçimi ve çeyrek etiketi
+  (TR 1P/U1 · EN Q1/OT1) dile bağlı.
+- `tools/i18n-scan.js`: EN modunda tüm sayfaları, modalları ve canlı maçı gezip çevrilmemiş metin
+  düğümlerini raporlar. Son durumda kalan Türkçe metin **yalnızca özel isimler** (kulüp ve oyuncu adları).
+
+### Kararlar / gözlemler
+- Kulüp ve oyuncu adları EN modunda da Türkçe/yerel kalır — bunlar özel isim; çevrilmeleri gerçekçiliği bozar.
+- Sözlükte karşılığı olmayan her metin Türkçesiyle görünmeye devam eder: eksik çeviri asla hata üretmez.
+- `\b` sözcük sınırı JS'te ASCII tabanlı; İ/Ç/Ş ile başlayan kalıplarda çalışmaz — bu kalıplarda sınır
+  elle yazıldı (`(^|[\s(·•])`).
+- Geniş tek-sözcük kalıpları (ör. `ribaund`→`reb`) Türkçe cümlelerin ortasını bozuyordu; kaldırıldı,
+  yerine tam ifade kalıpları kullanıldı.
+
+### Test edilmesi gerekenler (kullanıcı)
+1. **Dil:** Giriş ekranında 🇬🇧 English'e bas → tüm arayüz + canlı maç anlatımı İngilizce olmalı; Ayarlar'dan
+   🇹🇷 Türkçe'ye dönünce kayıt bozulmadan geri gelmeli.
+2. **Roller:** Kadro kartlarında rol rozeti; oyuncuya tıkla → 5 eğilim çubuğu. Şutör rolündeki oyuncunun
+   maçta daha çok üçlük denediğini gör.
+3. **Playbook:** Maçlar → Taktik → aşağıda "Hücum seti" bölümü. Dip Köşe Üçlüsü seç, maçta üçlük sayısının
+   arttığını gör. Kadro uyumu düşük bir set seçip farkı hisset.
+4. **Maç içi müdahale:** Manuel Koçluk aç → Mola al → set değiştir; rakip koçun da mola aldığını,
+   set değiştirdiğini ve oyuncu değiştirdiğini anlatımdan izle.
+5. **Soyunma odası:** Bir yıldızı 3-4 maç oynatma → kriz modalı açılmalı. "Söz ver" seçip sonraki maçta
+   yine oynatma → güvenin çöktüğünü gör. Kadro sayfasındaki Soyunma Odası panelini incele.
+6. **Draft:** Sezonu bitir → draft gecesi kurulu açılmalı, rakipler tek tek seçmeli, sıra sana gelince
+   taban/tavan ve izci raporuna göre seç.
