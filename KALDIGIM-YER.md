@@ -1,66 +1,54 @@
 # KALDIĞIM YER
-Son güncelleme: 2026-08-29 · oturum kullanıcı tarafından durduruldu (DEVAM-ET.md §5)
+Son güncelleme: 2026-08-29 · 32. oturum — **açık iş yok, tüm testler yeşil**
 
-Kaynak talep belgesi: `REVIZE-PAKETI.md` · Protokol: `DEVAM-ET.md`
+Kaynak talep belgeleri: `REVIZE-PAKETI.md` (FAZ 1-6) · `REVIZE-PAKETI-FAZ7.md` (maç dışı)
+Protokol: `DEVAM-ET.md` · Oturum günlüğü: `PROGRESS.md` (32. oturum)
 
-## Biten maddeler
+## Durum: TEMİZ
 
-**FAZ 5 — ölçüm araçları** ✔
-- `tools/live-metrics.js` (YENİ) — canlı maçta 6 metrik: syncRatio, orphanEvents, ballTeleport, identityMatch, tokenSpeedP99, box. Argümanlar: `--rate= --ms= --full --url= --json`
-- `tools/box-band.js` (YENİ) — N maç animasyonsuz simülasyon, takım başına box-score bandı. **Denge kararlarının tek yetkili aracı.**
-- Enstrümanın kendisinde 5 ölçüm kusuru bulunup düzeltildi (kimlik referansı en-yakın-jeton → `_sim.ball.carrier` + pas hedefi; rAF bir kare gecikmesi; jeton indeksinin isim etiketine bağlı olması; orphan sayacının HTML ve `ftPre/ftRes` iki-parça basımını görmemesi). **Revize paketindeki "%87 kimlik uyuşmazlığı" büyük ölçüde ölçüm kusuruymuş.**
+31. oturumdan devreden regresyon **kapatıldı**, ertelenen doğrulama borçları **ödendi**,
+`REVIZE-PAKETI-FAZ7.md`'nin **30 maddesinin tamamı** uygulandı ve doğrulandı.
 
-**FAZ 1 — zaman senkronu** ✔
-- M1 — `ev.dt` damgası (`match-engine.js` `runPossessionV` + çeyrek/uzatma döngüleri)
-- M1+M2 — gecikme `ev.dt`'den türer (`main.js` `matchStep`; `MATCH_TIME_SCALE=0.30`)
-- M16 — varsayılan izleme hızı 1.5 → **1** (`main.js`)
-- M10 — `visibilitychange` ile kuyruk duraklatma (`main.js`)
-- M11 — `setMatchRate` kalan süreyi yeni hıza göre yeniden kurar (`main.js`)
-- M13 — set fazı aralıkları ~2,2×, `sprintV` 1.62→1.35, `keepNear:true` (`match-engine.js`)
-- Ölçüm: jeton hızı p99 **332 → 274 px/sn** ✓
+## Son ölçümler (hepsi hedef içinde)
 
-**FAZ 2 — kimlik** ✔ (regresyon öncesi **%100**)
-- M3 — `_flushPending()` + `clearBallTimers` bekleyen geri çağrıları çalıştırır
-- M4 — chase zaman aşımı her modda; topu takipçiye verir
-- M7 — rakip ilk 5 tek kaynak: motor `events[0].oppFive` damgalar, `startMatch` onu kullanır
-- M8 — bot koç duyuruları (`sub`, `tactic`+`botCoach:true`) sahneye dokunmaz
-- `reb` cümlesi topu almadan basılıyordu → script adımına taşındı
-- serbest atışta düdük anında top atıcıya verilir
+| Araç | Sonuç |
+|---|---|
+| `node tools/visual-check.js` | ✓ masaüstü + mobil, **0 konsol hatası** |
+| `node tools/live-metrics.js` | ✓ orphan **0** · kimlik **%100** · ışınlanma **0 kare** · syncRatio 2,3-3,0× · jeton p99 266-273 px/sn |
+| `node tools/box-band.js --n=200` | ✓ **11 bandın tamamı** (sayı 85,0 · top kaybı 9,3 · FT payı 0,166 · faul 15,1) |
+| `node tools/i18n-scan.js` | ✓ kalan Türkçe **yalnızca özel isim** |
 
-**FAZ 3 — top fiziği** ✔ (kısmi)
-- M6 — `_ballHold` uzun mesafe süresi 0.30 → `min(0.90, d/520)`
-- M5 — `_inboundPass` ışınlanma yerine görünür toparlama pası; `bridge` adımı `min(0.55, d/520)`
-- Ölçüm: ışınlanma 5 kare → **1-2 kare** (777 px → ~130 px). Hedef 0'a ulaşılmadı.
+## Bu oturumda kapatılanlar
 
-**FAZ 4 — denge** ✔ **tüm bantlar tuttu** (`box-band.js --n=200`)
-- M17 top kaybı ekonomisi (pozisyon dağılımı + tür ayrımı: çalma %55 / pas hatası %31 / ihlal %14)
-- M18 serbest atış enflasyonu (and-1 %12→%8,5 · turnike faulü %15→%9,5 · üçlük faulü %8→%5 · şut faulü payı %10→%6)
-- M19 `ftRebound()` — kaçan son serbest atış canlı top + %9 sarkma faulü
-- Skor telafisi: `playsMax` 48→54, isabet 0.505→0.545 / 0.355→0.372 (rakip simetrik)
-
-| Metrik | ÖNCE | SONRA | Bant |
-|---|---|---|---|
-| Sayı | 92,4 | 84,0 | 82-100 ✓ |
-| Top kaybı | **3,3** | **9,6** | 9-15 ✓ |
-| Serbest atış denemesi | 29,5 | 17,9 | 14-26 ✓ |
-| FT sayı payı | 0,241 | 0,162 | 0,12-0,20 ✓ |
-| Ribaund | 29,5 | 31,0 | 30-46 ✓ |
-| Faul | 16,9 | 14,9 | 14-24 ✓ |
-| Top çalma | 3,3 | 5,3 | 4-12 ✓ |
+- **31. oturum regresyonu:** `pendingPaint` `clearBallTimers()`'tan önce kuruluyordu, aynı
+  satırdaki flush cümleyi pozisyonun başında bastırıyordu → sonraya alındı + `stepGuarded()`.
+- **FAZ 3 (top fiziği) kapandı:** şut anındaki ışınlanma ve serbest atışlar arası `b.carrier`
+  doğrudan ataması kaldırıldı → 0 kare.
+- **i18n borcu:** M17 top kaybı satırlarının EN karşılıkları + kalıp önceliği düzeltmesi.
+- **FAZ 7 (F7-1 … F7-30):** veri kaybı (4), istismar/denge (4), Steam/mobil/erişilebilirlik (7),
+  sağlamlık/performans (11), cila (4). Ayrıntı `PROGRESS.md` 32. oturum.
 
 ## Yarım kalan
-**Madde:** M3 tamamlayıcı — "bekleyen anlatım" (pendingPaint) · **REGRESYON, düzeltilmedi**
-**Dosya:** `js/match-engine.js`
-**Satır:** `_flushPending` (~567) ve `animateShotPossession` başı (~1162) + içindeki iki `_res()` çağrısı (~1225, ~1234)
-**Ne yapıyordum:** Şut cümlesi `onResult` ile script sonunda basılıyor; sıradaki olay erken gelince `clearBallTimers()` script'i çalıştırmadan siliyor ve o basketin cümlesi kayboluyordu (orphan=1). `S.pendingPaint` ekleyip flush'ta bastırdım.
-**Ne kaldı:** orphan 0 oldu **ama** cümle artık top çembere varmadan basıldığı için `identityMatch` **%100 → %64** düştü (syncRatio farkı da 1,94 → 2,46). Yani "hiç basılmama" sorunu "yanlış anda basılma"ya dönüştü.
 
-## Sıradaki adım
-`main.js` `matchStep` içinde şutlu olayların gecikmesine **şut uçuş payı** ekleyip (`simMs`'e `+shotDur`) `pendingPaint` flush'ını olay değişiminden çıkar — böylece orphan=0 ve kimlik %100 aynı anda tutar; sonra M9 → M12 → M14 → FAZ 6.
+Yok.
 
-## Dikkat / takıldığım yer
-- **Bu oturumda `visual-check.js` ve `i18n-scan.js` FAZ 1-4 sonrası ÇALIŞTIRILMADI** — yeni oturumda ilk iş.
-- Yeni top kaybı anlatım satırları (`%S pasını kontrol edemedi — topu %R aldı.` vb.) Türkçe yazıldı; **`js/i18n-dict.js`'e İngilizce karşılıkları eklenmedi**.
-- Kapanmayan maddeler: **M9** (ribaund sonrası outlet pas yok — `match-engine.js` ~1130 `let pg=…` ve ~1304 `bringT`), **M12** (AND-1'de serbest atış canlandırılmıyor — and-1 dalı ~2130), **M14** (şut saati; hücum ribaundunda 24 yerine 14 — `main.js` `startClockTween` ~318), **M20** (rakip kadro kalıcılığı), **FAZ 6** (B4 sezon ödülleri, B5 zorluk seviyesi, C2/C3, yerel font, Tauri/Steam, mobil test).
-- `syncRatio` tipler arası fark 1,9-2,0 — hedef < 1,9, sınırda.
-- Alternatif çözüm yolu (istenirse): son 3 değişikliği geri al → kimlik %100'e döner, orphan≈1 kalır.
+## Sıradaki adım (öncelik sırasıyla)
+
+1. **M9** — ribaund sonrası outlet pas yok (`match-engine.js` ~1130 `let pg=…`, ~1304 `bringT`).
+2. **M12** — AND-1'de serbest atış canlandırılmıyor (and-1 dalı ~2130).
+3. **M14** — şut saati: hücum ribaundunda 24 yerine 14 (`main.js` `startClockTween`).
+4. **M20** — rakip kadro kalıcılığı (`RAPOR-EKSIKLER.md`).
+5. **FAZ 6** — B4 sezon ödülleri, B5 zorluk seviyesi, C2/C3, Tauri/Steam paketleme, mobil test.
+
+## Dikkat
+
+- **Kayıt sürümü v6.** `SAVE_VERSIONS=[2,3,4,5,6]`, `migrateV5ToV6` normalizasyon yapıyor.
+  Yeni alan eklenirse migrasyona da yazılmalı.
+- **Fontlar artık yerel** (`assets/fonts/`, 4 woff2). Google Fonts referansı kalmadı —
+  yeni bir `<link>` eklenmemeli (Steam çevrimdışı gereği).
+- **`js/league.js` CRLF**, diğer modüller LF. Toplu düzenlemede satır sonunu otomatik tespit et.
+- `charazayRunLayoutCalibration` artık yalnız `window.CHARAZAY_DEBUG` açıkken çalışır;
+  mentor panelini kullanacaksan bayrağı aç.
+- Kulüp önbelleği (`getBotClubProfile`) bellekte tutuluyor; `CLUB_CACHE_KEY`'e yazan yeni bir
+  yer eklenirse `invalidateClubCacheMem()` çağrılmalı. Aynısı `getTblState` için
+  `invalidateTblStateMem()`.

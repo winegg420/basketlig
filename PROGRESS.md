@@ -1727,3 +1727,158 @@ Yani "hiç basılmama" sorunu "yanlış anda basılma"ya dönüştü. Ayrıntı 
   top kaybı/faul/şut bantları bu sabit bütçe içinde birbiriyle takas ediliyor.
 - Bu oturumda `visual-check.js` ve `i18n-scan.js` FAZ 1-4 sonrası **çalıştırılmadı**; yeni top kaybı
   anlatım satırlarının İngilizce karşılıkları `js/i18n-dict.js`'e **eklenmedi**.
+
+---
+
+## 32. Oturum — 2026-08-29 · REGRESYON KAPANIŞI + FAZ 7 (maç dışı modüller, TAMAMI)
+
+Giriş: 31. oturum açık bir regresyonla durdurulmuştu (`KALDIGIM-YER.md`). Bu oturumda önce o
+kapatıldı, ertelenen doğrulama borçları ödendi, sonra kullanıcının yeni talep belgesi
+`REVIZE-PAKETI-FAZ7.md` (30 madde, maç dışı modüller) **baştan sona** uygulandı.
+
+### 1) Açık regresyon kapatıldı — orphan 0 **ve** kimlik %100 aynı anda
+
+Kök neden 31. oturumda yanlış teşhis edilmişti. `animateShotPossession` içinde
+`S.pendingPaint=_res` **`clearBallTimers()`'tan ÖNCE** kuruluyordu; hemen ardından gelen o
+`clearBallTimers()` çağrısı `_flushPending` üzerinden `_res`'i **anında çalıştırıyordu**.
+Yani şut sonuç cümlesi pozisyonun **başında** basılıyordu — kimlik %64'ün sebebi buydu.
+
+- `match-engine.js`: `pendingPaint` ataması `clearBallTimers()`'tan **sonraya** alındı.
+- `main.js`: `stepGuarded()` — şutlu olaylarda sıradaki olaya geçmeden önce sonuç cümlesinin
+  basılmasını sınırlı süre (delay + 0,6-2,2 sn) bekler. Kare düşmesi/arka plan yüzünden
+  koreografi tahmini süreden geç bitse de cümle ne kaybolur ne de erken basılır.
+  `setMatchRate` ve `visibilitychange` de bu sarmalayıcıyı kullanır (kilitlenme yok).
+
+**Ölçüm kusuru (yine):** `orphan 1` kalıntısının kaynağı motorda değil enstrümandaydı —
+`mState.idx` ilerlemiş olsa da son pozisyonun koreografisi ölçüm kesildiğinde bitmemiş
+oluyordu. `live-metrics.js` artık son olayı orphan sayımından hariç tutuyor ve pencere
+sonunda 1,5 sn drenaj bekliyor. **İkinci kez ders: sayıyı kovalamadan önce enstrümanı doğrula.**
+
+### 2) FAZ 3 kapandı — top ışınlanması 0 kare
+
+Sıçrama kaynağını bulmak için enstrümana teşhis eklendi (sıçrama anındaki top modu + olay tipi).
+İki gerçek kusur çıktı:
+- `fire()` topu şut noktasına **doğrudan atıyordu** (`b.x=sh.x`). Artık `bridge` topu taşır
+  (tFire-0,62'ye alındı); kalan fark >40 px ise şut topun **gerçek** konumundan çıkar.
+- Serbest atışlar arasında `b.mode='held'; b.carrier=shooter` **doğrudan atanıyordu** →
+  top çemberden çizgiye ~135 px ışınlanıyordu. Artık `_ballHold` ile görünür kısa pas.
+
+| Metrik | 31. oturum sonu | 32. oturum sonu | Hedef |
+|---|---|---|---|
+| orphanEvents | 1 (ya da kimlik %64) | **0** | 0 |
+| identityMatch | %64 | **%100** | >= %95 |
+| ballTeleport | 1-2 kare (777 → 130 px) | **0 kare** (en büyük 32-41 px) | 0 |
+| tokenSpeed p99 | 274 | 266-273 px/sn | < 340 |
+
+### 3) Ertelenen doğrulama borçları ödendi
+- `visual-check.js` masaüstü + mobil: **0 konsol hatası** (FAZ 1-4 sonrası hiç çalıştırılmamıştı).
+- M17 top kaybı satırlarının İngilizce karşılıkları `i18n-commentary.js`'e eklendi (8 ifade
+  kalıbı; baştaki isim korunur, cümle ortasındaki ikinci isim yakalanır).
+- `i18n-scan.js`'te iki karma metin bulundu: genel kalıplar (`grubun`, `hedefi:`) daha özel
+  cümleleri yarıda çeviriyordu ("Senin group:", "Başkanın goal:"). Üç kalıp en öne alındı,
+  sıra eki (14th place) doğru üretiliyor.
+
+### 4) FAZ 7 — maç dışı modüller (30 maddenin tamamı)
+
+**A · Veri kaybı (Steam engelleyici)**
+- **F7-1** `ensureLeagueSeasonOrStart` playoff/draft durumuna hiç bakmıyordu: playoff ortasında
+  sayfa yenilenince `startLeagueSeason()` çalışıp bracket + draft siliniyor, oyuncular
+  yaşlanıyor, sözleşmeler eksiliyordu. İki erken çıkış + yarım playoffta lig sayfasına yönlendirme.
+- **F7-2 / F7-9** Açılışta IndexedDB'ye **yalnızca localStorage tamamen boşsa** bakılıyordu.
+  Kota dolduktan sonra LS bayat kalıp IDB güncelleniyor → **bayat kayıt kazanıyordu**; ayrıca
+  desteklenmeyen sürümlü LS, sağlam IDB yedeğini gizliyordu. Artık iki kaynak da okunur,
+  `savedAt` karşılaştırılır, yeni olan seçilir.
+- **F7-3** `clearSavedGame` IDB kopyasını silmiyordu → silinen kariyer sonraki açılışta geri
+  geliyordu. `idbDeleteString()` eklendi.
+- **F7-4** `_lastSavedFingerprint` `try`'dan **önce** güncelleniyordu: yazma hata verse bile
+  "kaydedildi" sayılıyor ve durum değişmediği sürece bir daha denenmiyordu. Artık yalnız
+  başarılı yazmadan sonra güncellenir, hatada sıfırlanır, iki depo da başarısızsa kritik uyarı.
+
+**B · Denge ve istismar**
+- **F7-5** Taktik modalında "İlk 5 seç"e basınca kaydedilmemiş tempo/odak/savunma seçimleri
+  siliniyordu (modal `innerHTML` değişiyor). `_captureTacticInputs()` taslağı saklar,
+  `saveLineup`/`resetLineup` taktik formuna geri döner.
+- **F7-6** `G.arena` varsayılanı `ecoRound(45)=938` idi; `ARENA_LVL.bk` ham KR olduğu için
+  **seviye 1 arena, seviye 4'ten (800) pahalı** bakım ödüyor, yükseltince bakım **düşüyordu**.
+- **F7-7 (istismar)** `if(!G.coaches.length) G.coaches=genCoaches()` — tüm koçları kov + sayfayı
+  yenile = 3 bedava koç; beğenmezsen tekrar kov + yenile ile **seviye 5 reroll**. Artık alan
+  kaydın kendisinde yoksa üretilir (`coachMarket`, `scoutMarket` dahil).
+- **F7-8** `createTeam` kalıcı alanların çoğunu sıfırlamıyordu: yeni kariyer eskisinin Mega
+  Arena'sı, Elit Akademi'si, kulüp rekorları, `pendingMatch` kilidi ve geçersiz `lineup`
+  id'leriyle başlıyordu. 20 alan eklendi.
+
+**Erişim / mobil / Steam**
+- **F7-11 (Steam engelleyici)** Tek font kaynağı Google Fonts idi; depodaki `css2` hiçbir
+  yerden referans edilmiyor ve hâlâ `fonts.gstatic.com`'a bakıyordu. 4 `.woff2` indirildi
+  (`assets/fonts/`), `<link>` kaldırıldı, yerel `@font-face` yazıldı, yedek yığın genişletildi
+  (`'Arial Narrow','Helvetica Neue Condensed',Impact`), `.scoreboard` `flex-wrap` aldı.
+- **F7-10** `.lu-card{touch-action:none}` yüzünden yedek listesi mobilde **kaydırılamıyordu**
+  (dokunmak sürükleme başlatıyordu). Kart `pan-y`, sürükleme ayrı bir tutamağa (`.lu-grip`).
+- **F7-12** Turuncu zeminde beyaz yazı **2,80:1** (7 kural) → `#1a1002` ~ 7,4:1.
+- **F7-13** `.menu-btn` ~20x24px idi (mobilde sidebar'ın tek girişi) → 44x44.
+- **F7-24 / F7-25** Mobilde 44px dokunma hedefleri; genel `:focus-visible` kuralı;
+  `role="button"` öğeleri artık Space'e de yanıt veriyor.
+- **F7-30** Lig tablosu mobilde iç içe iki eksenli kaydırıcıydı → `min-width` 520px, +/-
+  sütunları gizli, dikey kaydırma sayfaya bırakıldı. Portrelere `alt=""`. `svgLineChart`
+  tüm değerler eşitken çizgiyi tabana yapıştırmıyor.
+
+**C · Sağlamlık ve performans**
+- **F7-14** `applyGameState` try/catch'sizdi; bozuk kayıt `G`'yi **yarı yüklenmiş** bırakıp
+  oyunu boş ekranda kilitliyordu. Anlık görüntü alınır, hata olursa geri sarılır, kullanıcıya
+  "dışa aktar / sil" yönlendirmesi verilir.
+- **F7-15** Çok sekmede `storage` olayı canlı maçı bozuyordu: `applyGameState` `G.players`'ı
+  yeniden kurarken `mState` eski referansları tutuyor, maç içi enerji/faul/değişiklik
+  güncellemeleri **yetim nesnelere** yazılıp maç sonunda kayboluyordu.
+- **F7-16** `_crisisPid`/`_crisisDay` kayda girdi (aynı soyunma odası krizi tekrar açılıyordu);
+  biten draft de saklanıyor (özet ekranı erişilebilir).
+- **F7-17** Kayıt sürümü **v6**; `migrateV5ToV6` normalizasyonu. `ensureRoles` çağrısı seed
+  doldurma bloğundan **sonraya** alındı (seed'siz oyuncularda eğilimler bir kez zıplıyordu).
+- **F7-18** `charazayRunLayoutCalibration` her navigasyonda yazma+okuma karıştırıp zorunlu
+  senkron layout tetikliyor, 11 DOM sorgusu yapıp `localStorage`'a yazıyordu. Bu bir
+  mentor-panel geliştirme aracı → yalnız `CHARAZAY_DEBUG` modunda.
+- **F7-19** İlk 5 düzenleyicide her yerleştirmede **tüm modal** yeniden kuruluyordu (kaydırma
+  konumu her hamlede en üste sıçrıyordu) → `refreshLineupEditor()` yalnız iki kabı günceller.
+- **F7-20** `getBotClubProfile` her çağrıda ~300 KB JSON ayrıştırıyordu; `buildSeasonPlayerPool`
+  bunu 19 akran takım için art arda çağırıyor (~6 MB / kare). Okuma bellek önbelleğinden;
+  yazma senkron kalır (aynı anahtara `economy.js` ve `match-prep.js` de yazıyor) ve o iki
+  nokta önbelleği geçersiz kılar.
+- **F7-21** Eşit puanda `h2h` **geçişsiz** karşılaştırıcı üretiyordu (A>B, B>C, C>A tek devreli
+  ligde olağan; `Array.sort` standart dışı sonuç verir). h2h artık yalnız eşit puanlı grup
+  **tam iki takımken** uygulanır, sonra averaj → attığı sayı. Puanı `'—'` olan satırlar gerçek
+  0 puanlılarla karışmıyor.
+- **F7-22** Modalda Escape ve odak yönetimi yoktu → `role="dialog"`/`aria-modal`, odaklanabilir
+  sheet, Escape ile kapanma, odağın açan öğeye dönmesi.
+- **F7-23** Analiz sayfasında oyuncu seçince tüm gövde yeniden basılıp `<select>` odağı
+  kayboluyordu → yalnız `#analiticPlayerBody` güncelleniyor.
+- **F7-26** `escMatch` `>` ve `'` kaçırmıyordu (ikinci savunma katmanı tamamlandı).
+- **F7-27** Bireysel antrenman `refreshRole` çağırmıyordu (maç motoru bayat eğilimlerle
+  çalışıyordu); takım antrenmanındaki çift çağrının biri silindi.
+- **F7-28** `localStorage` engelliyse `getTblState` **her çağrıda** 26 grup x 20 takım yeniden
+  üretiyordu → lig rakiplerinin adları her render'da değişiyordu. Bellek önbelleği + depolama
+  kapalıysa tek seferlik kritik uyarı.
+- **F7-29** `saveMatchTactics` doğrulama yapmıyordu: modal kapalıyken çağrılırsa `G.tactics`
+  **varsayılana eziliyor** ve "kaydedildi" bildirimi çıkıyordu. Odak oyuncusu artık kadroda ve
+  sağlıklı olmalı.
+
+**Bu oturumda üretilen bir regresyon da yakalandı:** F7-8'de eklenen `G.posTraining={}` boş
+nesne truthy olduğu için Antrenman sayfasında "undefined gün kaldı" kartı basılıyordu →
+`null` + render tarafında guard. `i18n-scan.js` bunu tarama çıktısında ortaya çıkardı
+(çeviri aracı bir mantık hatasını buldu).
+
+### Doğrulama (oturum sonu)
+- `node --check`: değişen tüm modüller ✓
+- `tools/visual-check.js`: masaüstü 1440x900 + mobil 390x844, **0 konsol hatası**, 15 adımlık akış
+- `tools/live-metrics.js`: **tüm hedefler tuttu** — orphan 0 · kimlik %100 · ışınlanma 0 kare ·
+  syncRatio medyan 2,3-3,0x · jeton p99 266-273 px/sn
+- `tools/box-band.js --n=200`: **11 bandın tamamı tuttu** (sayı 85,0 · top kaybı 9,3 ·
+  FT payı 0,166 · ribaund 31,3 · asist 19,0 · faul 15,1 · çalma 5,1)
+- `tools/i18n-scan.js`: kalan Türkçe **yalnızca özel isim**
+
+### Kararlar / gözlemler
+- **Enstrüman iki kez yanılttı** (31. oturumda kimlik ölçümü, bu oturumda orphan sayımı).
+  Bir metrik hedefi tutmuyorsa önce ölçüm yolunu doğrula; teşhis aracına bağlam (top modu,
+  olay tipi) eklemek sıçrama kaynağını tek denemede buldu.
+- Kayıt katmanındaki dört veri kaybı maddesinin ortak deseni: **başarısızlık sessizdi.** Kota
+  hatası, silinmemiş IDB kopyası, yarım uygulanmış durum — hiçbiri kullanıcıya bildirilmiyordu.
+- `js/league.js` CRLF, diğer modüller LF satır sonu kullanıyor; toplu düzenlemede satır sonu
+  otomatik tespit edilmeli.
