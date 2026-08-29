@@ -634,6 +634,110 @@ function rollInjuriesForBotClub(teamName,ligKey){
   }catch(e){ dbg('opp injury',e); }
 }
 
+/* ── M20: bot kulüp kadrosunda kalıcı durum ────────────────────────────────────────────
+   Rakip kadrolar kalıcıydı ama üzerlerinde hiçbir şey birikmiyordu: maç istatistiği yok,
+   yorgunluk yok, sezon geçince yaşlanma yok. "Kalıcı kadro nesnesi" ancak üzerinde durum
+   biriktiğinde anlamlı olur — aşağıdaki üç fonksiyon bunu kullanıcı tarafıyla aynı
+   alanlar (p.sezon, p.enerji) üzerinden yapar. */
+
+/** Bot kulüp kaydını önbellekten okur, fn(roster) uygular, değiştiyse geri yazar. */
+function withBotClubRoster(teamName,ligKey,fn){
+  try{
+    if(!teamName||!ligKey) return false;
+    if(G.team&&teamName===G.team.isim) return false;   /* kullanıcı takımı ayrı sistemle işlenir */
+    let cache={}; try{ cache=JSON.parse(localStorage.getItem(CLUB_CACHE_KEY)||'{}'); }catch(e){ cache={}; }
+    const ck=ligKey+'||'+teamName;
+    const row=cache[ck];
+    if(!row||!Array.isArray(row.roster)) return false;
+    const changed=fn(row.roster,row);
+    if(changed){
+      cache[ck]=row;
+      try{ localStorage.setItem(CLUB_CACHE_KEY,JSON.stringify(cache)); }catch(e){}
+      if(typeof invalidateClubCacheMem==='function') invalidateClubCacheMem();
+    }
+    return !!changed;
+  }catch(e){ dbg('bot roster',e); return false; }
+}
+
+/** Maç sonu: rakip oyuncuların sezon istatistiği + yorgunluğu işlenir (kullanıcı tarafındaki
+    mergeMatchPlayerStats + applyMatchFatigueToRoster karşılığı). */
+function mergeBotClubMatchStats(teamName,ligKey,ostats,oppIds){
+  const stats=ostats||{};
+  const oynayan=new Set(Array.isArray(oppIds)?oppIds:[]);
+  Object.keys(stats).forEach(id=>oynayan.add(id));
+  if(!oynayan.size) return false;
+  return withBotClubRoster(teamName,ligKey,(roster)=>{
+    let changed=false;
+    roster.forEach(p=>{
+      if(!p||!oynayan.has(p.id)) return;
+      p.sezon=p.sezon||{mac:0,pts:0,ast:0,reb:0};
+      p.sezon.mac++;
+      const st=stats[p.id];
+      if(st){ p.sezon.pts+=st.pts||0; p.sezon.ast+=st.ast||0; p.sezon.reb+=st.reb||0; }
+      /* Yorgunluk: dayanıklılığı yüksek oyuncu daha az yıpranır (kullanıcı tarafıyla aynı formül). */
+      const dayan=Number(p.dayaniklilik)||60;
+      const mit=Math.max(0,Math.min(8,Math.round((dayan-55)/10)));
+      const cost=Math.max(4,rand(9,20)-mit);
+      p.enerji=Math.max(0,Math.round((Number(p.enerji!=null?p.enerji:100))-cost));
+      changed=true;
+    });
+    return changed;
+  });
+}
+
+/** Gün geçişi: oynamayan/dinlenen bot oyuncular toparlanır. */
+function recoverBotClubEnergy(teamName,ligKey,gun){
+  const d=Math.max(0,Number(gun)||0);
+  if(!d) return false;
+  return withBotClubRoster(teamName,ligKey,(roster)=>{
+    let changed=false;
+    roster.forEach(p=>{
+      if(!p) return;
+      const e=Number(p.enerji!=null?p.enerji:100);
+      if(e>=100) return;
+      const dayan=Number(p.dayaniklilik)||60;
+      const hiz=6+Math.round(dayan/25);              /* günde ~8-10 puan */
+      p.enerji=Math.min(100,Math.round(e+hiz*d));
+      changed=true;
+    });
+    return changed;
+  });
+}
+
+/** Sezon geçişi: bot kadrolar da yaşlanır, gelişir/geriler ve sezon istatistiği sıfırlanır. */
+function ageBotClubRoster(teamName,ligKey){
+  return withBotClubRoster(teamName,ligKey,(roster)=>{
+    roster.forEach(p=>{
+      if(!p) return;
+      p.yas=(Number(p.yas)||24)+1;
+      const yas=p.yas;
+      /* Gelişim eğrisi kullanıcı tarafıyla aynı yönde: genç gelişir, 30+ geriler. */
+      const delta=yas<=23?rand(1,3):yas<=27?rand(0,2):yas<=30?rand(-1,1):yas<=33?rand(-3,0):rand(-5,-1);
+      if(delta){
+        STAT_KEYS.forEach(k=>{
+          const v=Number(p[k])||60;
+          p[k]=Math.max(30,Math.min(Math.min(99,Number(p.potansiyel)||99),v+Math.round(delta*(Math.random()<0.5?1:0.5))));
+        });
+        p.genel=Math.round(STAT_KEYS.reduce((a,k)=>a+(Number(p[k])||60),0)/STAT_KEYS.length);
+        p.maas=salaryKRFromGenel(p.genel);
+      }
+      p.sezon={mac:0,pts:0,ast:0,reb:0};
+      p.enerji=100;
+      if(typeof refreshRole==='function'){ try{ refreshRole(p); }catch(e){} }
+    });
+    return true;
+  });
+}
+
+/** Sezon geçişinde kullanıcının grubundaki TÜM rakip kulüpler yaşlandırılır. */
+function ageAllPeerClubs(){
+  try{
+    const key=(G.team&&G.team.tblKey)||null;
+    if(!key||typeof userLeaguePeers!=='function') return;
+    userLeaguePeers().forEach(name=>{ try{ ageBotClubRoster(name,key); }catch(e){} });
+  }catch(e){ dbg('peer aging',e); }
+}
+
 function seasonAllMatchesPlayed(){
   return G.season&&G.season.matches.every(m=>m.played);
 }
@@ -660,8 +764,22 @@ function buildSeasonPlayerPool(){
     userLeaguePeers().forEach(name=>{
       const prof=getBotClubProfile(name,G.team.tblKey||'tbl');
       (prof.roster||[]).slice().sort((a,b)=>(b.genel||0)-(a.genel||0)).slice(0,4).forEach(p=>{
-        const st=seasonAwardStatSynth(p,games);
-        pool.push({isim:p.isim,team:name,poz:p.poz,genel:p.genel,yas:p.yas,mac:st.mac,pts:st.pts,ast:st.ast,reb:st.reb,isUser:false});
+        /* M20: rakip oyuncular artık GERÇEK maç istatistiği biriktiriyor. Ama bot oyuncu
+           yalnız kullanıcıyla oynadığı maçlarda veri toplar (tek devrede rakip başına ~1 maç),
+           kullanıcı oyuncuları ise 19 maç. Ödül karşılaştırması TOPLAM üzerinden yapıldığı için
+           ham veriyi koymak rakipleri yarıştan tümüyle düşürürdü. Bu yüzden gerçek veri maç
+           başına indirgenip sezon uzunluğuna ölçeklenir ve örnek azken sentetikle harmanlanır
+           (6+ maçta tamamen gerçeğe döner) — tek maçlık uç performans sezonu domine etmesin. */
+        const ger=p.sezon;
+        const sen=seasonAwardStatSynth(p,games);
+        let st=sen;
+        if(ger&&(ger.mac||0)>=1){
+          const w=Math.min(1,(ger.mac||0)/6);                 /* gerçek verinin ağırlığı */
+          const oran=games/(ger.mac||1);                      /* sezon uzunluğuna ölçek */
+          const kar=(g,x)=>Math.round(((g||0)*oran)*w+(x||0)*(1-w));
+          st={mac:games,pts:kar(ger.pts,sen.pts),ast:kar(ger.ast,sen.ast),reb:kar(ger.reb,sen.reb)};
+        }
+        pool.push({isim:p.isim,team:name,poz:p.poz,genel:p.genel,yas:p.yas,mac:st.mac,pts:st.pts||0,ast:st.ast||0,reb:st.reb||0,isUser:false,gercekMac:(ger&&ger.mac)||0});
       });
     });
   }catch(e){ dbg('award pool',e); }
@@ -1315,6 +1433,9 @@ function startLeagueSeason(){
   G.losses=0;
   G.points=0;
   G.winStreak=0; /* A4: galibiyet serisi her yeni sezon başında sıfırlanır (seri sezona devretmez). */
+  /* M20: bot kulüpler de yaşlanır/gelişir ve sezon istatistikleri sıfırlanır. Kullanıcı
+     kadrosu yukarıdaki blokta işleniyor; rakipler artık aynı sezon döngüsüne girer. */
+  if(prevY>0&&typeof ageAllPeerClubs==='function') ageAllPeerClubs();
   G.gameDay=1;
   G.lastEcoDay=1;
   regenerateSeasonFixtures();

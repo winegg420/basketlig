@@ -965,7 +965,16 @@ function movePlayersForEvent(ev,paint){
       S.away.forEach((p,i)=>{ p.tx=as[i][0]; p.ty=as[i][1]; p.maxV=p.baseV; p._oob=false; });
       clearBallTimers();
       S.defTrack=false;
-      const b=S.ball; b.mode='loose'; b.carrier=null; b.x=COURT_MID; b.y=250; b.vx=0; b.vy=0; b.h=20; b.vh=40;
+      /* M5/M6 (kenar durum): top çeyrek sonunda orta sahaya IŞINLANIYORDU (ölçüm: 245 px
+         tek kare sıçrama, mod 'loose'). Uzaksa görünür şekilde taşınır — hakeme dönüş. */
+      const b=S.ball;
+      b.carrier=null; b.vx=0; b.vy=0; b.h=20; b.vh=40;
+      const _dq=Math.hypot(b.x-COURT_MID,b.y-250);
+      if(_dq>50){
+        _ballPass({x:COURT_MID,y:250,vx:0,vy:0,side:1,ghost:true},Math.max(0.25,Math.min(0.85,_dq/520)));
+      } else {
+        b.mode='loose'; b.x=COURT_MID; b.y=250;
+      }
       S.inb=null;
       return 0;
     }
@@ -1935,7 +1944,7 @@ function generateMatchEvents(rakip, opts){
   const stlW=(p)=>Math.max(0.10,statN(p,'topCalma')/65+(p&&p.rol==='kilit'?0.9:0));
   /* Faul disiplini düşük olan oyuncu faulleri toplar (gerçek hayatta pivotlar). */
   const foulW=(p)=>Math.max(0.15,(100-_eg(p,'disiplin'))/45);
-  const shooterAcc=(shooter,is3,base,clutch)=>{
+  const shooterAcc=(shooter,is3,base,clutch,isUser)=>{
     const s2=statN(shooter,'hucum')*0.5+statN(shooter,'sutIsabeti')*0.5;
     const s3=statN(shooter,'sutIsabeti')*0.7+statN(shooter,'hucum')*0.3;
     const skill=is3?s3:s2;
@@ -1943,7 +1952,11 @@ function generateMatchEvents(rakip, opts){
     const en=Math.max(0,Math.min(100,Number(shooter.enerji!=null?shooter.enerji:100)));
     const enMul=0.85+en/100*0.17;                        /* 0.85..1.02 — bireysel yorgunluk */
     const mood=Number(shooter.mood!=null?shooter.mood:70);
-    const psyMul=Math.max(0.95,Math.min(1.05,1+((mood-60)/40)*0.04+((teamChem-70)/30)*0.03));
+    /* Psikoloji: kullanıcı tarafında moral + takım kimyası; bot tarafında kulüp kadrosunun
+       kendi morali (kimya kullanıcıya özgü bir kavram, bota taşınmaz). */
+    const psyMul=(isUser===false)
+      ? Math.max(0.96,Math.min(1.04,1+((mood-60)/40)*0.04))
+      : Math.max(0.95,Math.min(1.05,1+((mood-60)/40)*0.04+((teamChem-70)/30)*0.03));
     /* Madde 36: kritik anlarda (son 2 dk / uzatma) zekâsı yüksek oyuncu daha iyi karar verir. */
     let clutchMul=1;
     if(clutch){
@@ -1952,6 +1965,9 @@ function generateMatchEvents(rakip, opts){
       const _cl=_eg(shooter,'clutch');
       clutchMul=Math.max(0.86,Math.min(1.12,1+(statN(shooter,'zeka')-70)/100*0.06+(_cl-50)/100*0.18));
     }
+    /* Takım çarpanı ve pozisyon uyumu yalnız kullanıcı tarafına aittir; bot tarafında
+       çağıran kendi çarpanını base'e katar. */
+    if(isUser===false) return base*skillMul*enMul*psyMul*clutchMul;
     return base*skillMul*enMul*psyMul*clutchMul*uMul*pozFitMul(shooter);
   };
   const ftMake=(shooter)=>{
@@ -1982,10 +1998,17 @@ function generateMatchEvents(rakip, opts){
   const _oppFiveOut=[];
   /* A1: Rakip sahada kalıcı 5 + yedek. En iyi 5 başlar; sakatlar dışlanır (yoksa tam kadroya düş). */
   const oppHealthy=oppFull.filter(p=>!(p&&p.injReturnDay!=null&&(G.gameDay||1)<p.injReturnDay));
-  const oppPool=(oppHealthy.length>=5?oppHealthy:oppFull).slice().sort((a,b)=>(Number(b.genel)||0)-(Number(a.genel)||0));
+  /* M20: ilk 5 seçimi yalnız OVR'ye değil, güncel enerjiye de bakar (kullanıcı tarafındaki
+     yorgun oyuncuyu dinlendirme mantığının bot karşılığı). Enerji 100 iken sıralama eskisiyle
+     aynıdır; yorgun oyuncu geriye düşer ve yedeği başlar. */
+  const _oppRank=p=>(Number(p&&p.genel)||0)*(0.75+0.25*Math.max(0,Math.min(100,Number(p&&p.enerji!=null?p.enerji:100)))/100);
+  const oppPool=(oppHealthy.length>=5?oppHealthy:oppFull).slice().sort((a,b)=>_oppRank(b)-_oppRank(a));
   oppPool.forEach(p=>{ if(p) p.matchFouls=0; });
   let oppCourt=oppPool.slice(0,5);
   oppCourt.forEach(p=>_oppFiveOut.push(p));   /* M7: sahne bu beşliyi dizecek */
+  /* M20: maç boyunca sahada SÜRE ALAN rakip oyuncular — sezon istatistiği yalnız onlara işlenir. */
+  const _oppPlayed=new Set();
+  oppCourt.forEach(p=>{ if(p&&p.id) _oppPlayed.add(p.id); });
   const oppBench=oppPool.slice(5);
   /* ── FAZ C: rakip koç ── Bot artık kendi setini seçer, mola alır, rotasyon yapar. */
   const botC=(typeof botCoachProfile==='function')?botCoachProfile(oppName):{pb:'dengeli',def:'adam',toRun:8,switchGap:10,depth:8,restEvery:20,panicPb:'transition'};
@@ -2009,7 +2032,7 @@ function generateMatchEvents(rakip, opts){
   function oppFoulsOut(p,q,t){
     const sub=oBenchNext();
     const ix=oppCourt.indexOf(p);
-    if(sub){ if(ix>=0) oppCourt[ix]=sub; else oppCourt.push(sub); }
+    if(sub){ if(ix>=0) oppCourt[ix]=sub; else oppCourt.push(sub); if(sub.id) _oppPlayed.add(sub.id); }
     else if(ix>=0) oppCourt.splice(ix,1);
     /* Rakip bot havuzu G.players'ta yok — id yerine oyuncu nesnesi taşınır (saha jetonu değişimi için). */
     events.push({type:'foul',text:`⚠️ ${rname} — ${p.isim} 5. faulüne ulaştı ve oyundan atıldı${sub?` — yerine ${sub.isim} girdi.`:' — rakibin yedeği kalmadı, eksik oynuyor.'} (${homeScore} - ${awayScore})`,q,t:t||0,home:homeScore,away:awayScore,subOutObj:p,subInObj:sub||null,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
@@ -2130,6 +2153,7 @@ function generateMatchEvents(rakip, opts){
         if(out&&inP){
           const ix=oppCourt.indexOf(out);
           if(ix>=0) oppCourt[ix]=inP;
+          if(inP&&inP.id) _oppPlayed.add(inP.id);   /* M20 */
           oppBench.push(out);              /* dinlenen oyuncu yedeğe döner (rotasyon derinliği) */
           botState.restCd=6;
           const why=(out.matchFouls||0)>=3?`${out.matchFouls} faulle`:'dinlenmek için';
@@ -2222,8 +2246,11 @@ function generateMatchEvents(rakip, opts){
          Eşleştirmede rakip yıldızının isabeti belirgin düşer (o oyuncu için ×0.82). */
       const markMul=(markStar&&oppPool.length&&shooter===oppPool[0])?0.82:1;
       /* FAZ C: rakip koçun seti kendi isabetini de etkiler (kullanıcınınkiyle simetrik). */
-      const oppAcc=(is3?(0.366+(botPb.acc3||0))*defOppAcc3Mul:(0.534+(botPb.acc2||0))*defOppAcc2Mul)*oMul*markMul;
-      const acc=userPos?shooterAcc(shooter,is3,is3?0.372+acc3:0.545+acc2,clutch):oppAcc;
+      /* M20: rakip isabeti de şutörün KENDİ statından/enerjisinden/moralinden geçer.
+         Taban değerler korunur; oyuncu kalitesi artık her iki tarafta da fark yaratır. */
+      const oppBase=(is3?(0.366+(botPb.acc3||0))*defOppAcc3Mul:(0.534+(botPb.acc2||0))*defOppAcc2Mul)*oMul*markMul;
+      const oppAcc=shooterAcc(shooter,is3,oppBase,clutch,false);
+      const acc=userPos?shooterAcc(shooter,is3,is3?0.372+acc3:0.545+acc2,clutch,true):oppAcc;
       /* Ev avantajı (eski %53 pozisyon payının yerine, isabete taşındı) + hızlı hücumda kolay sayı. */
       let accF=acc*((userPos===userIsHome)?1.03:0.97);
       if(userPos&&botState.dampen>0) accF*=0.93;   /* FAZ C: rakip molası kullanıcının serisini keser */
@@ -2254,15 +2281,14 @@ function generateMatchEvents(rakip, opts){
       const _dFoulMul=defenderIsUser?(dset.foul!=null?dset.foul:1):1;   /* FAZ B: pres faul riski ↑, pack ↓ */
       if(made&&!is3&&Math.random()<0.085*_dFoulMul){   /* M18: and-1 %12 → %8,5 */
         and1=true; B.ftAtt++; D.foul++; recordFoul(defenderIsUser,q,t);
-        and1Made=userPos?ftMake(shooter):(Math.random()<0.74);
+        and1Made=ftMake(shooter);   /* M20: rakip de kendi serbest atış statından */
         if(and1Made){ B.ftMade++; addPts(1); if(userPos) bumpP(shooter,'pts',1); else bumpO(shooter,'pts',1); }
         else if(ftRebound(userPos,B,D,0,1,q,t)) posNext=userPos;
       }
       /* Kaçan turnikede savunma faulü → 2 serbest atış */
       if(!made&&!is3&&Math.random()<0.095*_dFoulMul){  /* M18: kaçan turnikede faul %15 → %9,5 */
         let nMade=0;
-        if(userPos){ if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++; }
-        else { if(Math.random()<0.74)nMade++; if(Math.random()<0.74)nMade++; }
+        if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++;   /* M20: iki taraf da aynı yoldan */
         B.ftAtt+=2; B.ftMade+=nMade; D.foul++; recordFoul(defenderIsUser,q,t);
         if(ftRebound(userPos,B,D,nMade,2,q,t)) posNext=userPos;
         addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
@@ -2383,8 +2409,7 @@ function generateMatchEvents(rakip, opts){
     } else if(roll<0.805){
       /* Şut faulü — çizgide 2 serbest atış. M18: pay %10 → %6 (serbest atış enflasyonu). */
       let nMade=0;
-      if(userPos){ if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++; }
-      else { if(Math.random()<0.72)nMade++; if(Math.random()<0.72)nMade++; }
+      if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++;     /* M20: iki taraf da aynı yoldan */
       B.ftAtt+=2; B.ftMade+=nMade; D.foul++; recordFoul(defenderIsUser,q,t);
       if(ftRebound(userPos,B,D,nMade,2,q,t)) posNext=userPos;
       addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
@@ -2566,6 +2591,9 @@ function generateMatchEvents(rakip, opts){
     players:pstats,
     lineupIds:[pg,sg,sf,pf,c].filter(Boolean).map(x=>x.id),
     subIds:[...subbedIds],
+    /* M20: rakip tarafın maç istatistiği + sahada süre alan rakip oyuncular. */
+    oplayers:_cloneStats(ostats),
+    oppPlayedIds:oppPool.filter(x=>x&&x.id&&(_oppPlayed.has(x.id))).map(x=>x.id),
     box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
   });
 
@@ -2628,6 +2656,9 @@ function applyMatchResult(ev,ctx){
     clearResolvedInjuries();
     rollInjuriesAfterUserMatch();
     rollInjuriesForBotClub(ctx.rakipName,ligKey); /* A1: rakip kadrosunda da sakatlık işlenir */
+    /* M20: rakip kadro artık kalıcı durum biriktiriyor — maç istatistiği ve yorgunluk. */
+    if(typeof mergeBotClubMatchStats==='function') mergeBotClubMatchStats(ctx.rakipName,ligKey,ev.oplayers,ev.oppPlayedIds);
+    if(typeof recoverBotClubEnergy==='function') recoverBotClubEnergy(ctx.rakipName,ligKey,Math.max(1,(G.gameDay||1)-prevDay));
     simulateRoundCpuMatches(sm.round);
     regenerateSeasonFixtures();
     syncUserRecordFromStandings();
@@ -2673,6 +2704,9 @@ function applyMatchResult(ev,ctx){
     clearResolvedInjuries();
     rollInjuriesAfterUserMatch();
     rollInjuriesForBotClub(ctx.rakipName,ligKey); /* A1 */
+    /* M20: playoff maçında da rakip kadroya işlenir. */
+    if(typeof mergeBotClubMatchStats==='function') mergeBotClubMatchStats(ctx.rakipName,ligKey,ev.oplayers,ev.oppPlayedIds);
+    if(typeof recoverBotClubEnergy==='function') recoverBotClubEnergy(ctx.rakipName,ligKey,Math.max(1,(G.gameDay||1)-prevDay));
     if(ctx.userIsHome){
       const bilet=homeTicketIncome();
       txn('Playoff bilet geliri',bilet);

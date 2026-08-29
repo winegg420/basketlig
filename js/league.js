@@ -39,6 +39,33 @@ function showAppModal(html,opts){
    yazdıktan sonra invalidateClubCacheMem() ile bellek tazelenir. */
 let _clubCacheMem=null;
 function invalidateClubCacheMem(){ _clubCacheMem=null; }
+/* M20: bot kulüp kadrosunun pozisyon dağılımı ve hedef derinliği.
+   İlk 7 sıra tarihsel dağılımdır — DEĞİŞTİRME, eski kayıtlardaki id/seed'ler bu sıraya bağlı. */
+const BOT_ROSTER_DIST=['PG','SG','SG','SF','PF','C','C','PG','SF','PF'];
+/** Kadroyu hedef derinliğe tamamlar. Eklenen oyuncu oldu ise true döner (kayıt tazelenmeli). */
+function botClubEnsureDepth(roster,ck){
+  if(!Array.isArray(roster)) return false;
+  const seed=hash32(ck);
+  let eklendi=false;
+  for(let i=roster.length;i<BOT_ROSTER_DIST.length;i++){
+    const p=genPlayer(BOT_ROSTER_DIST[i]);
+    p.id='b'+seed+'_'+i;
+    p.seed='b'+ck+i;
+    p.maas=salaryKRFromGenel(p.genel);
+    /* M20: bot oyuncular da enerji ve sezon istatistiği taşır — kullanıcı tarafıyla aynı alanlar. */
+    if(p.enerji==null) p.enerji=100;
+    if(!p.sezon) p.sezon={mac:0,pts:0,ast:0,reb:0};
+    roster.push(p);
+    eklendi=true;
+  }
+  /* Eski kayıtlardaki oyunculara eksik alanları geriye dönük ekle. */
+  roster.forEach(p=>{
+    if(!p) return;
+    if(p.enerji==null){ p.enerji=100; eklendi=true; }
+    if(!p.sezon){ p.sezon={mac:0,pts:0,ast:0,reb:0}; eklendi=true; }
+  });
+  return eklendi;
+}
 function getBotClubProfile(teamName,ligKey){
   if(G.team&&teamName===G.team.isim&&ligKey===G.team.tblKey){
     return {human:true,teamName,ligKey,logoUrl:G.team.logoUrl||'',arena:G.arena.isim,renk:G.team.renk||'#f97316',roster:G.players.slice()};
@@ -51,18 +78,22 @@ function getBotClubProfile(teamName,ligKey){
   }
   const ck=ligKey+'||'+teamName;
   /* FAZ A: eski önbellekteki bot kadrolarına rol/eğilim geriye dönük doldurulur (seed'den deterministik). */
-  if(cache[ck]){ const hit=Object.assign({human:false},cache[ck]); ensureRoles(hit.roster); return hit; }
-  const seed=hash32(ck);
-  const roster=[];
-  const dist=['PG','SG','SG','SF','PF','C','C'];
-  for(let i=0;i<dist.length;i++){
-    const p=genPlayer(dist[i]);
-    p.id='b'+seed+'_'+i;
-    p.seed='b'+ck+i;
-    p.maas=salaryKRFromGenel(p.genel);
-    roster.push(p);
+  if(cache[ck]){
+    const hit=Object.assign({human:false},cache[ck]);
+    ensureRoles(hit.roster);
+    /* M20: eski kayıtlardaki 7 kişilik kadrolar 10'a tamamlanır (sakatlık + 5 faul + rotasyon
+       derinliği için); mevcut oyuncuların id/seed değerleri korunur. */
+    if(botClubEnsureDepth(hit.roster,ck)){
+      cache[ck]=Object.assign({},cache[ck],{roster:hit.roster});
+      _clubCacheMem=cache;
+      try{ localStorage.setItem(CLUB_CACHE_KEY,JSON.stringify(cache)); }catch(e){}
+    }
+    return hit;
   }
+  const roster=[];
+  botClubEnsureDepth(roster,ck);
   ensureUniquePlayerNames(roster);
+  const seed=hash32(ck);
   const arenas=['Şehir Spor Salonu','Metro Arena','Karadeniz Kapalı','Ege Basket Merkezi','Anadolu Spor Kompleksi'];
   const row={human:false,teamName,ligKey,logoUrl:'',arena:arenas[seed%arenas.length],renk:['#3b82f6','#22c55e','#ef4444','#a855f7'][seed%4],roster};
   cache[ck]=row;
