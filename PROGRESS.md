@@ -1939,3 +1939,76 @@ bant** · `i18n-scan` kalan Türkçe yalnız özel isim.
 
 **Ders:** Bu oturumda hem 31. oturumun teşhisi hem de kendi "uyguladım" beyanım test karşısında
 düzeltildi. Kabul kriteri varsa çalıştırılabilir hâle getirilmeli; okuyarak onaylamak yetmiyor.
+
+### 32. oturum — EK 2: a11y sürükleme hatası + M9 / M12 / M14
+
+#### a11y-big (zoom 1.18) sürükleme hayaleti kayması
+Kullanıcının ölçümü: zoom kapalı sapma 0 px, açık **147 px**; `style.top`'a yazılan `clientY`
+zoom ile çarpılıyor (669 × 1,18 − 32 = 757, ölçülen 757). `elementFromPoint` doğru çalışıyor.
+
+`_luPositionGhost` (`league.js`) — `position:fixed` hayaletin `left/top` değerleri zoom'lu
+kök içinde ölçekleniyor, pointer'ın `clientX/clientY`'si ölçeklenmiyordu. Koordinatlar
+`_uiZoom()` faktörüne bölünüyor; bırakma hedefi zaten doğru olduğu için yalnız çizim düzeltildi.
+
+**`tools/faz7-check.js` K9 eklendi** — sapmayı zoom kapalı ve açık ölçüp karşılaştırır.
+Testin gerçekten bu hatayı yakaladığı, düzeltme geçici olarak geri alınarak kanıtlandı:
+
+| | zoom kapalı | zoom açık | K9 |
+|---|---|---|---|
+| düzeltmesiz | 0 px | **172 px** | DÜŞÜYOR |
+| düzeltmeli | 0 px | **0 px** | GEÇİYOR |
+
+#### M9 — Ribaund sonrası çıkış (outlet) pası
+Uzun (PF/C) topu alınca guard'a çıkarıyor; `bringT` artık topu getirenin **gerçekten gittiği**
+kulvara (`TRANS_OFF[pg.role]`) göre hesaplanıyor — eskiden her zaman `TRANS_OFF[0]` alınıyor,
+pivot topu getirdiğinde gitmediği bir noktaya göre süre biçiliyordu.
+
+**İlk denemem sessizce yanlıştı.** Outlet kararını `pg===shooter` düzeltmesinden *sonra*
+veriyordum: uzun hem ribaundu alıp hem şutu atacaksa `pg` guard'a çevriliyor, top yine uzunda
+kalıyor ve çıkış pası **hiç kurulmuyordu**. Ölçümde %71'de takıldı; sıra düzeltilince
+**126/126 pozisyon (%100)**. Bu, "uyguladım" demenin yetmediğinin bu oturumdaki üçüncü örneği.
+
+#### M12 — AND-1 ek serbest atışı
+Şut nesnesi `and1` bilgisini taşıyor; `_and1Sequence()` şutörü çizgiye gönderip tek atış
+yaptırıyor. Anlatım cümlesi ("AND-1 tamam!" / "ek atış kaçtı.") sonucu söylediği için atışın
+sonucuyla **aynı karede** basılıyor. Eskiden tabela 3 artarken çizgide kimse yoktu.
+
+#### M14 — Şut saati
+Hücum ribaundunda 24 yerine **14** (FIBA). Hücum sahibi artık `mState._lastOff` yerine
+**olayın kendisinden** (`_eventOff`) türetiliyor — `_lastOff`, `_startBreak`/`_setupInbound`
+tarafından animasyon ortasında asenkron değiştiği için sıfırlama güvenilmezdi. Limit aşılırsa
+gösterge boşalmak yerine sıfırlanıp devam ediyor (`reb` olayı her hücum ribaundunda
+üretilmediği için saat bazen hiç sıfırlanmıyor, `left` negatife düşüp gösterge kayboluyordu).
+
+#### YENİ ARAÇ — `tools/sunum-check.js`
+Bu üç madde maç sonucunu değiştirmediği için `band.js`/`box-band.js` onları **göremez**;
+davranış yalnız canlı sahnede gözlenebilir. Araç taşıyıcı rol zincirini, motorun outlet
+kararını (`S._dbgOutlet` damgası), and-1 sahne çağrısını (fonksiyon sarmalayıcı sayacı) ve
+şut saati limitini ölçer. **M9 kusurunu bu araç buldu.**
+
+Ölçüm sırasında testin kendi varsayımları da iki kez düzeltildi: (a) ikinci şans (putback)
+şutunda outlet tasarımca yoktur, (b) ribaundu her zaman şutlu pozisyon izlemez — araya top
+kaybı/faul girerse hücum hiç kurulmaz. Bu vakalar artık kapsam dışı sayılıyor.
+
+#### ARAÇ KUSURU — `tools/band.js` tohumu hiç kurmuyormuş
+`if (SEED)` koruması + varsayılan `SEED = 0` → `if(0)` **falsy**, yani tohum hiç uygulanmıyordu.
+Araç başlıkta "seed=0" yazdığı hâlde her çalıştırmada farklı hash üretiyordu:
+
+```
+aynı kod, iki çalıştırma:  73668a37f7b205bb  /  018df729cb9da13c
+```
+
+Yani `CLAUDE.md`'nin *"sunum değişikliklerinden sonra ikisi de aynı hash'i vermeli"* güvencesi
+**fiilen hiç çalışmıyordu**. Varsayılan tohum `measure.js` ile aynı (987654321) yapıldı ve
+uygulama koşulsuz hâle getirildi. Artık aynı kod aynı hash'i veriyor — ve bu sayede M9/M12/M14
+öncesi/sonrası karşılaştırması yapılabildi: **`e429f6c091168315` (değişmedi)**.
+
+#### Doğrulama (oturum sonu)
+- `sunum-check`: M9 %100 · M12 5/5 · M14 3/3 ✓
+- `band.js`: M9/M12/M14 **öncesi ve sonrası aynı hash** — sonuçlar değişmedi
+- `box-band --n=200`: 11/11 bant · `visual-check`: 0 hata · `faz7-check`: **8/8**
+- `live-metrics`: orphan 0 · kimlik %100 · ışınlanma 0 kare
+
+**Ders (bu oturumda üç kez tekrarlandı):** ölçmediğin düzeltme çalışmıyor olabilir. 31. oturumun
+teşhisi, kendi FAZ 7 "uyguladım" beyanım ve M9'un ilk hâli — üçü de test karşısında düzeltildi.
+Ayrıca iki ölçüm aracı (orphan sayacı, band.js tohumu) sessizce yanlış sonuç veriyordu.
