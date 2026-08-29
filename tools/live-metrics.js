@@ -299,7 +299,12 @@ function med(a){ return pct(a,0.5); }
     console.log('\n══ CANLI SUNUM ÖLÇÜMÜ ══');
     console.log('izlenen  :',JSON.stringify(out.izlenen));
     console.log('syncRatio: medyan',syncMedyan>0?(syncMedyan+'×'):'— (yetersiz örnek; --ms değerini artır)','· tipler arası fark',syncSpread+'×');
-    Object.keys(syncTip).sort((a,b)=>syncTip[b]-syncTip[a]).forEach(k=>console.log('           '+k.padEnd(14)+syncTip[k]+'×'));
+    /* Örnek sayısı da yazılır: kısa pencerede tip başına 3-4 örnek yayılımı şişirip
+       yanlış alarm veriyordu (aynı çalıştırma --ms=90000'de 1.92×, --ms=200000'de 1.03×).
+       Yayılım dar örnekle okunmamalı. */
+    Object.keys(syncTip).sort((a,b)=>syncTip[b]-syncTip[a]).forEach(k=>console.log('           '+k.padEnd(14)+syncTip[k]+'× ('+(R.sync[k]||[]).length+' örnek)'));
+    if(tipler.length&&Math.min.apply(null,Object.keys(syncTip).map(k=>(R.sync[k]||[]).length))<6)
+      console.log('           ⚠ örnek sayısı düşük — yayılım gürültülü olabilir, --ms değerini artır');
     console.log('orphan   :',R.orphan,R.orphanOrn.length?'· örnek: '+R.orphanOrn[0]:'');
     console.log('topSıçra :',R.ballJumps,'kare · en büyük',R.ballMax,'px',(R.ballJumpOrn&&R.ballJumpOrn.length)?'· '+R.ballJumpOrn.map(j=>j.px+'px['+j.mod+'|'+j.ev+']').join(' '):'');
     console.log('kimlik   : %'+(identity*100).toFixed(0),'('+R.idOk+' eşleşen /',R.idBad,'uyuşmayan)');

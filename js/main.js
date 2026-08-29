@@ -565,7 +565,7 @@ function callTimeout(){
     const p=(G.players||[]).find(x=>x.id===id);
     if(p&&p.enerji!=null) p.enerji=Math.min(100,Number(p.enerji)+Math.round(boost*0.5));
   });
-  addComment(`⏸ MOLA! ${G.team.isim} molasını kullandı — oyuncular nefeslendi, enerji tazelendi. (Kalan mola: ${mState.timeoutsLeft})`,'tactic');
+  addComment(`⏸ MOLA! ${escMatch(G.team.isim)} molasını kullandı — oyuncular nefeslendi, enerji tazelendi. (Kalan mola: ${mState.timeoutsLeft})`,'tactic');
   updateTimeoutBtn();
   /* Gerçek mola süresi: 30 saniye geri sayım — oyuncu rahatça değişiklik/taktik yapar, 0'da otomatik devam. */
   mState._toRemain=30;
@@ -811,7 +811,7 @@ function buyFromMarket(id){
   G.chemistry=Math.max(20,G.chemistry-dropM);
   showNotif(`✅ ${p.isim} kadrona katıldı! Takım kimyası biraz düştü.`);
   if(G.team&&G.team.tblKey){
-    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">💰 <strong>${G.team.isim}</strong> — ${formatTblSlotLabel(G.team.tblKey)} — <strong>${fmtn(p.fiyat)} KR</strong> ile <strong>${p.isim}</strong> (${st}★) transferini duyurdu.</div>`);
+    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">💰 <strong>${escMatch(G.team.isim)}</strong> — ${formatTblSlotLabel(G.team.tblKey)} — <strong>${fmtn(p.fiyat)} KR</strong> ile <strong>${p.isim}</strong> (${st}★) transferini duyurdu.</div>`);
     if(document.getElementById('page-dashboard')&&document.getElementById('page-dashboard').classList.contains('active')) renderDashboardNews();
   }
   updateCoins();updateChemistry();renderMarket();if(document.getElementById('page-kadro')&&document.getElementById('page-kadro').classList.contains('active')) renderRoster();
@@ -1290,40 +1290,27 @@ function createTeam(){
   const name=sanitizeTeamName(document.getElementById('teamName').value);
   if(!name){showNotif('Takım adı gir!');return;}
   const mi=document.getElementById('managerNameInput');
-  G.managerName=sanitizeTeamName(mi&&mi.value)||'Menajer';
+  const managerName=sanitizeTeamName(mi&&mi.value)||'Menajer';
+  const renk=G.selectedColor;
+  /* F7-8: kalıcı kariyer alanlarının ÇOĞU sıfırlanmıyordu — aynı oturumda kayıt yükleyip
+     yeni takım kuran oyuncu eskisinin Mega Arena'sı, Elit Akademi'si, kulüp rekorları,
+     pendingMatch kilidi ve artık var olmayan oyuncu id'lerini gösteren lineup'ı ile
+     başlıyordu. Elle alan listesi kırılgandı (biri unutulursa sessizce devrediyor), bu
+     yüzden TEK kaynak: varsayılan durumun derin kopyası. İleride eklenen alanlar da kapsanır. */
+  const ayarlar=Object.assign({sound:true,autosaveSec:12},G.settings||{});   /* ses/otokayıt kullanıcı tercihi — korunur */
+  G=defaultGameState();
+  G.settings=ayarlar;
+  G.selectedColor=renk;
+  G.managerName=managerName;
   G.joinedAt=new Date().toISOString();
   G.lastActive=G.joinedAt;
-  G.coins=START_KR;G.wins=0;G.losses=0;G.points=0;G.chemistry=75;
-  G.activeTrainings=[];
-  G.marketPozFilter='all';G.marketSort='ovr';G.marketSortDesc={ovr:true,maas:true};G.kadroFilter='all';G.kadroView='cards';G.youthView='list';
-  G.team={isim:name,renk:G.selectedColor,tblKey:assignUserToTblSlot(name),logoUrl:''};
+  G.team={isim:name,renk,tblKey:assignUserToTblSlot(name),logoUrl:''};
   G.players=genRoster();G.youth=genYouth();G.marketPlayers=genMarket();
   G.ligTeams=genLigTeams();G.coaches=genCoaches();G.coachMarket=genCoachMarket();
-  G.scouts=[];G.scoutMarket=genScoutMarket();
-  G.season=null;
-  G.seasonFixtures=[];
-  G.settings=Object.assign({sound:true,autosaveSec:12},G.settings||{});
-  G.achievements={};
-  G.ledger=[];
-  G.lastEcoDay=1;
+  G.scoutMarket=genScoutMarket();
+  G.arena={s:1,kap:ARENA_LVL[0].kap,bk:ARENA_LVL[0].bk,isim:'Başlangıç Arena'};   /* F7-6: ham KR */
   G.tactics={tempo:'normal',odak:'dengeli',defensiveStyle:'adam',focusPlayerId:null,markStar:false};
-  G.pendingOffers=[];G.presidentTarget=null;G.budgetPenalty=0;
-  G.analytics={teamMatches:[],playerDev:{}};
-  G.draft=null;
-  G.tutorialDone=false;
-  /* F7-8: kalıcı kariyer alanları da sıfırlanır — aynı oturumda kayıt yükleyip yeni takım
-     kuran oyuncu eskisinin Mega Arena'sı, Elit Akademi'si, kulüp rekorları ve artık var
-     olmayan oyuncu id'lerini gösteren lineup'ı ile başlıyordu. */
-  G.arena={s:1,kap:ARENA_LVL[0].kap,bk:ARENA_LVL[0].bk,isim:'Başlangıç Arena'};
-  G.youthFacility={s:1};
-  G.cup=null; G.cupHistory=[];
-  G.clubRecords={}; G.managerHistory=[]; G.managerRep=0;
-  G.careerMatches=0; G.careerWins=0; G.careerLosses=0;
-  G.posTraining=null; G.bankruptWeeks=0;   /* null = eğitim yok; {} truthy olduğu için boş kart basılıyordu */
-  G.lineup=null; G.pendingMatch=null; G.prepareMatchIx=null;
-  G.ticketPrice=2; G.winStreak=0; G._ctSeq=0;
-  G.clubTransferPlayers=[]; G.playoff=null;
-  G._crisisPid=null; G._crisisDay=null;
+  if(typeof suppressAutoSave==='function') suppressAutoSave(false);   /* F7-3: yeni kariyer bilinçli işlem */
   bootstrapAppUi();
   applyAutosaveSetting();
   const dashNav=document.querySelector('#sbNav button[data-page="dashboard"]');

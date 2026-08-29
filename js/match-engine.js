@@ -2032,7 +2032,7 @@ function generateMatchEvents(rakip, opts){
     if(botState.run>=botC.toRun && botState.to>0 && q>=1 && t>20){
       botState.to--; botState.run=0; botState.dampen=3;
       events.push({type:'tactic',off:false,botCoach:true,
-        text:`⏸ ${rname} MOLA aldı — ${G.team.isim} serisini kesmek istiyor. (Rakip mola hakkı: ${botState.to}) (${homeScore} - ${awayScore})`,
+        text:`⏸ ${rname} MOLA aldı — ${escMatch(G.team.isim)} serisini kesmek istiyor. (Rakip mola hakkı: ${botState.to}) (${homeScore} - ${awayScore})`,
         q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       return;
     }
@@ -2383,7 +2383,7 @@ function generateMatchEvents(rakip, opts){
   if(!resume){
     events.push({
       type:'start',spId:SP.id,
-      text:`${SP.emoji} Bugünün spikeri: <strong>${SP.ad}</strong> (${SP.stil}). Maç hava atışıyla başlıyor. ${G.team.isim} ${userIsHome?'ev sahibi':'deplasman takımı olarak'}; ${c.isim} dairede, ${pg.isim} ilk hücumu kuruyor. Tribünler dolu.`,
+      text:`${SP.emoji} Bugünün spikeri: <strong>${SP.ad}</strong> (${SP.stil}). Maç hava atışıyla başlıyor. ${escMatch(G.team.isim)} ${userIsHome?'ev sahibi':'deplasman takımı olarak'}; ${c.isim} dairede, ${pg.isim} ilk hücumu kuruyor. Tribünler dolu.`,
       q:1,t:MATCH_CLOCK_SEC,home:0,away:0,
       box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
     });
@@ -2399,7 +2399,7 @@ function generateMatchEvents(rakip, opts){
       events.push({
         type:'quarter_start',
         /* FAZ B: çeyrek başında hangi setle oynandığı anlatıma girer (koçun kararı görünür olsun). */
-        text:`🔔 ${q}. çeyrek başladı — ${G.team.isim} ${homeScore} - ${awayScore} ${rname}.${pb&&pb.key!=='dengeli'?` ${G.team.isim} ${pb.ikon} ${pb.ad} setiyle çıkıyor.`:''}`,
+        text:`🔔 ${q}. çeyrek başladı — ${escMatch(G.team.isim)} ${homeScore} - ${awayScore} ${rname}.${pb&&pb.key!=='dengeli'?` ${escMatch(G.team.isim)} ${pb.ikon} ${pb.ad} setiyle çıkıyor.`:''}`,
         q,t:MATCH_CLOCK_SEC,home:homeScore,away:awayScore,
         box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
       });
@@ -2421,7 +2421,7 @@ function generateMatchEvents(rakip, opts){
     if(q<4){
       events.push({
         type:'quarter_end',
-        text:`Çeyrek bitti: ${G.team.isim} ${homeScore} - ${awayScore} ${rname}. Taktik masasına dönülüyor.`,
+        text:`Çeyrek bitti: ${escMatch(G.team.isim)} ${homeScore} - ${awayScore} ${rname}. Taktik masasına dönülüyor.`,
         q,t:0,home:homeScore,away:awayScore,
         box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
       });
@@ -2450,11 +2450,11 @@ function generateMatchEvents(rakip, opts){
       botCoachTick(qq,t,homeScore-_bh2,awayScore-_ba2);
       if(t===0) break;
     }
-    events.push({type:'quarter_end',text:`Uzatma ${otRound} bitti: ${G.team.isim} ${homeScore} - ${awayScore} ${rname}${homeScore===awayScore?' — hâlâ berabere, bir uzatma daha!':'.'}`,q:qq,t:0,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+    events.push({type:'quarter_end',text:`Uzatma ${otRound} bitti: ${escMatch(G.team.isim)} ${homeScore} - ${awayScore} ${rname}${homeScore===awayScore?' — hâlâ berabere, bir uzatma daha!':'.'}`,q:qq,t:0,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
     /* Güvenlik: aşırı uzarsa (çok nadir) bir sonraki uzatmada kesin sonuç için küçük eşik. */
     if(otRound>=8 && homeScore===awayScore){
       if(Math.random()<0.5){ homeScore++; qh[qq]++; hB.ftMade++; hB.ftAtt++; } else { awayScore++; qa[qq]++; aB.ftMade++; aB.ftAtt++; }
-      events.push({type:'free',text:`Son saniye serbest atışı sonucu belirledi — ${G.team.isim} ${homeScore} - ${awayScore} ${rname}.`,q:qq,t:0,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      events.push({type:'free',text:`Son saniye serbest atışı sonucu belirledi — ${escMatch(G.team.isim)} ${homeScore} - ${awayScore} ${rname}.`,q:qq,t:0,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       break;
     }
   }
@@ -2486,7 +2486,7 @@ function generateMatchEvents(rakip, opts){
   if(ow) endNote=userIsHome?'Ev sahasında mağlubiyet.':'Deplasmanda mağlubiyet.';
   events.push({
     type:'end',
-    text:`Maç bitti! ${G.team.isim} ${homeScore} - ${awayScore} ${rname}. ${endNote}`,
+    text:`Maç bitti! ${escMatch(G.team.isim)} ${homeScore} - ${awayScore} ${rname}. ${endNote}`,
     q:lastPeriod,t:0,home:homeScore,away:awayScore,winner,spId:SP.id,
     players:pstats,
     lineupIds:[pg,sg,sf,pf,c].filter(Boolean).map(x=>x.id),
@@ -2573,7 +2573,7 @@ function applyMatchResult(ev,ctx){
     if(G.wins>=1) unlockAchievement('ilkGalibiyet');
     if(G.wins>=5) unlockAchievement('seri5');
     if(G.wins>=10) unlockAchievement('g10');
-    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid ${ev.winner==='home'?'var(--green)':ev.winner==='draw'?'var(--gold)':'var(--red)'};">🏀 <strong>${G.team.isim}</strong> ${uPts}-${oPts} <strong>${ctx.rakipName}</strong> · Gün ${sm.day} · Tur ${sm.round}/${totalRounds()}</div>`);
+    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid ${ev.winner==='home'?'var(--green)':ev.winner==='draw'?'var(--gold)':'var(--red)'};">🏀 <strong>${escMatch(G.team.isim)}</strong> ${uPts}-${oPts} <strong>${ctx.rakipName}</strong> · Gün ${sm.day} · Tur ${sm.round}/${totalRounds()}</div>`);
     endLeagueSeasonIfDone();
   } else if(ctx.isPlayoff && ctx.playoffMatch){
     /* Faz 2.1: playoff artık seri — bu maç bir seri maçıdır; sonucu seriye işle. */
@@ -2610,7 +2610,7 @@ function applyMatchResult(ev,ctx){
     const seriesTxt=serDone
       ? (s.winner===G.team.isim?`seriyi ${uSeriesW}-${oSeriesW} kazandın — tur atlandı!`:`seriyi ${oSeriesW}-${uSeriesW} kaybettin — elendin.`)
       : `seri ${uSeriesW}-${oSeriesW}`;
-    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid ${uPts>oPts?'var(--green)':'var(--red)'};">🏆 Playoff (${playoffRoundLabel(0,total)}) ${gd.gameNo}. maç: <strong>${G.team.isim}</strong> ${uPts}-${oPts} <strong>${ctx.rakipName}</strong> — ${seriesTxt}</div>`);
+    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid ${uPts>oPts?'var(--green)':'var(--red)'};">🏆 Playoff (${playoffRoundLabel(0,total)}) ${gd.gameNo}. maç: <strong>${escMatch(G.team.isim)}</strong> ${uPts}-${oPts} <strong>${ctx.rakipName}</strong> — ${seriesTxt}</div>`);
     maybeAdvancePlayoff();
   } else if(ctx.isCup){
     /* Paket 1 (14. oturum): ULUSAL KUPA maçı — sonuç kupa ağacına işlenir. Yorgunluk,

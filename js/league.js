@@ -95,7 +95,7 @@ function openLigGroupModal(ligKey){
 
 function openClubPublicModal(teamName,ligKey){
   const prof=getBotClubProfile(teamName,ligKey);
-  const logo=prof.logoUrl?`<img src="${prof.logoUrl.replace(/"/g,'')}" style="max-width:100px;border-radius:8px;" referrerpolicy="no-referrer" onerror="this.style.display='none'">`:`<div style="width:72px;height:72px;border-radius:12px;background:${prof.renk};"></div>`;
+  const logo=prof.logoUrl?`<img src="${prof.logoUrl.replace(/"/g,'')}" alt="${escMatch(teamName)} logosu" style="max-width:100px;border-radius:8px;" referrerpolicy="no-referrer" onerror="this.style.display='none'">`:`<div style="width:72px;height:72px;border-radius:12px;background:${prof.renk};"></div>`;
   const roster=prof.roster.map(p=>`<div style="display:flex;gap:8px;align-items:center;padding:6px;background:var(--bg3);border-radius:8px;margin-bottom:4px;"><div class="mavatar-wrap"><img src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} style="width:44px;height:56px;border-radius:6px;object-fit:cover;"><span style="font-size:9px;font-weight:700;color:var(--accent);">OVR ${p.genel}</span></div><div style="font-size:12px;"><strong>${p.bayrak} ${p.isim}</strong><br><span style="color:var(--text2);">${p.poz} · ${p.genel}</span></div></div>`).join('');
   const mgr=prof.human
     ?`<p style="font-size:11px;color:var(--blue);margin:6px 0 0;">👔 Menajer: ${escMatch(G.managerName||'Menajer')} · itibar ${Number(G.managerRep)||0}</p>`
@@ -571,7 +571,11 @@ function fixtureFullSeasonGridHtml(rows){
         <div class="mac-fx-meta">Gün ${r.dayNum} · Tur ${r.round}/${totalRounds()} · Tamamlandı</div>
       </div>`;
     }
-    const raw=G.season&&G.season.matches&&r.seasonMatchIx!=null?G.season.matches[r.seasonMatchIx]:null;
+    /* NOT (FAZ 7): burası tek yerde INDEKS erişimi yapıyordu, diğer tüm çağrılar
+       .find(x=>x.seasonMatchIx===ix) kullanıyor. Dizi bugün sıralı olduğu için çalışıyordu;
+       ileride bir sort eklenirse yanlış maç kartı gösterirdi — aramaya çevrildi. */
+    const raw=(G.season&&Array.isArray(G.season.matches)&&r.seasonMatchIx!=null)
+      ? (G.season.matches.find(x=>x&&x.seasonMatchIx===r.seasonMatchIx)||null) : null;
     if(!raw) return '';
     return macSeasonMatchCardHtml(raw,!!(nx&&nx.seasonMatchIx===r.seasonMatchIx));
   });

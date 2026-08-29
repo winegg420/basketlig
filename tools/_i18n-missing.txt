@@ -1,697 +1,565 @@
-canli-mac :: Adana Gençlik
+canli-mac :: Adana Yıldızları
 canli-mac :: Adana Şimşekleri
 canli-mac :: Ahmet Yıldız
-canli-mac :: Bursa Gençlik
-canli-mac :: Bursa Gençlik — Eskişehir Şahinleri
-canli-mac :: Eskişehir Boğaları
-canli-mac :: Eskişehir Boğaları — Gaziantep Gençlik
-canli-mac :: Eskişehir Kurtları
-canli-mac :: Eskişehir Yıldızları
+canli-mac :: Diyarbakır Aslanları
 canli-mac :: Eskişehir Şahinleri
-canli-mac :: Gaziantep Gençlik
-canli-mac :: Gaziantep Yıldızları
-canli-mac :: Kayseri Aslanları
-canli-mac :: Kayseri Kartalları
-canli-mac :: Kayseri Kurtları
-canli-mac :: Konya Boğaları
-canli-mac :: Konya Şimşekleri
-canli-mac :: Samsun Basket — Kayseri Aslanları
-canli-mac :: Trabzon Kartalları
-canli-mac :: Trabzon Kartalları — Ankara Eagles
-canli-mac :: Trabzon Şimşekleri
-canli-mac :: Türkiye • 16 yrs • 215cm · Pot 92
-canli-mac :: Türkiye • 19 yrs • 204cm
-canli-mac :: Türkiye • 32 yrs • 182cm
-canli-mac :: Türkiye • 32 yrs • 203cm
-canli-mac :: 🇩🇪 Franz Müller
-canli-mac :: 🇹🇷 Burak Şahin
-canli-mac :: 🇹🇷 Enes Yılmaz
+canli-mac :: Eskişehir Şahinleri — Trabzon Şahinleri
+canli-mac :: Franz Müller
+canli-mac :: Franz Müller (PF) — Overall: 71
+canli-mac :: Franz Müller (PF) → C
+canli-mac :: Franz Müller (PF) → SF
+canli-mac :: Franz Müller (PF·OVR 71)
+canli-mac :: Gaziantep Boğaları
+canli-mac :: Gaziantep Kartalları
+canli-mac :: Kayseri Boğaları
+canli-mac :: Kayseri Boğaları — Gaziantep Basket
+canli-mac :: Konya Kurtları
+canli-mac :: Konya Kurtları — İzmir Yıldızları
+canli-mac :: Trabzon Şahinleri
+canli-mac :: Türkiye • 30 yrs • 187cm
+canli-mac :: Türkiye • 35 yrs • 214cm
+canli-mac :: Türkiye • 35 yrs • 219cm
+canli-mac :: İzmir Yıldızları
+canli-mac :: İzmir Şimşekleri
+canli-mac :: 🇩🇪 Andreas Schröder
+canli-mac :: 🇩🇪 Jonas Müller
+canli-mac :: 🇹🇷 Ali Çelik
+canli-mac :: 🇹🇷 Berk Özdemir
 canli-mac :: 🇹🇷 Türkiye
-canli-mac :: 🇹🇷 Türkiye • 32 yrs
 canli-mac :: 🇹🇷 Türkçe
-canli-mac :: 🏛️ Adana Gençlik from
 canli-mac :: 🏛️ Adana Şimşekleri from
-canli-mac :: 🏛️ Eskişehir Boğaları from
-canli-mac :: 🏛️ Eskişehir Kurtları from
-canli-mac :: 🏛️ Gaziantep Gençlik from
-canli-mac :: 🏛️ Kayseri Kartalları from
-canli-mac :: 🏛️ Kayseri Kurtları from
-canli-mac :: 🏛️ Trabzon Kartalları from
-canli-mac :: 🏛️ Trabzon Şimşekleri from
-canli-mac :: 🔔 Start of Q1 — Ankara Eagles 0 - 0 Kayseri Kurtları.
+canli-mac :: 🏛️ Eskişehir Şahinleri from
+canli-mac :: 🏛️ Gaziantep Kartalları from
+canli-mac :: 🏛️ Konya Kurtları from
+canli-mac :: 🏛️ Trabzon Şahinleri from
 login :: 🇹🇷 Türkçe
-modal:ayarlar :: Adana Gençlik
+modal:ayarlar :: Adana Yıldızları
 modal:ayarlar :: Adana Şimşekleri
 modal:ayarlar :: Ahmet Yıldız
-modal:ayarlar :: Bursa Gençlik
-modal:ayarlar :: Bursa Gençlik — Eskişehir Şahinleri
-modal:ayarlar :: Eskişehir Boğaları
-modal:ayarlar :: Eskişehir Boğaları — Gaziantep Gençlik
-modal:ayarlar :: Eskişehir Kurtları
-modal:ayarlar :: Eskişehir Yıldızları
+modal:ayarlar :: Diyarbakır Aslanları
 modal:ayarlar :: Eskişehir Şahinleri
-modal:ayarlar :: Gaziantep Gençlik
-modal:ayarlar :: Gaziantep Yıldızları
-modal:ayarlar :: Kayseri Aslanları
-modal:ayarlar :: Kayseri Kartalları
-modal:ayarlar :: Kayseri Kurtları
-modal:ayarlar :: Konya Boğaları
-modal:ayarlar :: Konya Şimşekleri
-modal:ayarlar :: Samsun Basket — Kayseri Aslanları
-modal:ayarlar :: Trabzon Kartalları
-modal:ayarlar :: Trabzon Kartalları — Ankara Eagles
-modal:ayarlar :: Trabzon Şimşekleri
-modal:ayarlar :: Türkiye • 16 yrs • 215cm · Pot 92
-modal:ayarlar :: Türkiye • 19 yrs • 204cm
-modal:ayarlar :: Türkiye • 32 yrs • 182cm
-modal:ayarlar :: Türkiye • 32 yrs • 203cm
-modal:ayarlar :: 🇩🇪 Franz Müller
-modal:ayarlar :: 🇹🇷 Burak Şahin
-modal:ayarlar :: 🇹🇷 Enes Yılmaz
+modal:ayarlar :: Eskişehir Şahinleri — Trabzon Şahinleri
+modal:ayarlar :: Franz Müller
+modal:ayarlar :: Franz Müller (PF) — Overall: 71
+modal:ayarlar :: Franz Müller (PF) → C
+modal:ayarlar :: Franz Müller (PF) → SF
+modal:ayarlar :: Franz Müller (PF·OVR 71)
+modal:ayarlar :: Gaziantep Boğaları
+modal:ayarlar :: Gaziantep Kartalları
+modal:ayarlar :: Kayseri Boğaları
+modal:ayarlar :: Kayseri Boğaları — Gaziantep Basket
+modal:ayarlar :: Konya Kurtları
+modal:ayarlar :: Konya Kurtları — İzmir Yıldızları
+modal:ayarlar :: Trabzon Şahinleri
+modal:ayarlar :: Türkiye • 30 yrs • 187cm
+modal:ayarlar :: Türkiye • 35 yrs • 214cm
+modal:ayarlar :: Türkiye • 35 yrs • 219cm
+modal:ayarlar :: İzmir Yıldızları
+modal:ayarlar :: İzmir Şimşekleri
+modal:ayarlar :: 🇩🇪 Andreas Schröder
+modal:ayarlar :: 🇩🇪 Jonas Müller
+modal:ayarlar :: 🇹🇷 Ali Çelik
+modal:ayarlar :: 🇹🇷 Berk Özdemir
 modal:ayarlar :: 🇹🇷 Türkiye
-modal:ayarlar :: 🇹🇷 Türkiye • 32 yrs
 modal:ayarlar :: 🇹🇷 Türkçe
-modal:ayarlar :: 🏛️ Adana Gençlik from
 modal:ayarlar :: 🏛️ Adana Şimşekleri from
-modal:ayarlar :: 🏛️ Eskişehir Boğaları from
-modal:ayarlar :: 🏛️ Eskişehir Kurtları from
-modal:ayarlar :: 🏛️ Gaziantep Gençlik from
-modal:ayarlar :: 🏛️ Kayseri Kartalları from
-modal:ayarlar :: 🏛️ Kayseri Kurtları from
-modal:ayarlar :: 🏛️ Trabzon Kartalları from
-modal:ayarlar :: 🏛️ Trabzon Şimşekleri from
-modal:basarim :: Adana Gençlik
+modal:ayarlar :: 🏛️ Eskişehir Şahinleri from
+modal:ayarlar :: 🏛️ Gaziantep Kartalları from
+modal:ayarlar :: 🏛️ Konya Kurtları from
+modal:ayarlar :: 🏛️ Trabzon Şahinleri from
+modal:basarim :: Adana Yıldızları
 modal:basarim :: Adana Şimşekleri
 modal:basarim :: Ahmet Yıldız
-modal:basarim :: Bursa Gençlik
-modal:basarim :: Bursa Gençlik — Eskişehir Şahinleri
-modal:basarim :: Eskişehir Boğaları
-modal:basarim :: Eskişehir Boğaları — Gaziantep Gençlik
-modal:basarim :: Eskişehir Kurtları
-modal:basarim :: Eskişehir Yıldızları
+modal:basarim :: Diyarbakır Aslanları
 modal:basarim :: Eskişehir Şahinleri
-modal:basarim :: Gaziantep Gençlik
-modal:basarim :: Gaziantep Yıldızları
-modal:basarim :: Kayseri Aslanları
-modal:basarim :: Kayseri Kartalları
-modal:basarim :: Kayseri Kurtları
-modal:basarim :: Konya Boğaları
-modal:basarim :: Konya Şimşekleri
-modal:basarim :: Samsun Basket — Kayseri Aslanları
-modal:basarim :: Trabzon Kartalları
-modal:basarim :: Trabzon Kartalları — Ankara Eagles
-modal:basarim :: Trabzon Şimşekleri
-modal:basarim :: Türkiye • 16 yrs • 215cm · Pot 92
-modal:basarim :: Türkiye • 19 yrs • 204cm
-modal:basarim :: Türkiye • 32 yrs • 182cm
-modal:basarim :: Türkiye • 32 yrs • 203cm
-modal:basarim :: 🇩🇪 Franz Müller
-modal:basarim :: 🇹🇷 Burak Şahin
-modal:basarim :: 🇹🇷 Enes Yılmaz
+modal:basarim :: Eskişehir Şahinleri — Trabzon Şahinleri
+modal:basarim :: Franz Müller
+modal:basarim :: Franz Müller (PF) — Overall: 71
+modal:basarim :: Franz Müller (PF) → C
+modal:basarim :: Franz Müller (PF) → SF
+modal:basarim :: Franz Müller (PF·OVR 71)
+modal:basarim :: Gaziantep Boğaları
+modal:basarim :: Gaziantep Kartalları
+modal:basarim :: Kayseri Boğaları
+modal:basarim :: Kayseri Boğaları — Gaziantep Basket
+modal:basarim :: Konya Kurtları
+modal:basarim :: Konya Kurtları — İzmir Yıldızları
+modal:basarim :: Trabzon Şahinleri
+modal:basarim :: Türkiye • 30 yrs • 187cm
+modal:basarim :: Türkiye • 35 yrs • 214cm
+modal:basarim :: Türkiye • 35 yrs • 219cm
+modal:basarim :: İzmir Yıldızları
+modal:basarim :: İzmir Şimşekleri
+modal:basarim :: 🇩🇪 Andreas Schröder
+modal:basarim :: 🇩🇪 Jonas Müller
+modal:basarim :: 🇹🇷 Ali Çelik
+modal:basarim :: 🇹🇷 Berk Özdemir
 modal:basarim :: 🇹🇷 Türkiye
-modal:basarim :: 🇹🇷 Türkiye • 32 yrs
 modal:basarim :: 🇹🇷 Türkçe
-modal:basarim :: 🏛️ Adana Gençlik from
 modal:basarim :: 🏛️ Adana Şimşekleri from
-modal:basarim :: 🏛️ Eskişehir Boğaları from
-modal:basarim :: 🏛️ Eskişehir Kurtları from
-modal:basarim :: 🏛️ Gaziantep Gençlik from
-modal:basarim :: 🏛️ Kayseri Kartalları from
-modal:basarim :: 🏛️ Kayseri Kurtları from
-modal:basarim :: 🏛️ Trabzon Kartalları from
-modal:basarim :: 🏛️ Trabzon Şimşekleri from
-modal:draft :: Adana Gençlik
+modal:basarim :: 🏛️ Eskişehir Şahinleri from
+modal:basarim :: 🏛️ Gaziantep Kartalları from
+modal:basarim :: 🏛️ Konya Kurtları from
+modal:basarim :: 🏛️ Trabzon Şahinleri from
+modal:draft :: Adana Yıldızları
 modal:draft :: Adana Şimşekleri
 modal:draft :: Ahmet Yıldız
-modal:draft :: Bursa Gençlik
-modal:draft :: Bursa Gençlik — Eskişehir Şahinleri
-modal:draft :: Eskişehir Boğaları
-modal:draft :: Eskişehir Boğaları — Gaziantep Gençlik
-modal:draft :: Eskişehir Kurtları
-modal:draft :: Eskişehir Yıldızları
+modal:draft :: Diyarbakır Aslanları
 modal:draft :: Eskişehir Şahinleri
-modal:draft :: Gaziantep Gençlik
-modal:draft :: Gaziantep Yıldızları
-modal:draft :: Kayseri Aslanları
-modal:draft :: Kayseri Kartalları
-modal:draft :: Kayseri Kurtları
-modal:draft :: Konya Boğaları
-modal:draft :: Konya Şimşekleri
-modal:draft :: Samsun Basket — Kayseri Aslanları
-modal:draft :: Trabzon Kartalları
-modal:draft :: Trabzon Kartalları — Ankara Eagles
-modal:draft :: Trabzon Şimşekleri
-modal:draft :: Türkiye • 16 yrs • 215cm · Pot 92
-modal:draft :: Türkiye • 19 yrs • 204cm
-modal:draft :: Türkiye • 32 yrs • 182cm
-modal:draft :: Türkiye • 32 yrs • 203cm
-modal:draft :: 🇩🇪 Franz Müller
-modal:draft :: 🇹🇷 Burak Şahin
-modal:draft :: 🇹🇷 Enes Yılmaz
+modal:draft :: Eskişehir Şahinleri — Trabzon Şahinleri
+modal:draft :: Franz Müller
+modal:draft :: Franz Müller (PF) — Overall: 71
+modal:draft :: Franz Müller (PF) → C
+modal:draft :: Franz Müller (PF) → SF
+modal:draft :: Franz Müller (PF·OVR 71)
+modal:draft :: Gaziantep Boğaları
+modal:draft :: Gaziantep Kartalları
+modal:draft :: Kayseri Boğaları
+modal:draft :: Kayseri Boğaları — Gaziantep Basket
+modal:draft :: Konya Kurtları
+modal:draft :: Konya Kurtları — İzmir Yıldızları
+modal:draft :: Trabzon Şahinleri
+modal:draft :: Türkiye • 30 yrs • 187cm
+modal:draft :: Türkiye • 35 yrs • 214cm
+modal:draft :: Türkiye • 35 yrs • 219cm
+modal:draft :: İzmir Yıldızları
+modal:draft :: İzmir Şimşekleri
+modal:draft :: 🇩🇪 Andreas Schröder
+modal:draft :: 🇩🇪 Jonas Müller
+modal:draft :: 🇹🇷 Ali Çelik
+modal:draft :: 🇹🇷 Berk Özdemir
 modal:draft :: 🇹🇷 Türkiye
-modal:draft :: 🇹🇷 Türkiye • 32 yrs
 modal:draft :: 🇹🇷 Türkçe
-modal:draft :: 🏛️ Adana Gençlik from
 modal:draft :: 🏛️ Adana Şimşekleri from
-modal:draft :: 🏛️ Eskişehir Boğaları from
-modal:draft :: 🏛️ Eskişehir Kurtları from
-modal:draft :: 🏛️ Gaziantep Gençlik from
-modal:draft :: 🏛️ Kayseri Kartalları from
-modal:draft :: 🏛️ Kayseri Kurtları from
-modal:draft :: 🏛️ Trabzon Kartalları from
-modal:draft :: 🏛️ Trabzon Şimşekleri from
-modal:ilk5 :: Adana Gençlik
+modal:draft :: 🏛️ Eskişehir Şahinleri from
+modal:draft :: 🏛️ Gaziantep Kartalları from
+modal:draft :: 🏛️ Konya Kurtları from
+modal:draft :: 🏛️ Trabzon Şahinleri from
+modal:ilk5 :: Adana Yıldızları
 modal:ilk5 :: Adana Şimşekleri
 modal:ilk5 :: Ahmet Yıldız
-modal:ilk5 :: Bursa Gençlik
-modal:ilk5 :: Bursa Gençlik — Eskişehir Şahinleri
-modal:ilk5 :: Eskişehir Boğaları
-modal:ilk5 :: Eskişehir Boğaları — Gaziantep Gençlik
-modal:ilk5 :: Eskişehir Kurtları
-modal:ilk5 :: Eskişehir Yıldızları
+modal:ilk5 :: Diyarbakır Aslanları
 modal:ilk5 :: Eskişehir Şahinleri
-modal:ilk5 :: Gaziantep Gençlik
-modal:ilk5 :: Gaziantep Yıldızları
-modal:ilk5 :: Kayseri Aslanları
-modal:ilk5 :: Kayseri Kartalları
-modal:ilk5 :: Kayseri Kurtları
-modal:ilk5 :: Konya Boğaları
-modal:ilk5 :: Konya Şimşekleri
-modal:ilk5 :: Samsun Basket — Kayseri Aslanları
-modal:ilk5 :: Trabzon Kartalları
-modal:ilk5 :: Trabzon Kartalları — Ankara Eagles
-modal:ilk5 :: Trabzon Şimşekleri
-modal:ilk5 :: Türkiye • 16 yrs • 215cm · Pot 92
-modal:ilk5 :: Türkiye • 19 yrs • 204cm
-modal:ilk5 :: Türkiye • 32 yrs • 182cm
-modal:ilk5 :: Türkiye • 32 yrs • 203cm
-modal:ilk5 :: 🇩🇪 Franz Müller
-modal:ilk5 :: 🇹🇷 Burak Şahin
-modal:ilk5 :: 🇹🇷 Enes Yılmaz
+modal:ilk5 :: Eskişehir Şahinleri — Trabzon Şahinleri
+modal:ilk5 :: Franz Müller
+modal:ilk5 :: Franz Müller (PF) — Overall: 71
+modal:ilk5 :: Franz Müller (PF) → C
+modal:ilk5 :: Franz Müller (PF) → SF
+modal:ilk5 :: Franz Müller (PF·OVR 71)
+modal:ilk5 :: Gaziantep Boğaları
+modal:ilk5 :: Gaziantep Kartalları
+modal:ilk5 :: Kayseri Boğaları
+modal:ilk5 :: Kayseri Boğaları — Gaziantep Basket
+modal:ilk5 :: Konya Kurtları
+modal:ilk5 :: Konya Kurtları — İzmir Yıldızları
+modal:ilk5 :: Trabzon Şahinleri
+modal:ilk5 :: Türkiye • 30 yrs • 187cm
+modal:ilk5 :: Türkiye • 35 yrs • 214cm
+modal:ilk5 :: Türkiye • 35 yrs • 219cm
+modal:ilk5 :: İzmir Yıldızları
+modal:ilk5 :: İzmir Şimşekleri
+modal:ilk5 :: 🇩🇪 Andreas Schröder
+modal:ilk5 :: 🇩🇪 Jonas Müller
+modal:ilk5 :: 🇹🇷 Ali Çelik
+modal:ilk5 :: 🇹🇷 Berk Özdemir
 modal:ilk5 :: 🇹🇷 Türkiye
-modal:ilk5 :: 🇹🇷 Türkiye • 32 yrs
 modal:ilk5 :: 🇹🇷 Türkçe
-modal:ilk5 :: 🏛️ Adana Gençlik from
 modal:ilk5 :: 🏛️ Adana Şimşekleri from
-modal:ilk5 :: 🏛️ Eskişehir Boğaları from
-modal:ilk5 :: 🏛️ Eskişehir Kurtları from
-modal:ilk5 :: 🏛️ Gaziantep Gençlik from
-modal:ilk5 :: 🏛️ Kayseri Kartalları from
-modal:ilk5 :: 🏛️ Kayseri Kurtları from
-modal:ilk5 :: 🏛️ Trabzon Kartalları from
-modal:ilk5 :: 🏛️ Trabzon Şimşekleri from
-modal:oyuncu :: Adana Gençlik
+modal:ilk5 :: 🏛️ Eskişehir Şahinleri from
+modal:ilk5 :: 🏛️ Gaziantep Kartalları from
+modal:ilk5 :: 🏛️ Konya Kurtları from
+modal:ilk5 :: 🏛️ Trabzon Şahinleri from
+modal:oyuncu :: Adana Yıldızları
 modal:oyuncu :: Adana Şimşekleri
 modal:oyuncu :: Ahmet Yıldız
-modal:oyuncu :: Bursa Gençlik
-modal:oyuncu :: Bursa Gençlik — Eskişehir Şahinleri
-modal:oyuncu :: Eskişehir Boğaları
-modal:oyuncu :: Eskişehir Boğaları — Gaziantep Gençlik
-modal:oyuncu :: Eskişehir Kurtları
-modal:oyuncu :: Eskişehir Yıldızları
+modal:oyuncu :: Diyarbakır Aslanları
 modal:oyuncu :: Eskişehir Şahinleri
-modal:oyuncu :: Gaziantep Gençlik
-modal:oyuncu :: Gaziantep Yıldızları
-modal:oyuncu :: Kayseri Aslanları
-modal:oyuncu :: Kayseri Kartalları
-modal:oyuncu :: Kayseri Kurtları
-modal:oyuncu :: Konya Boğaları
-modal:oyuncu :: Konya Şimşekleri
-modal:oyuncu :: Samsun Basket — Kayseri Aslanları
-modal:oyuncu :: Trabzon Kartalları
-modal:oyuncu :: Trabzon Kartalları — Ankara Eagles
-modal:oyuncu :: Trabzon Şimşekleri
-modal:oyuncu :: Türkiye • 16 yrs • 215cm · Pot 92
-modal:oyuncu :: Türkiye • 19 yrs • 204cm
-modal:oyuncu :: Türkiye • 32 yrs • 182cm
-modal:oyuncu :: Türkiye • 32 yrs • 203cm
-modal:oyuncu :: 🇩🇪 Franz Müller
-modal:oyuncu :: 🇹🇷 Burak Şahin
-modal:oyuncu :: 🇹🇷 Enes Yılmaz
+modal:oyuncu :: Eskişehir Şahinleri — Trabzon Şahinleri
+modal:oyuncu :: Franz Müller
+modal:oyuncu :: Franz Müller (PF) — Overall: 71
+modal:oyuncu :: Franz Müller (PF) → C
+modal:oyuncu :: Franz Müller (PF) → SF
+modal:oyuncu :: Franz Müller (PF·OVR 71)
+modal:oyuncu :: Gaziantep Boğaları
+modal:oyuncu :: Gaziantep Kartalları
+modal:oyuncu :: Kayseri Boğaları
+modal:oyuncu :: Kayseri Boğaları — Gaziantep Basket
+modal:oyuncu :: Konya Kurtları
+modal:oyuncu :: Konya Kurtları — İzmir Yıldızları
+modal:oyuncu :: Trabzon Şahinleri
+modal:oyuncu :: Türkiye • 30 yrs • 187cm
+modal:oyuncu :: Türkiye • 35 yrs • 214cm
+modal:oyuncu :: Türkiye • 35 yrs • 219cm
+modal:oyuncu :: İzmir Yıldızları
+modal:oyuncu :: İzmir Şimşekleri
+modal:oyuncu :: 🇩🇪 Andreas Schröder
+modal:oyuncu :: 🇩🇪 Jonas Müller
+modal:oyuncu :: 🇹🇷 Ali Çelik
+modal:oyuncu :: 🇹🇷 Berk Özdemir
 modal:oyuncu :: 🇹🇷 Türkiye
-modal:oyuncu :: 🇹🇷 Türkiye • 32 yrs
 modal:oyuncu :: 🇹🇷 Türkçe
-modal:oyuncu :: 🏛️ Adana Gençlik from
 modal:oyuncu :: 🏛️ Adana Şimşekleri from
-modal:oyuncu :: 🏛️ Eskişehir Boğaları from
-modal:oyuncu :: 🏛️ Eskişehir Kurtları from
-modal:oyuncu :: 🏛️ Gaziantep Gençlik from
-modal:oyuncu :: 🏛️ Kayseri Kartalları from
-modal:oyuncu :: 🏛️ Kayseri Kurtları from
-modal:oyuncu :: 🏛️ Trabzon Kartalları from
-modal:oyuncu :: 🏛️ Trabzon Şimşekleri from
-modal:soyunma :: Adana Gençlik
+modal:oyuncu :: 🏛️ Eskişehir Şahinleri from
+modal:oyuncu :: 🏛️ Gaziantep Kartalları from
+modal:oyuncu :: 🏛️ Konya Kurtları from
+modal:oyuncu :: 🏛️ Trabzon Şahinleri from
+modal:soyunma :: Adana Yıldızları
 modal:soyunma :: Adana Şimşekleri
 modal:soyunma :: Ahmet Yıldız
-modal:soyunma :: Bursa Gençlik
-modal:soyunma :: Bursa Gençlik — Eskişehir Şahinleri
-modal:soyunma :: Eskişehir Boğaları
-modal:soyunma :: Eskişehir Boğaları — Gaziantep Gençlik
-modal:soyunma :: Eskişehir Kurtları
-modal:soyunma :: Eskişehir Yıldızları
+modal:soyunma :: Diyarbakır Aslanları
 modal:soyunma :: Eskişehir Şahinleri
-modal:soyunma :: Gaziantep Gençlik
-modal:soyunma :: Gaziantep Yıldızları
-modal:soyunma :: Kayseri Aslanları
-modal:soyunma :: Kayseri Kartalları
-modal:soyunma :: Kayseri Kurtları
-modal:soyunma :: Konya Boğaları
-modal:soyunma :: Konya Şimşekleri
-modal:soyunma :: Samsun Basket — Kayseri Aslanları
-modal:soyunma :: Trabzon Kartalları
-modal:soyunma :: Trabzon Kartalları — Ankara Eagles
-modal:soyunma :: Trabzon Şimşekleri
-modal:soyunma :: Türkiye • 16 yrs • 215cm · Pot 92
-modal:soyunma :: Türkiye • 19 yrs • 204cm
-modal:soyunma :: Türkiye • 32 yrs • 182cm
-modal:soyunma :: Türkiye • 32 yrs • 203cm
-modal:soyunma :: 🇩🇪 Franz Müller
-modal:soyunma :: 🇹🇷 Burak Şahin
-modal:soyunma :: 🇹🇷 Enes Yılmaz
+modal:soyunma :: Eskişehir Şahinleri — Trabzon Şahinleri
+modal:soyunma :: Franz Müller
+modal:soyunma :: Franz Müller (PF) — Overall: 71
+modal:soyunma :: Franz Müller (PF) → C
+modal:soyunma :: Franz Müller (PF) → SF
+modal:soyunma :: Franz Müller (PF·OVR 71)
+modal:soyunma :: Gaziantep Boğaları
+modal:soyunma :: Gaziantep Kartalları
+modal:soyunma :: Kayseri Boğaları
+modal:soyunma :: Kayseri Boğaları — Gaziantep Basket
+modal:soyunma :: Konya Kurtları
+modal:soyunma :: Konya Kurtları — İzmir Yıldızları
+modal:soyunma :: Trabzon Şahinleri
+modal:soyunma :: Türkiye • 30 yrs • 187cm
+modal:soyunma :: Türkiye • 35 yrs • 214cm
+modal:soyunma :: Türkiye • 35 yrs • 219cm
+modal:soyunma :: İzmir Yıldızları
+modal:soyunma :: İzmir Şimşekleri
+modal:soyunma :: 🇩🇪 Andreas Schröder
+modal:soyunma :: 🇩🇪 Jonas Müller
+modal:soyunma :: 🇹🇷 Ali Çelik
+modal:soyunma :: 🇹🇷 Berk Özdemir
 modal:soyunma :: 🇹🇷 Türkiye
-modal:soyunma :: 🇹🇷 Türkiye • 32 yrs
 modal:soyunma :: 🇹🇷 Türkçe
-modal:soyunma :: 🏛️ Adana Gençlik from
 modal:soyunma :: 🏛️ Adana Şimşekleri from
-modal:soyunma :: 🏛️ Eskişehir Boğaları from
-modal:soyunma :: 🏛️ Eskişehir Kurtları from
-modal:soyunma :: 🏛️ Gaziantep Gençlik from
-modal:soyunma :: 🏛️ Kayseri Kartalları from
-modal:soyunma :: 🏛️ Kayseri Kurtları from
-modal:soyunma :: 🏛️ Trabzon Kartalları from
-modal:soyunma :: 🏛️ Trabzon Şimşekleri from
-modal:taktik :: Adana Gençlik
+modal:soyunma :: 🏛️ Eskişehir Şahinleri from
+modal:soyunma :: 🏛️ Gaziantep Kartalları from
+modal:soyunma :: 🏛️ Konya Kurtları from
+modal:soyunma :: 🏛️ Trabzon Şahinleri from
+modal:taktik :: Adana Yıldızları
 modal:taktik :: Adana Şimşekleri
 modal:taktik :: Ahmet Yıldız
-modal:taktik :: Bursa Gençlik
-modal:taktik :: Bursa Gençlik — Eskişehir Şahinleri
-modal:taktik :: Eskişehir Boğaları
-modal:taktik :: Eskişehir Boğaları — Gaziantep Gençlik
-modal:taktik :: Eskişehir Kurtları
-modal:taktik :: Eskişehir Yıldızları
+modal:taktik :: Diyarbakır Aslanları
 modal:taktik :: Eskişehir Şahinleri
-modal:taktik :: Gaziantep Gençlik
-modal:taktik :: Gaziantep Yıldızları
-modal:taktik :: Kayseri Aslanları
-modal:taktik :: Kayseri Kartalları
-modal:taktik :: Kayseri Kurtları
-modal:taktik :: Konya Boğaları
-modal:taktik :: Konya Şimşekleri
-modal:taktik :: Samsun Basket — Kayseri Aslanları
-modal:taktik :: Trabzon Kartalları
-modal:taktik :: Trabzon Kartalları — Ankara Eagles
-modal:taktik :: Trabzon Şimşekleri
-modal:taktik :: Türkiye • 16 yrs • 215cm · Pot 92
-modal:taktik :: Türkiye • 19 yrs • 204cm
-modal:taktik :: Türkiye • 32 yrs • 182cm
-modal:taktik :: Türkiye • 32 yrs • 203cm
-modal:taktik :: 🇩🇪 Franz Müller
-modal:taktik :: 🇹🇷 Burak Şahin
-modal:taktik :: 🇹🇷 Enes Yılmaz
+modal:taktik :: Eskişehir Şahinleri — Trabzon Şahinleri
+modal:taktik :: Franz Müller
+modal:taktik :: Franz Müller (PF) — Overall: 71
+modal:taktik :: Franz Müller (PF) → C
+modal:taktik :: Franz Müller (PF) → SF
+modal:taktik :: Franz Müller (PF·OVR 71)
+modal:taktik :: Gaziantep Boğaları
+modal:taktik :: Gaziantep Kartalları
+modal:taktik :: Kayseri Boğaları
+modal:taktik :: Kayseri Boğaları — Gaziantep Basket
+modal:taktik :: Konya Kurtları
+modal:taktik :: Konya Kurtları — İzmir Yıldızları
+modal:taktik :: Trabzon Şahinleri
+modal:taktik :: Türkiye • 30 yrs • 187cm
+modal:taktik :: Türkiye • 35 yrs • 214cm
+modal:taktik :: Türkiye • 35 yrs • 219cm
+modal:taktik :: İzmir Yıldızları
+modal:taktik :: İzmir Şimşekleri
+modal:taktik :: 🇩🇪 Andreas Schröder
+modal:taktik :: 🇩🇪 Jonas Müller
+modal:taktik :: 🇹🇷 Ali Çelik
+modal:taktik :: 🇹🇷 Berk Özdemir
 modal:taktik :: 🇹🇷 Türkiye
-modal:taktik :: 🇹🇷 Türkiye • 32 yrs
 modal:taktik :: 🇹🇷 Türkçe
-modal:taktik :: 🎯 Tactics — vs Kayseri Kurtları
-modal:taktik :: 🏛️ Adana Gençlik from
 modal:taktik :: 🏛️ Adana Şimşekleri from
-modal:taktik :: 🏛️ Eskişehir Boğaları from
-modal:taktik :: 🏛️ Eskişehir Kurtları from
-modal:taktik :: 🏛️ Gaziantep Gençlik from
-modal:taktik :: 🏛️ Kayseri Kartalları from
-modal:taktik :: 🏛️ Kayseri Kurtları from
-modal:taktik :: 🏛️ Trabzon Kartalları from
-modal:taktik :: 🏛️ Trabzon Şimşekleri from
-sayfa:altyapi :: Adana Gençlik
+modal:taktik :: 🏛️ Eskişehir Şahinleri from
+modal:taktik :: 🏛️ Gaziantep Kartalları from
+modal:taktik :: 🏛️ Konya Kurtları from
+modal:taktik :: 🏛️ Trabzon Şahinleri from
+sayfa:altyapi :: Adana Yıldızları
 sayfa:altyapi :: Adana Şimşekleri
-sayfa:altyapi :: Bursa Gençlik
-sayfa:altyapi :: Bursa Gençlik — Eskişehir Şahinleri
-sayfa:altyapi :: Eskişehir Boğaları
-sayfa:altyapi :: Eskişehir Boğaları — Gaziantep Gençlik
-sayfa:altyapi :: Eskişehir Kurtları
-sayfa:altyapi :: Eskişehir Yıldızları
+sayfa:altyapi :: Diyarbakır Aslanları
 sayfa:altyapi :: Eskişehir Şahinleri
-sayfa:altyapi :: Gaziantep Gençlik
-sayfa:altyapi :: Gaziantep Yıldızları
-sayfa:altyapi :: Kayseri Aslanları
-sayfa:altyapi :: Kayseri Kartalları
-sayfa:altyapi :: Kayseri Kurtları
-sayfa:altyapi :: Konya Boğaları
-sayfa:altyapi :: Konya Şimşekleri
-sayfa:altyapi :: Samsun Basket — Kayseri Aslanları
-sayfa:altyapi :: Trabzon Kartalları
-sayfa:altyapi :: Trabzon Kartalları — Ankara Eagles
-sayfa:altyapi :: Trabzon Şimşekleri
-sayfa:altyapi :: Türkiye • 16 yrs • 215cm · Pot 92
-sayfa:altyapi :: Türkiye • 19 yrs • 204cm
-sayfa:altyapi :: Türkiye • 32 yrs • 182cm
-sayfa:altyapi :: Türkiye • 32 yrs • 203cm
-sayfa:altyapi :: 🇩🇪 Franz Müller
-sayfa:altyapi :: 🇹🇷 Burak Şahin
-sayfa:altyapi :: 🇹🇷 Enes Yılmaz
+sayfa:altyapi :: Eskişehir Şahinleri — Trabzon Şahinleri
+sayfa:altyapi :: Franz Müller
+sayfa:altyapi :: Gaziantep Boğaları
+sayfa:altyapi :: Gaziantep Kartalları
+sayfa:altyapi :: Kayseri Boğaları
+sayfa:altyapi :: Kayseri Boğaları — Gaziantep Basket
+sayfa:altyapi :: Konya Kurtları
+sayfa:altyapi :: Konya Kurtları — İzmir Yıldızları
+sayfa:altyapi :: Trabzon Şahinleri
+sayfa:altyapi :: Türkiye • 30 yrs • 187cm
+sayfa:altyapi :: Türkiye • 35 yrs • 214cm
+sayfa:altyapi :: Türkiye • 35 yrs • 219cm
+sayfa:altyapi :: İzmir Yıldızları
+sayfa:altyapi :: İzmir Şimşekleri
+sayfa:altyapi :: 🇩🇪 Andreas Schröder
+sayfa:altyapi :: 🇩🇪 Jonas Müller
+sayfa:altyapi :: 🇹🇷 Ali Çelik
+sayfa:altyapi :: 🇹🇷 Berk Özdemir
 sayfa:altyapi :: 🇹🇷 Türkiye
-sayfa:altyapi :: 🇹🇷 Türkiye • 32 yrs
 sayfa:altyapi :: 🇹🇷 Türkçe
-sayfa:altyapi :: 🏛️ Adana Gençlik from
 sayfa:altyapi :: 🏛️ Adana Şimşekleri from
-sayfa:altyapi :: 🏛️ Eskişehir Boğaları from
-sayfa:altyapi :: 🏛️ Eskişehir Kurtları from
-sayfa:altyapi :: 🏛️ Gaziantep Gençlik from
-sayfa:altyapi :: 🏛️ Kayseri Kartalları from
-sayfa:altyapi :: 🏛️ Kayseri Kurtları from
-sayfa:altyapi :: 🏛️ Trabzon Kartalları from
-sayfa:altyapi :: 🏛️ Trabzon Şimşekleri from
-sayfa:analiz :: Adana Gençlik
+sayfa:altyapi :: 🏛️ Eskişehir Şahinleri from
+sayfa:altyapi :: 🏛️ Gaziantep Kartalları from
+sayfa:altyapi :: 🏛️ Konya Kurtları from
+sayfa:altyapi :: 🏛️ Trabzon Şahinleri from
+sayfa:analiz :: Adana Yıldızları
 sayfa:analiz :: Adana Şimşekleri
 sayfa:analiz :: Ahmet Yıldız
-sayfa:analiz :: Bursa Gençlik
-sayfa:analiz :: Bursa Gençlik — Eskişehir Şahinleri
-sayfa:analiz :: Eskişehir Boğaları
-sayfa:analiz :: Eskişehir Boğaları — Gaziantep Gençlik
-sayfa:analiz :: Eskişehir Kurtları
-sayfa:analiz :: Eskişehir Yıldızları
+sayfa:analiz :: Diyarbakır Aslanları
 sayfa:analiz :: Eskişehir Şahinleri
-sayfa:analiz :: Gaziantep Gençlik
-sayfa:analiz :: Gaziantep Yıldızları
-sayfa:analiz :: Kayseri Aslanları
-sayfa:analiz :: Kayseri Kartalları
-sayfa:analiz :: Kayseri Kurtları
-sayfa:analiz :: Konya Boğaları
-sayfa:analiz :: Konya Şimşekleri
-sayfa:analiz :: Samsun Basket — Kayseri Aslanları
-sayfa:analiz :: Trabzon Kartalları
-sayfa:analiz :: Trabzon Kartalları — Ankara Eagles
-sayfa:analiz :: Trabzon Şimşekleri
-sayfa:analiz :: Türkiye • 16 yrs • 215cm · Pot 92
-sayfa:analiz :: Türkiye • 19 yrs • 204cm
-sayfa:analiz :: Türkiye • 32 yrs • 182cm
-sayfa:analiz :: Türkiye • 32 yrs • 203cm
-sayfa:analiz :: 🇩🇪 Franz Müller
-sayfa:analiz :: 🇹🇷 Burak Şahin
-sayfa:analiz :: 🇹🇷 Enes Yılmaz
+sayfa:analiz :: Eskişehir Şahinleri — Trabzon Şahinleri
+sayfa:analiz :: Franz Müller
+sayfa:analiz :: Franz Müller (PF) — Overall: 71
+sayfa:analiz :: Franz Müller (PF) → C
+sayfa:analiz :: Franz Müller (PF) → SF
+sayfa:analiz :: Franz Müller (PF·OVR 71)
+sayfa:analiz :: Gaziantep Boğaları
+sayfa:analiz :: Gaziantep Kartalları
+sayfa:analiz :: Kayseri Boğaları
+sayfa:analiz :: Kayseri Boğaları — Gaziantep Basket
+sayfa:analiz :: Konya Kurtları
+sayfa:analiz :: Konya Kurtları — İzmir Yıldızları
+sayfa:analiz :: Trabzon Şahinleri
+sayfa:analiz :: Türkiye • 30 yrs • 187cm
+sayfa:analiz :: Türkiye • 35 yrs • 214cm
+sayfa:analiz :: Türkiye • 35 yrs • 219cm
+sayfa:analiz :: İzmir Yıldızları
+sayfa:analiz :: İzmir Şimşekleri
+sayfa:analiz :: 🇩🇪 Andreas Schröder
+sayfa:analiz :: 🇩🇪 Jonas Müller
+sayfa:analiz :: 🇹🇷 Ali Çelik
+sayfa:analiz :: 🇹🇷 Berk Özdemir
 sayfa:analiz :: 🇹🇷 Türkiye
-sayfa:analiz :: 🇹🇷 Türkiye • 32 yrs
 sayfa:analiz :: 🇹🇷 Türkçe
-sayfa:analiz :: 🏛️ Adana Gençlik from
 sayfa:analiz :: 🏛️ Adana Şimşekleri from
-sayfa:analiz :: 🏛️ Eskişehir Boğaları from
-sayfa:analiz :: 🏛️ Eskişehir Kurtları from
-sayfa:analiz :: 🏛️ Gaziantep Gençlik from
-sayfa:analiz :: 🏛️ Kayseri Kartalları from
-sayfa:analiz :: 🏛️ Kayseri Kurtları from
-sayfa:analiz :: 🏛️ Trabzon Kartalları from
-sayfa:analiz :: 🏛️ Trabzon Şimşekleri from
-sayfa:antrenman :: Adana Gençlik
+sayfa:analiz :: 🏛️ Eskişehir Şahinleri from
+sayfa:analiz :: 🏛️ Gaziantep Kartalları from
+sayfa:analiz :: 🏛️ Konya Kurtları from
+sayfa:analiz :: 🏛️ Trabzon Şahinleri from
+sayfa:antrenman :: Adana Yıldızları
 sayfa:antrenman :: Adana Şimşekleri
 sayfa:antrenman :: Ahmet Yıldız
-sayfa:antrenman :: Bursa Gençlik
-sayfa:antrenman :: Bursa Gençlik — Eskişehir Şahinleri
-sayfa:antrenman :: Eskişehir Boğaları
-sayfa:antrenman :: Eskişehir Boğaları — Gaziantep Gençlik
-sayfa:antrenman :: Eskişehir Kurtları
-sayfa:antrenman :: Eskişehir Yıldızları
+sayfa:antrenman :: Diyarbakır Aslanları
 sayfa:antrenman :: Eskişehir Şahinleri
-sayfa:antrenman :: Gaziantep Gençlik
-sayfa:antrenman :: Gaziantep Yıldızları
-sayfa:antrenman :: Kayseri Aslanları
-sayfa:antrenman :: Kayseri Kartalları
-sayfa:antrenman :: Kayseri Kurtları
-sayfa:antrenman :: Konya Boğaları
-sayfa:antrenman :: Konya Şimşekleri
-sayfa:antrenman :: Samsun Basket — Kayseri Aslanları
-sayfa:antrenman :: Trabzon Kartalları
-sayfa:antrenman :: Trabzon Kartalları — Ankara Eagles
-sayfa:antrenman :: Trabzon Şimşekleri
-sayfa:antrenman :: Türkiye • 16 yrs • 215cm · Pot 92
-sayfa:antrenman :: Türkiye • 19 yrs • 204cm
-sayfa:antrenman :: Türkiye • 32 yrs • 182cm
-sayfa:antrenman :: Türkiye • 32 yrs • 203cm
-sayfa:antrenman :: 🇩🇪 Franz Müller
-sayfa:antrenman :: 🇹🇷 Burak Şahin
-sayfa:antrenman :: 🇹🇷 Enes Yılmaz
+sayfa:antrenman :: Eskişehir Şahinleri — Trabzon Şahinleri
+sayfa:antrenman :: Franz Müller
+sayfa:antrenman :: Franz Müller (PF) — Overall: 71
+sayfa:antrenman :: Franz Müller (PF) → C
+sayfa:antrenman :: Franz Müller (PF) → SF
+sayfa:antrenman :: Gaziantep Boğaları
+sayfa:antrenman :: Gaziantep Kartalları
+sayfa:antrenman :: Kayseri Boğaları
+sayfa:antrenman :: Kayseri Boğaları — Gaziantep Basket
+sayfa:antrenman :: Konya Kurtları
+sayfa:antrenman :: Konya Kurtları — İzmir Yıldızları
+sayfa:antrenman :: Trabzon Şahinleri
+sayfa:antrenman :: Türkiye • 30 yrs • 187cm
+sayfa:antrenman :: Türkiye • 35 yrs • 214cm
+sayfa:antrenman :: Türkiye • 35 yrs • 219cm
+sayfa:antrenman :: İzmir Yıldızları
+sayfa:antrenman :: İzmir Şimşekleri
+sayfa:antrenman :: 🇩🇪 Andreas Schröder
+sayfa:antrenman :: 🇩🇪 Jonas Müller
+sayfa:antrenman :: 🇹🇷 Ali Çelik
+sayfa:antrenman :: 🇹🇷 Berk Özdemir
 sayfa:antrenman :: 🇹🇷 Türkiye
-sayfa:antrenman :: 🇹🇷 Türkiye • 32 yrs
 sayfa:antrenman :: 🇹🇷 Türkçe
-sayfa:antrenman :: 🏛️ Adana Gençlik from
 sayfa:antrenman :: 🏛️ Adana Şimşekleri from
-sayfa:antrenman :: 🏛️ Eskişehir Boğaları from
-sayfa:antrenman :: 🏛️ Eskişehir Kurtları from
-sayfa:antrenman :: 🏛️ Gaziantep Gençlik from
-sayfa:antrenman :: 🏛️ Kayseri Kartalları from
-sayfa:antrenman :: 🏛️ Kayseri Kurtları from
-sayfa:antrenman :: 🏛️ Trabzon Kartalları from
-sayfa:antrenman :: 🏛️ Trabzon Şimşekleri from
-sayfa:arena :: Adana Gençlik
+sayfa:antrenman :: 🏛️ Eskişehir Şahinleri from
+sayfa:antrenman :: 🏛️ Gaziantep Kartalları from
+sayfa:antrenman :: 🏛️ Konya Kurtları from
+sayfa:antrenman :: 🏛️ Trabzon Şahinleri from
+sayfa:arena :: Adana Yıldızları
 sayfa:arena :: Adana Şimşekleri
 sayfa:arena :: Ahmet Yıldız
-sayfa:arena :: Bursa Gençlik
-sayfa:arena :: Bursa Gençlik — Eskişehir Şahinleri
-sayfa:arena :: Eskişehir Boğaları
-sayfa:arena :: Eskişehir Boğaları — Gaziantep Gençlik
-sayfa:arena :: Eskişehir Kurtları
-sayfa:arena :: Eskişehir Yıldızları
+sayfa:arena :: Diyarbakır Aslanları
 sayfa:arena :: Eskişehir Şahinleri
-sayfa:arena :: Gaziantep Gençlik
-sayfa:arena :: Gaziantep Yıldızları
-sayfa:arena :: Kayseri Aslanları
-sayfa:arena :: Kayseri Kartalları
-sayfa:arena :: Kayseri Kurtları
-sayfa:arena :: Konya Boğaları
-sayfa:arena :: Konya Şimşekleri
-sayfa:arena :: Samsun Basket — Kayseri Aslanları
-sayfa:arena :: Trabzon Kartalları
-sayfa:arena :: Trabzon Kartalları — Ankara Eagles
-sayfa:arena :: Trabzon Şimşekleri
-sayfa:arena :: Türkiye • 16 yrs • 215cm · Pot 92
-sayfa:arena :: Türkiye • 19 yrs • 204cm
-sayfa:arena :: Türkiye • 32 yrs • 182cm
-sayfa:arena :: Türkiye • 32 yrs • 203cm
-sayfa:arena :: 🇩🇪 Franz Müller
-sayfa:arena :: 🇹🇷 Burak Şahin
-sayfa:arena :: 🇹🇷 Enes Yılmaz
+sayfa:arena :: Eskişehir Şahinleri — Trabzon Şahinleri
+sayfa:arena :: Franz Müller
+sayfa:arena :: Franz Müller (PF) — Overall: 71
+sayfa:arena :: Franz Müller (PF) → C
+sayfa:arena :: Franz Müller (PF) → SF
+sayfa:arena :: Gaziantep Boğaları
+sayfa:arena :: Gaziantep Kartalları
+sayfa:arena :: Kayseri Boğaları
+sayfa:arena :: Kayseri Boğaları — Gaziantep Basket
+sayfa:arena :: Konya Kurtları
+sayfa:arena :: Konya Kurtları — İzmir Yıldızları
+sayfa:arena :: Trabzon Şahinleri
+sayfa:arena :: Türkiye • 30 yrs • 187cm
+sayfa:arena :: Türkiye • 35 yrs • 214cm
+sayfa:arena :: Türkiye • 35 yrs • 219cm
+sayfa:arena :: İzmir Yıldızları
+sayfa:arena :: İzmir Şimşekleri
+sayfa:arena :: 🇩🇪 Andreas Schröder
+sayfa:arena :: 🇩🇪 Jonas Müller
+sayfa:arena :: 🇹🇷 Ali Çelik
+sayfa:arena :: 🇹🇷 Berk Özdemir
 sayfa:arena :: 🇹🇷 Türkiye
-sayfa:arena :: 🇹🇷 Türkiye • 32 yrs
 sayfa:arena :: 🇹🇷 Türkçe
-sayfa:arena :: 🏛️ Adana Gençlik from
 sayfa:arena :: 🏛️ Adana Şimşekleri from
-sayfa:arena :: 🏛️ Eskişehir Boğaları from
-sayfa:arena :: 🏛️ Eskişehir Kurtları from
-sayfa:arena :: 🏛️ Gaziantep Gençlik from
-sayfa:arena :: 🏛️ Kayseri Kartalları from
-sayfa:arena :: 🏛️ Kayseri Kurtları from
-sayfa:arena :: 🏛️ Trabzon Kartalları from
-sayfa:arena :: 🏛️ Trabzon Şimşekleri from
-sayfa:bilanco :: Adana Gençlik
+sayfa:arena :: 🏛️ Eskişehir Şahinleri from
+sayfa:arena :: 🏛️ Gaziantep Kartalları from
+sayfa:arena :: 🏛️ Konya Kurtları from
+sayfa:arena :: 🏛️ Trabzon Şahinleri from
+sayfa:bilanco :: Adana Yıldızları
 sayfa:bilanco :: Adana Şimşekleri
 sayfa:bilanco :: Ahmet Yıldız
-sayfa:bilanco :: Bursa Gençlik
-sayfa:bilanco :: Bursa Gençlik — Eskişehir Şahinleri
-sayfa:bilanco :: Eskişehir Boğaları
-sayfa:bilanco :: Eskişehir Boğaları — Gaziantep Gençlik
-sayfa:bilanco :: Eskişehir Kurtları
-sayfa:bilanco :: Eskişehir Yıldızları
+sayfa:bilanco :: Diyarbakır Aslanları
 sayfa:bilanco :: Eskişehir Şahinleri
-sayfa:bilanco :: Gaziantep Gençlik
-sayfa:bilanco :: Gaziantep Yıldızları
-sayfa:bilanco :: Kayseri Aslanları
-sayfa:bilanco :: Kayseri Kartalları
-sayfa:bilanco :: Kayseri Kurtları
-sayfa:bilanco :: Konya Boğaları
-sayfa:bilanco :: Konya Şimşekleri
-sayfa:bilanco :: Samsun Basket — Kayseri Aslanları
-sayfa:bilanco :: Trabzon Kartalları
-sayfa:bilanco :: Trabzon Kartalları — Ankara Eagles
-sayfa:bilanco :: Trabzon Şimşekleri
-sayfa:bilanco :: Türkiye • 16 yrs • 215cm · Pot 92
-sayfa:bilanco :: Türkiye • 19 yrs • 204cm
-sayfa:bilanco :: Türkiye • 32 yrs • 182cm
-sayfa:bilanco :: Türkiye • 32 yrs • 203cm
-sayfa:bilanco :: 🇩🇪 Franz Müller
-sayfa:bilanco :: 🇹🇷 Burak Şahin
-sayfa:bilanco :: 🇹🇷 Enes Yılmaz
+sayfa:bilanco :: Eskişehir Şahinleri — Trabzon Şahinleri
+sayfa:bilanco :: Franz Müller
+sayfa:bilanco :: Franz Müller (PF) — Overall: 71
+sayfa:bilanco :: Franz Müller (PF) → C
+sayfa:bilanco :: Franz Müller (PF) → SF
+sayfa:bilanco :: Gaziantep Boğaları
+sayfa:bilanco :: Gaziantep Kartalları
+sayfa:bilanco :: Kayseri Boğaları
+sayfa:bilanco :: Kayseri Boğaları — Gaziantep Basket
+sayfa:bilanco :: Konya Kurtları
+sayfa:bilanco :: Konya Kurtları — İzmir Yıldızları
+sayfa:bilanco :: Trabzon Şahinleri
+sayfa:bilanco :: Türkiye • 30 yrs • 187cm
+sayfa:bilanco :: Türkiye • 35 yrs • 214cm
+sayfa:bilanco :: Türkiye • 35 yrs • 219cm
+sayfa:bilanco :: İzmir Yıldızları
+sayfa:bilanco :: İzmir Şimşekleri
+sayfa:bilanco :: 🇩🇪 Andreas Schröder
+sayfa:bilanco :: 🇩🇪 Jonas Müller
+sayfa:bilanco :: 🇹🇷 Ali Çelik
+sayfa:bilanco :: 🇹🇷 Berk Özdemir
 sayfa:bilanco :: 🇹🇷 Türkiye
-sayfa:bilanco :: 🇹🇷 Türkiye • 32 yrs
 sayfa:bilanco :: 🇹🇷 Türkçe
-sayfa:bilanco :: 🏛️ Adana Gençlik from
 sayfa:bilanco :: 🏛️ Adana Şimşekleri from
-sayfa:bilanco :: 🏛️ Eskişehir Boğaları from
-sayfa:bilanco :: 🏛️ Eskişehir Kurtları from
-sayfa:bilanco :: 🏛️ Gaziantep Gençlik from
-sayfa:bilanco :: 🏛️ Kayseri Kartalları from
-sayfa:bilanco :: 🏛️ Kayseri Kurtları from
-sayfa:bilanco :: 🏛️ Trabzon Kartalları from
-sayfa:bilanco :: 🏛️ Trabzon Şimşekleri from
-sayfa:dashboard :: Adana Gençlik
+sayfa:bilanco :: 🏛️ Eskişehir Şahinleri from
+sayfa:bilanco :: 🏛️ Gaziantep Kartalları from
+sayfa:bilanco :: 🏛️ Konya Kurtları from
+sayfa:bilanco :: 🏛️ Trabzon Şahinleri from
+sayfa:dashboard :: Adana Yıldızları
 sayfa:dashboard :: Adana Şimşekleri
-sayfa:dashboard :: Bursa Gençlik
-sayfa:dashboard :: Bursa Gençlik — Eskişehir Şahinleri
-sayfa:dashboard :: Eskişehir Boğaları
-sayfa:dashboard :: Eskişehir Boğaları — Gaziantep Gençlik
-sayfa:dashboard :: Eskişehir Kurtları
-sayfa:dashboard :: Eskişehir Yıldızları
+sayfa:dashboard :: Diyarbakır Aslanları
 sayfa:dashboard :: Eskişehir Şahinleri
-sayfa:dashboard :: Gaziantep Gençlik
-sayfa:dashboard :: Gaziantep Yıldızları
-sayfa:dashboard :: Kayseri Aslanları
-sayfa:dashboard :: Kayseri Kartalları
-sayfa:dashboard :: Kayseri Kurtları
-sayfa:dashboard :: Konya Boğaları
-sayfa:dashboard :: Konya Şimşekleri
-sayfa:dashboard :: Samsun Basket — Kayseri Aslanları
-sayfa:dashboard :: Trabzon Kartalları
-sayfa:dashboard :: Trabzon Kartalları — Ankara Eagles
-sayfa:dashboard :: Trabzon Şimşekleri
-sayfa:dashboard :: 🇹🇷 Türkiye • 32 yrs
+sayfa:dashboard :: Eskişehir Şahinleri — Trabzon Şahinleri
+sayfa:dashboard :: Franz Müller
+sayfa:dashboard :: Gaziantep Boğaları
+sayfa:dashboard :: Gaziantep Kartalları
+sayfa:dashboard :: Kayseri Boğaları
+sayfa:dashboard :: Kayseri Boğaları — Gaziantep Basket
+sayfa:dashboard :: Konya Kurtları
+sayfa:dashboard :: Konya Kurtları — İzmir Yıldızları
+sayfa:dashboard :: Trabzon Şahinleri
+sayfa:dashboard :: İzmir Yıldızları
+sayfa:dashboard :: İzmir Şimşekleri
 sayfa:dashboard :: 🇹🇷 Türkçe
-sayfa:kadro :: Adana Gençlik
+sayfa:kadro :: Adana Yıldızları
 sayfa:kadro :: Adana Şimşekleri
-sayfa:kadro :: Bursa Gençlik
-sayfa:kadro :: Bursa Gençlik — Eskişehir Şahinleri
-sayfa:kadro :: Eskişehir Boğaları
-sayfa:kadro :: Eskişehir Boğaları — Gaziantep Gençlik
-sayfa:kadro :: Eskişehir Kurtları
-sayfa:kadro :: Eskişehir Yıldızları
+sayfa:kadro :: Diyarbakır Aslanları
 sayfa:kadro :: Eskişehir Şahinleri
-sayfa:kadro :: Gaziantep Gençlik
-sayfa:kadro :: Gaziantep Yıldızları
-sayfa:kadro :: Kayseri Aslanları
-sayfa:kadro :: Kayseri Kartalları
-sayfa:kadro :: Kayseri Kurtları
-sayfa:kadro :: Konya Boğaları
-sayfa:kadro :: Konya Şimşekleri
-sayfa:kadro :: Samsun Basket — Kayseri Aslanları
-sayfa:kadro :: Trabzon Kartalları
-sayfa:kadro :: Trabzon Kartalları — Ankara Eagles
-sayfa:kadro :: Trabzon Şimşekleri
+sayfa:kadro :: Eskişehir Şahinleri — Trabzon Şahinleri
+sayfa:kadro :: Franz Müller
+sayfa:kadro :: Gaziantep Boğaları
+sayfa:kadro :: Gaziantep Kartalları
+sayfa:kadro :: Kayseri Boğaları
+sayfa:kadro :: Kayseri Boğaları — Gaziantep Basket
+sayfa:kadro :: Konya Kurtları
+sayfa:kadro :: Konya Kurtları — İzmir Yıldızları
+sayfa:kadro :: Trabzon Şahinleri
+sayfa:kadro :: İzmir Yıldızları
+sayfa:kadro :: İzmir Şimşekleri
 sayfa:kadro :: 🇹🇷 Türkiye
-sayfa:kadro :: 🇹🇷 Türkiye • 32 yrs
 sayfa:kadro :: 🇹🇷 Türkçe
-sayfa:lig :: Adana Gençlik
+sayfa:lig :: Adana Yıldızları
 sayfa:lig :: Adana Şimşekleri
-sayfa:lig :: Bursa Gençlik
-sayfa:lig :: Bursa Gençlik — Eskişehir Şahinleri
-sayfa:lig :: Eskişehir Boğaları
-sayfa:lig :: Eskişehir Boğaları — Gaziantep Gençlik
-sayfa:lig :: Eskişehir Kurtları
-sayfa:lig :: Eskişehir Yıldızları
+sayfa:lig :: Diyarbakır Aslanları
 sayfa:lig :: Eskişehir Şahinleri
-sayfa:lig :: Gaziantep Gençlik
-sayfa:lig :: Gaziantep Yıldızları
-sayfa:lig :: Kayseri Aslanları
-sayfa:lig :: Kayseri Kartalları
-sayfa:lig :: Kayseri Kurtları
-sayfa:lig :: Konya Boğaları
-sayfa:lig :: Konya Şimşekleri
-sayfa:lig :: Samsun Basket — Kayseri Aslanları
-sayfa:lig :: Trabzon Kartalları
-sayfa:lig :: Trabzon Kartalları — Ankara Eagles
-sayfa:lig :: Trabzon Şimşekleri
+sayfa:lig :: Eskişehir Şahinleri — Trabzon Şahinleri
+sayfa:lig :: Franz Müller
+sayfa:lig :: Gaziantep Boğaları
+sayfa:lig :: Gaziantep Kartalları
+sayfa:lig :: Kayseri Boğaları
+sayfa:lig :: Kayseri Boğaları — Gaziantep Basket
+sayfa:lig :: Konya Kurtları
+sayfa:lig :: Konya Kurtları — İzmir Yıldızları
+sayfa:lig :: Trabzon Şahinleri
+sayfa:lig :: İzmir Yıldızları
+sayfa:lig :: İzmir Şimşekleri
 sayfa:lig :: 🇹🇷 Türkiye
-sayfa:lig :: 🇹🇷 Türkiye • 32 yrs
 sayfa:lig :: 🇹🇷 Türkçe
-sayfa:mac :: Adana Gençlik
+sayfa:mac :: Adana Yıldızları
 sayfa:mac :: Adana Şimşekleri
-sayfa:mac :: Bursa Gençlik
-sayfa:mac :: Bursa Gençlik — Eskişehir Şahinleri
-sayfa:mac :: Eskişehir Boğaları
-sayfa:mac :: Eskişehir Boğaları — Gaziantep Gençlik
-sayfa:mac :: Eskişehir Kurtları
-sayfa:mac :: Eskişehir Yıldızları
+sayfa:mac :: Diyarbakır Aslanları
 sayfa:mac :: Eskişehir Şahinleri
-sayfa:mac :: Gaziantep Gençlik
-sayfa:mac :: Gaziantep Yıldızları
-sayfa:mac :: Kayseri Aslanları
-sayfa:mac :: Kayseri Kartalları
-sayfa:mac :: Kayseri Kurtları
-sayfa:mac :: Konya Boğaları
-sayfa:mac :: Konya Şimşekleri
-sayfa:mac :: Samsun Basket — Kayseri Aslanları
-sayfa:mac :: Trabzon Kartalları
-sayfa:mac :: Trabzon Kartalları — Ankara Eagles
-sayfa:mac :: Trabzon Şimşekleri
+sayfa:mac :: Eskişehir Şahinleri — Trabzon Şahinleri
+sayfa:mac :: Franz Müller
+sayfa:mac :: Gaziantep Boğaları
+sayfa:mac :: Gaziantep Kartalları
+sayfa:mac :: Kayseri Boğaları
+sayfa:mac :: Kayseri Boğaları — Gaziantep Basket
+sayfa:mac :: Konya Kurtları
+sayfa:mac :: Konya Kurtları — İzmir Yıldızları
+sayfa:mac :: Trabzon Şahinleri
+sayfa:mac :: İzmir Yıldızları
+sayfa:mac :: İzmir Şimşekleri
 sayfa:mac :: 🇹🇷 Türkiye
-sayfa:mac :: 🇹🇷 Türkiye • 32 yrs
 sayfa:mac :: 🇹🇷 Türkçe
-sayfa:market :: Adana Gençlik
+sayfa:market :: Adana Yıldızları
 sayfa:market :: Adana Şimşekleri
-sayfa:market :: Bursa Gençlik
-sayfa:market :: Bursa Gençlik — Eskişehir Şahinleri
-sayfa:market :: Eskişehir Boğaları
-sayfa:market :: Eskişehir Boğaları — Gaziantep Gençlik
-sayfa:market :: Eskişehir Kurtları
-sayfa:market :: Eskişehir Yıldızları
+sayfa:market :: Diyarbakır Aslanları
 sayfa:market :: Eskişehir Şahinleri
-sayfa:market :: Gaziantep Gençlik
-sayfa:market :: Gaziantep Yıldızları
-sayfa:market :: Kayseri Aslanları
-sayfa:market :: Kayseri Kartalları
-sayfa:market :: Kayseri Kurtları
-sayfa:market :: Konya Boğaları
-sayfa:market :: Konya Şimşekleri
-sayfa:market :: Samsun Basket — Kayseri Aslanları
-sayfa:market :: Trabzon Kartalları
-sayfa:market :: Trabzon Kartalları — Ankara Eagles
-sayfa:market :: Trabzon Şimşekleri
-sayfa:market :: Türkiye • 19 yrs • 204cm
-sayfa:market :: Türkiye • 32 yrs • 182cm
-sayfa:market :: Türkiye • 32 yrs • 203cm
-sayfa:market :: 🇩🇪 Franz Müller
-sayfa:market :: 🇹🇷 Burak Şahin
-sayfa:market :: 🇹🇷 Enes Yılmaz
+sayfa:market :: Eskişehir Şahinleri — Trabzon Şahinleri
+sayfa:market :: Franz Müller
+sayfa:market :: Gaziantep Boğaları
+sayfa:market :: Gaziantep Kartalları
+sayfa:market :: Kayseri Boğaları
+sayfa:market :: Kayseri Boğaları — Gaziantep Basket
+sayfa:market :: Konya Kurtları
+sayfa:market :: Konya Kurtları — İzmir Yıldızları
+sayfa:market :: Trabzon Şahinleri
+sayfa:market :: Türkiye • 30 yrs • 187cm
+sayfa:market :: Türkiye • 35 yrs • 214cm
+sayfa:market :: Türkiye • 35 yrs • 219cm
+sayfa:market :: İzmir Yıldızları
+sayfa:market :: İzmir Şimşekleri
+sayfa:market :: 🇩🇪 Andreas Schröder
+sayfa:market :: 🇩🇪 Jonas Müller
+sayfa:market :: 🇹🇷 Ali Çelik
+sayfa:market :: 🇹🇷 Berk Özdemir
 sayfa:market :: 🇹🇷 Türkiye
-sayfa:market :: 🇹🇷 Türkiye • 32 yrs
 sayfa:market :: 🇹🇷 Türkçe
-sayfa:market :: 🏛️ Adana Gençlik from
 sayfa:market :: 🏛️ Adana Şimşekleri from
-sayfa:market :: 🏛️ Eskişehir Boğaları from
-sayfa:market :: 🏛️ Eskişehir Kurtları from
-sayfa:market :: 🏛️ Gaziantep Gençlik from
-sayfa:market :: 🏛️ Kayseri Kartalları from
-sayfa:market :: 🏛️ Kayseri Kurtları from
-sayfa:market :: 🏛️ Trabzon Kartalları from
-sayfa:market :: 🏛️ Trabzon Şimşekleri from
-sayfa:takim :: Adana Gençlik
+sayfa:market :: 🏛️ Eskişehir Şahinleri from
+sayfa:market :: 🏛️ Gaziantep Kartalları from
+sayfa:market :: 🏛️ Konya Kurtları from
+sayfa:market :: 🏛️ Trabzon Şahinleri from
+sayfa:takim :: Adana Yıldızları
 sayfa:takim :: Adana Şimşekleri
-sayfa:takim :: Bursa Gençlik
-sayfa:takim :: Bursa Gençlik — Eskişehir Şahinleri
-sayfa:takim :: Eskişehir Boğaları
-sayfa:takim :: Eskişehir Boğaları — Gaziantep Gençlik
-sayfa:takim :: Eskişehir Kurtları
-sayfa:takim :: Eskişehir Yıldızları
+sayfa:takim :: Diyarbakır Aslanları
 sayfa:takim :: Eskişehir Şahinleri
-sayfa:takim :: Gaziantep Gençlik
-sayfa:takim :: Gaziantep Yıldızları
-sayfa:takim :: Kayseri Aslanları
-sayfa:takim :: Kayseri Kartalları
-sayfa:takim :: Kayseri Kurtları
-sayfa:takim :: Konya Boğaları
-sayfa:takim :: Konya Şimşekleri
-sayfa:takim :: Samsun Basket — Kayseri Aslanları
-sayfa:takim :: Trabzon Kartalları
-sayfa:takim :: Trabzon Kartalları — Ankara Eagles
-sayfa:takim :: Trabzon Şimşekleri
+sayfa:takim :: Eskişehir Şahinleri — Trabzon Şahinleri
+sayfa:takim :: Franz Müller
+sayfa:takim :: Gaziantep Boğaları
+sayfa:takim :: Gaziantep Kartalları
+sayfa:takim :: Kayseri Boğaları
+sayfa:takim :: Kayseri Boğaları — Gaziantep Basket
+sayfa:takim :: Konya Kurtları
+sayfa:takim :: Konya Kurtları — İzmir Yıldızları
+sayfa:takim :: Trabzon Şahinleri
+sayfa:takim :: İzmir Yıldızları
+sayfa:takim :: İzmir Şimşekleri
 sayfa:takim :: 🇹🇷 Türkiye
-sayfa:takim :: 🇹🇷 Türkiye • 32 yrs
 sayfa:takim :: 🇹🇷 Türkçe
 setup :: 🇹🇷 Türkçe
-tutorial :: Adana Gençlik
+tutorial :: Adana Yıldızları
 tutorial :: Adana Şimşekleri
-tutorial :: Bursa Gençlik
-tutorial :: Bursa Gençlik — Eskişehir Şahinleri
-tutorial :: Eskişehir Boğaları
-tutorial :: Eskişehir Boğaları — Gaziantep Gençlik
-tutorial :: Eskişehir Kurtları
-tutorial :: Eskişehir Yıldızları
+tutorial :: Diyarbakır Aslanları
 tutorial :: Eskişehir Şahinleri
-tutorial :: Gaziantep Gençlik
-tutorial :: Gaziantep Yıldızları
-tutorial :: Kayseri Aslanları
-tutorial :: Kayseri Kartalları
-tutorial :: Kayseri Kurtları
-tutorial :: Konya Boğaları
-tutorial :: Konya Şimşekleri
-tutorial :: Samsun Basket — Kayseri Aslanları
-tutorial :: Trabzon Kartalları
-tutorial :: Trabzon Kartalları — Ankara Eagles
-tutorial :: Trabzon Şimşekleri
-tutorial :: 🇹🇷 Türkiye • 32 yrs
+tutorial :: Eskişehir Şahinleri — Trabzon Şahinleri
+tutorial :: Franz Müller
+tutorial :: Gaziantep Boğaları
+tutorial :: Gaziantep Kartalları
+tutorial :: Kayseri Boğaları
+tutorial :: Kayseri Boğaları — Gaziantep Basket
+tutorial :: Konya Kurtları
+tutorial :: Konya Kurtları — İzmir Yıldızları
+tutorial :: Trabzon Şahinleri
+tutorial :: İzmir Yıldızları
+tutorial :: İzmir Şimşekleri
 tutorial :: 🇹🇷 Türkçe

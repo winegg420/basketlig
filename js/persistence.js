@@ -338,10 +338,9 @@ function scheduleGameSave(){
 }
 
 function serializeGameState(){
-  const pl=(G.ligTeams||[]).map(t=>({
-    id:t.id,isim:t.isim,renk:t.renk,
-    galibiyet:t.galibiyet,maglubiyet:t.maglubiyet,sayiFor:t.sayiFor,sayiAg:t.sayiAg
-  }));
+  /* F7-16: eskiden 7 alan tek tek kopyalanıyordu — bu diziye ileride alan eklenirse
+     sessizce kaybolacak TEK yer burasıydı. Artık olduğu gibi saklanır. */
+  const pl=(G.ligTeams||[]).slice();
   return{
     v:6,   /* F7-17: v5'ten sonra rol/eğilim, playbook, soyunma odası, izci ağı, draft ve başkan hedefi eklendi */
     savedAt:new Date().toISOString(),
@@ -382,8 +381,17 @@ function serializeGameState(){
 }
 
 let _lastSavedFingerprint='';
+/* Kayıt silindikten sonra otomatik yazmaları bastır (F7-3). Kullanıcı bilerek bir işlem
+   yaparsa — elle "Kaydet", yeni kariyer, kayıt yükleme/içe aktarma — bastırma kalkar. */
+let _saveSuppressed=false;
+function suppressAutoSave(v){ _saveSuppressed=!!v; }
 function saveGameNow(showToast){
   if(!G||!G.team){ if(showToast) showNotif('Önce takım oluştur veya kayıt yükle.'); return; }
+  /* Otomatik/kapanış kaydı silinen kaydı diriltmesin; elle kayıt (showToast) bastırmayı kaldırır. */
+  if(_saveSuppressed){
+    if(!showToast) return;
+    _saveSuppressed=false;
+  }
   const state=serializeGameState();
   const raw=JSON.stringify(state);
   /* Değişiklik yoksa yazma — diğer sekmelerde gereksiz "güncellendi" bildirimi tetiklenmesin. */
@@ -718,6 +726,7 @@ function resumeFromSavedGame(){
   renderFixture();
   const dashBtn=document.querySelector('button.ni.active')||document.querySelector('button.ni');
   showPage('dashboard',dashBtn);
+  suppressAutoSave(false);          /* kayıt yüklendi — otomatik kayıt yeniden serbest */
   showNotif('Kayıt yüklendi — '+G.team.isim);
   saveGameNow(false);
   /* F7-1: yarim kalan draft/playoff varsa ilgili ekrani ac (aksi halde kullanici
@@ -763,6 +772,7 @@ function importGameJson(ev){
       renderFixture();
       const dbtn=document.querySelector('#sbNav button[data-page="dashboard"]');
       if(dbtn) showPage('dashboard',dbtn);
+      suppressAutoSave(false);      /* içe aktarma bilinçli bir işlem */
       showNotif('Kayıt içe aktarıldı.');
       saveGameNow(false);
     }catch(e){ showNotif('Dosya okunamadı.'); }
@@ -771,6 +781,9 @@ function importGameJson(ev){
 }
 
 function clearSavedGame(){
+  /* Bastırmayı SİLMEDEN ÖNCE aç: bekleyen otomatik kayıt zamanlayıcısı araya girmesin. */
+  suppressAutoSave(true);
+  try{ clearTimeout(_gameSaveTimer); }catch(e){}
   try{ localStorage.removeItem(GAME_SAVE_KEY); }catch(e){}
   /* F7-3: IndexedDB kopyasi da silinir; yoksa silinen kariyer sonraki acilista geri gelir. */
   try{ if(typeof idbDeleteString==='function') idbDeleteString(); }catch(e){}

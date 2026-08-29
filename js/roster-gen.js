@@ -36,7 +36,10 @@ const INJURIES=[
   {ad:'Stres kırığı (metatars)',bolge:'Ayak',siddet:'Ağır',minD:24,maxD:40,w:3}
 ];
 
-let G={
+/* F7-8: yeni kariyerin sıfırlama kaynağı — G'nin varsayılan hâli. createTeam bunun
+   derin kopyasını uygular, böylece ileride eklenen her alan otomatik kapsanır.
+   (Elle yazılan alan listesi kırılgandı; eksik kalan alan eski kariyerden devrediyordu.) */
+const DEFAULT_G={
   coins:START_KR,wins:0,losses:0,points:0,chemistry:75,winStreak:0,
   team:null,players:[],youth:[],marketPlayers:[],
   clubTransferPlayers:[],marketTab:'free',clubTransferFilter:'all',
@@ -69,8 +72,26 @@ let G={
   tactics:{tempo:'normal',odak:'dengeli'},
   lineup:null,
   ticketPrice:2,
-  tutorialDone:false
+  tutorialDone:false,
+  /* Aşağıdakiler literalde yoktu ama kariyer boyunca doluyor — sıfırlamaya dahil olmaları için
+     varsayılanları burada duruyor (F7-8). */
+  youthFacility:{s:1},
+  cup:null,cupHistory:[],
+  clubRecords:{},managerHistory:[],
+  careerMatches:0,careerWins:0,careerLosses:0,
+  posTraining:null,
+  pendingMatch:null,pendingOffers:[],
+  presidentTarget:null,budgetPenalty:0,
+  scouts:[],scoutMarket:[],
+  draft:null,
+  analytics:{teamMatches:[],playerDev:{}},
+  _ctSeq:0,_crisisPid:null,_crisisDay:null
 };
+/** Varsayılan durumun derin kopyası — yeni kariyer bununla başlar. */
+function defaultGameState(){
+  try{ return structuredClone(DEFAULT_G); }catch(e){ return JSON.parse(JSON.stringify(DEFAULT_G)); }
+}
+let G=defaultGameState();
 
 const MARKET_TARGET=40;
 
