@@ -224,6 +224,45 @@ function startI18nObserver(){
 /* Metin düğümü çevirisi: önce BİREBİR sözlük, tutmazsa İFADE katmanı.
    İfade katmanı, "🇩🇪 Almanya • 31 yaş" gibi çalışma anında birleştirilmiş dizeleri
    kelime/kalıp düzeyinde çevirir; oyuncu adlarına dokunmaması için kalıplar dar tutuldu. */
+/* F8-5: Sözlük kaynak-dize anahtarlı çalışıyor; "🆓 Serbest Oyuncular" gibi EMOJİ ÖN EKLİ
+   metinler anahtar olarak hiç eklenmediği için EN modunda olduğu gibi kalıyordu (canlı
+   oturumda 9 dize gözlendi). Her emoji'li varyantı sözlüğe eklemek yerine kalıcı çözüm:
+   baştaki simge/boşluk önekini ayır, GÖVDEYİ çevir, öneki olduğu gibi geri koy.
+   (30. oturumdaki " ASCII tabanlı" hatasıyla aynı sınıf: anahtar normalize edilmiyordu.) */
+function _splitIconPrefix(str){
+  try{
+    /* Baştaki simge/boşluk/noktalama önekini tara. Harf tespiti için büyük/küçük harf
+       karşılaştırması kullanılır (emoji ve noktalamada ikisi eşittir, harfte değil) —
+       böylece Unicode özellik kaçışlarına gerek kalmaz ve Türkçe harfler de doğru tanınır. */
+    let i=0;
+    while(i<str.length){
+      const c=str[i];
+      const cc=str.codePointAt(i);
+      if(c>='0'&&c<='9') break;                    /* rakam: gövde başlamış */
+      if(c.toLowerCase()!==c.toUpperCase()) break; /* harf: gövde başlamış */
+      i+=(cc>0xFFFF?2:1);
+    }
+    if(!i) return null;
+    const pre=str.slice(0,i);
+    const body=str.slice(i).trim();
+    if(!body||body===str) return null;
+    return {pre,body};
+  }catch(e){ return null; }
+}
+/** Bir anahtarı çevirir: önce tam eşleşme, sonra simge öneki ayrılmış gövde, sonra ifade katmanı. */
+function _i18nResolve(key){
+  const hit=I18N_TR_EN[key];
+  if(hit!=null&&hit!==key) return hit;
+  const sp=_splitIconPrefix(key);
+  if(sp){
+    const h2=I18N_TR_EN[sp.body];
+    if(h2!=null&&h2!==sp.body) return sp.pre+h2;
+    const p2=i18nPhrases(sp.body);
+    if(p2!==sp.body) return sp.pre+p2;
+  }
+  const ph=i18nPhrases(key);
+  return ph!==key?ph:null;
+}
 function _i18nTextNode(node){
   if(!node||!node.nodeValue) return;
   const p=node.parentNode;
@@ -231,10 +270,8 @@ function _i18nTextNode(node){
   const raw=node.nodeValue;
   const key=raw.trim();
   if(!key) return;
-  const hit=I18N_TR_EN[key];
-  if(hit!=null&&hit!==key){ node.nodeValue=raw.replace(key,hit); return; }
-  const ph=i18nPhrases(key);
-  if(ph!==key) node.nodeValue=raw.replace(key,ph);
+  const out=_i18nResolve(key);
+  if(out!=null&&out!==key) node.nodeValue=raw.replace(key,out);
 }
 /** İfade (parça) çevirisi — sözlükte tam karşılığı olmayan birleşik metinler için. */
 function i18nPhrases(str){

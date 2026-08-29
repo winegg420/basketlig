@@ -704,3 +704,79 @@ I18N_PHRASES.unshift(
 );
 
 Object.assign(I18N_TR_EN,{'Haberler':'News','Galibiyet':'Wins','Mağlubiyet':'Losses','Sen':'You','Lig Sırası':'League Position','Puan':'Points'});
+
+/* ── F8-5 / F8-6 (32. oturum): canlı EN oturumunda ekranda kalan Türkçe dizeler ──────────
+   Emoji ön ekli olanlar artık i18n.js'teki simge-öneki normalizasyonu sayesinde gövdeden
+   çözülüyor; buraya GÖVDELER eklendi (önek olduğu gibi korunur). */
+Object.assign(I18N_TR_EN,{
+'Serbest Oyuncular':'Free Agents',
+'Bakiye:':'Balance:',
+'Bakiye':'Balance',
+'Bireysel Antrenman':'Individual Training',
+'Takım Antrenmanı':'Team Training',
+'Menajer':'Manager',
+'Gelir Tahmini':'Revenue Estimate',
+'Gider Tahmini':'Expense Estimate',
+/* Kutu skor + Analiz sayfası başlıkları (EN oynayan kullanıcının en çok baktığı iki ekran) */
+'Asist':'Assists',
+'Faul':'Fouls',
+'Asist ort.':'Assists avg.',
+'Ribaund ort.':'Rebounds avg.',
+'Sayı ort.':'Points avg.',
+'Ribaund':'Rebounds',
+'Blok':'Blocks',
+'Top çalma':'Steals',
+'Top kaybı':'Turnovers',
+'Sayı':'Points'
+});
+
+/* F8-7 sonrası: düzeltilmiş tarayıcının bulduğu kalan dizeler. */
+Object.assign(I18N_TR_EN,{
+'Oyuncular':'Players',
+'· serbest':'· free agent',
+'· oyuncu ilanı':'· listed by you'
+});
+I18N_PHRASES.unshift(
+  [/Ligi altta bitiren önce seçer\. Taban\/tavan tahminleri/g,'The lowest-placed club picks first. Floor/ceiling estimates depend on'],
+  [/izci kalitene/g,'your scout quality'],
+  [/ bağlıdır/g,''],
+  [/— en iyi izcin (\d+)★/g,'— your best scout: $1★'],
+  [/— izcin yok, band çok geniş/g,'— no scout, the range is very wide']
+);
+
+/* F8-11 / F8-12 (32. oturum): yeni eklenen Ana Panel özet bloğu ve haber şablonları. */
+Object.assign(I18N_TR_EN,{
+'Durum Özeti':'Status Summary',
+'Son 5 maç':'Last 5 games',
+'Sıradaki maçlar':'Upcoming games',
+'Kadro uyarıları':'Squad alerts',
+'Başkan hedefi':'Chairman goal',
+'Henüz maç oynanmadı.':'No games played yet.',
+'✅ Kadro sağlıklı ve formda.':'✅ Squad is healthy and in form.',
+'Şu an':'Currently',
+'sakat':'injured',
+'yorgun (enerji <60)':'fatigued (energy <60)',
+'morali düşük':'low morale'
+});
+I18N_PHRASES.unshift(
+  /* Ana Panel özeti */
+  [/(\d+)G · (\d+)M$/g,'$1W · $2L'],
+  [/hedef (\d+)\. sıra/g,'target: $1. place'],
+  [/(\d+)\. sıra/g,'$1. place'],
+  [/🩹 (\d+) sakat/g,'🩹 $1 injured'],
+  [/😮‍💨 (\d+) yorgun \(enerji/g,'😮‍💨 $1 fatigued (energy'],
+  [/💬 (\d+) morali düşük/g,'💬 $1 with low morale'],
+  /* Haber şablonları (F8-11) */
+  [/kötü haber aldı: (.+?) (\d+) hafta sahalardan uzak kalacak\./g,'received bad news: $1 will be out for $2 weeks.'],
+  [/(\d+) hafta sahalardan uzak kalacak\./g,'will be out for $1 weeks.'],
+  [/son (\d+) maçını kazandı/g,'have won their last $1 games'],
+  [/ formda takım\./g,' — a team in form.'],
+  [/başkanı: "Bu sezon hedefimiz ilk (\d+)\. Kadromuza güveniyoruz\."/g,'chairman: "Our goal this season is a top-$1 finish. We trust this squad."'],
+  [/taraftarı sonuçlardan memnun değil — tribünde pankart açıldı\./g,'fans are unhappy with the results — banners were unfurled in the stands.'],
+  [/bilet fiyatlarını güncelledi; iç saha doluluğu/g,'have updated ticket prices; home attendance is at'],
+  [/altyapıdan (.+?) adlı genci A takıma çıkardı —/g,'have promoted $1 from the academy to the first team —'],
+
+  [/(\d+) yaşında\./g,'aged $1.'],
+  [/ arasında takas görüşmesi sürüyor\./g,' are in trade talks.'],
+  [/ ile <strong>/g,' and <strong>']
+);

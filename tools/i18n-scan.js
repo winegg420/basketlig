@@ -22,11 +22,46 @@ const LIMIT=Number((process.argv.find(a=>a.startsWith('--limit='))||'--limit=400
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForSelector('#loginPage',{state:'visible'});
 
+  /* F8-7: ARAÇ KÖR NOKTASI. Eski sürüm yalnız Türkçe'ye ÖZGÜ harf (çğıöşü) veya dar bir
+     sözcük listesi arıyordu; "Asist", "Faul", "Menajer", "Bakiye:", "Serbest Oyuncular"
+     gibi SALT ASCII harfli Türkçe metinleri hiç göremiyordu. Araç "kalan Türkçe yalnız özel
+     isim" raporlarken gerçek EN oturumunda 9 dize ekranda duruyordu. Sözcük listesi
+     genişletildi, simge öneki soyulup gövdeye de bakılıyor ve kapsam (kaç düğüm tarandı)
+     çıktıya yazılıyor — kapsam görünmezse kör nokta ölçülemez. */
+  let taranan=0; const kapsam=[];
   const collect=async(etiket)=>{
-    const rows=await page.evaluate(()=>{
+    const res=await page.evaluate(()=>{
       const TR=/[çğıöşüÇĞİÖŞÜ]/;
-      const WORDS=/\b(ve|için|ile|maç|takım|oyuncu|sezon|puan|kadro|sıra|gün|hafta|yok|var|bir|bu|senin|kalan|toplam|seç|kaydet|geri|ileri)\b/i;
+      const HARF='A-Za-zÇĞİÖŞÜçğıöşü';
+      /* Salt ASCII yazılabilen Türkçe arayüz sözcükleri de yakalanmalı.
+         DİKKAT: İngilizce'de aynı yazılan sözcükler (arena, transfer, moral, tempo, draft,
+         final, seri, plan, test, video, poz, stat) bu listeye GİRMEZ — yoksa çevrilmiş
+         İngilizce metinler yanlış pozitif olarak "çevrilmemiş" raporlanır. */
+      const WORDS=new RegExp('(^|[^'+HARF+'])('+[
+        've','icin','için','ile','mac','maç','takim','takım','oyuncu','sezon','puan','kadro',
+        'sira','sıra','gun','gün','hafta','yok','senin','kalan','toplam',
+        'sec','seç','kaydet','geri','ileri','asist','faul','ribaund','blok','sayi','sayı',
+        'menajer','bakiye','serbest','gelir','gider','antrenman','tahmini','oyuncular',
+        'bireysel','bilet','koc','koç','izci','sakat','enerji',
+        'kimya','potansiyel','sozlesme','sözleşme','maas','maaş','hucum','hücum','savunma',
+        'odak','yedek','ceyrek','çeyrek','uzatma','galibiyet','maglubiyet',
+        'mağlubiyet','beraberlik','sampiyon','şampiyon','gecmis','geçmiş','ayarlar',
+        'basarim','başarım','haberler','duyuru','deplasman','altyapi','altyapı','bilanco',
+        'bilanço','odul','ödül'
+      ].join('|')+')([^'+HARF+']|$)','i');
+      /* Simge/boşluk önekini soy — emoji'li dizeler de gövdesinden değerlendirilsin. */
+      const soy=(t)=>{
+        let i=0;
+        while(i<t.length){
+          const c=t[i], cc=t.codePointAt(i);
+          if(c>='0'&&c<='9') break;
+          if(c.toLowerCase()!==c.toUpperCase()) break;
+          i+=(cc>0xFFFF?2:1);
+        }
+        return i?t.slice(i).trim():t;
+      };
       const out=[];
+      let sayac=0;
       const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null);
       let n;
       while((n=w.nextNode())){
@@ -34,11 +69,15 @@ const LIMIT=Number((process.argv.find(a=>a.startsWith('--limit='))||'--limit=400
         if(!p||p.nodeName==='SCRIPT'||p.nodeName==='STYLE') continue;
         const s=(n.nodeValue||'').trim();
         if(s.length<2) continue;
-        if(TR.test(s)||WORDS.test(s)) out.push(s);
+        sayac++;
+        const gov=soy(s);
+        if(TR.test(s)||WORDS.test(s)||TR.test(gov)||WORDS.test(gov)) out.push(s);
       }
-      return out;
+      return {out,sayac};
     });
-    rows.forEach(r=>bulunan.add(etiket+' :: '+r));
+    taranan+=res.sayac;
+    kapsam.push(etiket+':'+res.sayac);
+    res.out.forEach(r=>bulunan.add(etiket+' :: '+r));
   };
   const bulunan=new Set();
   await collect('login');
@@ -83,6 +122,8 @@ const LIMIT=Number((process.argv.find(a=>a.startsWith('--limit='))||'--limit=400
 
   const arr=Array.from(bulunan).sort();
   fs.writeFileSync(path.join(__dirname,'_i18n-missing.txt'),arr.join('\n'),'utf8');
+  console.log('KAPSAM: '+kapsam.length+' ekran · '+taranan+' metin düğümü tarandı');
+  console.log('  '+kapsam.join(' · '));
   console.log('ÇEVRİLMEMİŞ (benzersiz metin düğümü):',arr.length);
   arr.slice(0,LIMIT).forEach(r=>console.log('  '+r));
   console.log('konsol hata:',errs.length,errs.slice(0,3));

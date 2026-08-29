@@ -433,6 +433,23 @@ function pseudoTeamStrength(isim,tblKey){
   return 58+(seqFromName(String(isim),tblKey||'tbl')%4200)/100+botManagerTitles(isim)*0.4;
 }
 
+/* F8-3: lig sonuçları aşırı kutuplaşmıştı — 8 maçta hem 8-0 hem 0-8 çıkıyor, galibiyet
+   standart sapması 2,61 oluyordu (saf şansta 1,41). Sebep: sonuç takım gücüne fazla bağlıydı
+   (diff×0.6) ve maça özgü form payı yoktu. Zayıf takımla başlayan oyuncu hiç kazanamıyor,
+   güçlü takım hiç kaybetmiyordu — ikisi de sıkıcı. Güç etkisi azaltıldı, her maça özgü GÜN
+   FORMU ve daha geniş gürültü eklendi.
+   Skor formülü AYRI bir saf fonksiyonda: hem motor hem tools/faz8-check.js aynı kaynağı
+   kullansın (kopyalanan formül, motor değişince sessizce eskir). */
+function cpuMatchScore(hr,ar){
+  const diff=Math.max(-35,Math.min(35,hr-ar));
+  const gunFormu=()=>rand(-6,6)+(Math.random()<0.14?rand(-7,7):0);   /* nadir "sürpriz günü" */
+  let hs=Math.round(86+rand(-10,10)+gunFormu()+diff*0.26+2);   /* +2 ev sahibi avantajı */
+  let as=Math.round(86+rand(-10,10)+gunFormu()-diff*0.26);
+  hs=Math.max(58,Math.min(125,hs));
+  as=Math.max(58,Math.min(125,as));
+  if(hs===as){ if(rand(0,1)) hs+=rand(2,6); else as+=rand(2,6); }  /* beraberlik → uzatma benzeri kırılma */
+  return {hs,as};
+}
 /** Yalnızca bot-bot maçları buradan geçer; kullanıcı maçları canlı motorla (generateMatchEvents) oynanır. */
 function simulateCpuMatch(m){
   const k=G.team&&G.team.tblKey?G.team.tblKey:'tbl';
@@ -442,16 +459,11 @@ function simulateCpuMatch(m){
   let ar=pseudoTeamStrength(m.away,k)+(drift[m.away]||0)+teamFormModifier(m.away,st)-cpuScheduleTire(m.away,st);
   /* Skor ölçeği kullanıcı maçlarıyla (canlı motor: 4×10 dk FIBA, ~85-95 sayı/takım) aynı bantta olsun ki
      lig tablosunda averaj (sayı farkı) tutarlı karşılaştırılabilsin. */
-  const diff=Math.max(-35,Math.min(35,hr-ar));
-  let hs=Math.round(86+rand(-8,8)+diff*0.6+2);   /* +2 ev sahibi avantajı */
-  let as=Math.round(86+rand(-8,8)-diff*0.6);
-  hs=Math.max(58,Math.min(125,hs));
-  as=Math.max(58,Math.min(125,as));
-  if(hs===as){ if(rand(0,1)) hs+=rand(2,6); else as+=rand(2,6); }  /* beraberlik → uzatma benzeri kırılma */
-  m.hs=hs;
-  m.as=as;
+  const sk=cpuMatchScore(hr,ar);
+  m.hs=sk.hs;
+  m.as=sk.as;
   m.played=true;
-  updateStandingsFromResult(m.home,m.away,hs,as);
+  updateStandingsFromResult(m.home,m.away,sk.hs,sk.as);
 }
 
 function simulateRoundCpuMatches(round){

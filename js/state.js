@@ -5,7 +5,13 @@ const TR_ULKE={ad:'Türkiye',b:'🇹🇷'};
 const SIDEBAR_DIV_MAX_VISIBLE=1;
 const POZLAR=['PG','SG','SF','PF','C'];
 const POZ_TR={PG:'Organizatör',SG:'Şutör',SF:'K. Forvet',PF:'G. Forvet',C:'Pivot'};
-const SEHIR=['Adana','Trabzon','Gaziantep','Samsun','Eskişehir','Diyarbakır','Kayseri','İzmir','Bursa','Konya'];
+/* F8-4: 10 şehirlik havuz 20 takımlık ligde şehir başına 3-4 takım üretiyordu (aynı ligde
+   dört Kayseri takımı) ve İstanbul, Ankara, Antalya hiç yoktu — Türkiye ligi hissi vermiyor,
+   üretilmiş görünüyordu. Havuz 24 şehre çıkarıldı; lig kurulumu ayrıca şehir başına en fazla
+   2 takım uyguluyor (genUniqueClubName). */
+const SEHIR=['İstanbul','Ankara','İzmir','Bursa','Antalya','Adana','Konya','Gaziantep',
+  'Kayseri','Eskişehir','Samsun','Trabzon','Diyarbakır','Mersin','Denizli','Sakarya',
+  'Manisa','Balıkesir','Malatya','Erzurum','Şanlıurfa','Aydın','Tekirdağ','Kocaeli'];
 /** Bot kulüp adı ekleri — genRandomClubName bunu kullanır (eksikti; yeni oyunda takım kurma çöküyordu). */
 const LIG_T=['Basket','Spor','Yıldızları','Kartalları','Aslanları','Şimşekleri','Boğaları','Panterleri','Şahinleri','Kurtları','BK','Gençlik'];
 const ILK=['Marcus','James','Kevin','Luka','Nikola','Joel','Trae','Jayson','Devin','Damian','Tyler','Darius','Cade','Paolo','Victor','Anthony','Donovan','Shai','Ja','LaMelo','Yuki','Chen','Hakeem','Kwame','Diego','Andre','Giannis','Domantas','Rudy','Jonas','Bogdan','Dennis'];

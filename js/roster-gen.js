@@ -58,7 +58,7 @@ const DEFAULT_G={
   marketSort:'ovr',
   marketSortDesc:{ovr:true,maas:true},
   kadroFilter:'all',
-  kadroView:'cards',
+  kadroView:null,   /* F8-10: null = kullanıcı seçmedi; mobilde 'list', masaüstünde 'cards' */
   youthView:'list',
   prepareMatchIx:null,
   seasonFixtures:[],
@@ -382,17 +382,28 @@ function ensureYouthStock(){
   ensureUniquePlayerNames(G.youth);
 }
 
+/** F8-2: Serbest piyasanın kalite bandı KADRONA göre belirlenir.
+    Eskiden sabit 60-97 bandı vardı: 1. gün piyasasında 96 OVR oyuncu bekliyor, piyasa
+    ortalaması (75) kadro ortalamasından (71) YÜKSEK oluyordu — yani rastgele bir serbest
+    oyuncu senin ortalama oyuncundan iyiydi. Menajerlik oyununun gerilimi kıtlıktan gelir;
+    kıtlık yoktu. Artık piyasa ortalaması kadronun altında kalır ve tavan "en iyinden +6"yı
+    aşmaz. Gerçek süperstarlar yalnız kulüp transferi (pazarlıklı, pahalı) yoluyla gelir. */
+function marketQualityBand(){
+  const ps=(G.players||[]).filter(x=>x&&x.genel!=null);
+  if(!ps.length) return {taban:55,tavan:78};
+  const ort=ps.reduce((a,x)=>a+(Number(x.genel)||0),0)/ps.length;
+  const enIyi=Math.max.apply(null,ps.map(x=>Number(x.genel)||0));
+  const tavan=Math.max(50,Math.min(97,Math.round(enIyi+6)));
+  const taban=Math.max(40,Math.min(tavan-6,Math.round(ort-18)));
+  return {taban,tavan};
+}
 function genSingleMarketPlayer(idx){
-  const r=Math.random();
-  let minG,maxG;
-  if(r<0.14){ minG=60; maxG=64; }
-  else if(r<0.32){ minG=64; maxG=69; }
-  else if(r<0.52){ minG=69; maxG=74; }
-  else if(r<0.68){ minG=74; maxG=80; }
-  else if(r<0.80){ minG=80; maxG=85; }
-  else if(r<0.91){ minG=85; maxG=90; }
-  else if(r<0.97){ minG=90; maxG=94; }
-  else { minG=92; maxG=97; }
+  const band=marketQualityBand();
+  /* Üs 1.7 dağılımı düşük OVR'a yığılır: tavan nadiren görünür, piyasa ortalaması
+     kadro ortalamasının ~%90'ında kalır. */
+  const g=Math.round(band.taban+(band.tavan-band.taban)*Math.pow(Math.random(),1.7));
+  /* Bant tavanı KESİN sınırdır: g+2 kelepçelenmezse piyasa tavanı "kadro en iyisi + 6"yı aşıyordu. */
+  const minG=Math.max(40,Math.min(band.tavan-1,g-2)), maxG=Math.min(band.tavan,g+2);
   const p=genPlayerBounded(ch(POZLAR),minG,maxG);
   p.fiyat=transferFeeKR(p);
   p.sure=rand(1,72);
@@ -426,15 +437,34 @@ function genRandomClubName(){
 }
 
 /** Grup içinde benzersiz kulüp adı üretir (aynı ligde iki özdeş isim olmasın). */
+/* F8-4: aynı ligde şehir başına en fazla 2, sonek başına en fazla 3 takım. Eskiden yalnız
+   tam ad çakışmasına bakılıyordu; 20 takımlık grupta dört Kayseri ve dört "Spor" çıkıyordu. */
 function genUniqueClubName(taken){
-  for(let tries=0;tries<300;tries++){
-    const n=genRandomClubName();
-    if(!taken.has(n)){ taken.add(n); return n; }
-  }
-  const base=genRandomClubName();
-  let n=base, k=2;
-  while(taken.has(n)){ n=base+' '+k; k++; }
-  taken.add(n); return n;
+  const sehirSay={}, sonekSay={};
+  taken.forEach(ad=>{
+    const parcalar=String(ad).split(' ');
+    const sh=parcalar[0];
+    const sn=parcalar.slice(1).join(' ');
+    sehirSay[sh]=(sehirSay[sh]||0)+1;
+    if(sn) sonekSay[sn]=(sonekSay[sn]||0)+1;
+  });
+  const dene=(sehirLimit,sonekLimit)=>{
+    for(let tries=0;tries<400;tries++){
+      const sh=ch(SEHIR), sn=ch(LIG_T), n=sh+' '+sn;
+      if(taken.has(n)) continue;
+      if((sehirSay[sh]||0)>=sehirLimit) continue;
+      if((sonekSay[sn]||0)>=sonekLimit) continue;
+      taken.add(n); return n;
+    }
+    return null;
+  };
+  /* Önce sıkı kural; havuz yetmezse kademeli gevşet (kilitlenme yok). */
+  return dene(2,3)||dene(3,4)||dene(99,99)||(function(){
+    const base=genRandomClubName();
+    let n=base, k=2;
+    while(taken.has(n)){ n=base+' '+k; k++; }
+    taken.add(n); return n;
+  })();
 }
 
 function makeSubTemplate(){

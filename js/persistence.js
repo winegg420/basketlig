@@ -342,7 +342,7 @@ function serializeGameState(){
      sessizce kaybolacak TEK yer burasıydı. Artık olduğu gibi saklanır. */
   const pl=(G.ligTeams||[]).slice();
   return{
-    v:6,   /* F7-17: v5'ten sonra rol/eğilim, playbook, soyunma odası, izci ağı, draft ve başkan hedefi eklendi */
+    v:7,   /* F8-1: eski kayıtlardaki boy/isim kozmetik düzeltmesi (v6: rol/eğilim, playbook, izci ağı, draft, başkan hedefi) */
     savedAt:new Date().toISOString(),
     coins:G.coins,wins:G.wins,losses:G.losses,points:G.points,chemistry:G.chemistry,winStreak:G.winStreak||0,careerMatches:G.careerMatches||0,careerWins:G.careerWins||0,careerLosses:G.careerLosses||0,clubRecords:G.clubRecords||{},
     team:G.team,
@@ -494,11 +494,69 @@ function migrateEconomyV4ToV5(d){
   if(d.lastEcoDay==null) d.lastEcoDay=d.gameDay||1;
 }
 
-const SAVE_VERSIONS=[2,3,4,5,6];
+const SAVE_VERSIONS=[2,3,4,5,6,7];
 /* F7-17: v5 → v6 normalizasyonu. v5'ten sonra eklenen alanlar (rol/eğilim, playbook,
    izci ağı, draft, başkan hedefi, soyunma odası krizi) boşluklarını '||' varsayılanlarıyla
    kapatıyordu; artık sürüm damgası hangi kaydın neyi içerdiğini ayırt ediyor ve eksik
    alanlar tek noktada normalleştiriliyor. */
+/* ── F8-1: v6 → v7 · ESKİ KAYITTAKİ KOZMETİK VERİ DÜZELTMESİ ──────────────────────────
+   Boy/kilo mevkiye bağlanmadan (Madde 4) ve isim–ülke uyumu gelmeden (Madde 5) önce
+   üretilmiş oyuncular, o düzeltmelerden yararlanamadan kayıtta DONMUŞ kalıyordu. Canlı
+   kayıt ölçümü: C ortalama boyu 198 cm (guard'lardan kısa), 205 cm+ 10 guard, aynı soyadı
+   4 oyuncuda (Jones ×4, Martinez ×4) — anlatımda "Martinez ıskaladı" okunamaz hale geliyor.
+
+   Bu migrasyon YALNIZ KOZMETİK alanları düzeltir: boy, kilo ve çakışan isimler.
+   Oyuncu kimliği (id), statlar, potansiyel, sözleşme, sakatlık, sezon/kariyer verisi,
+   moral ve rol/eğilimler AYNEN korunur — oyuncunun "kim olduğu" değişmez.
+
+   Boy düzeltmesi deterministiktir (seed'den türer): aynı kayıt iki kez yüklense de aynı
+   sonucu verir, kayıt her açılışta oynamaz. */
+function migrateV6ToV7(d){
+  if(!d) return;
+  const listeler=[d.players,d.youth,d.marketPlayers,d.clubTransferPlayers];
+  /* 1) Boy/kilo mevki aralığına çekilir — yalnız aralık DIŞINDA olanlar düzeltilir. */
+  listeler.forEach(list=>{
+    (list||[]).forEach(p=>{
+      if(!p||!p.poz) return;
+      const rg=(typeof HW_RANGE!=='undefined')?HW_RANGE[p.poz]:null;
+      if(!rg) return;
+      const [hR,wR]=rg;
+      const h=Number(p.boy)||0, w=Number(p.kilo)||0;
+      /* Deterministik dağılım: aynı oyuncu her zaman aynı boya düzelir. */
+      const sd=(typeof hash32==='function')?hash32(String(p.seed||p.id||p.isim||'')):0;
+      if(h<hR[0]||h>hR[1]) p.boy=hR[0]+(sd%(hR[1]-hR[0]+1));
+      if(w<wR[0]||w>wR[1]) p.kilo=wR[0]+((sd>>7)%(wR[1]-wR[0]+1));
+    });
+  });
+  /* 2) Soyadı çakışmaları — aynı soyadı en fazla 2 oyuncuda kalsın. Kullanıcının kendi
+     kadrosu (players) öncelikli korunur; fazlalar ülkesine uygun yeni adla yenilenir. */
+  try{
+    const soyad=(isim)=>String(isim||'').trim().split(/\s+/).pop().toLowerCase();
+    const sayac={};
+    const tumIsimler=new Set();
+    listeler.forEach(list=>(list||[]).forEach(p=>{ if(p&&p.isim) tumIsimler.add(p.isim); }));
+    listeler.forEach(list=>{
+      (list||[]).forEach(p=>{
+        if(!p||!p.isim) return;
+        const s=soyad(p.isim);
+        sayac[s]=(sayac[s]||0)+1;
+        if(sayac[s]<=2) return;                       /* 2'ye kadar doğal, dokunma */
+        if(typeof randomNameFor!=='function') return;
+        for(let i=0;i<60;i++){
+          const yeni=randomNameFor(p.ulke);           /* isim–ülke uyumu korunur */
+          const ys=soyad(yeni);
+          if((sayac[ys]||0)<2&&!tumIsimler.has(yeni)){
+            tumIsimler.delete(p.isim);
+            p.isim=yeni; tumIsimler.add(yeni);
+            sayac[s]--; sayac[ys]=(sayac[ys]||0)+1;
+            break;
+          }
+        }
+      });
+    });
+  }catch(e){ dbg('v7 isim',e); }
+  d.v=7;
+}
 function migrateV5ToV6(d){
   if(!d) return;
   if(!Array.isArray(d.scouts)) d.scouts=[];
@@ -574,6 +632,7 @@ function _applyGameStateInner(d){
   if((d.v|0)<4) migrateEconomyV3ToV4(d);
   if((d.v|0)<5) migrateEconomyV4ToV5(d);
   if((d.v|0)<6) migrateV5ToV6(d);
+  if((d.v|0)<7) migrateV6ToV7(d);
   G.coins=d.coins??START_KR;
   G.wins=d.wins??0;
   G.careerMatches=Number(d.careerMatches)||0; /* Paket B: kariyer maç sayacı */
@@ -608,7 +667,7 @@ function _applyGameStateInner(d){
   G.marketSort=d.marketSort||'ovr';
   G.marketSortDesc=d.marketSortDesc||{ovr:true,maas:true};
   G.kadroFilter=d.kadroFilter||'all';
-  G.kadroView=d.kadroView||'cards';
+  G.kadroView=d.kadroView||null;   /* F8-10: null = seçim yok, ekran genişliğine göre karar verilir */
   G.youthView=d.youthView||'list';
   G.prepareMatchIx=d.prepareMatchIx!=null&&d.prepareMatchIx!==undefined?d.prepareMatchIx:null;
   G.season=d.season||null;
@@ -685,7 +744,19 @@ function wireAppNav(){
   });
 }
 
+/* F8-14: mentor telemetrisi artık CHARAZAY_DEBUG ile kapalı (F7-18), ama eskiden yazılmış
+   anahtarlar kullanıcının tarayıcısında duruyor ve kota bütçesinden yer kaplıyordu.
+   Yayın modunda bir kez temizlenir. */
+function cleanupDevTelemetryKeys(){
+  try{
+    if(window.CHARAZAY_DEBUG) return;
+    ['CHARAZAY_MENTOR_SYNC','CHARAZAY_MENTOR_LAYOUT_LOG'].forEach(k=>{
+      try{ if(localStorage.getItem(k)!=null) localStorage.removeItem(k); }catch(e){}
+    });
+  }catch(e){}
+}
 function bootstrapAppUi(){
+  cleanupDevTelemetryKeys();
   document.getElementById('setupPage').style.display='none';
   document.getElementById('loginPage').style.display='none';
   document.getElementById('app').style.display='block';

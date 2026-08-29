@@ -148,16 +148,36 @@ function pushLeagueNewsLine(html){
   arr.unshift({t:Date.now(),html});
   sessionStorage.setItem(NEWS_SESSION_KEY,JSON.stringify(arr.slice(0,40)));
 }
+/* F8-11: Haberler tek şablonu tekrarlıyordu (5 haberin 4'ü aynı kalıp) ve iç grup kimliği
+   (`tb1`) kullanıcıya sızıyordu — bu bir hata ayıklama değeri, lig adı olmalı. Şablonlar
+   çeşitlendirildi: transfer, sakatlık, form serisi, başkan açıklaması, taraftar tepkisi,
+   arena/bilet, genç oyuncu çıkışı. */
+function _newsBox(renk,ikon,govde){
+  return `<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--${renk});">${ikon} ${govde}</div>`;
+}
 function maybeSimOtherTransfers(){
   if(!G.team||!G.team.tblKey) return;
   const sub=getTblState().subs[G.team.tblKey];
   if(!sub||!sub.teams) return;
   const peers=sub.teams.filter(n=>n&&n!==G.team.isim);
   if(!peers.length||Math.random()>0.5) return;
-  const t1=ch(peers);
-  const fake=`${ch(ILK)} ${ch(SY)}`;
-  const fee=rand(4000,80000);
-  pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--blue);">💰 <strong>${t1}</strong> — senin grubun (<code style="font-size:10px;">${G.team.tblKey}</code>) — <strong>${fmtn(fee)} KR</strong> ile <strong>${fake}</strong> için anlaşma duyurdu.</div>`);
+  const t1=escMatch(ch(peers));
+  const t2=escMatch(ch(peers.filter(n=>n!==t1))||t1);
+  const oyuncu=escMatch(`${ch(ILK)} ${ch(SY)}`);
+  const lig=escMatch(formatTblSlotLabel(G.team.tblKey));   /* iç anahtar değil, okunabilir lig adı */
+  const kalip=[
+    ()=>_newsBox('blue','💰',`<strong>${t1}</strong> — ${lig} — <strong>${fmtn(rand(4000,80000))} KR</strong> ile <strong>${oyuncu}</strong> için anlaşma duyurdu.`),
+    ()=>_newsBox('red','🩹',`<strong>${t1}</strong> kötü haber aldı: ${oyuncu} ${rand(2,7)} hafta sahalardan uzak kalacak.`),
+    ()=>_newsBox('green','🔥',`<strong>${t1}</strong> son ${rand(3,6)} maçını kazandı — ${lig} formda takım.`),
+    ()=>_newsBox('gold','🗣️',`<strong>${t1}</strong> başkanı: "Bu sezon hedefimiz ilk ${ch([4,6,8])}. Kadromuza güveniyoruz."`),
+    ()=>_newsBox('purple','📣',`<strong>${t1}</strong> taraftarı sonuçlardan memnun değil — tribünde pankart açıldı.`),
+    ()=>_newsBox('accent','🏟️',`<strong>${t1}</strong> bilet fiyatlarını güncelledi; iç saha doluluğu <strong>%${rand(58,96)}</strong>.`),
+    /* Not: vurgu etiketi cümleyi metin düğümlerine BÖLER ve ifade kalıbı eşleşmez —
+       çevrilmesi gereken cümleler tek düğümde tutulur (F8-5/F8-6 dersi). */
+    ()=>_newsBox('green','🌱',`<strong>${t1}</strong> altyapıdan ${oyuncu} adlı genci A takıma çıkardı — ${rand(17,19)} yaşında.`),
+    ()=>_newsBox('blue','🤝',`<strong>${t1}</strong> ile <strong>${t2}</strong> arasında takas görüşmesi sürüyor.`)
+  ];
+  pushLeagueNewsLine(ch(kalip)());
 }
 function renderDashboardNews(){
   const box=document.getElementById('newsLog');

@@ -6,6 +6,74 @@ function _teamRecordLabel(name){
     return `${row.g||0}G · ${row.m||0}M`;
   }catch(e){ return ''; }
 }
+/* F8-12: Ana Panel'de maç kartının altındaki boş alanı dolduran durum özeti.
+   Dört blok: son 5 maç formu · sıradaki 3 maç · kadro uyarıları · başkan hedefi ilerlemesi.
+   Hepsi mevcut veriden türer; yeni durum tutulmaz. */
+function renderDashboardSummary(){
+  const box=document.getElementById('dashSummary');
+  if(!box||!G.team) return;
+  const kutu=(baslik,govde)=>`<div style="background:var(--bg3);border-radius:10px;padding:10px 12px;">
+      <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">${baslik}</div>
+      <div style="font-size:12px;line-height:1.6;">${govde}</div></div>`;
+  const parts=[];
+  try{
+    /* 1) Son 5 maç formu */
+    const u=G.team.isim;
+    const oynanan=((G.season&&G.season.matches)||[]).filter(m=>m&&m.played&&(m.home===u||m.away===u));
+    const son5=oynanan.slice(-5);
+    if(son5.length){
+      const rozet=son5.map(m=>{
+        const bizEv=m.home===u;
+        const bz=bizEv?m.hs:m.as, rk=bizEv?m.as:m.hs;
+        const g=bz>rk;
+        return `<span title="${escMatch(bizEv?m.away:m.home)} ${bz}-${rk}" style="display:inline-block;width:20px;height:20px;line-height:20px;text-align:center;border-radius:5px;font-size:10px;font-weight:800;margin-right:3px;background:${g?'rgba(34,197,94,0.25)':'rgba(239,68,68,0.25)'};color:${g?'#4ade80':'#fca5a5'};">${g?'G':'M'}</span>`;
+      }).join('');
+      const galip=son5.filter(m=>{const e=m.home===u;return (e?m.hs:m.as)>(e?m.as:m.hs);}).length;
+      parts.push(kutu('Son 5 maç',rozet+`<div style="margin-top:5px;color:var(--text2);">${galip}G · ${son5.length-galip}M</div>`));
+    } else {
+      parts.push(kutu('Son 5 maç','<span style="color:var(--text2);">Henüz maç oynanmadı.</span>'));
+    }
+
+    /* 2) Sıradaki 3 maç */
+    const gelecek=((G.season&&G.season.matches)||[]).filter(m=>m&&!m.played&&(m.home===u||m.away===u))
+      .sort((a,b)=>(a.seasonMatchIx||0)-(b.seasonMatchIx||0)).slice(0,3);
+    if(gelecek.length){
+      const satir=gelecek.map(m=>{
+        const bizEv=m.home===u;
+        const rakip=bizEv?m.away:m.home;
+        return `<div>${bizEv?'🏠':'✈️'} <strong>${escMatch(rakip)}</strong> <span style="color:var(--text2);">· Tur ${m.round||'?'}</span></div>`;
+      }).join('');
+      parts.push(kutu('Sıradaki maçlar',satir));
+    }
+
+    /* 3) Kadro uyarıları */
+    const ps=(G.players||[]);
+    const sakat=ps.filter(p=>typeof playerIsInjured==='function'&&playerIsInjured(p));
+    const yorgun=ps.filter(p=>Number(p.enerji!=null?p.enerji:100)<60&&!(typeof playerIsInjured==='function'&&playerIsInjured(p)));
+    const moralsiz=ps.filter(p=>Number(p.mood!=null?p.mood:70)<45);
+    const uyari=[];
+    if(sakat.length) uyari.push(`<div style="color:#fca5a5;">🩹 ${sakat.length} sakat<span style="color:var(--text2);"> — ${escMatch(sakat[0].isim)}${sakat.length>1?' +'+(sakat.length-1):''}</span></div>`);
+    if(yorgun.length) uyari.push(`<div style="color:var(--gold);">😮‍💨 ${yorgun.length} yorgun (enerji &lt;60)</div>`);
+    if(moralsiz.length) uyari.push(`<div style="color:var(--purple);">💬 ${moralsiz.length} morali düşük</div>`);
+    parts.push(kutu('Kadro uyarıları',uyari.length?uyari.join(''):'<span style="color:var(--green);">✅ Kadro sağlıklı ve formda.</span>'));
+
+    /* 4) Başkan hedefi ilerlemesi */
+    const pt=G.presidentTarget;
+    if(pt&&pt.targetRank){
+      let sira='—';
+      try{
+        const rows=buildLeagueRows(G.team.tblKey||'tbl');
+        const ix=rows.findIndex(r=>r.isUser);
+        if(ix>=0) sira=ix+1;
+      }catch(e){}
+      const iyi=(sira!=='—'&&sira<=pt.targetRank);
+      parts.push(kutu('Başkan hedefi',
+        `<div>${escMatch(pt.label||'')}</div>
+         <div style="margin-top:4px;">Şu an <strong style="color:${iyi?'var(--green)':'var(--red)'};">${sira}. sıra</strong> · hedef ${pt.targetRank}. sıra</div>`));
+    }
+  }catch(e){ dbg('dash summary',e); }
+  box.innerHTML=parts.join('');
+}
 function renderDashboardNextMatch(){
   const nh=document.getElementById('nextHome');
   const na=document.getElementById('nextAway');
@@ -751,7 +819,16 @@ function renderRoster(){
   let f=filter==='all'?G.players.slice():G.players.filter(p=>p.poz===filter);
   f.sort((a,b)=>(b.genel||0)-(a.genel||0));
   const grid=document.getElementById('rosterGrid');
+  /* F8-10: 390×844'te tek oyuncu kartı ~1,5 ekran; 15 kişilik kadro 20+ ekran kaydırma
+     demek. Liste görünümü zaten var ve mobil için çok daha uygun — kullanıcı bir tercih
+     yapmadıysa mobilde varsayılan LİSTE olur (Kart'a elle geçebilir). */
+  if(!G.kadroView&&typeof window!=='undefined'&&window.innerWidth<=768) G.kadroView='list';
   const view=G.kadroView||'cards';
+  /* Aktif görünüm butonu durumla uyumlu kalsın. */
+  try{
+    const bC=document.getElementById('kadroViewCard'), bL=document.getElementById('kadroViewList');
+    if(bC&&bL){ bC.classList.toggle('active',view!=='list'); bL.classList.toggle('active',view==='list'); }
+  }catch(e){}
   if(view==='list'){
     grid.className='roster-as-list';
     grid.innerHTML=f.map(p=>renderRosterListRow(p)).join('');

@@ -1251,7 +1251,7 @@ function showPage(page,btn){
     if(pt) pt.textContent=PAGE_TITLES[page]||'';
     if(window.innerWidth<=768)closeSidebar();
     if(page==='lig')renderLig();
-    if(page==='dashboard'){ renderDashboardNews(); renderDashboardNextMatch(); }
+    if(page==='dashboard'){ renderDashboardNews(); renderDashboardNextMatch(); if(typeof renderDashboardSummary==='function') renderDashboardSummary(); }
     if(page==='takim'){
       renderTeamDetailPage();
       const t0=document.querySelector('#teamPageTabs .td-tab');
