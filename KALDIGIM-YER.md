@@ -3,7 +3,7 @@ Son güncelleme: 2026-08-29 · 32. oturum — **açık iş yok, tüm testler ye�
 
 Talep belgeleri: `REVIZE-PAKETI.md` (FAZ 1-6) · `REVIZE-PAKETI-FAZ7.md` (maç dışı) ·
 `REVIZE-PAKETI-FAZ8.md` (oynanış testi) — **üçü de baştan sona uygulandı ve ölçülerek doğrulandı**.
-Protokol: `DEVAM-ET.md` · Oturum günlüğü: `PROGRESS.md` (32. oturum + dört ek)
+Protokol: `DEVAM-ET.md` · Oturum günlüğü: `PROGRESS.md` (32. oturum + beş ek)
 
 ## Durum: TEMİZ
 
@@ -69,7 +69,7 @@ Talep belgelerinde **açık madde kalmadı**. Sıradakiler kapsam kararı gerekt
   `I18N_PHRASES` kalıbı eşleşmez (FAZ 8'de üç haber şablonu bu yüzden yeniden yazıldı).
 - **`i18n-scan.js` sözcük listesine İngilizce'de aynı yazılan kelimeleri EKLEME** (arena,
   transfer, moral, tempo) — çevrilmiş metinler yanlış pozitif olur.
-- **Kayıt sürümü v7.** `SAVE_VERSIONS=[2,3,4,5,6,7]`; `migrateV5ToV6` + `migrateV6ToV7`.
+- **Kayıt sürümü v8.** `SAVE_VERSIONS=[2,3,4,5,6,7,8]`; `migrateV5ToV6` + `migrateV6ToV7` (boy/isim) + `migrateV7ToV8` (zorluk).
 - **Yeni kariyerin tek sıfırlama kaynağı `DEFAULT_G`** (`roster-gen.js`); yeni kalıcı alanı
   literale ekle, `createTeam` içine satır yazma.
 - **Piyasa kalitesi kadroya bağlı** (`marketQualityBand`): tavan = kadro en iyisi + 6, kesin
@@ -78,7 +78,7 @@ Talep belgelerinde **açık madde kalmadı**. Sıradakiler kapsam kararı gerekt
   eklerken `botClubEnsureDepth` içindeki geriye dönük doldurmaya da ekle. `BOT_ROSTER_DIST`
   başındaki İLK 7 SIRA tarihseldir — id/seed'ler ona bağlı, değiştirme.
 - **`cpuMatchScore()` tek kaynaktır** — bot-bot skor formülünü test de oradan çağırır.
-- **Script sürüm etiketi** her yayın öncesi artırılmalı (`?v=38` → 39…); `faz8-check` A7 sınıyor.
+- **Script sürüm etiketi** her yayın öncesi artırılmalı — şu an **`?v=39`**; `faz8-check` A7 sınıyor.
 - **Fontlar yerel** (`assets/fonts/`) — yeni Google Fonts `<link>` eklenmemeli.
 - **`S._dbgOutlet`** yalnız `sunum-check` için bırakılmış teşhis damgasıdır, silme.
 - **`js/league.js` CRLF**, `charazay2.0.html` KARIŞIK (CRLF+LF), diğer modüller LF. Toplu
