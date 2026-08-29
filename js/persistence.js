@@ -197,6 +197,11 @@ function openSettingsModal(){
   showAppModal(`<div class="modal-title">⚙️ Ayarlar</div>
     <div style="display:flex;flex-direction:column;gap:12px;">
       <div style="padding:12px;background:var(--bg3);border-radius:10px;">
+        <div style="font-size:13px;margin-bottom:7px;">🎚️ Zorluk Seviyesi</div>
+        <div id="ayarDifficulty" class="diff-picker"></div>
+        <div id="ayarDifficultyDesc" style="font-size:10px;color:var(--text2);margin-top:6px;line-height:1.5;"></div>
+      </div>
+      <div style="padding:12px;background:var(--bg3);border-radius:10px;">
         <div style="font-size:13px;margin-bottom:7px;">🌍 Dil / Language</div>
         <div class="lang-row" style="justify-content:flex-start;">${langPickerHtml()}</div>
         <div style="font-size:10px;color:var(--text2);margin-top:6px;">Dil değişince oyun yeniden yüklenir — ilerlemen korunur.</div>
@@ -342,7 +347,7 @@ function serializeGameState(){
      sessizce kaybolacak TEK yer burasıydı. Artık olduğu gibi saklanır. */
   const pl=(G.ligTeams||[]).slice();
   return{
-    v:7,   /* F8-1: eski kayıtlardaki boy/isim kozmetik düzeltmesi (v6: rol/eğilim, playbook, izci ağı, draft, başkan hedefi) */
+    v:8,   /* B5: zorluk seviyesi eklendi (v7: boy/isim kozmetik düzeltmesi) */
     savedAt:new Date().toISOString(),
     coins:G.coins,wins:G.wins,losses:G.losses,points:G.points,chemistry:G.chemistry,winStreak:G.winStreak||0,careerMatches:G.careerMatches||0,careerWins:G.careerWins||0,careerLosses:G.careerLosses||0,clubRecords:G.clubRecords||{},
     team:G.team,
@@ -355,6 +360,7 @@ function serializeGameState(){
     gameDay:G.gameDay,managerName:G.managerName,managerRep:G.managerRep||0,managerHistory:G.managerHistory||[],joinedAt:G.joinedAt,lastActive:new Date().toISOString(),
     marketPozFilter:G.marketPozFilter,marketSort:G.marketSort,marketSortDesc:G.marketSortDesc||{ovr:true,maas:true},
     kadroFilter:G.kadroFilter,kadroView:G.kadroView,youthView:G.youthView||'list',
+    difficulty:G.difficulty||'normal',   /* B5 */
     prepareMatchIx:G.prepareMatchIx!=null?G.prepareMatchIx:null,
     season:G.season,seasonFixtures:G.seasonFixtures||[],playoff:G.playoff||null,cup:G.cup||null,cupHistory:G.cupHistory||[],
     settings:G.settings||{sound:true,autosaveSec:12},
@@ -494,7 +500,7 @@ function migrateEconomyV4ToV5(d){
   if(d.lastEcoDay==null) d.lastEcoDay=d.gameDay||1;
 }
 
-const SAVE_VERSIONS=[2,3,4,5,6,7];
+const SAVE_VERSIONS=[2,3,4,5,6,7,8];
 /* F7-17: v5 → v6 normalizasyonu. v5'ten sonra eklenen alanlar (rol/eğilim, playbook,
    izci ağı, draft, başkan hedefi, soyunma odası krizi) boşluklarını '||' varsayılanlarıyla
    kapatıyordu; artık sürüm damgası hangi kaydın neyi içerdiğini ayırt ediyor ve eksik
@@ -511,6 +517,13 @@ const SAVE_VERSIONS=[2,3,4,5,6,7];
 
    Boy düzeltmesi deterministiktir (seed'den türer): aynı kayıt iki kez yüklense de aynı
    sonucu verir, kayıt her açılışta oynamaz. */
+/* B5: v7 → v8 · zorluk seviyesi alanı. Eski kayıtlar NORMAL'de devam eder — normal tüm
+   çarpanları 1/0 olduğu için davranışları birebir korunur. */
+function migrateV7ToV8(d){
+  if(!d) return;
+  if(typeof DIFFICULTY==='undefined'||!DIFFICULTY[d.difficulty]) d.difficulty='normal';
+  d.v=8;
+}
 function migrateV6ToV7(d){
   if(!d) return;
   const listeler=[d.players,d.youth,d.marketPlayers,d.clubTransferPlayers];
@@ -633,6 +646,7 @@ function _applyGameStateInner(d){
   if((d.v|0)<5) migrateEconomyV4ToV5(d);
   if((d.v|0)<6) migrateV5ToV6(d);
   if((d.v|0)<7) migrateV6ToV7(d);
+  if((d.v|0)<8) migrateV7ToV8(d);
   G.coins=d.coins??START_KR;
   G.wins=d.wins??0;
   G.careerMatches=Number(d.careerMatches)||0; /* Paket B: kariyer maç sayacı */
@@ -668,6 +682,7 @@ function _applyGameStateInner(d){
   G.marketSortDesc=d.marketSortDesc||{ovr:true,maas:true};
   G.kadroFilter=d.kadroFilter||'all';
   G.kadroView=d.kadroView||null;   /* F8-10: null = seçim yok, ekran genişliğine göre karar verilir */
+  G.difficulty=(typeof DIFFICULTY!=='undefined'&&DIFFICULTY[d.difficulty])?d.difficulty:'normal';   /* B5 */
   G.youthView=d.youthView||'list';
   G.prepareMatchIx=d.prepareMatchIx!=null&&d.prepareMatchIx!==undefined?d.prepareMatchIx:null;
   G.season=d.season||null;

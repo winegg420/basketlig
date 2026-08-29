@@ -780,3 +780,20 @@ I18N_PHRASES.unshift(
   [/ arasında takas görüşmesi sürüyor\./g,' are in trade talks.'],
   [/ ile <strong>/g,' and <strong>']
 );
+
+/* B5 (FAZ 6): zorluk seviyesi arayüzü. */
+Object.assign(I18N_TR_EN,{
+'Zorluk Seviyesi':'Difficulty',
+'🎚️ Zorluk Seviyesi':'🎚️ Difficulty',
+'Kolay':'Easy','Normal':'Normal','Zor':'Hard',
+'Daha geniş bütçe, daha yumuşak rakipler, az sakatlık. Oyunu öğrenmek için.':'A bigger budget, softer opponents, fewer injuries. Good for learning the game.',
+'Dengeli deneyim — tasarlanmış zorluk.':'A balanced experience — the intended challenge.',
+'Dar bütçe, güçlü rakipler, sık sakatlık. Deneyimli menajerler için.':'A tight budget, strong opponents, frequent injuries. For experienced managers.'
+});
+I18N_PHRASES.unshift(
+  [/Zorluk: Kolay/g,'Difficulty: Easy'],
+  [/Zorluk: Normal/g,'Difficulty: Normal'],
+  [/Zorluk: Zor/g,'Difficulty: Hard'],
+  [/şampiyonluk yarışı — ilk (\d+)/g,'title race — top $1'],
+  [/playoff \(ilk (\d+)\)/g,'playoffs (top $1)']
+);

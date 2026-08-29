@@ -73,6 +73,7 @@ const DEFAULT_G={
   lineup:null,
   ticketPrice:2,
   tutorialDone:false,
+  difficulty:'normal',   /* B5: zorluk seviyesi — kariyer başında seçilir */
   /* Aşağıdakiler literalde yoktu ama kariyer boyunca doluyor — sıfırlamaya dahil olmaları için
      varsayılanları burada duruyor (F7-8). */
   youthFacility:{s:1},
@@ -393,7 +394,9 @@ function marketQualityBand(){
   if(!ps.length) return {taban:55,tavan:78};
   const ort=ps.reduce((a,x)=>a+(Number(x.genel)||0),0)/ps.length;
   const enIyi=Math.max.apply(null,ps.map(x=>Number(x.genel)||0));
-  const tavan=Math.max(50,Math.min(97,Math.round(enIyi+6)));
+  /* B5: zor modda piyasa tavanı kısılır, kolayda biraz açılır. */
+  const zorPay=(typeof difficultyCfg==='function')?(difficultyCfg().piyasa||0):0;
+  const tavan=Math.max(50,Math.min(97,Math.round(enIyi+6+zorPay)));
   const taban=Math.max(40,Math.min(tavan-6,Math.round(ort-18)));
   return {taban,tavan};
 }

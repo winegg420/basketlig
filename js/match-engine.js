@@ -1847,7 +1847,9 @@ function generateMatchEvents(rakip, opts){
   const oq=Math.max(0,Math.min(1,(oppStr-58)/42));
   const strengthEdge=Math.max(-0.16,Math.min(0.16,(uq-oq)*0.22));
   /* Madde 8/9: koç skoru + menajer itibarı küçük ek çarpan olarak kullanıcı lehine (maks ~+%5.5). */
-  const uMul=(1+strengthEdge)*teamBonusFactor(), oMul=1-strengthEdge;
+  /* B5: zorluk rakip gücünü ölçekler (normal = 1, davranış değişmez). */
+  const _zorRakip=(typeof difficultyCfg==='function')?(difficultyCfg().rakip||1):1;
+  const uMul=(1+strengthEdge)*teamBonusFactor(), oMul=(1-strengthEdge)*_zorRakip;
   /* Taktik etkisi (Faz 3: derinleştirildi): tempo·hücum odağı·savunma stili·top yükleme·yıldız eşleştirme.
      VARSAYILANLAR (tempo=normal, odak=dengeli, savunma=adam, yükleme yok, eşleştirme kapalı) tam olarak
      eski davranışı üretir — skor bandı (~86-90) korunur; yalnız kullanıcı seçimleri dengeyi kaydırır. */

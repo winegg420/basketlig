@@ -1,615 +1,653 @@
+canli-mac :: Adana Şahinleri
+canli-mac :: Adana Şahinleri — Manisa BK
 canli-mac :: Ahmet Yıldız
-canli-mac :: Aydın BK
-canli-mac :: Aydın Şimşekleri
-canli-mac :: Balıkesir Şahinleri
-canli-mac :: Bursa Kurtları
-canli-mac :: Denizli Şahinleri
-canli-mac :: Denizli Şahinleri — Sakarya Basket
-canli-mac :: Diyarbakır Boğaları
-canli-mac :: Diyarbakır Boğaları — Aydın Şimşekleri
-canli-mac :: Diyarbakır Yıldızları
-canli-mac :: Gaziantep Gençlik
-canli-mac :: Gaziantep Gençlik — Trabzon Kurtları
-canli-mac :: Malatya Kurtları
-canli-mac :: Manisa Yıldızları
-canli-mac :: Trabzon Kurtları
-canli-mac :: Trabzon Şahinleri
-canli-mac :: Trabzon Şahinleri — Diyarbakır Yıldızları
-canli-mac :: Türkiye • 21 yrs • 219cm
-canli-mac :: Türkiye • 25 yrs • 204cm
-canli-mac :: Türkiye • 30 yrs • 210cm
-canli-mac :: İstanbul Kartalları
-canli-mac :: İzmir Spor
-canli-mac :: 🇵🇹 João Gonçalves
-canli-mac :: 🇹🇷 Mehmet Doğan
+canli-mac :: Ankara Yıldızları
+canli-mac :: Antalya Gençlik
+canli-mac :: Denizli Aslanları
+canli-mac :: Denizli Yıldızları
+canli-mac :: Furkan Kılıç
+canli-mac :: Furkan Kılıç (SG) — Overall: 74
+canli-mac :: Furkan Kılıç (SG) → PG
+canli-mac :: Furkan Kılıç (SG) → SF
+canli-mac :: Furkan Kılıç (SG·OVR 74)
+canli-mac :: Kayseri Şimşekleri
+canli-mac :: Kayseri Şimşekleri — Malatya Boğaları
+canli-mac :: Kocaeli Gençlik
+canli-mac :: Kocaeli Gençlik — Denizli Yıldızları
+canli-mac :: Malatya Boğaları
+canli-mac :: Malatya Spor — Sakarya Gençlik
+canli-mac :: Sakarya Boğaları
+canli-mac :: Sakarya Gençlik
+canli-mac :: Samsun Kartalları
+canli-mac :: Türkiye • 18 yrs • 208cm
+canli-mac :: Türkiye • 23 yrs • 193cm
+canli-mac :: İstanbul Şahinleri
+canli-mac :: ⚡ Kılıç – Ridder (SG role clash)
+canli-mac :: 🇹🇷 Can Şen
 canli-mac :: 🇹🇷 Türkiye
-canli-mac :: 🇹🇷 Türkiye • 30 yrs
+canli-mac :: 🇹🇷 Türkiye • 24 yrs
+canli-mac :: 🇹🇷 Türkiye • 34 yrs
 canli-mac :: 🇹🇷 Türkçe
-canli-mac :: 🏛️ Aydın BK from
-canli-mac :: 🏛️ Aydın Şimşekleri from
-canli-mac :: 🏛️ Balıkesir Şahinleri from
-canli-mac :: 🏛️ Bursa Kurtları from
-canli-mac :: 🏛️ Denizli Şahinleri from
-canli-mac :: 🏛️ Diyarbakır Yıldızları from
-canli-mac :: 🏛️ Malatya Kurtları from
-canli-mac :: 🏛️ İstanbul Kartalları from
-canli-mac :: 🔔 Start of Q1 — Ankara Eagles 0 - 0 İzmir Spor.
+canli-mac :: 🏛️ Adana Şahinleri from
+canli-mac :: 🏛️ Antalya Gençlik from
+canli-mac :: 🏛️ Denizli Yıldızları from
+canli-mac :: 🏛️ Kocaeli Gençlik from
+canli-mac :: 🏛️ Malatya Boğaları from
+canli-mac :: 🏛️ Sakarya Gençlik from
+canli-mac :: 🏛️ Samsun Kartalları from
+canli-mac :: 🏛️ İstanbul Şahinleri from
+canli-mac :: 🔔 Start of Q1 — Ankara Eagles 0 - 0 Malatya Boğaları.
 login :: 🇹🇷 Türkçe
+modal:ayarlar :: Adana Şahinleri
+modal:ayarlar :: Adana Şahinleri — Manisa BK
 modal:ayarlar :: Ahmet Yıldız
-modal:ayarlar :: Aydın BK
-modal:ayarlar :: Aydın Şimşekleri
-modal:ayarlar :: Balıkesir Şahinleri
-modal:ayarlar :: Bursa Kurtları
-modal:ayarlar :: Denizli Şahinleri
-modal:ayarlar :: Denizli Şahinleri — Sakarya Basket
-modal:ayarlar :: Diyarbakır Boğaları
-modal:ayarlar :: Diyarbakır Boğaları — Aydın Şimşekleri
-modal:ayarlar :: Diyarbakır Yıldızları
-modal:ayarlar :: Gaziantep Gençlik
-modal:ayarlar :: Gaziantep Gençlik — Trabzon Kurtları
-modal:ayarlar :: Malatya Kurtları
-modal:ayarlar :: Manisa Yıldızları
-modal:ayarlar :: Trabzon Kurtları
-modal:ayarlar :: Trabzon Şahinleri
-modal:ayarlar :: Trabzon Şahinleri — Diyarbakır Yıldızları
-modal:ayarlar :: Türkiye • 21 yrs • 219cm
-modal:ayarlar :: Türkiye • 25 yrs • 204cm
-modal:ayarlar :: Türkiye • 30 yrs • 210cm
-modal:ayarlar :: İstanbul Kartalları
-modal:ayarlar :: İzmir Spor
-modal:ayarlar :: 🇵🇹 João Gonçalves
-modal:ayarlar :: 🇹🇷 Mehmet Doğan
+modal:ayarlar :: Ankara Yıldızları
+modal:ayarlar :: Antalya Gençlik
+modal:ayarlar :: Denizli Aslanları
+modal:ayarlar :: Denizli Yıldızları
+modal:ayarlar :: Furkan Kılıç
+modal:ayarlar :: Furkan Kılıç (SG) — Overall: 74
+modal:ayarlar :: Furkan Kılıç (SG) → PG
+modal:ayarlar :: Furkan Kılıç (SG) → SF
+modal:ayarlar :: Furkan Kılıç (SG·OVR 74)
+modal:ayarlar :: Kayseri Şimşekleri
+modal:ayarlar :: Kayseri Şimşekleri — Malatya Boğaları
+modal:ayarlar :: Kocaeli Gençlik
+modal:ayarlar :: Kocaeli Gençlik — Denizli Yıldızları
+modal:ayarlar :: Malatya Boğaları
+modal:ayarlar :: Malatya Spor — Sakarya Gençlik
+modal:ayarlar :: Sakarya Boğaları
+modal:ayarlar :: Sakarya Gençlik
+modal:ayarlar :: Samsun Kartalları
+modal:ayarlar :: Türkiye • 18 yrs • 208cm
+modal:ayarlar :: Türkiye • 23 yrs • 193cm
+modal:ayarlar :: İstanbul Şahinleri
+modal:ayarlar :: ⚡ Kılıç – Ridder (SG role clash)
+modal:ayarlar :: 🇹🇷 Can Şen
 modal:ayarlar :: 🇹🇷 Türkiye
-modal:ayarlar :: 🇹🇷 Türkiye • 30 yrs
+modal:ayarlar :: 🇹🇷 Türkiye • 24 yrs
+modal:ayarlar :: 🇹🇷 Türkiye • 34 yrs
 modal:ayarlar :: 🇹🇷 Türkçe
-modal:ayarlar :: 🏛️ Aydın BK from
-modal:ayarlar :: 🏛️ Aydın Şimşekleri from
-modal:ayarlar :: 🏛️ Balıkesir Şahinleri from
-modal:ayarlar :: 🏛️ Bursa Kurtları from
-modal:ayarlar :: 🏛️ Denizli Şahinleri from
-modal:ayarlar :: 🏛️ Diyarbakır Yıldızları from
-modal:ayarlar :: 🏛️ Malatya Kurtları from
-modal:ayarlar :: 🏛️ İstanbul Kartalları from
+modal:ayarlar :: 🏛️ Adana Şahinleri from
+modal:ayarlar :: 🏛️ Antalya Gençlik from
+modal:ayarlar :: 🏛️ Denizli Yıldızları from
+modal:ayarlar :: 🏛️ Kocaeli Gençlik from
+modal:ayarlar :: 🏛️ Malatya Boğaları from
+modal:ayarlar :: 🏛️ Sakarya Gençlik from
+modal:ayarlar :: 🏛️ Samsun Kartalları from
+modal:ayarlar :: 🏛️ İstanbul Şahinleri from
+modal:basarim :: Adana Şahinleri
+modal:basarim :: Adana Şahinleri — Manisa BK
 modal:basarim :: Ahmet Yıldız
-modal:basarim :: Aydın BK
-modal:basarim :: Aydın Şimşekleri
-modal:basarim :: Balıkesir Şahinleri
-modal:basarim :: Bursa Kurtları
-modal:basarim :: Denizli Şahinleri
-modal:basarim :: Denizli Şahinleri — Sakarya Basket
-modal:basarim :: Diyarbakır Boğaları
-modal:basarim :: Diyarbakır Boğaları — Aydın Şimşekleri
-modal:basarim :: Diyarbakır Yıldızları
-modal:basarim :: Gaziantep Gençlik
-modal:basarim :: Gaziantep Gençlik — Trabzon Kurtları
-modal:basarim :: Malatya Kurtları
-modal:basarim :: Manisa Yıldızları
-modal:basarim :: Trabzon Kurtları
-modal:basarim :: Trabzon Şahinleri
-modal:basarim :: Trabzon Şahinleri — Diyarbakır Yıldızları
-modal:basarim :: Türkiye • 21 yrs • 219cm
-modal:basarim :: Türkiye • 25 yrs • 204cm
-modal:basarim :: Türkiye • 30 yrs • 210cm
-modal:basarim :: İstanbul Kartalları
-modal:basarim :: İzmir Spor
-modal:basarim :: 🇵🇹 João Gonçalves
-modal:basarim :: 🇹🇷 Mehmet Doğan
+modal:basarim :: Ankara Yıldızları
+modal:basarim :: Antalya Gençlik
+modal:basarim :: Denizli Aslanları
+modal:basarim :: Denizli Yıldızları
+modal:basarim :: Furkan Kılıç
+modal:basarim :: Furkan Kılıç (SG) — Overall: 74
+modal:basarim :: Furkan Kılıç (SG) → PG
+modal:basarim :: Furkan Kılıç (SG) → SF
+modal:basarim :: Furkan Kılıç (SG·OVR 74)
+modal:basarim :: Kayseri Şimşekleri
+modal:basarim :: Kayseri Şimşekleri — Malatya Boğaları
+modal:basarim :: Kocaeli Gençlik
+modal:basarim :: Kocaeli Gençlik — Denizli Yıldızları
+modal:basarim :: Malatya Boğaları
+modal:basarim :: Malatya Spor — Sakarya Gençlik
+modal:basarim :: Sakarya Boğaları
+modal:basarim :: Sakarya Gençlik
+modal:basarim :: Samsun Kartalları
+modal:basarim :: Türkiye • 18 yrs • 208cm
+modal:basarim :: Türkiye • 23 yrs • 193cm
+modal:basarim :: İstanbul Şahinleri
+modal:basarim :: ⚡ Kılıç – Ridder (SG role clash)
+modal:basarim :: 🇹🇷 Can Şen
 modal:basarim :: 🇹🇷 Türkiye
-modal:basarim :: 🇹🇷 Türkiye • 30 yrs
+modal:basarim :: 🇹🇷 Türkiye • 24 yrs
+modal:basarim :: 🇹🇷 Türkiye • 34 yrs
 modal:basarim :: 🇹🇷 Türkçe
-modal:basarim :: 🏛️ Aydın BK from
-modal:basarim :: 🏛️ Aydın Şimşekleri from
-modal:basarim :: 🏛️ Balıkesir Şahinleri from
-modal:basarim :: 🏛️ Bursa Kurtları from
-modal:basarim :: 🏛️ Denizli Şahinleri from
-modal:basarim :: 🏛️ Diyarbakır Yıldızları from
-modal:basarim :: 🏛️ Malatya Kurtları from
-modal:basarim :: 🏛️ İstanbul Kartalları from
+modal:basarim :: 🏛️ Adana Şahinleri from
+modal:basarim :: 🏛️ Antalya Gençlik from
+modal:basarim :: 🏛️ Denizli Yıldızları from
+modal:basarim :: 🏛️ Kocaeli Gençlik from
+modal:basarim :: 🏛️ Malatya Boğaları from
+modal:basarim :: 🏛️ Sakarya Gençlik from
+modal:basarim :: 🏛️ Samsun Kartalları from
+modal:basarim :: 🏛️ İstanbul Şahinleri from
+modal:draft :: Adana Şahinleri
+modal:draft :: Adana Şahinleri — Manisa BK
 modal:draft :: Ahmet Yıldız
-modal:draft :: Aydın BK
-modal:draft :: Aydın Şimşekleri
-modal:draft :: Balıkesir Şahinleri
-modal:draft :: Bursa Kurtları
-modal:draft :: Denizli Şahinleri
-modal:draft :: Denizli Şahinleri — Sakarya Basket
-modal:draft :: Diyarbakır Boğaları
-modal:draft :: Diyarbakır Boğaları — Aydın Şimşekleri
-modal:draft :: Diyarbakır Yıldızları
-modal:draft :: Gaziantep Gençlik
-modal:draft :: Gaziantep Gençlik — Trabzon Kurtları
-modal:draft :: Malatya Kurtları
-modal:draft :: Manisa Yıldızları
-modal:draft :: Trabzon Kurtları
-modal:draft :: Trabzon Şahinleri
-modal:draft :: Trabzon Şahinleri — Diyarbakır Yıldızları
-modal:draft :: Türkiye • 21 yrs • 219cm
-modal:draft :: Türkiye • 25 yrs • 204cm
-modal:draft :: Türkiye • 30 yrs • 210cm
-modal:draft :: İstanbul Kartalları
-modal:draft :: İzmir Spor
-modal:draft :: 🇵🇹 João Gonçalves
-modal:draft :: 🇹🇷 Mehmet Doğan
+modal:draft :: Ankara Yıldızları
+modal:draft :: Antalya Gençlik
+modal:draft :: Denizli Aslanları
+modal:draft :: Denizli Yıldızları
+modal:draft :: Furkan Kılıç
+modal:draft :: Furkan Kılıç (SG) — Overall: 74
+modal:draft :: Furkan Kılıç (SG) → PG
+modal:draft :: Furkan Kılıç (SG) → SF
+modal:draft :: Furkan Kılıç (SG·OVR 74)
+modal:draft :: Kayseri Şimşekleri
+modal:draft :: Kayseri Şimşekleri — Malatya Boğaları
+modal:draft :: Kocaeli Gençlik
+modal:draft :: Kocaeli Gençlik — Denizli Yıldızları
+modal:draft :: Malatya Boğaları
+modal:draft :: Malatya Spor — Sakarya Gençlik
+modal:draft :: Sakarya Boğaları
+modal:draft :: Sakarya Gençlik
+modal:draft :: Samsun Kartalları
+modal:draft :: Türkiye • 18 yrs • 208cm
+modal:draft :: Türkiye • 23 yrs • 193cm
+modal:draft :: İstanbul Şahinleri
+modal:draft :: ⚡ Kılıç – Ridder (SG role clash)
+modal:draft :: 🇹🇷 Can Şen
 modal:draft :: 🇹🇷 Türkiye
-modal:draft :: 🇹🇷 Türkiye • 30 yrs
+modal:draft :: 🇹🇷 Türkiye • 24 yrs
+modal:draft :: 🇹🇷 Türkiye • 34 yrs
 modal:draft :: 🇹🇷 Türkçe
-modal:draft :: 🏛️ Aydın BK from
-modal:draft :: 🏛️ Aydın Şimşekleri from
-modal:draft :: 🏛️ Balıkesir Şahinleri from
-modal:draft :: 🏛️ Bursa Kurtları from
-modal:draft :: 🏛️ Denizli Şahinleri from
-modal:draft :: 🏛️ Diyarbakır Yıldızları from
-modal:draft :: 🏛️ Malatya Kurtları from
-modal:draft :: 🏛️ İstanbul Kartalları from
+modal:draft :: 🏛️ Adana Şahinleri from
+modal:draft :: 🏛️ Antalya Gençlik from
+modal:draft :: 🏛️ Denizli Yıldızları from
+modal:draft :: 🏛️ Kocaeli Gençlik from
+modal:draft :: 🏛️ Malatya Boğaları from
+modal:draft :: 🏛️ Sakarya Gençlik from
+modal:draft :: 🏛️ Samsun Kartalları from
+modal:draft :: 🏛️ İstanbul Şahinleri from
+modal:ilk5 :: Adana Şahinleri
+modal:ilk5 :: Adana Şahinleri — Manisa BK
 modal:ilk5 :: Ahmet Yıldız
-modal:ilk5 :: Aydın BK
-modal:ilk5 :: Aydın Şimşekleri
-modal:ilk5 :: Balıkesir Şahinleri
-modal:ilk5 :: Bursa Kurtları
-modal:ilk5 :: Denizli Şahinleri
-modal:ilk5 :: Denizli Şahinleri — Sakarya Basket
-modal:ilk5 :: Diyarbakır Boğaları
-modal:ilk5 :: Diyarbakır Boğaları — Aydın Şimşekleri
-modal:ilk5 :: Diyarbakır Yıldızları
-modal:ilk5 :: Gaziantep Gençlik
-modal:ilk5 :: Gaziantep Gençlik — Trabzon Kurtları
-modal:ilk5 :: Malatya Kurtları
-modal:ilk5 :: Manisa Yıldızları
-modal:ilk5 :: Trabzon Kurtları
-modal:ilk5 :: Trabzon Şahinleri
-modal:ilk5 :: Trabzon Şahinleri — Diyarbakır Yıldızları
-modal:ilk5 :: Türkiye • 21 yrs • 219cm
-modal:ilk5 :: Türkiye • 25 yrs • 204cm
-modal:ilk5 :: Türkiye • 30 yrs • 210cm
-modal:ilk5 :: İstanbul Kartalları
-modal:ilk5 :: İzmir Spor
-modal:ilk5 :: 🇵🇹 João Gonçalves
-modal:ilk5 :: 🇹🇷 Mehmet Doğan
+modal:ilk5 :: Ankara Yıldızları
+modal:ilk5 :: Antalya Gençlik
+modal:ilk5 :: Denizli Aslanları
+modal:ilk5 :: Denizli Yıldızları
+modal:ilk5 :: Furkan Kılıç
+modal:ilk5 :: Furkan Kılıç (SG) — Overall: 74
+modal:ilk5 :: Furkan Kılıç (SG) → PG
+modal:ilk5 :: Furkan Kılıç (SG) → SF
+modal:ilk5 :: Furkan Kılıç (SG·OVR 74)
+modal:ilk5 :: Kayseri Şimşekleri
+modal:ilk5 :: Kayseri Şimşekleri — Malatya Boğaları
+modal:ilk5 :: Kocaeli Gençlik
+modal:ilk5 :: Kocaeli Gençlik — Denizli Yıldızları
+modal:ilk5 :: Malatya Boğaları
+modal:ilk5 :: Malatya Spor — Sakarya Gençlik
+modal:ilk5 :: Sakarya Boğaları
+modal:ilk5 :: Sakarya Gençlik
+modal:ilk5 :: Samsun Kartalları
+modal:ilk5 :: Türkiye • 18 yrs • 208cm
+modal:ilk5 :: Türkiye • 23 yrs • 193cm
+modal:ilk5 :: İstanbul Şahinleri
+modal:ilk5 :: ⚡ Kılıç – Ridder (SG role clash)
+modal:ilk5 :: 🇹🇷 Can Şen
 modal:ilk5 :: 🇹🇷 Türkiye
-modal:ilk5 :: 🇹🇷 Türkiye • 30 yrs
+modal:ilk5 :: 🇹🇷 Türkiye • 24 yrs
+modal:ilk5 :: 🇹🇷 Türkiye • 34 yrs
 modal:ilk5 :: 🇹🇷 Türkçe
-modal:ilk5 :: 🏛️ Aydın BK from
-modal:ilk5 :: 🏛️ Aydın Şimşekleri from
-modal:ilk5 :: 🏛️ Balıkesir Şahinleri from
-modal:ilk5 :: 🏛️ Bursa Kurtları from
-modal:ilk5 :: 🏛️ Denizli Şahinleri from
-modal:ilk5 :: 🏛️ Diyarbakır Yıldızları from
-modal:ilk5 :: 🏛️ Malatya Kurtları from
-modal:ilk5 :: 🏛️ İstanbul Kartalları from
+modal:ilk5 :: 🏛️ Adana Şahinleri from
+modal:ilk5 :: 🏛️ Antalya Gençlik from
+modal:ilk5 :: 🏛️ Denizli Yıldızları from
+modal:ilk5 :: 🏛️ Kocaeli Gençlik from
+modal:ilk5 :: 🏛️ Malatya Boğaları from
+modal:ilk5 :: 🏛️ Sakarya Gençlik from
+modal:ilk5 :: 🏛️ Samsun Kartalları from
+modal:ilk5 :: 🏛️ İstanbul Şahinleri from
+modal:oyuncu :: Adana Şahinleri
+modal:oyuncu :: Adana Şahinleri — Manisa BK
 modal:oyuncu :: Ahmet Yıldız
-modal:oyuncu :: Aydın BK
-modal:oyuncu :: Aydın Şimşekleri
-modal:oyuncu :: Balıkesir Şahinleri
-modal:oyuncu :: Bursa Kurtları
-modal:oyuncu :: Denizli Şahinleri
-modal:oyuncu :: Denizli Şahinleri — Sakarya Basket
-modal:oyuncu :: Diyarbakır Boğaları
-modal:oyuncu :: Diyarbakır Boğaları — Aydın Şimşekleri
-modal:oyuncu :: Diyarbakır Yıldızları
-modal:oyuncu :: Gaziantep Gençlik
-modal:oyuncu :: Gaziantep Gençlik — Trabzon Kurtları
-modal:oyuncu :: Malatya Kurtları
-modal:oyuncu :: Manisa Yıldızları
-modal:oyuncu :: Trabzon Kurtları
-modal:oyuncu :: Trabzon Şahinleri
-modal:oyuncu :: Trabzon Şahinleri — Diyarbakır Yıldızları
-modal:oyuncu :: Türkiye • 21 yrs • 219cm
-modal:oyuncu :: Türkiye • 25 yrs • 204cm
-modal:oyuncu :: Türkiye • 30 yrs • 210cm
-modal:oyuncu :: İstanbul Kartalları
-modal:oyuncu :: İzmir Spor
-modal:oyuncu :: 🇵🇹 João Gonçalves
-modal:oyuncu :: 🇹🇷 Mehmet Doğan
+modal:oyuncu :: Ankara Yıldızları
+modal:oyuncu :: Antalya Gençlik
+modal:oyuncu :: Denizli Aslanları
+modal:oyuncu :: Denizli Yıldızları
+modal:oyuncu :: Furkan Kılıç
+modal:oyuncu :: Furkan Kılıç (SG) — Overall: 74
+modal:oyuncu :: Furkan Kılıç (SG) → PG
+modal:oyuncu :: Furkan Kılıç (SG) → SF
+modal:oyuncu :: Furkan Kılıç (SG·OVR 74)
+modal:oyuncu :: Kayseri Şimşekleri
+modal:oyuncu :: Kayseri Şimşekleri — Malatya Boğaları
+modal:oyuncu :: Kocaeli Gençlik
+modal:oyuncu :: Kocaeli Gençlik — Denizli Yıldızları
+modal:oyuncu :: Malatya Boğaları
+modal:oyuncu :: Malatya Spor — Sakarya Gençlik
+modal:oyuncu :: Sakarya Boğaları
+modal:oyuncu :: Sakarya Gençlik
+modal:oyuncu :: Samsun Kartalları
+modal:oyuncu :: Türkiye • 18 yrs • 208cm
+modal:oyuncu :: Türkiye • 23 yrs • 193cm
+modal:oyuncu :: İstanbul Şahinleri
+modal:oyuncu :: ⚡ Kılıç – Ridder (SG role clash)
+modal:oyuncu :: 🇹🇷 Can Şen
 modal:oyuncu :: 🇹🇷 Türkiye
-modal:oyuncu :: 🇹🇷 Türkiye • 30 yrs
+modal:oyuncu :: 🇹🇷 Türkiye • 24 yrs
+modal:oyuncu :: 🇹🇷 Türkiye • 34 yrs
 modal:oyuncu :: 🇹🇷 Türkçe
-modal:oyuncu :: 🏛️ Aydın BK from
-modal:oyuncu :: 🏛️ Aydın Şimşekleri from
-modal:oyuncu :: 🏛️ Balıkesir Şahinleri from
-modal:oyuncu :: 🏛️ Bursa Kurtları from
-modal:oyuncu :: 🏛️ Denizli Şahinleri from
-modal:oyuncu :: 🏛️ Diyarbakır Yıldızları from
-modal:oyuncu :: 🏛️ Malatya Kurtları from
-modal:oyuncu :: 🏛️ İstanbul Kartalları from
+modal:oyuncu :: 🏛️ Adana Şahinleri from
+modal:oyuncu :: 🏛️ Antalya Gençlik from
+modal:oyuncu :: 🏛️ Denizli Yıldızları from
+modal:oyuncu :: 🏛️ Kocaeli Gençlik from
+modal:oyuncu :: 🏛️ Malatya Boğaları from
+modal:oyuncu :: 🏛️ Sakarya Gençlik from
+modal:oyuncu :: 🏛️ Samsun Kartalları from
+modal:oyuncu :: 🏛️ İstanbul Şahinleri from
+modal:soyunma :: Adana Şahinleri
+modal:soyunma :: Adana Şahinleri — Manisa BK
 modal:soyunma :: Ahmet Yıldız
-modal:soyunma :: Aydın BK
-modal:soyunma :: Aydın Şimşekleri
-modal:soyunma :: Balıkesir Şahinleri
-modal:soyunma :: Bursa Kurtları
-modal:soyunma :: Denizli Şahinleri
-modal:soyunma :: Denizli Şahinleri — Sakarya Basket
-modal:soyunma :: Diyarbakır Boğaları
-modal:soyunma :: Diyarbakır Boğaları — Aydın Şimşekleri
-modal:soyunma :: Diyarbakır Yıldızları
-modal:soyunma :: Gaziantep Gençlik
-modal:soyunma :: Gaziantep Gençlik — Trabzon Kurtları
-modal:soyunma :: Malatya Kurtları
-modal:soyunma :: Manisa Yıldızları
-modal:soyunma :: Trabzon Kurtları
-modal:soyunma :: Trabzon Şahinleri
-modal:soyunma :: Trabzon Şahinleri — Diyarbakır Yıldızları
-modal:soyunma :: Türkiye • 21 yrs • 219cm
-modal:soyunma :: Türkiye • 25 yrs • 204cm
-modal:soyunma :: Türkiye • 30 yrs • 210cm
-modal:soyunma :: İstanbul Kartalları
-modal:soyunma :: İzmir Spor
-modal:soyunma :: 🇵🇹 João Gonçalves
-modal:soyunma :: 🇹🇷 Mehmet Doğan
+modal:soyunma :: Ankara Yıldızları
+modal:soyunma :: Antalya Gençlik
+modal:soyunma :: Denizli Aslanları
+modal:soyunma :: Denizli Yıldızları
+modal:soyunma :: Furkan Kılıç
+modal:soyunma :: Furkan Kılıç (SG) — Overall: 74
+modal:soyunma :: Furkan Kılıç (SG) → PG
+modal:soyunma :: Furkan Kılıç (SG) → SF
+modal:soyunma :: Furkan Kılıç (SG·OVR 74)
+modal:soyunma :: Kayseri Şimşekleri
+modal:soyunma :: Kayseri Şimşekleri — Malatya Boğaları
+modal:soyunma :: Kocaeli Gençlik
+modal:soyunma :: Kocaeli Gençlik — Denizli Yıldızları
+modal:soyunma :: Malatya Boğaları
+modal:soyunma :: Malatya Spor — Sakarya Gençlik
+modal:soyunma :: Sakarya Boğaları
+modal:soyunma :: Sakarya Gençlik
+modal:soyunma :: Samsun Kartalları
+modal:soyunma :: Türkiye • 18 yrs • 208cm
+modal:soyunma :: Türkiye • 23 yrs • 193cm
+modal:soyunma :: İstanbul Şahinleri
+modal:soyunma :: ⚡ Kılıç – Ridder (SG role clash)
+modal:soyunma :: 🇹🇷 Can Şen
 modal:soyunma :: 🇹🇷 Türkiye
-modal:soyunma :: 🇹🇷 Türkiye • 30 yrs
+modal:soyunma :: 🇹🇷 Türkiye • 24 yrs
+modal:soyunma :: 🇹🇷 Türkiye • 34 yrs
 modal:soyunma :: 🇹🇷 Türkçe
-modal:soyunma :: 🏛️ Aydın BK from
-modal:soyunma :: 🏛️ Aydın Şimşekleri from
-modal:soyunma :: 🏛️ Balıkesir Şahinleri from
-modal:soyunma :: 🏛️ Bursa Kurtları from
-modal:soyunma :: 🏛️ Denizli Şahinleri from
-modal:soyunma :: 🏛️ Diyarbakır Yıldızları from
-modal:soyunma :: 🏛️ Malatya Kurtları from
-modal:soyunma :: 🏛️ İstanbul Kartalları from
+modal:soyunma :: 🏛️ Adana Şahinleri from
+modal:soyunma :: 🏛️ Antalya Gençlik from
+modal:soyunma :: 🏛️ Denizli Yıldızları from
+modal:soyunma :: 🏛️ Kocaeli Gençlik from
+modal:soyunma :: 🏛️ Malatya Boğaları from
+modal:soyunma :: 🏛️ Sakarya Gençlik from
+modal:soyunma :: 🏛️ Samsun Kartalları from
+modal:soyunma :: 🏛️ İstanbul Şahinleri from
+modal:taktik :: Adana Şahinleri
+modal:taktik :: Adana Şahinleri — Manisa BK
 modal:taktik :: Ahmet Yıldız
-modal:taktik :: Aydın BK
-modal:taktik :: Aydın Şimşekleri
-modal:taktik :: Balıkesir Şahinleri
-modal:taktik :: Bursa Kurtları
-modal:taktik :: Denizli Şahinleri
-modal:taktik :: Denizli Şahinleri — Sakarya Basket
-modal:taktik :: Diyarbakır Boğaları
-modal:taktik :: Diyarbakır Boğaları — Aydın Şimşekleri
-modal:taktik :: Diyarbakır Yıldızları
-modal:taktik :: Gaziantep Gençlik
-modal:taktik :: Gaziantep Gençlik — Trabzon Kurtları
-modal:taktik :: Malatya Kurtları
-modal:taktik :: Manisa Yıldızları
-modal:taktik :: Trabzon Kurtları
-modal:taktik :: Trabzon Şahinleri
-modal:taktik :: Trabzon Şahinleri — Diyarbakır Yıldızları
-modal:taktik :: Türkiye • 21 yrs • 219cm
-modal:taktik :: Türkiye • 25 yrs • 204cm
-modal:taktik :: Türkiye • 30 yrs • 210cm
-modal:taktik :: İstanbul Kartalları
-modal:taktik :: İzmir Spor
-modal:taktik :: 🇵🇹 João Gonçalves
-modal:taktik :: 🇹🇷 Mehmet Doğan
+modal:taktik :: Ankara Yıldızları
+modal:taktik :: Antalya Gençlik
+modal:taktik :: Denizli Aslanları
+modal:taktik :: Denizli Yıldızları
+modal:taktik :: Furkan Kılıç
+modal:taktik :: Furkan Kılıç (SG) — Overall: 74
+modal:taktik :: Furkan Kılıç (SG) → PG
+modal:taktik :: Furkan Kılıç (SG) → SF
+modal:taktik :: Furkan Kılıç (SG·OVR 74)
+modal:taktik :: Kayseri Şimşekleri
+modal:taktik :: Kayseri Şimşekleri — Malatya Boğaları
+modal:taktik :: Kocaeli Gençlik
+modal:taktik :: Kocaeli Gençlik — Denizli Yıldızları
+modal:taktik :: Malatya Boğaları
+modal:taktik :: Malatya Spor — Sakarya Gençlik
+modal:taktik :: Sakarya Boğaları
+modal:taktik :: Sakarya Gençlik
+modal:taktik :: Samsun Kartalları
+modal:taktik :: Türkiye • 18 yrs • 208cm
+modal:taktik :: Türkiye • 23 yrs • 193cm
+modal:taktik :: İstanbul Şahinleri
+modal:taktik :: ⚡ Kılıç – Ridder (SG role clash)
+modal:taktik :: 🇹🇷 Can Şen
 modal:taktik :: 🇹🇷 Türkiye
-modal:taktik :: 🇹🇷 Türkiye • 30 yrs
+modal:taktik :: 🇹🇷 Türkiye • 24 yrs
+modal:taktik :: 🇹🇷 Türkiye • 34 yrs
 modal:taktik :: 🇹🇷 Türkçe
-modal:taktik :: 🎯 Tactics — vs İzmir Spor
-modal:taktik :: 🏛️ Aydın BK from
-modal:taktik :: 🏛️ Aydın Şimşekleri from
-modal:taktik :: 🏛️ Balıkesir Şahinleri from
-modal:taktik :: 🏛️ Bursa Kurtları from
-modal:taktik :: 🏛️ Denizli Şahinleri from
-modal:taktik :: 🏛️ Diyarbakır Yıldızları from
-modal:taktik :: 🏛️ Malatya Kurtları from
-modal:taktik :: 🏛️ İstanbul Kartalları from
-sayfa:altyapi :: Aydın BK
-sayfa:altyapi :: Aydın Şimşekleri
-sayfa:altyapi :: Balıkesir Şahinleri
-sayfa:altyapi :: Bursa Kurtları
-sayfa:altyapi :: Denizli Şahinleri
-sayfa:altyapi :: Denizli Şahinleri — Sakarya Basket
-sayfa:altyapi :: Diyarbakır Boğaları
-sayfa:altyapi :: Diyarbakır Boğaları — Aydın Şimşekleri
-sayfa:altyapi :: Diyarbakır Yıldızları
-sayfa:altyapi :: Gaziantep Gençlik
-sayfa:altyapi :: Gaziantep Gençlik — Trabzon Kurtları
-sayfa:altyapi :: Malatya Kurtları
-sayfa:altyapi :: Manisa Yıldızları
-sayfa:altyapi :: Trabzon Kurtları
-sayfa:altyapi :: Trabzon Şahinleri
-sayfa:altyapi :: Trabzon Şahinleri — Diyarbakır Yıldızları
-sayfa:altyapi :: Türkiye • 21 yrs • 219cm
-sayfa:altyapi :: Türkiye • 25 yrs • 204cm
-sayfa:altyapi :: Türkiye • 30 yrs • 210cm
-sayfa:altyapi :: İstanbul Kartalları
-sayfa:altyapi :: İzmir Spor
-sayfa:altyapi :: 🇵🇹 João Gonçalves
-sayfa:altyapi :: 🇹🇷 Mehmet Doğan
+modal:taktik :: 🎯 Tactics — vs Malatya Boğaları
+modal:taktik :: 🏛️ Adana Şahinleri from
+modal:taktik :: 🏛️ Antalya Gençlik from
+modal:taktik :: 🏛️ Denizli Yıldızları from
+modal:taktik :: 🏛️ Kocaeli Gençlik from
+modal:taktik :: 🏛️ Malatya Boğaları from
+modal:taktik :: 🏛️ Sakarya Gençlik from
+modal:taktik :: 🏛️ Samsun Kartalları from
+modal:taktik :: 🏛️ İstanbul Şahinleri from
+sayfa:altyapi :: Adana Şahinleri
+sayfa:altyapi :: Adana Şahinleri — Manisa BK
+sayfa:altyapi :: Ankara Yıldızları
+sayfa:altyapi :: Antalya Gençlik
+sayfa:altyapi :: Denizli Aslanları
+sayfa:altyapi :: Denizli Yıldızları
+sayfa:altyapi :: Furkan Kılıç
+sayfa:altyapi :: Kayseri Şimşekleri
+sayfa:altyapi :: Kayseri Şimşekleri — Malatya Boğaları
+sayfa:altyapi :: Kocaeli Gençlik
+sayfa:altyapi :: Kocaeli Gençlik — Denizli Yıldızları
+sayfa:altyapi :: Malatya Boğaları
+sayfa:altyapi :: Malatya Spor — Sakarya Gençlik
+sayfa:altyapi :: Sakarya Boğaları
+sayfa:altyapi :: Sakarya Gençlik
+sayfa:altyapi :: Samsun Kartalları
+sayfa:altyapi :: Türkiye • 18 yrs • 208cm
+sayfa:altyapi :: Türkiye • 23 yrs • 193cm
+sayfa:altyapi :: İstanbul Şahinleri
+sayfa:altyapi :: ⚡ Kılıç – Ridder (SG role clash)
+sayfa:altyapi :: 🇹🇷 Can Şen
 sayfa:altyapi :: 🇹🇷 Türkiye
-sayfa:altyapi :: 🇹🇷 Türkiye • 30 yrs
+sayfa:altyapi :: 🇹🇷 Türkiye • 24 yrs
+sayfa:altyapi :: 🇹🇷 Türkiye • 34 yrs
 sayfa:altyapi :: 🇹🇷 Türkçe
-sayfa:altyapi :: 🏛️ Aydın BK from
-sayfa:altyapi :: 🏛️ Aydın Şimşekleri from
-sayfa:altyapi :: 🏛️ Balıkesir Şahinleri from
-sayfa:altyapi :: 🏛️ Bursa Kurtları from
-sayfa:altyapi :: 🏛️ Denizli Şahinleri from
-sayfa:altyapi :: 🏛️ Diyarbakır Yıldızları from
-sayfa:altyapi :: 🏛️ Malatya Kurtları from
-sayfa:altyapi :: 🏛️ İstanbul Kartalları from
+sayfa:altyapi :: 🏛️ Adana Şahinleri from
+sayfa:altyapi :: 🏛️ Antalya Gençlik from
+sayfa:altyapi :: 🏛️ Denizli Yıldızları from
+sayfa:altyapi :: 🏛️ Kocaeli Gençlik from
+sayfa:altyapi :: 🏛️ Malatya Boğaları from
+sayfa:altyapi :: 🏛️ Sakarya Gençlik from
+sayfa:altyapi :: 🏛️ Samsun Kartalları from
+sayfa:altyapi :: 🏛️ İstanbul Şahinleri from
+sayfa:analiz :: Adana Şahinleri
+sayfa:analiz :: Adana Şahinleri — Manisa BK
 sayfa:analiz :: Ahmet Yıldız
-sayfa:analiz :: Aydın BK
-sayfa:analiz :: Aydın Şimşekleri
-sayfa:analiz :: Balıkesir Şahinleri
-sayfa:analiz :: Bursa Kurtları
-sayfa:analiz :: Denizli Şahinleri
-sayfa:analiz :: Denizli Şahinleri — Sakarya Basket
-sayfa:analiz :: Diyarbakır Boğaları
-sayfa:analiz :: Diyarbakır Boğaları — Aydın Şimşekleri
-sayfa:analiz :: Diyarbakır Yıldızları
-sayfa:analiz :: Gaziantep Gençlik
-sayfa:analiz :: Gaziantep Gençlik — Trabzon Kurtları
-sayfa:analiz :: Malatya Kurtları
-sayfa:analiz :: Manisa Yıldızları
-sayfa:analiz :: Trabzon Kurtları
-sayfa:analiz :: Trabzon Şahinleri
-sayfa:analiz :: Trabzon Şahinleri — Diyarbakır Yıldızları
-sayfa:analiz :: Türkiye • 21 yrs • 219cm
-sayfa:analiz :: Türkiye • 25 yrs • 204cm
-sayfa:analiz :: Türkiye • 30 yrs • 210cm
-sayfa:analiz :: İstanbul Kartalları
-sayfa:analiz :: İzmir Spor
-sayfa:analiz :: 🇵🇹 João Gonçalves
-sayfa:analiz :: 🇹🇷 Mehmet Doğan
+sayfa:analiz :: Ankara Yıldızları
+sayfa:analiz :: Antalya Gençlik
+sayfa:analiz :: Denizli Aslanları
+sayfa:analiz :: Denizli Yıldızları
+sayfa:analiz :: Furkan Kılıç
+sayfa:analiz :: Furkan Kılıç (SG) — Overall: 74
+sayfa:analiz :: Furkan Kılıç (SG) → PG
+sayfa:analiz :: Furkan Kılıç (SG) → SF
+sayfa:analiz :: Furkan Kılıç (SG·OVR 74)
+sayfa:analiz :: Kayseri Şimşekleri
+sayfa:analiz :: Kayseri Şimşekleri — Malatya Boğaları
+sayfa:analiz :: Kocaeli Gençlik
+sayfa:analiz :: Kocaeli Gençlik — Denizli Yıldızları
+sayfa:analiz :: Malatya Boğaları
+sayfa:analiz :: Malatya Spor — Sakarya Gençlik
+sayfa:analiz :: Sakarya Boğaları
+sayfa:analiz :: Sakarya Gençlik
+sayfa:analiz :: Samsun Kartalları
+sayfa:analiz :: Türkiye • 18 yrs • 208cm
+sayfa:analiz :: Türkiye • 23 yrs • 193cm
+sayfa:analiz :: İstanbul Şahinleri
+sayfa:analiz :: ⚡ Kılıç – Ridder (SG role clash)
+sayfa:analiz :: 🇹🇷 Can Şen
 sayfa:analiz :: 🇹🇷 Türkiye
-sayfa:analiz :: 🇹🇷 Türkiye • 30 yrs
+sayfa:analiz :: 🇹🇷 Türkiye • 24 yrs
+sayfa:analiz :: 🇹🇷 Türkiye • 34 yrs
 sayfa:analiz :: 🇹🇷 Türkçe
-sayfa:analiz :: 🏛️ Aydın BK from
-sayfa:analiz :: 🏛️ Aydın Şimşekleri from
-sayfa:analiz :: 🏛️ Balıkesir Şahinleri from
-sayfa:analiz :: 🏛️ Bursa Kurtları from
-sayfa:analiz :: 🏛️ Denizli Şahinleri from
-sayfa:analiz :: 🏛️ Diyarbakır Yıldızları from
-sayfa:analiz :: 🏛️ Malatya Kurtları from
-sayfa:analiz :: 🏛️ İstanbul Kartalları from
+sayfa:analiz :: 🏛️ Adana Şahinleri from
+sayfa:analiz :: 🏛️ Antalya Gençlik from
+sayfa:analiz :: 🏛️ Denizli Yıldızları from
+sayfa:analiz :: 🏛️ Kocaeli Gençlik from
+sayfa:analiz :: 🏛️ Malatya Boğaları from
+sayfa:analiz :: 🏛️ Sakarya Gençlik from
+sayfa:analiz :: 🏛️ Samsun Kartalları from
+sayfa:analiz :: 🏛️ İstanbul Şahinleri from
+sayfa:antrenman :: Adana Şahinleri
+sayfa:antrenman :: Adana Şahinleri — Manisa BK
 sayfa:antrenman :: Ahmet Yıldız
-sayfa:antrenman :: Aydın BK
-sayfa:antrenman :: Aydın Şimşekleri
-sayfa:antrenman :: Balıkesir Şahinleri
-sayfa:antrenman :: Bursa Kurtları
-sayfa:antrenman :: Denizli Şahinleri
-sayfa:antrenman :: Denizli Şahinleri — Sakarya Basket
-sayfa:antrenman :: Diyarbakır Boğaları
-sayfa:antrenman :: Diyarbakır Boğaları — Aydın Şimşekleri
-sayfa:antrenman :: Diyarbakır Yıldızları
-sayfa:antrenman :: Gaziantep Gençlik
-sayfa:antrenman :: Gaziantep Gençlik — Trabzon Kurtları
-sayfa:antrenman :: Malatya Kurtları
-sayfa:antrenman :: Manisa Yıldızları
-sayfa:antrenman :: Trabzon Kurtları
-sayfa:antrenman :: Trabzon Şahinleri
-sayfa:antrenman :: Trabzon Şahinleri — Diyarbakır Yıldızları
-sayfa:antrenman :: Türkiye • 21 yrs • 219cm
-sayfa:antrenman :: Türkiye • 25 yrs • 204cm
-sayfa:antrenman :: Türkiye • 30 yrs • 210cm
-sayfa:antrenman :: İstanbul Kartalları
-sayfa:antrenman :: İzmir Spor
-sayfa:antrenman :: 🇵🇹 João Gonçalves
-sayfa:antrenman :: 🇹🇷 Mehmet Doğan
+sayfa:antrenman :: Ankara Yıldızları
+sayfa:antrenman :: Antalya Gençlik
+sayfa:antrenman :: Denizli Aslanları
+sayfa:antrenman :: Denizli Yıldızları
+sayfa:antrenman :: Furkan Kılıç
+sayfa:antrenman :: Furkan Kılıç (SG) — Overall: 74
+sayfa:antrenman :: Furkan Kılıç (SG) → PG
+sayfa:antrenman :: Furkan Kılıç (SG) → SF
+sayfa:antrenman :: Kayseri Şimşekleri
+sayfa:antrenman :: Kayseri Şimşekleri — Malatya Boğaları
+sayfa:antrenman :: Kocaeli Gençlik
+sayfa:antrenman :: Kocaeli Gençlik — Denizli Yıldızları
+sayfa:antrenman :: Malatya Boğaları
+sayfa:antrenman :: Malatya Spor — Sakarya Gençlik
+sayfa:antrenman :: Sakarya Boğaları
+sayfa:antrenman :: Sakarya Gençlik
+sayfa:antrenman :: Samsun Kartalları
+sayfa:antrenman :: Türkiye • 18 yrs • 208cm
+sayfa:antrenman :: Türkiye • 23 yrs • 193cm
+sayfa:antrenman :: İstanbul Şahinleri
+sayfa:antrenman :: ⚡ Kılıç – Ridder (SG role clash)
+sayfa:antrenman :: 🇹🇷 Can Şen
 sayfa:antrenman :: 🇹🇷 Türkiye
-sayfa:antrenman :: 🇹🇷 Türkiye • 30 yrs
+sayfa:antrenman :: 🇹🇷 Türkiye • 24 yrs
+sayfa:antrenman :: 🇹🇷 Türkiye • 34 yrs
 sayfa:antrenman :: 🇹🇷 Türkçe
-sayfa:antrenman :: 🏛️ Aydın BK from
-sayfa:antrenman :: 🏛️ Aydın Şimşekleri from
-sayfa:antrenman :: 🏛️ Balıkesir Şahinleri from
-sayfa:antrenman :: 🏛️ Bursa Kurtları from
-sayfa:antrenman :: 🏛️ Denizli Şahinleri from
-sayfa:antrenman :: 🏛️ Diyarbakır Yıldızları from
-sayfa:antrenman :: 🏛️ Malatya Kurtları from
-sayfa:antrenman :: 🏛️ İstanbul Kartalları from
+sayfa:antrenman :: 🏛️ Adana Şahinleri from
+sayfa:antrenman :: 🏛️ Antalya Gençlik from
+sayfa:antrenman :: 🏛️ Denizli Yıldızları from
+sayfa:antrenman :: 🏛️ Kocaeli Gençlik from
+sayfa:antrenman :: 🏛️ Malatya Boğaları from
+sayfa:antrenman :: 🏛️ Sakarya Gençlik from
+sayfa:antrenman :: 🏛️ Samsun Kartalları from
+sayfa:antrenman :: 🏛️ İstanbul Şahinleri from
+sayfa:arena :: Adana Şahinleri
+sayfa:arena :: Adana Şahinleri — Manisa BK
 sayfa:arena :: Ahmet Yıldız
-sayfa:arena :: Aydın BK
-sayfa:arena :: Aydın Şimşekleri
-sayfa:arena :: Balıkesir Şahinleri
-sayfa:arena :: Bursa Kurtları
-sayfa:arena :: Denizli Şahinleri
-sayfa:arena :: Denizli Şahinleri — Sakarya Basket
-sayfa:arena :: Diyarbakır Boğaları
-sayfa:arena :: Diyarbakır Boğaları — Aydın Şimşekleri
-sayfa:arena :: Diyarbakır Yıldızları
-sayfa:arena :: Gaziantep Gençlik
-sayfa:arena :: Gaziantep Gençlik — Trabzon Kurtları
-sayfa:arena :: Malatya Kurtları
-sayfa:arena :: Manisa Yıldızları
-sayfa:arena :: Trabzon Kurtları
-sayfa:arena :: Trabzon Şahinleri
-sayfa:arena :: Trabzon Şahinleri — Diyarbakır Yıldızları
-sayfa:arena :: Türkiye • 21 yrs • 219cm
-sayfa:arena :: Türkiye • 25 yrs • 204cm
-sayfa:arena :: Türkiye • 30 yrs • 210cm
-sayfa:arena :: İstanbul Kartalları
-sayfa:arena :: İzmir Spor
-sayfa:arena :: 🇵🇹 João Gonçalves
-sayfa:arena :: 🇹🇷 Mehmet Doğan
+sayfa:arena :: Ankara Yıldızları
+sayfa:arena :: Antalya Gençlik
+sayfa:arena :: Denizli Aslanları
+sayfa:arena :: Denizli Yıldızları
+sayfa:arena :: Furkan Kılıç
+sayfa:arena :: Furkan Kılıç (SG) — Overall: 74
+sayfa:arena :: Furkan Kılıç (SG) → PG
+sayfa:arena :: Furkan Kılıç (SG) → SF
+sayfa:arena :: Kayseri Şimşekleri
+sayfa:arena :: Kayseri Şimşekleri — Malatya Boğaları
+sayfa:arena :: Kocaeli Gençlik
+sayfa:arena :: Kocaeli Gençlik — Denizli Yıldızları
+sayfa:arena :: Malatya Boğaları
+sayfa:arena :: Malatya Spor — Sakarya Gençlik
+sayfa:arena :: Sakarya Boğaları
+sayfa:arena :: Sakarya Gençlik
+sayfa:arena :: Samsun Kartalları
+sayfa:arena :: Türkiye • 18 yrs • 208cm
+sayfa:arena :: Türkiye • 23 yrs • 193cm
+sayfa:arena :: İstanbul Şahinleri
+sayfa:arena :: ⚡ Kılıç – Ridder (SG role clash)
+sayfa:arena :: 🇹🇷 Can Şen
 sayfa:arena :: 🇹🇷 Türkiye
-sayfa:arena :: 🇹🇷 Türkiye • 30 yrs
+sayfa:arena :: 🇹🇷 Türkiye • 24 yrs
+sayfa:arena :: 🇹🇷 Türkiye • 34 yrs
 sayfa:arena :: 🇹🇷 Türkçe
-sayfa:arena :: 🏛️ Aydın BK from
-sayfa:arena :: 🏛️ Aydın Şimşekleri from
-sayfa:arena :: 🏛️ Balıkesir Şahinleri from
-sayfa:arena :: 🏛️ Bursa Kurtları from
-sayfa:arena :: 🏛️ Denizli Şahinleri from
-sayfa:arena :: 🏛️ Diyarbakır Yıldızları from
-sayfa:arena :: 🏛️ Malatya Kurtları from
-sayfa:arena :: 🏛️ İstanbul Kartalları from
+sayfa:arena :: 🏛️ Adana Şahinleri from
+sayfa:arena :: 🏛️ Antalya Gençlik from
+sayfa:arena :: 🏛️ Denizli Yıldızları from
+sayfa:arena :: 🏛️ Kocaeli Gençlik from
+sayfa:arena :: 🏛️ Malatya Boğaları from
+sayfa:arena :: 🏛️ Sakarya Gençlik from
+sayfa:arena :: 🏛️ Samsun Kartalları from
+sayfa:arena :: 🏛️ İstanbul Şahinleri from
+sayfa:bilanco :: Adana Şahinleri
+sayfa:bilanco :: Adana Şahinleri — Manisa BK
 sayfa:bilanco :: Ahmet Yıldız
-sayfa:bilanco :: Aydın BK
-sayfa:bilanco :: Aydın Şimşekleri
-sayfa:bilanco :: Balıkesir Şahinleri
-sayfa:bilanco :: Bursa Kurtları
-sayfa:bilanco :: Denizli Şahinleri
-sayfa:bilanco :: Denizli Şahinleri — Sakarya Basket
-sayfa:bilanco :: Diyarbakır Boğaları
-sayfa:bilanco :: Diyarbakır Boğaları — Aydın Şimşekleri
-sayfa:bilanco :: Diyarbakır Yıldızları
-sayfa:bilanco :: Gaziantep Gençlik
-sayfa:bilanco :: Gaziantep Gençlik — Trabzon Kurtları
-sayfa:bilanco :: Malatya Kurtları
-sayfa:bilanco :: Manisa Yıldızları
-sayfa:bilanco :: Trabzon Kurtları
-sayfa:bilanco :: Trabzon Şahinleri
-sayfa:bilanco :: Trabzon Şahinleri — Diyarbakır Yıldızları
-sayfa:bilanco :: Türkiye • 21 yrs • 219cm
-sayfa:bilanco :: Türkiye • 25 yrs • 204cm
-sayfa:bilanco :: Türkiye • 30 yrs • 210cm
-sayfa:bilanco :: İstanbul Kartalları
-sayfa:bilanco :: İzmir Spor
-sayfa:bilanco :: 🇵🇹 João Gonçalves
-sayfa:bilanco :: 🇹🇷 Mehmet Doğan
+sayfa:bilanco :: Ankara Yıldızları
+sayfa:bilanco :: Antalya Gençlik
+sayfa:bilanco :: Denizli Aslanları
+sayfa:bilanco :: Denizli Yıldızları
+sayfa:bilanco :: Furkan Kılıç
+sayfa:bilanco :: Furkan Kılıç (SG) — Overall: 74
+sayfa:bilanco :: Furkan Kılıç (SG) → PG
+sayfa:bilanco :: Furkan Kılıç (SG) → SF
+sayfa:bilanco :: Kayseri Şimşekleri
+sayfa:bilanco :: Kayseri Şimşekleri — Malatya Boğaları
+sayfa:bilanco :: Kocaeli Gençlik
+sayfa:bilanco :: Kocaeli Gençlik — Denizli Yıldızları
+sayfa:bilanco :: Malatya Boğaları
+sayfa:bilanco :: Malatya Spor — Sakarya Gençlik
+sayfa:bilanco :: Sakarya Boğaları
+sayfa:bilanco :: Sakarya Gençlik
+sayfa:bilanco :: Samsun Kartalları
+sayfa:bilanco :: Türkiye • 18 yrs • 208cm
+sayfa:bilanco :: Türkiye • 23 yrs • 193cm
+sayfa:bilanco :: İstanbul Şahinleri
+sayfa:bilanco :: ⚡ Kılıç – Ridder (SG role clash)
+sayfa:bilanco :: 🇹🇷 Can Şen
 sayfa:bilanco :: 🇹🇷 Türkiye
-sayfa:bilanco :: 🇹🇷 Türkiye • 30 yrs
+sayfa:bilanco :: 🇹🇷 Türkiye • 24 yrs
+sayfa:bilanco :: 🇹🇷 Türkiye • 34 yrs
 sayfa:bilanco :: 🇹🇷 Türkçe
-sayfa:bilanco :: 🏛️ Aydın BK from
-sayfa:bilanco :: 🏛️ Aydın Şimşekleri from
-sayfa:bilanco :: 🏛️ Balıkesir Şahinleri from
-sayfa:bilanco :: 🏛️ Bursa Kurtları from
-sayfa:bilanco :: 🏛️ Denizli Şahinleri from
-sayfa:bilanco :: 🏛️ Diyarbakır Yıldızları from
-sayfa:bilanco :: 🏛️ Malatya Kurtları from
-sayfa:bilanco :: 🏛️ İstanbul Kartalları from
-sayfa:dashboard :: Aydın BK
-sayfa:dashboard :: Aydın Şimşekleri
-sayfa:dashboard :: Balıkesir Şahinleri
-sayfa:dashboard :: Bursa Kurtları
-sayfa:dashboard :: Denizli Şahinleri
-sayfa:dashboard :: Denizli Şahinleri — Sakarya Basket
-sayfa:dashboard :: Diyarbakır Boğaları
-sayfa:dashboard :: Diyarbakır Boğaları — Aydın Şimşekleri
-sayfa:dashboard :: Diyarbakır Yıldızları
-sayfa:dashboard :: Gaziantep Gençlik
-sayfa:dashboard :: Gaziantep Gençlik — Trabzon Kurtları
-sayfa:dashboard :: Malatya Kurtları
-sayfa:dashboard :: Manisa Yıldızları
-sayfa:dashboard :: Trabzon Kurtları
-sayfa:dashboard :: Trabzon Şahinleri
-sayfa:dashboard :: Trabzon Şahinleri — Diyarbakır Yıldızları
-sayfa:dashboard :: İstanbul Kartalları
-sayfa:dashboard :: İzmir Spor
-sayfa:dashboard :: 🇹🇷 Türkiye • 30 yrs
+sayfa:bilanco :: 🏛️ Adana Şahinleri from
+sayfa:bilanco :: 🏛️ Antalya Gençlik from
+sayfa:bilanco :: 🏛️ Denizli Yıldızları from
+sayfa:bilanco :: 🏛️ Kocaeli Gençlik from
+sayfa:bilanco :: 🏛️ Malatya Boğaları from
+sayfa:bilanco :: 🏛️ Sakarya Gençlik from
+sayfa:bilanco :: 🏛️ Samsun Kartalları from
+sayfa:bilanco :: 🏛️ İstanbul Şahinleri from
+sayfa:dashboard :: Adana Şahinleri
+sayfa:dashboard :: Adana Şahinleri — Manisa BK
+sayfa:dashboard :: Ankara Yıldızları
+sayfa:dashboard :: Antalya Gençlik
+sayfa:dashboard :: Denizli Aslanları
+sayfa:dashboard :: Denizli Yıldızları
+sayfa:dashboard :: Furkan Kılıç
+sayfa:dashboard :: Kayseri Şimşekleri
+sayfa:dashboard :: Kayseri Şimşekleri — Malatya Boğaları
+sayfa:dashboard :: Kocaeli Gençlik
+sayfa:dashboard :: Kocaeli Gençlik — Denizli Yıldızları
+sayfa:dashboard :: Malatya Boğaları
+sayfa:dashboard :: Malatya Spor — Sakarya Gençlik
+sayfa:dashboard :: Sakarya Boğaları
+sayfa:dashboard :: Sakarya Gençlik
+sayfa:dashboard :: Samsun Kartalları
+sayfa:dashboard :: İstanbul Şahinleri
+sayfa:dashboard :: ⚡ Kılıç – Ridder (SG role clash)
+sayfa:dashboard :: 🇹🇷 Türkiye • 24 yrs
+sayfa:dashboard :: 🇹🇷 Türkiye • 34 yrs
 sayfa:dashboard :: 🇹🇷 Türkçe
-sayfa:kadro :: Aydın BK
-sayfa:kadro :: Aydın Şimşekleri
-sayfa:kadro :: Balıkesir Şahinleri
-sayfa:kadro :: Bursa Kurtları
-sayfa:kadro :: Denizli Şahinleri
-sayfa:kadro :: Denizli Şahinleri — Sakarya Basket
-sayfa:kadro :: Diyarbakır Boğaları
-sayfa:kadro :: Diyarbakır Boğaları — Aydın Şimşekleri
-sayfa:kadro :: Diyarbakır Yıldızları
-sayfa:kadro :: Gaziantep Gençlik
-sayfa:kadro :: Gaziantep Gençlik — Trabzon Kurtları
-sayfa:kadro :: Malatya Kurtları
-sayfa:kadro :: Manisa Yıldızları
-sayfa:kadro :: Trabzon Kurtları
-sayfa:kadro :: Trabzon Şahinleri
-sayfa:kadro :: Trabzon Şahinleri — Diyarbakır Yıldızları
-sayfa:kadro :: İstanbul Kartalları
-sayfa:kadro :: İzmir Spor
+sayfa:kadro :: Adana Şahinleri
+sayfa:kadro :: Adana Şahinleri — Manisa BK
+sayfa:kadro :: Ankara Yıldızları
+sayfa:kadro :: Antalya Gençlik
+sayfa:kadro :: Denizli Aslanları
+sayfa:kadro :: Denizli Yıldızları
+sayfa:kadro :: Furkan Kılıç
+sayfa:kadro :: Kayseri Şimşekleri
+sayfa:kadro :: Kayseri Şimşekleri — Malatya Boğaları
+sayfa:kadro :: Kocaeli Gençlik
+sayfa:kadro :: Kocaeli Gençlik — Denizli Yıldızları
+sayfa:kadro :: Malatya Boğaları
+sayfa:kadro :: Malatya Spor — Sakarya Gençlik
+sayfa:kadro :: Sakarya Boğaları
+sayfa:kadro :: Sakarya Gençlik
+sayfa:kadro :: Samsun Kartalları
+sayfa:kadro :: İstanbul Şahinleri
+sayfa:kadro :: ⚡ Kılıç – Ridder (SG role clash)
 sayfa:kadro :: 🇹🇷 Türkiye
-sayfa:kadro :: 🇹🇷 Türkiye • 30 yrs
+sayfa:kadro :: 🇹🇷 Türkiye • 24 yrs
+sayfa:kadro :: 🇹🇷 Türkiye • 34 yrs
 sayfa:kadro :: 🇹🇷 Türkçe
-sayfa:lig :: Aydın BK
-sayfa:lig :: Aydın Şimşekleri
-sayfa:lig :: Balıkesir Şahinleri
-sayfa:lig :: Bursa Kurtları
-sayfa:lig :: Denizli Şahinleri
-sayfa:lig :: Denizli Şahinleri — Sakarya Basket
-sayfa:lig :: Diyarbakır Boğaları
-sayfa:lig :: Diyarbakır Boğaları — Aydın Şimşekleri
-sayfa:lig :: Diyarbakır Yıldızları
-sayfa:lig :: Gaziantep Gençlik
-sayfa:lig :: Gaziantep Gençlik — Trabzon Kurtları
-sayfa:lig :: Malatya Kurtları
-sayfa:lig :: Manisa Yıldızları
-sayfa:lig :: Trabzon Kurtları
-sayfa:lig :: Trabzon Şahinleri
-sayfa:lig :: Trabzon Şahinleri — Diyarbakır Yıldızları
-sayfa:lig :: İstanbul Kartalları
-sayfa:lig :: İzmir Spor
+sayfa:lig :: Adana Şahinleri
+sayfa:lig :: Adana Şahinleri — Manisa BK
+sayfa:lig :: Ankara Yıldızları
+sayfa:lig :: Antalya Gençlik
+sayfa:lig :: Denizli Aslanları
+sayfa:lig :: Denizli Yıldızları
+sayfa:lig :: Furkan Kılıç
+sayfa:lig :: Kayseri Şimşekleri
+sayfa:lig :: Kayseri Şimşekleri — Malatya Boğaları
+sayfa:lig :: Kocaeli Gençlik
+sayfa:lig :: Kocaeli Gençlik — Denizli Yıldızları
+sayfa:lig :: Malatya Boğaları
+sayfa:lig :: Malatya Spor — Sakarya Gençlik
+sayfa:lig :: Sakarya Boğaları
+sayfa:lig :: Sakarya Gençlik
+sayfa:lig :: Samsun Kartalları
+sayfa:lig :: İstanbul Şahinleri
+sayfa:lig :: ⚡ Kılıç – Ridder (SG role clash)
 sayfa:lig :: 🇹🇷 Türkiye
-sayfa:lig :: 🇹🇷 Türkiye • 30 yrs
+sayfa:lig :: 🇹🇷 Türkiye • 24 yrs
+sayfa:lig :: 🇹🇷 Türkiye • 34 yrs
 sayfa:lig :: 🇹🇷 Türkçe
-sayfa:mac :: Aydın BK
-sayfa:mac :: Aydın Şimşekleri
-sayfa:mac :: Balıkesir Şahinleri
-sayfa:mac :: Bursa Kurtları
-sayfa:mac :: Denizli Şahinleri
-sayfa:mac :: Denizli Şahinleri — Sakarya Basket
-sayfa:mac :: Diyarbakır Boğaları
-sayfa:mac :: Diyarbakır Boğaları — Aydın Şimşekleri
-sayfa:mac :: Diyarbakır Yıldızları
-sayfa:mac :: Gaziantep Gençlik
-sayfa:mac :: Gaziantep Gençlik — Trabzon Kurtları
-sayfa:mac :: Malatya Kurtları
-sayfa:mac :: Manisa Yıldızları
-sayfa:mac :: Trabzon Kurtları
-sayfa:mac :: Trabzon Şahinleri
-sayfa:mac :: Trabzon Şahinleri — Diyarbakır Yıldızları
-sayfa:mac :: İstanbul Kartalları
-sayfa:mac :: İzmir Spor
+sayfa:mac :: Adana Şahinleri
+sayfa:mac :: Adana Şahinleri — Manisa BK
+sayfa:mac :: Ankara Yıldızları
+sayfa:mac :: Antalya Gençlik
+sayfa:mac :: Denizli Aslanları
+sayfa:mac :: Denizli Yıldızları
+sayfa:mac :: Furkan Kılıç
+sayfa:mac :: Kayseri Şimşekleri
+sayfa:mac :: Kayseri Şimşekleri — Malatya Boğaları
+sayfa:mac :: Kocaeli Gençlik
+sayfa:mac :: Kocaeli Gençlik — Denizli Yıldızları
+sayfa:mac :: Malatya Boğaları
+sayfa:mac :: Malatya Spor — Sakarya Gençlik
+sayfa:mac :: Sakarya Boğaları
+sayfa:mac :: Sakarya Gençlik
+sayfa:mac :: Samsun Kartalları
+sayfa:mac :: İstanbul Şahinleri
+sayfa:mac :: ⚡ Kılıç – Ridder (SG role clash)
 sayfa:mac :: 🇹🇷 Türkiye
-sayfa:mac :: 🇹🇷 Türkiye • 30 yrs
+sayfa:mac :: 🇹🇷 Türkiye • 24 yrs
+sayfa:mac :: 🇹🇷 Türkiye • 34 yrs
 sayfa:mac :: 🇹🇷 Türkçe
-sayfa:market :: Aydın BK
-sayfa:market :: Aydın Şimşekleri
-sayfa:market :: Balıkesir Şahinleri
-sayfa:market :: Bursa Kurtları
-sayfa:market :: Denizli Şahinleri
-sayfa:market :: Denizli Şahinleri — Sakarya Basket
-sayfa:market :: Diyarbakır Boğaları
-sayfa:market :: Diyarbakır Boğaları — Aydın Şimşekleri
-sayfa:market :: Diyarbakır Yıldızları
-sayfa:market :: Gaziantep Gençlik
-sayfa:market :: Gaziantep Gençlik — Trabzon Kurtları
-sayfa:market :: Malatya Kurtları
-sayfa:market :: Manisa Yıldızları
-sayfa:market :: Trabzon Kurtları
-sayfa:market :: Trabzon Şahinleri
-sayfa:market :: Trabzon Şahinleri — Diyarbakır Yıldızları
-sayfa:market :: Türkiye • 21 yrs • 219cm
-sayfa:market :: Türkiye • 25 yrs • 204cm
-sayfa:market :: Türkiye • 30 yrs • 210cm
-sayfa:market :: İstanbul Kartalları
-sayfa:market :: İzmir Spor
-sayfa:market :: 🇹🇷 Mehmet Doğan
+sayfa:market :: Adana Şahinleri
+sayfa:market :: Adana Şahinleri — Manisa BK
+sayfa:market :: Ankara Yıldızları
+sayfa:market :: Antalya Gençlik
+sayfa:market :: Denizli Aslanları
+sayfa:market :: Denizli Yıldızları
+sayfa:market :: Furkan Kılıç
+sayfa:market :: Kayseri Şimşekleri
+sayfa:market :: Kayseri Şimşekleri — Malatya Boğaları
+sayfa:market :: Kocaeli Gençlik
+sayfa:market :: Kocaeli Gençlik — Denizli Yıldızları
+sayfa:market :: Malatya Boğaları
+sayfa:market :: Malatya Spor — Sakarya Gençlik
+sayfa:market :: Sakarya Boğaları
+sayfa:market :: Sakarya Gençlik
+sayfa:market :: Samsun Kartalları
+sayfa:market :: Türkiye • 18 yrs • 208cm
+sayfa:market :: Türkiye • 23 yrs • 193cm
+sayfa:market :: İstanbul Şahinleri
+sayfa:market :: ⚡ Kılıç – Ridder (SG role clash)
+sayfa:market :: 🇹🇷 Can Şen
 sayfa:market :: 🇹🇷 Türkiye
-sayfa:market :: 🇹🇷 Türkiye • 30 yrs
+sayfa:market :: 🇹🇷 Türkiye • 24 yrs
+sayfa:market :: 🇹🇷 Türkiye • 34 yrs
 sayfa:market :: 🇹🇷 Türkçe
-sayfa:market :: 🏛️ Aydın BK from
-sayfa:market :: 🏛️ Aydın Şimşekleri from
-sayfa:market :: 🏛️ Balıkesir Şahinleri from
-sayfa:market :: 🏛️ Bursa Kurtları from
-sayfa:market :: 🏛️ Denizli Şahinleri from
-sayfa:market :: 🏛️ Diyarbakır Yıldızları from
-sayfa:market :: 🏛️ Malatya Kurtları from
-sayfa:market :: 🏛️ İstanbul Kartalları from
-sayfa:takim :: Aydın BK
-sayfa:takim :: Aydın Şimşekleri
-sayfa:takim :: Balıkesir Şahinleri
-sayfa:takim :: Bursa Kurtları
-sayfa:takim :: Denizli Şahinleri
-sayfa:takim :: Denizli Şahinleri — Sakarya Basket
-sayfa:takim :: Diyarbakır Boğaları
-sayfa:takim :: Diyarbakır Boğaları — Aydın Şimşekleri
-sayfa:takim :: Diyarbakır Yıldızları
-sayfa:takim :: Gaziantep Gençlik
-sayfa:takim :: Gaziantep Gençlik — Trabzon Kurtları
-sayfa:takim :: Malatya Kurtları
-sayfa:takim :: Manisa Yıldızları
-sayfa:takim :: Trabzon Kurtları
-sayfa:takim :: Trabzon Şahinleri
-sayfa:takim :: Trabzon Şahinleri — Diyarbakır Yıldızları
-sayfa:takim :: İstanbul Kartalları
-sayfa:takim :: İzmir Spor
+sayfa:market :: 🏛️ Adana Şahinleri from
+sayfa:market :: 🏛️ Antalya Gençlik from
+sayfa:market :: 🏛️ Denizli Yıldızları from
+sayfa:market :: 🏛️ Kocaeli Gençlik from
+sayfa:market :: 🏛️ Malatya Boğaları from
+sayfa:market :: 🏛️ Sakarya Gençlik from
+sayfa:market :: 🏛️ Samsun Kartalları from
+sayfa:market :: 🏛️ İstanbul Şahinleri from
+sayfa:takim :: Adana Şahinleri
+sayfa:takim :: Adana Şahinleri — Manisa BK
+sayfa:takim :: Ankara Yıldızları
+sayfa:takim :: Antalya Gençlik
+sayfa:takim :: Denizli Aslanları
+sayfa:takim :: Denizli Yıldızları
+sayfa:takim :: Furkan Kılıç
+sayfa:takim :: Kayseri Şimşekleri
+sayfa:takim :: Kayseri Şimşekleri — Malatya Boğaları
+sayfa:takim :: Kocaeli Gençlik
+sayfa:takim :: Kocaeli Gençlik — Denizli Yıldızları
+sayfa:takim :: Malatya Boğaları
+sayfa:takim :: Malatya Spor — Sakarya Gençlik
+sayfa:takim :: Sakarya Boğaları
+sayfa:takim :: Sakarya Gençlik
+sayfa:takim :: Samsun Kartalları
+sayfa:takim :: İstanbul Şahinleri
+sayfa:takim :: ⚡ Kılıç – Ridder (SG role clash)
 sayfa:takim :: 🇹🇷 Türkiye
-sayfa:takim :: 🇹🇷 Türkiye • 30 yrs
+sayfa:takim :: 🇹🇷 Türkiye • 24 yrs
+sayfa:takim :: 🇹🇷 Türkiye • 34 yrs
 sayfa:takim :: 🇹🇷 Türkçe
 setup :: 🇹🇷 Türkçe
-tutorial :: Aydın BK
-tutorial :: Aydın Şimşekleri
-tutorial :: Balıkesir Şahinleri
-tutorial :: Bursa Kurtları
-tutorial :: Denizli Şahinleri
-tutorial :: Denizli Şahinleri — Sakarya Basket
-tutorial :: Diyarbakır Boğaları
-tutorial :: Diyarbakır Boğaları — Aydın Şimşekleri
-tutorial :: Diyarbakır Yıldızları
-tutorial :: Gaziantep Gençlik
-tutorial :: Gaziantep Gençlik — Trabzon Kurtları
-tutorial :: Malatya Kurtları
-tutorial :: Manisa Yıldızları
-tutorial :: Trabzon Kurtları
-tutorial :: Trabzon Şahinleri
-tutorial :: Trabzon Şahinleri — Diyarbakır Yıldızları
-tutorial :: İstanbul Kartalları
-tutorial :: İzmir Spor
-tutorial :: 🇹🇷 Türkiye • 30 yrs
+tutorial :: Adana Şahinleri
+tutorial :: Adana Şahinleri — Manisa BK
+tutorial :: Ankara Yıldızları
+tutorial :: Antalya Gençlik
+tutorial :: Denizli Aslanları
+tutorial :: Denizli Yıldızları
+tutorial :: Furkan Kılıç
+tutorial :: Kayseri Şimşekleri
+tutorial :: Kayseri Şimşekleri — Malatya Boğaları
+tutorial :: Kocaeli Gençlik
+tutorial :: Kocaeli Gençlik — Denizli Yıldızları
+tutorial :: Malatya Boğaları
+tutorial :: Malatya Spor — Sakarya Gençlik
+tutorial :: Sakarya Boğaları
+tutorial :: Sakarya Gençlik
+tutorial :: Samsun Kartalları
+tutorial :: İstanbul Şahinleri
+tutorial :: ⚡ Kılıç – Ridder (SG role clash)
+tutorial :: 🇹🇷 Türkiye • 24 yrs
+tutorial :: 🇹🇷 Türkiye • 34 yrs
 tutorial :: 🇹🇷 Türkçe

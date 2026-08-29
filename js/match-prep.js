@@ -581,7 +581,8 @@ function rollInjuriesAfterUserMatch(){
     if(playerIsInjured(p)) return;
     const yas=Number(p.yas)||25;
     const enerji=Number(p.enerji||100);
-    let risk=yas>=36?0.17:yas>=33?0.11:yas>=30?0.078:yas>=27?0.052:0.034;
+    let risk=(yas>=36?0.17:yas>=33?0.11:yas>=30?0.078:yas>=27?0.052:0.034)
+             *((typeof difficultyCfg==='function')?(difficultyCfg().sakat||1):1);   /* B5 */
     if(enerji<52) risk*=1.58; else if(enerji<68) risk*=1.24;
     /* Faz 1.2: kronik yorgunluk — art arda düşük enerjiyle sahaya çıkan oyuncuda risk kademeli artar.
        Her ardışık yorgun maç +%15 ek risk, üst sınır +%60 (dengeyi bozmayacak makul tavan). */
@@ -808,7 +809,27 @@ function computeSeasonAwards(){
   const topReb=top(pool,e=>e.reb||0);
   const ideal=['PG','SG','SF','PF','C'].map(pz=>top(pool.filter(e=>e.poz===pz),perf));
   const young=top(pool.filter(e=>Number(e.yas)<=21),perf);
-  return {mvp,topScorer,topAst,topReb,ideal,young,games:Math.max(1,totalRounds())};
+  /* B4 (FAZ 6): "Yılın Genci" performansa göre seçiliyordu; asıl istenen EN GELİŞEN oyuncuydu.
+     G.analytics.playerDev sezon boyunca OVR anlık görüntülerini tutuyor — ilk/son fark en
+     büyük olan kullanıcı oyuncusu ayrı bir ödül alır. (Bot oyuncular için gelişim verisi
+     tutulmadığından bu ödül kullanıcı kadrosuna özgüdür; kart öyle etiketlenir.) */
+  let mostImproved=null;
+  try{
+    const dev=(G.analytics&&G.analytics.playerDev)||{};
+    let enIyi=0;
+    (G.players||[]).forEach(pl=>{
+      const arr=dev[pl.id];
+      if(!Array.isArray(arr)||arr.length<2) return;
+      const ilk=Number(arr[0]&&arr[0].genel)||0, son=Number(arr[arr.length-1]&&arr[arr.length-1].genel)||0;
+      const artis=son-ilk;
+      if(artis>enIyi){
+        enIyi=artis;
+        mostImproved={isim:pl.isim,team:G.team.isim,poz:pl.poz,genel:pl.genel,yas:pl.yas,
+                      artis,ilkOvr:ilk,sonOvr:son,isUser:true};
+      }
+    });
+  }catch(e){ dbg('most improved',e); }
+  return {mvp,topScorer,topAst,topReb,ideal,young,mostImproved,games:Math.max(1,totalRounds())};
 }
 function announceSeasonAwards(){
   try{
@@ -851,6 +872,7 @@ function showSeasonAwardsModal(aw,yr){
       ${card('🅰️','En Asistçi',aw.topAst,pg(aw.topAst.ast,aw.topAst)+' asist ort.')}
       ${card('💪','En Ribaundçu',aw.topReb,pg(aw.topReb.reb,aw.topReb)+' ribaund ort.')}
       ${aw.young?card('🌱','Yılın Genci',aw.young,aw.young.yas+' yaş · '+pg(aw.young.pts,aw.young)+' sayı'):''}
+      ${aw.mostImproved?card('📈','En Gelişen',aw.mostImproved,'OVR '+aw.mostImproved.ilkOvr+' → '+aw.mostImproved.sonOvr+' (+'+aw.mostImproved.artis+')'):''}
     </div>
     <div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:5px;">⭐ İdeal Beşli</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;">${idealRow}</div>
@@ -1477,9 +1499,11 @@ function setPresidentTarget(){
     rows.forEach(r=>{ if(r.isim!==G.team.isim){ const s=pseudoTeamStrength(r.isim,key)+((G.season&&G.season.drift&&G.season.drift[r.isim])||0); if(s>userStr) stronger++; } });
     const expectedRank=Math.max(1,Math.min(n,stronger+1));
     let targetRank,label;
-    if(expectedRank<=3){ targetRank=3; label='şampiyonluk yarışı — ilk 3'; }
-    else if(expectedRank<=8){ targetRank=8; label='playoff (ilk 8)'; }
-    else if(expectedRank<=Math.floor(n*0.7)){ targetRank=Math.min(n-2,expectedRank+2); label=`orta sıra — en fazla ${targetRank}. sıra`; }
+    /* B5: zorluk hedefi yumuşatır (kolay) ya da sıkılaştırır (zor). */
+    const zorHedef=(typeof difficultyCfg==='function')?(difficultyCfg().hedef||0):0;
+    if(expectedRank<=3){ targetRank=Math.max(1,3+zorHedef); label=zorHedef>0?`şampiyonluk yarışı — ilk ${targetRank}`:'şampiyonluk yarışı — ilk 3'; }
+    else if(expectedRank<=8){ targetRank=Math.max(2,8+zorHedef); label=`playoff (ilk ${targetRank})`; }
+    else if(expectedRank<=Math.floor(n*0.7)){ targetRank=Math.max(3,Math.min(n-2,expectedRank+2+zorHedef)); label=`orta sıra — en fazla ${targetRank}. sıra`; }
     else { targetRank=Math.max(1,n-4); label='düşme hattından uzak durmak'; }
     G.presidentTarget={year:G.season.year,expectedRank,targetRank,n,label,evaluated:false};
     pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--blue);">🗣️ <strong>Başkan</strong> — Sezon ${G.season.year} hedefi: <strong>${label}</strong> (beklenen güç sıran ~${expectedRank}.).</div>`);

@@ -1300,7 +1300,46 @@ function updateCoins(){
   if(document.getElementById('marketCoins'))document.getElementById('marketCoins').textContent=f;
 }
 
-function goSetup(){document.getElementById('loginPage').style.display='none';document.getElementById('setupPage').style.display='flex';}
+/* ── B5: zorluk seviyesi arayüzü ──────────────────────────────────────────────────────
+   Kurulum ekranında ve Ayarlar modalında aynı seçici kullanılır. Seçim `G.difficulty`de
+   tutulur; çarpanlar tek yerden (`difficultyCfg`) okunur. */
+let _setupDifficulty='normal';
+/** Zorluk seçici HTML'i — hedef kap ve seçili anahtar verilir. */
+function difficultyPickerHtml(secili,onclickFn){
+  return DIFFICULTY_KEYS.map(k=>{
+    const d=DIFFICULTY[k];
+    return `<div class="diff-opt${k===secili?' selected':''}" data-diff="${k}" role="button" tabindex="0"
+      onclick="${onclickFn}('${k}')"
+      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${onclickFn}('${k}');}"
+      title="${d.desc}"><div class="d-ikon">${d.ikon}</div><div class="d-ad">${d.ad}</div></div>`;
+  }).join('');
+}
+/** Kurulum ekranındaki seçiciyi çizer. */
+function renderSetupDifficulty(){
+  const box=document.getElementById('setupDifficulty');
+  if(!box) return;
+  box.innerHTML=difficultyPickerHtml(_setupDifficulty,'selectSetupDifficulty');
+  const desc=document.getElementById('setupDifficultyDesc');
+  if(desc) desc.textContent=(DIFFICULTY[_setupDifficulty]||DIFFICULTY.normal).desc;
+}
+function selectSetupDifficulty(k){
+  if(!DIFFICULTY[k]) return;
+  _setupDifficulty=k;
+  renderSetupDifficulty();
+}
+/** Ayarlar modalından zorluk değiştirme — kariyer sürerken de serbest (şeffaf tercih). */
+function setDifficulty(k){
+  if(!DIFFICULTY[k]||!G) return;
+  G.difficulty=k;
+  scheduleGameSave();
+  const d=DIFFICULTY[k];
+  const box=document.getElementById('ayarDifficulty');
+  if(box) box.innerHTML=difficultyPickerHtml(k,'setDifficulty');
+  const desc=document.getElementById('ayarDifficultyDesc');
+  if(desc) desc.textContent=d.desc;
+  showNotif(`${d.ikon} Zorluk: ${d.ad}`);
+}
+function goSetup(){document.getElementById('loginPage').style.display='none';document.getElementById('setupPage').style.display='flex';renderSetupDifficulty();}
 function selColor(el){document.querySelectorAll('.color-opt').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');G.selectedColor=el.dataset.color;}
 
 function createTeam(){
@@ -1318,6 +1357,9 @@ function createTeam(){
   G=defaultGameState();
   G.settings=ayarlar;
   G.selectedColor=renk;
+  /* B5: kurulum ekranında seçilen zorluk kariyere yazılır ve başlangıç bütçesine uygulanır. */
+  G.difficulty=DIFFICULTY[_setupDifficulty]?_setupDifficulty:'normal';
+  G.coins=Math.round(START_KR*(difficultyCfg().butce||1));
   G.managerName=managerName;
   G.joinedAt=new Date().toISOString();
   G.lastActive=G.joinedAt;

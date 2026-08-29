@@ -60,6 +60,14 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 
 .setup-box{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:40px;width:500px;max-width:95vw;}
 .setup-box h2{font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:34px;color:var(--accent);letter-spacing:3px;margin-bottom:6px;}
+/* B5: zorluk seçici — kurulum ekranı ve Ayarlar modalı ortak kullanır. */
+.diff-picker{display:flex;gap:8px;flex-wrap:wrap;}
+.diff-opt{flex:1;min-width:96px;background:var(--bg3);border:2px solid var(--border);border-radius:10px;padding:10px 8px;cursor:pointer;text-align:center;transition:border-color .14s,transform .12s;}
+.diff-opt:hover{transform:translateY(-1px);}
+.diff-opt.selected{border-color:var(--accent);background:rgba(249,115,22,0.12);}
+.diff-opt .d-ikon{font-size:18px;line-height:1;}
+.diff-opt .d-ad{font-size:12px;font-weight:800;margin-top:4px;}
+@media(max-width:768px){.diff-opt{min-height:44px;}}
 .color-picker{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
 .color-opt{width:34px;height:34px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all 0.2s;}
 .color-opt.selected{border-color:white;transform:scale(1.2);}
@@ -663,6 +671,12 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     <p style="color:var(--text2);font-size:13px;margin-bottom:26px;">Takım adını ve rengini seç. 15 oyuncun otomatik oluşturulacak.</p>
     <div class="fg"><label>Takım Adı</label><input id="teamName" placeholder="örn: Ankara Kartallar"></div>
     <div class="fg"><label>Menajer Adın (isteğe bağlı)</label><input id="managerNameInput" placeholder="örn: Ahmet"></div>
+    <!-- B5: zorluk seviyesi — kariyer başında seçilir, Ayarlar'dan sonra değiştirilebilir. -->
+    <div class="fg">
+      <label>Zorluk Seviyesi</label>
+      <div id="setupDifficulty" class="diff-picker"></div>
+      <p id="setupDifficultyDesc" style="font-size:11px;color:var(--text2);margin-top:6px;line-height:1.5;"></p>
+    </div>
     <div class="fg">
       <label>Takım Rengi</label>
       <div class="color-picker">

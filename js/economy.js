@@ -33,7 +33,9 @@ function homeTicketIncome(){
   const wr=form!=null?form*0.7+seasonWr*0.3:seasonWr;
   const occ=Math.max(0.35,Math.min(0.98,(0.55+wr*0.35)*ticketDemandFactor()));
   const budgetMul=(Number(G.budgetPenalty)||0)>0?0.90:1; /* Faz 4.3: başkan bütçe kısıtı sezonu */
-  return Math.round((G.arena&&G.arena.kap||5000)*occ*1.2*ticketPriceFactor()*budgetMul);
+  /* B5: zorluk gelir çarpanı (normal = 1). */
+  const zorGelir=(typeof difficultyCfg==='function')?(difficultyCfg().gelir||1):1;
+  return Math.round((G.arena&&G.arena.kap||5000)*occ*1.2*ticketPriceFactor()*budgetMul*zorGelir);
 }
 /** Madde 24: bilet fiyatı çarpanı — kullanıcı fiyatı belirler; yüksek fiyat gelir/bilet ↑ ama doluluk ↓. */
 function ticketPriceLevel(){ const v=Number(G.ticketPrice); return Number.isFinite(v)?Math.max(0,Math.min(4,v)):2; }

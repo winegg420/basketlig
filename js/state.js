@@ -69,6 +69,32 @@ const IDB_STORE_G='game';
 const MATCH_CLOCK_SEC=600;   /* Regülasyon çeyrek süresi — FIBA 10 dk (gerçekçi skorlar için) */
 const OT_CLOCK_SEC=300;      /* Uzatma süresi — FIBA 5 dk */
 /** Eski ekonomi 2.400 KR — yeni başlangıç 50.000 KR ile orantılı fiyatlar */
+/* ── B5: ZORLUK SEVİYESİ (FAZ 6) ────────────────────────────────────────────────────────
+   Tam sürüm/Steam beklentisi. Kariyer başında seçilir, Ayarlar'dan değiştirilebilir.
+   Tek bir yerden okunur (difficultyCfg) — çarpanlar koda dağılmasın.
+     butce   : başlangıç bütçesi çarpanı
+     gelir   : haftalık gelirler (bilet, sponsor) çarpanı
+     rakip   : rakip takım güç çarpanı (>1 = rakip daha güçlü)
+     sakat   : kullanıcı oyuncularının sakatlanma riski çarpanı
+     piyasa  : serbest piyasa tavanına eklenen OVR payı
+     hedef   : başkan hedefi sıra toleransı (+ = daha kolay hedef)
+   NORMAL tüm çarpanları 1 / 0'dır: davranış FAZ 6 öncesiyle birebir aynıdır. */
+const DIFFICULTY={
+  kolay:  {ad:'Kolay',  ikon:'🟢', butce:1.50, gelir:1.15, rakip:0.94, sakat:0.60, piyasa:+2, hedef:+2,
+           desc:'Daha geniş bütçe, daha yumuşak rakipler, az sakatlık. Oyunu öğrenmek için.'},
+  normal: {ad:'Normal', ikon:'🟡', butce:1.00, gelir:1.00, rakip:1.00, sakat:1.00, piyasa:0,  hedef:0,
+           desc:'Dengeli deneyim — tasarlanmış zorluk.'},
+  zor:    {ad:'Zor',    ikon:'🔴', butce:0.70, gelir:0.90, rakip:1.06, sakat:1.40, piyasa:-2, hedef:-1,
+           desc:'Dar bütçe, güçlü rakipler, sık sakatlık. Deneyimli menajerler için.'}
+};
+const DIFFICULTY_KEYS=['kolay','normal','zor'];
+/** Geçerli zorluk ayarını döndürür (kayıtta yoksa normal). */
+function difficultyCfg(){
+  try{
+    const k=(typeof G!=='undefined'&&G&&G.difficulty)||'normal';
+    return DIFFICULTY[k]||DIFFICULTY.normal;
+  }catch(e){ return DIFFICULTY.normal; }
+}
 const START_KR=50000;
 const ECO_REF_KR=2400;
 const ECO_MUL=START_KR/ECO_REF_KR;
