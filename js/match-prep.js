@@ -297,6 +297,137 @@ function botCoachProfile(teamName){
   };
 }
 
+/* ══════════════════════════════════════════════════════════════════════════════════════
+   FAZ D (30. oturum) — SOYUNMA ODASI: süre huzursuzluğu, ilişkiler, iletişim, kimya
+   Önceden `G.chemistry` yalnız transferlerde düşen / liderlikle artan bir sayıydı; oyuncular
+   süre alıp almadığını umursamıyordu. Artık:
+     • Her maç sonrası oyuncunun SÜRE durumu işlenir (oynadı / kadro dışı kaldı).
+     • Kadro değeri yüksek ama süre almayan oyuncu huzursuzlanır → kriz olayı açılır.
+     • Kullanıcı KONUŞUR (söz ver / sert konuş / görmezden gel) — sözünü tutmazsa bedeli ağır.
+     • Kimya artık gerçek verilerden hesaplanır: moral ortalaması, huzursuz sayısı, liderlik,
+       kadro istikrarı ve ROL ÇAKIŞMASI (aynı rolde iki yüksek kullanımlı oyuncu sürtüşür).
+     • Oyuncular arası dostluk/rekabet (ülke, kişilik, mevki/rol çakışması) kimyayı besler.
+   ══════════════════════════════════════════════════════════════════════════════════════ */
+
+/** Oyuncunun kadro içindeki "hak ettiği" sıra — OVR sıralaması (0 = en iyi). */
+function _rosterRank(p){
+  const list=(G.players||[]).slice().sort((a,b)=>(Number(b.genel)||0)-(Number(a.genel)||0));
+  return list.findIndex(x=>x&&x.id===p.id);
+}
+/** Maç sonrası süre durumu: oynayanlar sayacı sıfırlar, oynamayanlarınki artar. */
+function processPlayingTime(playedIds){
+  try{
+    const played=new Set(playedIds||[]);
+    (G.players||[]).forEach(p=>{
+      if(!p) return;
+      p.sit=Number(p.sit)||0;                 /* üst üste süre almadığı maç sayısı */
+      if(played.has(p.id)){ p.sit=0; p.oynadi=(Number(p.oynadi)||0)+1; return; }
+      if(playerIsInjured(p)) return;           /* sakatken küsmez */
+      p.sit++;
+      const rank=_rosterRank(p);
+      /* Kadronun ilk 6'sındaki bir oyuncu süre alamıyorsa morali düşer; 10. adam aldırmaz. */
+      const beklenti=rank<=5?1:rank<=8?0.5:0.15;
+      const kisilik=(typeof kisilikInfo==='function')?kisilikInfo(p.kisilik):{sadakat:1};
+      const sabir=Math.max(0.5,Number(kisilik.sadakat)||1);   /* sadık oyuncu daha sabırlı */
+      const dus=Math.round(beklenti*(p.sit>=3?3:2)/sabir);
+      if(dus>0) p.mood=Math.max(0,(Number(p.mood)||70)-dus);
+    });
+  }catch(e){ dbg('playingTime',e); }
+}
+
+/** Verilen sözün tutulup tutulmadığını denetler (söz: "gelecek maç ilk 5'tesin"). */
+function checkPromises(playedIds){
+  try{
+    const played=new Set(playedIds||[]);
+    (G.players||[]).forEach(p=>{
+      if(!p||!p.soz) return;
+      if(played.has(p.id)){
+        p.mood=Math.min(100,(Number(p.mood)||70)+rand(6,12));
+        p.soz=null; p.sozBozuk=0;
+        showNotif(`🤝 ${p.isim} sözünü tuttuğun için sana güveniyor — morali yükseldi.`);
+      } else {
+        p.sozBozuk=(Number(p.sozBozuk)||0)+1;
+        p.mood=Math.max(0,(Number(p.mood)||70)-rand(10,18));
+        G.chemistry=Math.max(15,Number(G.chemistry||75)-rand(3,6));
+        p.soz=null;
+        showNotif(`💔 ${p.isim}'a söz verdin ama yine oynatmadın — soyunma odasında güven sarsıldı.`,{critical:true});
+        pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">💬 <strong>${escMatch(p.isim)}</strong> kulüp yönetimine sitem etti: “Bana söz verilmişti.”</div>`);
+      }
+    });
+  }catch(e){ dbg('promises',e); }
+}
+
+/* ── Oyuncular arası ilişkiler ──
+   Dostluk: aynı ülke / uyumlu kişilik / yakın yaş. Rekabet: aynı mevki + aynı rol + ikisi de
+   yüksek kullanım (top paylaşamazlar). Deterministik — kayıt/yükleme arası değişmez. */
+function relationScore(a,b){
+  if(!a||!b||a.id===b.id) return 0;
+  let s=0;
+  if(a.ulke&&a.ulke===b.ulke) s+=2;
+  if(a.kisilik===b.kisilik) s+=1;
+  if(Math.abs((Number(a.yas)||25)-(Number(b.yas)||25))<=2) s+=1;
+  if(a.poz===b.poz&&a.rol===b.rol&&(Number(a.genel)||0)>=70&&(Number(b.genel)||0)>=70) s-=3;
+  if(a.rol==='skorer'&&b.rol==='skorer') s-=2;
+  const h=(typeof hash32==='function')?hash32([a.id,b.id].sort().join('|')):0;
+  s+=((h%5)-2)*0.5;   /* kişisel kimya payı */
+  return s;
+}
+/** Kadro içi ilişki özeti: dost çiftleri ve sürtüşmeler. */
+function rosterRelations(){
+  const ps=(G.players||[]).filter(Boolean);
+  const dost=[],catisma=[];
+  for(let i=0;i<ps.length;i++) for(let j=i+1;j<ps.length;j++){
+    const s=relationScore(ps[i],ps[j]);
+    if(s>=3) dost.push({a:ps[i],b:ps[j],s});
+    else if(s<=-3) catisma.push({a:ps[i],b:ps[j],s});
+  }
+  dost.sort((x,y)=>y.s-x.s); catisma.sort((x,y)=>x.s-y.s);
+  return {dost,catisma};
+}
+
+/** Kimyanın HEDEF değeri gerçek verilerden hesaplanır; G.chemistry buna kademeli yaklaşır. */
+function chemistryTarget(){
+  const ps=(G.players||[]).filter(Boolean);
+  if(!ps.length) return 75;
+  const avgMood=ps.reduce((s,p)=>s+(Number(p.mood)||70),0)/ps.length;
+  const huzursuz=ps.filter(p=>(Number(p.mood)||70)<45).length;
+  const lead=(typeof teamLeadership==='function')?teamLeadership():70;
+  const rel=rosterRelations();
+  let t=avgMood*0.62+lead*0.24+18;
+  t-=huzursuz*3.2;                       /* her huzursuz oyuncu odayı zehirler */
+  t+=Math.min(8,rel.dost.length*1.2);    /* dost çiftleri kaynaştırır */
+  t-=Math.min(12,rel.catisma.length*2.0);/* rol/mevki çakışması sürtüşme yaratır */
+  return Math.max(10,Math.min(100,Math.round(t)));
+}
+/** Kimya bir maçta en fazla ±3 hareket eder — ani sıçrama olmaz (gerçekçi ve okunabilir). */
+function driftChemistry(){
+  const t=chemistryTarget();
+  const cur=Number(G.chemistry)||75;
+  const d=Math.max(-3,Math.min(3,t-cur));
+  G.chemistry=Math.max(10,Math.min(100,cur+d));
+  return {target:t,cur:G.chemistry};
+}
+
+/* ── KRİZ / İLETİŞİM ──
+   Kriz koşulu: kadronun ilk 6'sında olup 3+ maçtır süre almayan ve morali düşen oyuncu. */
+function findUnrestPlayer(){
+  const cands=(G.players||[]).filter(p=>p&&!playerIsInjured(p)&&Number(p.sit||0)>=3&&(Number(p.mood)||70)<58&&_rosterRank(p)<=5&&!p.soz);
+  if(!cands.length) return null;
+  cands.sort((a,b)=>((Number(b.genel)||0)-(Number(a.genel)||0)));
+  return cands[0];
+}
+function maybeLockerRoomCrisis(){
+  try{
+    if(!G.team) return false;
+    const p=findUnrestPlayer();
+    if(!p) return false;
+    if(G._crisisPid===p.id&&Number(G._crisisDay||0)>=(G.gameDay||1)-3) return false; /* aynı oyuncuyla üst üste bunaltma */
+    G._crisisPid=p.id; G._crisisDay=G.gameDay||1;
+    openLockerRoomModal(p.id);
+    return true;
+  }catch(e){ dbg('crisis',e); return false; }
+}
+
 function pseudoTeamStrength(isim,tblKey){
   /* Madde 9: bot menajerin itibarı (hazır geçmiş) takıma küçük bir güç katkısı sağlar. */
   return 58+(seqFromName(String(isim),tblKey||'tbl')%4200)/100+botManagerTitles(isim)*0.4;

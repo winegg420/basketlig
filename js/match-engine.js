@@ -2409,6 +2409,9 @@ function applyMatchResult(ev,ctx){
     const playedSet=new Set(ev.lineupIds||[]);
     (ev.subIds||[]).forEach(id=>playedSet.add(id));
     updateChronicFatigue(playedSet); /* Faz 1.2: yorgunluk düşmeden önce sayacı güncelle */
+    /* FAZ D: süre huzursuzluğu + verilen sözlerin denetimi (kimya bunlardan besleniyor). */
+    if(typeof checkPromises==='function') checkPromises(playedSet);
+    if(typeof processPlayingTime==='function') processPlayingTime(playedSet);
     applyMatchFatigueToRoster(playedSet.size?playedSet:undefined);
     const prevDay=G.gameDay||1;
     const roundDays=G.season.matches.filter(x=>x.round===sm.round).map(x=>x.day);
@@ -2535,10 +2538,13 @@ function applyMatchResult(ev,ctx){
   if(ev.winner==='home') G.careerWins=(Number(G.careerWins)||0)+1;
   else if(ev.winner==='away') G.careerLosses=(Number(G.careerLosses)||0)+1;
   if(G.careerMatches>=100) unlockAchievement('yuzMac');
-  const lead=teamLeadership();
-  const chemNudge=lead>=85?3:lead>=75?2:lead>=65?1:0;
-  if(chemNudge) G.chemistry=Math.min(100,G.chemistry+chemNudge);
+  /* FAZ D: kimya artık moral ortalaması + liderlik + huzursuzlar + rol çakışmasından hesaplanan
+     HEDEFE kademeli yaklaşır (maç başına en fazla ±3). Eski liderlik dürtmesi bunun içinde. */
+  if(typeof driftChemistry==='function') driftChemistry();
+  else { const lead=teamLeadership(); const chemNudge=lead>=85?3:lead>=75?2:lead>=65?1:0; if(chemNudge) G.chemistry=Math.min(100,G.chemistry+chemNudge); }
   updateChemistry();
+  /* Maç sonrası soyunma odası krizi (süre alamayan yıldız) — kullanıcı karar verir. */
+  if(typeof maybeLockerRoomCrisis==='function') setTimeout(()=>{ try{ maybeLockerRoomCrisis(); }catch(e){} },1400);
   updateStats();
   renderLig();
   renderFixture();

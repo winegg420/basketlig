@@ -551,6 +551,20 @@ function egBarColor(k,v){
   if(k==='disiplin'||k==='clutch') return v>=70?'var(--green)':v>=45?'var(--gold)':'var(--red)';
   return v>=70?'var(--blue)':v>=40?'var(--text2)':'var(--border)';
 }
+/** FAZ D: oyuncu kartında süre/huzursuzluk/söz durumu. */
+function lockerLineHtml(p){
+  try{
+    if(!p||!(G.players||[]).some(x=>x&&x.id===p.id)) return "";
+    const sit=Number(p.sit)||0;
+    const bits=[];
+    if(p.soz) bits.push(`<span style="color:var(--blue);">🤝 Söz verildi — sonraki maç ilk 5</span>`);
+    if(sit>=2) bits.push(`<span style="color:var(--gold);">⏳ ${sit} maçtır süre almadı</span>`);
+    if((Number(p.mood)||70)<45) bits.push(`<span style="color:var(--red);">😖 Huzursuz</span>`);
+    if(Number(p.kirgin)||0) bits.push(`<span style="color:var(--red);">💔 ${p.kirgin} kez görmezden gelindi</span>`);
+    if(!bits.length) return "";
+    return `<p style="font-size:10px;margin:-4px 0 8px;">${bits.join(' · ')}</p>`;
+  }catch(e){ return ""; }
+}
 function rolTendencyHtml(p){
   if(!p) return '';
   try{ ensureRole(p); }catch(e){ return ''; }
@@ -622,6 +636,7 @@ function openPlayerModal(pid){
   <p style="font-size:12px;color:var(--text2);margin-bottom:8px;">${POZ_TR[p.poz]||''} · ${p.ulke} · ${p.yas} yaş · ${p.boy}cm · ${p.kilo}kg</p>
   <p style="font-size:10px;color:var(--text2);margin-bottom:4px;">Psikoloji: <span style="color:${moodColor(p.mood)};">${moodText(p.mood)}</span></p>
   <p style="font-size:10px;color:var(--text2);margin-bottom:10px;" title="${kisilikInfo(p.kisilik).desc}">Kişilik: <strong>${kisilikInfo(p.kisilik).ikon} ${kisilikInfo(p.kisilik).ad}</strong> — <span style="opacity:.85;">${kisilikInfo(p.kisilik).desc}</span></p>
+  ${lockerLineHtml(p)}
   ${rolTendencyHtml(p)}
   ${potBlock}
   <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
@@ -702,6 +717,7 @@ function renderYouthListRow(p){
 }
 
 function renderRoster(){
+  try{ renderLockerRoomPanel(); }catch(e){}   /* FAZ D: soyunma odası paneli */
   const kb=document.getElementById('kadroPrepareBanner');
   if(kb){
     let ix=G.prepareMatchIx;
@@ -771,6 +787,105 @@ function teamLeadership(){
   if(!avail.length) return 60;
   return avail.reduce((m,p)=>Math.max(m,statN(p,'liderlik')),0);
 }
+/* ── FAZ D: soyunma odası kriz modalı (İLETİŞİM) ──────────────────────────────────────
+   Kullanıcı üç yoldan birini seçer; sonuç oyuncunun KİŞİLİĞİNE göre değişir:
+   sadık/şehir bağımlısı sert konuşmayı kaldırır, hırslı/parasever söz ister, kararsız
+   öngörülemez. Söz verilirse `p.soz` işaretlenir ve sonraki maçta denetlenir. */
+function openLockerRoomModal(pid){
+  const p=(G.players||[]).find(x=>x.id===pid);
+  if(!p) return;
+  const k=kisilikInfo(p.kisilik);
+  const rank=_rosterRank(p)+1;
+  const av=playerAvatar(p.seed,p.id,{ovr:p.genel});
+  const sikayet=[
+    `“${p.sit} maçtır kenardayım. Ben bu takımın en iyi ${rank}. oyuncusuyum — sahada olmam gerekiyor.”`,
+    `“Antrenmanda her şeyi yapıyorum ama maç günü ismim yok. Bunu anlamıyorum.”`,
+    `“Menajerimle konuştum. Süre alamayacaksam burada ne işim var?”`
+  ][Math.abs(hash32(p.id))%3];
+  showAppModal(`<div class="modal-title">💬 Soyunma Odası — ${escMatch(p.isim)}</div>
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;">
+      <img src="${av}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} style="width:74px;height:92px;border-radius:10px;object-fit:cover;border:2px solid var(--red);" alt="">
+      <div style="flex:1;min-width:200px;">
+        <div style="font-size:12px;color:var(--text2);">${p.poz} · OVR ${p.genel} · kadro sırası ${rank}. · ${k.ikon} ${k.ad}</div>
+        <div style="font-size:11px;color:var(--red);margin-top:3px;">😖 Moral ${Math.round(Number(p.mood)||0)}/100 · ${p.sit} maçtır süre almadı</div>
+        <p style="font-size:13px;font-style:italic;margin:8px 0 0;line-height:1.5;">${sikayet}</p>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:8px;">Nasıl karşılık vereceksin? Kararın moralini ve tüm takımın kimyasını etkiler.</div>
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      <button type="button" class="btn-p" style="padding:10px;text-align:left;" onclick="resolveCrisis('${p.id}','soz')">
+        🤝 <strong>Söz ver</strong> — “Gelecek maç ilk 5’tesin.”<br><span style="font-size:10px;opacity:.85;">Morali hemen yükselir. Sözünü tutmazsan güven çöker ve kimya düşer.</span></button>
+      <button type="button" class="btn-sm" style="padding:10px;text-align:left;" onclick="resolveCrisis('${p.id}','sert')">
+        🗯️ <strong>Sert konuş</strong> — “Yerini antrenmanda kazanacaksın.”<br><span style="font-size:10px;opacity:.85;">Karakterine bağlı: kimisi toparlanır, kimisi küser. Otoriteni gösterir.</span></button>
+      <button type="button" class="btn-sm" style="padding:10px;text-align:left;" onclick="resolveCrisis('${p.id}','yoksay')">
+        🙈 <strong>Görmezden gel</strong><br><span style="font-size:10px;opacity:.85;">Bugün bedeli yok; huzursuzluk büyür ve odaya yayılır.</span></button>
+    </div>`);
+}
+function resolveCrisis(pid,secim){
+  const p=(G.players||[]).find(x=>x.id===pid);
+  if(!p){ closeAppModal(); return; }
+  const k=kisilikInfo(p.kisilik);
+  let msg='';
+  if(secim==='soz'){
+    p.soz=true;
+    p.mood=Math.min(100,(Number(p.mood)||70)+rand(8,14));
+    msg=`🤝 ${p.isim}'a söz verdin — morali toparlandı. Sonraki maçta sahada olmalı!`;
+  } else if(secim==='sert'){
+    /* Sadık/şehir bağımlısı otoriteyi kabul eder; parasever/hırslı küser; kararsız kumar. */
+    const kaldirir=(k.sadakat>=1.4)||(p.kisilik==='kararsiz'&&Math.random()<0.5);
+    if(kaldirir){
+      p.mood=Math.min(100,(Number(p.mood)||70)+rand(2,6));
+      G.chemistry=Math.min(100,Number(G.chemistry||75)+rand(1,3));
+      msg=`🗯️ ${p.isim} mesajı aldı — çalışmaya döndü, soyunma odasında otoriten arttı.`;
+    } else {
+      p.mood=Math.max(0,(Number(p.mood)||70)-rand(6,12));
+      G.chemistry=Math.max(10,Number(G.chemistry||75)-rand(1,3));
+      msg=`🗯️ ${p.isim} sert çıkışı kaldıramadı — morali daha da düştü.`;
+    }
+  } else {
+    p.mood=Math.max(0,(Number(p.mood)||70)-rand(5,10));
+    G.chemistry=Math.max(10,Number(G.chemistry||75)-rand(2,5));
+    p.kirgin=(Number(p.kirgin)||0)+1;
+    msg=`🙈 ${p.isim} görmezden gelindi — huzursuzluk soyunma odasına yayılıyor.`;
+  }
+  closeAppModal();
+  showNotif(msg,{critical:secim!=='soz'});
+  updateChemistry();
+  scheduleGameSave();
+  try{ if(document.getElementById('page-kadro')&&document.getElementById('page-kadro').classList.contains('active')) renderRoster(); }catch(e){}
+}
+
+/** Kadro sayfası için soyunma odası paneli — kimya nedenleri + dostluk/sürtüşme + huzursuzlar. */
+function renderLockerRoomPanel(){
+  const el=document.getElementById('lockerRoomPanel');
+  if(!el) return;
+  if(!G.team||!(G.players||[]).length){ el.innerHTML=''; return; }
+  const t=chemistryTarget();
+  const cur=Number(G.chemistry)||75;
+  const rel=rosterRelations();
+  const huzursuz=(G.players||[]).filter(p=>p&&(Number(p.mood)||70)<45);
+  const bekleyen=(G.players||[]).filter(p=>p&&Number(p.sit||0)>=2&&_rosterRank(p)<=5);
+  const yon=t>cur?'yükseliyor ↑':t<cur?'düşüyor ↓':'sabit';
+  const col=cur>=70?'var(--green)':cur>=45?'var(--gold)':'var(--red)';
+  const chip=(txt,c)=>`<span style="display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;background:var(--bg3);border:1px solid ${c||'var(--border)'};color:${c||'var(--text2)'};margin:2px 3px 2px 0;">${txt}</span>`;
+  el.innerHTML=`<div style="padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+      <strong style="font-size:13px;">🧬 Soyunma Odası</strong>
+      <span style="font-size:11px;color:var(--text2);">Kimya <strong style="color:${col};">${cur}</strong>/100 · hedef ${t} (${yon})</span>
+    </div>
+    <div style="font-size:10px;color:var(--text2);margin-bottom:7px;">Kimya; moral ortalaması, liderlik, süre alamayanlar ve rol çakışmalarından hesaplanır. Maç başına en fazla ±3 hareket eder.</div>
+    <div style="margin-bottom:6px;">
+      ${rel.dost.slice(0,3).map(d=>chip('🤝 '+escMatch(d.a.isim.split(' ').pop())+' – '+escMatch(d.b.isim.split(' ').pop()),'var(--green)')).join('')||chip('Belirgin dostluk yok')}
+    </div>
+    <div style="margin-bottom:6px;">
+      ${rel.catisma.slice(0,3).map(d=>chip('⚡ '+escMatch(d.a.isim.split(' ').pop())+' – '+escMatch(d.b.isim.split(' ').pop())+' ('+d.a.poz+' rol çakışması)','var(--red)')).join('')||chip('Sürtüşme yok')}
+    </div>
+    ${huzursuz.length?`<div style="font-size:11px;color:var(--red);margin-top:6px;">😖 Huzursuz: ${huzursuz.map(p=>escMatch(p.isim)).join(', ')}</div>`:''}
+    ${bekleyen.length?`<div style="font-size:11px;color:var(--gold);margin-top:4px;">⏳ Süre bekleyen: ${bekleyen.map(p=>escMatch(p.isim)+' ('+p.sit+' maç)').join(', ')}</div>`:''}
+    ${(G.players||[]).some(p=>p&&p.soz)?`<div style="font-size:11px;color:var(--blue);margin-top:4px;">🤝 Söz verildi: ${(G.players||[]).filter(p=>p&&p.soz).map(p=>escMatch(p.isim)).join(', ')} — sonraki maçta oynatmalısın.</div>`:''}
+  </div>`;
+}
+
 function updateChemistry(){
   const el=document.getElementById('chemFill');
   const sc=document.getElementById('chemScore');
