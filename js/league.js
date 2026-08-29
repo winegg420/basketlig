@@ -483,7 +483,7 @@ function formatFixtureDayLabel(dayNum){
       const dt=new Date();
       dt.setHours(0,0,0,0);
       dt.setDate(dt.getDate()+(d0-nm.day));
-      return dt.toLocaleDateString('tr-TR',{weekday:'short',day:'numeric',month:'long'});
+      return dt.toLocaleDateString(typeof getLang==='function'&&getLang()==='en'?'en-GB':'tr-TR',{weekday:'short',day:'numeric',month:'long'});
     }catch(e){}
   }
   return 'Gün '+d0;

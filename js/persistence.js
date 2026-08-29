@@ -15,7 +15,7 @@ function openAchievementsModal(){
     return `<div style="display:flex;gap:10px;align-items:center;padding:10px;background:var(--bg3);border-radius:10px;margin-bottom:6px;border:1px solid ${ok?'rgba(251,191,36,0.4)':'var(--border)'};${ok?'':'opacity:0.5;'}">
       <span style="font-size:22px;">${ok?a.ikon:'🔒'}</span>
       <div><div style="font-weight:700;font-size:13px;">${a.ad}</div><div style="font-size:11px;color:var(--text2);">${a.desc}</div></div>
-      ${ok?`<span style="margin-left:auto;font-size:10px;color:var(--gold);">${new Date(got[a.id]).toLocaleDateString('tr-TR')}</span>`:''}
+      ${ok?`<span style="margin-left:auto;font-size:10px;color:var(--gold);">${new Date(got[a.id]).toLocaleDateString(typeof getLang==='function'&&getLang()==='en'?'en-GB':'tr-TR')}</span>`:''}
     </div>`;
   }).join('');
   showAppModal(`<div class="modal-title">🏆 Başarımlar (${Object.keys(got).length}/${ACHV.length})</div>${rows}`);
@@ -196,6 +196,11 @@ function openSettingsModal(){
   const opt=(v,cur,label)=>`<option value="${v}" ${Number(cur)===v?'selected':''}>${label}</option>`;
   showAppModal(`<div class="modal-title">⚙️ Ayarlar</div>
     <div style="display:flex;flex-direction:column;gap:12px;">
+      <div style="padding:12px;background:var(--bg3);border-radius:10px;">
+        <div style="font-size:13px;margin-bottom:7px;">🌍 Dil / Language</div>
+        <div class="lang-row" style="justify-content:flex-start;">${langPickerHtml()}</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:6px;">Dil değişince oyun yeniden yüklenir — ilerlemen korunur.</div>
+      </div>
       <label style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg3);border-radius:10px;cursor:pointer;">
         <span style="font-size:13px;">🔊 Ses efektleri</span>
         <input type="checkbox" id="setSound" ${s.sound!==false?'checked':''} onchange="G.settings.sound=this.checked;scheduleGameSave();if(this.checked)sfx('notif');else stopCrowdAmbience();">
@@ -257,7 +262,7 @@ function slotInfo(n){
 }
 function slotRowHtml(n){
   const inf=slotInfo(n);
-  const label=inf?`<strong>${escMatch(inf.team)}</strong> · S${inf.year}${inf.at?` · ${new Date(inf.at).toLocaleDateString('tr-TR')}`:''}`:'<span style="color:var(--text2);">Boş slot</span>';
+  const label=inf?`<strong>${escMatch(inf.team)}</strong> · S${inf.year}${inf.at?` · ${new Date(inf.at).toLocaleDateString(typeof getLang==='function'&&getLang()==='en'?'en-GB':'tr-TR')}`:''}`:'<span style="color:var(--text2);">Boş slot</span>';
   return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:9px;margin-bottom:6px;">
     <span style="flex:1;font-size:12px;">💾 Slot ${n}: ${label}</span>
     <button type="button" class="btn-sm" style="padding:4px 9px;font-size:11px;" onclick="saveToSlot(${n})">Kaydet</button>

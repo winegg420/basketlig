@@ -1631,7 +1631,9 @@ function pickLine(pool,pr,memo,key){
     while(recent.length>cap) recent.shift();
     memo[key]=recent;
   }
-  return pick;
+  /* FAZ F: satır içi anlatım havuzları (fonksiyon gövdesinde tanımlı diziler) da
+     sözlükten geçer; %S/%B/%C yer tutucuları yerine konmadan ÖNCE çevrildiği için birebir eşleşir. */
+  return (typeof t==='function')?t(pick):pick;
 }
 /* İŞ 4: asist ibareleri şemayla uyumlu ve ÇEŞİTLİ (eski monoton "X buldu; Y…" bitti). */
 const ASSIST_PHRASES={

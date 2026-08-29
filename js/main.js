@@ -571,7 +571,9 @@ function addComment(txt,type=''){
   const t=ev.t!==undefined?ev.t:clk;
   const dm=Math.floor((clk-t)/60);
   const ds=(clk-t)%60;
-  const qLbl=q<=4?q+'P':('U'+String(q-4));
+  /* FAZ F: çeyrek/uzatma etiketi dile göre (TR: 1P/U1 · EN: Q1/OT1) */
+  const _en=(typeof isEN==='function'&&isEN());
+  const qLbl=q<=4?(_en?('Q'+q):(q+'P')):((_en?'OT':'U')+String(q-4));
   const item=document.createElement('div');
   let cls='ci';
   if(type==='score3'||type==='score2'||type==='free') cls+=' ci-score';
@@ -1291,6 +1293,9 @@ function _drainNotif(){
 })();
 
 window.onload=()=>{
+  /* FAZ F: dil katmanı her şeyden önce kurulur (kataloglar + canlı DOM çevirisi). */
+  try{ initI18n(); }catch(e){}
+  try{ const lp=document.getElementById("langPicker"); if(lp) lp.innerHTML=langPickerHtml(); }catch(e){}
   /* Loader görseli kapalı (display:none) — eski 1500+500ms sahte bekleme girişte gecikme yaratıyordu. */
   setTimeout(()=>{
     document.getElementById('loader').style.opacity='0';
