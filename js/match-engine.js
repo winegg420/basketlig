@@ -1737,6 +1737,40 @@ function generateMatchEvents(rakip, opts){
     if(!played||played===p.poz) return 1;
     return (p.ikincilPoz===played)?0.96:0.90;
   };
+  /* ── FAZ A: rol/eğilim tabanlı ağırlıklı seçim ──────────────────────────────────────
+     Eskiden şutör/asist/ribaund/blok/faul sahadaki 5 kişiden DÜZ rastgele seçiliyordu; bu yüzden
+     pivot da oyun kurucu kadar top kullanıyordu. Artık her seçim oyuncunun eğilim+statına göre
+     ağırlıklı. Takım TOPLAMLARI (üçlük payı, ribaund oranı, faul sayısı) değişmez — yalnız
+     dağılım gerçekçileşir. */
+  const wPick=(list,wf)=>{
+    const arr=(list||[]).filter(Boolean);
+    if(!arr.length) return null;
+    if(arr.length===1) return arr[0];
+    const w=arr.map(p=>{ const v=Number(wf(p)); return Number.isFinite(v)&&v>0?v:0.01; });
+    let tot=0; for(let i=0;i<w.length;i++) tot+=w[i];
+    if(!(tot>0)) return ch(arr);
+    let r=Math.random()*tot;
+    for(let i=0;i<arr.length;i++){ r-=w[i]; if(r<=0) return arr[i]; }
+    return arr[arr.length-1];
+  };
+  const _eg=(p,k)=>{ try{ return egOf(p,k); }catch(e){ return 50; } };
+  /* Top kullanım payı (usage): skorer/şutör rolleri ve hücum statı yükü çeker. */
+  const usageW=(p)=>{
+    if(!p) return 1;
+    const rol=p.rol||'cokYonlu';
+    /* Gerçek basketbolda kullanım payı (usage) ~%15-32 bandındadır: yıldız ile pivot arası fark
+       yaklaşık 2 kat, 10 kat değil. Çarpanlar bilinçli olarak dar tutuldu. */
+    const rolMul=rol==='skorer'?1.34:rol==='sutor'?1.20:rol==='slasher'?1.14:rol==='oyunKurucu'?1.02:
+                 rol==='kilit'?0.86:rol==='karartici'?0.86:rol==='ribaundcu'?0.88:1.0;
+    const sk=(statN(p,'hucum')*0.6+statN(p,'sutIsabeti')*0.4);
+    return Math.max(0.20,rolMul*(0.62+sk/150));
+  };
+  const astW=(p)=>Math.max(0.12,(_eg(p,'pas')/100)*1.5+statN(p,'pas')/140+(p&&p.rol==='oyunKurucu'?0.55:0));
+  const rebW=(p)=>Math.max(0.12,statN(p,'ribaund')/70+((Number(p&&p.boy)||200)-198)/40+(p&&p.rol==='ribaundcu'?0.8:0));
+  const blkW=(p)=>Math.max(0.08,statN(p,'blok')/60+(p&&p.rol==='karartici'?1.1:0));
+  const stlW=(p)=>Math.max(0.10,statN(p,'topCalma')/65+(p&&p.rol==='kilit'?0.9:0));
+  /* Faul disiplini düşük olan oyuncu faulleri toplar (gerçek hayatta pivotlar). */
+  const foulW=(p)=>Math.max(0.15,(100-_eg(p,'disiplin'))/45);
   const shooterAcc=(shooter,is3,base,clutch)=>{
     const s2=statN(shooter,'hucum')*0.5+statN(shooter,'sutIsabeti')*0.5;
     const s3=statN(shooter,'sutIsabeti')*0.7+statN(shooter,'hucum')*0.3;
@@ -1748,7 +1782,12 @@ function generateMatchEvents(rakip, opts){
     const psyMul=Math.max(0.95,Math.min(1.05,1+((mood-60)/40)*0.04+((teamChem-70)/30)*0.03));
     /* Madde 36: kritik anlarda (son 2 dk / uzatma) zekâsı yüksek oyuncu daha iyi karar verir. */
     let clutchMul=1;
-    if(clutch){ clutchMul=Math.max(0.94,Math.min(1.08,1+(statN(shooter,'zeka')-70)/100*0.10)); }
+    if(clutch){
+      /* FAZ A: SOĞUKKANLILIK — düşük eğilimli oyuncunun son dakikada eli titrer (×0.86'ya kadar),
+         yüksek olan ısınır (×1.12). Zekâ katkısı korunur ama artık tek belirleyici değil. */
+      const _cl=_eg(shooter,'clutch');
+      clutchMul=Math.max(0.86,Math.min(1.12,1+(statN(shooter,'zeka')-70)/100*0.06+(_cl-50)/100*0.18));
+    }
     return base*skillMul*enMul*psyMul*clutchMul*uMul*pozFitMul(shooter);
   };
   const ftMake=(shooter)=>{
@@ -1771,7 +1810,7 @@ function generateMatchEvents(rakip, opts){
   /* Faz 3: top yükleme — seçili oyuncu sahadaysa daha sık şut/pas alır (yorgunluk maliyeti maç sonu artar). */
   const uShooter=()=>{
     if(focusPlayerId){ const fp=userCourt.find(p=>p&&p.id===focusPlayerId); if(fp&&Math.random()<0.42) return fp; }
-    return userCourt.length?ch(userCourt):(pg||sg||sf||pf||c);
+    return userCourt.length?(wPick(userCourt,usageW)||ch(userCourt)):(pg||sg||sf||pf||c);
   };
   const uAny=()=>userCourt.length?ch(userCourt):(pg||sg||sf||pf||c);
   const benchNext=()=>{ while(benchQueue.length){ const nx=benchQueue.shift(); if(nx&&(nx.matchFouls||0)<foulLimit) return nx; } return null; };
@@ -1782,7 +1821,7 @@ function generateMatchEvents(rakip, opts){
   let oppCourt=oppPool.slice(0,5);
   const oppBench=oppPool.slice(5);
   const oFallback={isim:oppName+' oyuncusu'};
-  const oShooter=()=>oppCourt.length?ch(oppCourt):(oppPool[0]||oFallback);
+  const oShooter=()=>oppCourt.length?(wPick(oppCourt,usageW)||ch(oppCourt)):(oppPool[0]||oFallback);
   const oAny=()=>oppCourt.length?ch(oppCourt):(oppPool[0]||oFallback);
   const oBenchNext=()=>{ while(oppBench.length){ const nx=oppBench.shift(); if(nx&&(nx.matchFouls||0)<foulLimit) return nx; } return null; };
   const foulingTeamName=(defenderIsUser)=>defenderIsUser?G.team.isim:rname;
@@ -1807,12 +1846,12 @@ function generateMatchEvents(rakip, opts){
     if(defenderIsUser){
       qFoulU[q]=(qFoulU[q]||0)+1;
       const cand=userCourt.filter(p=>p&&(p.matchFouls||0)<foulLimit);
-      const p=cand.length?ch(cand):userCourt[0];
+      const p=cand.length?(wPick(cand,foulW)||ch(cand)):userCourt[0];   /* FAZ A: faul disiplini */
       if(p){ p.matchFouls=(p.matchFouls||0)+1; if(p.matchFouls>=foulLimit) userFoulsOut(p,q,t); }
     } else {
       qFoulO[q]=(qFoulO[q]||0)+1;
       const cand=oppCourt.filter(p=>p&&(p.matchFouls||0)<foulLimit);
-      const p=cand.length?ch(cand):oppCourt[0];
+      const p=cand.length?(wPick(cand,foulW)||ch(cand)):oppCourt[0];   /* FAZ A: faul disiplini */
       if(p){ p.matchFouls=(p.matchFouls||0)+1; if(p.matchFouls>=foulLimit) oppFoulsOut(p,q,t); }
     }
   }
@@ -1896,7 +1935,7 @@ function generateMatchEvents(rakip, opts){
 
     /* Faz 3 — Pres savunması: rakip pozisyonunda akış dışı ekstra top kaybı (kullanıcı çalar). */
     if(!userPos && defPressTO>0 && Math.random()<defPressTO){
-      const stealer=uAny();
+      const stealer=wPick(userCourt,stlW)||uAny();   /* FAZ A: kilit savunmacı çalar */
       B.to++; D.stl++;
       fastNext='steal';
       events.push({type:'steal',text:`🔥 Pres tuttu — ${stealer.isim} topu çaldı! ${sc()}`,q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:true,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
@@ -1904,7 +1943,7 @@ function generateMatchEvents(rakip, opts){
     }
     /* Faz 3 — Hızlı hücum: acele şutta kullanıcı pozisyonunda ekstra top kaybı riski. */
     if(userPos && offRushTO>0 && Math.random()<offRushTO){
-      const stealer=oAny();
+      const stealer=wPick(oppCourt,stlW)||oAny();    /* FAZ A: kilit savunmacı çalar */
       B.to++; D.stl++;
       fastNext='steal';
       events.push({type:'steal',text:`⚡ Erken hücumda hata — ${stealer.isim} topu kaptı. ${sc()}`,q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:false,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
@@ -1921,7 +1960,16 @@ function generateMatchEvents(rakip, opts){
       if(fbCh&&userPos&&(tempo==='hizli'||odak==='hizli')) fbCh=Math.min(0.75,fbCh*1.7);
       if(fbCh&&userPos&&tempo==='yavas') fbCh*=0.5;
       const fb=!putback&&Math.random()<fbCh;
-      const is3=putback?false:Math.random()<(userPos?userIs3Oran:0.32);
+      /* FAZ A: üçlük denemesi artık ŞUTÖRÜN eğilimine bağlı. Sahadaki 5'in ortalamasına
+         normalize edildiği için TAKIMIN üçlük payı (userIs3Oran / 0.32) korunur; değişen,
+         o denemeyi kimin yaptığı — şutör rolü dışarıdan, pivot boyalı alandan oynar. */
+      const _court3=userPos?userCourt:oppCourt;
+      let _is3p=userPos?userIs3Oran:0.32;
+      if(!putback&&_court3.length){
+        const _avgUc=_court3.reduce((q,p)=>q+_eg(p,'uc'),0)/_court3.length;
+        if(_avgUc>0) _is3p=Math.max(0.03,Math.min(0.74,_is3p*(_eg(shooter,'uc')/_avgUc)));
+      }
+      const is3=putback?false:Math.random()<_is3p;
       const clutch=(q>=4 && t<=120);
       /* Gerçek basketbol şut dağılımı: üçlük denemesi uzun oyuncuya (C/PF) düştüyse
          çoğunlukla dış oyuncuya (PG/SG/SF) devredilir — takım üçlük ORANI değişmez,
@@ -1953,8 +2001,8 @@ function generateMatchEvents(rakip, opts){
       const pts=is3?3:2;
       let passer=null;
       if(made){
-        if(userPos){ const pp=userCourt.filter(p=>p&&p.id!==shooter.id); if(pp.length&&Math.random()<(0.60+offAstBonus)) passer=ch(pp); }
-        else { const op=oppCourt.filter(p=>p&&p.id!==shooter.id); if(op.length&&Math.random()<0.55) passer=ch(op); }
+        if(userPos){ const pp=userCourt.filter(p=>p&&p.id!==shooter.id); if(pp.length&&Math.random()<(0.60+offAstBonus)) passer=wPick(pp,astW)||ch(pp);   /* FAZ A: asist oyun kurucudan */ }
+        else { const op=oppCourt.filter(p=>p&&p.id!==shooter.id); if(op.length&&Math.random()<0.55) passer=wPick(op,astW)||ch(op); }
         if(passer&&passer.isim===shooter.isim) passer=null;
       }
       if(is3){ B.thrAtt++; if(made) B.thrMade++; } else { B.twoAtt++; if(made) B.twoMade++; }
@@ -1997,12 +2045,14 @@ function generateMatchEvents(rakip, opts){
       }
       /* Blok / ribaund (kaçan şutlarda) */
       let blocked=false, blk=null;
-      if(!made&&Math.random()<0.10){ blocked=true; blk=userPos?oAny():uAny(); D.blk++; }
+      if(!made&&Math.random()<0.10){ blocked=true; blk=(userPos?(wPick(oppCourt,blkW)||oAny()):(wPick(userCourt,blkW)||uAny())); D.blk++; }  /* FAZ A: pota altı karartıcı bloklar */
       let rebounder=null, rebOff=false;
       if(!made){
         rebOff=Math.random()<0.26;
         /* Ribaund kutuya ve doğru takımın somut oyuncusuna yazılır (kullanıcı + rakip simetrik). */
-        rebounder=rebOff?(userPos?uAny():oAny()):(userPos?oAny():uAny());
+        /* FAZ A: ribaundu cam süpürücü/uzun oyuncu alır (takım ribaund ORANI değişmez). */
+        const _rebCourt=rebOff?(userPos?userCourt:oppCourt):(userPos?oppCourt:userCourt);
+        rebounder=wPick(_rebCourt,rebW)||(rebOff?(userPos?uAny():oAny()):(userPos?oAny():uAny()));
         if(rebOff){ B.reb++; if(userPos) bumpP(rebounder,'reb',1); else bumpO(rebounder,'reb',1); }
         else { D.reb++; if(userPos) bumpO(rebounder,'reb',1); else bumpP(rebounder,'reb',1); }
         posNext=rebOff?userPos:!userPos;   /* ribaundu alan takım hücuma devam eder */
@@ -2124,7 +2174,7 @@ function generateMatchEvents(rakip, opts){
            nötr seçimlerde keep=1 → her zaman top kaybı (eski davranış birebir). */
         const keep=userPos?offStealKeep:defStealKeep;
         if(keep>=1||Math.random()<keep){
-          const stealer=userPos?oAny():uAny();
+          const stealer=userPos?(wPick(oppCourt,stlW)||oAny()):(wPick(userCourt,stlW)||uAny());
           B.to++; D.stl++;
           fastNext='steal';
           events.push({type:'steal',text:spikerLinePR(SP.id,'steal',{c:stealer.isim},pr,narr.recent),q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});

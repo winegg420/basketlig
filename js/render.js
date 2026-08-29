@@ -144,6 +144,7 @@ function renderClubTransfers(){
       <div class="minfo">
         <div style="font-weight:700;font-size:13px;">${p.bayrak} ${p.isim} ${modeBadge}</div>
         <div style="font-size:11px;color:var(--text2);">${p.ulke} • ${p.yas} yaş • ${p.boy}cm</div>
+        <div style="margin-top:3px;">${rolBadgeHtml(p)}</div>
         <div style="font-size:10px;color:var(--accent);margin-top:3px;">🏛️ ${escMatch(p.fromClub||'')} kulübünden</div>
         <div style="display:flex;gap:7px;margin-top:4px;flex-wrap:wrap;">
           <span style="font-size:11px;">⚔️${p.hucum}</span><span style="font-size:11px;">🛡️${p.savunma}</span>
@@ -535,6 +536,47 @@ function findPlayerRecord(pid){
     ||null;
 }
 
+/* ── FAZ A: rol rozeti + eğilim çubukları ─────────────────────────────────────────────
+   Rol statlardan türer (computeRole), eğilimler oyuncunun sahadaki davranışını belirler:
+   üçlük denemesi payı, potaya dalma, asist dağıtımı, son dakika soğukkanlılığı, faul disiplini.
+   Bunlar maç motorunda GERÇEKTEN kullanılır (wPick ağırlıkları) — dekoratif değildir. */
+const EG_META={
+  uc:      {ad:'Üçlük eğilimi',    ikon:'🏹', desc:'Şut seçiminde dışarıyı tercih etme oranı.'},
+  pota:    {ad:'Potaya dalma',     ikon:'💨', desc:'Boyalı alana girme / faul kazanma eğilimi.'},
+  pas:     {ad:'Pas dağıtımı',     ikon:'🎁', desc:'Asistlerin ne kadarının ondan geçtiği.'},
+  clutch:  {ad:'Soğukkanlılık',    ikon:'🧊', desc:'Son 2 dakika ve uzatmada isabet. Düşükse baskı altında eli titrer.'},
+  disiplin:{ad:'Faul disiplini',   ikon:'⚖️', desc:'Düşükse takımın faullerini o toplar, erken oyundan atılır.'}
+};
+function egBarColor(k,v){
+  if(k==='disiplin'||k==='clutch') return v>=70?'var(--green)':v>=45?'var(--gold)':'var(--red)';
+  return v>=70?'var(--blue)':v>=40?'var(--text2)':'var(--border)';
+}
+function rolTendencyHtml(p){
+  if(!p) return '';
+  try{ ensureRole(p); }catch(e){ return ''; }
+  const r=rolInfo(p.rol);
+  const bars=Object.keys(EG_META).map(k=>{
+    const v=Math.max(0,Math.min(100,Number(p.eg&&p.eg[k])||0));
+    const m=EG_META[k];
+    return `<div style="display:flex;align-items:center;gap:7px;" title="${m.desc}">
+      <span style="font-size:10px;color:var(--text2);flex:0 0 96px;">${m.ikon} ${m.ad}</span>
+      <span style="flex:1;height:6px;border-radius:4px;background:var(--bg3);overflow:hidden;display:block;"><span style="display:block;height:100%;width:${v}%;background:${egBarColor(k,v)};"></span></span>
+      <span style="font-size:10px;color:var(--text2);flex:0 0 22px;text-align:right;">${v}</span>
+    </div>`;
+  }).join('');
+  return `<div style="background:var(--bg3);border-radius:10px;padding:9px 11px;margin-bottom:10px;">
+    <div style="font-size:12px;font-weight:700;margin-bottom:2px;">${r.ikon} ${r.ad}</div>
+    <div style="font-size:10px;color:var(--text2);margin-bottom:8px;">${r.desc}</div>
+    <div style="display:flex;flex-direction:column;gap:5px;">${bars}</div>
+  </div>`;
+}
+/** Liste/kart görünümü için kısa rol rozeti. */
+function rolBadgeHtml(p){
+  if(!p) return '';
+  try{ ensureRole(p); }catch(e){ return ''; }
+  const r=rolInfo(p.rol);
+  return `<span class="rol-badge" title="${r.ad} — ${r.desc}">${r.ikon} ${r.ad}</span>`;
+}
 function openPlayerModal(pid){
   const p=findPlayerRecord(pid);
   if(!p){ showNotif('Oyuncu bulunamadı.'); return; }
@@ -580,6 +622,7 @@ function openPlayerModal(pid){
   <p style="font-size:12px;color:var(--text2);margin-bottom:8px;">${POZ_TR[p.poz]||''} · ${p.ulke} · ${p.yas} yaş · ${p.boy}cm · ${p.kilo}kg</p>
   <p style="font-size:10px;color:var(--text2);margin-bottom:4px;">Psikoloji: <span style="color:${moodColor(p.mood)};">${moodText(p.mood)}</span></p>
   <p style="font-size:10px;color:var(--text2);margin-bottom:10px;" title="${kisilikInfo(p.kisilik).desc}">Kişilik: <strong>${kisilikInfo(p.kisilik).ikon} ${kisilikInfo(p.kisilik).ad}</strong> — <span style="opacity:.85;">${kisilikInfo(p.kisilik).desc}</span></p>
+  ${rolTendencyHtml(p)}
   ${potBlock}
   <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
     <div style="flex:0 0 min(42vw,240px);">
@@ -616,6 +659,7 @@ function renderRosterListRow(p){
       <div class="minfo">
         <div style="font-weight:700;font-size:13px;">${p.bayrak} ${p.isim}</div>
         <div style="font-size:11px;color:var(--text2);">${p.ulke} • ${p.yas} yaş • ${p.boy}cm</div>
+        <div style="margin-top:3px;">${rolBadgeHtml(p)}</div>
         <div style="display:flex;gap:7px;margin-top:5px;flex-wrap:wrap;">
           <span style="font-size:11px;">⚔️${p.hucum}</span><span style="font-size:11px;">🛡️${p.savunma}</span>
           <span style="font-size:11px;">🏀${p.ribaund}</span><span style="font-size:11px;">✋${p.topCalma}</span>
@@ -645,6 +689,7 @@ function renderYouthListRow(p){
       <div class="minfo">
         <div style="font-weight:700;font-size:13px;">${p.bayrak} ${p.isim}</div>
         <div style="font-size:11px;color:var(--text2);">${p.ulke} • ${p.yas} yaş • ${p.boy}cm ${p.potansiyel?`· Pot ${p.potansiyel}`:''}</div>
+        <div style="margin-top:3px;">${rolBadgeHtml(p)}</div>
         <div style="display:flex;gap:7px;margin-top:5px;flex-wrap:wrap;">
           <span style="font-size:11px;">⚔️${p.hucum}</span><span style="font-size:11px;">🛡️${p.savunma}</span>
           <span style="font-size:11px;">🏀${p.ribaund}</span><span style="font-size:11px;">✋${p.topCalma}</span>
@@ -835,6 +880,7 @@ function renderMarket(){
       <div class="minfo">
         <div style="font-weight:700;font-size:13px;">${p.bayrak} ${p.isim}${tag}</div>
         <div style="font-size:11px;color:var(--text2);">${p.ulke} • ${p.yas} yaş • ${p.boy}cm</div>
+        <div style="margin-top:3px;">${rolBadgeHtml(p)}</div>
         <div style="display:flex;gap:7px;margin-top:5px;flex-wrap:wrap;">
           <span style="font-size:11px;">⚔️${p.hucum}</span><span style="font-size:11px;">🛡️${p.savunma}</span>
           <span style="font-size:11px;">🏀${p.ribaund}</span><span style="font-size:11px;">✋${p.topCalma}</span>

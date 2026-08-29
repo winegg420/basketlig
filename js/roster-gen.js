@@ -95,6 +95,110 @@ const KISILIK_KEYS=Object.keys(KISILIKLER);
 function kisilikInfo(k){ return KISILIKLER[k]||KISILIKLER.kararsiz; }
 function ensurePersonality(p){ if(p&&!p.kisilik) p.kisilik=ch(KISILIK_KEYS); return p; }
 
+/* ══════════════════════════════════════════════════════════════════════════════════════
+   FAZ A (30. oturum) — OYUNCU ROLLERİ ve EĞİLİMLER (tendencies)
+   Sorun: oyuncular yalnız OVR ile ayrışıyordu; sahada kim şut atar, kim üçlük dener,
+   kim baskı altında ellerinin titremesi belirsizdi. Artık her oyuncunun:
+     • ROL'ü var (statlarından deterministik türer) — anlatım ve motor bunu kullanır,
+     • EĞİLİM'leri var (0-100): üçlük / pota / pas / soğukkanlılık / disiplin.
+   Motor tarafı: şutör seçimi, üçlük kararı, asist, ribaund, blok ve faul dağıtımı artık
+   ağırlıklı — takım toplamları (üçlük payı, ribaund oranı) korunur, sadece KİMİN yaptığı
+   gerçekçileşir.
+   ══════════════════════════════════════════════════════════════════════════════════════ */
+const ROLLER={
+  sutor:      {ad:'Şutör',                ikon:'🎯', desc:'Dış atışı besler — üçlük denemelerinin çoğu ondan geçer.'},
+  skorer:     {ad:'Skorer',               ikon:'🔥', desc:'Topu isteyen bitirici — takımın en yüksek şut yükü onda.'},
+  oyunKurucu: {ad:'Oyun Kurucu',          ikon:'🧠', desc:'Floor general — asistleri dağıtır, tempoyu o belirler.'},
+  slasher:    {ad:'Potaya Dalan',         ikon:'⚡', desc:'Dip çizgiye/potaya girer — faul kazanır, üçlük denemez.'},
+  kilit:      {ad:'Kilit Savunmacı',      ikon:'🔒', desc:'Rakibin en iyi dış oyuncusunu kapatır, top çalar.'},
+  karartici:  {ad:'Pota Altı Karartıcı',  ikon:'🛡️', desc:'Boyalı alanı korur — blokların çoğu ondan gelir.'},
+  ribaundcu:  {ad:'Cam Süpürücü',         ikon:'🪣', desc:'Hem hücum hem savunma ribaundunda ilk sıçrayan.'},
+  cokYonlu:   {ad:'Çok Yönlü',            ikon:'♾️', desc:'Belirgin bir uzmanlığı yok — her işi ortalama üstü yapar.'}
+};
+const ROL_KEYS=Object.keys(ROLLER);
+function rolInfo(k){ return ROLLER[k]||ROLLER.cokYonlu; }
+
+/** Rol, oyuncunun kendi statlarından DETERMİNİSTİK türer — kayıt/yükleme arası değişmez.
+ *  Yöntem: her rol için ağırlıkları TOPLAMI 1 olan bir stat karışımı hesaplanır; oyuncunun kendi
+ *  stat ORTALAMASINDAN ne kadar saptığına bakılır (uzmanlaşma payı). Böylece roller birbirine
+ *  karşı adil yarışır — aksi halde ağırlık toplamı büyük olan rol her oyuncuyu kapardı. */
+const ROL_W={
+  sutor:      {sutIsabeti:0.55,hucum:0.25,serbest:0.20},
+  skorer:     {hucum:0.50,sutIsabeti:0.25,topSurme:0.15,hiz:0.10},
+  oyunKurucu: {pas:0.50,zeka:0.25,liderlik:0.15,topSurme:0.10},
+  slasher:    {hiz:0.40,topSurme:0.35,hucum:0.25},
+  kilit:      {savunma:0.50,topCalma:0.35,hiz:0.15},
+  karartici:  {blok:0.60,savunma:0.25,ribaund:0.15},
+  ribaundcu:  {ribaund:0.65,dayaniklilik:0.20,kondisyon:0.15}
+};
+function computeRole(p){
+  if(!p) return 'cokYonlu';
+  const g=k=>Math.max(0,Math.min(99,Number(p[k])||0));
+  const poz=p.poz||'SF';
+  const dis=(poz==='PG'||poz==='SG'||poz==='SF');
+  const big=(poz==='PF'||poz==='C');
+  const mean=STAT_KEYS.reduce((s,k)=>s+g(k),0)/STAT_KEYS.length;
+  const adj={
+    sutor:      dis?1:-4,
+    skorer:     0,
+    oyunKurucu: poz==='PG'?4:poz==='SG'?1:poz==='C'?-3:0,
+    slasher:    dis?1:-4,
+    kilit:      0,
+    karartici:  big?3:-5,
+    ribaundcu:  big?2:-4
+  };
+  let best='cokYonlu', bv=3.5;   /* eşik: hiçbir uzmanlık bu kadar öne çıkmıyorsa Çok Yönlü */
+  for(const rol in ROL_W){
+    let v=0; for(const k in ROL_W[rol]) v+=g(k)*ROL_W[rol][k];
+    const sc=v-mean+(adj[rol]||0);
+    if(sc>bv){ bv=sc; best=rol; }
+  }
+  return best;
+}
+
+/** Eğilimler (0-100) — statlardan türer + oyuncuya özgü sabit sapma (seed'den, deterministik).
+ *  uc      : üçlük denemesi eğilimi (şut seçimi)
+ *  pota    : potaya dalma / boyalı alan eğilimi
+ *  pas     : pas dağıtma eğilimi (asist payı)
+ *  clutch  : SOĞUKKANLILIK — son dakikalarda el titremesi (düşükse kritik anda isabet düşer)
+ *  disiplin: faul disiplini (düşükse takımın faullerini o toplar) */
+function computeTendencies(p){
+  if(!p) return {uc:50,pota:50,pas:50,clutch:50,disiplin:50};
+  const g=k=>Math.max(0,Math.min(99,Number(p[k])||0));
+  const poz=p.poz||'SF';
+  /* Oyuncuya özgü, kayıttan kayda değişmeyen sapma (-9..+9) */
+  const h=(typeof hash32==='function')?Math.abs(hash32(String(p.seed||p.id||p.isim||'x'))):0;
+  const dev=(n)=>((h>>>(n*5))%19)-9;
+  const boy=Number(p.boy)||200;
+  const clamp=v=>Math.max(3,Math.min(97,Math.round(v)));
+  const ucBase={PG:56,SG:64,SF:50,PF:32,C:14}[poz]!=null?{PG:56,SG:64,SF:50,PF:32,C:14}[poz]:44;
+  return {
+    uc:      clamp(ucBase+(g('sutIsabeti')-68)*0.75+(g('hucum')-68)*0.15-(boy-200)*0.35+dev(0)),
+    pota:    clamp(58+(g('hiz')-68)*0.55+(g('topSurme')-68)*0.45+(boy-200)*0.30-(g('sutIsabeti')-68)*0.35+dev(1)),
+    pas:     clamp(34+(g('pas')-64)*1.05+(g('zeka')-68)*0.30+(poz==='PG'?18:poz==='SG'?4:poz==='C'?-6:0)+dev(2)),
+    clutch:  clamp(46+(g('zeka')-68)*0.55+(g('liderlik')-68)*0.65+(g('serbest')-68)*0.25+dev(3)),
+    disiplin:clamp(52+(g('zeka')-68)*0.55+(g('savunma')-68)*0.25-(poz==='C'?10:poz==='PF'?5:0)+dev(4))
+  };
+}
+
+/** Eski kayıtlar ve bot kadroları için tembel doldurma — çağrıldığı her yerde güvenli. */
+function ensureRole(p){
+  if(!p||typeof p!=='object') return p;
+  if(!p.rol||!ROLLER[p.rol]) p.rol=computeRole(p);
+  if(!p.eg||typeof p.eg!=='object'||p.eg.uc==null) p.eg=computeTendencies(p);
+  return p;
+}
+function ensureRoles(list){ (list||[]).forEach(ensureRole); return list; }
+/** Eğilim değeri güvenli okuma (eksikse hesaplayıp döndürür). */
+function egOf(p,k){
+  if(!p) return 50;
+  if(!p.eg||p.eg[k]==null) ensureRole(p);
+  const v=Number(p.eg&&p.eg[k]);
+  return Number.isFinite(v)?v:50;
+}
+/** Rol, stat değişince (antrenman/gelişim) yeniden hesaplanmalı — sezon/antrenman sonrası çağrılır. */
+function refreshRole(p){ if(p){ p.rol=computeRole(p); p.eg=computeTendencies(p); } return p; }
+
 /* Faz 5.1: Bölgesel izci ağı — her izci bir bölgeye odaklı; kalite keşif hızını/isabetini belirler. */
 const SCOUT_REGIONS=['Yerli (Türkiye)','Avrupa','Amerika','Global Genç Yetenek'];
 function genScout(tag){
@@ -145,7 +249,8 @@ function genPlayer(poz=null,tr=false){
   const seed='pl'+id+hash32(isim+yas);
   /* Madde 4: boy/kilo pozisyonla uyumlu üretilir (önceden tüm pozisyonlar için 185-220cm/80-120kg sabitti). */
   const [hR,wR]=HW_RANGE[p]||[[185,220],[80,120]];
-  return {id,isim,poz:p,yas,ulke:ulke.ad,bayrak:ulke.b,boy:rand(hR[0],hR[1]),kilo:rand(wR[0],wR[1]),seed,maas,...stats,genel,mood,enerji:100,potansiyel:rand(genel,Math.min(99,genel+20)),formDay:0,kontratSezon:rand(1,3),kisilik:ch(KISILIK_KEYS),sezon:{mac:0,pts:0,ast:0,reb:0}};
+  const out={id,isim,poz:p,yas,ulke:ulke.ad,bayrak:ulke.b,boy:rand(hR[0],hR[1]),kilo:rand(wR[0],wR[1]),seed,maas,...stats,genel,mood,enerji:100,potansiyel:rand(genel,Math.min(99,genel+20)),formDay:0,kontratSezon:rand(1,3),kisilik:ch(KISILIK_KEYS),sezon:{mac:0,pts:0,ast:0,reb:0}};
+  return ensureRole(out); /* FAZ A: rol + eğilimler statlardan türetilir */
 }
 
 /** Aynı grupta (kadro / market listesi) iki oyuncu aynı ADA ya da aynı FOTOĞRAF index'ine denk gelmesin.

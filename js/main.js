@@ -577,6 +577,8 @@ function applyTeamTrainingEffect(etki){
       p[etki]=Math.min(Math.min(99,p.potansiyel||99),p[etki]+add);
     }
     p.genel=Math.round(STAT_KEYS.reduce((s,k)=>s+p[k],0)/STAT_KEYS.length);
+  refreshRole(p); /* FAZ A */
+    refreshRole(p); /* FAZ A */
     /* Maaş sözleşme boyunca sabit — gelişimin maaşa yansıması sözleşme yenilemesinde olur. */
   });
 }

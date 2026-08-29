@@ -21,7 +21,8 @@ function getBotClubProfile(teamName,ligKey){
   let cache={};
   try{ cache=JSON.parse(localStorage.getItem(CLUB_CACHE_KEY)||'{}'); }catch(e){ cache={}; }
   const ck=ligKey+'||'+teamName;
-  if(cache[ck]) return Object.assign({human:false},cache[ck]);
+  /* FAZ A: eski önbellekteki bot kadrolarına rol/eğilim geriye dönük doldurulur (seed'den deterministik). */
+  if(cache[ck]){ const hit=Object.assign({human:false},cache[ck]); ensureRoles(hit.roster); return hit; }
   const seed=hash32(ck);
   const roster=[];
   const dist=['PG','SG','SG','SF','PF','C','C'];

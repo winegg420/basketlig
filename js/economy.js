@@ -83,6 +83,7 @@ function applyWeeklyCoachBonuses(){
       if((p[c.stat]||0)<tavan){
         p[c.stat]=Math.min(tavan,(p[c.stat]||0)+1);
         p.genel=Math.round(STAT_KEYS.reduce((s,k)=>s+p[k],0)/STAT_KEYS.length);
+        refreshRole(p); /* FAZ A: statlar değişti — rol/eğilim yeniden türetilir */
       }
     });
   });

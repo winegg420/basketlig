@@ -776,6 +776,7 @@ function startLeagueSeason(){
         ['hiz','kondisyon','dayaniklilik','topSurme','blok','topCalma'].forEach(k=>{ p[k]=Math.max(30,(Number(p[k])||50)-decl); });
         if(na>=35){ p.sutIsabeti=Math.max(30,(Number(p.sutIsabeti)||50)-1); p.hucum=Math.max(30,(Number(p.hucum)||50)-1); p.savunma=Math.max(30,(Number(p.savunma)||50)-1); }
         p.genel=Math.round(STAT_KEYS.reduce((s,k)=>s+(Number(p[k])||0),0)/STAT_KEYS.length);
+        refreshRole(p); /* FAZ A: sezon gelişimi sonrası rol güncellenir */
         p.potansiyel=Math.max(p.genel,Number(p.potansiyel)||0); /* artık gelişmez */
       }
     });

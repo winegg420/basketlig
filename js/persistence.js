@@ -518,6 +518,8 @@ function applyGameState(d){
   G.youth=Array.isArray(d.youth)?d.youth:[];
   G.marketPlayers=Array.isArray(d.marketPlayers)?d.marketPlayers:[];
   G.clubTransferPlayers=Array.isArray(d.clubTransferPlayers)?d.clubTransferPlayers:[];
+  /* FAZ A (30. oturum): eski kayıtlarda rol/eğilim yok — statlardan deterministik doldurulur. */
+  try{ ensureRoles(G.players); ensureRoles(G.youth); ensureRoles(G.marketPlayers); ensureRoles(G.clubTransferPlayers); }catch(e){}
   G._ctSeq=d._ctSeq||0;
   G.marketTab='free';G.clubTransferFilter='all';
   G.coaches=Array.isArray(d.coaches)?d.coaches:[];
