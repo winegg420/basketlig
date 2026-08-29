@@ -1054,7 +1054,9 @@ function movePlayersForEvent(ev,paint){
             }
           });
         }});
-        if(i<shots.length-1) steps.push({at:t0+0.80,fn:()=>{ const b=S.ball; b.mode='held'; b.carrier=shooter; b.noDrib=false; }});
+        /* M5: atislar arasi top cemberden aticiya ISINLANMAZ (b.carrier dogrudan atanmisti,
+           ~135 px tek kare sicramasi); hakem topu geri verir — gorunur kisa pas. */
+        if(i<shots.length-1) steps.push({at:t0+0.70,fn:()=>{ _ballHold(shooter); }});
       });
       _markMarks();
       /* son atış isabetliyse: rakip dip çizgiden sokacak */
@@ -1221,7 +1223,10 @@ function animateShotPossession(sh,onShoot,onResult){
     /* ── şut anı ── */
     const fire=()=>{
       try{ if(typeof onShoot==='function') onShoot(); }catch(e){}
-      b.x=sh.x; b.y=sh.y;
+      /* M5/M6: top sut noktasina ISINLANMAZ. bridge onu zaten oraya tasidi; kalan fark
+         kucukse hizalanir, buyukse sut topun GERCEK konumundan cikar (tek karelik
+         100+ px sicrama boylece kalkti). */
+      { const dF=Math.hypot(b.x-sh.x,b.y-sh.y); if(dF<=40){ b.x=sh.x; b.y=sh.y; } }
       shooter.pop=1;                       /* şutör yükselir (sıçrama) */
       _lockTok(shooter,0.8);
       if(sh.blk){
@@ -1434,7 +1439,8 @@ function animateShotPossession(sh,onShoot,onResult){
       }
     }
     if(sh.contest&&sh.contest!=='open') steps.push({at:Math.max(0.05,tFire-0.24),fn:closeout});
-    steps.push({at:tFire-0.22,fn:bridge});
+    /* bridge, pasin en uzun suresi (0,55 sn) kadar ONCE calisir ki top sut anina yetissin. */
+    steps.push({at:Math.max(0.05,tFire-0.62),fn:bridge});
     steps.push({at:tFire,fn:fire});
 
     _script(steps);

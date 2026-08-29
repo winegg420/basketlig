@@ -124,7 +124,13 @@ function med(a){ return pct(a,0.5); }
         const b=xyOf(document.getElementById('liveBall'));
         if(b&&P.lastBall){
           const d=Math.hypot(b[0]-P.lastBall[0],b[1]-P.lastBall[1]);
-          if(d>60) P.ballJumps.push(+d.toFixed(1));
+          if(d>60){
+            /* Teshis: sicramanin hangi top modunda ve hangi olay tipinde oldugunu kaydet. */
+            let mod='?',ev='?';
+            try{ const St=mState._sim; mod=St&&St.ball?(St.ball.mode+(St.ball.carrier?'/held':'')):'?';
+                 const e=mState.events&&mState.events[Math.max(0,mState.idx-1)]; ev=e?e.type:'?'; }catch(e2){}
+            P.ballJumps.push({px:+d.toFixed(1),mod,ev});
+          }
           if(d>P.ballMax) P.ballMax=+d.toFixed(1);
         }
         if(b) P.lastBall=b;
@@ -167,6 +173,9 @@ function med(a){ return pct(a,0.5); }
   });
 
   await sleep(WATCH_MS);
+  /* Drenaj: izleme penceresi kapanırken son pozisyonun koreografisi surebilir; sonuc
+     cumlesi top cembere varinca basildigi icin kisa bir sure daha beklenir. */
+  await sleep(1500);
 
   const R=await page.evaluate(()=>{
     clearInterval(window.__evPoll);
@@ -207,7 +216,10 @@ function med(a){ return pct(a,0.5); }
     /* orphan: metni olan ama anlatıma düşmeyen olay */
     const cmTxt=P.comments.map(c=>c.txt).join('\n');
     let orphan=0; const orphanOrn=[];
-    EV.forEach(e=>{
+    /* Son olay HARIC: mState.idx ilerlemis olsa da o pozisyonun koreografisi (ve dolayisiyla
+       sonuc cumlesi) olcum kesildiginde henuz bitmemis olabilir — kesme artefakti orphan
+       olarak sayilmasin. */
+    EV.slice(0,-1).forEach(e=>{
       if(!e.hasText) return;
       /* Serbest atış olayları iki parça basılır (ftPre + ftRes); birleşik metin hiç görünmez. */
       const ham=e.ftPre||e.txt; if(!ham) return;
@@ -227,7 +239,7 @@ function med(a){ return pct(a,0.5); }
     })();
     return {
       frames:P.frames,
-      ballJumps:P.ballJumps.length, ballMax:P.ballMax,
+      ballJumps:P.ballJumps.length, ballMax:P.ballMax, ballJumpOrn:P.ballJumps.slice(0,8),
       tokSpeeds:P.tokSpeeds,
       sync, idOk, idBad, idBadOrn, orphan, orphanOrn,
       yorum:P.comments.length, olay:EV.length, toplamOlay:window.__EVTOTAL,
@@ -261,7 +273,7 @@ function med(a){ return pct(a,0.5); }
     izlenen:{kare:R.frames,olay:R.olay+'/'+R.toplamOlay,yorum:R.yorum,ceyrek:R.quarter,skor:R.skor},
     syncRatio:{medyan:syncMedyan,tipler:syncTip,tiplerArasiFark:syncSpread},
     orphanEvents:{adet:R.orphan,ornek:R.orphanOrn},
-    ballTeleport:{adet:R.ballJumps,enBuyukPx:R.ballMax},
+    ballTeleport:{adet:R.ballJumps,enBuyukPx:R.ballMax,ornek:R.ballJumpOrn},
     identityMatch:{oran:identity,eslesen:R.idOk,uyusmayan:R.idBad,ornek:R.idBadOrn},
     tokenSpeed:{p50:p50,p99:p99},
     boxScoreBand:{topKaybiTakimBasi:toTotal,serbestAtisSayiPayi:ftShare,ribaundToplam:reb},
@@ -285,7 +297,7 @@ function med(a){ return pct(a,0.5); }
     console.log('syncRatio: medyan',syncMedyan+'×','· tipler arası fark',syncSpread+'×');
     Object.keys(syncTip).sort((a,b)=>syncTip[b]-syncTip[a]).forEach(k=>console.log('           '+k.padEnd(14)+syncTip[k]+'×'));
     console.log('orphan   :',R.orphan,R.orphanOrn.length?'· örnek: '+R.orphanOrn[0]:'');
-    console.log('topSıçra :',R.ballJumps,'kare · en büyük',R.ballMax,'px');
+    console.log('topSıçra :',R.ballJumps,'kare · en büyük',R.ballMax,'px',(R.ballJumpOrn&&R.ballJumpOrn.length)?'· '+R.ballJumpOrn.map(j=>j.px+'px['+j.mod+'|'+j.ev+']').join(' '):'');
     console.log('kimlik   : %'+(identity*100).toFixed(0),'('+R.idOk+' eşleşen /',R.idBad,'uyuşmayan)');
     (R.idBadOrn||[]).slice(0,3).forEach(o=>console.log('           ✗ "'+o.anlatim+'" ↔ sahada: '+o.sahada));
     console.log('jetonHız : p50',p50,'· p99',p99,'px/sn');
