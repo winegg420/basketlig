@@ -1882,3 +1882,60 @@ nesne truthy olduğu için Antrenman sayfasında "undefined gün kaldı" kartı 
   hatası, silinmemiş IDB kopyası, yarım uygulanmış durum — hiçbiri kullanıcıya bildirilmiyordu.
 - `js/league.js` CRLF, diğer modüller LF satır sonu kullanıyor; toplu düzenlemede satır sonu
   otomatik tespit edilmeli.
+
+### 32. oturum — EK: FAZ 7 kabul kriterlerinin fiilen doğrulanması
+
+FAZ 7 maddeleri uygulandıktan sonra belgenin sonundaki **8 kabul kriteri hiç çalıştırılmamıştı**;
+"kodu yazdım" ile "kriter geçiyor" aynı şey değil. Bunun için yeni bir araç yazıldı:
+
+**`tools/faz7-check.js` (YENİ)** — kriterleri gerçek tarayıcıda, gerçek senaryoyla sınar:
+
+| Kod | Kriter | Nasıl sınanıyor |
+|---|---|---|
+| K1 | Playoff ortasında yenile → bracket korunuyor | Sezon bitmiş + playoff kurulmuş duruma getirilir, kaydedilir, sayfa yenilenir, seri skoru ve sezon yılı karşılaştırılır |
+| K2 | Kota dolu → en güncel kayıt geliyor | LS'e **bayat** (savedAt −1 saat), IDB'ye **güncel** kayıt yazılır; açılışta hangisinin kazandığı `coins` ile ölçülür |
+| K3 | "Kaydı sil" → "Devam et" bloğu yok | LS + IDB kopyası kurulur, `clearSavedGame()` çağrılır, sayfa yenilenir; blok görünürlüğü + iki deponun içeriği denetlenir |
+| K4 | Yeni oyun → arena bakımı 150 KR | `G.arena.bk` ile `ARENA_LVL[0].bk` karşılaştırılır |
+| K5 | Koçları kov + yenile → geri gelmiyor | `G.coaches=[]` kaydedilir, yeniden yüklenir, sayı 0 mı bakılır |
+| K6 | İnternetsiz → fontlar yerel, tabela taşmıyor | `ctx.route` ile **127.0.0.1 dışındaki tüm ağ kesilir**; `document.fonts` yüklü aileleri + `.scoreboard` taşması ölçülür |
+| K7 | 390×844 İlk 5 → tüm yedeklere erişim | `touch-action` değerleri, tutamağın varlığı, listenin kaydırılabilirliği ve en alta kaydırınca son kartın görünürlüğü |
+| K8 | `visual-check` çıkış kodu 0 | Ayrı çalıştırılır |
+
+**Test iki gerçek kusur buldu — ikisi de "uyguladım" dediğim maddelerdeydi:**
+
+- **K3 DÜŞTÜ.** `clearSavedGame` IDB'yi siliyordu (F7-3 doğru uygulanmıştı) **ama silme kalıcı
+  değildi**: sayfa kapanırken `beforeunload → saveGameNow(false)` ve bekleyen otomatik kayıt
+  zamanlayıcısı kaydı hemen geri yazıyordu. Kullanıcı "sildim" dediği hâlde sonraki açılışta
+  "Devam et" bloğu geliyordu. Düzeltme: `suppressAutoSave()` bayrağı — `clearSavedGame`
+  bastırmayı açar ve bekleyen zamanlayıcıyı iptal eder; bilinçli işlemler (elle "Kaydet",
+  yeni kariyer, kayıt yükleme, içe aktarma) bastırmayı kaldırır.
+- **K2 DÜŞTÜ** — bu testin kendi kusuruydu: `beforeunload` hazırlanan bayat LS kaydını güncel
+  durumla eziyordu, dolayısıyla karşılaştırma anlamsızlaşıyordu. Test düzeltildi.
+
+**Eksik kalan alt maddeler de tamamlandı:**
+- **F7-8 belgenin önerdiği sağlam yola çevrildi:** `DEFAULT_G` + `defaultGameState()`.
+  `createTeam` artık elle yazılmış alan listesi yerine varsayılan durumun derin kopyasını
+  uyguluyor. Elle liste kırılgandı — nitekim önceki turda `posTraining={}` unutulup
+  "undefined gün kaldı" regresyonu çıkmıştı. Tek kaynak artık literalin kendisi.
+- **F7-16c** `ligTeams` alan-alan değil olduğu gibi kaydediliyor.
+- **F7-22** `.modal-backdrop{overscroll-behavior:contain}`.
+- **F7-26 ikinci yarı:** `innerHTML`'e giden 11 şablonda ham `${G.team.isim}` `escMatch` ile
+  sarıldı. `sanitizeTeamName` bugün `[<>&"'\`]` sildiği için **davranış değişmiyor** — bu
+  yalnızca sanitize katmanı ileride atlanırsa devreye girecek ikinci katman. `showNotif`
+  çağrılarına dokunulmadı (`textContent` kullanıyor; kaçış dizileri görünür olurdu).
+- **F7-30b** kulüp logosuna `alt="<takım> logosu"`.
+- **NOT EDİLEN madde:** `fixtureFullSeasonGridHtml` tek yerde indeks erişimi yapıyordu →
+  `.find(x=>x.seasonMatchIx===ix)` ile değiştirildi (ileride bir `sort` eklenirse yanlış maç
+  kartı gösterecekti).
+
+**Enstrüman notu:** `live-metrics.js` bir çalıştırmada `syncRatio` yayılımını 1,92× (hedef <1,9)
+verip düştü; aynı derleme `--ms=200000` ile **1,03×** verdi. Fark gerçek değil, tip başına
+3-4 örnekten gelen gürültüydü. Araç artık her tipin **örnek sayısını** yazıyor ve örnek azsa
+uyarıyor — hedef gevşetilmedi, okunabilirlik arttı.
+
+**Sonuç:** `faz7-check` **7/7** · `visual-check` çıkış kodu **0** · `live-metrics` tüm hedefler
+(orphan 0 · kimlik %100 · ışınlanma 0 kare · yayılım 1,03× @200 sn) · `box-band --n=200` **11/11
+bant** · `i18n-scan` kalan Türkçe yalnız özel isim.
+
+**Ders:** Bu oturumda hem 31. oturumun teşhisi hem de kendi "uyguladım" beyanım test karşısında
+düzeltildi. Kabul kriteri varsa çalıştırılabilir hâle getirilmeli; okuyarak onaylamak yetmiyor.
