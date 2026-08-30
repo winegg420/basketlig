@@ -154,6 +154,41 @@ function olc(kareler) {
       if (p[3] >= 0) urgSay[p[3]] = (urgSay[p[3]] || 0) + 1;
     });
   }
+  /* C-1: ANLIK yığılma — her karede ON oyuncu birden bakılır (set/geçiş ayrımı yok).
+     `spacing-check` ORTALAMA ölçüyor; ortalama iyiyken tek tek kareler kötü olabiliyor. */
+  const kareIkili = [];
+  let yigilanKare = 0, yigilanTakimKare = 0;
+  const YAKIN = 2.0 * PX_M;                 /* 2,0 m */
+  kareler.forEach(f => {
+    const hepsi = f.off.concat(f.def);
+    if (hepsi.length < 6) return;
+    kareIkili.push(ikiliOrt(hepsi) / PX_M);
+    /* 3+ oyuncu kümesi: üçünün BİRBİRİNE 2 m'den yakın olması (karşılıklı üçlü).
+       "Bir oyuncunun çevresinde iki kişi" ölçütü adam adama savunmayı yığılma sayıyordu
+       (savunmacı adamının 1,8-2,0 m'sinde durur — ölçüm %51,5 çıkmıştı, tanım kusuruydu). */
+    let yigin = false, yiginTakim = false;
+    const d2 = (a2, b2) => Math.hypot(a2[0] - b2[0], a2[1] - b2[1]) < YAKIN;
+    const nOff = f.off.length;
+    const ayniTakim = (i, j) => ((i < nOff) === (j < nOff));
+    for (let i = 0; i < hepsi.length; i++)
+      for (let j = i + 1; j < hepsi.length; j++) {
+        if (!d2(hepsi[i], hepsi[j])) continue;
+        for (let k = j + 1; k < hepsi.length; k++)
+          if (d2(hepsi[i], hepsi[k]) && d2(hepsi[j], hepsi[k])) {
+            yigin = true;
+            /* Üçlünün içinde AYNI TAKIMDAN iki oyuncu var mı? Adam adama savunmada
+               (savunmacı adamının ~1,9 m'sinde durur — spacing-check bunu ŞART koşuyor)
+               her markaj çifti 2 m eşiğinin altındadır; iki markaj çiftinden kurulan üçlü
+               normal basketboldur, açıklık kusuru değildir. Kusur, AYNI TAKIMDAN iki
+               oyuncunun aynı 2 m'ye sıkışmasıdır. */
+            if (ayniTakim(i, j) || ayniTakim(i, k) || ayniTakim(j, k)) yiginTakim = true;
+          }
+      }
+    if (yigin) yigilanKare++;
+    if (yiginTakim) yigilanTakimKare++;
+  });
+  const p5 = (a) => { if (!a.length) return 0; const b = a.slice().sort((x, y) => x - y); return b[Math.floor(b.length * 0.05)]; };
+
   /* Açılım yalnız SET fazı karelerinden — geçişte iki takım kulvarda koşar, o kareler
      "dizilim açıklığı" sorusunun cevabı değildir (spacing-check ile aynı ayrım). */
   kareler.forEach(f => {
@@ -181,6 +216,13 @@ function olc(kareler) {
     offIkili: ort(offIkili), defIkili: ort(defIkili),
     offKabuk: ort(offKabuk), defKabuk: ort(defKabuk),
     setKare: offIkili.length, urgSay,
+    enKotuKareIkili: p5(kareIkili), yigilmaOrani: yuzde(yigilanKare, kareIkili.length),
+    yigilmaTakim: yuzde(yigilanTakimKare, kareIkili.length),
+    /* C-2: kademe dağılımı ARTIK YARGILANIR — Madde A'daki hatayı (YÜRÜ %0) ortaya
+       çıkaran ölçüm buydu ve araçta yalnız bilgi satırı olarak vardı. */
+    urgYuru: yuzde(urgSay[0] || 0, Object.values(urgSay).reduce((a, b) => a + b, 0)),
+    urgKosSprint: yuzde((urgSay[2] || 0) + (urgSay[3] || 0), Object.values(urgSay).reduce((a, b) => a + b, 0)),
+    urgSprint: yuzde(urgSay[3] || 0, Object.values(urgSay).reduce((a, b) => a + b, 0)),
   };
 }
 
@@ -208,6 +250,14 @@ const HEDEFLER = [
   { ad: 'savunma ortalama ikili mesafe', al: r => r.defIkili, hedef: '5,0 - 7,0 m', gec: v => v >= 5.0 && v <= 7.0, br: 'm' },
   { ad: 'hücum konveks kabuk alanı', al: r => r.offKabuk, hedef: '40 - 65 m²', gec: v => v >= 40 && v <= 65, br: 'm²' },
   { ad: 'savunma konveks kabuk alanı', al: r => r.defKabuk, hedef: '22 - 42 m²', gec: v => v >= 22 && v <= 42, br: 'm²' },
+  /* C-1 · F16 */
+  { ad: 'en kötü kare — ikili mesafe (p5)', al: r => r.enKotuKareIkili, hedef: '> 4,0 m', gec: v => v > 4.0, br: 'm' },
+  { ad: 'yığılma — aynı takımdan 2 oyuncu < 2 m', al: r => r.yigilmaTakim, hedef: '< %8', gec: v => v < 8, br: '%' },
+  { ad: 'yığılma — herhangi 3 oyuncu < 2 m', al: r => r.yigilmaOrani, hedef: '< %8', gec: v => true, br: '%', bilgi: 'markaj çiftleri tasarım gereği 2 m altında' },
+  /* C-2 · F16 — kademe dağılımı */
+  { ad: 'kademe: YÜRÜ payı', al: r => r.urgYuru, hedef: '%20 - 45', gec: v => v >= 20 && v <= 45, br: '%' },
+  { ad: 'kademe: KOŞ+SPRINT payı', al: r => r.urgKosSprint, hedef: '< %55', gec: v => v < 55, br: '%' },
+  { ad: 'kademe: SPRINT payı', al: r => r.urgSprint, hedef: '%5 - 20', gec: v => v >= 5 && v <= 20, br: '%' },
 ];
 
 (async () => {

@@ -113,6 +113,14 @@ const CRT_OUT=26;    /* topu sokan oyuncunun çizgi dışına adımı */
 const _PL_MAXV=150;          /* px/sn — hız stat'ı yoksa yedek koşu hızı */
 const _PL_ACC=13;            /* hedefe yaklaşma sertliği */
 const _PL_R=40;              /* çarpışma yarıçapı — jetonlar bu mesafeden yakın durmaz */
+/* F16-C: AYNI TAKIM oyuncuları için daha geniş yarıçap. Ölçüm (hareket-check): karelerin
+   %25,5'inde aynı takımdan iki oyuncu 2 m'nin içindeydi — izleyicinin gördüğü "isim
+   etiketleri üst üste binmiş 6-8 oyuncu" tam olarak buydu. Rakip için yarıçap 40 px
+   (1,35 m) kalmalı: savunmacı adamını 1,8 m'den yakın kapatır (spacing-check ŞART koşuyor),
+   ama takım arkadaşları birbirinden 2 m'den uzak durur — gerçek açıklık ilkesi. */
+/* 54 px (1,83 m) denendi: iki takım arkadaşı 1,83-2,0 m arasında durabildiği için yığılma
+   ölçüsü %20'de kalıyordu. 62 px = 2,10 m, eşiğin üstünde. */
+const _PL_R_TAKIM=62;        /* px ≈ 2,10 m */
 
 /* ── F15-1: HAREKET KADEMELERİ ────────────────────────────────────────────────────────
    Ölçüm (tools/hareket-check.js, kalibrasyon öncesi): ortalama hız 2,86 m/sn, zamanın
@@ -140,14 +148,21 @@ function _setUrg(p,urg){
 /* Eşik 34 px (1,15 m) denendi: oyuncular noktalarına oturmayıp çevresinde kalıyor ve
    hücumun kapladığı alan 57,5 → 39,5 m²'ye düşüyordu. 26 px (0,88 m) hem "her pozisyonda
    yer değiştirme" davranışını bitiriyor hem dizilimi bozmuyor. */
-const _YERINDE_ESIK=26;      /* px ≈ 0,88 m */
+const _YERINDE_ESIK=20;      /* px ≈ 0,68 m */
 function _hedefAta(p,tx,ty,urg){
   if(!p||p._oob) return;
   const d=Math.hypot(p.x-tx,p.y-ty);
-  if(d<_YERINDE_ESIK&&urg<=_URG.JOG){
-    p.tx=p.x; p.ty=p.y; _setUrg(p,_URG.YURU); return;
-  }
-  p.tx=_inX(tx); p.ty=_inY(ty); _setUrg(p,urg);
+  /* F16-A: eski koşul `urg<=JOG` idi; mevcut çağrıların yarısı KOŞ geçtiği için o
+     çağrılarda yürüme dalı MATEMATİKSEL OLARAK imkânsızdı ve YÜRÜ kademesi canlı ölçümde
+     %0,0 çıkıyordu. SPRINT muaf: hızlı hücumda/serbest topta yerinde kalma olmaz. */
+  /* HEDEF HER ZAMAN KORUNUR, yalnız KADEME düşer. Eski hâli hedefi jetonun BULUNDUĞU
+     noktaya sabitliyordu (`p.tx=p.x`); markajdaki savunmacı böylece pota tarafına düzeltilmiş
+     hedefini hiç almıyor ve zamanla hattan kayıyordu — "ball-you-man" %86 → %83'e düştü.
+     Yakınsa yürür: aynı "yerinde kalma" etkisi, geometri kaybı olmadan. */
+  p.tx=_inX(tx); p.ty=_inY(ty);
+  /* MARKAJDAKİ savunmacı kademe düşürmez: adamı her an hızlanabilir, yürüyerek başlayan
+     savunmacı pota tarafını kaybediyor ("ball-you-man" ölçüsü bunu görüyor). */
+  _setUrg(p,(d<_YERINDE_ESIK&&urg<_URG.SPRINT&&!p._mark)?_URG.YURU:urg);
 }
 
 /* Oyuncunun gerçek koşu hızı — GERÇEK ÖLÇEK: saha 940px = 28m (1px ≈ 0.03m).
@@ -465,7 +480,10 @@ function _simTick(dt){
         const m=p._mark;
         const onBall=(b.carrier===m);
         /* DEADZONE: adam ya da top belirgin oynamadıkça hedef güncellenmez (jitter yok) */
-        if(p._mkx==null||Math.hypot(m.x-p._mkx,m.y-p._mky)>12||Math.hypot(b.x-(p._bbx||0),b.y-(p._bby||0))>30){
+        /* F16-A: ölü bölge 12/30 px idi; savunmacının hedefi o kadar bayat kalabildiği için
+           adamı hareket edince kısa süre pota tarafını kaybediyordu. 8/20 px'e çekildi —
+           jitter koruması sürüyor, gecikme azalıyor. */
+        if(p._mkx==null||Math.hypot(m.x-p._mkx,m.y-p._mky)>8||Math.hypot(b.x-(p._bbx||0),b.y-(p._bby||0))>20){
           p._mkx=m.x; p._mky=m.y; p._bbx=b.x; p._bby=b.y;
           const hx=onBall?rim[0]:(rim[0]+b.x)/2, hy=onBall?rim[1]:(rim[1]+b.y)/2;
           const gap=onBall?(p._press?22:27):_defGap(Math.hypot(m.x-b.x,m.y-b.y));
@@ -500,6 +518,17 @@ function _simTick(dt){
       if(Math.hypot(p.x-p._wp[0],p.y-p._wp[1])<30) p._wp=null;
       else { _tx=p._wp[0]; _ty=p._wp[1]; }
     }
+    /* F16-A: HEDEFİNE VARAN JETON KADEMESİNİ DÜŞÜRÜR. Kademe yalnız atama anında
+       veriliyordu; yerine varmış oyuncu pozisyon boyunca koşu kademesini taşımaya devam
+       ediyor ve YÜRÜ payı ölçümde %3,7'de kalıyordu. Davranış neredeyse değişmez (varış
+       freni zaten hızı sınırlıyor), ama kademe artık gerçeği söyler. SPRINT ve koreografi
+       kilidi altındaki jeton muaftır. */
+    if(p.urg!=null&&p.urg!==_URG.SPRINT&&p.urg!==_URG.YURU&&(p._lock||0)<=S.time&&
+       Math.hypot(p.x-p.tx,p.y-p.ty)<_YERINDE_ESIK){
+      /* Markajdaki savunmacı da yürür: "ball-you-man" kaybının sebebi bu değil, savunmanın
+         ölü bölgesiydi (yukarıda 12/30 → 8/20 px'e çekildi ve ölçü %85,6'ya döndü). */
+      _setUrg(p,_URG.YURU);
+    }
     const gx=_tx+Math.sin(S.time*1.15+p.ph)*1.8*w;
     const gy=_ty+Math.cos(S.time*0.87+p.ph*1.7)*1.8*w;
     let dx=gx-p.x, dy=gy-p.y;
@@ -525,8 +554,9 @@ function _simTick(dt){
       if(a._oob&&b._oob) continue;
       let dx=b.x-a.x, dy=b.y-a.y;
       let d=Math.hypot(dx,dy);
-      if(d<_PL_R&&d>0.001){
-        const push=Math.min((_PL_R-d)/2,2.6)*Math.min(1.5,dt*60);
+      const _R=(a.team===b.team)?_PL_R_TAKIM:_PL_R;
+      if(d<_R&&d>0.001){
+        const push=Math.min((_R-d)/2,2.6)*Math.min(1.5,dt*60);
         dx/=d; dy/=d;
         /* Çizgi dışındaki sokucu itilmez ama İÇİNDEN de geçilmez — yalnız karşı taraf kayar. */
         if(a._oob){ b.x+=dx*push*1.7; b.y+=dy*push*1.7; }
@@ -750,8 +780,8 @@ function _defBehind(tx,ty,m,rim){
   /* F15-1: pay 8 px idi — savunmacı adamının pota tarafında ANCAK 0,27 m kalıyordu ve
      hareket gecikmesi bu farkı kolayca yiyordu ("ball-you-man" ölçüsü %87 → %78).
      Pay 22 px (0,74 m): savunmacı belirgin biçimde pota tarafında durur. */
-  if(dd<=dm-22) return [tx,ty];
-  const k=(dm-22)/(dd||1);
+  if(dd<=dm-30) return [tx,ty];
+  const k=(dm-30)/(dd||1);
   return [rim[0]+(tx-rim[0])*k, rim[1]+(ty-rim[1])*k];
 }
 /** Bir jetonun hedefini kısa süre "kilitle" — savunma takibi/dizilim üzerine yazmasın. */
@@ -862,11 +892,11 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
     offR.forEach((p,i)=>{
       if(!p||p._oob) return;
       const c=_pt(TRANS_OFF[i],offLeft,false);
-      p.tx=_inX(_jit(c[0],10)); p.ty=_inY(_jit(c[1],8)); _setUrg(p,_URG.SPRINT);
+      _hedefAta(p,_jit(c[0],10),_jit(c[1],8),_URG.SPRINT);
       /* kanatlar (rol 1-2) önce kendi hizasında KENARA açılır, sonra kulvarda öne koşar */
       p._wp=(i===1||i===2)?[_inX(p.x+(offLeft?-58:58)),_inY(c[1])]:null;
     });
-    defR.forEach((p,i)=>{ if(!p||p._oob) return; const c=_pt(TRANS_DEF[i],offLeft,false); p.tx=_inX(_jit(c[0],8)); p.ty=_inY(_jit(c[1],8)); _setUrg(p,_URG.KOS); p._wp=null; });
+    defR.forEach((p,i)=>{ if(!p||p._oob) return; const c=_pt(TRANS_DEF[i],offLeft,false); _hedefAta(p,_jit(c[0],8),_jit(c[1],8),_URG.KOS); p._wp=null; });
     S.shooter=null;
     return null;
   }
@@ -940,7 +970,7 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
     if(!p||p._oob) return;                    /* topu sokan çizgi dışında kalır */
     p._wp=null;                               /* set kurulunca geçiş ara noktası biter */
     const c=B[i];
-    if(p===shooter){ p.tx=c[0]; p.ty=c[1]; _setUrg(p,_URG.KOS); return; }
+    if(p===shooter){ _hedefAta(p,c[0],c[1],_URG.KOS); return; }
     /* Noktasına ZATEN yakınsa yeni hedef atanmaz (yerinde durur, mikro-salınım yapar).
        F11-2: eşik 40 px idi — iki oyuncu birbirine doğru 40'ar px sapabildiği için ölçülen
        en yakın ikili mesafe dizilimin kâğıt üzerindeki değerinden ~2,4 m düşüyordu. Eşik ve
@@ -968,8 +998,7 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
       const z=zones[i%zones.length];
       if(i===closeIdx&&shooter){
         p._mark=shooter; p._gap=26;
-        p.tx=_inX(_jit(shooter.tx,5)); p.ty=_inY(_jit(shooter.ty,5));
-        _setUrg(p,_URG.KOS);
+        _hedefAta(p,_jit(shooter.tx,5),_jit(shooter.ty,5),_URG.KOS);
       } else {
         p._zone=z;
         _hedefAta(p,_jit(z[0],6),_jit(z[1],6),_URG.JOG);
@@ -998,8 +1027,8 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
     const gap=isBall?(press?22:28):_defGap(Math.hypot(m.tx-S.ball.x,m.ty-S.ball.y));
     const dx=hx-m.tx, dy=hy-m.ty, d=Math.hypot(dx,dy)||1;
     { const bh=_defBehind(m.tx+dx/d*gap,m.ty+dy/d*gap,{x:m.tx,y:m.ty},rim);
-      p.tx=_inX(_jit(bh[0],press?4:6)); p.ty=_inY(_jit(bh[1],press?4:6)); }
-    _setUrg(p,Math.max(isBall?_URG.KOS:(press?_URG.KOS:_URG.JOG),(m.urg!=null?m.urg:_URG.JOG)));
+      _hedefAta(p,_jit(bh[0],press?4:6),_jit(bh[1],press?4:6),
+        Math.max(isBall?_URG.KOS:(press?_URG.KOS:_URG.JOG),(m.urg!=null?m.urg:_URG.JOG))); }
   });
   S.shooter=shooter;
   return shooter;
@@ -1009,11 +1038,11 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
     dipten yukarı SAVUNMA→HÜCUM→SAVUNMA. Blok noktalarını uzunlar (C/PF) alır. */
 function _setFtFormation(offLeft,offPlayers,defPlayers,shooter){
   const line=_pt([FT_LINE_X,250],offLeft,false);
-  shooter.tx=line[0]; shooter.ty=line[1]; _setUrg(shooter,_URG.JOG);
+  _hedefAta(shooter,line[0],line[1],_URG.JOG);
   const bigFirst=(arr)=>_rolesOrder(arr).slice().reverse();   /* C, PF, SF, SG, PG */
   const others=bigFirst(offPlayers.filter(p=>p!==shooter));
-  others.forEach((p,i)=>{ const c=_pt(FT_OFF_S[i%FT_OFF_S.length],offLeft,false); p.tx=_inX(_jit(c[0],2)); p.ty=_inY(_jit(c[1],2)); _setUrg(p,_URG.JOG); });
-  bigFirst(defPlayers).forEach((p,i)=>{ const c=_pt(FT_DEF_S[i%FT_DEF_S.length],offLeft,false); p.tx=_inX(_jit(c[0],2)); p.ty=_inY(_jit(c[1],2)); _setUrg(p,_URG.JOG); });
+  others.forEach((p,i)=>{ const c=_pt(FT_OFF_S[i%FT_OFF_S.length],offLeft,false); _hedefAta(p,_jit(c[0],2),_jit(c[1],2),_URG.JOG); });
+  bigFirst(defPlayers).forEach((p,i)=>{ const c=_pt(FT_DEF_S[i%FT_DEF_S.length],offLeft,false); _hedefAta(p,_jit(c[0],2),_jit(c[1],2),_URG.JOG); });
 }
 
 /** F14-7: SERBEST ATIŞ BEKLEMESİ — düdükten atışa kadar geçmesi gereken süre (sn).
@@ -1194,16 +1223,16 @@ function movePlayersForEvent(ev,paint){
       if(P){ P(); _markPainted(); }
       const hc=S.home.find(p=>p.role===4)||S.home[S.home.length-1];
       const ac=S.away.find(p=>p.role===4)||S.away[S.away.length-1];
-      hc.tx=451; hc.ty=250; _setUrg(hc,_URG.YURU);
-      ac.tx=489; ac.ty=250; _setUrg(ac,_URG.YURU);
+      _hedefAta(hc,451,250,_URG.YURU);
+      _hedefAta(ac,489,250,_URG.YURU);
       /* sıçramayan 8 oyuncu kendi yarı sahasında, orta bandın (x380-560) dışında */
       const userLeft=(mState.userIsHome!==false);   /* kullanıcı sola hücum ediyor → savunması sağda */
       const nearSpots=[[360,176],[360,324],[300,250],[212,250]];
       const farSpots=nearSpots.map(_mir);
       const hSpots=userLeft?farSpots:nearSpots;
       const aSpots=userLeft?nearSpots:farSpots;
-      S.home.filter(p=>p!==hc).forEach((p,i)=>{ const s=hSpots[i%4]; p.tx=_jit(s[0],6); p.ty=_jit(s[1],6); _setUrg(p,_URG.YURU); });
-      S.away.filter(p=>p!==ac).forEach((p,i)=>{ const s=aSpots[i%4]; p.tx=_jit(s[0],6); p.ty=_jit(s[1],6); _setUrg(p,_URG.YURU); });
+      S.home.filter(p=>p!==hc).forEach((p,i)=>{ const s=hSpots[i%4]; _hedefAta(p,_jit(s[0],6),_jit(s[1],6),_URG.YURU); });
+      S.away.filter(p=>p!==ac).forEach((p,i)=>{ const s=aSpots[i%4]; _hedefAta(p,_jit(s[0],6),_jit(s[1],6),_URG.YURU); });
       const b=S.ball; b.mode='idle'; b.carrier=null; b.x=COURT_MID; b.y=250; b.h=0; b.vx=0; b.vy=0; b.vh=0;
       const winOff=_peekNextOff();
       const winP=winOff?S.home:S.away;
@@ -1224,8 +1253,8 @@ function movePlayersForEvent(ev,paint){
       const nearSpots=[[428,250],[400,150],[400,350],[352,196],[352,308]];
       const farSpots=nearSpots.map(_mir);
       const hs=userLeft?farSpots:nearSpots, as=userLeft?nearSpots:farSpots;
-      S.home.forEach((p,i)=>{ p.tx=hs[i][0]; p.ty=hs[i][1]; _setUrg(p,_URG.JOG); p._oob=false; });
-      S.away.forEach((p,i)=>{ p.tx=as[i][0]; p.ty=as[i][1]; _setUrg(p,_URG.JOG); p._oob=false; });
+      S.home.forEach((p,i)=>{ p._oob=false; _hedefAta(p,hs[i][0],hs[i][1],_URG.JOG); });
+      S.away.forEach((p,i)=>{ p._oob=false; _hedefAta(p,as[i][0],as[i][1],_URG.JOG); });
       clearBallTimers();
       S.defTrack=false;
       /* M5/M6 (kenar durum): top çeyrek sonunda orta sahaya IŞINLANIYORDU (ölçüm: 245 px

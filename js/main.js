@@ -166,6 +166,7 @@ function startMatch(playoff){
     restBonus:{},            /* mola ile tazelenen enerji (göstergeye eklenir) */
     rate:_matchRate,           /* izleme hızı — hem animasyon hem olay temposu */
     _clkNow:MATCH_CLOCK_SEC,   /* akan maç saati (sn, kesirli) */
+    _logged:new Set(),         /* F16-B: basılan anlatım anahtarları (maça özel) */
     _scOff:null,_scAnchor:MATCH_CLOCK_SEC,
     energyStart:Object.fromEntries((G.players||[]).map(p=>[p.id,Number(p.enerji!=null?p.enerji:100)]))};
   /* C1: Sonucu maç başında kilitle ve kalıcı kaydet. Canlı izleme sadece görselleştirmedir;
@@ -215,6 +216,8 @@ function startMatch(playoff){
       return;
     }
     const ev=mState.events[mState.idx];
+    const _evIx=mState.idx;      /* F16-B: log tekilliği için SABİT anahtar — mState.idx
+                                    hemen artıyor, paint asenkron çalışabiliyor. */
     mState.idx++;
 
     /* İç durum HEMEN güncellenir (duraklatma/kilit güvenliği için). */
@@ -242,10 +245,11 @@ function startMatch(playoff){
       if(ev.qh&&ev.qa) updateQuarterBoard(ev.qh,ev.qa,ev.home||0,ev.away||0);
     };
     const paint=(mode)=>{
-      if(mode==='pre'){ addComment(ev.ftPre||ev.text,ev.type); return; }   /* faul düdüğü — sonuç YOK */
-      if(mode==='res'){ paintScore(); if(ev.ftRes) addComment(ev.ftRes,ev.type); return; }
+      const _pk='i'+_evIx+':'+(mode||'main');
+      if(mode==='pre'){ addComment(ev.ftPre||ev.text,ev.type,_pk); return; }   /* faul düdüğü — sonuç YOK */
+      if(mode==='res'){ paintScore(); if(ev.ftRes) addComment(ev.ftRes,ev.type,_pk); return; }
       paintScore();
-      addComment(ev.text,ev.type);
+      addComment(ev.text,ev.type,_pk);
     };
     /* Önce oyuncuları yerleştir (top bu GERÇEK konumlara paslanacak), sonra topu canlandır.
        Dönen süre (sim-ms) koreografinin uzunluğu; izleme hızına bölünerek gerçek gecikmeye
@@ -632,7 +636,7 @@ function setLiveTactic(key,val){
   let vl={yavas:'Yavaş',normal:'Normal',hizli:(key==='odak'?'Hızlı hücum':'Hızlı'),ic:'İçeri',dis:'Dış şut',set:'Set oyun',dengeli:'Dengeli',adam:'Adam adama',bolge:'Bölge',pres:'Pres'}[val]||val;
   if(key==='playbook'){ const pb=playbookOf(val); vl=pb.ikon+' '+pb.ad; }
   if(key==='defSet'){ const d=defSetOf(val); vl=d.ikon+' '+d.ad; }
-  addComment(`🎯 Taktik değişti — ${nm}: ${vl} (koç kararı).`,'tactic');
+  addComment(`🎯 Taktik değişti — ${nm}: ${vl} (koç kararı).`,'tactic','tactic:'+Date.now()+':'+(mState.idx|0));
   regenerateMatchRemainder();      /* kalan maç yeni taktikle yeniden simüle edilir */
   if(typeof scheduleGameSave==='function') scheduleGameSave();
   renderCoachingPanel(true);
@@ -654,7 +658,7 @@ function callTimeout(){
     const p=(G.players||[]).find(x=>x.id===id);
     if(p&&p.enerji!=null) p.enerji=Math.min(100,Number(p.enerji)+Math.round(boost*0.5));
   });
-  addComment(`⏸ MOLA! ${escMatch(G.team.isim)} molasını kullandı — oyuncular nefeslendi, enerji tazelendi. (Kalan mola: ${mState.timeoutsLeft})`,'tactic');
+  addComment(`⏸ MOLA! ${escMatch(G.team.isim)} molasını kullandı — oyuncular nefeslendi, enerji tazelendi. (Kalan mola: ${mState.timeoutsLeft})`,'tactic','timeout:'+Date.now());
   updateTimeoutBtn();
   /* Gerçek mola süresi: 30 saniye geri sayım — oyuncu rahatça değişiklik/taktik yapar, 0'da otomatik devam. */
   mState._toRemain=30;
@@ -686,7 +690,7 @@ function substituteLive(outId,inId){
   if(!mState.benchIds.includes(outId)) mState.benchIds.unshift(outId);
   mState.subbedIds.add(inId);
   if(!mState.paused) mState.subsLeft--;   /* çeyrek arası hakkı; molada/dead-ball serbest */
-  addComment(`🔁 Değişiklik (koç kararı): ${outP?outP.isim:'?'} çıktı, ${inP.isim} girdi.`,'tactic');
+  addComment(`🔁 Değişiklik (koç kararı): ${outP?outP.isim:'?'} çıktı, ${inP.isim} girdi.`,'tactic','sub:'+Date.now());
   regenerateMatchRemainder();
   renderCoachingPanel(true);
 }
@@ -730,7 +734,20 @@ function continueMatchAfterBreak(){
   if(mState.running && mState.step && !matchEventTimer){ matchEventTimer=setTimeout(mState.step,700); }
 }
 
-function addComment(txt,type=''){
+/* F16-B: AYNI OLAY İKİ KEZ LOG'LANAMAZ. Canlı testte aynı cümle arka arkaya iki kez
+   basılmıştı. Motor temiz — 40 maç / 9.887 metinli olayda ardışık tekrar 0; hata SUNUM
+   katmanındaydı: `paint` hem `movePlayersForEvent` geri çağrısı olarak veriliyor hem de
+   `if(!_h.paint) paint()` ile doğrudan çağrılıyordu ve `_evH.paint` bayrağı bazı yollarda
+   (`_markPainted()` çağrılmadığında) kurulmuyordu. Bayrak yerine OLAY KİMLİĞİ: hangi
+   yoldan gelirse gelsin bir olay+mod bir kez basılır. Kullanıcı eylemleri (taktik, mola,
+   değişiklik) bilerek tekrarlanabilir — onlar benzersiz anahtar geçer. */
+function addComment(txt,type='',key){
+  try{
+    const _k=(key!=null)?key:('t:'+String(txt).slice(0,60));
+    if(!mState._logged) mState._logged=new Set();
+    if(mState._logged.has(_k)) return;
+    mState._logged.add(_k);
+  }catch(e){}
   const div=document.getElementById('commentary');
   const ev=mState.events[Math.max(0,mState.idx-1)]||{};
   const q=ev.q||mState.quarter;

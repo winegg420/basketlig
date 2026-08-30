@@ -3381,3 +3381,86 @@ ball-you-man %86,2 · potaya 6,40 m).
 `realism-check` saha dışı/ışınlanma/üst üste binme 0 · `anlatim-check` 13/13 · `--freeze`
 23/23 · `live-metrics` ✓ · `faz7/8/10/11` ✓ · `m20` ✓ · `schema` 17/17 · `mobile-check`
 18/18 · `visual-check` 0 hata · `i18n-scan` %0,0. Script sürümü **?v=51**.
+
+## FAZ 16 — CANLI TEST BULGULARI (40. oturum)
+
+Üç madde canlı tarayıcı testinde ölçülerek bulundu; her birinin kök nedeni kodda tespit
+edildi ve düzeltme **ölçümle** doğrulandı.
+
+### MADDE A · YÜRÜ kademesi ölüydü (%0)
+FAZ 15 dört hareket kademesi getirmişti ama canlı ölçümde oyuncuların **%88,5'i her an
+KOŞ/SPRINT** kademesindeydi, YÜRÜ **%0,0**. İki kusur birlikte çalışıyordu:
+
+- **A1 — kapı neredeyse hiç çağrılmıyordu.** `_hedefAta()` yalnız 4 yerden çağrılıyor,
+  buna karşılık 41 doğrudan `p.tx=` yazımı kapıyı atlıyordu.
+- **A2 — kapının koşulu kendi çağrılarını eliyordu.** `urg<=_URG.JOG` koşulu, KOŞ ile
+  yapılan çağrılarda yürüme dalını **matematiksel olarak imkânsız** kılıyordu.
+
+**Düzeltme:** kapı `_setFormation` · `_setFtFormation` · `movePlayersForEvent` içindeki tüm
+dizilim yazımlarına yayıldı (13 çağrı; şut koreografisi, top takibi ve çizgi dışı mantığı
+brifte belirtildiği gibi dışarıda bırakıldı), koşul `urg<_URG.SPRINT` oldu, eşik 26 → **20 px**.
+
+> **Ölçüm bir üçüncü kusuru daha gösterdi:** kapı düzeldikten sonra bile YÜRÜ %3,7'de kaldı,
+> çünkü **kademe yalnız ATAMA anında veriliyordu** — yerine varmış oyuncu pozisyon boyunca
+> koşu kademesini taşımaya devam ediyordu. Hareket döngüsüne "hedefine varan jeton kademesini
+> düşürür" kuralı eklendi (SPRINT ve koreografi kilidi muaf). **%3,7 → %41,3.**
+
+> **İkinci ders:** kapının eski hâli hedefi jetonun BULUNDUĞU noktaya sabitliyordu
+> (`p.tx=p.x`). Markajdaki savunmacı böylece pota tarafına düzeltilmiş hedefini hiç almıyor,
+> zamanla hattan kayıyordu (ball-you-man %86 → %83). Artık **hedef her zaman korunur, yalnız
+> kademe düşer.** Kalan farkı savunmanın ölü bölgesi kapattı (12/30 → **8/20 px**): savunmacının
+> hedefi 12 px'e kadar bayat kalabildiği için adamı hareket edince kısa süre pota tarafını
+> kaybediyordu. **%86,8** (FAZ 16 öncesi %86,2).
+
+| Kademe | Canlı test (önce) | Başsız ölçüm (önce) | SONRA | Hedef |
+|---|---|---|---|---|
+| YÜRÜ | %0,0 | %3,1 | **%41,3** | %20-45 ✓ |
+| KOŞ+SPRINT | %88,5 | %54,9 | **%42,0** | < %55 ✓ |
+| SPRINT | %35,2 | %9,3 | **%9,1** | %5-20 ✓ |
+
+### MADDE B · Anlatımda ardışık tekrar
+Canlı ekranda aynı cümle arka arkaya iki kez basılmıştı. **Motor temiz:** 40 maç / 9.887
+metinli olayda ardışık aynı metin **0**. Hata sunum katmanındaydı: `paint` hem
+`movePlayersForEvent` geri çağrısı olarak veriliyor hem de `if(!_h.paint) paint()` ile
+doğrudan çağrılıyordu; `_evH.paint` bayrağı bazı yollarda (`_markPainted()` çağrılmadığında)
+kurulmuyordu.
+
+**Düzeltme:** bayrak yerine **olay kimliğine dayalı tekillik**. `addComment(txt,type,key)`
+üçüncü bir anahtar alır; `paint` her olay için `i<olayIndeksi>:<mod>` anahtarı geçer
+(`main`/`pre`/`res` ayrı). Anahtar `mState._logged` kümesinde tutulur ve **maç başında
+sıfırlanır**. `mState.idx` paint anına kadar ilerleyebildiği için indeks olayın işlendiği
+karede **sabitlenir** (`_evIx`). Kullanıcı eylemleri (taktik, mola, değişiklik) bilerek
+tekrarlanabilir — onlara benzersiz anahtar geçirildi, bastırılmazlar.
+
+**Doğrulama:** 4 dakikalık canlı maç, DOM'da **198 anlatım satırı · ardışık tekrar 0 ·
+konsol hatası 0**. `anlatim-check --freeze`'e iki kalıcı denetim eklendi (ardışık tekrar +
+"aynı taktik iki kez → iki satır"), **25/25**.
+
+### MADDE C · Anlık yığılma ölçülmüyordu
+`spacing-check` ORTALAMA ölçüyor; ortalama iyiyken tek tek kareler kötü olabiliyordu
+(canlı testte izlenen 4 karenin 2'sinde 6-8 oyuncu üst üste). `hareket-check`'e üç ölçüt
+eklendi: **en kötü kare ikili mesafesi (p5)**, **yığılma oranı**, **kademe dağılımı**.
+
+> **Tanım düzeltmesi:** "bir oyuncunun 2 m çevresinde iki kişi" ölçütü adam adama savunmayı
+> yığılma sayıyordu (savunmacı adamının ~1,85 m'sinde durur — `spacing-check` bunu ŞART
+> koşuyor) ve %51,5 veriyordu. Ölçüt **karşılıklı üçlü** yapıldı ve ayrıca **aynı takımdan
+> iki oyuncu** koşulu eklendi: kusur, iki takım arkadaşının aynı 2 m'ye sıkışmasıdır.
+
+**Ölçüm gerçek bir kusur gösterdi: %25,3.** Sebep, çarpışma yarıçapının (`_PL_R`=40 px =
+1,35 m) takım arkadaşları için de aynı olmasıydı. **Düzeltme:** aynı takım için ayrı yarıçap
+`_PL_R_TAKIM` = **62 px (2,10 m)**; rakip için 40 px korunur (savunmacı adamını 1,8 m'den
+yakın kapatmalı — `spacing-check` şartı). **%25,3 → %4,0.**
+
+| Ölçüt | ÖNCE | SONRA | Hedef |
+|---|---|---|---|
+| en kötü kare — ikili mesafe (p5) | 4,35 m | **4,21 m** | > 4,0 ✓ |
+| yığılma (aynı takımdan 2 oyuncu < 2 m) | %25,3 | **%4,0** | < %8 ✓ |
+
+### Doğrulama
+`band.js` hash **`fb393bdab878e699` — değişmedi** · `sim-node --n=100 --seed=42` →
+**86.7-80.7 · 251 olay/maç · tohum 42 → 92-64** (FAZ 15 referansıyla birebir aynı) ·
+`box-band --n=200` 11/11 · `spacing-check` **10/10** · `hareket-check` **14/14** ·
+`sunum-check` 4/4 (F14-7 9,8/10) · `anlatim-check` 13/13 · `--freeze` **25/25** ·
+`live-metrics` ✓ · `realism-check` 0 ihlal · `geometri-check` 19/19 · `faz7/8/10/11` ✓ ·
+`m20` ✓ · `schema` 17/17 · `mobile-check` 18/18 · `visual-check` 0 hata · `i18n-scan` %0,0.
+Script sürümü **?v=52**.

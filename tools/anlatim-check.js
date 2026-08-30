@@ -389,6 +389,30 @@ function analizEt(events) {
         !!panel.sonra.govde && panel.sonra.govde.length >= Math.min(20, panel.once.govde.length) &&
         panel.sonra.rakip === panel.once.rakip,
         `rakip "${panel.once.rakip}" → "${panel.sonra.rakip}" · gövde ${panel.once.govde.length} → ${panel.sonra.govde.length} krk`);
+      /* F16-B: CANLI DOM'da ardışık aynı anlatım satırı OLMAMALI. Canlı testte aynı cümle
+         iki kez basılmıştı; motor temiz olduğu için hata sunum katmanındaydı. Ayrıca
+         kullanıcı eylemleri (taktik) bilerek tekrarlanabilir — bastırılmadıkları sınanır. */
+      const log = await p.evaluate(async () => {
+        const oku = () => Array.prototype.map.call(
+          document.querySelectorAll('#commentary .ci'),
+          e => (e.textContent || '').replace(/s+/g, ' ').trim()).filter(Boolean);
+        const satirlar = oku();
+        let ardisik = 0, ornek = '';
+        for (let i = 1; i < satirlar.length; i++) {
+          if (satirlar[i] === satirlar[i - 1]) { ardisik++; if (!ornek) ornek = satirlar[i]; }
+        }
+        /* Aynı taktik iki kez uygulanınca İKİ satır basılmalı (tekillik onları susturmamalı). */
+        const once = oku().length;
+        try { setLiveTactic('tempo', 'hizli'); } catch (e) {}
+        await new Promise(r => setTimeout(r, 120));
+        try { setLiveTactic('tempo', 'hizli'); } catch (e) {}
+        await new Promise(r => setTimeout(r, 120));
+        return { n: satirlar.length, ardisik, ornek, taktikArtis: oku().length - once };
+      });
+      ok('canlı logda ardışık aynı satır yok (F16-B)', log.ardisik === 0,
+        `${log.n} satır · ardışık tekrar ${log.ardisik}${log.ornek ? ' — "' + log.ornek.slice(0, 60) + '"' : ''}`);
+      ok('kullanıcı eylemi tekrarı bastırılmıyor (F16-B)', log.taktikArtis >= 2,
+        `aynı taktik 2 kez → ${log.taktikArtis} satır`);
       /* 37. oturum: parkenin üzerinde O/X şut izi KALMAMALI (kullanıcı isteği). */
       const izler = await p.evaluate(() => {
         const svg = document.getElementById('courtSvg');
