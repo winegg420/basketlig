@@ -2953,3 +2953,19 @@ medyan 3,86× ✓ · `i18n-scan` temiz.
 > savunmacıyı adlandırıyor (F13-4) ve değişiklik satırları yeni kalıplarla geliyor; ikisi de
 > "topu tutan oyuncu" kimlik ölçüsünün dışındadır (bloklarla aynı gerekçe). Eski dışlama
 > kalıpları yeni metinlerle eşleşmediği için ölçüm yanlışlıkla %93'e düşmüştü.
+
+### `live-metrics` syncRatio yayılımı — FAZ 13 öncesiyle karşılaştırıldı
+
+FAZ 13 sonrası tek düşen ölçü buydu. `git worktree` ile aynı pencerede (`--ms=540000`)
+FAZ 13 öncesi commit (`cf36a74`) ölçüldü:
+
+| | öncesi | sonrası |
+|---|---|---|
+| syncRatio medyan | 2,78× ✓ | 3,86× ✓ (hedef 2-5×) |
+| tipler arası yayılım | **2,47× ✗** | **3,11× ✗** (hedef < 1,9×) |
+
+**Yayılım hedefi iki kodda da tutmuyor** — gerileme değil. Sebep ölçü tanımında: bir
+pozisyonun bütün olayları aynı `t` (maç saati) değerini taşır, bu yüzden saat hareketini
+pozisyonun İLK olayı soğurur; oran olay başına hesaplandığı için tipler arasında yapay fark
+çıkar. F13-1 ribaund olaylarını araya sokunca bu hareket başka tiplere kaydı ve fark büyüdü.
+**Düzeltilecek olan araçtır** (oran pozisyon başına hesaplanmalı), motor değil.

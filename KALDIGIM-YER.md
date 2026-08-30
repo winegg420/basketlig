@@ -94,11 +94,20 @@ Bu depoda dördüncü kez bir ölçüm aracının kendisi şüpheli.
 getirdiği için araç artık 3 değil **20 vaka** ölçüyor: **%80 (hedef ≥ %80) ✓**. Örneklem
 sorunu kendiliğinden çözüldü.
 
-**`live-metrics` syncRatio YAYILIMI** (tipler arası fark 3,1× · hedef < 1,9×) — medyan
-**3,86×** hedef bandında (2-5×), orphan 0, kimlik %100, top ışınlanması 0 kare. Yayılımı
-`free` tipi (8 örnek) çekiyor; araç zaten "örnek sayısı düşük" uyarısı basıyor. FAZ 13
-öncesiyle karşılaştırması yapıldı (aşağıdaki nota bak) — ölçüm penceresi büyütülmeden
-yargıya varılmamalı.
+**`live-metrics` syncRatio YAYILIMI — FAZ 13'ün getirdiği bir gerileme DEĞİL, ölçüldü.**
+Aynı pencerede (`--ms=540000`) `git worktree` ile karşılaştırıldı:
+
+| | FAZ 13 öncesi (`cf36a74`) | sonrası (`7ca037a`) |
+|---|---|---|
+| syncRatio medyan | 2,78× ✓ | **3,86× ✓** (hedef 2-5×) |
+| tipler arası yayılım | **2,47× ✗** | **3,11× ✗** (hedef < 1,9×) |
+
+Yani yayılım hedefi **iki kodda da** tutmuyor. Yayılımı `free` tipi çekiyor (8 örnek) ve
+sebebi ölçü tanımında: bir pozisyonun bütün olayları AYNI `t` değerini taşır, dolayısıyla
+maç saati hareketini pozisyonun İLK olayı soğurur. F13-1 ile araya ribaund olayları girince
+bu hareket başka bir tipe kaydı. **Yapılacak iş motorda değil araçta:** oran olay başına
+değil POZİSYON başına hesaplanmalı. Medyan, orphan, kimlik ve top ışınlanması güvenceleri
+her iki kodda da tutuyor.
 
 ## Sıradaki adım (öncelik sırasıyla)
 
