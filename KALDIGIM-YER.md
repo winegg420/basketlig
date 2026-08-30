@@ -47,6 +47,7 @@ ayrı bir fazdır.
 | `node tools/faz11-check.js` | FAZ 11 (dizilim geometrisi, yetişme, kesme noktası, `startMatch` kilidi) | ✓ **13/13** |
 | `node tools/mobile-check.js` | FAZ 12 mobil (dokunma sayısı, maç sayfası düzeni, yoğunluk, 44 px) | ✓ **18/18** |
 | `node tools/sim-node.js --n=50` | **tarayıcısız** maç simülasyonu + determinizm (sunucu ön koşulu) | ✓ 50/50 |
+| `node tools/schema-check.js` | `db/schema.sql` sözdizimi + lig kuralları + RLS + bağlantı yok | ✓ **17/17** |
 | `node tools/sunum-check.js --ms=300000` | M9 outlet · M12 and-1 · M14 şut saati | ✓ **3/3** |
 | `node tools/visual-check.js` | masaüstü + mobil akış, konsol | ✓ çıkış kodu **0** |
 | `node tools/live-metrics.js --ms=360000` | senkron · kimlik · ışınlanma | ✓ orphan 0 · kimlik %100 · 0 kare |

@@ -2766,3 +2766,31 @@ düşüyor** (`8288405` ve FAZ 9'un bittiği `7e8f5c0` dahil). Yani Bölüm 1-3'
 FAZ 9'da "6/6" olarak kaydedilen ölçüm bugün aynı commit'te tekrar üretilemiyor — aracın
 ekonomi ölçümünde tohumla sabitlenmeyen bir girdi (büyük olasılıkla takvim/tarih) var.
 **Bu, denge değil ölçüm aracı sorunu olabilir; ayrı ele alınmalı.**
+
+## BÖLÜM 4 — `db/schema.sql` (yalnız dosya; hesap açılmadı, bağlantı kurulmadı)
+
+`PLAN-LIG-YAPISI.md` bölüm 7'deki taslak gerçek `CREATE TABLE` ifadelerine çevrildi:
+`countries · users · leagues · teams · players · fixtures · results · standings · transfers`.
+
+**Şemaya yansıtılan lig kuralları:**
+
+| Karar | Şemadaki karşılığı |
+|---|---|
+| Bot takım = sahipsiz | `teams.owner_user_id` NULL · `devralinabilir_takimlar` görünümü |
+| **Sistem botu ≠ terk edilmiş takım** | `bot_controlled` + `abandoned_since` + `terk_adaylari` görünümü (45 gün) |
+| Devralma kadroya dokunmaz | devralma yalnız `owner_user_id` yazar; `players` değişmez |
+| 18 takım · 17 maç · tek devre | `fixtures.tur` (1-17) |
+| Sezon 2 ay, ayın 1'inde | `leagues.baslangic` / `bitis` |
+| **Play-off yok** | `fixtures.tip ∈ (lig, yukselme, dusme, kupa, uluslararasi)` — playoff yok |
+| Fikstür saati | `fixtures.oynanma_zamani` + zamanlayıcı için **kısmi indeks** (`where durum='bekliyor'`) |
+| Sonuç sunucuda üretilir | `fixtures/results/standings` için istemci **yazma politikası yok** (yalnız service_role) |
+| Olay dökümü büyür (~140 MB/sezon) | `results.seed` + `motor_surum` → döküm tohumdan yeniden üretilebilir, `olaylar` silinebilir |
+
+**RLS:** dokuz tabloda da açık. Okuma herkese açık (ligde şeffaflık), yazma yalnız sahibine ve
+yalnız izin verilen sütunlara (şemada sütun düzeyinde `GRANT` reçetesi yorum olarak yazıldı).
+
+**Yeni araç: `tools/schema-check.js` (17 denetim).** Sözdizimi katmanı `pgsql-parser` kuruluysa
+**gerçek PostgreSQL ayrıştırıcısıyla** doğrulanır (45 ifade ayrıştırıldı); kurulu değilse
+yapısal denetime düşer (bağımlılık eklenmedi — `npm i --no-save pgsql-parser`). Kural katmanı
+yukarıdaki tablonun her satırını şemada arar; ayrıca `js/` ve HTML'de **Supabase bağlantısı
+olmadığını** sınar (bu bölüm yalnız dosya üretir).
