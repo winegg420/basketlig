@@ -88,6 +88,11 @@ bugün aynı commit'te tekrar üretilemiyor → aracın ekonomi ölçümünde to
 girdi var (muhtemelen takvim/tarih). **Önce aracın determinizmi doğrulanmalı, sonra denge.**
 Bu depoda dördüncü kez bir ölçüm aracının kendisi şüpheli.
 
+**`sunum-check` M9 küçük örneklemde karar veremiyor** — 10 dakikalık pencerede yalnız 3 vaka
+kapsama giriyor, 3 vakada %80 eşiği ancak 3/3 ile tutturulabiliyor. `c2c46b3` (FAZ 11 öncesi)
+ile karşılaştırıldı: **birebir aynı sonuç (2/3)**, yani gerileme değil. Aynı koşuda motorun
+kendi kararı **231/237 = %97,5**. Düzeltilecek olan aracın kapsam kuralı/penceresi.
+
 ## Sıradaki adım (öncelik sırasıyla)
 
 Talep belgelerinde **açık madde kalmadı**. Sıradakiler kapsam kararı gerektirir:

@@ -2829,3 +2829,24 @@ olmadığını** sınar (bu bölüm yalnız dosya üretir).
 | `sunum-check` | M9 küçük örneklemde dalgalı (aşağıda) |
 
 Script sürümü `?v=44` + `sw.js` `SCRIPT_V='44'`.
+
+### `sunum-check` M9 — ölçüldü: gerileme DEĞİL, aracın örneklemi yetersiz
+
+Bölüm 5 sonunda tam regresyonda `sunum-check` M9 düştü (%67, hedef ≥ %80). `git worktree` ile
+**FAZ 11 öncesi commit'te (`c2c46b3`) aynı ölçüm yapıldı:**
+
+| | HEAD (36. oturum) | `c2c46b3` (FAZ 11 öncesi) |
+|---|---|---|
+| M9 kapsam içi vaka | **3** | **3** |
+| outlet kurulan | 2 (**%67**) | 2 (**%67**) |
+| M14 | ✓ geçti | **✗ düştü** |
+
+**Aynı sonuç** — yani M9 bu oturumun değişikliklerinden etkilenmemiş. Üstelik aynı koşuda
+motorun kendi kararı raporlanıyor: **taşıyıcı uzun olan pozisyon 237, outlet kurulan 231
+(%97,5)**. Yani mekanik doğru çalışıyor; düşen şey aracın **görsel doğrulama örneklemi**:
+10 dakikalık izleme penceresinde yalnız 3 vaka kapsama giriyor ve 3 vakada %80 eşiği
+matematiksel olarak ancak 3/3 ile tutturulabiliyor (0 / 33 / 67 / 100 dışında değer yok).
+
+**Sonuç:** `sunum-check` M9 ölçüsü küçük örneklemde karar veremiyor. Düzeltilecek olan
+motor değil, aracın kapsam kuralı/penceresi (ya da motor kararının doğrudan sınanması).
+`season-loop` K2 ile birlikte **açık iş listesine** yazıldı.
