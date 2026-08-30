@@ -45,15 +45,18 @@ tek gerçek kaynağı sunucu olan çok oyunculu şemaya genişletir.
 `generateMatchEvents()` bugün tarayıcıda çalışıyor ve sonucu yerel PRNG ile üretiyor. İki gerçek
 oyuncu karşılaşınca sonucu **kim** üretecek sorusunun tek doğru cevabı sunucudur.
 
-> **⚠ 36. oturum düzeltmesi:** Aşağıdaki "zaten Node'da çalıştırıyor" ifadesi yanlıştı —
-> `tools/box-band.js` Playwright ile başsız bir **tarayıcı** açıyor, saf Node değil. Motor
-> gerçekten tarayıcısız yüklenebiliyor (ölçüldü), ama iki engel var: rakip gücü takım adının
-> hash'inden üretiliyor (`pseudoTeamStrength`) ve motor küresel `G` durumuna bağlı.
-> Ayrıntı ve yapılacak dönüşüm: **`KARAR-SUNUCU.md` madde 3.0.**
+> **⚠ 36. oturum — ÖLÇÜLDÜ VE YAPILDI:** Bu belgenin ilk sürümü "motor zaten Node'da
+> çalışıyor, `box-band.js` bunu yapıyor" diyordu. **Gerekçe yanlıştı** —
+> `box-band.js` Playwright ile başsız bir *tarayıcı* açar, saf Node değil.
+> Doğrusu 36. oturumda yapıldı ve ölçüldü: motorun `G` bağımlılığı bağlam
+> nesnesine çevrildi (`buildMatchCtx`), rakip gücü artık ad hash'i değil
+> **gerçek kadro**, ve `tools/sim-node.js` motoru **tarayıcısız** çalıştırıyor
+> (50 maç 0,3 sn; aynı tohum aynı maç). Sözleşme:
+> `simulateMatch({homeRoster, awayRoster, homeTactics, awayTactics, seed})`.
 
-**İyi haber:** motor saf JavaScript ve tarayıcıya bağımlı değil — `tools/box-band.js`,
-`tools/season-loop.js` ve `tools/band.js` onu başsız ortamda çalıştırıyor. Yapılacak iş,
-bu harness'lerin yaptığını üretimde tekrarlamak:
+**Durum (36. oturum):** motor saf JavaScript, tarayıcıya bağımlı değil ve **artık `G`'ye de
+bağımlı değil**. `tools/sim-node.js` 12 modülü düz Node'da yükleyip maç oynatıyor;
+üretimde yapılacak iş bu çağrıyı sunucuya taşımaktır:
 
 ```
 js/match-engine.js  ─┬─→ tarayıcı (canlı SUNUM: olay listesini oynatır)

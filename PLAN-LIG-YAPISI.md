@@ -248,8 +248,11 @@ transfers      id · player_id · from_team · to_team · bedel · tarih
 Devralma = bu alana kullanıcı kimliğini yazmak. Kadroya dokunulmaz.
 
 **Kritik kural:** Maç sonucu **sunucuda** üretilir (`results.olaylar`), tarayıcı yalnız oynatır.
-Mevcut `generateMatchEvents()` saf JavaScript olduğu için Node'da doğrudan çalışır — `box-band.js`
-ve `season-loop.js` bunu zaten yapıyor.
+**36. oturum notu (ölçüldü):** `box-band.js` ve `season-loop.js` Playwright ile başsız bir
+*tarayıcı* açar — saf Node değildir; bu gerekçe yanlıştı. Ayrıştırma 36. oturumda yapıldı:
+motor artık bağlam nesnesi okur (`buildMatchCtx`), rakip gücü gerçek kadrodan hesaplanır ve
+`tools/sim-node.js` motoru **tarayıcısız** çalıştırır (`simulateMatch({...seed})`, deterministik).
+Veri modelinin gerçek `CREATE TABLE` hâli: `db/schema.sql`.
 
 ---
 

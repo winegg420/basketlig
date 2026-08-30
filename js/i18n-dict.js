@@ -770,6 +770,7 @@ I18N_PHRASES.unshift(
   [/kötü haber aldı: (.+?) (\d+) hafta sahalardan uzak kalacak\./g,'received bad news: $1 will be out for $2 weeks.'],
   [/(\d+) hafta sahalardan uzak kalacak\./g,'will be out for $1 weeks.'],
   [/son (\d+) maçını kazandı/g,'have won their last $1 games'],
+  [/^formda takım\./g,'— a team in form.'],
   [/ formda takım\./g,' — a team in form.'],
   [/başkanı: "Bu sezon hedefimiz ilk (\d+)\. Kadromuza güveniyoruz\."/g,'chairman: "Our goal this season is a top-$1 finish. We trust this squad."'],
   [/taraftarı sonuçlardan memnun değil — tribünde pankart açıldı\./g,'fans are unhappy with the results — banners were unfurled in the stands.'],
@@ -777,6 +778,10 @@ I18N_PHRASES.unshift(
   [/altyapıdan (.+?) adlı genci A takıma çıkardı —/g,'have promoted $1 from the academy to the first team —'],
 
   [/(\d+) yaşında\./g,'aged $1.'],
+  /* i18n-scan bulgusu (36. oturum): metin düğümü çeviriye girmeden ÖNCE trim edilir
+     (_i18nTextNode → raw.trim()), bu yüzden BAŞTA BOŞLUK isteyen kalıplar hiç eşleşmiyordu.
+     <strong> ile bölünen haber satırlarında görünen düğüm tam olarak budur. */
+  [/^arasında takas görüşmesi sürüyor\./g,'are in trade talks.'],
   [/ arasında takas görüşmesi sürüyor\./g,' are in trade talks.'],
   [/ ile <strong>/g,' and <strong>']
 );

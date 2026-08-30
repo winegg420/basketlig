@@ -17,7 +17,27 @@ Derleme/kurulum **yok** — statik bir HTML dosyası.
 - **Yerel sunucu ile** (portrelerin/asset'lerin sorunsuz yüklenmesi için önerilir): `Charazay-2.0-YEREL-SUNUCU.bat`.
 - **Canlı (GitHub Pages):** https://winegg420.github.io/basketlig/charazay2.0.html — **yayında** (depo public, kaynak `master` / kök; push sonrası ~1-2 dk içinde güncellenir). Yayın sonrası doğrulama: `node tools/live-check.js`.
 
-Oyun ilerlemesi tarayıcıda **localStorage + IndexedDB** ile saklanır (otomatik kayıt + 3 manuel slot). Sunucu/veritabanı yoktur.
+Oyun ilerlemesi **bugün** tarayıcıda **localStorage + IndexedDB** ile saklanır (otomatik kayıt + 3 manuel slot).
+
+## Proje temeli — ÇOK OYUNCULU
+
+**Charazay baştan beri çevrimiçi çok oyunculu olarak tasarlandı.** Maçlar **fikstür tarihinde
+otomatik** oynanır; oyuncu o an oradaysa canlı izleyip müdahale eder (taktik, mola, değişiklik),
+değilse sonucu döndüğünde görür. Rakipler gerçek oyuncular + sahipsiz takımları dolduran botlardır.
+
+> **Maçların bugün art arda oynanabilmesi bilinçli bir test kolaylığıdır, hata değildir.**
+> FAZ 10'da `?test=1` bayrağının arkasına alındı (`TEST_MODU`, `matchTimeGateOk` · `js/state.js`);
+> fikstüre `scheduledAt` eklendiği gün kapı kendiliğinden devreye girer.
+
+**Sunucu kararı: Supabase** (`KARAR-SUNUCU.md`) — **kod henüz yazılmadı.** Veri modeli
+`db/schema.sql` dosyasında hazır; kod tabanında hiçbir bağlantı kurulmuyor.
+
+**Lig yapısı** (`PLAN-LIG-YAPISI.md`): her ülkenin kendi lig piramidi · lig **18 takım**,
+**17 maç**, tek devre · sezon **2 ay**, ayın 1'inde başlar · **play-off yok** (şampiyon lig
+birincisidir; 2-5 yükselme, 15-17 düşme maçı) · boş yerleri **bot takımlar** doldurur ·
+yeni oyuncu, boş bot takımı olan en üst ligde **istediği takımı devralır** (kadroya dokunulmaz).
+**Sistem botu** (sahipsiz) ile **terk edilmiş takım** (sahibi var, 45 gündür girilmemiş) ayrı
+kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 lig düşer.
 
 ## Teknolojiler
 
@@ -47,6 +67,10 @@ Oyun ilerlemesi tarayıcıda **localStorage + IndexedDB** ile saklanır (otomati
 | `tools/faz10-check.js` | **FAZ 10 kabul kriterleri** — fikstür saati kapısı (`?test=1`), analitik olayları, og/twitter etiketleri, PWA (manifest + `sw.js` sürümü), öğretici dili, paylaşım akışı. Yayın altyapısı değişince çalıştır. |
 | `tools/spacing-check.js` | **Saha dizilimi ölçümü (FAZ 11)** — set hücumunda aralık, yayılım, boya kullanımı, markaj mesafesi, ball-you-man. Tohumlu. `--bg` sekmeyi arka plana alıp ölçer (F11-1 gerileme testi). **Dizilim/koreografi değişince çalıştır.** |
 | `tools/faz11-check.js` | **FAZ 11 kabul kriterleri** — dizilim geometrisi, kare kaybında yetişme, kesme noktası çakışması, `startMatch` sessiz kilitlenmesi. |
+| `tools/mobile-check.js` | **FAZ 12 mobil denetçisi** (390×844) — dokunma sayısı (gerçekten tıklayarak), maç sayfası düzeni, bilgi yoğunluğu, 44 px dokunma hedefi, market yoğunluğu. Mobil düzen değişince çalıştır. |
+| `tools/sim-node.js` | **Tarayıcısız maç simülasyonu** — 12 modülü düz Node'da (vm) yükler, `simulateMatch()` sözleşmesini ve determinizmi sınar. Motor sözleşmesi değişince çalıştır. |
+| `tools/schema-check.js` | **`db/schema.sql` denetçisi** — sözdizimi (varsa gerçek PostgreSQL ayrıştırıcısı), lig kuralları, RLS, "kod tabanında bağlantı yok". |
+| `db/schema.sql` | **Çok oyunculu veri modeli** (Postgres/Supabase). Yalnız dosya — hiçbir bağlantı kurulmuyor. |
 | `tools/gen-brand-images.js` | og:image (1200×630) + PWA ikonlarını üretir (Playwright). Marka görselini değiştirince tekrar çalıştır. |
 | `sw.js`, `manifest.json` | **PWA** — önbellek (HTML: önce ağ · js/font/ikon: önce önbellek) + ana ekrana ekleme. `sw.js` içindeki `SCRIPT_V`, HTML'deki `?v=` ile **aynı olmalı**. |
 | `PLAN-COK-OYUNCULU.md` | **Çok oyunculu mimari planı** (Supabase şeması, fikstür zamanlayıcısı, sunucu tarafı simülasyon). Sunucu kodu yazılmadı. |
@@ -75,7 +99,7 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
 | `js/league.js` | Lig modalları, haber/sidebar, takım detay sayfası, `genRoundRobinMatches`, fikstür, `openMatchTactics`/`saveMatchTactics`, ilk-5 editörü. |
 | `js/match-prep.js` | `updateStandingsFromResult`, `computeRosterOfrDef`, `matchLineup`, `simulateCpuMatch`, yorgunluk/sakatlık, playoff, `startLeagueSeason`. |
 | `js/render.js` | Sayfa render'ları: `renderRoster/renderLig/renderMarket/renderArena/renderAltyapi/renderAntrenman/renderBilanço/renderAnalytics`, oyuncu kartı/modal, scouting/izci ağı (`renderScouts`), kulüp transfer pazarlığı (`openClubOfferModal`), SVG grafik (`svgLineChart`). |
-| `js/match-engine.js` | Maç motoru: `generateMatchEvents` → `runPossession` (tempo/odak/savunma stili/top yükleme/eşleştirme taktikleri), şut haritası/kutu skor render, `applyMatchResult`. **Canlı sunum v3** (27. oturum): rol tabanlı dizilim (`_assignRoles`, `SET_*`), üç fazlı pozisyon (sokma → `TRANS_*` geçiş → set), top durum makinesi (`_ballHold/_ballPass/_ballShoot/_ballLoose`), serbest top takibi (`_chase`), çizgi dışı sokma (`_inboundSetup`/`_clearOob`), anlatım senkronu (`movePlayersForEvent(ev,paint)`). |
+| `js/match-engine.js` | Maç motoru: `simulateMatch`/`buildMatchCtx` (sunucu sözleşmesi, `G`'siz) → `generateMatchEvents` → `runPossession` (tempo/odak/savunma stili/top yükleme/eşleştirme taktikleri), şut haritası/kutu skor render, `applyMatchResult`. **Canlı sunum v3** (27. oturum): rol tabanlı dizilim (`_assignRoles`, `SET_*`), üç fazlı pozisyon (sokma → `TRANS_*` geçiş → set), top durum makinesi (`_ballHold/_ballPass/_ballShoot/_ballLoose`), serbest top takibi (`_chase`), çizgi dışı sokma (`_inboundSetup`/`_clearOob`), anlatım senkronu (`movePlayersForEvent(ev,paint)`). |
 | `js/main.js` | `startMatch`/`stopMatch`/canlı oynatım, `toggleManualCoach`, antrenman + izci (`hireScout`) aksiyonları, transfer/gelen teklif (`showIncomingOfferModal`)/koç/arena aksiyonları, `showPage` (SPA, `analiz` dahil), `createTeam`, bildirim kuyruğu, `window.onload` bootstrap. |
 | — | **7. oturum sistemleri:** playoff serisi + sezon ödülleri + **başkan hedefi** (`match-prep.js`), transfer pazarlığı + **kişilikler** (`playerAcceptsOffer`), **izci ağı** + **draft** (`startDraft`, `match-prep.js`), **Analiz** sayfası. Detay `PROGRESS.md` 7. oturum. |
 

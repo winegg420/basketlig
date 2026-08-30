@@ -1,5 +1,5 @@
 # KALDIĞIM YER
-Son güncelleme: 2026-08-30 · 36. oturum — **PROMPT-CLAUDE-CODE.md bölüm 1-2 bitti**
+Son güncelleme: 2026-08-30 · 36. oturum — **PROMPT-CLAUDE-CODE.md beş bölümün tamamı bitti**
 
 Talep belgeleri: `REVIZE-PAKETI.md` (FAZ 1-6) · `REVIZE-PAKETI-FAZ7.md` (maç dışı) ·
 `REVIZE-PAKETI-FAZ8.md` (oynanış testi) · `REVIZE-PAKETI-FAZ9.md` (uzun vadeli döngü) ·
@@ -92,10 +92,12 @@ Bu depoda dördüncü kez bir ölçüm aracının kendisi şüpheli.
 
 Talep belgelerinde **açık madde kalmadı**. Sıradakiler kapsam kararı gerektirir:
 
-0. **ÇOK OYUNCULU (FAZ 10 · F10-1)** — en büyük ve en öncelikli iş. `PLAN-COK-OYUNCULU.md`
-   6. bölümündeki 9 adım sırasıyla: Supabase şeması → anonim giriş → motoru Node'da koşturan
-   `sim` paketi → fikstür zamanlayıcısı → istemcinin sunucudan gelen olayları oynatması →
-   realtime + çeyrek arası müdahale → ortak transfer piyasası → lig yönetimi → bildirim.
+0. **ÇOK OYUNCULU (FAZ 10 · F10-1)** — en büyük iş. `PLAN-COK-OYUNCULU.md` 6. bölümündeki
+   9 adımdan **ikisi 36. oturumda bitti**: şema (`db/schema.sql`) ve motoru Node'da koşturan
+   ayrıştırma (`simulateMatch` + `tools/sim-node.js`). Kalan sıra: Supabase projesi + anonim
+   giriş → fikstür zamanlayıcısı → istemcinin sunucudan gelen olayları oynatması → realtime +
+   çeyrek arası müdahale → ortak transfer piyasası → lig yönetimi → bildirim.
+   **Sunucu kodu hâlâ yazılmadı; hiçbir hesap açılmadı.**
    *Ara yol önerisi (belgeden):* tek oyunculu sürüm şimdi yayınlanıp gerçek tutunma verisi
    toplanırken altyapı arkada kurulabilir — analitik ve og etiketleri bu yüzden önden yapıldı.
 0b. **Analitik hesabı açılması** — `ANALYTICS_SRC` + `ANALYTICS_SITE` (`js/state.js`) doldurulunca

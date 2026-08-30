@@ -2794,3 +2794,38 @@ yalnız izin verilen sütunlara (şemada sütun düzeyinde `GRANT` reçetesi yor
 yapısal denetime düşer (bağımlılık eklenmedi — `npm i --no-save pgsql-parser`). Kural katmanı
 yukarıdaki tablonun her satırını şemada arar; ayrıca `js/` ve HTML'de **Supabase bağlantısı
 olmadığını** sınar (bu bölüm yalnız dosya üretir).
+
+## BÖLÜM 5 — BELGE GÜNCELLEMELERİ
+
+1. **`CLAUDE.md`** — "Sunucu/veritabanı yoktur" ifadesi kaldırıldı; yerine **"Proje temeli —
+   ÇOK OYUNCULU"** bölümü eklendi: maçlar fikstür tarihinde otomatik oynanır, art arda
+   oynanabilmesi bilinçli test kolaylığıdır (`?test=1`), sunucu kararı Supabase (kod yok),
+   ve lig yapısının özeti (18 takım · 17 maç · 2 aylık sezon · play-off yok · bot devralma ·
+   sistem botu ≠ terk edilmiş takım). Depo yapısı tablosuna dört yeni satır: `mobile-check.js`,
+   `sim-node.js`, `schema-check.js`, `db/schema.sql`.
+2. **`PLAN-COK-OYUNCULU.md` ve `PLAN-LIG-YAPISI.md`** — "motor zaten Node'da çalışıyor,
+   `box-band.js` bunu yapıyor" gerekçesi **yanlıştı** (o araç başsız bir *tarayıcı* açar).
+   İki belgede de ölçülmüş gerçekle değiştirildi: ayrıştırma 36. oturumda yapıldı,
+   `tools/sim-node.js` motoru gerçekten tarayıcısız çalıştırıyor.
+3. **`KALDIGIM-YER.md` / `PROGRESS.md`** — her bölüm sonunda güncellendi; üç yeni araç
+   doğrulama komutları tablosuna eklendi.
+
+## 36. OTURUM — TAM REGRESYON
+
+| Araç | Sonuç |
+|---|---|
+| `spacing-check` | ✓ 9/9 |
+| `mobile-check` | ✓ 18/18 |
+| `sim-node --n=50` | ✓ tarayıcısız + deterministik |
+| `schema-check` | ✓ 17/17 |
+| `faz6` / `faz7` / `faz8` | ✓ 7/7 · 8/8 · 6/6 |
+| `faz10` / `faz11` | ✓ 27/27 · 13/13 |
+| `m20-check` | ✓ 6/6 |
+| `visual-check` | ✓ 0 konsol hatası (masaüstü + mobil) |
+| `box-band --n=200` | ✓ 11/11 |
+| `band.js` | **`ec630b3a512bb3b2` — değişmedi** |
+| `i18n-scan` | ✓ kalan Türkçe yalnız özel isim |
+| `season-loop --n=3 --runs=3` | ✗ **K2** (aşağıda — bu oturumun işi değil, ölçüldü) |
+| `sunum-check` | M9 küçük örneklemde dalgalı (aşağıda) |
+
+Script sürümü `?v=44` + `sw.js` `SCRIPT_V='44'`.
