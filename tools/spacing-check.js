@@ -191,8 +191,15 @@ function zarfAlani(pts) {
   return Math.abs(a) / 2;
 }
 
-function olc(frames, oturmusMs) {
-  const setK = frames.filter(f => f.set && f.rimX != null && (!oturmusMs || f.setMs >= oturmusMs));
+/* B-4 (DENETIM-FAZ13): araç yalnız SET fazı karelerini süzüyordu; bağımsız denetimde
+   "izleyicinin gerçekten gördüğü" tüm yarı saha karelerinde tablo daha kötü çıkmıştı
+   (markaj 1,96 m yerine 3,15 m · boyada %76 yerine %39). Süzgeç yanlış değil, KAPSAMI
+   dardı. `tumu=true` ile top ön sahadayken geçen HER kare ölçülür (geçiş dahil) —
+   dizilim kurulurken koşan oyuncular da tabloya girer. */
+function olc(frames, oturmusMs, tumu) {
+  const onSahada = f => (f.rimX < 470 ? f.ball[0] < 470 : f.ball[0] > 470);
+  const setK = frames.filter(f => f.rimX != null &&
+    (tumu ? onSahada(f) : (f.set && (!oturmusMs || f.setMs >= oturmusMs))));
   if (!setK.length) return null;
   const potaUzak = [];
   const ikiliOrt = [], ikiliMin = [], ikiliMinTopsuz = [], alanY = [], zarfY = [], ortaOran = [], carrierDef = [], markUzak = [], markOrt = [], markIcerdeOran = [];
@@ -258,7 +265,7 @@ const HEDEFLER = [
       '--disable-backgrounding-occluded-windows'],
   });
   const hatalar = [];
-  let r = null, rOturmus = null;
+  let r = null, rOturmus = null, rTumu = null;
   try {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await ctx.newPage();
@@ -297,6 +304,7 @@ const HEDEFLER = [
     if (veri.hata) hatalar.push('örnekleyici: ' + veri.hata);
     r = olc(veri.frames || []);
     rOturmus = olc(veri.frames || [], 1200);
+    rTumu = olc(veri.frames || [], 0, true);
     await page.evaluate(() => { try { stopMatch(); } catch (e) {} });
   } finally {
     await browser.close();
@@ -338,6 +346,28 @@ const HEDEFLER = [
     console.log(`    ikili ort ${rOturmus.ikiliOrt.toFixed(2)} m · en yakın ${rOturmus.ikiliMin.toFixed(2)} m · alan %${rOturmus.alanYuzde.toFixed(1)}` +
       ` · boyada %${rOturmus.boyaKareOran.toFixed(0)} · markaj ${rOturmus.markOrt.toFixed(2)} m` +
       ` · >5 m savunmacı %${rOturmus.markUzakOran.toFixed(1)}`);
+  }
+  /* B-4: SÜZÜLMEMİŞ rapor — dar kapsamda tutup geniş kapsamda tutmayan bir ölçü gerçek bir
+     gerilemeyi gizler, bu yüzden DİZİLİM hedefleri burada da YARGILANIR.
+     MARKAJ hedefleri ise burada yalnız BİLGİDİR ve bu bilinçli bir karardır: geçiş
+     karelerinde savunma potaya dönüyor, adamına henüz yetişmemiştir; "topu tutana en yakın
+     savunmacı < 1,8 m" bir hızlı hücum karesinde gerçek basketbolda da sağlanmaz. Markaj,
+     savunmanın kurulduğu (set) karelerde yargılanır — yukarıdaki ana blok tam olarak odur
+     (yalnız "oturmuş" alt kümesi değil). */
+  if (rTumu && !ARKA_PLAN) {
+    const MARKAJ = ['topu tutana en yakın savunmacı', 'savunmacının adamına ortalama uzaklığı',
+      'yerine oturmuş ama adamı > 5 m uzakta', 'savunmacı adamı ile pota arasında'];
+    console.log(`\n  SÜZÜLMEMİŞ — top ön sahadayken geçen TÜM kareler (${rTumu.setKare} kare · geçiş dahil):`);
+    HEDEFLER.forEach(h => {
+      const v = h.al(rTumu);
+      if (v == null) return;
+      const bilgi = MARKAJ.indexOf(h.ad) >= 0;
+      const gec = h.gec(v);
+      if (!gec && !bilgi) dusen++;
+      const y = h.br === '%' ? '%' + v.toFixed(1) : v.toFixed(2) + ' m';
+      console.log(`    ${bilgi ? '⋯' : (gec ? '✓' : '✗')} ${h.ad.padEnd(42)} ${y.padStart(12)}   ` +
+        (bilgi ? '(geçişte savunma toparlanıyor — bilgi)' : 'hedef ' + h.hedef));
+    });
   }
   console.log(`\n  bilgi: dışbükey zarf %${r.zarfYuzde.toFixed(1)} · hücum x ortalaması ${r.offXOrt.toFixed(0)} · saldırılan pota x ${r.rimXOrt.toFixed(0)} (saha 0-940)`);
   console.log(`  konsol hatası: ${hatalar.length}${hatalar.length ? ' — ' + hatalar[0] : ''}`);

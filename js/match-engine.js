@@ -88,6 +88,22 @@ function clearMatchCourt(){
 /* F14-6: kenar çizgileri 30/470 iken dikey ölçek 29,33 px/m idi (yatay 29,54) — saha %0,7
    yatay gerginti ve px'te dairesel çizilen her yay metrede elips oluyordu. Yükseklik
    443,14 px = 15 m yapılarak iki eksenin ölçeği eşitlendi. */
+/* ── B-5: SAHNE PRNG'si ───────────────────────────────────────────────────────────────
+   Canlı sahne kararları (kimin topu kaptığı animasyonu, kenardan sokma noktası, dizilim
+   seçimi, serbest topun saçılma açısı…) `Math.random`/`rand()` kullanıyordu — yani MAÇIN
+   rastgele akışını tüketiyorlardı. Sonuç: aynı tohumla iki koşu farklı sonuç veriyordu,
+   çünkü animasyon karesi sayısı gerçek zamana bağlı. `season-loop` K2'nin kararsızlığı
+   (2,8× / 2,7× · 1,09× / 1,24×) tam olarak buydu. Sahne artık KENDİ akışını kullanır.
+   Kural (F13-3 ile aynı): canlı sahne katmanında `Math.random`/`rand()` YOK — `_sr`/`_srand`. */
+let _scPr=null;
+function _scSeed(s){
+  let a=(s>>>0)||1;
+  _scPr=function(){ a|=0; a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a);
+    t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; };
+}
+function _sr(){ if(!_scPr) _scSeed(0x9E3779B9); return _scPr(); }
+function _srand(a,b){ return a+Math.floor(_sr()*(b-a+1)); }
+
 const CRT_X0=56.4, CRT_X1=883.6, CRT_Y0=28.43, CRT_Y1=471.57;
 const CRT_IN=14;     /* jeton merkezi çizgiden bu kadar içeride tutulur */
 const CRT_OUT=26;    /* topu sokan oyuncunun çizgi dışına adımı */
@@ -114,7 +130,7 @@ function _tokSet(g,x,y,sc){
 }
 function _mir(p){ return [940-p[0],p[1]]; }
 function _rim(left){ return left?RIM_L.slice():RIM_R.slice(); }
-function _jit(n,a){ return n+(Math.random()*2-1)*(a||10); }
+function _jit(n,a){ return n+(_sr()*2-1)*(a||10); }
 /* Bir noktayı saha içinde tut (topu sokan hariç herkes için geçerli). */
 function _inX(x){ return Math.max(CRT_X0+CRT_IN,Math.min(CRT_X1-CRT_IN,x)); }
 function _inY(y){ return Math.max(CRT_Y0+CRT_IN,Math.min(CRT_Y1-CRT_IN,y)); }
@@ -202,7 +218,7 @@ function initMatchPlayers(lu,rakip,oppPlayers){
     const mkP=(g,x,y,team,slot,pl)=>{
       const bv=_tokBaseV(pl);
       return {g,x,y,vx:0,vy:0,tx:x,ty:y,team,slot,pl:pl||null,baseV:bv,sprintV:bv*1.35,maxV:bv,
-              ph:Math.random()*6.283,side:Math.random()<0.5?-1:1,role:null,pop:0,sc:1,_oob:false,_lock:0};
+              ph:_sr()*6.283,side:_sr()<0.5?-1:1,role:null,pop:0,sc:1,_oob:false,_lock:0};
     };
     /* Hava atışı dizilimi: her takım KENDİ savunacağı yarı sahada; pivotlar dairede.
        Kullanıcı (home jetonları) userIsHome ise SOL potaya hücum eder → savunduğu yarı SAĞ. */
@@ -224,6 +240,7 @@ function initMatchPlayers(lu,rakip,oppPlayers){
       away.push(mkP(mk(String(i+1),on,awayCol),as[i][0],as[i][1],'a',i,(op&&typeof op==='object')?op:null));
     }
     _assignRoles(home); _assignRoles(away);
+    _scSeed(0x5CE4E5 ^ ((mState.events&&mState.events.length)||0));   /* B-5: sahne PRNG'si */
     mState._tokens={home:home.map(p=>p.g),away:away.map(p=>p.g)};
     mState._sim={
       home,away,players:home.concat(away),
@@ -237,7 +254,7 @@ function initMatchPlayers(lu,rakip,oppPlayers){
       setIx:0,flip:false,
       /* Rakip bot da maç bazında savunma kimliği taşır: çoğunlukla adam adama,
          ~%25 maçta 2-3 bölge — savunma çeşitliliği iki yönde de görülür. */
-      botDef:Math.random()<0.25?'bolge':'adam',
+      botDef:_sr()<0.25?'bolge':'adam',
       defTrack:false,defRim:null
     };
     mState._lastOff=null;
@@ -746,7 +763,7 @@ function _pickCutSpot(offP,cutter,offLeft){
   const digerleri=(offP||[]).filter(p=>p&&p!==cutter);
   let best=null,bestD=-1;
   CUT_SPOTS.forEach(c=>{
-    const p=_pt([c[0]+rand(-10,10),c[1]+rand(-10,10)],offLeft,false);
+    const p=_pt([c[0]+_srand(-10,10),c[1]+_srand(-10,10)],offLeft,false);
     let mn=1e9;
     digerleri.forEach(q=>{ mn=Math.min(mn,Math.hypot(q.tx-p[0],q.ty-p[1])); });
     if(mn>bestD){ bestD=mn; best=p; }
@@ -976,7 +993,7 @@ function _peekNextOff(){
       if(evs[i]&&evs[i].off!==undefined) return !!evs[i].off;
     }
   }catch(e){}
-  return Math.random()<0.5;
+  return _sr()<0.5;
 }
 /** Bir sonraki olay nesnesi (ribaundun anlatılıp anlatılmayacağını bilmek için). */
 function _peekNext(){
@@ -993,7 +1010,7 @@ function _peekNext(){
 function _inboundSpot(kind,offLeft,x,y){
   if(kind==='base'){
     const bx=offLeft?(CRT_X1+CRT_OUT):(CRT_X0-CRT_OUT);   /* KENDİ savunma dip çizgisi (sayı yiyen taraf) */
-    return {x:bx,y:Math.max(CRT_Y0+40,Math.min(CRT_Y1-40,y!=null?y:250+(Math.random()<0.5?-1:1)*rand(30,86)))};
+    return {x:bx,y:Math.max(CRT_Y0+40,Math.min(CRT_Y1-40,y!=null?y:250+(_sr()<0.5?-1:1)*_srand(30,86)))};
   }
   const sy=(y!=null&&y<250)?(CRT_Y0-CRT_OUT):(CRT_Y1+CRT_OUT);
   return {x:Math.max(CRT_X0+40,Math.min(CRT_X1-40,x!=null?x:COURT_MID)),y:sy};
@@ -1009,7 +1026,7 @@ function _startBreak(offIsUser){
   const offP=offIsUser?S.home:S.away;
   const defP=offIsUser?S.away:S.home;
   S.offSide=offLeft; S.offP=offP; S.defP=defP; S.offIsUser=offIsUser;
-  S.setIx=rand(0,SET_ALL.length-1); S.flip=Math.random()<0.5;
+  S.setIx=_srand(0,SET_ALL.length-1); S.flip=_sr()<0.5;
   mState._lastOff=offIsUser;
   _setFormation(offLeft,offP,defP,null,{phase:'trans'});
 }
@@ -1176,9 +1193,9 @@ function movePlayersForEvent(ev,paint){
       const defP=off?S.away:S.home;
       S.offSide=offLeft; S.offP=offP; S.defP=defP; S.offIsUser=off;
       S.prevType=S.curType; S.curType=type;
-      S.setIx=rand(0,SET_ALL.length-1); S.flip=Math.random()<0.5;
+      S.setIx=_srand(0,SET_ALL.length-1); S.flip=_sr()<0.5;
       _setFormation(offLeft,offP,defP,null,{phase:'set'});
-      const spot=_inboundSpot('side',offLeft,COURT_MID+(offLeft?24:-24),Math.random()<0.5?100:400);
+      const spot=_inboundSpot('side',offLeft,COURT_MID+(offLeft?24:-24),_sr()<0.5?100:400);
       const recv=_rolesOrder(offP)[0];
       const inb=_inboundSetup(spot,offP,[recv]);
       _ballHold(inb,true);
@@ -1198,7 +1215,7 @@ function movePlayersForEvent(ev,paint){
     S.offP=offP; S.defP=defP;
     S.offIsUser=off;                      /* taktikler yalnız kullanıcı tarafına uygulanır */
     S.prevType=S.curType; S.curType=type;
-    if(posChanged){ S.setIx=rand(0,SET_ALL.length-1); S.flip=Math.random()<0.5; }
+    if(posChanged){ S.setIx=_srand(0,SET_ALL.length-1); S.flip=_sr()<0.5; }
 
     if(ev&&ev.shot) return 0;             /* top: animateShotPossession (diziliş de orada) */
 
@@ -1238,10 +1255,10 @@ function movePlayersForEvent(ev,paint){
             if(typeof sfx==='function'&&sh.made) sfx('score');
             if(i===shots.length-1&&P){ P('res'); }
             if(!sh.made&&i===shots.length-1){
-              const a=Math.random()*6.283;
+              const a=_sr()*6.283;
               _ballLoose(Math.cos(a)*110,Math.sin(a)*100,105);
               /* kaçan son atış → canlı ribaund: en yakın uzun topu toplar */
-              const pool=Math.random()<0.72?defP:offP;
+              const pool=_sr()<0.72?defP:offP;
               const reb=_rolesOrder(pool)[4]||pool[0];
               _chase(reb,null,2.6);
             }
@@ -1291,11 +1308,11 @@ function movePlayersForEvent(ev,paint){
         const pool=(ev.stealIsUser!=null)?(ev.stealIsUser?S.home:S.away):defP;
         thief=pool.find(p=>p.pl&&p.pl.id===ev.stealId)||null;
       }
-      if(!thief) thief=defP[rand(0,4)];
+      if(!thief) thief=defP[_srand(0,4)];
       const thiefIsUser=(ev.stealIsUser!=null)?!!ev.stealIsUser:(S.home.indexOf(thief)>=0);
       const b=S.ball;
       const dx=thief.x-b.x, dy=thief.y-b.y, dd=Math.hypot(dx,dy)||1;
-      _ballLoose(dx/dd*150+rand(-40,40),dy/dd*150+rand(-40,40),60);
+      _ballLoose(dx/dd*150+_srand(-40,40),dy/dd*150+_srand(-40,40),60);
       /* Top kapıldığı an: cümle + karşı yöne hücum aynı karede başlar. */
       _chase(thief,()=>{ if(P){ P(); } _startBreak(thiefIsUser); },2.2);
       if(P) _markPainted();
@@ -1345,7 +1362,7 @@ function movePlayersForEvent(ev,paint){
     }
     if(needBall) _ballHold(pg);
     _setFormation(offLeft,offP,defP,null,{phase:'set'});
-    const a1=offR[rand(1,4)]||pg, a2=offR[rand(1,4)]||pg;
+    const a1=offR[_srand(1,4)]||pg, a2=offR[_srand(1,4)]||pg;
     return _script([
       {at:0.35,fn:()=>_ballPass(a1,0.36)},
       {at:0.95,fn:()=>_ballPass(a2!==a1?a2:pg,0.36)}
@@ -1409,7 +1426,7 @@ function animateShotPossession(sh,onShoot,onResult){
     const tac=G.tactics||{};
     const userAtt=!!sh.isHome;
     /* Ara pas hedefi: taktik odağı → anlatımdaki asistçi (sh.pid) önceliklidir. */
-    let mid=relay.length?relay[rand(0,relay.length-1)]:pg;
+    let mid=relay.length?relay[_srand(0,relay.length-1)]:pg;
     if(userAtt&&tac.focusPlayerId){
       const f=relay.find(p=>p.pl&&p.pl.id===tac.focusPlayerId);
       if(f) mid=f;
@@ -1441,14 +1458,14 @@ function animateShotPossession(sh,onShoot,onResult){
       _lockTok(shooter,0.8);
       if(sh.blk){
         /* Blok: top çembere ULAŞMAZ — kısa yükselip çelinir, serbest kalır. */
-        const bx=sh.x+(rim[0]-sh.x)*0.22+rand(-16,16), by=sh.y+(rim[1]-sh.y)*0.22+rand(-16,16);
+        const bx=sh.x+(rim[0]-sh.x)*0.22+_srand(-16,16), by=sh.y+(rim[1]-sh.y)*0.22+_srand(-16,16);
         /* bloğu yapan en yakın savunmacı sıçrar */
         let bl=null,bd=1e9;
         defP.forEach(p=>{ const d=Math.hypot(p.x-sh.x,p.y-sh.y); if(d<bd){bd=d;bl=p;} });
         if(bl) bl.pop=1;
         _ballShoot([bx,by],0.20,false,()=>{
           _res();
-          const a2=Math.random()*6.283;
+          const a2=_sr()*6.283;
           _ballLoose(Math.cos(a2)*150,Math.sin(a2)*140,95);
           _rebScramble(offP,defP,rim,offLeft);
         });
@@ -1465,12 +1482,12 @@ function animateShotPossession(sh,onShoot,onResult){
         if(sh.made){
           /* Sayı: top fileden geçer, potanın altına düşer. Rakip HEMEN topu almaya gider,
              çizgi dışına çıkar; sayı atan takım savunmaya döner (ölü bekleme yok). */
-          _setupInbound(!sh.isHome,250+(Math.random()<0.5?-1:1)*rand(24,74));
+          _setupInbound(!sh.isHome,250+(_sr()<0.5?-1:1)*_srand(24,74));
         } else {
           /* Kaçan şut: çemberden karambol — top potadan uzağa, GERÇEKÇİ mesafede seker
              (~2-3m), sonra ribaund mücadelesi başlar. */
-          const away=Math.atan2(sh.y-rim[1],sh.x-rim[0])+(Math.random()*2-1)*1.1;
-          const sp=rand(120,205);
+          const away=Math.atan2(sh.y-rim[1],sh.x-rim[0])+(_sr()*2-1)*1.1;
+          const sp=_srand(120,205);
           _ballLoose(Math.cos(away)*sp,Math.sin(away)*sp,105);
           S.inb=null;
           _rebScramble(offP,defP,rim,offLeft);
@@ -1485,7 +1502,7 @@ function animateShotPossession(sh,onShoot,onResult){
       let winTeam=null;
       if(nx&&nx.type==='reb'&&nx.rebIsUser!=null) winTeam=nx.rebIsUser?S.home:S.away;
       else if(nx&&nx.off!==undefined) winTeam=nx.off?S.home:S.away;
-      if(!winTeam) winTeam=Math.random()<0.72?defA:offA;
+      if(!winTeam) winTeam=_sr()<0.72?defA:offA;
       const loseTeam=(winTeam===S.home)?S.away:S.home;
       const pick=(team)=>{
         const R=_rolesOrder(team);
@@ -1499,7 +1516,7 @@ function animateShotPossession(sh,onShoot,onResult){
       const winIsUser=(winTeam===S.home);
       /* Rakip ribaundcu topun ÜSTÜNE değil, box-out mesafesinde (≈1.5m) yüklenir —
          iki jeton iç içe geçmesin. */
-      if(l&&l!==w){ const an=Math.random()*6.283, rr=rand(48,66); l.maxV=l.sprintV; l.tx=_inX(bb.x+Math.cos(an)*rr); l.ty=_inY(bb.y+Math.sin(an)*rr); _lockTok(l,1.4); }
+      if(l&&l!==w){ const an=_sr()*6.283, rr=_srand(48,66); l.maxV=l.sprintV; l.tx=_inX(bb.x+Math.cos(an)*rr); l.ty=_inY(bb.y+Math.sin(an)*rr); _lockTok(l,1.4); }
       if(w){
         w.pop=0.7;
         /* Anlatımda ribaund cümlesi VARSA topu 'reb' olayı aldırır (senkron);
@@ -1628,7 +1645,7 @@ function animateShotPossession(sh,onShoot,onResult){
          hücumun kapladığı alan çöküyordu. Artık yalnız anlatımın gerçekten kesme/postup
          olduğu pozisyonlarda (ve seyrek olarak çeşitlilik için) kesme yapılır — dış şut
          (spotup) pozisyonlarında dizilim korunur. */
-      const doCut=(scheme==='cut')||(!isPnr&&scheme!=='postup'&&scheme!=='spotup'&&Math.random()<0.35);
+      const doCut=(scheme==='cut')||(!isPnr&&scheme!=='postup'&&scheme!=='spotup'&&_sr()<0.35);
       const cutter=doCut?(relay.find(p=>p!==mid&&p.pl&&(p.pl.poz==='C'||p.pl.poz==='PF'))||relay.find(p=>p!==mid)||null):null;
       const screener=isPnr?_pickScreener(relay,mid,cutter,pg,rim):null;
       const doMid=(mid!==pg)&&(sh.pid!=null);
@@ -1641,7 +1658,7 @@ function animateShotPossession(sh,onShoot,onResult){
         /* F11-2: perde mesafesi 22→32 px (≈1 m) — gerçek top perdesinde perdeci topçunun
            yanına yapışmaz, omuz mesafesinde durur; jetonlar da iç içe geçmiş görünmez. */
         steps.push({at:tSet+0.25,fn:()=>{ screener.tx=_inX(pg.x+(offLeft?32:-32)); screener.ty=_inY(pg.y-22); screener.maxV=screener.baseV; _lockTok(screener,1.0); }});
-        steps.push({at:tKey-0.10,fn:()=>{ screener.tx=_inX(rim[0]+(offLeft?1:-1)*rand(30,64)); screener.ty=_inY(250+rand(-30,30)); screener.maxV=screener.sprintV; _lockTok(screener,1.1); }});
+        steps.push({at:tKey-0.10,fn:()=>{ screener.tx=_inX(rim[0]+(offLeft?1:-1)*_srand(30,64)); screener.ty=_inY(250+_srand(-30,30)); screener.maxV=screener.sprintV; _lockTok(screener,1.1); }});
       }
       if(cutter){
         steps.push({at:tSet+0.45,fn:()=>{
@@ -1715,12 +1732,12 @@ function _and1Sequence(sh,shooter,offP,defP,offLeft,rim,res){
           try{ res(); }catch(e){}                        /* cümle: sonuçla senkron */
           if(typeof sfx==='function'&&made) sfx('score');
           if(made){
-            _setupInbound(!sh.isHome,250+(Math.random()<0.5?-1:1)*rand(24,74));
+            _setupInbound(!sh.isHome,250+(_sr()<0.5?-1:1)*_srand(24,74));
           } else {
             /* Kaçan ek atış canlı toptur — ribaund mücadelesi başlar. */
-            const a=Math.random()*6.283;
+            const a=_sr()*6.283;
             _ballLoose(Math.cos(a)*110,Math.sin(a)*100,105);
-            const pool=Math.random()<0.72?defP:offP;
+            const pool=_sr()<0.72?defP:offP;
             const reb=_rolesOrder(pool)[4]||pool[0];
             _chase(reb,null,2.6);
           }

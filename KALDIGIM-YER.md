@@ -1,5 +1,43 @@
 # KALDIĞIM YER
-Son güncelleme: 2026-08-30 · 37. oturum — **PROMPT-CLAUDE-CODE.md'nin altı bölümü + kullanıcı bildirimleri (canlı maç görünümü)**
+Son güncelleme: 2026-08-30 · **38. oturum — FAZ 14 (saha geometrisi + serbest atış) ve
+`DENETIM-FAZ13.md` bölüm 2'nin beş maddesi (B-1…B-5) bitti.**
+
+## 38. oturum özeti (ayrıntı: PROGRESS.md)
+
+**FAZ 14-G (saha):** 3 sayı yayı potaya değil DİP ÇİZGİYE merkezli çiziliyordu (SVG, kirişten
+küçük yarıçapı sessizce büyütür) — aynı çizgi üzerinde potaya uzaklık 5,26-7,63 m arasında
+değişiyordu. Köşe düzlükleri eklendi, ölçüler FIBA'ya çekildi, yatay/dikey ölçek eşitlendi
+(saha yüksekliği 440 → 443,14 px), potanın önündeki sahte turuncu daire silindi.
+Serbest atış artık **on oyuncu yerleştikten sonra** atılıyor (2,8/10 → **9,3/10**).
+Yeni araç **`tools/geometri-check.js`** — nitelik okumaz, `getPointAtLength` ile ÇİZİLEN
+eğriyi ölçer; 19/19.
+
+> **Ad çakışması:** "FAZ 14" iki işe verildi. `f77bac1` = **FAZ 14-D** (canlı anlatım dil
+> revizyonu), `6039816` = **FAZ 14-G** (saha geometrisi, `REVIZE-PAKETI-FAZ14.md`).
+> F14-1…F14-7 madde kodları geometri paketine aittir.
+
+**Bölüm B:** EN canlı anlatım %37,5 Türkçeden **%0**'a (87 sözlük girişi + 11 katalog kaydı +
+33 kalıp; `i18n-scan`'e canlı anlatım kapısı). M9 ve `live-metrics` "gerilemeleri" kodda
+değil **ölçü araçlarında** çıktı ve ikisi de düzeltildi (motorun kendi damgası: çıkış pası
+125/125 guard'a). `spacing-check`'e süzülmemiş rapor bloğu eklendi. `season-loop` K2
+kararsızlığının altından gerçek bir kusur çıktı: **canlı sahne katmanı maçın rastgele akışını
+tüketiyordu** — sahneye kendi PRNG'si verildi (41 çağrı).
+
+### Referans değerler
+- `band.js` hash: **`fb393bdab878e699`** (FAZ 14 ve Bölüm B boyunca **değişmedi**)
+- script sürümü: **?v=50** · `sw.js` SCRIPT_V=50
+- `live-metrics --ms=360000`: medyan 2,07× · yayılım 1,14× (ölçü POZİSYON başına yeniden
+  tanımlandı; eski değerlerle karşılaştırılamaz)
+- `season-loop --n=3 --runs=3`: K2 medyan 1,54× (koşular 2,88 · 1,43 · 1,54)
+- `spacing-check` süzülmemiş blok: ikili 7,67 m · boyada %63,5 · potaya 6,82 m
+
+### Açık kalan (bu brifin kapsamı dışında)
+Denetimin 5. maddesi: markaj ve boyada oyuncu oranını GEÇİŞ karelerinde de hedefe çekmek.
+Bugün geçiş kareleri bilgi olarak raporlanıyor (markaj 2,63 m · boyada %74,7).
+
+---
+
+## 37. oturum — **PROMPT-CLAUDE-CODE.md'nin altı bölümü + kullanıcı bildirimleri (canlı maç görünümü)**
 
 Talep belgeleri: `REVIZE-PAKETI.md` (FAZ 1-6) · `REVIZE-PAKETI-FAZ7.md` (maç dışı) ·
 `REVIZE-PAKETI-FAZ8.md` (oynanış testi) · `REVIZE-PAKETI-FAZ9.md` (uzun vadeli döngü) ·

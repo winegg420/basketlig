@@ -381,9 +381,14 @@ function analizEt(events) {
         await new Promise(r => setTimeout(r, 450));
         return { once, sonra: { govde: oku(), rakip: ad() } };
       });
+      /* Ölçüt "panel DONMUŞ mu" değil "panel SIFIRLANMIŞ mı" olmalı: maç sayfa değişimi
+         sırasında da akmaya devam ettiği için kutu skor gövdesi meşru olarak değişebilir
+         (bu denetim o yüzden ara sıra sebepsiz kırmızı yanıyordu). Gerileme belirtisi
+         gövdenin BOŞALMASI ve rakip adının kaybolmasıdır. */
       ok('sayfa değişince maç içi panel sıfırlanmıyor (F13-18)',
-        panel.sonra.govde === panel.once.govde && panel.sonra.rakip === panel.once.rakip,
-        `rakip adı "${panel.once.rakip}" → "${panel.sonra.rakip}"`);
+        !!panel.sonra.govde && panel.sonra.govde.length >= Math.min(20, panel.once.govde.length) &&
+        panel.sonra.rakip === panel.once.rakip,
+        `rakip "${panel.once.rakip}" → "${panel.sonra.rakip}" · gövde ${panel.once.govde.length} → ${panel.sonra.govde.length} krk`);
       /* 37. oturum: parkenin üzerinde O/X şut izi KALMAMALI (kullanıcı isteği). */
       const izler = await p.evaluate(() => {
         const svg = document.getElementById('courtSvg');

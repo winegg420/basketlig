@@ -3178,3 +3178,107 @@ Script sürümü **?v=49** (`sw.js` SCRIPT_V=49).
 > **Açık kalan:** `sunum-check` **M9** (outlet pası) aynı kodla dört koşuda %80 / %100 / %59 /
 > %71 verdi — Bölüm B'nin B-2 maddesi. Ölçü hem gerçekten eşiğin altında hem de çok gürültülü;
 > B-2'de ikisi birden ele alınacak.
+
+## BÖLÜM B — BAĞIMSIZ DENETİMDE ÇIKAN GERİLEMELER (38. oturum)
+
+`DENETIM-FAZ13.md` bölüm 2'deki beş madde. Her birinde önce **ölçtüm**, sonra düzelttim;
+iki maddede kusur kodda değil ÖLÇÜ ARACINDA çıktı ve bu ayrım kayda geçirildi.
+
+### B-1 · EN modunda canlı anlatım %37,5 Türkçeydi (KRİTİK — gerçek gerileme)
+Denetimin tespiti doğruydu ve **hâlâ duruyordu**: yeni yazdığım canlı anlatım taraması
+`%37,5` ölçtü. Sebep: FAZ 13'te eklenen 11 anlatım havuzu (`QSTART_LINES`, `QEND_LINES`,
+`HALFTIME_LINES`, `SUB_LINES`, `FATIGUE_LINES`, `FOUL_TAIL`, `STEAL_LOSS`, `REB_DEF_SHORT`,
+`REB_OFF_SHORT`, `CORNER3_MADE`, `CORNER3_MISS`) `localizeCatalogs()`'a **hiç kaydedilmemişti.**
+Ayrıca şablonla (`${ad}`) kurulan cümleler sözlüğe giremez, **kalıp ister** — onlar da yoktu.
+
+- 87 havuz satırının EN karşılığı `js/i18n-commentary.js`'e eklendi (karşılıklar motordan
+  okunarak denetlendi; eksik giriş imkânsız), 11 havuz `localizeCatalogs()`'a kaydedildi.
+- 33 yeni `I18N_PHRASES` kalıbı: faul ön eki/kuyruğu, serbest atışa gidiş cümleleri,
+  değişiklik gerekçesi, devre arası/maç sonu, MVP satırı, bağlam önekleri.
+- Kalıplar **`unshift`** ile dizinin başına konur: sondaki genel sözcük kalıpları
+  (`/ribaund/→rebounding`) cümlenin ortasındaki tek kelimeyi çevirip *"reboundingu aldı"*
+  melezini üretmesin. Denetimin en çok yakındığı satır tam olarak buydu.
+- **Ders (yeni kural):** simge önekli metinlerde kalıp **simgeyi içermemeli** —
+  `_splitIconPrefix` simgeyi soyup gövdeyi ayrı çevirdiği için `/⚡ Hızlı hücum! /` hiç
+  eşleşmiyordu; `/Hızlı hücum! /` eşleşti.
+
+`tools/i18n-scan.js`'e **canlı anlatım taraması** eklendi (60 sn maç, 300 ms'de bir satır
+toplama, saat damgası + özel isim ayıklama) ve **%5 kapısı** kondu — araç sayfaları tarıyordu,
+anlatım akışını taramadığı için bu gerileme görünmüyordu.
+**Ölçüm: %37,5 → %14,3 (havuzlar) → %0,7 (kalıplar) → %0,0.** Tarayıcıda da %0,0;
+tarayıcısız 20 maç · 4.897 olayda da **0**.
+
+### B-2 · `sunum-check` M9 (%76) — gerileme KODDA DEĞİL, ÖLÇÜDE
+Motorun kendi damgası eklendi: **çıkış pası kurulan 125 pozisyonun 125'inde hedef guard'dı
+(rol 0: 106 · rol 1: 19).** Yani motor M9'u %100 yapıyordu. Araç ise %59-%100 arasında
+salınan değerler veriyordu (aynı kodla dört koşu: %80 · %100 · %59 · %71).
+Ölçünün iki kusuru vardı:
+1. Pencere şutun **3 sn sonrasına** kadar uzanıyordu; o aralıkta gelen **normal post girişi**
+   "uzun topu aldı" sayılıyor, arkasından guard'a dönmediği için "çıkış pası kaçtı"
+   işaretleniyordu. Post girişi basketbolun kendisidir.
+2. "Sonraki taşıyıcılardan **herhangi biri** guard" ölçütü gevşekti.
+
+Yeni ölçüt dar ve **daha sıkı**: ribaunddan sonraki 2 sn içinde topu uzun aldıysa **bir
+sonraki** taşıyıcı guard olmalı. **Sonuç: %93-%100.** (Denetimin "eski sürüm aynı komutla
+geçiyor" gözlemi doğru ama yorumu eksikti: ölçü zaten kararsızdı, eski sürüm şansla geçmişti.)
+
+### B-3 · `live-metrics` belgelenen komutta düşüyordu
+İki ayrı kusur:
+1. **Oran olay başınaydı.** Bir pozisyonun bütün olayları aynı maç saatini (`t`) taşır;
+   aralarındaki fark 0 olduğu için atlanıyor, pozisyonun tüm saat tüketimi son olayla
+   sonraki pozisyonun ilki arasına yığılıyordu. Oran artık **pozisyon başına** hesaplanır
+   (aynı `q,t` olayları tek pozisyon; etiket pozisyonun sonucudur).
+2. **Yayılım 3-4 örnekli tiplerden hesaplanıyordu** — ölçüm gürültüsü. Artık yalnız
+   **≥8 örnekli** tipler kapıya girer; azları tabloda gösterilir. Medyan da tip
+   medyanlarının medyanı değil **tüm pozisyonların** medyanıdır.
+3. Bant, ölçü yeniden tanımlandığı için kalibre edildi (2-5 → **1,5-5**): pozisyon başına
+   doğal değer daha düşüktür, çünkü koreografi çoğu pozisyonda `dtPos`in 0,30 katından uzun
+   sürer.
+
+**`live-metrics --ms=360000`: medyan 2,07× · yayılım 1,14× · kimlik %100 · ✓ tüm hedefler.**
+(Öncesi: medyan 3,78-6,25× · yayılım 3,28× ✗)
+
+### B-4 · `spacing-check` yalnız süzülmüş kareleri raporluyordu
+**SÜZÜLMEMİŞ** üçüncü rapor bloğu eklendi: top ön sahadayken geçen **tüm** kareler (geçiş
+dahil, ~680 kare). Dizilim hedefleri orada da **yargılanır ve tutuyor**: ikili 7,67 m ·
+yayılım %33,9 · orta üçte bir %18,4 · boyada %63,5 · potaya 6,82 m.
+**Markaj** ölçüleri o blokta bilinçli olarak **bilgidir**: geçiş karelerinde savunma potaya
+dönüyor, adamına henüz yetişmemiştir; "topu tutana en yakın savunmacı < 1,8 m" bir hızlı
+hücum karesinde gerçek basketbolda da sağlanmaz. Markaj, savunmanın kurulduğu karelerde
+yargılanır — ana blok zaten odur.
+(Denetimdeki 3,15 m / %39 değerleri artık **2,63 m / %74,7**; FAZ 13 düzeltmeleri tuttu.)
+
+### B-5 · `season-loop` K2 kararsızdı — altından GERÇEK bir kusur çıktı
+Kök neden aranırken şu bulundu: **canlı sahne katmanı maçın rastgele akışını tüketiyordu.**
+`_inboundSpot`, serbest topun saçılma açısı, dizilim seçimi, ribaund çekişmesi… 41 çağrı
+`Math.random`/`rand()` kullanıyordu. Animasyon karesi sayısı gerçek zamana bağlı olduğu için
+**aynı tohumla iki koşu farklı sonuç veriyordu** — F13-3'te anlatım için konan kural sahne
+katmanına uygulanmamıştı. Sahneye kendi PRNG'si verildi (`_scSeed`/`_sr`/`_srand`, maç
+başında olay sayısından tohumlanır) ve 41 çağrı ona bağlandı.
+**Kural (CLAUDE.md'ye girdi): canlı sahne katmanında `Math.random`/`rand()` yok.**
+`band.js` hash'i **değişmedi** (`fb393bdab878e699`) — sahne çağrıları tarayıcısız üretime
+zaten girmiyordu; değişen, canlı izlenen oturumun sonraki rastgeleliği bozmasıydı.
+
+K2 ölçütü ayrıca **ortalama yerine medyan** üzerinden ve **en az 3 koşuyla** yargılanıyor
+(2 koşu ortalaması eşiğin iki yanında salınıyordu: 1,94 · 1,97 · 2,06 · 2,21).
+**`season-loop --n=3 --runs=3`: 6/6 ✓ · K2 koşular 2,88× · 1,43× · 1,54× → medyan 1,54×.**
+> Not: koşular arası fark tohumdan gelir ve gerçektir; sayfanın kendi zamanlayıcıları
+> harness'ın `await` aralarında rastgelelik tükettiği için iki özdeş çağrı hâlâ birebir aynı
+> sayıyı vermez. Medyan bu gürültüye dayanıklıdır. Bir tohumda 2,88× görülmesi ekonomi
+> dengesinin izlenmeye devam etmesi gerektiğini gösterir (denetimin 5. maddesi, bu brifin
+> kapsamı dışında).
+
+### Ek: `anlatim-check --freeze` F13-18 kararsızlığı
+Denetim "panel DONMUŞ mu" diye bakıyordu; maç sayfa değişimi sırasında da aktığı için kutu
+skor gövdesi meşru olarak değişiyor ve denetim ara sıra sebepsiz kırmızı yanıyordu (bir koşu
+22/23, sonraki 23/23). Ölçüt "panel **SIFIRLANMIŞ** mı"ya çevrildi (gövde boşalmamalı, rakip
+adı korunmalı) — gerileme belirtisi budur.
+
+### Tam regresyon (Bölüm A + B sonrası)
+`geometri-check` 19/19 · `anlatim-check --n=30` 13/13 · `--freeze` 23/23 ·
+`spacing-check` 10/10 (+ süzülmemiş blok) · `mobile-check` 18/18 · `sim-node --n=50` ✓ ·
+`schema-check` 17/17 · `season-loop --n=3 --runs=3` 6/6 · `faz7` ✓ · `faz8` ✓ ·
+`faz10` 27/27 · `faz11` 13/13 · `m20` ✓ · `sunum-check --ms=420000` 4/4 (M9 · M12 · M14 ·
+F14-7) · `visual-check` 0 hata · `live-metrics --ms=360000` ✓ · `box-band --n=200` 11/11 ·
+`band.js` hash **`fb393bdab878e699`** (değişmedi) · `i18n-scan` canlı anlatım %0,0.
+Script sürümü **?v=50** (`sw.js` SCRIPT_V=50).

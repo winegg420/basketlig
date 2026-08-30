@@ -173,7 +173,14 @@ async function main() {
       try {
         const S = mState._sim, b = S && S.ball, sh = S && S.shooter;
         const line = (typeof FT_LINE_X !== 'undefined' && S) ? _pt([FT_LINE_X, 250], S.offSide, false) : null;
-        const ftSahne = !!(S && !S.defTrack && sh && line && Math.hypot(sh.x - line[0], sh.y - line[1]) < 70);
+        /* Ölçüm anı GERÇEKTEN serbest atış olmalı: "ölü top + şutör çizgiye yakın" ölçütü
+           tek başına yetmiyordu — GEÇİŞTE serbest atış çizgisi civarından atılan normal
+           orta mesafe şutu da bu koşulu sağlıyor ve koşan oyuncular "yerleşmemiş" diye
+           sayılıyordu (5-6 m'lik aykırı değerler bundandı). Canlandırılan olayın kendisi
+           serbest atış (ya da and-1) olmalı. */
+        const _ev = (typeof mState !== 'undefined' && mState && mState.events) ? mState.events[Math.max(0, mState.idx - 1)] : null;
+        const ftOlay = !!(_ev && (_ev.type === 'free' || (_ev.shot && _ev.shot.and1)));
+        const ftSahne = !!(ftOlay && S && !S.defTrack && sh && line && Math.hypot(sh.x - line[0], sh.y - line[1]) < 70);
         const mod = b ? b.mode : null;
         if (ftSahne && P.sonMod === 'held' && mod === 'shot') {
           if (!P.ftSon || t - P.ftSon > 2500) {
@@ -211,12 +218,22 @@ async function main() {
       const araya = P.digerAnlar.find(x => x.t > rb.t && (!sut || x.t < sut.t));
       if (!sut || araya) { atlanan++; return; }
       if (sut.pb) { atlanan++; return; }             // ikinci şans
+      /* B-2 ÖLÇÜ DÜZELTMESİ. Eski hâli iki yerde yanılıyordu ve M9'u haksız yere düşürüyordu
+         (motorun kendi damgası çıkış pasının hedefini %100 guard gösterirken araç %71 diyordu):
+           1) Pencere şutun 3 sn SONRASINA kadar uzanıyordu; o aralıkta gelen NORMAL POST
+              GİRİŞİ (topun set hücumda pivota girmesi) "uzun topu aldı" sayılıyor, arkasından
+              guard'a dönmediği için ÇIKIŞ PASI KAÇTI diye işaretleniyordu. Oysa post girişi
+              basketbolun kendisidir, çıkış pasıyla ilgisi yoktur.
+           2) "Sonraki taşıyıcılardan HERHANGİ BİRİ guard" ölçütü gevşekti; uzun topu kanada
+              verip kanat guard'a verse de geçiyordu.
+         Yeni ölçüt dar ve sıkı: ribaunddan sonraki 2 sn içinde topu uzun aldıysa, BİR SONRAKİ
+         taşıyıcı guard olmalı. */
       const pencere = P.tasiyiciDizi.filter(x => x.t >= rb.t - 400 && x.t <= sut.t + 3000);
-      const uzunIx = pencere.findIndex(x => x.role === 3 || x.role === 4);
+      const uzunIx = pencere.findIndex(x => (x.role === 3 || x.role === 4) && x.t <= rb.t + 2000);
       if (uzunIx < 0) { atlanan++; return; }         // ribaundu guard aldı — outlet gerekmiyor
       uzunAldi++;
-      const sonra = pencere.slice(uzunIx + 1);
-      if (sonra.some(x => x.role === 0 || x.role === 1)) outletVar++;
+      const sonraki = pencere[uzunIx + 1];
+      if (sonraki && (sonraki.role === 0 || sonraki.role === 1)) outletVar++;
     });
     // M12: and-1 olaylarının kaçında serbest atış sahnesi kuruldu
     let and1Sahneli = 0;
@@ -233,6 +250,10 @@ async function main() {
       /* Motorun kararı: taşıyıcı uzunken (3/4) ve ikinci şans değilken outlet kurulmalı. */
       kararUzun: P.outletKarar.filter(x => !x.pb && (x.tasiyiciRol === 3 || x.tasiyiciRol === 4)).length,
       kararUzunOutlet: P.outletKarar.filter(x => !x.pb && (x.tasiyiciRol === 3 || x.tasiyiciRol === 4) && x.outlet).length,
+      /* B-2: çıkış pası KURULUYOR ama KİME? Hedef guard (0/1) değilse `sunum-check` M9
+         ölçütü haklı olarak düşer — motorun niyeti ile sonucu ayrı ayrı görünmeli. */
+      kararHedefGuard: P.outletKarar.filter(x => x.outlet && (x.pgRol === 0 || x.pgRol === 1)).length,
+      kararHedefDagilim: (() => { const d = {}; P.outletKarar.filter(x => x.outlet).forEach(x => { d[x.pgRol] = (d[x.pgRol] || 0) + 1; }); return d; })(),
       kararOrnek: P.outletKarar.slice(0, 12),
       rebSayisi: P.rebAnlari.length, uzunAldi, outletVar, atlanan,
       and1Sayisi: P.and1Olaylari.length, and1Sahneli,
@@ -260,7 +281,7 @@ async function main() {
     console.log(`  ${gecti ? '✓' : '✗'} ${kod}  ${ad}\n       ${detay}`);
   };
 
-  console.log(`  motor kararı: taşıyıcı uzun olan pozisyon ${R.kararUzun}, outlet kurulan ${R.kararUzunOutlet}`);
+  console.log(`  motor kararı: taşıyıcı uzun olan pozisyon ${R.kararUzun}, outlet kurulan ${R.kararUzunOutlet} · outlet hedefi guard olan ${R.kararHedefGuard} · hedef rol dağılımı ${JSON.stringify(R.kararHedefDagilim)}`);
   // M9 — uzun ribaundu aldıysa topu guard'a çıkarmalı
   if (R.uzunAldi === 0) {
     kayit('M9', 'Ribaund sonrası çıkış (outlet) pası', false,

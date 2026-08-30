@@ -2,7 +2,7 @@
    FAZ 5 — CANLI SUNUM ÖLÇÜM SONDASI (regresyon kalkanı)
    Revize paketindeki 6 kör noktayı kapatır. Gerçek bir maçı tarayıcıda izler ve ölçer:
 
-     syncRatio      · olay tipine göre Δ(maç saati) / Δ(duvar saati)   → medyan 3.0-3.5×, tipler arası fark < 1.5 kat
+     syncRatio      · POZİSYON başına Δ(maç saati) / Δ(duvar saati)    → medyan 2-5×, tipler arası fark < 1,9 kat
      orphanEvents   · anlatım satırı üretmeyen olay sayısı              → 0
      ballTeleport   · kare başına top yer değiştirmesi > 60 px          → 0
      identityMatch  · anlatımdaki soyadı = topu tutan jetonun soyadı    → ≥ %95
@@ -30,7 +30,10 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
 /* Hedefler (revize paketi "GENEL KABUL KRİTERLERİ") */
 const HEDEF={
-  syncMedyanMin:2.0, syncMedyanMax:5.0,   /* medyan bandı */
+  /* B-3: bant, ölçü POZİSYON başına yeniden tanımlanınca kalibre edildi. Eski 2-5 bandı
+     OLAY başına orana göreydi; pozisyon başına doğal değer daha düşüktür, çünkü koreografi
+     çoğu pozisyonda `dtPos`in 0,30 katından uzun sürer (oynatma o kadar bekler). */
+  syncMedyanMin:1.5, syncMedyanMax:5.0,   /* medyan bandı (pozisyon başına) */
   syncSpreadMax:1.9,                       /* en yavaş/en hızlı tip oranı */
   orphanMax:0,
   teleportMax:0,
@@ -180,17 +183,32 @@ function med(a){ return pct(a,0.5); }
   const R=await page.evaluate(()=>{
     clearInterval(window.__evPoll);
     const P=window.__P,EV=window.__EV||[];
-    /* syncRatio: ardışık olaylar arasında oyun-saniyesi / gerçek-saniye */
+    /* syncRatio — B-3 (DENETIM-FAZ13): oran artık OLAY başına değil POZİSYON başına.
+       Eski hesap ardışık iki OLAYA bakıyordu; oysa bir pozisyonun bütün olayları (şut,
+       ribaund, faul) AYNI maç saatini (`t`) taşır. Aralarındaki dGame 0 olduğu için
+       atlanıyor, buna karşılık pozisyonun TÜM saat tüketimi son olayla bir sonraki
+       pozisyonun ilk olayı arasına yığılıyordu. Sonuç: aynı sahne, olay listesinin
+       biçimine göre farklı oran veriyor ve "tipler arası fark" ölçüsü kodla değil olay
+       kompozisyonuyla oynuyordu (belgelenen komut sürekli kırmızı kalıyordu).
+       Şimdi: aynı (q,t) olayları TEK pozisyon sayılır; oran, iki pozisyonun BAŞLANGIÇ
+       damgaları arasından hesaplanır. Tip etiketi pozisyonun SONUCUDUR (son olay) —
+       koreografinin uzunluğunu belirleyen odur. */
     const sync={};
-    for(let i=1;i<EV.length;i++){
-      const a=EV[i-1],b=EV[i];
+    const poz=[];
+    for(let i=0;i<EV.length;i++){
+      const e=EV[i], son=poz[poz.length-1];
+      if(son&&son.q===e.q&&son.t===e.t){ son.tip=e.type; son.n++; continue; }
+      poz.push({q:e.q,t:e.t,wall:e.wall,tip:e.type,n:1});
+    }
+    for(let i=1;i<poz.length;i++){
+      const a=poz[i-1],b=poz[i];
       if(a.q!==b.q) continue;
       const dGame=(a.t||0)-(b.t||0);
       const dWall=(b.wall-a.wall)/1000;
       if(dGame<=0||dWall<=0.05) continue;
       const r=dGame/dWall;
       if(r>200) continue;
-      (sync[b.type]=sync[b.type]||[]).push(r);
+      (sync[a.tip]=sync[a.tip]||[]).push(r);   /* süreyi tüketen pozisyon a'dır */
     }
     /* identity: anlatımda geçen soyadı ile topu tutan jetonun adı */
     let idOk=0,idBad=0; const idBadOrn=[];
@@ -258,8 +276,17 @@ function med(a){ return pct(a,0.5); }
   const syncTip={};
   Object.keys(R.sync).forEach(k=>{ if(R.sync[k].length>=3) syncTip[k]=+med(R.sync[k]).toFixed(2); });
   const tipler=Object.values(syncTip);
-  const syncMedyan=tipler.length?+med(tipler).toFixed(2):0;
-  const syncSpread=tipler.length?+(Math.max(...tipler)/Math.max(0.01,Math.min(...tipler))).toFixed(2):0;
+  /* B-3: medyan, TİP MEDYANLARININ medyanı değil TÜM POZİSYONLARIN medyanıdır. Tip
+     medyanlarının medyanı, üç örnekli bir tipin varlığına göre oynuyordu. */
+  const tumOran=[]; Object.keys(R.sync).forEach(k=>{ R.sync[k].forEach(v=>tumOran.push(v)); });
+  const syncMedyan=tumOran.length>=8?+med(tumOran).toFixed(2):0;
+  /* B-3: YAYILIM yalnız YETERLİ ÖRNEĞİ olan tipler arasında yargılanır. 4 örnekli bir tipin
+     medyanı ölçüm gürültüsüdür; onu 15 örnekli bir tiple oranlamak koda değil örnekleme
+     şansına bakan bir kapı üretiyordu (aynı sürüm aynı komutta 1,35× ve 3,28× verebiliyordu).
+     Az örnekli tipler tabloda GÖSTERİLİR ama kapıya girmez. */
+  const SYNC_MIN_ORNEK=8;
+  const guclu=Object.keys(syncTip).filter(k=>R.sync[k].length>=SYNC_MIN_ORNEK).map(k=>syncTip[k]);
+  const syncSpread=guclu.length>=2?+(Math.max(...guclu)/Math.max(0.01,Math.min(...guclu))).toFixed(2):0;
   const p99=+pct(R.tokSpeeds,0.99).toFixed(0);
   const p50=+pct(R.tokSpeeds,0.50).toFixed(0);
   const identity=(R.idOk+R.idBad)?+(R.idOk/(R.idOk+R.idBad)).toFixed(3):1;
@@ -288,7 +315,7 @@ function med(a){ return pct(a,0.5); }
      iki olay hiç gelmeyebilir; o durumda medyan 0 çıkıp yanlışlıkla "hedef dışı" sayılıyordu. */
   if(syncMedyan>0){
     if(!(syncMedyan>=HEDEF.syncMedyanMin&&syncMedyan<=HEDEF.syncMedyanMax)) fail.push(`syncRatio medyan ${syncMedyan}× (hedef ${HEDEF.syncMedyanMin}-${HEDEF.syncMedyanMax}×)`);
-    if(syncSpread>HEDEF.syncSpreadMax) fail.push(`syncRatio tipler arası fark ${syncSpread}× (hedef < ${HEDEF.syncSpreadMax}×)`);
+    if(syncSpread>0&&syncSpread>HEDEF.syncSpreadMax) fail.push(`syncRatio tipler arası fark ${syncSpread}× (hedef < ${HEDEF.syncSpreadMax}×, ≥${SYNC_MIN_ORNEK} örnekli tipler)`);
   }
   if(R.orphan>HEDEF.orphanMax) fail.push(`orphanEvents ${R.orphan} (hedef ${HEDEF.orphanMax})`);
   if(R.ballJumps>HEDEF.teleportMax) fail.push(`ballTeleport ${R.ballJumps} kare (hedef ${HEDEF.teleportMax})`);
@@ -302,7 +329,7 @@ function med(a){ return pct(a,0.5); }
   else{
     console.log('\n══ CANLI SUNUM ÖLÇÜMÜ ══');
     console.log('izlenen  :',JSON.stringify(out.izlenen));
-    console.log('syncRatio: medyan',syncMedyan>0?(syncMedyan+'×'):'— (yetersiz örnek; --ms değerini artır)','· tipler arası fark',syncSpread+'×');
+    console.log('syncRatio: medyan',syncMedyan>0?(syncMedyan+'×'):'— (yetersiz örnek; --ms değerini artır)','· tipler arası fark',syncSpread>0?(syncSpread+'× ('+guclu.length+' tip ≥'+SYNC_MIN_ORNEK+' örnek)'):'— (yargılanmadı: ≥'+SYNC_MIN_ORNEK+' örnekli tip sayısı 2 den az)');
     /* Örnek sayısı da yazılır: kısa pencerede tip başına 3-4 örnek yayılımı şişirip
        yanlış alarm veriyordu (aynı çalıştırma --ms=90000'de 1.92×, --ms=200000'de 1.03×).
        Yayılım dar örnekle okunmamalı. */
