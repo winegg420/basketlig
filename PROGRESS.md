@@ -2434,3 +2434,181 @@ Script sürümü `?v=40` → **`?v=41`** (13 etiket) + `sw.js` `SCRIPT_V='41'`.
 - **Analitik hesabı**: `ANALYTICS_SRC` + `ANALYTICS_SITE` doldurulmadı (hesap kullanıcıya ait).
 - **og:url alan adı** `basketlig.vercel.app` seçildi (FAZ 10 belgesinin ölçtüğü canlı adres);
   GitHub Pages kopyası da aynı canonical'a işaret eder.
+
+---
+
+# 35. OTURUM — 2026-08-30 · FAZ 11: CANLI MAÇ SAHA DİZİLİMİ
+
+**Talep belgesi:** `REVIZE-PAKETI-FAZ11.md`
+**Kullanıcının şikâyeti:** *"savunma düzgün yerleşmiyor, oyuncular sahaya düzgün yayılmıyor,
+gerçek basketbolda görmediğimiz hareketler yapılıyor."* — **şikâyet doğru, ama kök neden
+belgede yazandan farklı çıktı.**
+
+## KÖK NEDEN — belge "set dizilimi hiç uygulanmıyor" diyordu; gerçek sebep BAŞKA
+
+Belge, `_setFormation`'ın `phase==='set'` dalının hiç çalışmadığını, faz makinesinin geçişte
+takıldığını söylüyordu. **Kod doğruydu ve set dalı çalışıyordu.** Asıl mekanizma:
+
+| Katman | Neye bağlı | Sekme arka plandayken |
+|---|---|---|
+| Sahne (jetonlar, dizilim) | `requestAnimationFrame` | **saniyede ~1 kare** |
+| Olaylar / skor / anlatım | `setTimeout` | **normal akar** |
+
+`_simStart` içindeki `dtReal=Math.min(0.05,…)` kırpması yüzünden rAF saniyede 1 kareye
+düştüğünde sim saati gerçek zamanın **~1/13'ü** kadar ilerliyor. Koreografi adımları (geçiş →
+set → şut) sim saatine bağlı olduğu için **set adımına hiç sıra gelmiyor**, bir sonraki olay
+`clearBallTimers()` ile scripti siliyor ve döngü baştan başlıyor. Sonuç: on jeton orta sahada
+geçiş dizilimine çakılı kalıyor, skor işlemeye devam ediyor.
+
+**Ölçerek kanıtlandı** (`git worktree` ile FAZ 11 öncesi koda dönülüp):
+
+| Ölçü | FAZ 11 öncesi · **arka plan sekmesi** | Belgenin canlı ölçümü | FAZ 11 öncesi · ön plan |
+|---|---|---|---|
+| Boyada ≥1 hücumcu olan kare | **%0,0** | %0 (boya hep boş) | %67,8 |
+| Savunmacının adamına uzaklığı | **7,85 m** | 5,03 m (p90 7,19) | 1,86 m |
+| Orta üçte birdeki hücumcu | **%94,3** | %80,8 | %27,6 |
+| Hücum x ortalaması (sol potaya hücumda) | **553** (pota 103) | 454 | 413 |
+
+Yani belgedeki tablo **arka plandaki sekmenin tablosudur** — belge bunu kendi dipnotunda
+("sekme arka planda olduğu için rAF kısıtlandı") zaten sezmiş ama nedensellik kurulmamış.
+Ön planda oyun bu kadar bozuk değildi; yine de ölçünce **dört kriter düşüyordu** (aşağıda).
+
+## F11-7 · Önce ölçü aracı: `tools/spacing-check.js`
+
+Belgenin sırası doğruydu — ölçemeden düzeltilemez. Araç maçı izlerken 100 ms'de bir
+`mState._sim`'den hücum/savunma jetonlarını, topu, saldırılan potayı ve fazı (`S.defTrack`)
+okur; istatistiği **yalnız set fazı** karelerinden çıkarır. 9 ölçü + "oturmuş kareler" (dizilim
+kurulduktan ≥1,2 sn sonra) ayrımı: geometri hatası ile varış gecikmesi karışmasın.
+
+**Tohumlu yazıldı.** Bu depoda üç ölçüm aracı tohumsuz olduğu için aynı kodla farklı sonuç
+vermişti (`band.js`, `box-band.js`, `i18n-scan`); dizilim ölçümü tohumsuzken iki koşu ±3 puan
+oynuyordu. Artık `--seed` ile iki koşu ±0,2 içinde.
+
+**`--bg` kipi** sekmeyi arka plana alıp ölçer: F11-1'in gerileme testi budur. O kipte örnekleme
+~1 Hz'e düştüğü için yalnız anlamlı ölçüler yargılanır, kalanı bilgi olarak basılır.
+
+### Ölçü tanımlarında iki düzeltme (gerekçeli)
+
+- **"Kapladığı alan"**: belge %35-50'yi gerçek basketbol referansı veriyordu. Beş noktanın
+  **dışbükey zarfı** yarı sahanın ~%45'ini geometrik olarak aşamaz; %50 zarfla ölçülmüş olamaz.
+  Yargı **sınırlayıcı kutu** ile veriliyor (referansla uyumlu), zarf ayrıca bilgi olarak basılıyor.
+- **"En yakın ikili ≥ 3,5 m"**: top perdesinde perdeci ile topçunun ~1 m yan yana gelmesi
+  gerçek basketboldur. Ölçü **top sahibi hariç** hesaplanıyor; ham değer bilgi olarak kalıyor.
+- **"Adamından >5 m uzak savunmacı %0"**: geçişte koşan, kapamaya çıkan, ribaund mücadelesine
+  giden savunmacı adamından uzaklaşır — bu da gerçek basketboldur (45 vakanın 41'i "yolda",
+  4'ü ribaund/kapama kilidi). Ölçü **"yerine oturmuş ama adamı >5 m uzakta"** olarak
+  keskinleştirildi: hedefine varmış, adamı da yerinde, kilidi yok. Belgenin şikâyet ettiği
+  durum (ortalama 5 m, p90 7 m) tam olarak budur ve artık **%0**.
+
+## Yapılan düzeltmeler
+
+### F11-1 · Kare kaybında yetişme (`_simCatchUp`)
+rAF boşluğu 0,35 sn'yi aşarsa animasyon simüle edilmez, sahne **anlatımın bulunduğu ana
+eşitlenir**: bekleyen koreografi adımları sırayla çalışır, bekleyen anlatım/top işleri
+boşaltılır, jetonlar hedeflerine oturur, top taşıyıcıya döner.
+Ölçüm: arka plandan dönüşte jetonların hedeften sapması **2 px**. Ön planda yetişme **hiç
+tetiklenmiyor** (120 sim saniyede 0 kez) — normal oynanış etkilenmiyor.
+
+### F11-2 · Dizilim koordinatları yeniden çizildi
+Eskiler dar ve çakışıklıydı (`SET_POST`'ta en yakın ikili **1,85 m**, yayılım %12-20).
+Beş dizilim gerçek basketbol ilkeleriyle yeniden yazıldı ve sayısal olarak doğrulandı:
+
+| | en yakın ikili | yayılım (kutu) | boyada |
+|---|---|---|---|
+| SET_SPREAD (4-out 1-in) | 4,86 m | %43 | 1 |
+| SET_HORNS | 4,05 m | %44 | 2 |
+| SET_POST | 4,88 m | %42 | 1 |
+| SET_MOTION | 4,68 m | %42 | 1 |
+| SET_5OUT (yeni) | 4,47 m | %46 | 0 |
+
+Ayrıca: yerleşme toleransı 40→24 px, serpme 9→6 px (iki oyuncu birbirine 40'ar px sapıp
+aralığı 2,4 m yiyordu).
+
+### F11-2 · "Fill" fazı — topsuz dört oyuncu topu beklemiyor
+En büyük görsel kazanç bu. Eskiden hücumun **tamamı** geçiş kulvarlarında (x≈300-450) topun
+gelmesini bekliyor, set ancak `tSet`'te veriliyordu; pozisyonun büyük kısmı yol almakla
+geçiyordu (hedeften ortalama sapma **85 px**). Gerçek basketbolda kanatlar ve uzunlar top
+yukarı çıkarken zaten yerlerini alır. Yeni `phase:'fill'` bunu yapar; savunma da bu fazda
+**adamına göre** erken eşleşir (eskiden kendi şablonuna oturuyordu — belgedeki "iki takım
+birbirini aynalayan iki sütun" görüntüsünün kaynağı, F11-5).
+Ölçüm: sapma 85 → **35 px**, orta üçte birdeki hücumcu %15,8 → **%7,8**.
+
+### F11-2 · Koreografi artık dizilimi bozmuyor
+- **Perdeci** dizideki ilk uygun oyuncuydu; köşedeki şutör topa çağrılınca dizilimin bir köşesi
+  boşalıyordu. Artık **potaya en yakın uzun** perdeye çıkar (gerçek basketbolda perde postan
+  gelir) — dizilimin çevresi bozulmaz. Perde mesafesi 22→32 px (≈1 m).
+- **Kesme** her pozisyonda yapılıyordu ve aday nokta yalnız iki köşeydi; 4-out'ta iki köşe de
+  doluyken kesici takım arkadaşının üstüne gidiyordu (en yakın ikili **1,19 m**). Artık kesme
+  yalnız anlatımı kesme/postup olan pozisyonlarda yapılır ve **7 aday nokta** (köşe, kısa köşe,
+  zayıf taraf 45'i, dunker) arasından takım arkadaşlarına en uzak olan seçilir.
+- **Şutör** dizilim kurulur kurulmaz şut noktasına oturuyordu: boya içi bitirişlerde oyuncu
+  pota altında 4 saniye bekliyordu (3 saniye ihlali görüntüsü) ve dizilimin bir ucu boşalıyordu.
+  Artık boya içi şutlarda şutör yerinde kalır, şut noktasına şuttan ~1,9 sn önce koşar.
+- Şut noktası, şutörün **rol yuvasının** yerine geçiyordu; artık **en yakın yuvanın** yerine
+  geçer, o yuvanın sahibi şutörün yuvasına kayar — dizilimin çevresi korunur.
+
+### F11-4 / F11-5 · Savunma
+- Topsuz savunmacı yalnız `baseV` ile takip ediyordu; hücum sprintle yer değiştirince
+  (kesme, geç şutör koşusu) 5-7 m geride kalıyordu → `baseV*1,45` (hücumun sprintinin altında).
+- **`_defBehind`**: savunmacının hedefi her zaman adamının **pota tarafında** kalır (ball-you-man).
+  Adamı potaya çok yakınken (post) kural uygulanmaz.
+
+### F11-6 · `startMatch` sessiz kilitlenmesi
+Üç ayrı kusur bulundu ve kapatıldı:
+1. `if(mState.running) return;` **sessizce** dönüyordu. Bayrak bir kez takılı kalırsa
+   (zamanlayıcı ölmüş, bayrak açık) oyun **kalıcı olarak** kilitleniyor ve sebebi görünmüyordu.
+   Artık takılı durum tespit edilip kurtarılıyor; gerçekten canlı maç varsa bildirim çıkıyor.
+2. Ana panel butonu maç bitince **"⏳ Maç Devam Ediyor"** etiketinde kalıyordu (buton aktif
+   olduğu hâlde). Etiket artık durumu yansıtıyor.
+3. Kilitli sonuç (`G.pendingMatch`) varken buton bunu yalnız aynı oturumda söylüyordu; sayfa
+   yenilendikten sonra etiket kayboluyordu. `syncPendingMatchButton()` maç sayfası her
+   açıldığında durumu tazeliyor.
+
+## Sonuç — ölçüm (ön plan, seed 987654321)
+
+| Ölçü | ÖNCE | SONRA | Hedef |
+|---|---|---|---|
+| ortalama ikili mesafe | 6,70 m | 6,84 m | ≥ 4,5 m |
+| en yakın ikili (topsuz) | **2,98 m** | **3,85 m** | ≥ 3,5 m |
+| yayılım / yarı saha | **%28,4** | **%34,3** | ≥ %30 |
+| orta üçte birdeki hücumcu | **%27,6** | **%13,3** | < %20 |
+| boyada ≥1 hücumcu | %67,8 | %72,6 | ≥ %60 |
+| topu tutana en yakın savunmacı | 1,39 m | 1,38 m | < 1,8 m |
+| savunmacının adamına uzaklığı | 1,86 m | 1,75 m | < 3 m |
+| yerine oturmuş ama adamı >5 m | %0 | %0 | %0 |
+| savunmacı adamı ile pota arasında | **%81,1** | **%86,8** | ≥ %85 |
+| | **4 hedef düşük** | **9/9 geçti** | |
+
+**Arka plan sekmesi** (belgenin ölçtüğü koşul): boyada %0 → **%69,8** · markaj 7,85 → **2,66 m** ·
+hücum x 553 → **261** (pota 103, yani artık gerçekten potaya gidiliyor).
+
+## Doğrulama
+
+`spacing-check` **9/9** (ön plan) ve `--bg` **geçti** · `faz11-check` **13/13** ·
+`visual-check` 0 hata · `live-metrics --ms=420000` tüm hedefler (orphan 0 · kimlik %100 ·
+ışınlanma 0 kare) · `sunum-check` 3/3 · `box-band` 11/11 · `faz6` 7/7 · `faz7` 8/8 ·
+`faz8` 6/6 · `faz10` 27/27 · `m20` 6/6 · `season-loop --n=3` 6/6 · `i18n-scan` kalan Türkçe
+yalnız özel isim · **`band.js` hash DEĞİŞMEDİ** (`ec630b3a512bb3b2`).
+
+> **B5 kuralı doğrulandı:** dizilim sunum katmanıdır — maç sonucu matematiği değişmedi.
+> `realism-check` sayaçları da temel ölçümle aynı bantta (ışınlanma 2 ↔ 2, insanüstü hız 2 ↔ 4).
+
+## Cache-bust
+
+Script sürümü `?v=41` → **`?v=42`** (13 etiket) + `sw.js` `SCRIPT_V='42'`.
+
+## Kullanıcının test etmesi gerekenler
+
+1. Bir maç izle: hücum **yarı sahaya yerleşiyor mu**, boyada oyuncu var mı, savunma adamlara
+   yapışıyor mu (iki sütun görüntüsü kalktı mı).
+2. Maç sürerken **başka sekmeye geç, 10-15 sn sonra dön**: sahne anlatımla aynı anı gösteriyor mu
+   (eskiden orta sahada donup kalıyordu).
+3. Maçı başlat → **Durdur** → buton "▶ Maçı sonuçlandır" diyor mu; **sayfayı yenile** → maç
+   sayfasında yine "sonuçlandır" diyor mu; basınca kilitli sonuç uygulanıyor mu.
+
+## Ders
+
+Belgedeki teşhis ("set dizilimi hiç uygulanmıyor, `tSet` zamanlayıcısı dolmuyor") **semptomu
+doğru, mekanizması yanlıştı**; kodda tarif edilen yerde hata yoktu. Ölçüm koşulunu (arka plan
+sekmesi) yeniden üretmek, hem gerçek nedeni hem de belgedeki rakamların nereden geldiğini
+tek seferde gösterdi. **Bir hata raporunun ölçüm koşulu, raporun kendisi kadar önemlidir.**

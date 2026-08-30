@@ -62,12 +62,50 @@ function setMatchButtonsRunning(running){
     const db=card.querySelector('.dn-play');
     if(db){
       db.disabled=!!running;
+      /* F11-6: maç bitince/durunca etiket "⏳ Maç Devam Ediyor"da KALIYORDU. Buton aktif
+         olduğu hâlde "maç sürüyor" yazdığı için oyun kilitlenmiş görünüyordu. */
       if(running) db.textContent='⏳ Maç Devam Ediyor';
+      else db.textContent=(G.pendingMatch&&pendingMatchIsNext())?'▶ Maçı sonuçlandır':'▶ Maçı Başlat';
     }
   }
+  if(!running) syncPendingMatchButton();
+}
+/** F11-6: sıradaki maçın sonucu kilitli mi? (maç başlatılıp yarıda bırakılmış) */
+function pendingMatchIsNext(){
+  try{
+    if(!G.pendingMatch||!G.pendingMatch.sig||!G.pendingMatch.ev) return false;
+    if(mState&&mState.sig&&G.pendingMatch.sig===mState.sig) return true;
+    const m=(typeof findNextUserSeasonMatch==='function')?findNextUserSeasonMatch():null;
+    return !!(m&&G.pendingMatch.sig===('lig|'+m.seasonMatchIx));
+  }catch(e){ return false; }
+}
+/** F11-6: kilitli sonuç varken "Maçı Başlat" butonu bunu SÖYLESİN — sayfa yenilendikten
+    sonra etiket kayboluyor, oyuncu neden maç başlamadığını anlayamıyordu. */
+function syncPendingMatchButton(){
+  try{
+    const b=document.getElementById('startMatchBtn');
+    if(!b||mState.running) return;
+    if(pendingMatchIsNext()){
+      b.textContent='▶ Maçı sonuçlandır';
+      b.title='Sonuç maç başında kilitlendi; bu maç yeniden oynanamaz. Basınca kilitli sonuç uygulanır.';
+    } else {
+      b.textContent='▶ Maçı Başlat';
+      b.removeAttribute('title');
+    }
+  }catch(e){}
 }
 function startMatch(playoff){
-  if(mState.running) return;
+  /* F11-6: eskiden bu dal SESSİZCE dönüyordu. mState.running bir kez takılı kaldığında
+     (olay zamanlayıcısı ölmüş ama bayrak açık kalmış) oyun KALICI olarak kilitleniyor,
+     hiçbir bildirim de çıkmadığı için sebebi görünmüyordu. Artık takılı durum tespit edilip
+     kurtarılıyor; gerçekten canlı maç varsa kullanıcıya söyleniyor. */
+  if(mState.running){
+    const canli=!!(matchEventTimer||mState.paused||(mState._sim&&mState._sim.raf));
+    if(canli){ showNotif('Maç zaten oynanıyor.'); return; }
+    mState.running=false;               /* takılı bayrak — kurtar ve normal akışa devam et */
+    setMatchButtonsRunning(false);
+    dbg('startMatch','takılı running bayrağı temizlendi');
+  }
   if(!G.team){ showNotif('Önce takım oluştur.'); return; }
   /* C1: buton "sonuçlandır" durumundaysa normale döndür. */
   const _smBtn=document.getElementById('startMatchBtn');
@@ -1271,6 +1309,8 @@ function showPage(page,btn){
     if(page==='mac'){
       renderFixture();
       if(G.team) renderBoxScore(emptyBox(),emptyBox(),G.team.isim,'Deplasman');
+      /* F11-6: kilitli sonuç varsa buton bunu söylesin (sayfa yenilendikten sonra da). */
+      syncPendingMatchButton();
     }
     if(page==='market')renderMarket();
     if(page==='kadro')renderRoster();

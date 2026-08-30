@@ -846,3 +846,9 @@ Object.assign(I18N_TR_EN,{
 'Charazay 2.0 — Türkçe basketbol menajerlik oyunu. Kendi kulübünü kur:':'Charazay 2.0 — a basketball management game. Build your own club:',
 'Charazay 2.0’da {takim} kulübünü yönetiyorum. Sen de bir kulüp kur, ligde karşılaşalım:':'I manage {takim} in Charazay 2.0. Start your own club and let us meet in the league:'
 });
+
+/* ── F11-6: kilitli maç / takılı durum bildirimleri ─────────────────────────────────── */
+Object.assign(I18N_TR_EN,{
+'▶ Maçı sonuçlandır':'▶ Finish match',
+'Maç zaten oynanıyor.':'A match is already in progress.'
+});

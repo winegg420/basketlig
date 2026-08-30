@@ -267,16 +267,54 @@ function _simStart(){
     const St=(typeof mState!=='undefined'&&mState)?mState._sim:null;
     if(!St||St!==S){ return; }
     if(!S.last) S.last=ts;
-    const dtReal=Math.min(0.05,(ts-S.last)/1000);   /* sekme arkaplandayken sıçramasın */
+    const raw=(ts-S.last)/1000;
+    const dtReal=Math.min(0.05,raw);   /* tek karede fizik sıçramasın */
     S.last=ts;
     /* maç bittikten ~3sn sonra döngüyü bırak (pil) */
     if(typeof mState!=='undefined'&&mState&&mState.running===false&&!mState.paused){
       S.idle+=dtReal; if(S.idle>3){ S.raf=null; return; }
     } else S.idle=0;
-    try{ _simStep(dtReal); }catch(e){}
+    /* F11-1 (FAZ 11): KARE KAYBINDA YETİŞ.
+       Sim saati requestAnimationFrame'e, olay zamanlayıcısı ise setTimeout'a bağlı. Sekme arka
+       plana alınınca (ya da cihaz ağırlaşınca) rAF saniyede ~1 kareye düşer, dtReal 0,05'e
+       kırpıldığı için sim saati gerçek zamanın ~1/13'ü kadar ilerler — ama olaylar akmaya devam
+       eder. Ölçüm: 10 sn arka planda sim yalnız 0,77 sn ilerledi, 2 olay geçti. Sonuç: jetonlar
+       geçiş dizilimine takılı kalıyor, set dizilimine HİÇ ulaşamıyor (FAZ 11 belgesinin
+       "oyuncular orta sahada duruyor, boya boş" ölçümünün kaynağı budur).
+       Çözüm: boşluk büyükse animasyonu simüle etmek yerine sahneyi güncel olaya eşitle. */
+    if(raw>0.35) { try{ _simCatchUp(); }catch(e){} }
+    else { try{ _simStep(dtReal); }catch(e){} }
     S.raf=requestAnimationFrame(loop);
   };
   S.raf=requestAnimationFrame(loop);
+}
+
+/** F11-1: Kare kaybı sonrası sahneyi anlatımın bulunduğu ana eşitle.
+    Kayıp karelerde "yavaş yürüyüş" simüle etmenin karşılığı yok: oyuncu zaten gitmiş olmalıydı.
+    Sırayla (1) bekleyen koreografi adımları, (2) bekleyen anlatım/top işleri, (3) jetonlar
+    hedeflerine, (4) top taşıyıcıya, (5) tek tick ile savunma takibi + sınır düzeltmesi. */
+function _simCatchUp(){
+  const S=mState._sim; if(!S) return;
+  S.cuCount=(S.cuCount||0)+1;   /* teşhis sayacı: ön planda 0'a yakın olmalı (araçlar okur) */
+  if(S.script&&S.script.length){
+    S.sT=S.script[S.script.length-1].at;
+    while(S.sIdx<S.script.length){ const st=S.script[S.sIdx++]; try{ st.fn(); }catch(e){} }
+    S.script=[]; S.sIdx=0;
+  }
+  _flushPending(S);
+  const P=S.players||[];
+  for(const p of P){
+    if(!p) continue;
+    /* Topu sokan oyuncunun çizgi dışı izni sürer — onu sahaya kırpma. */
+    if(p.tx!=null) p.x=p._oob?p.tx:_inX(p.tx);
+    if(p.ty!=null) p.y=p._oob?p.ty:_inY(p.ty);
+    p.vx=0; p.vy=0; p._wp=null;
+    _tokSet(p.g,p.x,p.y,p.sc);
+  }
+  const b=S.ball;
+  if(b&&b.carrier){ b.x=b.carrier.x; b.y=b.carrier.y; b.h=0; }
+  try{ _simTick(0.033); }catch(e){}
+  _ballRender();
 }
 
 /** İzleme hızı (rate) uygulanmış zamanı SABİT küçük adımlara böl — hızlı modda
@@ -361,8 +399,11 @@ function _simTick(dt){
           const hx=onBall?rim[0]:(rim[0]+b.x)/2, hy=onBall?rim[1]:(rim[1]+b.y)/2;
           const gap=onBall?(p._press?22:27):_defGap(Math.hypot(m.x-b.x,m.y-b.y));
           const dx=hx-m.x, dy=hy-m.y, d=Math.hypot(dx,dy)||1;
-          p.tx=_inX(m.x+dx/d*gap); p.ty=_inY(m.y+dy/d*gap);
-          p.maxV=onBall?p.baseV*1.25:p.baseV;
+          { const bh=_defBehind(m.x+dx/d*gap,m.y+dy/d*gap,m,rim); p.tx=_inX(bh[0]); p.ty=_inY(bh[1]); }
+          /* F11-4: topsuz savunmacı yalnız baseV ile takip ediyordu; hücum sprintle yer
+             değiştirince (kesme, geç şutör koşusu) adamından 5-7 m geride kalıyordu.
+             Hücumun sprint hızının (baseV*1,62) altında ama takip edebilecek kadar hızlı. */
+          p.maxV=onBall?p.baseV*1.35:p.baseV*1.45;
         }
       }
     }
@@ -617,6 +658,17 @@ function _script(steps){
     savunmacısı boyaya doğru sarkar, ama TÜM savunma tek noktada yığılmasın diye üst
     sınır dar tutulur (~1.7m). Adamı topa yakınsa yakın markaja (deny) geçer. */
 function _defGap(distManBall){ return Math.min(56,26+distManBall*0.14); }
+/** F11-5 (ball-you-man): savunmacının hedefi HER ZAMAN adamının pota tarafında kalsın.
+    Yardım pozisyonu top ile pota arasına bakar; adamı potaya çok yakınken (post) kural
+    uygulanmaz — orada iki jetonu ayıran zaten üst üste binme çözücüsüdür. */
+function _defBehind(tx,ty,m,rim){
+  const dm=Math.hypot(m.x-rim[0],m.y-rim[1]);
+  if(dm<64) return [tx,ty];
+  const dd=Math.hypot(tx-rim[0],ty-rim[1]);
+  if(dd<=dm-8) return [tx,ty];
+  const k=(dm-8)/(dd||1);
+  return [rim[0]+(tx-rim[0])*k, rim[1]+(ty-rim[1])*k];
+}
 /** Bir jetonun hedefini kısa süre "kilitle" — savunma takibi/dizilim üzerine yazmasın. */
 function _lockTok(p,sec){ const S=mState._sim; if(p&&S) p._lock=S.time+(sec||0.6); }
 /** Serbest topun peşine düş: yetişince topu alır ve fn() çalışır (anlatım senkronu). */
@@ -625,11 +677,23 @@ function _chase(tok,fn,maxSec){ const S=mState._sim; if(!S||!tok) return; S.chas
 /* ── Dizilimler ───────────────────────────────────────────────────────────
    Tüm noktalar SOL potaya hücum eden takım içindir; index = ROL (0 PG…4 C).
    Sağa hücumda aynalanır, güçlü taraf için y ekseninde çevrilebilir. */
-const SET_SPREAD=[[336,250],[248,114],[248,386],[ 92,436],[126,304]];  /* 4-out 1-in */
-const SET_HORNS =[[348,250],[ 92, 66],[ 92,434],[212,190],[212,310]];  /* iki büyük dirseklerde */
-const SET_POST  =[[330,206],[254,110],[204,390],[238,338],[112,296]];  /* pivot düşük postta */
-const SET_MOTION=[[320,158],[290,346],[ 96, 66],[176,398],[132,214]];  /* hareketli dizilim */
-const SET_ALL=[SET_SPREAD,SET_HORNS,SET_POST,SET_MOTION,SET_SPREAD,SET_POST];
+/* FAZ 11 (F11-2/F11-3): eski dizilimler ÖLÇÜLDÜĞÜNDE dar çıkıyordu — en yakın ikili
+   SET_POST'ta 1,85 m (15 feet = 4,57 m kuralının çok altında), kaplanan alan yarı sahanın
+   %12-20'si, boyada çoğu zaman kimse yok. Yeni koordinatlar gerçek basketbol ilkelerine göre
+   yeniden çizildi ve `tools/spacing-check.js` ölçütleriyle sayısal olarak doğrulandı:
+     dizilim        en yakın ikili   kaplanan alan   boyada
+     5-OUT              4,47 m           %35,6         0
+     SPREAD (4-out1in)  4,86 m           %33,7         1
+     HORNS              3,99 m           %22,2         2
+     POST               4,88 m           %31,7         1
+     MOTION             4,68 m           %30,6         1
+   Köşeler dip çizgiye (x≈56), kanatlar/slotlar yay dışına (x≈276-300), pivot bloğa (x≈146). */
+const SET_SPREAD=[[296,132],[296,368],[ 56,462],[ 56, 38],[146,196]];  /* 4-out 1-in: guardlar slotta, pivot blokta */
+const SET_HORNS =[[302,250],[ 56, 38],[ 56,462],[188,176],[188,324]];  /* iki büyük dirseklerde, guardlar köşede */
+const SET_POST  =[[292,342],[284,118],[ 56, 38],[ 58,458],[146,206]];  /* pivot düşük postta, top kanattan */
+const SET_MOTION=[[300,150],[288,352],[ 58, 46],[ 60,456],[172,246]];  /* kesme/blok trafiği, geniş */
+const SET_5OUT  =[[310,250],[276,104],[276,396],[ 56, 38],[ 56,462]];  /* beşi de yay dışında, boya boş */
+const SET_ALL=[SET_SPREAD,SET_HORNS,SET_POST,SET_MOTION,SET_5OUT,SET_SPREAD];
 /* GEÇİŞ: hücum ÜÇ KULVAR — top ortadan sürülür, kanatlar KENAR çizgilerine yakın koşar,
    büyükler arkadan gelir. Kulvarlar geniş tutulur (y 58/442) ki iki takım orta bantta tek
    yumak hâlinde koşmasın; savunma ise ortadan potaya döner. */
@@ -643,6 +707,42 @@ const ZONE_23=[[252,166],[252,334],[148,120],[148,380],[124,250]];
 const FT_LINE_X=234;
 const FT_DEF_S=[[ 96,182],[ 96,318],[168,180],[168,320],[292,250]];
 const FT_OFF_S=[[131,181],[131,319],[306,140],[306,360]];
+
+/** F11-2: perdeyi POTAYA EN YAKIN uzun oyuncu kurar — gerçek basketbolda top perdesine
+    posttaki/dirsekteki büyük çıkar. Eskiden dizideki ilk uygun oyuncu seçiliyordu; köşedeki
+    ya da kanattaki şutör topa çağrılınca dizilimin bir KÖŞESİ boşalıyor, hücumun kapladığı
+    alan çöküyordu (ölçüm: dizilim %34 → sahada %20). İçerideki oyuncu zaten dizilimin
+    çevresinde değil, ortasındadır; perdeye o çıkınca aralık bozulmaz. */
+function _pickScreener(relay,mid,cutter,pg,rim){
+  const uygun=(relay||[]).filter(p=>p&&p!==mid&&p!==cutter);
+  if(!uygun.length) return (relay||[]).find(p=>p!==mid)||null;
+  const r=rim||[102.6,250];
+  const puan=p=>Math.hypot(p.tx-r[0],p.ty-r[1])+((p.pl&&(p.pl.poz==='C'||p.pl.poz==='PF'))?0:200);
+  return uygun.slice().sort((a,b)=>puan(a)-puan(b))[0];
+}
+
+/* F11-2: kesme (cut) varış noktaları — köşe, kısa köşe (dunker), zayıf taraf 45'i.
+   Eskiden yalnız İKİ KÖŞE adaydı; 4-out dizilimde iki köşe de zaten doluyken kesici
+   bir takım arkadaşının üstüne gidiyordu (ölçüm: en yakın ikili 1,19 m). Artık aday
+   noktalar arasından takım arkadaşlarının HEDEFLERİNE en uzak olan seçilir. */
+const CUT_SPOTS=[[72,52],[72,448],[96,168],[96,332],[232,120],[232,380],[150,250]];
+function _pickCutSpot(offP,cutter,offLeft){
+  const digerleri=(offP||[]).filter(p=>p&&p!==cutter);
+  let best=null,bestD=-1;
+  CUT_SPOTS.forEach(c=>{
+    const p=_pt([c[0]+rand(-10,10),c[1]+rand(-10,10)],offLeft,false);
+    let mn=1e9;
+    digerleri.forEach(q=>{ mn=Math.min(mn,Math.hypot(q.tx-p[0],q.ty-p[1])); });
+    if(mn>bestD){ bestD=mn; best=p; }
+  });
+  return best||[cutter.tx,cutter.ty];
+}
+
+/** Nokta boyanın (key) içinde mi? Dip çizgiden 5,8 m, 4,9 m genişlik. */
+function _inPaint(x,y,offLeft){
+  if(Math.abs(y-250)>82) return false;
+  return offLeft?(x<=195):(x>=745);
+}
 
 function _pt(c,offLeft,flip){
   let p=[c[0],flip?500-c[1]:c[1]];
@@ -686,6 +786,35 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
     else if(tac.odak==='ic'){ base[1][0]-=8; base[2][0]-=8; base[3][0]-=12; base[4][0]-=8; }
   }
   const B=base.map(c=>_pt(c,offLeft,flip));
+
+  /* ── FILL (F11-1/F11-2): topsuz dört oyuncu, top gelmeden yerlerine açılır ──────────
+     Eskiden hücumun tamamı geçiş kulvarlarında (x≈300-450) topun gelmesini bekliyor, set
+     dizilimi ancak tSet'te veriliyordu; oyuncular pozisyonun geri kalanını yol alarak
+     geçirdiği için ölçümde saha ortasında yumak görünüyorlardı (hedeften ortalama sapma
+     85 px). Gerçek basketbolda kanatlar ve uzunlar top yukarı çıkarken ZATEN yerlerini alır.
+     Savunma bu fazda hâlâ potaya dönüyor (defTrack'e dokunulmaz). */
+  if(phase==='fill'){
+    offR.forEach((p,i)=>{
+      if(!p||p._oob||p===opts.ballTok) return;
+      if((p._lock||0)>S.time) return;        /* perde/kesme kilidi varsa bozma */
+      p._wp=null;
+      p.tx=_inX(_jit(B[i][0],6)); p.ty=_inY(_jit(B[i][1],6)); p.maxV=p.sprintV;
+    });
+    /* F11-4/F11-5: savunma da geçişte EŞLEŞİR — adamının gideceği noktanın pota tarafına
+       yerleşir. Eskiden savunma TRANS_DEF şablonuna oturuyordu; hücum yerine yerleştiğinde
+       savunmacılar 5-7 m geriden yetişmeye çalışıyor, iki takım birbirini aynalayan iki
+       sütun gibi görünüyordu. Bu faz markaj DEĞİL yalnız erken eşleşmedir (defTrack kapalı). */
+    defR.forEach((p,i)=>{
+      if(!p||p._oob) return;
+      if((p._lock||0)>S.time) return;
+      const m=B[i]||B[0];
+      const dx=rim[0]-m[0], dy=rim[1]-m[1], d=Math.hypot(dx,dy)||1;
+      p._wp=null;
+      p.tx=_inX(m[0]+dx/d*46); p.ty=_inY(m[1]+dy/d*46); p.maxV=p.sprintV*0.96;
+    });
+    return null;
+  }
+
   let shooter=null;
   if(shot){
     /* Şutör önce ANLATIMDAKİ oyuncu (shot.sid) — saha ile spiker aynı maçı anlatır. */
@@ -696,17 +825,35 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
       offR.forEach((p,i)=>{ if(!p) return; const d=Math.hypot(p.x-shot.x,p.y-shot.y); if(d<bd){bd=d;bi=i;} });
     }
     shooter=offR[bi];
-    if(shooter) B[bi]=[shot.x,shot.y];
+    /* F11-2/F11-3: şutör, dizilim kurulur kurulmaz şut noktasına oturuyordu; boya içi
+       bitirişlerde bu, oyuncunun pota altında 4 saniye beklemesi (3 saniye ihlali) ve
+       hücumun bir köşesinin boşalması demekti. Boya içi şutlarda şutör dizilimdeki yerinde
+       kalır, şut noktasına pozisyonun sonunda (tRelease) koşar. */
+    if(shooter&&!(opts.lateShooter&&_inPaint(shot.x,shot.y,offLeft))){
+      /* F11-2: şut noktası, şutörün ROL yuvasının yerine geçiyordu. Köşedeki oyuncu yay
+         tepesinden şut atacaksa köşe boşalıyor, iki oyuncu üst üste biniyor ve hücumun
+         kapladığı alan çöküyordu (ölçüm: hedeflerin alanı %34 → %24). Doğrusu: şut noktası
+         KENDİNE EN YAKIN yuvanın yerine geçer, o yuvanın sahibi de şutörün yuvasına kayar —
+         dizilimin çevresi korunur, yalnız bir nokta şut yerine doğru kaymış olur. */
+      let k=bi,kd=1e9;
+      B.forEach((c,i)=>{ const d=Math.hypot(c[0]-shot.x,c[1]-shot.y); if(d<kd){kd=d;k=i;} });
+      const eski=B[bi];
+      B[bi]=[shot.x,shot.y];
+      if(k!==bi) B[k]=eski;
+    }
   }
   offR.forEach((p,i)=>{
     if(!p||p._oob) return;                    /* topu sokan çizgi dışında kalır */
     p._wp=null;                               /* set kurulunca geçiş ara noktası biter */
     const c=B[i];
     if(p===shooter){ p.tx=c[0]; p.ty=c[1]; p.maxV=p.sprintV; return; }
-    /* Noktasına ZATEN yakınsa yeni hedef atanmaz (yerinde durur, mikro-salınım yapar). */
-    const near=Math.hypot(p.x-c[0],p.y-c[1])<40;
+    /* Noktasına ZATEN yakınsa yeni hedef atanmaz (yerinde durur, mikro-salınım yapar).
+       F11-2: eşik 40 px idi — iki oyuncu birbirine doğru 40'ar px sapabildiği için ölçülen
+       en yakın ikili mesafe dizilimin kâğıt üzerindeki değerinden ~2,4 m düşüyordu. Eşik ve
+       serpme (jitter) daraltıldı: oyuncular gerçekten noktalarına oturur, aralık korunur. */
+    const near=Math.hypot(p.x-c[0],p.y-c[1])<24;
     if(near&&opts.keepNear!==false){ p.tx=p.x; p.ty=p.y; p.maxV=p.baseV*0.55; }
-    else { p.tx=_inX(_jit(c[0],9)); p.ty=_inY(_jit(c[1],9)); p.maxV=p.sprintV; }
+    else { p.tx=_inX(_jit(c[0],6)); p.ty=_inY(_jit(c[1],6)); p.maxV=p.sprintV; }
   });
 
   /* ── Savunma ── kullanıcı savunuyorsa seçtiği stil, bot savunuyorsa maç kimliği. */
@@ -757,7 +904,8 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
     const hx=isBall?rim[0]:(rim[0]+S.ball.x)/2, hy=isBall?rim[1]:(rim[1]+S.ball.y)/2;
     const gap=isBall?(press?22:28):_defGap(Math.hypot(m.tx-S.ball.x,m.ty-S.ball.y));
     const dx=hx-m.tx, dy=hy-m.ty, d=Math.hypot(dx,dy)||1;
-    p.tx=_inX(_jit(m.tx+dx/d*gap,press?4:6)); p.ty=_inY(_jit(m.ty+dy/d*gap,press?4:6));
+    { const bh=_defBehind(m.tx+dx/d*gap,m.ty+dy/d*gap,{x:m.tx,y:m.ty},rim);
+      p.tx=_inX(_jit(bh[0],press?4:6)); p.ty=_inY(_jit(bh[1],press?4:6)); }
     p.maxV=isBall?p.sprintV*0.92:(press?p.sprintV*0.9:p.baseV*1.4);
   });
   S.shooter=shooter;
@@ -1416,7 +1564,9 @@ function animateShotPossession(sh,onShoot,onResult){
     const outletPay=outletTok?0.45:0;
     const bringT=fastBreak?0.85:Math.max(1.05,Math.min(2.4,outletPay+etaTok(pg,bringHedef[0],bringHedef[1])));
     const tSet=tOff+bringT;
-    steps.push({at:tSet,fn:()=>{ _setFormation(offLeft,offP,defP,sh,{phase:'set',keepNear:true}); }});
+    /* F11-2: topsuz dört oyuncu topu beklemeden dizilime açılır (hızlı hücumda kulvarlar korunur). */
+    if(!fastBreak) steps.push({at:tOff+0.30,fn:()=>{ _setFormation(offLeft,offP,defP,null,{phase:'fill',ballTok:pg}); }});
+    steps.push({at:tSet,fn:()=>{ _setFormation(offLeft,offP,defP,sh,{phase:'set',keepNear:true,lateShooter:true}); }});
 
     let tFire;
     if(fastBreak){
@@ -1438,8 +1588,13 @@ function animateShotPossession(sh,onShoot,onResult){
       steps.push({at:tPass,fn:()=>_ballPass(shooter,0.32)});
     } else {
       /* SET OYUNU: perde (pnr), tek kesme, kilit pas. */
-      const cutter=relay.find(p=>p!==mid&&p.pl&&(p.pl.poz==='C'||p.pl.poz==='PF'))||relay.find(p=>p!==mid)||null;
-      const screener=isPnr?(relay.find(p=>p!==mid&&p!==cutter)||relay.find(p=>p!==mid)||null):null;
+      /* F11-2: kesme HER pozisyonda yapılıyordu; kesici dizilimdeki noktasını boşaltınca
+         hücumun kapladığı alan çöküyordu. Artık yalnız anlatımın gerçekten kesme/postup
+         olduğu pozisyonlarda (ve seyrek olarak çeşitlilik için) kesme yapılır — dış şut
+         (spotup) pozisyonlarında dizilim korunur. */
+      const doCut=(scheme==='cut')||(!isPnr&&scheme!=='postup'&&scheme!=='spotup'&&Math.random()<0.35);
+      const cutter=doCut?(relay.find(p=>p!==mid&&p.pl&&(p.pl.poz==='C'||p.pl.poz==='PF'))||relay.find(p=>p!==mid)||null):null;
+      const screener=isPnr?_pickScreener(relay,mid,cutter,pg,rim):null;
       const doMid=(mid!==pg)&&(sh.pid!=null);
       /* M13: aralıklar ~2,2 katına çıkarıldı — dizilim şuttan en az 1,5 sn önce oturur,
          jetonlar sprint sınırına dayanmadan yerlerine yürür. */
@@ -1447,18 +1602,15 @@ function animateShotPossession(sh,onShoot,onResult){
       const tKey=tSwing+(doMid?1.85:0.85);
       tFire=tKey+1.60;
       if(screener){
-        steps.push({at:tSet+0.25,fn:()=>{ screener.tx=_inX(pg.x+(offLeft?22:-22)); screener.ty=_inY(pg.y-16); screener.maxV=screener.baseV; _lockTok(screener,1.0); }});
+        /* F11-2: perde mesafesi 22→32 px (≈1 m) — gerçek top perdesinde perdeci topçunun
+           yanına yapışmaz, omuz mesafesinde durur; jetonlar da iç içe geçmiş görünmez. */
+        steps.push({at:tSet+0.25,fn:()=>{ screener.tx=_inX(pg.x+(offLeft?32:-32)); screener.ty=_inY(pg.y-22); screener.maxV=screener.baseV; _lockTok(screener,1.0); }});
         steps.push({at:tKey-0.10,fn:()=>{ screener.tx=_inX(rim[0]+(offLeft?1:-1)*rand(30,64)); screener.ty=_inY(250+rand(-30,30)); screener.maxV=screener.sprintV; _lockTok(screener,1.1); }});
       }
       if(cutter){
         steps.push({at:tSet+0.45,fn:()=>{
-          /* Kesici BOŞ köşeye açılır — dolu köşeye giderse iki jeton üst üste biner
-             (spacing bozulur). İki köşeden takım arkadaşlarına uzak olan seçilir. */
-          const cx=offLeft?rand(76,106):rand(834,864);
-          const free=(cy)=>Math.min.apply(null,offP.filter(p=>p!==cutter).map(p=>Math.hypot(p.tx-cx,p.ty-cy)));
-          const cyA=rand(52,92), cyB=rand(408,448);
-          const cy=free(cyA)>free(cyB)?cyA:cyB;
-          cutter.tx=cx; cutter.ty=_inY(cy);
+          const sp=_pickCutSpot(offP,cutter,offLeft);
+          cutter.tx=_inX(sp[0]); cutter.ty=_inY(sp[1]);
           cutter.maxV=cutter.sprintV; _lockTok(cutter,1.2);
         }});
       }
@@ -1466,6 +1618,16 @@ function animateShotPossession(sh,onShoot,onResult){
       steps.push({at:tKey,fn:()=>{ _ballPass(shooter,0.34,scheme==='postup'); if(sh.pid!=null&&typeof sfx==='function') sfx('pass'); }});
     }
 
+    /* F11-2/F11-3: boya içi şutlarda şutör dizilimde bekletildi (lateShooter); şut noktasına
+       burada, şuttan ~1,9 sn önce koşar — hem 3 saniye ihlali görüntüsü kalkar hem de
+       hücumun aralığı pozisyonun büyük kısmında korunur. */
+    if(shooter&&_inPaint(sh.x,sh.y,offLeft)){
+      const tRelease=Math.max(tSet+0.15,tFire-1.9);
+      steps.push({at:tRelease,fn:()=>{
+        shooter.tx=_inX(sh.x); shooter.ty=_inY(sh.y);
+        shooter.maxV=shooter.sprintV; _lockTok(shooter,Math.max(0.6,tFire-tRelease));
+      }});
+    }
     /* şutör hamlesi (crossover/step-back/spin/drive) — metinle birebir aynı hamle */
     if(shooter&&mv){
       if(mv==='stepback'){

@@ -1,11 +1,12 @@
 # KALDIĞIM YER
-Son güncelleme: 2026-08-30 · 34. oturum — **açık iş yok, tüm testler yeşil**
+Son güncelleme: 2026-08-30 · 35. oturum — **açık iş yok, tüm testler yeşil**
 
 Talep belgeleri: `REVIZE-PAKETI.md` (FAZ 1-6) · `REVIZE-PAKETI-FAZ7.md` (maç dışı) ·
 `REVIZE-PAKETI-FAZ8.md` (oynanış testi) · `REVIZE-PAKETI-FAZ9.md` (uzun vadeli döngü) ·
-`REVIZE-PAKETI-FAZ10.md` (yayın hazırlığı) — **beşi de uygulandı ve ölçülerek doğrulandı**;
-FAZ 10'un yalnız A grubu (çok oyunculu sunucu altyapısı) **bilinçli olarak** plana bırakıldı.
-Protokol: `DEVAM-ET.md` · Oturum günlüğü: `PROGRESS.md` (32-34. oturum)
+`REVIZE-PAKETI-FAZ10.md` (yayın hazırlığı) · `REVIZE-PAKETI-FAZ11.md` (canlı maç dizilimi) —
+**altısı da uygulandı ve ölçülerek doğrulandı**; FAZ 10'un yalnız A grubu (çok oyunculu
+sunucu altyapısı) **bilinçli olarak** plana bırakıldı.
+Protokol: `DEVAM-ET.md` · Oturum günlüğü: `PROGRESS.md` (32-35. oturum)
 
 ## Durum: TEMİZ
 
@@ -14,6 +15,10 @@ B5 zorluk seviyesi eklendi; uzun vadeli sezon döngüsü dengelendi.
 **FAZ 10'un B grubu bitti** (34. oturum): fikstür saati kapısı + `?test=1` bayrağı, analitik
 katmanı (varsayılan kapalı), og/twitter etiketleri + og:image, davet & sonuç paylaşımı,
 öğreticinin 7 adımının tamamı EN, service worker + manifest (PWA).
+**FAZ 11 bitti** (35. oturum): canlı maç saha dizilimi. Kök neden belgede yazandan farklı
+çıktı — sahne saati (rAF) ile olay saati (setTimeout) ayrışması; arka plan sekmesinde sahne
+anlatımın 13 kat gerisine düşüp geçiş dizilimine takılıyordu. `_simCatchUp` + yeniden çizilen
+`SET_*` dizilimleri + "fill" fazı + koreografi düzeltmeleri + `startMatch` sessiz kilitlenmesi.
 Her madde **ölçülerek** doğrulandı — "uyguladım" beyanına dayanan açık iş yok.
 
 ## ÇOK OYUNCULU — oyunun temeli, henüz başlanmadı
@@ -37,6 +42,9 @@ ayrı bir fazdır.
 | `node tools/faz7-check.js` | FAZ 7 kabul kriterleri + a11y zoom hayaleti | ✓ **8/8** |
 | `node tools/m20-check.js` | rakip kadro kalıcılığı | ✓ **6/6** |
 | `node tools/faz10-check.js` | FAZ 10 (fikstür saati kapısı, analitik, og etiketleri, PWA, öğretici dili, paylaşım) | ✓ **27/27** |
+| `node tools/spacing-check.js` | saha dizilimi (aralık, yayılım, boya, markaj, ball-you-man) — tohumlu | ✓ **9/9** |
+| `node tools/spacing-check.js --bg` | arka plan sekmesinde dizilim (F11-1 gerileme testi) | ✓ geçti |
+| `node tools/faz11-check.js` | FAZ 11 (dizilim geometrisi, yetişme, kesme noktası, `startMatch` kilidi) | ✓ **13/13** |
 | `node tools/sunum-check.js --ms=300000` | M9 outlet · M12 and-1 · M14 şut saati | ✓ **3/3** |
 | `node tools/visual-check.js` | masaüstü + mobil akış, konsol | ✓ çıkış kodu **0** |
 | `node tools/live-metrics.js --ms=360000` | senkron · kimlik · ışınlanma | ✓ orphan 0 · kimlik %100 · 0 kare |
@@ -147,11 +155,17 @@ sıfırdan derlenir); sonrakiler önbellekten hızlanır.
   eklerken `botClubEnsureDepth` içindeki geriye dönük doldurmaya da ekle. `BOT_ROSTER_DIST`
   başındaki İLK 7 SIRA tarihseldir — id/seed'ler ona bağlı, değiştirme.
 - **`cpuMatchScore()` tek kaynaktır** — bot-bot skor formülünü test de oradan çağırır.
-- **Script sürüm etiketi** her yayın öncesi artırılmalı — şu an **`?v=41`**; `faz8-check` A7 sınıyor.
+- **Script sürüm etiketi** her yayın öncesi artırılmalı — şu an **`?v=42`**; `faz8-check` A7 sınıyor.
   Aynı sürüm `sw.js` içindeki `SCRIPT_V`'de de geçer — ikisi ayrışırsa `faz10-check` A4 düşer.
 - **Service worker yalnız yayın sunucusunda kaydedilir** (`isProdHost()`); yerelde/testte kapalı,
   yoksa önbellek eski JS'i servis edip ölçümleri yanıltır. `?nosw=1` ile de kapatılabilir.
 - **Yeni maç başlatma yolu eklersen** `matchTimeGateOk()` kapısından geçir (F10-2).
+- **Bir hata raporunun ÖLÇÜM KOŞULU raporun kendisi kadar önemlidir (35. oturum):** FAZ 11
+  belgesinin tablosu arka plandaki sekmede ölçülmüştü; ön planda oyun o kadar bozuk değildi.
+  Koşulu yeniden üretmeden teşhis yapılırsa yanlış yerde hata aranır (belge "set dizilimi hiç
+  uygulanmıyor" diyordu; gerçek sebep rAF kısıtlaması yüzünden sahne saatinin donmasıydı).
+- **`_simCatchUp` yalnız kare kaybında çalışır** — ön planda 120 sim saniyede 0 kez tetiklenir.
+  `mState._sim.cuCount` teşhis sayacıdır; ön planda 0 beklenir.
 - **`season-loop --n=1` çalıştırma:** tek sezonda sezon geçişi olmadığı için K4 (yaşlanma) düşer;
   yargı için `--n=3` gerekir.
 - **Fontlar yerel** (`assets/fonts/`) — yeni Google Fonts `<link>` eklenmemeli.

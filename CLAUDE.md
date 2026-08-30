@@ -45,6 +45,8 @@ Oyun ilerlemesi tarayıcıda **localStorage + IndexedDB** ile saklanır (otomati
 | `tools/faz8-check.js` | **FAZ 8 kabul kriterleri** — piyasa dengesi, şehir dağılımı, v7 migrasyonu, 200 sezonluk lig kutuplaşması, script sürümü, mobil varsayılan görünüm. |
 | `tools/m20-check.js` | **Rakip kadro kalıcılığı denetçisi** — kimlik · derinlik · sezon istatistiği · yorgunluk · isabet yolu · sakatlık. Bot kulüp/rakip mekaniği değişince çalıştır. |
 | `tools/faz10-check.js` | **FAZ 10 kabul kriterleri** — fikstür saati kapısı (`?test=1`), analitik olayları, og/twitter etiketleri, PWA (manifest + `sw.js` sürümü), öğretici dili, paylaşım akışı. Yayın altyapısı değişince çalıştır. |
+| `tools/spacing-check.js` | **Saha dizilimi ölçümü (FAZ 11)** — set hücumunda aralık, yayılım, boya kullanımı, markaj mesafesi, ball-you-man. Tohumlu. `--bg` sekmeyi arka plana alıp ölçer (F11-1 gerileme testi). **Dizilim/koreografi değişince çalıştır.** |
+| `tools/faz11-check.js` | **FAZ 11 kabul kriterleri** — dizilim geometrisi, kare kaybında yetişme, kesme noktası çakışması, `startMatch` sessiz kilitlenmesi. |
 | `tools/gen-brand-images.js` | og:image (1200×630) + PWA ikonlarını üretir (Playwright). Marka görselini değiştirince tekrar çalıştır. |
 | `sw.js`, `manifest.json` | **PWA** — önbellek (HTML: önce ağ · js/font/ikon: önce önbellek) + ana ekrana ekleme. `sw.js` içindeki `SCRIPT_V`, HTML'deki `?v=` ile **aynı olmalı**. |
 | `PLAN-COK-OYUNCULU.md` | **Çok oyunculu mimari planı** (Supabase şeması, fikstür zamanlayıcısı, sunucu tarafı simülasyon). Sunucu kodu yazılmadı. |
@@ -93,6 +95,8 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
 - **Fikstür saati kapısı (F10-2):** oyun çok oyunculu ve fikstür tarihlidir; maç, saati gelince oynanır. Kapı tek noktadadır (`matchTimeGateOk` / `matchTimeGateMsg`, `js/state.js`) ve fikstürde `scheduledAt` bulunmadığı sürece açıktır. `?test=1` (`TEST_MODU`) kapıyı bilinçli olarak atlar — Node harness'lerinde `location` olmadığı için test modu **açık** kabul edilir. Yeni bir maç başlatma yolu eklersen kapıdan geçir.
 - **Analitik (F10-4):** olaylar `trackEvent` / `trackOnce` / `trackMilestone` ile gönderilir; yeni olay eklerken `ANALYTICS_EVENTS` listesine de yaz. Varsayılan **kapalıdır** (`ANALYTICS_SRC=''`) ve betik yalnız `isProdHost()` doğruyken yüklenir — yerel ölçümler kirlenmez.
 - **PWA (F10-7):** service worker yalnız yayın sunucusunda kaydedilir (`registerServiceWorker`); yerelde önbellek eski JS'i servis edip testleri yanıltırdı. Script sürümünü artırırken `sw.js` içindeki `SCRIPT_V`'yi de artır (`faz10-check` A4 sınıyor).
+- **Sahne saati ile olay saati ayrıdır (F11-1):** jetonlar `requestAnimationFrame`, olaylar `setTimeout` üzerinden akar. rAF kısıtlanırsa (arka plan sekmesi, ağır cihaz) sahne anlatımın gerisine düşer; `_simCatchUp()` 0,35 sn'yi aşan boşlukta sahneyi güncel olaya eşitler. Koreografiye yeni adım eklerken bu yolun da adımı çalıştıracağını hesaba kat.
+- **Dizilim koordinatları** `SET_*` sabitlerindedir (`match-engine.js`); değiştirince `faz11-check` B1 (geometri) ve `spacing-check` ile ölç. Koreografi adımı eklerken (kesme, perde, şutör hamlesi) dizilimin ÇEVRESİNİ boşaltmamaya dikkat et — köşedeki oyuncuyu topa çağırmak aralığı çökertir.
 
 ## Bilinen eksikler
 
