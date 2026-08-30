@@ -3080,3 +3080,12 @@ imkânsız) ve `localizeCatalogs()`'a kaydedildi. EN modunda havuzlarda Türkçe
 ### Doğrulama
 `anlatim-check --n=30` 13/13 · `--freeze` 23/23 · `box-band --n=200` 11/11 ·
 `visual-check` 0 hata · `i18n-scan` temiz · `band.js` hash sabit.
+
+### FAZ 14 sonrası `live-metrics` notu (gerileme DEĞİL)
+`live-metrics --ms=420000` iki satırda hedef dışı veriyor: syncRatio **medyan** (hedef 2-5×)
+ve **tipler arası fark** (hedef <1,9×). FAZ 14 öncesi commit (`6ce00f8`) worktree'de aynı
+komutla koşuldu: **6,25× / 2,68×** — FAZ 14 sonrası **5,1× / 2,54×**, yani ikisi de bir miktar
+iyileşmiş. Kimlik eşleşmesi %97 → %99. Ölçüt gürültülü: aynı kodla iki koşu 3,77×/5,07× ve
+5,1×/2,54× verdi, aracın kendi uyarısı da geçerli (tip başına 4-11 örnek; `--ms` yetmiyor).
+**Sonuç:** bu açık FAZ 14'ten önce de vardı, tempo dengesi ayrı bir iş kalemidir; yargı için
+`--ms` en az iki katına çıkarılmalı, tek koşu yeterli değil.
