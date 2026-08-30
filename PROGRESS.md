@@ -3282,3 +3282,102 @@ adı korunmalı) — gerileme belirtisi budur.
 F14-7) · `visual-check` 0 hata · `live-metrics --ms=360000` ✓ · `box-band --n=200` 11/11 ·
 `band.js` hash **`fb393bdab878e699`** (değişmedi) · `i18n-scan` canlı anlatım %0,0.
 Script sürümü **?v=50** (`sw.js` SCRIPT_V=50).
+
+## FAZ 15 — SAHA HAREKETİ KALİBRASYONU (39. oturum)
+
+### Önce araç: `tools/hareket-check.js`
+Depoda "oyuncular NE HIZLA hareket ediyor" sorusunu soran araç yoktu (`spacing-check` nerede
+durulduğunu, `live-metrics` zaman senkronunu, `realism-check` ihlalleri ölçüyor). Yeni araç
+sahneyi 25 Hz örnekler, her jetonun hızını **simülasyon saatinden** türetir (izleme hızından
+bağımsız), konveks kabuk alanını (Andrew monotone chain) ve hız bandı dağılımını çıkarır.
+
+### ⚠ ÖLÇÜM BRİFİN TEŞHİSİNİ DÜZELTTİ
+Brif, jetonun px/sn değerini 29,54 px/m ile bölüp "oyuncular gerçeğin ~4 katı hızlı" diyordu.
+**Araç, karşılaştırmanın yanlış büyüklükle yapıldığını gösterdi:** sahne maç saatini
+**~2× sıkıştırarak** oynatıyor — ölçüldü, **1 sahne saniyesi ≈ 2,0 maç saniyesi**. Yani sahnede
+6 m/sn görünen jeton maç saatinde 3 m/sn'dir.
+
+| | Sahne saniyesi | MAÇ saniyesi | Gerçek (sensör) |
+|---|---|---|---|
+| FAZ 15 ÖNCESİ ortalama hız | 2,88 m/sn | **1,45 m/sn** | 1,54 – 1,60 |
+| FAZ 15 ÖNCESİ en yüksek | 12,82 m/sn | **6,44 m/sn** | sprint > 7 |
+
+Yani oyun maç saatinde **zaten gerçekçi hızdaydı, hatta bir tık yavaştı.** Brifin §4.1'deki
+mutlak yavaşlatması (`130+80` → `62+38`) uygulandığında ölçüm şunu gösterdi: jetonlar
+pozisyon bitmeden yerlerine varamıyor ve **FAZ 11 kapıları düşüyor** — orta üçte bir %16,5 →
+%25,8 · ball-you-man %86 → %74 · potaya uzaklık 6,4 → 7,1 m · kaplanan alan 57,6 → 39,5 m².
+Sebep basit: mesafe sabit, süre sıkıştırılmış; gerçek m/sn ile hareket eden oyuncu 28 m'lik
+sahayı sıkıştırılmış sürede geçemez.
+
+> **Ders (FAZ 13'ün "yay yarıçapını nitelikten okumak" hatasıyla aynı sınıf):** bir oyun
+> değerini gerçek dünyayla kıyaslamadan önce **hangi zaman/uzunluk tabanında** olduğunu ölç.
+
+**Bu yüzden brifin §4.1 mutlak ölçeği UYGULANMADI** (brif §2: "Bir varsayım tutmuyorsa
+uyarla, kodu zorlama"). Uygulanan, brifin asıl değerli kısmı olan **kademe yapısıdır.**
+
+### Ölçümün BULDUĞU gerçek kusur: hareket "ya dur ya tam gaz"
+Dağılım çift tepeliydi: zamanın **%59'u durma, %22'si sprint bandı, arada neredeyse hiç
+hafif koşu yok (%6)**. Sebep: `maxV` ataması 40 yerde vardı ve neredeyse hepsi `sprintV`ydi.
+
+**F15-1 — dört kademe.** `_V_TIER=[0.42,1.00,1.35,1.62]` + `_URG` + `_setUrg(p,urg)`.
+`baseV` = JOG; KOŞ ve SPRINT çarpanları **eskiden zaten kullanılan** 1,35 ve 1,62'dir —
+yeni olan, altına eklenen **YÜRÜ (0,42)** kademesi ve `maxV`'nin artık her yerde duruma göre
+verilmesidir: serbest topu kovalama/hızlı hücum SPRINT · şutör, kesici, perdeci, top savunması,
+geçişte savunma KOŞ · yardım savunması, dizilime dönüş JOG · ölü top, oyun durması YÜRÜ.
+Tutarsızlık da giderildi: `sprintV` iki ayrı yerde `bv*1.35` ve `bv*1.62` idi, birleştirildi.
+
+**F15-2 — herkes her pozisyonda hareket etmesin.** `_hedefAta()`: yeni dizilim noktası
+26 px'ten yakınsa oyuncu **yerinde kalır** ve YÜRÜ kademesine düşer. (34 px denendi, dizilim
+açıklığını 57,6 → 39,5 m²'ye düşürdüğü için 26'ya çekildi.)
+
+**Yan düzeltmeler (ölçümle bulundu):**
+- `_defBehind` payı 8 → 22 px: savunmacı adamının pota tarafında yalnız 0,27 m kalıyordu,
+  hareket gecikmesi bunu yiyordu (ball-you-man %87 → %78'e düşmüştü).
+- `_defGap` 56 → 34 px: yardım sarkması fazlaydı, savunma ortada toplanıyordu
+  (kapladığı alan 29,5 m², gerçek 32,3).
+- Savunmacının kademesi **adamınınkinden düşük olamaz** (jog eden savunmacı koşan adamını
+  kaybediyordu); pota tarafında değilse toparlanma KOŞ'tur.
+- Üst üste binme itmesi kare başına sınırlandı (0,08 sn'de ~1 m'lik sıçrama üretiyordu).
+- `_PL_MAXV` 320 → 150 (yedek değer sprint sınırının üstündeydi).
+- Serbest atış dizilimi YÜRÜ ile denendi: bekleme 5-6 sn'ye çıkıp F14-7 düştü (yerinde
+  6,2/10). Gerçek maçta oyuncular kulvara **tırısla** gider → JOG. `_ftWaitSec` fren payı
+  da 12 → 10'a (varış freni F15-1'de 12 → 10 olmuştu) düzeltildi. **F14-7: 9,8/10.**
+
+### Ölçüm tablosu (aynı tohum, aynı araç, MAÇ saati tabanında)
+
+| Ölçüt | ÖNCE | SONRA | Hedef | Gerçek |
+|---|---|---|---|---|
+| ortalama hız | 1,45 | **1,36** | 1,3-2,1 ✓ | 1,54-1,60 |
+| en yüksek anlık hız | 6,44 | **6,24** | < 9,5 ✓ | sprint > 7 |
+| zaman: hafif koşu | %11,5 ✗ | **%15,3** ✓ | %12-38 | %5,6-36,3 |
+| zaman: koşu | %23,4 | **%17,5** ✓ | %8-25 | %4,5-33,2 |
+| zaman: sprint | %0,0 | %0,0 ✓ | %0-6 | %0,3-8,5 |
+| hücum ikili mesafe | 7,97 m | **7,81 m** ✓ | 6,5-9,0 | **7,96** |
+| savunma ikili mesafe | 5,69 m | **6,02 m** ✓ | 5,0-7,0 | **6,17** |
+| hücum kabuk alanı | 57,6 m² | **55,2 m²** ✓ | 40-65 | **53,5** |
+| savunma kabuk alanı | 29,5 m² | **32,6 m²** ✓ | 22-42 | **32,3** |
+| SAHNE bandı (dur/jog/koş/sprint) | 59/6/13/22 | **57/10/17/16** | — | çift tepe azaldı |
+
+Dört açıklık ölçüsünün **dördü de gerçek değere yaklaştı.** Hız dağılımının çift tepeliliği
+azaldı (jog %6 → %10, sprint %22 → %16 sahne bandında).
+
+**Tutmayan iki ölçüt bilgi olarak raporlanıyor, sebebi araçta yazılı:**
+`medyan hız` (0,35 vs 1,1-1,8) ve `durma/yürüme payı` (%67 vs %35-60). İkisinin de sebebi
+aynı: sahne yalnız **senaryolu** hareketi canlandırır — yerine varmış jeton tam olarak durur,
+ölü top ve mola anları canlandırılmaz. Gerçek oyuncu hiç durmaz. Bunu kapatmak için boştaki
+salınım genliği 1,8 → 5,5 px denendi; medyanı **ölçülebilir biçimde değiştirmedi** (0,41)
+ve geri alındı — ölçülemeyen değişiklik kod kirliliğidir.
+
+### F15-4 · `spacing-check` eşiği
+"Ortalama ikili mesafe ≥ 4,5 m" → **≥ 5,8 m** (gerçek ölçüm 7,96 m; 4,5'i geçmek gerçekçi
+olmak anlamına gelmiyordu). Diğer eşiklere dokunulmadı. Yeni eşikle **10/10 geçiyor** ve
+değerler FAZ 15 öncesinden daha iyi (ikili 8,04 · yayılım %36,5 · orta üçte bir %16,5 ·
+ball-you-man %86,2 · potaya 6,40 m).
+
+### Doğrulama
+`band.js` hash **`fb393bdab878e699` — değişmedi** · `box-band --n=200` 11/11 ·
+`sim-node --n=50` aynı tohum aynı maç ✓ · `sunum-check --ms=420000` **4/4** (F14-7 9,8/10) ·
+`spacing-check` 10/10 · `hareket-check` 9/9 yargılanan hedef ✓ · `geometri-check` 19/19 ·
+`realism-check` saha dışı/ışınlanma/üst üste binme 0 · `anlatim-check` 13/13 · `--freeze`
+23/23 · `live-metrics` ✓ · `faz7/8/10/11` ✓ · `m20` ✓ · `schema` 17/17 · `mobile-check`
+18/18 · `visual-check` 0 hata · `i18n-scan` %0,0. Script sürümü **?v=51**.

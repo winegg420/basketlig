@@ -65,6 +65,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/faz8-check.js` | **FAZ 8 kabul kriterleri** — piyasa dengesi, şehir dağılımı, v7 migrasyonu, 200 sezonluk lig kutuplaşması, script sürümü, mobil varsayılan görünüm. |
 | `tools/m20-check.js` | **Rakip kadro kalıcılığı denetçisi** — kimlik · derinlik · sezon istatistiği · yorgunluk · isabet yolu · sakatlık. Bot kulüp/rakip mekaniği değişince çalıştır. |
 | `tools/faz10-check.js` | **FAZ 10 kabul kriterleri** — fikstür saati kapısı (`?test=1`), analitik olayları, og/twitter etiketleri, PWA (manifest + `sw.js` sürümü), öğretici dili, paylaşım akışı. Yayın altyapısı değişince çalıştır. |
+| `tools/hareket-check.js` | **Saha hareketi (FAZ 15)** — jeton hızı (bant dağılımı), konveks kabuk alanı, ikili mesafe. Hız **maç saatinde** yargılanır; sahne maç saatini ~2× sıkıştırdığı için sahne px/sn'si gerçek m/sn ile doğrudan kıyaslanamaz. Hız/dizilim değişince çalıştır. |
 | `tools/geometri-check.js` | **Saha çizgisi geometrisi (FAZ 14)** — 3 sayı yayı, köşe düzlükleri, boya, çember/pano ölçüleri, kesişme ve "sahada karşılığı olmayan çizim". **Nitelik okumaz**, `getPointAtLength`/`getBBox` ile ÇİZİLEN eğriyi ölçer. Saha SVG'si değişince çalıştır. |
 | `tools/spacing-check.js` | **Saha dizilimi ölçümü (FAZ 11)** — set hücumunda aralık, yayılım, boya kullanımı, markaj mesafesi, ball-you-man. Tohumlu. `--bg` sekmeyi arka plana alıp ölçer (F11-1 gerileme testi). **Dizilim/koreografi değişince çalıştır.** |
 | `tools/faz11-check.js` | **FAZ 11 kabul kriterleri** — dizilim geometrisi, kare kaybında yetişme, kesme noktası çakışması, `startMatch` sessiz kilitlenmesi. |
@@ -136,6 +137,16 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
 - **Maç donarsa sessiz kalmamalı (F13-14):** `canResumeMatch()` / `resumeMatch()` /
   `startMatchWatchdog()` üçlüsü; buton etiketi tek kaynaktan (`syncMatchButtons`).
 - **Sahne saati ile olay saati ayrıdır (F11-1):** jetonlar `requestAnimationFrame`, olaylar `setTimeout` üzerinden akar. rAF kısıtlanırsa (arka plan sekmesi, ağır cihaz) sahne anlatımın gerisine düşer; `_simCatchUp()` 0,35 sn'yi aşan boşlukta sahneyi güncel olaya eşitler. Koreografiye yeni adım eklerken bu yolun da adımı çalıştıracağını hesaba kat.
+- **Jeton hızı `maxV` doğrudan atanmaz (F15-1):** `_setUrg(p,_URG.YURU|JOG|KOS|SPRINT)` ile
+  verilir; `maxV` kademeden (`_V_TIER`) türetilir. Dizilim noktası atarken `_hedefAta()`
+  kullan — nokta 26 px'ten yakınsa oyuncu yerinde kalır (her pozisyonda yer değiştirmesin).
+  Savunmacının kademesi adamınınkinden düşük olamaz.
+- **SAHNE SAATİ ≠ MAÇ SAATİ (F15 dersi):** canlı sahne maç saatini **~2× sıkıştırarak**
+  oynatır (`hareket-check` ölçüyor: 1 sahne sn ≈ 2,0 maç sn). Bir jetonun px/sn değerini
+  29,54'e bölüp gerçek basketbolun m/sn'siyle kıyaslamak **yanlış büyüklüğü** karşılaştırır —
+  FAZ 15 brifi bu yüzden "oyuncular 4 kat hızlı" diyordu, oysa maç saatinde 1,45 m/sn ile
+  gerçeğin (1,54-1,60) bir tık altındaydı. Hızları mutlak olarak düşürmek jetonların
+  pozisyon içinde yerlerine varamamasına ve FAZ 11 kapılarının düşmesine yol açar.
 - **Canlı sahne katmanında `Math.random`/`rand()` YOK (B-5 dersi):** sahne kararları
   (kenardan sokma noktası, serbest topun saçılma açısı, dizilim seçimi, ribaund çekişmesi)
   maçın rastgele akışını tüketiyordu; animasyon karesi sayısı gerçek zamana bağlı olduğu için

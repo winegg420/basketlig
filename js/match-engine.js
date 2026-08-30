@@ -108,9 +108,47 @@ const CRT_X0=56.4, CRT_X1=883.6, CRT_Y0=28.43, CRT_Y1=471.57;
 const CRT_IN=14;     /* jeton merkezi çizgiden bu kadar içeride tutulur */
 const CRT_OUT=26;    /* topu sokan oyuncunun çizgi dışına adımı */
 
-const _PL_MAXV=320;          /* px/sn — hız stat'ı yoksa yedek koşu hızı */
+/* F15-1: 320 px/sn = 10,8 m/sn idi — bu, oyunun ölçeğinde (29,54 px = 1 m) bir insanın
+   sprint sınırının üstü. Yedek değer artık gerçek "koşu" hızıdır: 150 px/sn = 5,1 m/sn. */
+const _PL_MAXV=150;          /* px/sn — hız stat'ı yoksa yedek koşu hızı */
 const _PL_ACC=13;            /* hedefe yaklaşma sertliği */
 const _PL_R=40;              /* çarpışma yarıçapı — jetonlar bu mesafeden yakın durmaz */
+
+/* ── F15-1: HAREKET KADEMELERİ ────────────────────────────────────────────────────────
+   Ölçüm (tools/hareket-check.js, kalibrasyon öncesi): ortalama hız 2,86 m/sn, zamanın
+   %21,9'u SPRINT (>7 m/sn), en yüksek anlık hız 13,68 m/sn — yani 49 km/sa. Gerçek
+   basketbolda (sensör ölçümü) oyuncu ortalaması 1,54-1,60 m/sn ve sprint payı %0,3-8,5'tir.
+   Sorun animasyon kalitesi değil HIZ ÖLÇEĞİYDİ: tek bir `maxV` vardı ve neredeyse her
+   atama `sprintV`ye eşitliyordu; jeton ya duruyor ya tam gaz koşuyordu (ölçüm de tam
+   olarak bunu gösterdi: %59 durma + %22 sprint, arada neredeyse hiç "jog" yok).
+   Artık dört kademe var ve `maxV` DAİMA kademeden türetilir (`_setUrg`).
+   baseV = JOG'dur; kademeler onun katıdır. Ortalama oyuncu (hız=60, baseV=85 px/sn):
+     yürü 36 px/sn = 1,21 m/sn · jog 85 = 2,88 · koş 157 = 5,32 · sprint 234 = 7,91 */
+const _V_TIER=[0.42,1.00,1.35,1.62];
+const _URG={YURU:0,JOG:1,KOS:2,SPRINT:3};
+/** F15-1: jetona acele kademesi ata; maxV kademeden türetilir. */
+function _setUrg(p,urg){
+  if(!p) return;
+  const u=Math.max(0,Math.min(3,urg|0));
+  p.urg=u;
+  p.maxV=(p.baseV||_PL_MAXV/2)*_V_TIER[u];
+}
+/* F15-2: yeni dizilim noktası mevcut konuma yakınsa oyuncu YERİNDE KALIR. Gerçek
+   basketbolda set hücumunda çevredeki oyuncular her pozisyonda yer değiştirmez; oyunun
+   eski hâlinde `_setFormation` her çağrıldığında 10 jetona yeni hedef veriyordu.
+   Şutör/kesici/perdeci ve geçiş hücumu KOS/SPRINT ile çağrıldığı için kapı onlara açılmaz. */
+/* Eşik 34 px (1,15 m) denendi: oyuncular noktalarına oturmayıp çevresinde kalıyor ve
+   hücumun kapladığı alan 57,5 → 39,5 m²'ye düşüyordu. 26 px (0,88 m) hem "her pozisyonda
+   yer değiştirme" davranışını bitiriyor hem dizilimi bozmuyor. */
+const _YERINDE_ESIK=26;      /* px ≈ 0,88 m */
+function _hedefAta(p,tx,ty,urg){
+  if(!p||p._oob) return;
+  const d=Math.hypot(p.x-tx,p.y-ty);
+  if(d<_YERINDE_ESIK&&urg<=_URG.JOG){
+    p.tx=p.x; p.ty=p.y; _setUrg(p,_URG.YURU); return;
+  }
+  p.tx=_inX(tx); p.ty=_inY(ty); _setUrg(p,urg);
+}
 
 /* Oyuncunun gerçek koşu hızı — GERÇEK ÖLÇEK: saha 940px = 28m (1px ≈ 0.03m).
    `hiz` stat'ı (0-99) → 130-210 px/sn ≈ 3.9-6.3 m/sn; sprint ×1.62. Düşük enerji
@@ -119,6 +157,14 @@ function _tokBaseV(pl){
   const hiz=(pl&&pl.hiz!=null)?Number(pl.hiz):60;
   const en=(pl&&pl.enerji!=null)?Number(pl.enerji):100;
   const fat=1-0.13*Math.max(0,Math.min(1,(100-en)/100));
+  /* F15-1: baseV artık KOŞU değil HAFİF KOŞU (jog) hızıdır — koşu ve sprint `_V_TIER`
+     çarpanlarıyla türetilir. Eski taban 130 px/sn = 4,40 m/sn idi; bu, gerçek basketbolun
+     "koşu" bölgesinin üst yarısıdır ve oyunun EN YAVAŞ jetonuydu.
+     ⚠ HIZLAR SAHNE SANİYESİNDEDİR. Sahne maç saatini ~2× sıkıştırır (ölçüldü: 1 sahne sn
+       = 1,98 maç sn), yani gerçek basketbolla kıyaslanacak değer bunun YARISIDIR:
+       hız=0 → 130 px/sn = 4,40 m/sn sahne = 2,22 m/sn maç
+       hız=60 → 178 px/sn = 6,04 sahne = 3,05 maç · hız=99 → 210 = 7,11 sahne = 3,59 maç
+     Kademeler bunun katıdır; JOG bandının üstünde durmasının sebebi zaman sıkıştırmasıdır. */
   return (130+Math.max(0,Math.min(99,hiz))/99*80)*fat;
 }
 function _tokShort(name){ const a=String(name||'').trim().split(/\s+/); return a[a.length-1]||String(name||''); }
@@ -217,7 +263,7 @@ function initMatchPlayers(lu,rakip,oppPlayers){
     const rk=(rakip&&rakip.isim)?_tokShort(rakip.isim):'Rakip';
     const mkP=(g,x,y,team,slot,pl)=>{
       const bv=_tokBaseV(pl);
-      return {g,x,y,vx:0,vy:0,tx:x,ty:y,team,slot,pl:pl||null,baseV:bv,sprintV:bv*1.35,maxV:bv,
+      return {g,x,y,vx:0,vy:0,tx:x,ty:y,team,slot,pl:pl||null,baseV:bv,sprintV:bv*_V_TIER[3],maxV:bv,urg:_URG.JOG,
               ph:_sr()*6.283,side:_sr()<0.5?-1:1,role:null,pop:0,sc:1,_oob:false,_lock:0};
     };
     /* Hava atışı dizilimi: her takım KENDİ savunacağı yarı sahada; pivotlar dairede.
@@ -275,7 +321,7 @@ function swapCourtToken(outId,inPlayer){
     if(!tok) return;
     tok.pl=inPlayer;
     const bv=_tokBaseV(inPlayer);
-    tok.baseV=bv; tok.sprintV=bv*1.62; tok.maxV=bv;
+    tok.baseV=bv; tok.sprintV=bv*_V_TIER[3]; _setUrg(tok,_URG.JOG);
     const nm=tok.g&&tok.g.querySelector('text:last-child');
     if(nm) nm.textContent=_tokShort(inPlayer.isim);
     /* rol havuzunu yeni pozisyona göre tazele (pivot yerine guard girdiyse dizilim düzelsin) */
@@ -326,6 +372,7 @@ function _simCatchUp(){
     S.script=[]; S.sIdx=0;
   }
   _flushPending(S);
+  S._snapN=(S._snapN||0)+1;   /* F15-3: yetişme ışınlaması damgası (hareket-check okur) */
   const P=S.players||[];
   for(const p of P){
     if(!p) continue;
@@ -389,7 +436,7 @@ function _simTick(dt){
       }
     }
     else {
-      t.tx=b.x; t.ty=b.y; t.maxV=t.sprintV; t._lock=S.time+0.1;
+      t.tx=b.x; t.ty=b.y; _setUrg(t,_URG.SPRINT); t._lock=S.time+0.1;
       const d=Math.hypot(t.x-b.x,t.y-b.y);
       if(d<(c.r||26)&&b.h<30){
         _ballHold(t); t.pop=1; S.chase=null;
@@ -427,7 +474,15 @@ function _simTick(dt){
           /* F11-4: topsuz savunmacı yalnız baseV ile takip ediyordu; hücum sprintle yer
              değiştirince (kesme, geç şutör koşusu) adamından 5-7 m geride kalıyordu.
              Hücumun sprint hızının (baseV*1,62) altında ama takip edebilecek kadar hızlı. */
-          p.maxV=onBall?p.baseV*1.35:p.baseV*1.45;
+          /* F15-1: kalan mesafe kısa ise savunmacı KOŞMAZ, adımlayarak yerini ayarlar —
+             topsuz savunmacının maç boyunca jog etmesi ortalama hızı gerçek dışı yapıyordu. */
+          const _kd=Math.hypot(p.x-p.tx,p.y-p.ty);
+          const _mu=(m.urg!=null?m.urg:_URG.JOG);
+          /* F15-1: savunmacı adamının POTA TARAFINDA değilse (ball-you-man bozuk) toparlanma
+             KOŞUDUR — jog ile kurtarmaya çalışınca oran %87'den %74'e düşüyordu (ölçüm). */
+          const _rimSide=Math.hypot(p.x-rim[0],p.y-rim[1])<=Math.hypot(m.x-rim[0],m.y-rim[1]);
+          const _taban=onBall?_URG.KOS:(!_rimSide?_URG.KOS:(_kd>_YERINDE_ESIK?_URG.JOG:_URG.YURU));
+          _setUrg(p,Math.max(_taban,_mu));
         }
       }
     }
@@ -451,7 +506,10 @@ function _simTick(dt){
     const d=Math.hypot(dx,dy);
     if(d>0.01){
       /* VARIŞ FRENİ — hedefe <24px kalınca hız eşik altına çekilir; jeton noktasında DURUR. */
-      const want=d<24?Math.min(p.maxV||_PL_MAXV,12):Math.min(p.maxV||_PL_MAXV,d*3.4);
+      /* F15-1: hedef hız artık jetonun ACELE KADEMESİNDEN gelir. `d*3.4` 52 px'ten uzak
+         her hedefte tam gaz demekti; katsayı düşürüldü ki yakın hedefe yürüyerek gidilsin. */
+      const _tv=(p.maxV!=null?p.maxV:_PL_MAXV);
+      const want=d<24?Math.min(_tv,10):Math.min(_tv,d*2.1);
       p.vx+=((dx/d)*want-p.vx)*_PL_ACC*dt;
       p.vy+=((dy/d)*want-p.vy)*_PL_ACC*dt;
     } else { p.vx*=0.85; p.vy*=0.85; }
@@ -468,13 +526,13 @@ function _simTick(dt){
       let dx=b.x-a.x, dy=b.y-a.y;
       let d=Math.hypot(dx,dy);
       if(d<_PL_R&&d>0.001){
-        const push=Math.min((_PL_R-d)/2,2.6)*(dt*60);
+        const push=Math.min((_PL_R-d)/2,2.6)*Math.min(1.5,dt*60);
         dx/=d; dy/=d;
         /* Çizgi dışındaki sokucu itilmez ama İÇİNDEN de geçilmez — yalnız karşı taraf kayar. */
-        if(a._oob){ b.x+=dx*push*2; b.y+=dy*push*2; }
-        else if(b._oob){ a.x-=dx*push*2; a.y-=dy*push*2; }
-        else if(a===shooterTok){ b.x+=dx*push*2; b.y+=dy*push*2; }
-        else if(b===shooterTok){ a.x-=dx*push*2; a.y-=dy*push*2; }
+        if(a._oob){ b.x+=dx*push*1.7; b.y+=dy*push*1.7; }
+        else if(b._oob){ a.x-=dx*push*1.7; a.y-=dy*push*1.7; }
+        else if(a===shooterTok){ b.x+=dx*push*1.7; b.y+=dy*push*1.7; }
+        else if(b===shooterTok){ a.x-=dx*push*1.7; a.y-=dy*push*1.7; }
         else { a.x-=dx*push; a.y-=dy*push; b.x+=dx*push; b.y+=dy*push; }
       }
     }
@@ -681,7 +739,7 @@ function _script(steps){
 /** Topsuz savunmacının adamından sarkma mesafesi (yardım pozisyonu): topa uzak adamın
     savunmacısı boyaya doğru sarkar, ama TÜM savunma tek noktada yığılmasın diye üst
     sınır dar tutulur (~1.7m). Adamı topa yakınsa yakın markaja (deny) geçer. */
-function _defGap(distManBall){ return Math.min(56,26+distManBall*0.14); }
+function _defGap(distManBall){ return Math.min(34,17+distManBall*0.09); }
 /** F11-5 (ball-you-man): savunmacının hedefi HER ZAMAN adamının pota tarafında kalsın.
     Yardım pozisyonu top ile pota arasına bakar; adamı potaya çok yakınken (post) kural
     uygulanmaz — orada iki jetonu ayıran zaten üst üste binme çözücüsüdür. */
@@ -689,8 +747,11 @@ function _defBehind(tx,ty,m,rim){
   const dm=Math.hypot(m.x-rim[0],m.y-rim[1]);
   if(dm<64) return [tx,ty];
   const dd=Math.hypot(tx-rim[0],ty-rim[1]);
-  if(dd<=dm-8) return [tx,ty];
-  const k=(dm-8)/(dd||1);
+  /* F15-1: pay 8 px idi — savunmacı adamının pota tarafında ANCAK 0,27 m kalıyordu ve
+     hareket gecikmesi bu farkı kolayca yiyordu ("ball-you-man" ölçüsü %87 → %78).
+     Pay 22 px (0,74 m): savunmacı belirgin biçimde pota tarafında durur. */
+  if(dd<=dm-22) return [tx,ty];
+  const k=(dm-22)/(dd||1);
   return [rim[0]+(tx-rim[0])*k, rim[1]+(ty-rim[1])*k];
 }
 /** Bir jetonun hedefini kısa süre "kilitle" — savunma takibi/dizilim üzerine yazmasın. */
@@ -801,11 +862,11 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
     offR.forEach((p,i)=>{
       if(!p||p._oob) return;
       const c=_pt(TRANS_OFF[i],offLeft,false);
-      p.tx=_inX(_jit(c[0],10)); p.ty=_inY(_jit(c[1],8)); p.maxV=p.sprintV;
+      p.tx=_inX(_jit(c[0],10)); p.ty=_inY(_jit(c[1],8)); _setUrg(p,_URG.SPRINT);
       /* kanatlar (rol 1-2) önce kendi hizasında KENARA açılır, sonra kulvarda öne koşar */
       p._wp=(i===1||i===2)?[_inX(p.x+(offLeft?-58:58)),_inY(c[1])]:null;
     });
-    defR.forEach((p,i)=>{ if(!p||p._oob) return; const c=_pt(TRANS_DEF[i],offLeft,false); p.tx=_inX(_jit(c[0],8)); p.ty=_inY(_jit(c[1],8)); p.maxV=p.sprintV*0.96; p._wp=null; });
+    defR.forEach((p,i)=>{ if(!p||p._oob) return; const c=_pt(TRANS_DEF[i],offLeft,false); p.tx=_inX(_jit(c[0],8)); p.ty=_inY(_jit(c[1],8)); _setUrg(p,_URG.KOS); p._wp=null; });
     S.shooter=null;
     return null;
   }
@@ -831,7 +892,7 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
       if(!p||p._oob||p===opts.ballTok) return;
       if((p._lock||0)>S.time) return;        /* perde/kesme kilidi varsa bozma */
       p._wp=null;
-      p.tx=_inX(_jit(B[i][0],6)); p.ty=_inY(_jit(B[i][1],6)); p.maxV=p.sprintV;
+      _hedefAta(p,_jit(B[i][0],6),_jit(B[i][1],6),_URG.KOS);
     });
     /* F11-4/F11-5: savunma da geçişte EŞLEŞİR — adamının gideceği noktanın pota tarafına
        yerleşir. Eskiden savunma TRANS_DEF şablonuna oturuyordu; hücum yerine yerleştiğinde
@@ -843,7 +904,7 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
       const m=B[i]||B[0];
       const dx=rim[0]-m[0], dy=rim[1]-m[1], d=Math.hypot(dx,dy)||1;
       p._wp=null;
-      p.tx=_inX(m[0]+dx/d*46); p.ty=_inY(m[1]+dy/d*46); p.maxV=p.sprintV*0.96;
+      _hedefAta(p,m[0]+dx/d*46,m[1]+dy/d*46,_URG.KOS);
     });
     return null;
   }
@@ -879,14 +940,14 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
     if(!p||p._oob) return;                    /* topu sokan çizgi dışında kalır */
     p._wp=null;                               /* set kurulunca geçiş ara noktası biter */
     const c=B[i];
-    if(p===shooter){ p.tx=c[0]; p.ty=c[1]; p.maxV=p.sprintV; return; }
+    if(p===shooter){ p.tx=c[0]; p.ty=c[1]; _setUrg(p,_URG.KOS); return; }
     /* Noktasına ZATEN yakınsa yeni hedef atanmaz (yerinde durur, mikro-salınım yapar).
        F11-2: eşik 40 px idi — iki oyuncu birbirine doğru 40'ar px sapabildiği için ölçülen
        en yakın ikili mesafe dizilimin kâğıt üzerindeki değerinden ~2,4 m düşüyordu. Eşik ve
        serpme (jitter) daraltıldı: oyuncular gerçekten noktalarına oturur, aralık korunur. */
     const near=Math.hypot(p.x-c[0],p.y-c[1])<24;
-    if(near&&opts.keepNear!==false){ p.tx=p.x; p.ty=p.y; p.maxV=p.baseV*0.55; }
-    else { p.tx=_inX(_jit(c[0],6)); p.ty=_inY(_jit(c[1],6)); p.maxV=p.sprintV; }
+    if(near&&opts.keepNear!==false){ p.tx=p.x; p.ty=p.y; _setUrg(p,_URG.YURU); }
+    else _hedefAta(p,_jit(c[0],6),_jit(c[1],6),_URG.JOG);
   });
 
   /* ── Savunma ── kullanıcı savunuyorsa seçtiği stil, bot savunuyorsa maç kimliği. */
@@ -908,11 +969,10 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
       if(i===closeIdx&&shooter){
         p._mark=shooter; p._gap=26;
         p.tx=_inX(_jit(shooter.tx,5)); p.ty=_inY(_jit(shooter.ty,5));
-        p.maxV=p.sprintV*0.92;
+        _setUrg(p,_URG.KOS);
       } else {
         p._zone=z;
-        p.tx=_inX(_jit(z[0],6)); p.ty=_inY(_jit(z[1],6));
-        p.maxV=p.baseV;
+        _hedefAta(p,_jit(z[0],6),_jit(z[1],6),_URG.JOG);
       }
     });
     S.shooter=shooter;
@@ -939,7 +999,7 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
     const dx=hx-m.tx, dy=hy-m.ty, d=Math.hypot(dx,dy)||1;
     { const bh=_defBehind(m.tx+dx/d*gap,m.ty+dy/d*gap,{x:m.tx,y:m.ty},rim);
       p.tx=_inX(_jit(bh[0],press?4:6)); p.ty=_inY(_jit(bh[1],press?4:6)); }
-    p.maxV=isBall?p.sprintV*0.92:(press?p.sprintV*0.9:p.baseV*1.4);
+    _setUrg(p,Math.max(isBall?_URG.KOS:(press?_URG.KOS:_URG.JOG),(m.urg!=null?m.urg:_URG.JOG)));
   });
   S.shooter=shooter;
   return shooter;
@@ -949,11 +1009,11 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
     dipten yukarı SAVUNMA→HÜCUM→SAVUNMA. Blok noktalarını uzunlar (C/PF) alır. */
 function _setFtFormation(offLeft,offPlayers,defPlayers,shooter){
   const line=_pt([FT_LINE_X,250],offLeft,false);
-  shooter.tx=line[0]; shooter.ty=line[1]; shooter.maxV=shooter.sprintV;
+  shooter.tx=line[0]; shooter.ty=line[1]; _setUrg(shooter,_URG.JOG);
   const bigFirst=(arr)=>_rolesOrder(arr).slice().reverse();   /* C, PF, SF, SG, PG */
   const others=bigFirst(offPlayers.filter(p=>p!==shooter));
-  others.forEach((p,i)=>{ const c=_pt(FT_OFF_S[i%FT_OFF_S.length],offLeft,false); p.tx=_inX(_jit(c[0],2)); p.ty=_inY(_jit(c[1],2)); p.maxV=p.baseV; });
-  bigFirst(defPlayers).forEach((p,i)=>{ const c=_pt(FT_DEF_S[i%FT_DEF_S.length],offLeft,false); p.tx=_inX(_jit(c[0],2)); p.ty=_inY(_jit(c[1],2)); p.maxV=p.baseV; });
+  others.forEach((p,i)=>{ const c=_pt(FT_OFF_S[i%FT_OFF_S.length],offLeft,false); p.tx=_inX(_jit(c[0],2)); p.ty=_inY(_jit(c[1],2)); _setUrg(p,_URG.JOG); });
+  bigFirst(defPlayers).forEach((p,i)=>{ const c=_pt(FT_DEF_S[i%FT_DEF_S.length],offLeft,false); p.tx=_inX(_jit(c[0],2)); p.ty=_inY(_jit(c[1],2)); _setUrg(p,_URG.JOG); });
 }
 
 /** F14-7: SERBEST ATIŞ BEKLEMESİ — düdükten atışa kadar geçmesi gereken süre (sn).
@@ -968,11 +1028,11 @@ function _ftWaitSec(players){
     const eta=p=>{
       if(!p) return 0;
       const d=Math.hypot(p.x-(p.tx!=null?p.tx:p.x),p.y-(p.ty!=null?p.ty:p.y));
-      const v=Math.max(120,p.maxV||p.sprintV||_PL_MAXV);
-      return Math.max(0,d-24)/v + Math.min(d,24)/12 + 0.25;
+      const v=Math.max(30,p.maxV||p.baseV||_PL_MAXV);
+      return Math.max(0,d-24)/v + Math.min(d,24)/10 + 0.35;
     };
     const enGec=(players||[]).reduce((m,p)=>Math.max(m,eta(p)),0);
-    return Math.max(1.6,Math.min(4.5,enGec+0.45));
+    return Math.max(1.6,Math.min(6.0,enGec+0.45));
   }catch(e){ return 2.0; }
 }
 
@@ -1039,7 +1099,7 @@ function _setupInbound(offIsUser,y){
   const offLeft=S.offSide;
   const spot=_inboundSpot('base',offLeft,null,y);
   const inb=_inboundSetup(spot,S.offP,[]);
-  _chase(inb,()=>{ S.ball.noDrib=true; inb.tx=spot.x; inb.ty=spot.y; inb.maxV=inb.baseV*1.3; },2.2);
+  _chase(inb,()=>{ S.ball.noDrib=true; inb.tx=spot.x; inb.ty=spot.y; _setUrg(inb,_URG.KOS); },2.2);
   S.inb={side:'base',x:spot.x,y:spot.y,tok:inb};
   return inb;
 }
@@ -1053,8 +1113,9 @@ function _inboundSetup(spot,offP,exclude){
   if(!inb){ inb=offP[offP.length-1]; bd=Math.hypot(inb.x-spot.x,inb.y-spot.y); }
   inb._retTx=inb.tx; inb._retTy=inb.ty;               /* formasyon hedefini sakla */
   inb._oob=true;                                       /* ÇİZGİ DIŞINA ÇIKMA İZNİ (yalnız o) */
-  inb.maxV=inb.sprintV; inb.tx=spot.x; inb.ty=spot.y;
-  inb._inbEta=Math.min(1.6,bd/Math.max(120,inb.sprintV||_PL_MAXV)+0.28);
+  _setUrg(inb,_URG.KOS); inb.tx=spot.x; inb.ty=spot.y;
+  /* F15-1: ETA jetonun GERÇEK hızından; eski taban (120 px/sn) yeni ölçekte fazla iyimser. */
+  inb._inbEta=Math.min(2.4,bd/Math.max(40,inb.maxV||inb.baseV||_PL_MAXV)+0.28);
   return inb;
 }
 /** Kalıntı çizgi-dışı izinlerini temizle (sokma yarıda kaldıysa oyuncu kalıcı OOB kalmasın).
@@ -1089,7 +1150,7 @@ function _inboundPass(inb,to,dur){
     inb._oob=false;
     if(inb._retTx!=null){ inb.tx=_inX(inb._retTx); inb.ty=_inY(inb._retTy); }
     inb._retTx=inb._retTy=null;
-    inb.maxV=inb.baseV*1.3;
+    _setUrg(inb,_URG.KOS);
   }
 }
 
@@ -1133,16 +1194,16 @@ function movePlayersForEvent(ev,paint){
       if(P){ P(); _markPainted(); }
       const hc=S.home.find(p=>p.role===4)||S.home[S.home.length-1];
       const ac=S.away.find(p=>p.role===4)||S.away[S.away.length-1];
-      hc.tx=451; hc.ty=250; hc.maxV=hc.baseV;
-      ac.tx=489; ac.ty=250; ac.maxV=ac.baseV;
+      hc.tx=451; hc.ty=250; _setUrg(hc,_URG.YURU);
+      ac.tx=489; ac.ty=250; _setUrg(ac,_URG.YURU);
       /* sıçramayan 8 oyuncu kendi yarı sahasında, orta bandın (x380-560) dışında */
       const userLeft=(mState.userIsHome!==false);   /* kullanıcı sola hücum ediyor → savunması sağda */
       const nearSpots=[[360,176],[360,324],[300,250],[212,250]];
       const farSpots=nearSpots.map(_mir);
       const hSpots=userLeft?farSpots:nearSpots;
       const aSpots=userLeft?nearSpots:farSpots;
-      S.home.filter(p=>p!==hc).forEach((p,i)=>{ const s=hSpots[i%4]; p.tx=_jit(s[0],6); p.ty=_jit(s[1],6); p.maxV=p.baseV; });
-      S.away.filter(p=>p!==ac).forEach((p,i)=>{ const s=aSpots[i%4]; p.tx=_jit(s[0],6); p.ty=_jit(s[1],6); p.maxV=p.baseV; });
+      S.home.filter(p=>p!==hc).forEach((p,i)=>{ const s=hSpots[i%4]; p.tx=_jit(s[0],6); p.ty=_jit(s[1],6); _setUrg(p,_URG.YURU); });
+      S.away.filter(p=>p!==ac).forEach((p,i)=>{ const s=aSpots[i%4]; p.tx=_jit(s[0],6); p.ty=_jit(s[1],6); _setUrg(p,_URG.YURU); });
       const b=S.ball; b.mode='idle'; b.carrier=null; b.x=COURT_MID; b.y=250; b.h=0; b.vx=0; b.vy=0; b.vh=0;
       const winOff=_peekNextOff();
       const winP=winOff?S.home:S.away;
@@ -1163,8 +1224,8 @@ function movePlayersForEvent(ev,paint){
       const nearSpots=[[428,250],[400,150],[400,350],[352,196],[352,308]];
       const farSpots=nearSpots.map(_mir);
       const hs=userLeft?farSpots:nearSpots, as=userLeft?nearSpots:farSpots;
-      S.home.forEach((p,i)=>{ p.tx=hs[i][0]; p.ty=hs[i][1]; p.maxV=p.baseV; p._oob=false; });
-      S.away.forEach((p,i)=>{ p.tx=as[i][0]; p.ty=as[i][1]; p.maxV=p.baseV; p._oob=false; });
+      S.home.forEach((p,i)=>{ p.tx=hs[i][0]; p.ty=hs[i][1]; _setUrg(p,_URG.JOG); p._oob=false; });
+      S.away.forEach((p,i)=>{ p.tx=as[i][0]; p.ty=as[i][1]; _setUrg(p,_URG.JOG); p._oob=false; });
       clearBallTimers();
       S.defTrack=false;
       /* M5/M6 (kenar durum): top çeyrek sonunda orta sahaya IŞINLANIYORDU (ölçüm: 245 px
@@ -1329,7 +1390,7 @@ function movePlayersForEvent(ev,paint){
       const spot=_inboundSpot('side',offLeft,bl.x,bl.y);
       const recv=_rolesOrder(offP)[0];
       _setFormation(offLeft,offP,defP,null,{phase:'set'});
-      S.players.forEach(p=>{ p.maxV=p.baseV*0.55; });  /* ölü topta herkes yürür */
+      S.players.forEach(p=>{ _setUrg(p,_URG.YURU); });  /* ölü topta herkes yürür */
       const inb=_inboundSetup(spot,offP,[recv]);       /* dizilimden SONRA: dönüş hedefi doğru */
       _ballHold(inb,true);
       S.inb=null;
@@ -1349,10 +1410,10 @@ function movePlayersForEvent(ev,paint){
       let inb=(S.inb.tok&&offP.indexOf(S.inb.tok)>=0)?S.inb.tok:null;
       S.inb=null;
       _setFormation(offLeft,offP,defP,null,{phase:'set'});
-      if(inb){ inb._oob=true; if(!S.chase){ inb.tx=spot.x; inb.ty=spot.y; inb.maxV=inb.baseV*1.25; } }
+      if(inb){ inb._oob=true; if(!S.chase){ inb.tx=spot.x; inb.ty=spot.y; _setUrg(inb,_URG.KOS); } }
       else {
         inb=_inboundSetup(spot,offP,[pg]);        /* dizilimden SONRA */
-        _chase(inb,()=>{ S.ball.noDrib=true; inb.tx=spot.x; inb.ty=spot.y; inb.maxV=inb.baseV*1.25; },1.8);
+        _chase(inb,()=>{ S.ball.noDrib=true; inb.tx=spot.x; inb.ty=spot.y; _setUrg(inb,_URG.KOS); },1.8);
       }
       const t0=Math.max(0.9,inb._inbEta||0.6);
       return _script([
@@ -1516,14 +1577,14 @@ function animateShotPossession(sh,onShoot,onResult){
       const winIsUser=(winTeam===S.home);
       /* Rakip ribaundcu topun ÜSTÜNE değil, box-out mesafesinde (≈1.5m) yüklenir —
          iki jeton iç içe geçmesin. */
-      if(l&&l!==w){ const an=_sr()*6.283, rr=_srand(48,66); l.maxV=l.sprintV; l.tx=_inX(bb.x+Math.cos(an)*rr); l.ty=_inY(bb.y+Math.sin(an)*rr); _lockTok(l,1.4); }
+      if(l&&l!==w){ const an=_sr()*6.283, rr=_srand(48,66); _setUrg(l,_URG.KOS); l.tx=_inX(bb.x+Math.cos(an)*rr); l.ty=_inY(bb.y+Math.sin(an)*rr); _lockTok(l,1.4); }
       if(w){
         w.pop=0.7;
         /* Anlatımda ribaund cümlesi VARSA topu 'reb' olayı aldırır (senkron);
            yoksa mücadeleyi burada bitir ki top yerde kalmasın. Top alınır alınmaz
            yeni hücum BAŞLAR (gerçek basketbol: ribaund = geçişin başlangıcı). */
         if(!(nx&&nx.type==='reb')) _chase(w,()=>{ _startBreak(winIsUser); },2.4);
-        else { w.maxV=w.sprintV; w.tx=bb.x; w.ty=bb.y; _lockTok(w,1.2); }
+        else { _setUrg(w,_URG.SPRINT); w.tx=bb.x; w.ty=bb.y; _lockTok(w,1.2); }
       }
     }
 
@@ -1536,7 +1597,7 @@ function animateShotPossession(sh,onShoot,onResult){
         if(dfn){
           const dx=rim[0]-sh.x,dy=rim[1]-sh.y,dd=Math.hypot(dx,dy)||1;
           const g=sh.contest==='heavy'?30:40;
-          dfn.tx=_inX(sh.x+dx/dd*g); dfn.ty=_inY(sh.y+dy/dd*g); dfn.maxV=dfn.sprintV;
+          dfn.tx=_inX(sh.x+dx/dd*g); dfn.ty=_inY(sh.y+dy/dd*g); _setUrg(dfn,_URG.SPRINT);
           _lockTok(dfn,0.9);
           if(sh.contest==='heavy') dfn.pop=0.6;
         }
@@ -1549,7 +1610,8 @@ function animateShotPossession(sh,onShoot,onResult){
       if(d>36) _ballPass({x:sh.x,y:sh.y,vx:0,vy:0,side:1,ghost:true},Math.max(0.14,Math.min(0.55,d/520)));
     };
 
-    const etaTok=(p,x,y)=>p?Math.hypot(p.x-x,p.y-y)/Math.max(90,p.maxV||p.baseV||160)+0.18:0.3;
+    /* F15-1: taban 90 px/sn yeni ölçekte yürüyen jetonu 2,5 kat hızlı sayıyordu. */
+    const etaTok=(p,x,y)=>p?Math.hypot(p.x-x,p.y-y)/Math.max(40,p.maxV||p.baseV||_PL_MAXV)+0.18:0.3;
     const steps=[];
     let tOff=0;    /* hücumun (geçişin) fiilî başlangıcı */
 
@@ -1564,7 +1626,7 @@ function animateShotPossession(sh,onShoot,onResult){
       if(!inb){
         _setFormation(offLeft,offP,defP,null,{phase:'trans'});
         inb=_inboundSetup(spot,offP,[pg,shooter]);
-        _chase(inb,()=>{ S.ball.noDrib=true; inb.tx=spot.x; inb.ty=spot.y; inb.maxV=inb.baseV*1.3; },1.8);
+        _chase(inb,()=>{ S.ball.noDrib=true; inb.tx=spot.x; inb.ty=spot.y; _setUrg(inb,_URG.KOS); },1.8);
       } else {
         inb._oob=true;                       /* çizgi dışı izni sürüyor */
         if(!S.chase){ inb.tx=spot.x; inb.ty=spot.y; }
@@ -1618,7 +1680,7 @@ function animateShotPossession(sh,onShoot,onResult){
     const bringT=fastBreak?0.85:Math.max(1.05,Math.min(2.4,outletPay+etaTok(pg,bringHedef[0],bringHedef[1])));
     const tSet=tOff+bringT;
     /* F11-2: topsuz dört oyuncu topu beklemeden dizilime açılır (hızlı hücumda kulvarlar korunur). */
-    if(!fastBreak) steps.push({at:tOff+0.30,fn:()=>{ _setFormation(offLeft,offP,defP,null,{phase:'fill',ballTok:pg}); }});
+    if(!fastBreak) steps.push({at:tOff+0.10,fn:()=>{ _setFormation(offLeft,offP,defP,null,{phase:'fill',ballTok:pg}); }});
     steps.push({at:tSet,fn:()=>{ _setFormation(offLeft,offP,defP,sh,{phase:'set',keepNear:true,lateShooter:true}); }});
 
     let tFire;
@@ -1626,7 +1688,7 @@ function animateShotPossession(sh,onShoot,onResult){
       /* Hızlı hücum: herkes sprintle öne, tek outlet pas, erken bitiriş. */
       const passerTok=(sh.pid!=null)?offP.find(p=>p!==shooter&&p.pl&&p.pl.id===sh.pid):null;
       tFire=tSet+(passerTok?1.15:0.95);
-      steps.push({at:tOff+0.05,fn:()=>{ offP.forEach(p=>{ p.maxV=p.sprintV; }); }});
+      steps.push({at:tOff+0.05,fn:()=>{ offP.forEach(p=>{ _setUrg(p,_URG.SPRINT); }); }});
       if(passerTok){
         steps.push({at:tOff+0.35,fn:()=>_ballPass(passerTok,0.42)});
         steps.push({at:tFire-0.55,fn:()=>{ _ballPass(shooter,0.40); if(typeof sfx==='function') sfx('pass'); }});
@@ -1657,14 +1719,14 @@ function animateShotPossession(sh,onShoot,onResult){
       if(screener){
         /* F11-2: perde mesafesi 22→32 px (≈1 m) — gerçek top perdesinde perdeci topçunun
            yanına yapışmaz, omuz mesafesinde durur; jetonlar da iç içe geçmiş görünmez. */
-        steps.push({at:tSet+0.25,fn:()=>{ screener.tx=_inX(pg.x+(offLeft?32:-32)); screener.ty=_inY(pg.y-22); screener.maxV=screener.baseV; _lockTok(screener,1.0); }});
-        steps.push({at:tKey-0.10,fn:()=>{ screener.tx=_inX(rim[0]+(offLeft?1:-1)*_srand(30,64)); screener.ty=_inY(250+_srand(-30,30)); screener.maxV=screener.sprintV; _lockTok(screener,1.1); }});
+        steps.push({at:tSet+0.25,fn:()=>{ screener.tx=_inX(pg.x+(offLeft?32:-32)); screener.ty=_inY(pg.y-22); _setUrg(screener,_URG.KOS); _lockTok(screener,1.0); }});
+        steps.push({at:tKey-0.10,fn:()=>{ screener.tx=_inX(rim[0]+(offLeft?1:-1)*_srand(30,64)); screener.ty=_inY(250+_srand(-30,30)); _setUrg(screener,_URG.KOS); _lockTok(screener,1.1); }});
       }
       if(cutter){
         steps.push({at:tSet+0.45,fn:()=>{
           const sp=_pickCutSpot(offP,cutter,offLeft);
           cutter.tx=_inX(sp[0]); cutter.ty=_inY(sp[1]);
-          cutter.maxV=cutter.sprintV; _lockTok(cutter,1.2);
+          _setUrg(cutter,_URG.KOS); _lockTok(cutter,1.2);
         }});
       }
       if(doMid) steps.push({at:tSwing,fn:()=>_ballPass(mid,0.34)});
@@ -1678,21 +1740,21 @@ function animateShotPossession(sh,onShoot,onResult){
       const tRelease=Math.max(tSet+0.15,tFire-1.9);
       steps.push({at:tRelease,fn:()=>{
         shooter.tx=_inX(sh.x); shooter.ty=_inY(sh.y);
-        shooter.maxV=shooter.sprintV; _lockTok(shooter,Math.max(0.6,tFire-tRelease));
+        _setUrg(shooter,_URG.KOS); _lockTok(shooter,Math.max(0.6,tFire-tRelease));
       }});
     }
     /* şutör hamlesi (crossover/step-back/spin/drive) — metinle birebir aynı hamle */
     if(shooter&&mv){
       if(mv==='stepback'){
-        steps.push({at:Math.max(0.1,tFire-0.55),fn:()=>{ const dx=rim[0]-sh.x,dy=rim[1]-sh.y,dd=Math.hypot(dx,dy)||1; shooter.tx=_inX(sh.x+dx/dd*32); shooter.ty=_inY(sh.y+dy/dd*32); shooter.maxV=shooter.sprintV; _lockTok(shooter,0.5); }});
+        steps.push({at:Math.max(0.1,tFire-0.55),fn:()=>{ const dx=rim[0]-sh.x,dy=rim[1]-sh.y,dd=Math.hypot(dx,dy)||1; shooter.tx=_inX(sh.x+dx/dd*32); shooter.ty=_inY(sh.y+dy/dd*32); _setUrg(shooter,_URG.KOS); _lockTok(shooter,0.5); }});
         steps.push({at:Math.max(0.12,tFire-0.16),fn:()=>{ shooter.tx=sh.x; shooter.ty=sh.y; _lockTok(shooter,0.4); }});
       } else if(mv==='spin'){
         steps.push({at:Math.max(0.1,tFire-0.42),fn:()=>{ shooter.tx=_inX(sh.x+(offLeft?-15:15)); shooter.ty=_inY(sh.y+13); _lockTok(shooter,0.4); }});
         steps.push({at:Math.max(0.12,tFire-0.14),fn:()=>{ shooter.tx=sh.x; shooter.ty=sh.y; _lockTok(shooter,0.3); }});
       } else if(mv==='drive'){
-        steps.push({at:Math.max(0.1,tFire-0.5),fn:()=>{ shooter.maxV=shooter.sprintV; }});
+        steps.push({at:Math.max(0.1,tFire-0.5),fn:()=>{ _setUrg(shooter,_URG.KOS); }});
       } else if(mv==='crossover'||mv==='hesitation'){
-        steps.push({at:Math.max(0.1,tFire-0.44),fn:()=>{ shooter.tx=_inX(sh.x+(offLeft?18:-18)); shooter.ty=_inY(sh.y+(sh.y<250?12:-12)); shooter.maxV=shooter.sprintV; _lockTok(shooter,0.4); }});
+        steps.push({at:Math.max(0.1,tFire-0.44),fn:()=>{ shooter.tx=_inX(sh.x+(offLeft?18:-18)); shooter.ty=_inY(sh.y+(sh.y<250?12:-12)); _setUrg(shooter,_URG.KOS); _lockTok(shooter,0.4); }});
         steps.push({at:Math.max(0.12,tFire-0.15),fn:()=>{ shooter.tx=sh.x; shooter.ty=sh.y; _lockTok(shooter,0.3); }});
       }
     }

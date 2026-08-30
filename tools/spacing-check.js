@@ -11,7 +11,8 @@
  * potayı ve fazı (`S.defTrack` → set/geçiş) okur. İstatistik yalnız SET fazı karelerinden çıkar.
  *
  * Ölçüler (hedefler FAZ 11 belgesinden):
- *   ortalama ikili mesafe ≥ 4,5 m · en yakın ikili ≥ 3,5 m · kaplanan alan ≥ %30 yarı saha
+ *   ortalama ikili mesafe ≥ 5,8 m (F15-4: gerçek ölçüm 7,96 m) · en yakın ikili ≥ 3,5 m ·
+ *   kaplanan alan ≥ %30 yarı saha
  *   orta üçte bir oranı < %20 · boyada ≥1 hücumcu olan kare ≥ %60
  *   topu tutana en yakın savunmacı < 1,8 m · adamından > 5 m uzak savunmacı %0
  *
@@ -242,7 +243,10 @@ function olc(frames, oturmusMs, tumu) {
 }
 
 const HEDEFLER = [
-  { ad: 'set hücumunda ortalama ikili mesafe', al: r => r.ikiliOrt, hedef: '≥ 4,5 m', gec: v => v >= 4.5, br: 'm' },
+  /* F15-4: eşik 4,5 m idi — sensörle ölçülmüş gerçek hücum ortalaması 7,96 m (medyan 7,97),
+     savunma 6,17 m. 4,5 m'yi geçmek "gerçekçi" demek değildi; eşik gerçeğe yaklaştırıldı.
+     Diğer eşiklere dokunulmadı. */
+  { ad: 'set hücumunda ortalama ikili mesafe', al: r => r.ikiliOrt, hedef: '≥ 5,8 m', gec: v => v >= 5.8, br: 'm' },
   { ad: 'en yakın ikili (top sahibi hariç)', al: r => r.ikiliMinTopsuz, hedef: '≥ 3,5 m', gec: v => v >= 3.5, br: 'm' },
   { ad: 'hücumun yayılımı / yarı saha (kutu)', al: r => r.alanYuzde, hedef: '≥ %30', gec: v => v >= 30, br: '%' },
   { ad: 'orta üçte birdeki hücumcu oranı', al: r => r.ortaOran, hedef: '< %20', gec: v => v < 20, br: '%' },

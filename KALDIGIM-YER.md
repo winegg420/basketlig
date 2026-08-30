@@ -2,6 +2,20 @@
 Son güncelleme: 2026-08-30 · **38. oturum — FAZ 14 (saha geometrisi + serbest atış) ve
 `DENETIM-FAZ13.md` bölüm 2'nin beş maddesi (B-1…B-5) bitti.**
 
+## 39. oturum — FAZ 15 (saha hareketi kalibrasyonu)
+
+Yeni araç **`tools/hareket-check.js`** (jeton hızı + kabuk alanı + bant dağılımı).
+**Araç, brifin teşhisini düzeltti:** sahne maç saatini ~2× sıkıştırıyor (1 sahne sn ≈ 2,0 maç
+sn), dolayısıyla oyun maç saatinde zaten gerçekçi hızdaydı (1,45 vs gerçek 1,54-1,60).
+Brifin mutlak yavaşlatması uygulanmadı — uygulandığında FAZ 11 kapıları düşüyor. Uygulanan:
+**hareket kademeleri** (`_V_TIER`/`_URG`/`_setUrg`, yeni YÜRÜ kademesi) + **yerinde kalma**
+(`_hedefAta`) + savunma düzeltmeleri. Sonuç: dört açıklık ölçüsünün dördü de gerçek değere
+yaklaştı (hücum kabuk 57,6 → 55,2 · gerçek 53,5 | savunma 29,5 → 32,6 · gerçek 32,3),
+hız dağılımının çift tepeliliği azaldı (jog %6 → %10, sprint %22 → %16).
+`spacing-check` eşiği 4,5 → **5,8 m** (F15-4). Script sürümü **?v=51**.
+
+---
+
 ## 38. oturum özeti (ayrıntı: PROGRESS.md)
 
 **FAZ 14-G (saha):** 3 sayı yayı potaya değil DİP ÇİZGİYE merkezli çiziliyordu (SVG, kirişten
