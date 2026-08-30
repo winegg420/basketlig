@@ -289,7 +289,39 @@ function analizEt(events) {
       await p.waitForSelector('#app', { state: 'visible', timeout: 8000 });
       await p.evaluate(() => { try { closeAppModal(); } catch (e) {} });
       await p.evaluate(() => showPage('mac', document.querySelector('#sbNav button[data-page="mac"]')));
-      await p.evaluate(() => { setMatchRate(1); startMatch(); });
+      /* Maç başı akışı: kaç düdük çalıyor ve ilk aksiyona kadar ne kadar ölü zaman var?
+         (37. oturum kullanıcı bildirimi: "düdük çalıyor, herkes sabit kalıyor, sonra bir
+         düdük daha". Sebep: start/quarter_start olaylarında `dt` yoktu → oynatma 12 sn
+         varsayıp her biri için 3,6 sn bekliyordu; üstüne 1. çeyrek düdüğü ikinci kez çalıyordu.) */
+      await p.evaluate(() => {
+        window.__sfx = [];
+        const eski = window.sfx;
+        window.sfx = function (k) { window.__sfx.push(k); try { return eski.apply(this, arguments); } catch (e) {} };
+        window.__ev = [];
+        window.__t0 = Date.now();
+        window.__izle = setInterval(() => {
+          if (typeof mState === 'undefined' || !mState || !mState.events) return;
+          for (let i = window.__ev.length; i < mState.idx; i++) {
+            window.__ev.push({ type: mState.events[i].type, ms: Date.now() - window.__t0 });
+          }
+        }, 50);
+        setMatchRate(1); startMatch();
+      });
+      await new Promise(r => setTimeout(r, 9000));
+      const acilis = await p.evaluate(() => {
+        clearInterval(window.__izle);
+        const ilkSut = window.__ev.find(e => /^(score2|score3|miss2|miss3|free|steal)$/.test(e.type));
+        return {
+          duduk: window.__sfx.filter(k => k === 'whistle').length,
+          ilkAksiyonMs: ilkSut ? ilkSut.ms : -1,
+          zincir: window.__ev.slice(0, 4).map(e => e.type + '@' + (e.ms / 1000).toFixed(1)).join(' → '),
+        };
+      });
+      ok('maç başında TEK düdük çalıyor', acilis.duduk === 1, `${acilis.duduk} düdük`);
+      ok('açılışta ölü bekleme yok (ilk aksiyon < 6 sn)',
+        acilis.ilkAksiyonMs > 0 && acilis.ilkAksiyonMs < 6000,
+        `${(acilis.ilkAksiyonMs / 1000).toFixed(1)} sn · ${acilis.zincir}`);
+
       await new Promise(r => setTimeout(r, 2500));
       const once = await p.evaluate(() => ({ idx: mState.idx, running: mState.running }));
 
@@ -352,6 +384,15 @@ function analizEt(events) {
       ok('sayfa değişince maç içi panel sıfırlanmıyor (F13-18)',
         panel.sonra.govde === panel.once.govde && panel.sonra.rakip === panel.once.rakip,
         `rakip adı "${panel.once.rakip}" → "${panel.sonra.rakip}"`);
+      /* 37. oturum: parkenin üzerinde O/X şut izi KALMAMALI (kullanıcı isteği). */
+      const izler = await p.evaluate(() => {
+        const svg = document.getElementById('courtSvg');
+        if (!svg) return { yok: true };
+        const metinler = Array.from(svg.querySelectorAll('text')).map(t => (t.textContent || '').trim());
+        return { ox: metinler.filter(t => t === 'O' || t === 'X').length, katman: !!document.getElementById('shotsLayer') };
+      });
+      ok('parkede O/X şut izi yok', !izler.yok && izler.ox === 0 && !izler.katman,
+        izler.yok ? 'saha bulunamadı' : `${izler.ox} işaret · shotsLayer ${izler.katman ? 'var' : 'yok'}`);
       ok('donma testinde konsol hatası yok', hatalar.length === 0, hatalar.slice(0, 2).join(' | '));
       await p.evaluate(() => { try { stopMatch(); } catch (e) {} });
     } finally { await browser.close(); server.close(); }

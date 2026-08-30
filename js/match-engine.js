@@ -1050,12 +1050,12 @@ function _inboundPass(inb,to,dur){
 function _evHandled(){ if(typeof mState!=='undefined'&&mState) mState._evH={paint:false,marks:false}; }
 function _markPainted(){ if(typeof mState!=='undefined'&&mState&&mState._evH) mState._evH.paint=true; }
 function _markMarks(){ if(typeof mState!=='undefined'&&mState&&mState._evH) mState._evH.marks=true; }
-/** Serbest atış izini canlı haritaya işle (zamanı gelince, tek tek). */
+/** Serbest atışı şut verisine ekle. (37. oturum: parkeye O/X izi ÇİZİLMEZ — veri yalnız
+    kutu skor ve analiz içindir.) */
 function _liveMark(sh){
   try{
     if(!sh) return;
     mState.allShots.push(sh);
-    if(shotPassesFilter(sh)) drawShotMark(sh);
   }catch(e){}
 }
 
@@ -1698,41 +1698,10 @@ function _and1Sequence(sh,shooter,offP,defP,offLeft,rim,res){
   }catch(e){ try{ res(); }catch(e2){} }
 }
 
-/** Şut izi: isabet "O", kaçan "X" — takım rengiyle. */
-function drawShotMark(sh){
-  const layer=document.getElementById('shotsLayer');
-  if(!layer) return;
-  const homeCol=(G.team&&G.team.renk)||'#f97316';
-  const col=sh.isHome?homeCol:AWAY_SHOT_COLOR;
-  const t=document.createElementNS('http://www.w3.org/2000/svg','text');
-  t.setAttribute('x',sh.x); t.setAttribute('y',sh.y);
-  t.setAttribute('text-anchor','middle'); t.setAttribute('dy','6.5');
-  t.setAttribute('font-size', sh.made?'20':'18');
-  t.setAttribute('font-weight','900');
-  t.setAttribute('fill',col);
-  t.setAttribute('stroke','rgba(0,0,0,0.5)'); t.setAttribute('stroke-width','0.6');
-  t.setAttribute('pointer-events','none');
-  t.textContent=sh.made?'O':'X';
-  layer.appendChild(t);
-}
-
-/** Şut filtresi: 'live' = bu çeyrek (canlı, her çeyrek sıfırlanır), 'all' = tüm maç, '1'..'4' = çeyrek. */
-function shotPassesFilter(sh){
-  const f=mState.shotFilter||'live';
-  if(f==='all') return true;
-  if(f==='live') return String(sh.q)===String(mState.quarter);
-  return String(sh.q)===String(f);
-}
-function redrawAllShots(){
-  const layer=document.getElementById('shotsLayer');
-  if(!layer) return;
-  layer.innerHTML='';
-  (mState.allShots||[]).forEach(sh=>{ if(shotPassesFilter(sh)) drawShotMark(sh); });
-}
-function setShotFilter(v){
-  mState.shotFilter=v;
-  redrawAllShots();
-}
+/* 37. oturum — KULLANICI İSTEĞİ: canlı sahanın üzerine biriken "O / X" şut izleri kaldırıldı.
+   Parkede artık yalnız oyuncular ve top var; şut verisi (`mState.allShots`) toplanmaya devam
+   eder ve kutu skor / analiz sayfası bundan beslenir. Filtre düğmeleri, açıklama metni ve
+   `shotsLayer` katmanı da arayüzden çıkarıldı (işlevsiz kalmışlardı). */
 
 /** Parke merkez markası: arena adı + takım amblemi/adı. startMatch'te çağrılır. */
 function updateCourtBranding(rakip){
@@ -3028,6 +2997,10 @@ function generateMatchEvents(rakip, opts){
     events.push({
       type:'start',spId:SP.id,
       text:`${SP.emoji} Bugünün spikeri: <strong>${SP.ad}</strong> (${SP.stil}). Maç hava atışıyla başlıyor. ${escMatch(MC.home.name)} ${userIsHome?'ev sahibi':'deplasman takımı olarak'}; ${c.isim} dairede, ${pg.isim} ilk hücumu kuruyor. Tribünler dolu.`,
+      /* F: hava atışı maç saatinden süre YEMEZ. dt verilmezse oynatma 12 sn varsayıp
+         3,6 sn bekliyor; koreografi 1,4 sn'de bittiği için saha donup kalıyordu
+         ("düdük çaldı, herkes sabit kaldı"). */
+      dt:0,
       q:1,t:MATCH_CLOCK_SEC,home:0,away:0,
       box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
     });
@@ -3041,9 +3014,11 @@ function generateMatchEvents(rakip, opts){
     const isResumeQ=resume&&resume.mid&&q===resume.q;
     if(!isResumeQ){
       events.push({
-        type:'quarter_start',
+        type:'quarter_start',dt:0,
         /* FAZ B: çeyrek başında hangi setle oynandığı anlatıma girer (koçun kararı görünür olsun). */
-        text:pickLine(QSTART_LINES,pr,narr.recent,'qstart').replace('%Q',String(q))+` — ${escMatch(MC.home.name)} ${homeScore} - ${awayScore} ${rname}.${pb&&pb.key!=='dengeli'?` ${escMatch(MC.home.name)} ${pb.ikon} ${pb.ad} setiyle çıkıyor.`:''}`,
+        /* 1. çeyrekte düdük hava atışında çaldı; o satırda "düdük çaldı" demeyen
+           kalıplar kullanılır (ses ile metin tutarlı olsun). */
+        text:pickLine(q===1?QSTART_LINES.filter(x=>!/düdük/i.test(x)):QSTART_LINES,pr,narr.recent,'qstart').replace('%Q',String(q))+` — ${escMatch(MC.home.name)} ${homeScore} - ${awayScore} ${rname}.${pb&&pb.key!=='dengeli'?` ${escMatch(MC.home.name)} ${pb.ikon} ${pb.ad} setiyle çıkıyor.`:''}`,
         q,t:MATCH_CLOCK_SEC,home:homeScore,away:awayScore,
         box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
       });
@@ -3104,7 +3079,7 @@ function generateMatchEvents(rakip, opts){
     const qq=4+otRound;
     lastPeriod=qq;
     qh[qq]=0; qa[qq]=0;
-    events.push({type:'quarter_start',text:`🔔 Uzatma ${otRound} başladı — 5:00. Skor ${homeScore}-${awayScore}. Gerginlik tavan!`,q:qq,t:OT_CLOCK_SEC,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+    events.push({type:'quarter_start',dt:0,text:`🔔 Uzatma ${otRound} başladı — 5:00. Skor ${homeScore}-${awayScore}. Gerginlik tavan!`,q:qq,t:OT_CLOCK_SEC,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
     let t=OT_CLOCK_SEC;
     let step=0;
     while(t>0 && step<40){

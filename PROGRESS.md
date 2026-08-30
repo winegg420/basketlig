@@ -2969,3 +2969,51 @@ pozisyonun bütün olayları aynı `t` (maç saati) değerini taşır, bu yüzde
 pozisyonun İLK olayı soğurur; oran olay başına hesaplandığı için tipler arasında yapay fark
 çıkar. F13-1 ribaund olaylarını araya sokunca bu hareket başka tiplere kaydı ve fark büyüdü.
 **Düzeltilecek olan araçtır** (oran pozisyon başına hesaplanmalı), motor değil.
+
+## 37. OTURUM — 2026-08-30 · KULLANICI BİLDİRİMİ: canlı maç görünümü ve açılış akışı
+
+Kullanıcı iki şey söyledi: *"canlı anlatımda sahada şutun girip girmediği x o işaretleri
+kalksın"* ve *"maç başında düdük çalıyor oyun başlıyor herkes sabit kalıyor, sonra bir düdük
+daha çalıyor"*.
+
+### 1) Parkedeki O/X şut izleri kaldırıldı
+
+Canlı sahaya her şuttan sonra bir "O" (isabet) / "X" (kaçan) işareti çiziliyor, çeyrek
+boyunca birikiyordu. Kaldırılanlar: `shotsLayer` katmanı, `drawShotMark`, `shotPassesFilter`,
+`redrawAllShots`, `setShotFilter`, altı radyo düğmesi (Canlı/Tüm maç/Ç1-Ç4), açıklama metni
+ve O/X anahtar satırı. Kart başlığı **"🔴 Canlı Maç"** oldu (eskiden "— Şut Haritası").
+
+- **Şut verisi silinmedi:** `mState.allShots` toplanmaya devam ediyor; kutu skor ve Analiz
+  sayfası bu veriden besleniyor.
+- **"⛶ Büyük Ekran"** düğmesi filtre şeridinin içindeydi; eylem şeridine taşındı (işlev korundu).
+- Mobilde katlanır "şut haritası filtreleri" bölümü de gitti (FAZ 12'de eklenmişti).
+
+### 2) Açılışta iki düdük ve ölü bekleme
+
+Ölçülen sebep: `start` (hava atışı) ve `quarter_start` olaylarında **`dt` alanı yoktu**.
+Oynatma tarafı `dt` yoksa 12 saniyelik pozisyon varsayıyor (`dtMs = 12 × 0.3 = 3600 ms`),
+oysa hava atışı koreografisi 1,4 sn'de bitiyor → **2,2 sn boyunca herkes donuk duruyordu.**
+Ardından `quarter_start` için 3,6 sn daha bekleniyor ve `sfx('whistle')` **ikinci kez**
+çalıyordu (ilk düdük hava atışında zaten çalmıştı).
+
+Düzeltme:
+- `start` ve tüm `quarter_start` olaylarına **`dt:0`** (bu olaylar maç saatinden süre yemez;
+  gecikme artık koreografinin uzunluğu kadar).
+- Periyot düdüğü yalnız **2. çeyrek ve sonrası** için çalıyor (`ev.q>1`).
+
+**Ölçüm (1× hız):** açılış zinciri `start@0,1 → quarter_start@2,6 → ilk aksiyon@4,2 sn`,
+**tek düdük** (+1,0 sn). Öncesinde ilk aksiyon ~7,2 sn'de ve iki düdük vardı.
+
+### Kalıcı denetim
+`tools/anlatim-check.js --freeze` üç yeni denetim aldı (toplam **23/23**):
+maç başında tek düdük · açılışta ilk aksiyon < 6 sn · **parkede O/X izi yok**.
+
+### Doğrulama
+`anlatim-check --n=30` 13/13 · `--freeze` **23/23** · `spacing-check` 10/10 ·
+`mobile-check` 18/18 · `visual-check` 0 hata · `faz6/7/8/10/11` ✓ · `m20` 6/6 ·
+`i18n-scan` temiz · **`band.js` hash değişmedi** (`fb393bdab878e699` — yalnız sunum değişti).
+Script sürümü **?v=47**.
+
+> **Yan hata (araç yakaladı):** ölü kod temizliği sırasında `openNextMatchTactics` da
+> silinmişti (bitişik bloktaydı); `mobile-check` "taktik açılmadı + pageerror" ile yakaladı,
+> geri alındı. Bitişik blokları toplu silerken sınırı satır satır doğrulamak gerekiyor.

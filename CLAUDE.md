@@ -126,6 +126,12 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
 - **Olay zamanı iki alandır (F13-17):** `dt` olayın maç saati PAYI (çeyrek toplamı 600 sn),
   `dtPos` pozisyonun tamamı ve SUNUM temposunu belirler. İkisini karıştırma — yalnız `dt`
   bölünürse maç iki kat hızlı akar (`live-metrics` syncRatio 3,3× → 6,8×).
+- **Olay `dt` taşımıyorsa oynatma 12 sn varsayar** (`dtMs = 12 × 0.3 = 3,6 sn`): koreografisi
+  kısa olan olaylar (hava atışı, çeyrek başı) ekranda donmuş gibi durur. Maç saatinden süre
+  yemeyen her yeni olaya **`dt:0`** ver (37. oturum: açılışta 2,2 sn ölü bekleme buydu).
+- **Canlı sahada O/X şut izi YOKTUR** (37. oturum kullanıcı kararı) — parkede yalnız oyuncular
+  ve top. `mState.allShots` verisi durur (kutu skor/analiz), ama çizim katmanı kaldırıldı;
+  geri eklenmemeli. `anlatim-check --freeze` bunu sınıyor.
 - **Maç donarsa sessiz kalmamalı (F13-14):** `canResumeMatch()` / `resumeMatch()` /
   `startMatchWatchdog()` üçlüsü; buton etiketi tek kaynaktan (`syncMatchButtons`).
 - **Sahne saati ile olay saati ayrıdır (F11-1):** jetonlar `requestAnimationFrame`, olaylar `setTimeout` üzerinden akar. rAF kısıtlanırsa (arka plan sekmesi, ağır cihaz) sahne anlatımın gerisine düşer; `_simCatchUp()` 0,35 sn'yi aşan boşlukta sahneyi güncel olaya eşitler. Koreografiye yeni adım eklerken bu yolun da adımı çalıştıracağını hesaba kat.

@@ -174,7 +174,7 @@ function startMatch(playoff){
   G.pendingMatch={sig,ev:events[events.length-1]||null};
   saveGameNow(false);
 
-  document.querySelectorAll('input[name="shotQ"]').forEach(r=>{ r.checked=(r.value==='live'); });
+
   updateTimeoutBtn();
   clearMatchEventTimer();
   clearMatchCourt();
@@ -223,8 +223,7 @@ function startMatch(playoff){
       const qChanged=mState.quarter!==ev.q;
       mState.quarter=ev.q;
       document.getElementById('liveQuarter').textContent=ev.q<=4?`${ev.q}. Periyot`:`Uzatma ${ev.q-4}`;
-      /* Çeyrek değişince canlı şut haritası sıfırlanır (filtre 'live' ise yeni çeyrek boş başlar). */
-      if(qChanged) redrawAllShots();
+      /* Şut izleri parkeden kaldırıldığı için çeyrek değişiminde yeniden çizim gerekmez. */
     }
     /* SENKRON: skor tabelası + kutu skor + çeyrek panosu + ANLATIM tek pakette basılır ve
        olayın SAHADA gerçekleştiği kareye bağlanır (şut → top çemberde, çalma → topun
@@ -259,15 +258,15 @@ function startMatch(playoff){
       mState.allShots.push(sh);
       /* Gerçekçi hücum: top oyuna sokulur, geçiş, set, şut.
          İz top elden çıkarken; SKOR+ANLATIM+ses top çembere varınca (tam senkron). */
+      /* Kullanıcı isteği (37. oturum): parkenin üzerine biriken O/X şut izleri KALKTI —
+         canlı sahada yalnız oyuncular ve top görünür. Şut verisi (`allShots`) toplanmaya
+         devam eder; maç sonu kutu skoru ve analiz sayfası bu veriden beslenir. */
       mState._animMs=animateShotPossession(sh,
-        ()=>{ if(shotPassesFilter(sh)) drawShotMark(sh); },
+        null,
         ()=>{ paint(); if(sh.made) sfx('score'); })||2900;
     } else {
       if(ev.shots&&!_h.marks){
-        ev.shots.forEach(sh=>{
-          mState.allShots.push(sh);
-          if(shotPassesFilter(sh)) drawShotMark(sh);
-        });
+        ev.shots.forEach(sh=>{ mState.allShots.push(sh); });
       }
       if(!_h.paint) paint();
     }
@@ -280,7 +279,10 @@ function startMatch(playoff){
       try{ const mp=ev.mvpId&&(G.players||[]).find(p=>p.id===ev.mvpId); if(mp&&mp.draftYili!=null) unlockAchievement('dogruSecim'); }catch(e){}
     }
     /* Paket 3: atmosfer — faulde düdük, çeyrek başında düdük, çeyrek/maç sonunda korna. */
-    if(ev.type==='foul'||ev.type==='quarter_start') sfx('whistle');
+    /* 1. çeyrek başında düdük ZATEN hava atışında çalıyor (start olayı, 0,95 sn). Burada
+       ikinci kez çalınca "düdük — bekleme — bir düdük daha" duyuluyordu. Periyot düdüğü
+       yalnız 2. çeyrek ve sonrası (ve uzatmalar) için. */
+    if(ev.type==='foul'||(ev.type==='quarter_start'&&ev.q>1)) sfx('whistle');
     if(ev.type==='quarter_end') sfx('buzzer');
 
     /* Madde 12: canlı kadro/foul takibi */
@@ -1702,20 +1704,6 @@ function syncMobileTabs(page){
   }catch(e){}
 }
 
-/** F12-2: şut haritası açıklaması artık ⓘ düğmesinde (kalıcı metin 90 px yer yiyordu). */
-function showShotMapHelp(){
-  showAppModal(`<div class="modal-title">🎯 Şut haritası</div>
-    <p style="font-size:13px;color:var(--text2);line-height:1.6;">
-      <strong>O</strong> = isabetli şut, <strong>X</strong> = kaçan şut.<br>
-      Turuncu işaretler <strong>senin takımın</strong>, yeşil işaretler <strong>rakip</strong>.<br>
-      Canlı görünüm her çeyrek sıfırlanır; maç boyunca biriken şutlar için
-      <strong>Tüm maç</strong> ya da <strong>Ç1–Ç4</strong> filtresini seç.
-    </p>
-    <div style="display:flex;justify-content:flex-end;margin-top:14px;">
-      <button type="button" class="btn-sm" onclick="closeAppModal()">Kapat</button>
-    </div>`);
-}
-
 /** F12-3: sıradaki maçın taktik ekranını doğrudan aç (Kadro sayfasından tek dokunuş). */
 function openNextMatchTactics(){
   try{
@@ -1734,7 +1722,7 @@ function isMobileView(){
 function applyMobileFolds(){
   try{
     const mob=isMobileView();
-    ['macStatsFold','macFiltersFold'].forEach(id=>{
+    ['macStatsFold'].forEach(id=>{
       const el=document.getElementById(id);
       if(!el) return;
       if(mob&&!el.dataset.userToggled) el.removeAttribute('open');

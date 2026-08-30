@@ -738,10 +738,6 @@ tr:hover td{background:rgba(255,255,255,0.02);}
   #macLiveAnchor .commentary{order:6;}
   #macLiveAnchor #quarterScores{order:7;}
   #macLiveAnchor .mac-live-stats{order:8;}
-  #macLiveAnchor #macFiltersFold{order:9;}
-  #macLiveAnchor #macShotKey{order:10;}
-  /* Kalıcı yardım metni ⓘ düğmesine taşındı (F12-2). */
-  #macShotLegend{display:none;}
 
   /* Kompakt tabela: dikey üç blok yerine tek satır — 380 px → ~80 px. */
   #macLiveAnchor .scoreboard{padding:8px 10px;gap:6px;flex-wrap:nowrap;}
@@ -1056,7 +1052,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <div class="match-layout" id="macLiveAnchor">
           <div>
             <div class="card" style="margin-bottom:14px;">
-              <div class="card-title">🔴 Canlı Maç — Şut Haritası</div>
+              <div class="card-title">🔴 Canlı Maç</div>
               <div class="scoreboard">
                 <div class="score-side">
                   <div class="score-tname" id="liveHome">Ev Takımı</div>
@@ -1074,19 +1070,6 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                 </div>
               </div>
               <div class="mac-qbox" id="quarterScores"></div>
-              <details class="m-fold" id="macFiltersFold" open><summary>🎯 Şut haritası filtreleri</summary>
-              <div class="shot-filters" id="macShotFilters">
-                <span>Şut haritası:</span><button type="button" class="btn-sm" onclick="showShotMapHelp()" title="Şut haritası nasıl okunur?" style="padding:2px 9px;font-size:12px;">ⓘ</button>
-                <label><input type="radio" name="shotQ" value="live" checked onchange="setShotFilter(this.value)"> Canlı (bu çeyrek)</label>
-                <label><input type="radio" name="shotQ" value="all" onchange="setShotFilter(this.value)"> Tüm maç</label>
-                <label><input type="radio" name="shotQ" value="1" onchange="setShotFilter(this.value)"> Ç1</label>
-                <label><input type="radio" name="shotQ" value="2" onchange="setShotFilter(this.value)"> Ç2</label>
-                <label><input type="radio" name="shotQ" value="3" onchange="setShotFilter(this.value)"> Ç3</label>
-                <label><input type="radio" name="shotQ" value="4" onchange="setShotFilter(this.value)"> Ç4</label>
-                <button type="button" class="btn-sm" id="theaterBtn" onclick="toggleMatchTheater()" style="padding:4px 11px;font-size:11px;margin-left:auto;">⛶ Büyük Ekran</button>
-              </div>
-              </details>
-        <p id="macShotLegend" style="font-size:11px;color:var(--text2);margin-bottom:8px;"><strong>O</strong> = isabetli şut, <strong>X</strong> = kaçan şut. Canlı görünüm her çeyrek sıfırlanır; maç boyunca biriken şutlar için <strong>Tüm maç</strong> ya da <strong>Ç1–Ç4</strong> seç.</p>
 
 
               <div class="court-stats-row" id="macCourtStatsRow">
@@ -1177,7 +1160,6 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                     </g>
                     <path d="M 883.6 30 L 883.6 48.5 A 196 196 0 1 0 883.6 451.5 L 883.6 470" stroke-width="2.2"></path>
                   </g>
-                  <g id="shotsLayer"></g>
                   <g id="liveBall" transform="translate(470,250)" style="opacity:0;transition:transform 0.5s cubic-bezier(.34,.02,.28,1),opacity 0.3s;">
                     <circle r="11.5" fill="#e07b1e" stroke="#6b2810" stroke-width="1.6"></circle>
                     <path d="M -11.5 0 L 11.5 0 M 0 -11.5 L 0 11.5 M -8.1 -8.1 Q 0 0 -8.1 8.1 M 8.1 -8.1 Q 0 0 8.1 8.1" stroke="#5c2410" stroke-width="1.15" fill="none"></path>
@@ -1196,16 +1178,13 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                 </table>
               </details>
               </div>
-              <div id="macShotKey" style="display:flex;gap:12px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
-                <span style="font-size:11px;color:var(--text2);"><b style="color:var(--accent);font-size:13px;">O</b> Bizim — isabet &nbsp; <b style="color:var(--accent);font-size:13px;">X</b> Bizim — kaçan</span>
-                <span style="font-size:11px;color:var(--text2);"><b style="color:#4ade80;font-size:13px;">O</b> Rakip — isabet &nbsp; <b style="color:#4ade80;font-size:13px;">X</b> Rakip — kaçan</span>
-              </div>
 
               <div id="macActionRow" style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
                 <button class="btn-p" id="startMatchBtn" onclick="startMatch()" style="flex:1;min-width:130px;padding:9px;font-size:13px;">▶ Maçı Başlat</button>
                 <button class="btn-sm" onclick="stopMatch()" style="flex:1;min-width:90px;">⏹ Durdur</button>
                 <button class="btn-sm" id="timeoutBtn" onclick="callTimeout()" style="flex:1;min-width:110px;" title="Mola al — oyuncular nefeslenir, enerji tazelenir; molada değişiklik serbest">⏸ Mola (5)</button>
                 <button class="btn-sm" id="manualCoachBtn" onclick="toggleManualCoach()" style="flex:1;min-width:130px;">🎧 Manuel Koçluk</button>
+                <button type="button" class="btn-sm" id="theaterBtn" onclick="toggleMatchTheater()" style="flex:1;min-width:120px;">⛶ Büyük Ekran</button>
                 <button class="btn-sm" id="shareResultBtn" onclick="shareMatchResult()" style="flex:1;min-width:120px;display:none;" title="Maç sonucunu paylaş">📣 Sonucu Paylaş</button>
               </div>
               <div id="macRateRow" style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
@@ -1454,19 +1433,19 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 <div class="notif" id="notif"></div>
 
-<script src="js/i18n.js?v=46"></script>
-<script src="js/i18n-dict.js?v=46"></script>
-<script src="js/i18n-commentary.js?v=46"></script>
-<script src="js/state.js?v=46"></script>
-<script src="js/economy.js?v=46"></script>
-<script src="js/persistence.js?v=46"></script>
-<script src="js/portraits.js?v=46"></script>
-<script src="js/roster-gen.js?v=46"></script>
-<script src="js/league.js?v=46"></script>
-<script src="js/match-prep.js?v=46"></script>
-<script src="js/render.js?v=46"></script>
-<script src="js/match-engine.js?v=46"></script>
-<script src="js/main.js?v=46"></script>
+<script src="js/i18n.js?v=47"></script>
+<script src="js/i18n-dict.js?v=47"></script>
+<script src="js/i18n-commentary.js?v=47"></script>
+<script src="js/state.js?v=47"></script>
+<script src="js/economy.js?v=47"></script>
+<script src="js/persistence.js?v=47"></script>
+<script src="js/portraits.js?v=47"></script>
+<script src="js/roster-gen.js?v=47"></script>
+<script src="js/league.js?v=47"></script>
+<script src="js/match-prep.js?v=47"></script>
+<script src="js/render.js?v=47"></script>
+<script src="js/match-engine.js?v=47"></script>
+<script src="js/main.js?v=47"></script>
 
 
 </body></html>

@@ -1,5 +1,5 @@
 # KALDIĞIM YER
-Son güncelleme: 2026-08-30 · 36. oturum — **PROMPT-CLAUDE-CODE.md: BÖLÜM 0 (FAZ 13) dahil altı bölüm bitti**
+Son güncelleme: 2026-08-30 · 37. oturum — **PROMPT-CLAUDE-CODE.md'nin altı bölümü + kullanıcı bildirimleri (canlı maç görünümü)**
 
 Talep belgeleri: `REVIZE-PAKETI.md` (FAZ 1-6) · `REVIZE-PAKETI-FAZ7.md` (maç dışı) ·
 `REVIZE-PAKETI-FAZ8.md` (oynanış testi) · `REVIZE-PAKETI-FAZ9.md` (uzun vadeli döngü) ·
@@ -49,7 +49,7 @@ ayrı bir fazdır.
 | `node tools/sim-node.js --n=50` | **tarayıcısız** maç simülasyonu + determinizm (sunucu ön koşulu) | ✓ 50/50 |
 | `node tools/schema-check.js` | `db/schema.sql` sözdizimi + lig kuralları + RLS + bağlantı yok | ✓ **17/17** |
 | `node tools/anlatim-check.js` | **canlı maç anlatımı** (ribaund, seri, faul, çalma, çeşitlilik, saha değişimi) — tarayıcısız | ✓ **13/13** |
-| `node tools/anlatim-check.js --freeze` | sekme donması / kurtarma + maç içi panel kalıcılığı | ✓ **20/20** |
+| `node tools/anlatim-check.js --freeze` | sekme donması/kurtarma · maç içi panel · açılışta tek düdük · parkede O/X izi yok | ✓ **23/23** |
 | `node tools/sunum-check.js --ms=300000` | M9 outlet · M12 and-1 · M14 şut saati | ✓ **3/3** |
 | `node tools/visual-check.js` | masaüstü + mobil akış, konsol | ✓ çıkış kodu **0** |
 | `node tools/live-metrics.js --ms=360000` | senkron · kimlik · ışınlanma | ✓ orphan 0 · kimlik %100 · 0 kare |

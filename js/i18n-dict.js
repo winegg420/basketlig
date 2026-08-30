@@ -78,7 +78,7 @@ const I18N_TR_EN={
 '⛶ Büyük Ekran':'⛶ Fullscreen',
 '🎧 Manuel Koçluk':'🎧 Manual Coaching',
 '🔴 CANLI MAÇ':'🔴 LIVE MATCH',
-'🔴 Canlı Maç — Şut Haritası':'🔴 Live Match — Shot Chart',
+'🔴 Canlı Maç':'🔴 Live Match',
 '↓ Canlı maç &amp; şut haritasına git':'↓ Go to live match &amp; shot chart',
 '📊 Maç içi — Takım istatistikleri':'📊 In-game — Team stats',
 '📊 Özet kutu (maç bitince)':'📊 Box score (after the match)',
