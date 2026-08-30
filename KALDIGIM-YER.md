@@ -46,6 +46,7 @@ ayrı bir fazdır.
 | `node tools/spacing-check.js --bg` | arka plan sekmesinde dizilim (F11-1 gerileme testi) | ✓ geçti |
 | `node tools/faz11-check.js` | FAZ 11 (dizilim geometrisi, yetişme, kesme noktası, `startMatch` kilidi) | ✓ **13/13** |
 | `node tools/mobile-check.js` | FAZ 12 mobil (dokunma sayısı, maç sayfası düzeni, yoğunluk, 44 px) | ✓ **18/18** |
+| `node tools/sim-node.js --n=50` | **tarayıcısız** maç simülasyonu + determinizm (sunucu ön koşulu) | ✓ 50/50 |
 | `node tools/sunum-check.js --ms=300000` | M9 outlet · M12 and-1 · M14 şut saati | ✓ **3/3** |
 | `node tools/visual-check.js` | masaüstü + mobil akış, konsol | ✓ çıkış kodu **0** |
 | `node tools/live-metrics.js --ms=360000` | senkron · kimlik · ışınlanma | ✓ orphan 0 · kimlik %100 · 0 kare |
@@ -79,7 +80,12 @@ ayrı bir fazdır.
 
 ## Yarım kalan
 
-Yok.
+**`season-loop` K2 (pasif takım kasası) düşüyor** — `--n=3 --runs=3` ortalaması 2,06× (eşik 2,0;
+tohumlara göre 1,56×-2,62×). `git worktree` ile ölçüldü: **36. oturum öncesi commit'lerde de
+düşüyor** (`8288405`, hatta FAZ 9'un bittiği `7e8f5c0`). FAZ 9'da "6/6" diye kaydedilen ölçüm
+bugün aynı commit'te tekrar üretilemiyor → aracın ekonomi ölçümünde tohumla sabitlenmeyen bir
+girdi var (muhtemelen takvim/tarih). **Önce aracın determinizmi doğrulanmalı, sonra denge.**
+Bu depoda dördüncü kez bir ölçüm aracının kendisi şüpheli.
 
 ## Sıradaki adım (öncelik sırasıyla)
 

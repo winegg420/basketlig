@@ -2694,3 +2694,75 @@ Market düğmesini kapatıyordu** — dokunma testi bunu ilk koşuda yakaladı (
 `mobile-check` **18/18** · `visual-check` 0 hata (masaüstü + mobil) · `faz6` 7/7 · `faz7` 8/8 ·
 `faz8` 6/6 · `faz10` 27/27 · `faz11` 13/13 · `i18n-scan` kalan Türkçe yalnız özel isim.
 Script sürümü `?v=42` → **`?v=43`** + `sw.js` `SCRIPT_V='43'`.
+
+## BÖLÜM 3 — MAÇ MOTORUNU `G`'DEN AYIR (KARAR-SUNUCU.md 3.0)
+
+Çok oyunculunun ön koşulu; tamamen yerel bir yeniden düzenleme.
+
+### İki engel, iki çözüm
+
+**Engel 1 — motor tek küresel `G` durumuna bağlıydı.** `generateMatchEvents` gövdesinde
+**30 adet `G.` okuması** vardı (G.team, G.players, G.tactics, G.chemistry, G.wins/losses,
+G.gameDay, G.season.drift) + `matchLineup()` / `computeRosterOfrDef()` / `teamBonusFactor()`
+çağrıları. Sunucu aynı anda yüzlerce maç oynatırken tek bir `G` olamaz.
+
+**Çözüm — bağlam nesnesi (MC):** motor artık `buildMatchCtx(rakip,opts)` ile kurulan bağlamı
+okur. `opts.ctx` verilmezse bağlam G'den kurulur → **tek oyunculu davranış birebir korunur**.
+Gövdedeki `G.` sayısı **30 → 0** (kalan tek eşleşme bir yorum satırı).
+
+**Engel 2 — rakibin kadrosu yoktu, sadece adı vardı.** `pseudoTeamStrength(isim,tblKey)`
+rakibin gücünü **takım adının hash'inden** üretiyordu; maç "senin kadron ↔ bir sayı" idi.
+
+**Çözüm:** `matchOppStrength(MC)` — bağlamda gerçek kadro varsa güç **kullanıcı tarafıyla
+aynı formülden** (`computeRosterOfrDef`) hesaplanır, yoksa eski ada dayalı yola düşer.
+Ayrıca rakip **oyuncu listesi** de bağlamdan alınır (eskiden her zaman
+`getBotClubProfile(ad)` önbelleğinden geliyordu).
+
+### Yardımcılar parametreli hâle geldi (geriye dönük uyumlu)
+- `computeRosterOfrDef(players)` — parametresiz çağrı eski davranış (G.players)
+- `matchLineup(players,lineupSel)` — dışarıdan kadro verildiğinde kullanıcının ilk 5 seçimi
+  uygulanmaz (o seçim yalnız kendi takımı içindir)
+
+### Sunucu sözleşmesi
+```js
+simulateMatch({ homeRoster, awayRoster, homeTactics, awayTactics, seed })
+  → { events, home, away, box }        // G yok · DOM yok · tohumla deterministik
+```
+Tohum, çağrı süresince `Math.random`'ı tohumlu bir PRNG ile değiştirir ve `finally` ile geri
+koyar; tüm rastgelelik (rand, Math.random, mulberry32) tek noktadan sabitlenir.
+
+### Yeni araç: `tools/sim-node.js`
+Motoru **tarayıcısız** çalıştırır. `band.js` / `box-band.js` / `season-loop.js` Playwright ile
+başsız bir *tarayıcı* açar; bu araç düz Node'dur.
+
+> **Bulgu (belgeye eklendi):** Node'un `vm` modülünde her `runInContext` çağrısı kendi
+> sözlüksel kapsamını açar; dosyalar ayrı ayrı çalıştırılırsa `G`, `SPIKERS`, `POZLAR` gibi
+> top-level `const/let` bağları birbirini göremez (tarayıcıda klasik script'ler ortak global
+> sözlüksel ortamı paylaşır). Bu yüzden 12 dosya **tek script** olarak birleştirilip bir kez
+> çalıştırılıyor — tarayıcı davranışının aynısı.
+
+**Ölçüm:** 50 maç **0,3 sn**de, hata 0, ortalama skor 86,8-81,9, olay/maç 194.
+Aynı tohum → **birebir aynı** skor ve olay listesi. `G` durumu **değişmedi**.
+
+### Determinizmi bozan gerçek hata (araç yakaladı)
+İlk denemede aynı tohum farklı sonuç veriyordu; 2. ve 3. koşular birbiriyle aynıydı.
+Sebep: rakip kadrosu `getBotClubProfile()` ile **ilk çağrıda üretilip önbelleğe alınıyordu** —
+üretim `Math.random` tükettiği için tohumlu diziyi yalnız ilk maçta kaydırıyordu. Rakip
+kadrosu bağlamdan alınınca hem sözleşme gereği doğru oldu hem determinizm düzeldi.
+
+### Bölüm 3 kabul kapısı
+`sim-node --n=50` ✓ (tarayıcısız, deterministik) · `box-band --n=200` **11/11** ·
+`spacing-check` **9/9** · `visual-check` 0 hata · `faz7` 8/8 · `faz10` 27/27 · `faz11` 13/13 ·
+`m20` 6/6 · **`band.js` hash DEĞİŞMEDİ** (`ec630b3a512bb3b2`).
+
+> Prompt "bu bölümde hash'in değişmesi beklenir" diyordu; **değişmedi** — çünkü sözleşme
+> değişikliği eklemeli yapıldı: bağlam verilmediğinde motor tam olarak eski yolu izliyor.
+> Bu, tek oyunculu sürüm için daha güvenli bir sonuç.
+
+### AÇIK BULGU — `season-loop` K2 (bu oturumun işi değil)
+`season-loop --n=3 --runs=3` → **K2 düşüyor** (pasif takım kasası ortalama 2,06× · eşik 2,0;
+tohumlara göre 1,56× – 2,62×). `git worktree` ile ölçüldü: **bu oturum öncesi commit'lerde de
+düşüyor** (`8288405` ve FAZ 9'un bittiği `7e8f5c0` dahil). Yani Bölüm 1-3'ten gelmiyor;
+FAZ 9'da "6/6" olarak kaydedilen ölçüm bugün aynı commit'te tekrar üretilemiyor — aracın
+ekonomi ölçümünde tohumla sabitlenmeyen bir girdi (büyük olasılıkla takvim/tarih) var.
+**Bu, denge değil ölçüm aracı sorunu olabilir; ayrı ele alınmalı.**

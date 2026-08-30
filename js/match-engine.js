@@ -1981,14 +1981,121 @@ function spikerLinePR(spId,kind,v,pr,memo){
   return line.replace(/%SC/g,v.sc||'').replace(/%S/g,v.s||'').replace(/%B/g,v.b||'').replace(/%C/g,v.c||'');
 }
 
+/* ══ BÖLÜM 3 — MAÇ BAĞLAMI (KARAR-SUNUCU.md madde 3.0) ═════════════════════════════════
+   Motor iki yerde küresel duruma bağlıydı:
+     1) `generateMatchEvents` içeride G.team / G.players / G.tactics / matchLineup() okuyordu —
+        "şu an bu tarayıcıda oturan tek oyuncu" varsayımı. Sunucu aynı anda yüzlerce maç
+        oynatırken tek bir G olamaz.
+     2) Rakibin gücü ADININ HASH'İNDEN üretiliyordu (`pseudoTeamStrength`); rakibin gerçek
+        kadrosu, taktiği ve formu maça hiç girmiyordu.
+   Çözüm: motor artık BAĞLAM nesnesi (MC) okur. Bağlam verilmezse G'den kurulur — yani tek
+   oyunculu davranış birebir korunur. Bağlam verildiğinde (sunucu / tools/sim-node.js) motor
+   G'ye hiç dokunmaz ve iki taraf da AYNI kod yolundan geçer. */
+
+/** Maç bağlamını kur. opts.ctx verilmişse doğrudan o kullanılır (G okunmaz). */
+function buildMatchCtx(rakip,opts){
+  opts=opts||{};
+  if(opts.ctx) return opts.ctx;
+  const _G=(typeof G!=='undefined')?G:{};
+  return {
+    gameDay:_G.gameDay||1,
+    difficultyOpp:(typeof difficultyCfg==='function')?(difficultyCfg().rakip||1):1,
+    home:{
+      name:(_G.team&&_G.team.isim)||'Takım',
+      players:_G.players||[],
+      lineup:matchLineup(),
+      tactics:_G.tactics||{},
+      chemistry:(_G.chemistry!=null?_G.chemistry:75),
+      strength:computeRosterOfrDef(),
+      bonus:(typeof teamBonusFactor==='function')?teamBonusFactor():1,
+      wins:_G.wins||0,
+      losses:_G.losses||0
+    },
+    away:{
+      name:(rakip&&rakip.isim)||'Rakip',
+      players:(rakip&&Array.isArray(rakip.players))?rakip.players:null,
+      tactics:(rakip&&rakip.tactics)||{},
+      ligKey:(_G.team&&_G.team.tblKey)?_G.team.tblKey:'tbl',
+      drift:(_G.season&&_G.season.drift)||{}
+    }
+  };
+}
+
+/** Rakip gücü (58-100 bandı). Gerçek kadro varsa kullanıcı tarafıyla AYNI formülden ölçülür;
+    yoksa eski ada dayalı sanal güce düşer (tek oyunculu bot rakipler). */
+function matchOppStrength(MC){
+  const a=MC.away||{};
+  if(a.strengthNum!=null) return Number(a.strengthNum);
+  if(Array.isArray(a.players)&&a.players.length){
+    const s=computeRosterOfrDef(a.players);
+    /* computeRosterOfrDef ~190-320 bandı üretir; pseudoTeamStrength 58-100 bandındadır.
+       İki ölçek aynı doğrusal eşlemeyle birleştirilir (uq/oq hesabıyla tutarlı). */
+    const q=Math.max(0,Math.min(1,((s.ofr+s.def)/2-190)/130));
+    return 58+q*42;
+  }
+  return pseudoTeamStrength(a.name,a.ligKey||'tbl')+((a.drift&&a.drift[a.name])||0);
+}
+
+/** Tohumlu PRNG — aynı tohum aynı maçı üretir (sunucu tarafı yeniden üretilebilirlik şartı). */
+function _seedRandom(seed){
+  let a=seed>>>0;
+  return function(){
+    a|=0; a=(a+0x6D2B79F5)|0;
+    let t=Math.imul(a^(a>>>15),1|a);
+    t=(t+Math.imul(t^(t>>>7),61|t))^t;
+    return ((t^(t>>>14))>>>0)/4294967296;
+  };
+}
+
+/** SUNUCU SÖZLEŞMESİ — saf fonksiyon: G yok, DOM yok, tohumla deterministik.
+      simulateMatch({homeRoster,awayRoster,homeTactics,awayTactics,seed,homeName,awayName,gameDay})
+    Dönen: {events, home, away, box} — events dizisi tarayıcıda oynatılabilir (aynı biçim). */
+function simulateMatch(o){
+  o=o||{};
+  const ctx={
+    gameDay:o.gameDay||1,
+    difficultyOpp:o.difficultyOpp!=null?o.difficultyOpp:1,
+    home:{
+      name:o.homeName||'Ev',
+      players:o.homeRoster||[],
+      lineup:matchLineup(o.homeRoster||[],o.homeLineup||null),
+      tactics:o.homeTactics||{},
+      chemistry:o.homeChemistry!=null?o.homeChemistry:75,
+      strength:computeRosterOfrDef(o.homeRoster||[]),
+      bonus:o.homeBonus!=null?o.homeBonus:1,
+      wins:o.homeWins||0,
+      losses:o.homeLosses||0
+    },
+    away:{
+      name:o.awayName||'Deplasman',
+      players:o.awayRoster||null,
+      tactics:o.awayTactics||{},
+      ligKey:'tbl',
+      drift:{}
+    }
+  };
+  const eskiRandom=Math.random;
+  if(o.seed!=null) Math.random=_seedRandom(o.seed|0);
+  let events;
+  try{
+    events=generateMatchEvents({isim:ctx.away.name,players:ctx.away.players},
+      {ctx:ctx,userIsHome:o.userIsHome!==false});
+  } finally {
+    Math.random=eskiRandom;
+  }
+  const son=events[events.length-1]||{};
+  return {events:events,home:son.home|0,away:son.away|0,box:son.box||null};
+}
+
 function generateMatchEvents(rakip, opts){
   opts=opts||{};
   const userIsHome=opts.userIsHome!==undefined?!!opts.userIsHome:true;
   const resume=opts.resume||null;   /* Madde 12: manuel değişiklik sonrası kalan maçı yeniden üret */
   /* Maç başına spiker ata (rotasyonlu — sezon maç sayısına göre + rastgele öğe). */
-  const spikerIx=(Math.abs((G.wins||0)+(G.losses||0))+rand(0,3))%SPIKERS.length;
+  const MC=buildMatchCtx(rakip,opts);
+  const spikerIx=(Math.abs((MC.home.wins||0)+(MC.home.losses||0))+rand(0,3))%SPIKERS.length;
   const SP=(resume&&resume.spId)?(SPIKERS.find(s=>s.id===resume.spId)||SPIKERS[spikerIx]):SPIKERS[spikerIx];
-  const lu=matchLineup();
+  const lu=MC.home.lineup;
   if(!lu||!lu.pg){
     const emptyQ={1:0,2:0,3:0,4:0};
     return [{
@@ -2001,21 +2108,21 @@ function generateMatchEvents(rakip, opts){
   let {pg,sg,sf,pf,c}=lu;   /* let: aşağıdaki boş-slot savunması yeniden atayabilsin */
   /* Takım gücü etkisi: kadro OFR/DEF ↔ rakip sanal gücü → şut isabet çarpanı (±%16 sınırlı).
      Böylece güçlü kadro kurmanın maç sonucuna gerçek etkisi olur; rastgelelik korunur. */
-  const rrStr=computeRosterOfrDef();
-  const ligKey=G.team&&G.team.tblKey?G.team.tblKey:'tbl';
-  const oppName=(rakip&&rakip.isim)||'Rakip';
-  const oppStr=pseudoTeamStrength(oppName,ligKey)+((G.season&&G.season.drift&&G.season.drift[oppName])||0);
+  const rrStr=MC.home.strength;
+  const ligKey=MC.away.ligKey;
+  const oppName=MC.away.name;
+  const oppStr=matchOppStrength(MC);
   const uq=Math.max(0,Math.min(1,((rrStr.ofr+rrStr.def)/2-190)/130));
   const oq=Math.max(0,Math.min(1,(oppStr-58)/42));
   const strengthEdge=Math.max(-0.16,Math.min(0.16,(uq-oq)*0.22));
   /* Madde 8/9: koç skoru + menajer itibarı küçük ek çarpan olarak kullanıcı lehine (maks ~+%5.5). */
   /* B5: zorluk rakip gücünü ölçekler (normal = 1, davranış değişmez). */
-  const _zorRakip=(typeof difficultyCfg==='function')?(difficultyCfg().rakip||1):1;
-  const uMul=(1+strengthEdge)*teamBonusFactor(), oMul=(1-strengthEdge)*_zorRakip;
+  const _zorRakip=MC.difficultyOpp!=null?MC.difficultyOpp:1;
+  const uMul=(1+strengthEdge)*MC.home.bonus, oMul=(1-strengthEdge)*_zorRakip;
   /* Taktik etkisi (Faz 3: derinleştirildi): tempo·hücum odağı·savunma stili·top yükleme·yıldız eşleştirme.
      VARSAYILANLAR (tempo=normal, odak=dengeli, savunma=adam, yükleme yok, eşleştirme kapalı) tam olarak
      eski davranışı üretir — skor bandı (~86-90) korunur; yalnız kullanıcı seçimleri dengeyi kaydırır. */
-  const tac=G.tactics||{};
+  const tac=MC.home.tactics||{};
   const tempo=tac.tempo||'normal';
   const odak=tac.odak||'dengeli';
   const defStyle=tac.defensiveStyle||'adam';        /* adam / bolge / pres */
@@ -2056,10 +2163,13 @@ function generateMatchEvents(rakip, opts){
      sabit bir 5 + yedek kurulur; kullanıcı takımıyla AYNI derinlikte maç istatistiği, faul sayacı
      ve oyundan atılma işler. Sakat rakip oyuncular sahaya çıkmaz (kalıcı sakatlık takibi). */
   let oppFull=[];
-  try{ oppFull=(getBotClubProfile(oppName,ligKey).roster||[]).slice(); }catch(e){ oppFull=[]; }
+  /* BÖLÜM 3: rakip kadrosu ÖNCE bağlamdan gelir (sunucu / iki gerçek takım). Bağlamda kadro
+     yoksa eski yol sürer: adı verilen bot kulübün kalıcı kadrosu (tek oyunculu davranış). */
+  if(Array.isArray(MC.away.players)&&MC.away.players.length) oppFull=MC.away.players.slice();
+  else { try{ oppFull=(getBotClubProfile(oppName,ligKey).roster||[]).slice(); }catch(e){ oppFull=[]; } }
   /* ── Madde 2/3/4: kullanıcı şutörünün kendi statı + enerjisi + moral/kimya isabeti belirler ──
      Takım gücü (uMul) ikincil çarpan olarak kalır; genel skor bandı (~85-95) korunur. */
-  const teamChem=Math.max(0,Math.min(100,Number(G.chemistry!=null?G.chemistry:75)));
+  const teamChem=Math.max(0,Math.min(100,Number(MC.home.chemistry!=null?MC.home.chemistry:75)));
   /* Paket 3 (14. oturum): pozisyon uyumu — oynadığı yuva doğal pozuysa tam performans,
      eğitimli İKİNCİL pozuysa küçük ceza (-%4), yabancı pozdaysa belirgin ceza (-%10).
      matchLineup önce doğal poza atadığından normal kadrolarda çarpan hep 1'dir (davranış değişmez). */
@@ -2145,7 +2255,7 @@ function generateMatchEvents(rakip, opts){
   const foulLimit=5;
   const qFoulU=resume&&resume.qFoulU?Object.assign({},resume.qFoulU):{};
   const qFoulO=resume&&resume.qFoulO?Object.assign({},resume.qFoulO):{};
-  const byPid=id=>(G.players||[]).find(p=>p.id===id);
+  const byPid=id=>(MC.home.players||[]).find(p=>p.id===id);
   let userCourt=(resume&&Array.isArray(resume.onCourtIds))?resume.onCourtIds.map(byPid).filter(Boolean):[pg,sg,sf,pf,c].filter(Boolean);
   const benchQueue=(resume&&Array.isArray(resume.benchIds))?resume.benchIds.map(byPid).filter(Boolean):(lu.bench||[]).slice();
   const subbedIds=new Set(resume&&Array.isArray(resume.subbedIds)?resume.subbedIds:[]);
@@ -2161,7 +2271,7 @@ function generateMatchEvents(rakip, opts){
   /* M7: sahnenin dizeceği rakip beşlisi — motorun gerçekten oynattığı kadro (tek doğruluk kaynağı). */
   const _oppFiveOut=[];
   /* A1: Rakip sahada kalıcı 5 + yedek. En iyi 5 başlar; sakatlar dışlanır (yoksa tam kadroya düş). */
-  const oppHealthy=oppFull.filter(p=>!(p&&p.injReturnDay!=null&&(G.gameDay||1)<p.injReturnDay));
+  const oppHealthy=oppFull.filter(p=>!(p&&p.injReturnDay!=null&&MC.gameDay<p.injReturnDay));
   /* M20: ilk 5 seçimi yalnız OVR'ye değil, güncel enerjiye de bakar (kullanıcı tarafındaki
      yorgun oyuncuyu dinlendirme mantığının bot karşılığı). Enerji 100 iken sıralama eskisiyle
      aynıdır; yorgun oyuncu geriye düşer ve yedeği başlar. */
@@ -2184,7 +2294,7 @@ function generateMatchEvents(rakip, opts){
   const oShooter=()=>oppCourt.length?(wPick(oppCourt,usageWO)||ch(oppCourt)):(oppPool[0]||oFallback);
   const oAny=()=>oppCourt.length?ch(oppCourt):(oppPool[0]||oFallback);
   const oBenchNext=()=>{ while(oppBench.length){ const nx=oppBench.shift(); if(nx&&(nx.matchFouls||0)<foulLimit) return nx; } return null; };
-  const foulingTeamName=(defenderIsUser)=>defenderIsUser?G.team.isim:rname;
+  const foulingTeamName=(defenderIsUser)=>defenderIsUser?MC.home.name:rname;
   function userFoulsOut(p,q,t){
     const sub=benchNext();
     const ix=userCourt.indexOf(p);
@@ -2254,7 +2364,7 @@ function generateMatchEvents(rakip, opts){
   /* Faz 1-3: sunum (anlatım/senaryo) rastgeleliği için AYRI deterministik üreteç.
      Böylece bağlam/hamle/anti-tekrar seçimleri global Math.random akışını (maç sonucu)
      kirletmez. Seed maça özgü ama deterministik → resume tutarlı üretir. */
-  const _seedBase=(Math.abs((G.wins||0)*131+(G.losses||0)*17)+(oppName?oppName.length*7:0)+(userIsHome?3:1))>>>0;
+  const _seedBase=(Math.abs((MC.home.wins||0)*131+(MC.home.losses||0)*17)+(oppName?oppName.length*7:0)+(userIsHome?3:1))>>>0;
   const pr=_mulberry32(_seedBase||0x9E3779B9);
   const prCh=a=>a[Math.floor(pr()*a.length)];
   const prChance=x=>pr()<x;
@@ -2294,7 +2404,7 @@ function generateMatchEvents(rakip, opts){
     if(botState.run>=botC.toRun && botState.to>0 && q>=1 && t>20){
       botState.to--; botState.run=0; botState.dampen=3;
       events.push({type:'tactic',off:false,botCoach:true,
-        text:`⏸ ${rname} MOLA aldı — ${escMatch(G.team.isim)} serisini kesmek istiyor. (Rakip mola hakkı: ${botState.to}) (${homeScore} - ${awayScore})`,
+        text:`⏸ ${rname} MOLA aldı — ${escMatch(MC.home.name)} serisini kesmek istiyor. (Rakip mola hakkı: ${botState.to}) (${homeScore} - ${awayScore})`,
         q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       return;
     }
@@ -2646,8 +2756,8 @@ function generateMatchEvents(rakip, opts){
 
   /* Savunma katmanı: ilk 5'te boş slot kalırsa (kadro çok eksikse) anlatım çökmesin. */
   if(!pg||!sg||!sf||!pf||!c){
-    const _yedekler=(lu&&lu.avail)||(G.players||[]);
-    const _ilk=_yedekler[0]||{isim:(G.team&&G.team.isim)||'Oyuncu'};
+    const _yedekler=(lu&&lu.avail)||(MC.home.players||[]);
+    const _ilk=_yedekler[0]||{isim:MC.home.name};
     if(!pg) pg=_yedekler[0]||_ilk;
     if(!sg) sg=_yedekler[1]||_ilk;
     if(!sf) sf=_yedekler[2]||_ilk;
@@ -2657,7 +2767,7 @@ function generateMatchEvents(rakip, opts){
   if(!resume){
     events.push({
       type:'start',spId:SP.id,
-      text:`${SP.emoji} Bugünün spikeri: <strong>${SP.ad}</strong> (${SP.stil}). Maç hava atışıyla başlıyor. ${escMatch(G.team.isim)} ${userIsHome?'ev sahibi':'deplasman takımı olarak'}; ${c.isim} dairede, ${pg.isim} ilk hücumu kuruyor. Tribünler dolu.`,
+      text:`${SP.emoji} Bugünün spikeri: <strong>${SP.ad}</strong> (${SP.stil}). Maç hava atışıyla başlıyor. ${escMatch(MC.home.name)} ${userIsHome?'ev sahibi':'deplasman takımı olarak'}; ${c.isim} dairede, ${pg.isim} ilk hücumu kuruyor. Tribünler dolu.`,
       q:1,t:MATCH_CLOCK_SEC,home:0,away:0,
       box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
     });
@@ -2673,7 +2783,7 @@ function generateMatchEvents(rakip, opts){
       events.push({
         type:'quarter_start',
         /* FAZ B: çeyrek başında hangi setle oynandığı anlatıma girer (koçun kararı görünür olsun). */
-        text:`🔔 ${q}. çeyrek başladı — ${escMatch(G.team.isim)} ${homeScore} - ${awayScore} ${rname}.${pb&&pb.key!=='dengeli'?` ${escMatch(G.team.isim)} ${pb.ikon} ${pb.ad} setiyle çıkıyor.`:''}`,
+        text:`🔔 ${q}. çeyrek başladı — ${escMatch(MC.home.name)} ${homeScore} - ${awayScore} ${rname}.${pb&&pb.key!=='dengeli'?` ${escMatch(MC.home.name)} ${pb.ikon} ${pb.ad} setiyle çıkıyor.`:''}`,
         q,t:MATCH_CLOCK_SEC,home:homeScore,away:awayScore,
         box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
       });
@@ -2695,7 +2805,7 @@ function generateMatchEvents(rakip, opts){
     if(q<4){
       events.push({
         type:'quarter_end',
-        text:`Çeyrek bitti: ${escMatch(G.team.isim)} ${homeScore} - ${awayScore} ${rname}. Taktik masasına dönülüyor.`,
+        text:`Çeyrek bitti: ${escMatch(MC.home.name)} ${homeScore} - ${awayScore} ${rname}. Taktik masasına dönülüyor.`,
         q,t:0,home:homeScore,away:awayScore,
         box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
       });
@@ -2724,11 +2834,11 @@ function generateMatchEvents(rakip, opts){
       botCoachTick(qq,t,homeScore-_bh2,awayScore-_ba2);
       if(t===0) break;
     }
-    events.push({type:'quarter_end',text:`Uzatma ${otRound} bitti: ${escMatch(G.team.isim)} ${homeScore} - ${awayScore} ${rname}${homeScore===awayScore?' — hâlâ berabere, bir uzatma daha!':'.'}`,q:qq,t:0,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+    events.push({type:'quarter_end',text:`Uzatma ${otRound} bitti: ${escMatch(MC.home.name)} ${homeScore} - ${awayScore} ${rname}${homeScore===awayScore?' — hâlâ berabere, bir uzatma daha!':'.'}`,q:qq,t:0,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
     /* Güvenlik: aşırı uzarsa (çok nadir) bir sonraki uzatmada kesin sonuç için küçük eşik. */
     if(otRound>=8 && homeScore===awayScore){
       if(Math.random()<0.5){ homeScore++; qh[qq]++; hB.ftMade++; hB.ftAtt++; } else { awayScore++; qa[qq]++; aB.ftMade++; aB.ftAtt++; }
-      events.push({type:'free',text:`Son saniye serbest atışı sonucu belirledi — ${escMatch(G.team.isim)} ${homeScore} - ${awayScore} ${rname}.`,q:qq,t:0,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      events.push({type:'free',text:`Son saniye serbest atışı sonucu belirledi — ${escMatch(MC.home.name)} ${homeScore} - ${awayScore} ${rname}.`,q:qq,t:0,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       break;
     }
   }
@@ -2745,7 +2855,7 @@ function generateMatchEvents(rakip, opts){
   const scoreOf=s=>(s.pts||0)+(s.ast||0)*1.5+(s.reb||0)*1.2;
   Object.keys(pstats).forEach(id=>{
     const s=pstats[id], sc0=scoreOf(s);
-    if(sc0>mvpScore){ mvpScore=sc0; mvp=(G.players||[]).find(p=>p.id===id); mvpStat=s; mvpTeam=G.team.isim; }
+    if(sc0>mvpScore){ mvpScore=sc0; mvp=(MC.home.players||[]).find(p=>p.id===id); mvpStat=s; mvpTeam=MC.home.name; }
   });
   Object.keys(ostats).forEach(id=>{
     const s=ostats[id], sc0=scoreOf(s);
@@ -2760,7 +2870,7 @@ function generateMatchEvents(rakip, opts){
   if(ow) endNote=userIsHome?'Ev sahasında mağlubiyet.':'Deplasmanda mağlubiyet.';
   events.push({
     type:'end',
-    text:`Maç bitti! ${escMatch(G.team.isim)} ${homeScore} - ${awayScore} ${rname}. ${endNote}`,
+    text:`Maç bitti! ${escMatch(MC.home.name)} ${homeScore} - ${awayScore} ${rname}. ${endNote}`,
     q:lastPeriod,t:0,home:homeScore,away:awayScore,winner,spId:SP.id,
     players:pstats,
     lineupIds:[pg,sg,sf,pf,c].filter(Boolean).map(x=>x.id),

@@ -56,8 +56,12 @@ function botManagerRepText(name){
 /** Sağlıklı oyuncular üzerinden; top-10 genel sıralı ortalama OFR/DEF + ham toplamlar.
  *  Madde 3: her oyuncunun kendi enerjisi kendi katkısını ağırlıklandırır (yorgun yıldız gücü düşürür).
  *  Madde 4: takım moral (mood) + kimya küçük, sınırlı bir çarpan olarak dahil (±%~6). */
-function computeRosterOfrDef(){
-  const avail=(G.players||[]).filter(p=>!playerIsInjured(p));
+/* BÖLÜM 3 (KARAR-SUNUCU 3.0): kadro gücü artık VERİLEN kadrodan hesaplanabiliyor.
+   Parametre verilmezse eski davranış (küresel G.players) aynen sürer — çağrı yerleri değişmedi.
+   Sunucuda iki gerçek takım karşılaşınca iki taraf da bu AYNI formülden geçer. */
+function computeRosterOfrDef(players){
+  const _src=Array.isArray(players)?players:((typeof G!=='undefined'&&G.players)||[]);
+  const avail=_src.filter(p=>!playerIsInjured(p));
   const top=avail.slice().sort((a,b)=>(b.genel||0)-(a.genel||0)).slice(0,10);
   if(!top.length) return {ofr:58,def:58,sumOfr:0,sumDef:0,n:0};
   let sumO=0,sumD=0;
@@ -80,13 +84,19 @@ function computeRosterOfrDef(){
 }
 /** Maç anlatımı için — sadece sakat olmayanlar. Kullanıcı ilk 5'i seçtiyse (G.lineup) o kullanılır;
  *  seçilmeyen/sakat kalan slotlar için yedek sırası (bench) ve en iyi genel fallback devreye girer. */
-function matchLineup(){
-  let avail=(G.players||[]).filter(p=>!playerIsInjured(p)).sort((a,b)=>(b.genel||0)-(a.genel||0));
+/** Verilen kadrodan ilk 5 + yedekler. Parametre yoksa küresel G.players (eski davranış). */
+function matchLineup(players,lineupSel){
+  const _all=Array.isArray(players)?players:((typeof G!=='undefined'&&G.players)||[]);
+  /* Kullanıcının seçtiği ilk 5 yalnız KENDİ kadrosu için geçerlidir; dışarıdan kadro
+     verildiğinde (rakip takım / sunucu) seçim de dışarıdan gelmeli. */
+  const _lu=(lineupSel!==undefined)?lineupSel
+    :(Array.isArray(players)?null:((typeof G!=='undefined'&&G.lineup)||null));
+  let avail=_all.filter(p=>!playerIsInjured(p)).sort((a,b)=>(b.genel||0)-(a.genel||0));
   /* Sağlıklı 5 kişi yoksa kadro tamamlanır: en yakın dönüşe sahip (en hafif) sakatlar
      sıraya girer. Aksi halde slotlar null kalıyor ve maç motoru çöküyordu. */
   if(avail.length<5){
-    const gd=G.gameDay||1;
-    const sakatlar=(G.players||[]).filter(p=>p&&playerIsInjured(p))
+    const gd=(typeof G!=='undefined'&&G.gameDay)||1;
+    const sakatlar=_all.filter(p=>p&&playerIsInjured(p))
       .sort((a,b)=>((Number(a.injReturnDay)||gd)-(Number(b.injReturnDay)||gd))
                  ||((b.genel||0)-(a.genel||0)));
     avail=avail.concat(sakatlar).slice(0,Math.max(5,avail.length));
@@ -97,10 +107,10 @@ function matchLineup(){
   const onCourt=[];
   const addP=p=>{ if(p&&!used.has(p.id)&&onCourt.length<5){ used.add(p.id); onCourt.push(p); } };
   /* 1) Kullanıcının seçtiği ilk 5 (sağlıklı olanlar) */
-  const sel=(G.lineup&&Array.isArray(G.lineup.starters))?G.lineup.starters:[];
+  const sel=(_lu&&Array.isArray(_lu.starters))?_lu.starters:[];
   sel.forEach(id=>addP(byId(id)));
   /* 2) Eksik slotları kullanıcının yedek sırasından doldur */
-  const benchOrder=(G.lineup&&Array.isArray(G.lineup.bench))?G.lineup.bench:[];
+  const benchOrder=(_lu&&Array.isArray(_lu.bench))?_lu.bench:[];
   benchOrder.forEach(id=>addP(byId(id)));
   /* 3) FAZ C: hâlâ eksikse ÖNCE pozisyon dengesi kur — otomatik ilk 5 artık "en iyi 5 OVR"
      değil, her mevkiden en iyi sağlıklı oyuncu. (Kullanıcı ilk 5'i seçtiyse buraya hiç girilmez.) */
