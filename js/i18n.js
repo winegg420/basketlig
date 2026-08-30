@@ -181,6 +181,9 @@ function localizeCatalogs(){
   try{ mapArr(typeof ANTRENMAN_T!=='undefined'?ANTRENMAN_T:null,['isim']); }catch(e){}
   try{ mapArr(typeof SPIKERS!=='undefined'?SPIKERS:null,['ad','stil']); }catch(e){}
   try{ mapStrArr(typeof SCOUT_REGIONS!=='undefined'?SCOUT_REGIONS:null); }catch(e){}
+  /* F10-6: öğretici adımları. Metinler <strong> içerdiği için DOM düğümü bazlı çeviri
+     onları parçalar; katalog olarak burada, innerHTML'e girmeden önce çevrilirler. */
+  try{ mapArr(typeof TUT_STEPS!=='undefined'?TUT_STEPS:null,['baslik','metin']); }catch(e){}
   /* Spiker anlatım havuzları: {spikerId:{kind:[şablon,...]}} — %S/%SC yer tutucuları korunur. */
   try{
     if(typeof SPIKER_LINES!=='undefined') Object.keys(SPIKER_LINES).forEach(sp=>{

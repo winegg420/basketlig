@@ -210,3 +210,113 @@ function hash32(str){
 
 // ===== EKONOMİ ÇEKİRDEĞİ: işlem defteri + haftalık döngü =====
 /** Tüm para hareketleri buradan geçer — bilanço gerçek veriden beslenir. */
+
+/* ══ FAZ 10 — YAYIN ALTYAPISI (test bayrağı · analitik · üretim tespiti) ════════════════
+   Oyunun hedefi çok oyunculu ve FİKSTÜR TARİHLİ: maç, saati gelince oynanır. Bugün fikstür
+   kayıtlarında saat alanı (scheduledAt) yok — tek oyunculu sürümde maçlar art arda oynanabilir
+   ve bu BİLİNÇLİ bir test kolaylığıdır. Kapı yine de şimdiden tek noktada kuruluyor: sunucu
+   tarafı geldiğinde davranış yalnız burada açılır, kapıyı atlayan yol açık bir bayrağın
+   (?test=1) arkasındadır. Node harness'lerinde (season-loop, band, box-band) location yoktur
+   → test modu açık kabul edilir, araçlar bozulmaz. */
+const TEST_MODU=(function(){
+  try{
+    if(typeof location==='undefined') return true;
+    return new URLSearchParams(location.search||'').has('test');
+  }catch(e){ return true; }
+})();
+
+/** Fikstür saati kapısı. scheduledAt yoksa (tek oyunculu sürüm) kapı açıktır. */
+function matchTimeGateOk(match){
+  if(TEST_MODU) return true;
+  const at=match?Number(match.scheduledAt||0):0;
+  if(!at||!isFinite(at)) return true;
+  return Date.now()>=at;
+}
+/** Kapı kapalıyken kullanıcıya gösterilecek mesaj (maç saatini içerir). */
+function matchTimeGateMsg(match){
+  const base=(typeof t==='function'?t('Maç saati henüz gelmedi.'):'Maç saati henüz gelmedi.');
+  const at=match?Number(match.scheduledAt||0):0;
+  if(!at||!isFinite(at)) return base;
+  let s='';
+  try{ s=new Date(at).toLocaleString(typeof getLang==='function'&&getLang()==='en'?'en-US':'tr-TR'); }catch(e){ s=''; }
+  return s?base+' ('+s+')':base;
+}
+
+/** Yayın sunucusunda mıyız? (yerel geliştirme ve test araçları hariç) */
+function isProdHost(){
+  try{
+    if(typeof location==='undefined') return false;
+    if(location.protocol!=='https:') return false;
+    const h=String(location.hostname||'');
+    if(!h||h==='localhost'||h==='127.0.0.1'||h==='[::1]') return false;
+    return !/\.local$/.test(h);
+  }catch(e){ return false; }
+}
+
+/* ── Analitik (çerezsiz, kişisel veri toplamaz) ────────────────────────────────────────
+   Varsayılan KAPALI: ANALYTICS_SRC boşken hiçbir dış istek yapılmaz; olaylar yalnız bellekteki
+   halkaya yazılır (window.__charazayAnalytics — tools/faz10-check.js bunu okur). Yayında açmak
+   için ANALYTICS_SRC + ANALYTICS_SITE doldurulur (Umami/Plausible), başka değişiklik gerekmez.
+   Betik ayrıca YALNIZ üretim sunucusunda yüklenir; yerel testlerde ölçüm kirletilmez. */
+const ANALYTICS_SRC='';
+const ANALYTICS_SITE='';
+const ANALYTICS_KEY='charazay_analytics';
+/** İzlenen olaylar — yeni olay eklerken bu listeye de yaz (belge niteliğinde). */
+const ANALYTICS_EVENTS=['oyun_acildi','takim_kuruldu','ogretici_atlandi','ogretici_bitti',
+  'ilk_mac_bitti','gun2_donus','davet_paylasildi','sonuc_paylasildi','magaza_acildi','reklam_izlendi'];
+const _analyticsLog=[];
+const _analyticsOnce={};
+
+function trackEvent(name,props){
+  try{
+    if(!name) return;
+    const rec={ad:String(name),t:Date.now(),props:props||null};
+    _analyticsLog.push(rec);
+    if(_analyticsLog.length>200) _analyticsLog.shift();
+    if(typeof window!=='undefined') window.__charazayAnalytics=_analyticsLog;
+    if(typeof umami!=='undefined'&&umami&&typeof umami.track==='function') umami.track(rec.ad,props||undefined);
+    else if(typeof plausible==='function') plausible(rec.ad,props?{props:props}:undefined);
+  }catch(e){}
+}
+/** Oturum başına bir kez. */
+function trackOnce(name,props){
+  if(!name||_analyticsOnce[name]) return;
+  _analyticsOnce[name]=1;
+  trackEvent(name,props);
+}
+function _analyticsRead(){
+  try{ return JSON.parse(localStorage.getItem(ANALYTICS_KEY)||'{}')||{}; }catch(e){ return {}; }
+}
+function _analyticsWrite(o){
+  try{ localStorage.setItem(ANALYTICS_KEY,JSON.stringify(o||{})); }catch(e){}
+}
+/** Tarayıcı başına bir kez (huni kilometre taşları: ilk maç, ertesi gün dönüşü). */
+function trackMilestone(name,props){
+  if(!name) return;
+  const o=_analyticsRead();
+  if(o[name]) return;
+  o[name]=Date.now();
+  _analyticsWrite(o);
+  trackEvent(name,props);
+}
+function initAnalytics(){
+  try{
+    if(ANALYTICS_SRC&&ANALYTICS_SITE&&isProdHost()&&typeof document!=='undefined'){
+      const s=document.createElement('script');
+      s.async=true; s.defer=true; s.src=ANALYTICS_SRC;
+      s.setAttribute('data-website-id',ANALYTICS_SITE);
+      document.head.appendChild(s);
+    }
+  }catch(e){}
+  trackOnce('oyun_acildi');
+  /* Ertesi gün dönüşü: ilk ziyaretten 20-72 saat sonraki ilk açılış. */
+  try{
+    const o=_analyticsRead();
+    const first=Number(o.ilk_ziyaret||0);
+    if(!first){ o.ilk_ziyaret=Date.now(); _analyticsWrite(o); }
+    else{
+      const saat=(Date.now()-first)/3600000;
+      if(saat>=20&&saat<=72) trackMilestone('gun2_donus');
+    }
+  }catch(e){}
+}

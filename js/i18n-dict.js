@@ -803,3 +803,46 @@ Object.assign(I18N_TR_EN,{
 'Transfer Bedeli':'Transfer Fee',
 'Transfer bedeli':'Transfer fee'
 });
+
+/* ── F10-6: ÖĞRETİCİ — 7 adımın tamamı + gezinme butonları ────────────────────
+   Tarama aracı öğreticinin yalnız İLK adımını görüyordu (sonraki adımlar tıklamayla açılıyor),
+   bu yüzden EN oturumunda 1. adım İngilizce, kalan altı adım ve butonlar Türkçe kalıyordu.
+   Adım metinleri <strong> içerdiği için metin düğümü bazlı çeviri parçalanır; çözüm TUT_STEPS
+   kataloğunu localizeCatalogs() ile ETİKETLERİYLE BİRLİKTE, innerHTML'e girmeden önce
+   çevirmektir (i18n.js). Bu yüzden anahtarlar markup içerir — kısaltma. */
+Object.assign(I18N_TR_EN,{
+/* 1. adimin baslik+govdesi F2 taramasinda zaten eklenmisti. */
+'Maçlar sayfası':'Matches page',
+'Sol menüden <strong>Maçlar</strong>a gir. Sıradaki maçında <strong>Taktik ayarla</strong> ile tempo ve hücum odağını seç, sonra <strong>▶ Maçı Başlat</strong> ile canlı izle. Maçlar oynandıkça oyun günleri ilerler.':'Open <strong>Matches</strong> from the left menu. On your next fixture use <strong>Set tactics</strong> to pick tempo and offensive focus, then hit <strong>▶ Start Match</strong> to watch it live. Game days advance as matches are played.',
+'Ekonomi':'Economy',
+'Her hafta oyuncu maaşları, koç maaşları ve arena bakımı kasandan düşer. Ev maçlarında <strong>bilet geliri</strong> kazanırsın — galibiyetler tribünü doldurur. Detaylar <strong>Bilanço</strong> sayfasında.':'Player wages, coach wages and arena upkeep leave your treasury every week. Home games earn you <strong>gate revenue</strong> — wins fill the stands. See the details on the <strong>Balance</strong> page.',
+'Kadro ve transfer':'Squad and transfers',
+'<strong>Kadro</strong>da oyuncularını incele; <strong>Transfer Market</strong>ten yenilerini al, ihtiyaç fazlasını sat (bonservisin %85\'i kasaya girer). <strong>Altyapı</strong>daki gençleri yükseltmeyi unutma — bazıları ham elmas!':'Review your players in <strong>Squad</strong>; buy new ones from the <strong>Transfer Market</strong> and sell the ones you do not need (85% of the fee goes to your treasury). Do not forget to promote prospects from the <strong>Academy</strong> — some of them are rough diamonds!',
+'Gelişim':'Development',
+'<strong>Antrenman</strong> sayfasından takım veya bireysel antrenman başlat; birkaç oyun günü sonra gelişim işlenir. Koçlar her hafta zayıf oyunculara küçük bonuslar verir.':'Start team or individual sessions from the <strong>Training</strong> page; progress is applied after a few game days. Coaches also hand small weekly bonuses to your weaker players.',
+'Enerji ve sakatlık riski':'Energy and injury risk',
+'Oyuncuların enerjisi maç oynadıkça düşer. Düşük enerjiyle — özellikle art arda — sahaya sürdüğün oyuncularda <strong>sakatlanma riski artar</strong>. Kadro ve İlk 5 ekranlarındaki ⚡ göstergesini takip et; 🥵 art arda yorgun oynayanı, 🩹 sakatlıktan yeni döneni işaretler. Riskli oyuncuları dinlendir.':'Energy drops as players log minutes. Fielding tired players — especially on back-to-back games — <strong>raises their injury risk</strong>. Watch the ⚡ gauge on the Squad and Starting Five screens; 🥵 marks a player who keeps playing tired, 🩹 one who just returned from injury. Rest the risky ones.',
+'Hedef':'Your goal',
+'İlk 5\'te bitir, üst lige yüksel, başarımları topla (sağ üstteki 🏆). Ayarlara ⚙️ simgesinden ulaşabilirsin. Bol şans!':'Finish in the top five, get promoted, collect achievements (🏆 in the top right). Settings live behind the ⚙️ icon. Good luck!',
+'← Geri':'← Back',
+'Sonraki →':'Next →',
+'Atla':'Skip',
+'Başla!':'Start!',
+'İyi oyunlar! 🏀':'Enjoy the game! 🏀',
+'Maç saati henüz gelmedi.':'It is not match time yet.'
+});
+
+/* ── F10-5: paylaşım / davet ─────────────────────────────────────────────────────────── */
+Object.assign(I18N_TR_EN,{
+'📣 Sonucu Paylaş':'📣 Share Result',
+'Maç sonucunu paylaş':'Share the final score',
+'📣 Arkadaşını davet et':'📣 Invite a friend',
+'🔗 Oyun bağlantısını paylaş':'🔗 Share the game link',
+'Bağlantı panoya kopyalanır (mobilde paylaşım menüsü açılır).':'The link is copied to your clipboard (on mobile the share sheet opens).',
+'📣 Paylaş':'📣 Share',
+'Metni kopyalayıp arkadaşına gönder.':'Copy the text and send it to a friend.',
+'Bağlantı kopyalandı — arkadaşına gönder!':'Link copied — send it to a friend!',
+'Paylaşılacak maç sonucu yok.':'There is no match result to share yet.',
+'Charazay 2.0 — Türkçe basketbol menajerlik oyunu. Kendi kulübünü kur:':'Charazay 2.0 — a basketball management game. Build your own club:',
+'Charazay 2.0’da {takim} kulübünü yönetiyorum. Sen de bir kulüp kur, ligde karşılaşalım:':'I manage {takim} in Charazay 2.0. Start your own club and let us meet in the league:'
+});

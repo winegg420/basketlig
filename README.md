@@ -8,6 +8,13 @@ Tek dosya basketbol menajerlik demosu (`charazay2.0.html`).
 
 Kendi bilgisayarında **hemen oynamak** için tarayıcıda aç: `charazay2.0.html` dosyasına çift tıkla veya `Charazay-2.0-Chrome.bat` çalıştır; internet linki şart değil.
 
+## Telefona uygulama gibi ekle
+
+Oyun artık bir **PWA**: canlı adresi telefonda aç → tarayıcı menüsünden **“Ana ekrana ekle”**.
+Simgeden açıldığında tam ekran çalışır ve bir kez açtıktan sonra **internetsiz de** açılır
+(ilerlemen zaten cihazında saklanıyor). Arkadaşını davet etmek için: oyun içinde
+**⚙️ Ayarlar → 🔗 Oyun bağlantısını paylaş**; maç bitince **📣 Sonucu Paylaş**.
+
 ---
 
 ## İnsanlar oyuna hangi linkten girer?

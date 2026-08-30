@@ -1,17 +1,31 @@
 # KALDIĞIM YER
-Son güncelleme: 2026-08-30 · 33. oturum — **açık iş yok, tüm testler yeşil**
+Son güncelleme: 2026-08-30 · 34. oturum — **açık iş yok, tüm testler yeşil**
 
 Talep belgeleri: `REVIZE-PAKETI.md` (FAZ 1-6) · `REVIZE-PAKETI-FAZ7.md` (maç dışı) ·
-`REVIZE-PAKETI-FAZ8.md` (oynanış testi) · `REVIZE-PAKETI-FAZ9.md` (uzun vadeli döngü) —
-**dördü de baştan sona uygulandı ve ölçülerek doğrulandı**.
-Protokol: `DEVAM-ET.md` · Oturum günlüğü: `PROGRESS.md` (32. oturum + altı ek, 33. oturum)
+`REVIZE-PAKETI-FAZ8.md` (oynanış testi) · `REVIZE-PAKETI-FAZ9.md` (uzun vadeli döngü) ·
+`REVIZE-PAKETI-FAZ10.md` (yayın hazırlığı) — **beşi de uygulandı ve ölçülerek doğrulandı**;
+FAZ 10'un yalnız A grubu (çok oyunculu sunucu altyapısı) **bilinçli olarak** plana bırakıldı.
+Protokol: `DEVAM-ET.md` · Oturum günlüğü: `PROGRESS.md` (32-34. oturum)
 
 ## Durum: TEMİZ
 
 **FAZ 1-9'un tamamı bitti.** M9, M12, M14, M20 kapatıldı; a11y sürükleme hatası düzeltildi;
-B5 zorluk seviyesi eklendi; uzun vadeli sezon döngüsü dengelendi. Talep belgelerinde açık
-madde kalmadı.
+B5 zorluk seviyesi eklendi; uzun vadeli sezon döngüsü dengelendi.
+**FAZ 10'un B grubu bitti** (34. oturum): fikstür saati kapısı + `?test=1` bayrağı, analitik
+katmanı (varsayılan kapalı), og/twitter etiketleri + og:image, davet & sonuç paylaşımı,
+öğreticinin 7 adımının tamamı EN, service worker + manifest (PWA).
 Her madde **ölçülerek** doğrulandı — "uyguladım" beyanına dayanan açık iş yok.
+
+## ÇOK OYUNCULU — oyunun temeli, henüz başlanmadı
+
+Charazay baştan beri **çevrimiçi çok oyunculu** hedefliyor: maç **fikstür tarihinde** ve
+**otomatik** oynanır; oyuncu oradaysa canlı izleyip müdahale eder, değilse sonucu döndüğünde
+görür; rakipler gerçek oyuncular + sahipsiz takımları dolduran botlardır.
+**Maçların bugün art arda oynanabilmesi bir hata değil, bilinçli test kolaylığıdır** —
+34. oturumda `?test=1` bayrağının arkasına alındı (`TEST_MODU`, `matchTimeGateOk` · `state.js`).
+Sunucu mimarisi kararı **Supabase**; şema ve yol haritası **`PLAN-COK-OYUNCULU.md`**'de.
+Sunucu/veritabanı/hesap/zamanlayıcı **kodu yazılmadı** — tek oyunculu tarafla aynı büyüklükte
+ayrı bir fazdır.
 
 ## Doğrulama komutları (hepsi geçiyor)
 
@@ -22,6 +36,7 @@ Her madde **ölçülerek** doğrulandı — "uyguladım" beyanına dayanan açı
 | `node tools/faz8-check.js` | FAZ 8 kabul kriterleri (piyasa, şehir, v7, kutuplaşma, sürüm, mobil) | ✓ **6/6** |
 | `node tools/faz7-check.js` | FAZ 7 kabul kriterleri + a11y zoom hayaleti | ✓ **8/8** |
 | `node tools/m20-check.js` | rakip kadro kalıcılığı | ✓ **6/6** |
+| `node tools/faz10-check.js` | FAZ 10 (fikstür saati kapısı, analitik, og etiketleri, PWA, öğretici dili, paylaşım) | ✓ **27/27** |
 | `node tools/sunum-check.js --ms=300000` | M9 outlet · M12 and-1 · M14 şut saati | ✓ **3/3** |
 | `node tools/visual-check.js` | masaüstü + mobil akış, konsol | ✓ çıkış kodu **0** |
 | `node tools/live-metrics.js --ms=360000` | senkron · kimlik · ışınlanma | ✓ orphan 0 · kimlik %100 · 0 kare |
@@ -61,6 +76,14 @@ Yok.
 
 Talep belgelerinde **açık madde kalmadı**. Sıradakiler kapsam kararı gerektirir:
 
+0. **ÇOK OYUNCULU (FAZ 10 · F10-1)** — en büyük ve en öncelikli iş. `PLAN-COK-OYUNCULU.md`
+   6. bölümündeki 9 adım sırasıyla: Supabase şeması → anonim giriş → motoru Node'da koşturan
+   `sim` paketi → fikstür zamanlayıcısı → istemcinin sunucudan gelen olayları oynatması →
+   realtime + çeyrek arası müdahale → ortak transfer piyasası → lig yönetimi → bildirim.
+   *Ara yol önerisi (belgeden):* tek oyunculu sürüm şimdi yayınlanıp gerçek tutunma verisi
+   toplanırken altyapı arkada kurulabilir — analitik ve og etiketleri bu yüzden önden yapıldı.
+0b. **Analitik hesabı açılması** — `ANALYTICS_SRC` + `ANALYTICS_SITE` (`js/state.js`) doldurulunca
+   ölçüm başlar; katman hazır, hesap kullanıcıya ait (Umami/Plausible önerildi).
 1. **Gerçek Tauri derlemesi** — `npm run desktop:build` bu makinede **çalıştırılamadı**:
    Rust ve MSVC Build Tools kurulu değil (2026-08-30'da denendi, kullanıcı kurulumu erteledi).
    Ayrıntı ve kurulum adımları aşağıdaki **"Masaüstü derlemesi"** bölümünde.
@@ -124,7 +147,13 @@ sıfırdan derlenir); sonrakiler önbellekten hızlanır.
   eklerken `botClubEnsureDepth` içindeki geriye dönük doldurmaya da ekle. `BOT_ROSTER_DIST`
   başındaki İLK 7 SIRA tarihseldir — id/seed'ler ona bağlı, değiştirme.
 - **`cpuMatchScore()` tek kaynaktır** — bot-bot skor formülünü test de oradan çağırır.
-- **Script sürüm etiketi** her yayın öncesi artırılmalı — şu an **`?v=40`**; `faz8-check` A7 sınıyor.
+- **Script sürüm etiketi** her yayın öncesi artırılmalı — şu an **`?v=41`**; `faz8-check` A7 sınıyor.
+  Aynı sürüm `sw.js` içindeki `SCRIPT_V`'de de geçer — ikisi ayrışırsa `faz10-check` A4 düşer.
+- **Service worker yalnız yayın sunucusunda kaydedilir** (`isProdHost()`); yerelde/testte kapalı,
+  yoksa önbellek eski JS'i servis edip ölçümleri yanıltır. `?nosw=1` ile de kapatılabilir.
+- **Yeni maç başlatma yolu eklersen** `matchTimeGateOk()` kapısından geçir (F10-2).
+- **`season-loop --n=1` çalıştırma:** tek sezonda sezon geçişi olmadığı için K4 (yaşlanma) düşer;
+  yargı için `--n=3` gerekir.
 - **Fontlar yerel** (`assets/fonts/`) — yeni Google Fonts `<link>` eklenmemeli.
 - **`S._dbgOutlet`** yalnız `sunum-check` için bırakılmış teşhis damgasıdır, silme.
 - **`js/league.js` CRLF**, `charazay2.0.html` KARIŞIK (CRLF+LF), diğer modüller LF. Toplu

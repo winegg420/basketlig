@@ -206,6 +206,11 @@ function openSettingsModal(){
         <div class="lang-row" style="justify-content:flex-start;">${langPickerHtml()}</div>
         <div style="font-size:10px;color:var(--text2);margin-top:6px;">Dil değişince oyun yeniden yüklenir — ilerlemen korunur.</div>
       </div>
+      <div style="padding:12px;background:var(--bg3);border-radius:10px;">
+        <div style="font-size:13px;margin-bottom:7px;">📣 Arkadaşını davet et</div>
+        <button type="button" class="btn-sm" onclick="shareGameInvite()">🔗 Oyun bağlantısını paylaş</button>
+        <div style="font-size:10px;color:var(--text2);margin-top:6px;">Bağlantı panoya kopyalanır (mobilde paylaşım menüsü açılır).</div>
+      </div>
       <label style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg3);border-radius:10px;cursor:pointer;">
         <span style="font-size:13px;">🔊 Ses efektleri</span>
         <input type="checkbox" id="setSound" ${s.sound!==false?'checked':''} onchange="G.settings.sound=this.checked;scheduleGameSave();if(this.checked)sfx('notif');else stopCrowdAmbience();">
@@ -329,9 +334,9 @@ function showTutorial(step){
     <div style="display:flex;gap:8px;justify-content:center;">
       ${i>0?`<button type="button" class="btn-sm" onclick="showTutorial(${i-1})">← Geri</button>`:''}
       ${son
-        ?`<button type="button" class="btn-p" style="width:auto;padding:10px 26px;" onclick="G.tutorialDone=true;scheduleGameSave();closeAppModal();showNotif('İyi oyunlar! 🏀')">Başla!</button>`
+        ?`<button type="button" class="btn-p" style="width:auto;padding:10px 26px;" onclick="G.tutorialDone=true;scheduleGameSave();closeAppModal();trackEvent('ogretici_bitti');showNotif('İyi oyunlar! 🏀')">Başla!</button>`
         :`<button type="button" class="btn-p" style="width:auto;padding:10px 26px;" onclick="showTutorial(${i+1})">Sonraki →</button>`}
-      ${!son?`<button type="button" class="btn-sm" onclick="G.tutorialDone=true;scheduleGameSave();closeAppModal()">Atla</button>`:''}
+      ${!son?`<button type="button" class="btn-sm" onclick="G.tutorialDone=true;scheduleGameSave();closeAppModal();trackEvent('ogretici_atlandi',{adim:${i+1}})">Atla</button>`:''}
     </div>
   </div>`);
 }

@@ -2314,3 +2314,123 @@ Denge yargısının **tek yetkili aracı** olduğu hâlde aynı kodla ribaund **
 Bu oturumda **üçüncü kez** bir ölçüm aracının kendisi yanlış sonuç verdi (`band.js` tohumu →
 `i18n-scan` kör noktası → `box-band` tohumu). Yeni bir denge aracı yazarken ilk soru
 "deterministik mi?" olmalı; değilse yapılan her ayar tesadüfe dayanır.
+
+---
+
+# 34. OTURUM — 2026-08-30 · FAZ 10: YAYIN HAZIRLIĞI (B grubu) + ÇOK OYUNCULU PLANI
+
+**Talep belgesi:** `REVIZE-PAKETI-FAZ10.md` (sürüm 2).
+**Kullanıcı kararı (oturum başında soruldu):** *ara yol* — şimdi yapılabilir maddeler uçtan uca
+bitirilsin, sunucu kodu yazılmasın; altyapı seçimi **Supabase**.
+
+## Neden bu kapsam?
+
+Belgenin A grubu (çok oyunculu sunucu altyapısı) kendi ifadesiyle "aynı büyüklükte ikinci bir
+proje". Bu oturumda **F10-2, F10-3, F10-4, F10-5, F10-6, F10-7** uygulandı; **F10-1** (sunucu,
+veritabanı, hesap, zamanlayıcı, sunucu tarafı simülasyon) yazılı plana dönüştürüldü, kod
+yazılmadı. F10-8/9/10 (para kazanma) sunucu ayağa kalkmadan anlamsız olduğu için ele alınmadı.
+
+## F10-2 · Fikstür saati kapısı bir bayrağın arkasına alındı
+
+Oyunun temeli fikstür tarihli: maç saati gelince oynanır. Bugün fikstür kayıtlarında saat alanı
+**yok** — maçların art arda oynanabilmesi bilinçli bir test kolaylığı. Kapı yine de şimdiden tek
+noktada kuruldu (`js/state.js`):
+
+| Ad | İş |
+|---|---|
+| `TEST_MODU` | `?test=1` varsa açık. **Node harness'lerinde `location` olmadığı için açık kabul edilir** — `season-loop`, `band`, `box-band` bozulmaz. |
+| `matchTimeGateOk(match)` | `scheduledAt` yoksa **her zaman true** → bugünkü davranış birebir korunur. |
+| `matchTimeGateMsg(match)` | Kullanıcı mesajı (maç saatini de yazar, i18n'li). |
+
+`startMatch()` hem lig hem playoff/kupa yolunda kapıdan geçiyor. Sunucu tarafı geldiğinde
+davranış tek yerden açılacak; kapıyı atlayan tek yol açık bayrak.
+
+## F10-3 · `PLAN-COK-OYUNCULU.md` yazıldı
+
+`PLAN-BULUT-KAYIT.md` yalnız *kayıt yedeklemeyi* planlıyordu (tek oyunculu güvenlik ağı). Yeni
+belge onu çok oyunculu şemaya genişletiyor: Postgres tabloları (`profiles · leagues · teams ·
+players · fixtures · results · transfers`) + RLS özeti, pg_cron fikstür zamanlayıcısı, **çeyrek
+çeyrek üretim** (oyuncu çevrimiçiyse çeyrek arasında müdahale edebilsin, sonucun tarafsızlığı
+bozulmasın), bot takım kuralı (`owner_id IS NULL`), 9 adımlık yol haritası.
+
+**Belgenin en kritik maddesi:** simülasyon sunucuya taşınmalı. İyi haber — motor saf JS ve
+`box-band.js` / `season-loop.js` onu **zaten Node'da** çalıştırıyor; yapılacak iş bu harness'in
+üretimde tekrarlanması. `results.seed` + `results.events` saklanınca "maç tekrarı" bedava gelir.
+
+## F10-4 · Analitik katmanı (varsayılan KAPALI)
+
+`js/state.js`: `trackEvent` / `trackOnce` / `trackMilestone` + `initAnalytics`.
+Olaylar: `oyun_acildi · takim_kuruldu · ogretici_atlandi · ogretici_bitti · ilk_mac_bitti ·
+gun2_donus · davet_paylasildi · sonuc_paylasildi` (+ mağaza/reklam ileriye ayrıldı).
+
+**Karar — neden varsayılan kapalı:** `ANALYTICS_SRC` boşken hiçbir dış istek yapılmaz; olaylar
+yalnız bellekteki halkaya (`window.__charazayAnalytics`) yazılır ve `faz10-check` bunu okur.
+Yayında açmak tek satır (Umami/Plausible betik URL'i + site id). Betik ayrıca **yalnız**
+`isProdHost()` doğruyken yüklenir — yerel ölçümler kirlenmez, KVKK açısından da temiz kalır.
+`gun2_donus` ilk ziyaret damgasından hesaplanır (20-72 saat penceresi), tarayıcı başına bir kez.
+
+## F10-5 · Paylaşım ve arama görünürlüğü
+
+- `charazay2.0.html` + `index.html`: `description`, `canonical`, og (`type/site_name/locale/url/
+  title/description/image+boyut/alt`), twitter (`summary_large_image`).
+- **og:image üretildi:** `tools/gen-brand-images.js` (Playwright ile 1200×630 PNG + 192/512 ikon).
+  Görsel depoda; yeniden üretmek için tek komut. og:image **mutlak URL** olmak zorunda.
+- Oyun içi: Ayarlar → **"🔗 Oyun bağlantısını paylaş"** (davet), maç bitince **"📣 Sonucu Paylaş"**.
+  Yol sırası `navigator.share` → pano → modal; **hiçbir adımda tarayıcı diyaloğu yok**.
+
+## F10-6 · Öğretici dili — kök neden bulundu
+
+Belge "gövde EN, butonlar TR" diyordu. Gerçek daha genişti: **7 adımdan yalnız 1.'si çeviriliydi**,
+çünkü `i18n-scan` öğreticinin yalnız ilk adımını görüyor (sonrakiler tıklamayla açılıyor).
+
+Adım metinleri `<strong>` içerdiği için metin düğümü bazlı çeviri onları parçalıyordu (KALDIGIM-
+YER'deki bilinen tuzağın aynısı). Çözüm: `TUT_STEPS` **katalog** olarak `localizeCatalogs()`'a
+kaydedildi — innerHTML'e girmeden, etiketleriyle birlikte çevriliyor. Butonlar (`← Geri`,
+`Sonraki →`, `Atla`, `Başla!`) ve bitiş bildirimi sözlüğe eklendi.
+
+## F10-7 · PWA (service worker + manifest)
+
+- `sw.js`: HTML → **önce ağ** (yeni sürüm anında görünür), js/font/ikon → **önce önbellek**
+  (URL'ler `?v=` ile sürümlü olduğu için bayat JS mümkün değil). Eski önbellekler `activate`'te siliniyor.
+- `manifest.json`: standalone, tema/arka plan `#0a0a0f`, 192/512 + maskable ikon.
+- **Kayıt yalnız yayın sunucusunda** (`registerServiceWorker` → `isProdHost()`): yerelde ve test
+  araçlarında (127.0.0.1) önbellek eski JS'i servis edip **ölçümleri yanıltırdı**. Bu, bu depoda
+  daha önce üç kez yaşanan "araç yanlış ölçüyor" sınıfının önden kapatılmasıdır.
+- `sw.js` içindeki `SCRIPT_V`, HTML'deki `?v=` ile aynı olmak zorunda — `faz10-check` sınıyor.
+
+## Yeni araç: `tools/faz10-check.js` (27 kriter)
+
+A1 kapı (normal modda engel + `?test=1` ile açık + `startMatch` uyumu) · A2 analitik (olaylar var,
+dış istek yok) · A3 og etiketleri + og-image 1200×630 · A4 manifest/ikon/`SCRIPT_V`/SW yerelde
+kayıtsız · A5 EN öğreticinin 7 adımı + butonları · A6 davet & sonuç paylaşımı (metin + bağlantı +
+analitik olayı). **27/27.**
+
+## Doğrulama
+
+`faz10-check` **27/27** · `visual-check` masaüstü+mobil **0 hata** · `faz6-check` 7/7 ·
+`faz7-check` 8/8 · `faz8-check` 6/6 · `m20-check` 6/6 · `season-loop --n=3` 6/6 ·
+`i18n-scan` kalan Türkçe yalnız özel isim (öğretici ekranında **sıfır** kalıntı) ·
+**`band.js` hash değişmedi** (`ec630b3a512bb3b2` — maç motoruna dokunulmadı).
+
+> `season-loop --n=1` çalıştırılırsa K4 (yaşlanma) düşer: tek sezonda sezon **geçişi** olmaz.
+> Yargı için `--n=3` kullanılmalı.
+
+## Cache-bust
+
+Script sürümü `?v=40` → **`?v=41`** (13 etiket) + `sw.js` `SCRIPT_V='41'`.
+
+## Kullanıcının test etmesi gerekenler
+
+1. Ayarlar → "🔗 Oyun bağlantısını paylaş" (masaüstünde panoya kopyalar, telefonda paylaşım menüsü).
+2. Bir maç bitir → "📣 Sonucu Paylaş" butonu görünüyor mu, skor doğru mu.
+3. Dili İngilizce yapıp yeni kariyer aç → öğreticinin **yedi adımı** da İngilizce mi.
+4. Yayına çıktıktan sonra: linki WhatsApp/X'e yapıştır → kart görseli çıkıyor mu; telefonda
+   "Ana ekrana ekle" görünüyor mu; çevrimdışıyken oyun açılıyor mu.
+
+## Açık kalan (bilinçli)
+
+- **F10-1** — sunucu/veritabanı/hesap/zamanlayıcı/sunucu tarafı simülasyon: `PLAN-COK-OYUNCULU.md`.
+- **F10-8/9/10** — reklam SDK soyutlaması, mağaza/kozmetik, destekçi katmanı: sunucudan sonra.
+- **Analitik hesabı**: `ANALYTICS_SRC` + `ANALYTICS_SITE` doldurulmadı (hesap kullanıcıya ait).
+- **og:url alan adı** `basketlig.vercel.app` seçildi (FAZ 10 belgesinin ölçtüğü canlı adres);
+  GitHub Pages kopyası da aynı canonical'a işaret eder.

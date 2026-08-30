@@ -72,16 +72,22 @@ function startMatch(playoff){
   /* C1: buton "sonuçlandır" durumundaysa normale döndür. */
   const _smBtn=document.getElementById('startMatchBtn');
   if(_smBtn){ _smBtn.textContent='▶ Maçı Başlat'; _smBtn.removeAttribute('title'); }
+  { const _shr=document.getElementById('shareResultBtn'); if(_shr) _shr.style.display='none'; }
   const isPlayoff=!!(playoff&&playoff.matchup);
   const isCup=!!(playoff&&playoff.cup);   /* Paket 1: kupa modu — startCupMatch() geçirir */
   let match=null,rakip,userIsHome;
   if(isPlayoff||isCup){
+    if(!matchTimeGateOk(playoff&&playoff.matchup)){ showNotif(matchTimeGateMsg(playoff&&playoff.matchup)); return; }
     rakip={isim:playoff.opp};
     userIsHome=!!playoff.userIsHome;
   } else {
     if(!G.season||!G.season.active){ showNotif('Önce Lig’den sezonu başlat.'); return; }
     match=findNextUserSeasonMatch();
     if(!match){ showNotif(seasonAllMatchesPlayed()?'Bu sezonun maçların bitti.':'Fikstürde maç yok.'); return; }
+    /* F10-2: fikstür saati kapısı. Çok oyunculu sürümde maç, saati gelince oynanır; kapıyı
+       atlayan tek yol ?test=1 bayrağıdır (geliştirme + tools/*). Fikstürde scheduledAt
+       bulunmadığı sürece kapı açıktır — bugünkü tek oyunculu davranış aynen korunur. */
+    if(!matchTimeGateOk(match)){ showNotif(matchTimeGateMsg(match)); return; }
     rakip={isim:match.home===G.team.isim?match.away:match.home};
     userIsHome=match.home===G.team.isim;
   }
@@ -273,6 +279,9 @@ function startMatch(playoff){
       const _mle=document.getElementById('macLiveAnchor'); if(_mle) _mle.classList.remove('live-on');
       setMatchButtonsRunning(false);
       applyMatchResult(ev,{seasonMatchIx:mState.seasonMatchIx,isPlayoff:mState.isPlayoff,isCup:mState.isCup,playoffMatch:mState.playoffMatch,rakipName:mState.rakipName,userIsHome:mState.userIsHome});
+      /* F10-4/F10-5: huni kilometre taşı + sonuç paylaşma butonu (maç bitince görünür). */
+      try{ trackMilestone('ilk_mac_bitti'); }catch(e){}
+      try{ showShareResultButton(ev); }catch(e){}
       return;
     }
     /* Şutlu hücumun süresi hücum türüne ve oyuncuların GERÇEK varış sürelerine göre değişir:
@@ -1377,6 +1386,7 @@ function createTeam(){
   const dashNav=document.querySelector('#sbNav button[data-page="dashboard"]');
   showPage('dashboard',dashNav);
   showNotif('🏀 Takımın hazır! Hadi basketbol oynayalım.');
+  trackEvent('takim_kuruldu',{zorluk:(G.settings&&G.settings.difficulty)||'normal'});
   scheduleGameSave();
   if(!G.tutorialDone) showTutorial(0);
 }
@@ -1441,6 +1451,9 @@ function _drainNotif(){
 window.onload=()=>{
   /* FAZ F: dil katmanı her şeyden önce kurulur (kataloglar + canlı DOM çevirisi). */
   try{ initI18n(); }catch(e){}
+  /* F10-4/F10-7: analitik (varsayılan kapalı, yalnız yayında betik yükler) + service worker. */
+  try{ initAnalytics(); }catch(e){}
+  try{ registerServiceWorker(); }catch(e){}
   try{ const lp=document.getElementById("langPicker"); if(lp) lp.innerHTML=langPickerHtml(); }catch(e){}
   /* Loader görseli kapalı (display:none) — eski 1500+500ms sahte bekleme girişte gecikme yaratıyordu. */
   setTimeout(()=>{
@@ -1503,3 +1516,83 @@ window.onload=()=>{
     }catch(e){}
   });
 };
+
+/* ══ F10-5 / F10-7 — PAYLAŞIM + SERVICE WORKER ═════════════════════════════════════════
+   Davet, çok oyunculu bir menajerlik oyununun en güçlü büyüme kanalıdır; altyapı hazır
+   olmadan da bağlantı paylaşımı bugün çalışır. navigator.share (mobil) → pano → modal
+   sırasıyla düşer; hiçbir yolda tarayıcı diyaloğu (alert/prompt) kullanılmaz. */
+const SHARE_URL='https://basketlig.vercel.app/charazay2.0.html';
+
+function shareTargetUrl(){
+  try{
+    if(typeof location!=='undefined'&&/^https?:$/.test(location.protocol))
+      return location.origin+location.pathname;
+  }catch(e){}
+  return SHARE_URL;
+}
+function _shareFallbackModal(full){
+  showAppModal(`<div class="modal-title">📣 Paylaş</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Metni kopyalayıp arkadaşına gönder.</p>
+    <textarea id="shareBox" readonly style="width:100%;height:92px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;padding:10px;resize:none;">${escMatch(full)}</textarea>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
+      <button type="button" class="btn-sm" onclick="closeAppModal()">Kapat</button>
+    </div>`);
+  try{ const b=document.getElementById('shareBox'); if(b){ b.focus(); b.select(); } }catch(e){}
+}
+/** Ortak paylaşım yolu. olay: analitik olay adı. */
+function shareLink(text,olay){
+  const url=shareTargetUrl();
+  const full=text+'\n'+url;
+  const done=()=>{ try{ trackEvent(olay); }catch(e){} };
+  try{
+    if(navigator.share){
+      navigator.share({title:'Charazay 2.0',text:text,url:url}).then(done).catch(()=>{});
+      return;
+    }
+  }catch(e){}
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(full)
+        .then(()=>{ showNotif('Bağlantı kopyalandı — arkadaşına gönder!'); done(); })
+        .catch(()=>{ _shareFallbackModal(full); done(); });
+      return;
+    }
+  }catch(e){}
+  _shareFallbackModal(full);
+  done();
+}
+/** Ayarlar → arkadaş daveti. Çok oyunculu sürümde lig davet koduyla genişleyecek. */
+function shareGameInvite(){
+  const takim=(G&&G.team&&G.team.isim)?G.team.isim:'';
+  const metin=takim
+    ? t('Charazay 2.0’da {takim} kulübünü yönetiyorum. Sen de bir kulüp kur, ligde karşılaşalım:',{takim:takim})
+    : t('Charazay 2.0 — Türkçe basketbol menajerlik oyunu. Kendi kulübünü kur:');
+  shareLink(metin,'davet_paylasildi');
+}
+/** Maç bitince paylaş butonunu görünür yapar (skoru saklar). */
+function showShareResultButton(ev){
+  const b=document.getElementById('shareResultBtn');
+  if(!b||!ev) return;
+  const us=(G&&G.team&&G.team.isim)||'—';
+  const opp=mState.rakipName||'—';
+  mState._shareText=(mState.userIsHome!==false)
+    ? `${us} ${ev.home}-${ev.away} ${opp}`
+    : `${opp} ${ev.away}-${ev.home} ${us}`;
+  b.style.display='';
+}
+function shareMatchResult(){
+  const s=mState&&mState._shareText;
+  if(!s){ showNotif('Paylaşılacak maç sonucu yok.'); return; }
+  shareLink('🏀 Charazay 2.0 — '+s,'sonuc_paylasildi');
+}
+
+/** F10-7: PWA service worker. Yalnız yayın sunucusunda kaydedilir — yerel geliştirmede ve
+    test araçlarında (127.0.0.1) önbellek eski JS'i servis edip ölçümleri yanıltırdı. */
+function registerServiceWorker(){
+  try{
+    if(typeof navigator==='undefined'||!('serviceWorker' in navigator)) return;
+    if(!isProdHost()) return;
+    if(new URLSearchParams(location.search||'').has('nosw')) return;
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }catch(e){}
+}

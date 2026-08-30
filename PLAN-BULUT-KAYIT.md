@@ -3,6 +3,11 @@
 **Durum:** planlama · kod değişikliği yapılmadı (29. oturum kararı)
 **Hazırlayan:** 29. oturum · **Tarih:** 2026-08-29
 
+> **34. oturum notu (F10-3):** Bu belge yalnız *kayıt yedeklemeyi* planlar — tek oyunculu
+> bir güvenlik ağıdır. Çok oyunculuda veritabanı yedek değil **tek gerçek kaynaktır**; genişletilmiş
+> şema, fikstür zamanlayıcısı ve sunucu tarafı simülasyon için **`PLAN-COK-OYUNCULU.md`**'ye bak.
+> Altyapı seçimi (Supabase) iki belgede de aynıdır.
+
 ---
 
 ## 1. Bugün ne var?
