@@ -1111,22 +1111,22 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                   </g>
                   <!-- NBA 94'×50' — tek ölçek s=8.8 px/ft; 3pt yayı oyun için ~196 px (köşe-boşluk) -->
                   <g stroke="rgba(255,255,255,0.97)" stroke-width="2.6" fill="none" stroke-linejoin="round">
-                    <rect x="56.4" y="30" width="827.2" height="440" rx="2"></rect>
-                    <line x1="470" y1="30" x2="470" y2="470"></line>
-                    <circle cx="470" cy="250" r="48"></circle>
+                    <rect id="cLine-bounds" x="56.4" y="30" width="827.2" height="440" rx="2"></rect>
+                    <line id="cLine-mid" x1="470" y1="30" x2="470" y2="470"></line>
+                    <circle id="cLine-center" cx="470" cy="250" r="48"></circle>
                     <circle cx="470" cy="250" r="6" fill="rgba(255,255,255,0.22)" stroke="none"></circle>
                   </g>
                   <!-- Ev (sol) -->
                   <g stroke="rgba(255,255,255,0.95)" stroke-width="2.1" fill="none">
-                    <rect x="56.4" y="179.6" width="167.2" height="140.8" fill="rgba(239,68,68,0.11)" stroke="rgba(255,255,255,0.95)"></rect>
-                    <line x1="223.6" y1="179.6" x2="223.6" y2="320.4"></line>
-                    <path d="M 223.6 197.2 A 52.8 52.8 0 0 1 223.6 302.8" fill="none" stroke="rgba(255,255,255,0.65)" stroke-dasharray="6,5"></path>
+                    <rect id="cLine-laneL" x="56.4" y="179.6" width="167.2" height="140.8" fill="rgba(239,68,68,0.11)" stroke="rgba(255,255,255,0.95)"></rect>
+                    <line id="cLine-ftLineL" x1="223.6" y1="179.6" x2="223.6" y2="320.4"></line>
+                    <path id="cLine-ftArcOutL" d="M 223.6 197.2 A 52.8 52.8 0 0 1 223.6 302.8" fill="none" stroke="rgba(255,255,255,0.65)" stroke-dasharray="6,5"></path>
                     <line x1="108.2" y1="250" x2="142.2" y2="250" stroke="#fbbf24" stroke-width="3"></line>
                     <circle cx="125.2" cy="250" r="17.6" stroke="#fbbf24" stroke-width="3"></circle>
-                    <line x1="91.6" y1="223.6" x2="91.6" y2="276.4" stroke-width="4" stroke="rgba(255,255,255,0.98)"></line>
-                    <circle cx="102.6" cy="250" r="6.6" stroke="#fbbf24" stroke-width="2.2"></circle>
-                    <path d="M 102.6 214.8 A 35.2 35.2 0 0 1 102.6 285.2" fill="none" stroke-width="1.9"></path>
-                    <g stroke="rgba(255,255,255,0.75)" stroke-width="1.5">
+                    <line id="cLine-boardL" x1="91.6" y1="223.6" x2="91.6" y2="276.4" stroke-width="4" stroke="rgba(255,255,255,0.98)"></line>
+                    <circle id="cLine-rimL" cx="102.6" cy="250" r="6.6" stroke="#fbbf24" stroke-width="2.2"></circle>
+                    <path id="cLine-restrL" d="M 102.6 214.8 A 35.2 35.2 0 0 1 102.6 285.2" fill="none" stroke-width="1.9"></path>
+                    <g id="cLine-hashL" stroke="rgba(255,255,255,0.75)" stroke-width="1.5">
                       <line x1="118" y1="179.6" x2="118" y2="184"></line>
                       <line x1="127.2" y1="179.6" x2="127.2" y2="184"></line>
                       <line x1="153.2" y1="179.6" x2="153.2" y2="184"></line>
@@ -1136,19 +1136,19 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                       <line x1="153.2" y1="320.4" x2="153.2" y2="316"></line>
                       <line x1="179.6" y1="320.4" x2="179.6" y2="316"></line>
                     </g>
-                    <path d="M 56.4 30 L 56.4 48.5 A 196 196 0 1 1 56.4 451.5 L 56.4 470" stroke-width="2.2"></path>
+                    <path id="cLine-threeL" d="M 56.4 30 L 56.4 48.5 A 196 196 0 1 1 56.4 451.5 L 56.4 470" stroke-width="2.2"></path>
                   </g>
                   <!-- Dep (sağ) -->
                   <g stroke="rgba(255,255,255,0.95)" stroke-width="2.1" fill="none">
-                    <rect x="716.4" y="179.6" width="167.2" height="140.8" fill="rgba(59,130,246,0.11)" stroke="rgba(255,255,255,0.95)"></rect>
-                    <line x1="716.4" y1="179.6" x2="716.4" y2="320.4"></line>
-                    <path d="M 716.4 197.2 A 52.8 52.8 0 0 0 716.4 302.8" fill="none" stroke="rgba(255,255,255,0.65)" stroke-dasharray="6,5"></path>
+                    <rect id="cLine-laneR" x="716.4" y="179.6" width="167.2" height="140.8" fill="rgba(59,130,246,0.11)" stroke="rgba(255,255,255,0.95)"></rect>
+                    <line id="cLine-ftLineR" x1="716.4" y1="179.6" x2="716.4" y2="320.4"></line>
+                    <path id="cLine-ftArcOutR" d="M 716.4 197.2 A 52.8 52.8 0 0 0 716.4 302.8" fill="none" stroke="rgba(255,255,255,0.65)" stroke-dasharray="6,5"></path>
                     <line x1="831.8" y1="250" x2="797.8" y2="250" stroke="#fbbf24" stroke-width="3"></line>
                     <circle cx="814.8" cy="250" r="17.6" stroke="#fbbf24" stroke-width="3"></circle>
-                    <line x1="848.4" y1="223.6" x2="848.4" y2="276.4" stroke-width="4" stroke="rgba(255,255,255,0.98)"></line>
-                    <circle cx="837.4" cy="250" r="6.6" stroke="#fbbf24" stroke-width="2.2"></circle>
-                    <path d="M 837.4 214.8 A 35.2 35.2 0 0 0 837.4 285.2" fill="none" stroke-width="1.9"></path>
-                    <g stroke="rgba(255,255,255,0.75)" stroke-width="1.5">
+                    <line id="cLine-boardR" x1="848.4" y1="223.6" x2="848.4" y2="276.4" stroke-width="4" stroke="rgba(255,255,255,0.98)"></line>
+                    <circle id="cLine-rimR" cx="837.4" cy="250" r="6.6" stroke="#fbbf24" stroke-width="2.2"></circle>
+                    <path id="cLine-restrR" d="M 837.4 214.8 A 35.2 35.2 0 0 0 837.4 285.2" fill="none" stroke-width="1.9"></path>
+                    <g id="cLine-hashR" stroke="rgba(255,255,255,0.75)" stroke-width="1.5">
                       <line x1="822" y1="179.6" x2="822" y2="184"></line>
                       <line x1="812.8" y1="179.6" x2="812.8" y2="184"></line>
                       <line x1="786.8" y1="179.6" x2="786.8" y2="184"></line>
@@ -1158,7 +1158,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                       <line x1="786.8" y1="320.4" x2="786.8" y2="316"></line>
                       <line x1="760.4" y1="320.4" x2="760.4" y2="316"></line>
                     </g>
-                    <path d="M 883.6 30 L 883.6 48.5 A 196 196 0 1 0 883.6 451.5 L 883.6 470" stroke-width="2.2"></path>
+                    <path id="cLine-threeR" d="M 883.6 30 L 883.6 48.5 A 196 196 0 1 0 883.6 451.5 L 883.6 470" stroke-width="2.2"></path>
                   </g>
                   <g id="liveBall" transform="translate(470,250)" style="opacity:0;transition:transform 0.5s cubic-bezier(.34,.02,.28,1),opacity 0.3s;">
                     <circle r="11.5" fill="#e07b1e" stroke="#6b2810" stroke-width="1.6"></circle>
