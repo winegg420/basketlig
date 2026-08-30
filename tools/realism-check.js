@@ -120,7 +120,7 @@ async function main() {
     window.__f = [];
     window.__prev = null;
     window.__stop = false;
-    const LX0 = 56.4, LX1 = 883.6, LY0 = 30, LY1 = 470;   // saha çizgileri
+    const LX0 = 56.4, LX1 = 883.6, LY0 = 28.43, LY1 = 471.57;   // saha çizgileri
     const tick = () => {
       if (window.__stop) return;
       requestAnimationFrame(tick);

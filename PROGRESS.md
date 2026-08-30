@@ -3089,3 +3089,92 @@ iyileşmiş. Kimlik eşleşmesi %97 → %99. Ölçüt gürültülü: aynı kodla
 5,1×/2,54× verdi, aracın kendi uyarısı da geçerli (tip başına 4-11 örnek; `--ms` yetmiyor).
 **Sonuç:** bu açık FAZ 14'ten önce de vardı, tempo dengesi ayrı bir iş kalemidir; yargı için
 `--ms` en az iki katına çıkarılmalı, tek koşu yeterli değil.
+
+## FAZ 14 — SAHA ÇİZGİLERİ VE SERBEST ATIŞ YERLEŞİMİ (38. oturum · Bölüm A)
+
+> **Ad çakışması uyarısı:** bu depoda "FAZ 14" adı iki işe verildi. `f77bac1` **canlı anlatım
+> dil revizyonu** (skor kapısı · zincir · spiker imzası), bu bölüm ise `REVIZE-PAKETI-FAZ14.md`
+> içindeki **saha geometrisi + serbest atış** işidir. Belgelerde ilki **FAZ 14-D (dil)**,
+> ikincisi **FAZ 14-G (geometri)** diye ayrılır; madde kodları (F14-1…F14-7) geometri
+> paketine aittir.
+
+### Önce ölçüm aracı — `tools/geometri-check.js` (paketin D maddesi)
+FAZ 13'te "saha geometrisi doğru, FIBA'ya uygun — aramayın" yazmıştım. **Yanlıştı.** O yargı
+`<path>`'in `r="196"` **niteliğini** okuyarak verilmişti; tarayıcının **çizdiği** eğri
+ölçülmemişti. Yeni araçta nitelik okumak yasak: yalnız `getPointAtLength` + `getBBox`, ölçek de
+çizilen saha dikdörtgeninden (28×15 m) türetilir. SVG çizgilerine `cLine-*` kimlikleri eklendi
+(beyaz liste dışı her çizgili öğe "sahada karşılığı yok" diye raporlanır).
+
+**Araç ilk koşuda paketin bulgularını birebir yeniden üretti** — teşhis doğrulandı, tahmine
+dayanmadı:
+
+| Ölçüt | ÖNCE (araç) | Pakette yazan | SONRA |
+|---|---|---|---|
+| 3 sayı yayının potaya uzaklığı — sapma | **2,370 m** | 2,35 m | **0,001 m** |
+| yayın potaya en yakın noktası | 5,260 m | 5,26 m | 6,750 m |
+| köşede | 7,63 / 7,66 m | 7,61 m | 6,600–6,783 m |
+| SA çemberi ↔ yay | **kesişiyor** (253,3 · 206,8) | (251,5 · 205,2) | 0,715 m boşluk |
+
+### F14-1 + F14-2 · Yay potaya değil DİP ÇİZGİYE merkezliydi
+Kök neden bir SVG kuralı: **yarıçap iki uç arasındaki kirişi kapsamıyorsa tarayıcı yarıçapı
+sessizce büyütür ve merkezi kaydırır.** Eski path'in iki ucu da dip çizgideydi (kiriş 403 px >
+2×196), bu yüzden çizilen yay r=201,5 ve merkezi (56,4 · 250) oluyordu. Yeni path **köşe
+düzlüklerinden** başlar (kenardan 0,90 m, y=55,02) — kiriş 389,96 < 2×199,41 olduğu için
+yarıçap büyütülmez. Yay artık gerçekten potaya 6,75 m. F14-2 (çemberin yayı kesmesi) bunun
+doğrudan sonucuydu, tek düzeltmeyle kapandı.
+
+### F14-3/4/5/6 · Kalan çizim hataları
+- Potanın önündeki **turuncu sahte daire + çizgi** (1,19 m çapında, gerçek çemberden 2,7 kat
+  büyük) silindi; sahada karşılığı yok.
+- **Köşe düzlükleri** eklendi (3,005 m, kenardan 0,90 m) — yay artık dipten dibe tek parça değil.
+- Serbest atış çemberinin **dış yarısı dolu, iç yarısı kesikli** (eskiden yalnız dış yarı vardı
+  ve o kesikliydi).
+- Ölçüler FIBA'ya çekildi: boya 4,77×5,66 → **4,90×5,80 m**, orta yuvarlak 1,63 → **1,80 m**,
+  yay altı 1,19 → **1,25 m**.
+- **Ölçek eşitlendi (F14-6):** saha 827,2×440 px iken yatay 29,54 / dikey 29,33 px/m idi (%0,71
+  gerginlik) — px'te dairesel çizilen her yay metrede elipsti. Yükseklik **443,14 px = 15 m**
+  yapıldı (kenar çizgileri y 30/470 → **28,43/471,57**; `CRT_Y0/CRT_Y1` ve `realism-check`
+  sınırları da güncellendi). Fark artık %0,00.
+- `THREE_R` 196 → **199,41** (şut koordinatı üretimi ile çizgi aynı yarıçaptan beslenir).
+  **Paket bu değişikliğin `band.js` hash'ini değiştirmesini bekliyordu — DEĞİŞMEDİ**
+  (`fb393bdab878e699`): sabit `rand()` çağrılarının SAYISINI değil sonucun ölçeğini değiştirir,
+  şut koordinatı da maç sonucuna geri beslenmez. `box-band --n=200` 11/11.
+
+**geometri-check: 19/19 ✓** (sapma 0,001 m · yarıçap 6,751 m · köşe 0,900 m · boşluk 0,715 m ·
+boya 4,900×5,800 · orta yuvarlak 1,800 · ölçek farkı %0,00 · yabancı çizim 0 · kesişme 0).
+
+### F14-7 · Serbest atış, oyuncular yerleşmeden atılıyordu
+Bekleme **yalnız şutörün** çizgiye uzaklığından hesaplanıyordu, oysa `_setFtFormation` **on
+oyuncuyu** birden yerleştiriyor; şutör çizgiye yakınsa taban 0,85 sn'ye düşüyor ve sahanın öbür
+ucundaki pivot koşarken atış yapılıyordu. Üç ayrı kusur çıktı, üçü de ölçümle bulundu:
+
+1. **Ölçüt yanlıştı** → en geç gelen oyuncuya bakılır (taban 1,6 · tavan 4,5 sn). *2,8 → 5,9/10*
+2. **Varış süresi "yol / hız" değil**: jeton son 24 px'i varış freniyle (≤12 px/sn) kapatır,
+   yalnız o bölüm ~2 sn sürer. Fren payı eklendi. *5,9 → 6,6/10 (yetmedi)*
+3. **İki çağıran vardı**: normal faul dalı düzeltilmişti, `_and1Sequence` eski formülü
+   kullanmaya devam ediyordu. Bekleme tek kapıya alındı: **`_ftWaitSec()`**. *6,6 → 8,7/10*
+4. **Kulvar noktaları 35-37 px aralıklıydı, çarpışma yarıçapı (`_PL_R`) 40** — üç jeton
+   birbirini sürekli itiyor, hiçbiri hedefine oturamıyordu. Aralık 44 px'e açıldı, dizilim
+   sarsıntısı (jit) 4 → 2. **8,7 → 9,3/10** ✓
+
+| Ölçüt | ÖNCE (paket) | SONRA | Hedef |
+|---|---|---|---|
+| atış anında yerinde oyuncu | 2,8 / 10 | **9,3 / 10** | ≥ 9 ✓ |
+| hedefe ortalama uzaklık | 2,02 m | **0,11 m** | — |
+| en uzaktaki oyuncu | 7,68 m | **1,79 m** | — |
+| atış anında jeton hızı | 85 px/sn | **8 px/sn** | < 15 ✓ |
+
+Ölçüt `tools/sunum-check.js`'e **F14-7** olarak eklendi (topun elden çıktığı ilk kare;
+serinin yalnız ilk atışı). *Araç hatası: ölçüm ilk sürümde hiç örnek yakalayamadı — top modu
+`'hold'` sanılmıştı, gerçekte `'held'`.*
+
+### Doğrulama
+`geometri-check` 19/19 · `box-band --n=200` 11/11 · `band.js` hash **değişmedi** ·
+`spacing-check` 10/10 · `anlatim-check --n=30` 13/13 · `faz10-check` 27/27 ·
+`faz11-check` 13/13 · `m20-check` geçti · `sim-node --n=50` deterministik ·
+`realism-check` saha dışı 0 · `visual-check` masaüstü+mobil 0 hata · `i18n-scan` temiz.
+Script sürümü **?v=49** (`sw.js` SCRIPT_V=49).
+
+> **Açık kalan:** `sunum-check` **M9** (outlet pası) aynı kodla dört koşuda %80 / %100 / %59 /
+> %71 verdi — Bölüm B'nin B-2 maddesi. Ölçü hem gerçekten eşiğin altında hem de çok gürültülü;
+> B-2'de ikisi birden ele alınacak.

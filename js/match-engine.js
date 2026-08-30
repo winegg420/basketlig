@@ -10,7 +10,11 @@ function cloneQx(o){return {...o};}
    Çember merkezleri, orta çizgi, serbest atış çizgileri. Tüm görsel/şut
    koordinatları buradan türetilir ki harita ile parke birebir örtüşsün. */
 const RIM_L=[102.6,250], RIM_R=[837.4,250];
-const THREE_R=196;            /* 3 sayı yayı yarıçapı (çemberden) */
+/* F14-1: 6,75 m × 29,5429 px/m. Eski 196 px SAHADAKİ ÇİZGİYE UYMUYORDU — çizilen yay
+   potaya değil dip çizgiye merkezliydi (SVG kirişten küçük yarıçapı sessizce büyütür), yani
+   "yayın 5 px dışı" diye üretilen üçlükler gerçekte yayın içinden atılıyordu. Sabiti
+   değiştirmek şut koordinatlarını da kaydırır → band.js hash'i değişir (beklenen). */
+const THREE_R=199.41;         /* 3 sayı yayı yarıçapı (çemberden) — SVG ile aynı */
 const COURT_MID=470;
 
 /* Şut noktası çemberden mesafe+açı ile üretilir: 3'lükler yayın hemen dışında,
@@ -81,7 +85,10 @@ function clearMatchCourt(){
    ═════════════════════════════════════════════════════════════════════════ */
 
 /* ── Saha çizgileri (iç viewBox 940×500) ── */
-const CRT_X0=56.4, CRT_X1=883.6, CRT_Y0=30, CRT_Y1=470;
+/* F14-6: kenar çizgileri 30/470 iken dikey ölçek 29,33 px/m idi (yatay 29,54) — saha %0,7
+   yatay gerginti ve px'te dairesel çizilen her yay metrede elips oluyordu. Yükseklik
+   443,14 px = 15 m yapılarak iki eksenin ölçeği eşitlendi. */
+const CRT_X0=56.4, CRT_X1=883.6, CRT_Y0=28.43, CRT_Y1=471.57;
 const CRT_IN=14;     /* jeton merkezi çizgiden bu kadar içeride tutulur */
 const CRT_OUT=26;    /* topu sokan oyuncunun çizgi dışına adımı */
 
@@ -689,7 +696,8 @@ function _chase(tok,fn,maxSec){ const S=mState._sim; if(!S||!tok) return; S.chas
      MOTION             4,68 m           %30,6         1
    Köşeler dip çizgiye (x≈56), kanatlar/slotlar yay dışına (x≈276-300), pivot bloğa (x≈146). */
 const SET_SPREAD=[[296,132],[296,368],[ 56,462],[ 56, 38],[146,196]];  /* 4-out 1-in: guardlar slotta, pivot blokta */
-/* Dirsek noktaları boyanın KÖŞESİDİR: SVG'de boya y ∈ [179,6 · 320,4]. y=176/324 bandın bir
+/* Dirsek noktaları boyanın KÖŞESİDİR: SVG'de boya y ∈ [177,62 · 322,38] (F14 öncesi
+   179,6/320,4 idi; boya FIBA 4,90 m'ye genişletildi). y=176/324 bandın bir
    tık dışında kalıyor ve "boyada oyuncu" ölçüsüne girmiyordu (FAZ 13 madde 0 sonrası fark
    edildi) — 186/314 hem gerçek dirsek hem boyanın içi. */
 const SET_HORNS =[[302,250],[ 56, 38],[ 56,462],[186,186],[186,314]];  /* iki büyük dirseklerde, guardlar köşede */
@@ -707,9 +715,14 @@ const TRANS_DEF=[[188,250],[140,178],[140,322],[252,200],[252,300]];
    boya hattında — köşe/kanat gerçekten kapatılsın (dar bölge "boyada yumak" gibi duruyordu). */
 const ZONE_23=[[252,166],[252,334],[148,120],[148,380],[124,250]];
 /* Serbest atış dizilimi: kulvarlarda savunma dipte, hücum üstte (gerçek sıra) */
-const FT_LINE_X=234;
-const FT_DEF_S=[[ 96,182],[ 96,318],[168,180],[168,320],[292,250]];
-const FT_OFF_S=[[131,181],[131,319],[306,140],[306,360]];
+const FT_LINE_X=238;   /* şutör çizginin (x=227,75) ~0,35 m gerisinde durur — F14 ile kaydı */
+/* F14-7: kulvar noktaları 35-37 px aralıklıydı, oysa çarpışma yarıçapı `_PL_R`=40 —
+   üç jeton birbirini sürekli itiyor, hiçbiri hedefine oturamıyordu (ölçüm: atış anında
+   yerinde 8,7/10, en uzak 1,35 m; kimse koşmuyor ama kimse de durmuyordu). Aralık 44 px'e
+   açıldı. Gerçek kulvar aralığı 0,85 m = 25 px'tir; jeton yarıçapı buna izin vermiyor —
+   sıra ve dizilim doğru, aralık jetona göre esnetildi. */
+const FT_DEF_S=[[108,177],[108,323],[196,177],[196,323],[292,250]];
+const FT_OFF_S=[[152,177],[152,323],[306,140],[306,360]];
 
 /** F11-2: perdeyi POTAYA EN YAKIN uzun oyuncu kurar — gerçek basketbolda top perdesine
     posttaki/dirsekteki büyük çıkar. Eskiden dizideki ilk uygun oyuncu seçiliyordu; köşedeki
@@ -922,8 +935,28 @@ function _setFtFormation(offLeft,offPlayers,defPlayers,shooter){
   shooter.tx=line[0]; shooter.ty=line[1]; shooter.maxV=shooter.sprintV;
   const bigFirst=(arr)=>_rolesOrder(arr).slice().reverse();   /* C, PF, SF, SG, PG */
   const others=bigFirst(offPlayers.filter(p=>p!==shooter));
-  others.forEach((p,i)=>{ const c=_pt(FT_OFF_S[i%FT_OFF_S.length],offLeft,false); p.tx=_inX(_jit(c[0],4)); p.ty=_inY(_jit(c[1],4)); p.maxV=p.baseV; });
-  bigFirst(defPlayers).forEach((p,i)=>{ const c=_pt(FT_DEF_S[i%FT_DEF_S.length],offLeft,false); p.tx=_inX(_jit(c[0],4)); p.ty=_inY(_jit(c[1],4)); p.maxV=p.baseV; });
+  others.forEach((p,i)=>{ const c=_pt(FT_OFF_S[i%FT_OFF_S.length],offLeft,false); p.tx=_inX(_jit(c[0],2)); p.ty=_inY(_jit(c[1],2)); p.maxV=p.baseV; });
+  bigFirst(defPlayers).forEach((p,i)=>{ const c=_pt(FT_DEF_S[i%FT_DEF_S.length],offLeft,false); p.tx=_inX(_jit(c[0],2)); p.ty=_inY(_jit(c[1],2)); p.maxV=p.baseV; });
+}
+
+/** F14-7: SERBEST ATIŞ BEKLEMESİ — düdükten atışa kadar geçmesi gereken süre (sn).
+    Ölçüt EN GEÇ GELEN oyuncudur, şutör değil: `_setFtFormation` on oyuncuyu birden
+    yerleştirir; şutör çizgiye yakınken taban süreye düşülünce sahanın öbür ucundaki pivot
+    daha koşarken atış yapılıyordu (ölçüm: atış anında 10 oyuncudan 2,8'i yerinde).
+    Varış süresi düz "yol / hız" değildir: jeton son 24 px'i varış freniyle (≤12 px/sn)
+    kapatır, yalnız o bölüm ~2 sn sürer — fren payı hesaba katılır.
+    İKİ ÇAĞIRAN VARDIR (normal faul dalı ve `_and1Sequence`); ikisi de buradan geçmeli. */
+function _ftWaitSec(players){
+  try{
+    const eta=p=>{
+      if(!p) return 0;
+      const d=Math.hypot(p.x-(p.tx!=null?p.tx:p.x),p.y-(p.ty!=null?p.ty:p.y));
+      const v=Math.max(120,p.maxV||p.sprintV||_PL_MAXV);
+      return Math.max(0,d-24)/v + Math.min(d,24)/12 + 0.25;
+    };
+    const enGec=(players||[]).reduce((m,p)=>Math.max(m,eta(p)),0);
+    return Math.max(1.6,Math.min(4.5,enGec+0.45));
+  }catch(e){ return 2.0; }
 }
 
 /** Bir olayın hücum sahibini çöz: true = kullanıcı takımı hücumda. */
@@ -1184,8 +1217,7 @@ function movePlayersForEvent(ev,paint){
       S.defTrack=false;   /* ölü top — savunma markaj değil, çizgi dizilişinde */
       const rim=_rim(offLeft);
       clearBallTimers();
-      const eta=Math.hypot(shooter.x-line[0],shooter.y-line[1])/Math.max(120,shooter.sprintV||_PL_MAXV)+0.40;
-      const tBase=Math.max(0.85,Math.min(2.2,eta));
+      const tBase=_ftWaitSec(offP.concat(defP));   /* F14-7 */
       const shots=ev.shots.slice(0,3);   /* 3 atışlık fauller de tam canlandırılır */
       const steps=[];
       /* düdük anında spiker faul cümlesini söyler (sonuç DEĞİL) */
@@ -1671,8 +1703,8 @@ function _and1Sequence(sh,shooter,offP,defP,offLeft,rim,res){
     S.shooter=shooter;
     S.defTrack=false;                 /* ölü top — savunma çizgi dizilişinde */
     S.inb=null;
-    const eta=Math.hypot(shooter.x-line[0],shooter.y-line[1])/Math.max(120,shooter.sprintV||_PL_MAXV)+0.35;
-    const tAt=Math.max(0.95,Math.min(2.0,eta))+0.45;
+    /* F14-7: burada da bekleme şutöre göre hesaplanıyordu — aynı kapıdan geçer. */
+    const tAt=_ftWaitSec(offP.concat(defP))+0.45;
     _script([
       {at:0.12,fn:()=>{ _ballHold(shooter); }},          /* hakem topu atıcıya verir */
       {at:tAt-0.18,fn:()=>{ _ballHold(shooter); }},      /* çizgiye varınca hizalan */

@@ -136,7 +136,7 @@ const yuzde = (n, t) => t ? (100 * n / t) : 0;
 /** Boya (key) — metreden hesaplamak yerine SAHA SVG'sindeki gerçek dikdörtgen kullanılır:
     sol boya  rect x=56.4 y=179.6 w=167.2 h=140.8  → x ≤ 223,6 · y ∈ [179,6 · 320,4]
     (5,66 m derinlik · 4,77 m genişlik — FIBA'ya uygun; ölçek sabitinden bağımsız). */
-const BOYA_X_SOL = 223.6, BOYA_Y0 = 179.6, BOYA_Y1 = 320.4;
+const BOYA_X_SOL = 227.75, BOYA_Y0 = 177.62, BOYA_Y1 = 322.38;
 function boyada(p, rimX) {
   const solaHucum = rimX < 470;
   const x = p[0], y = p[1];

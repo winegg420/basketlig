@@ -1,760 +1,619 @@
-canli-mac :: Adana Boğaları
-canli-mac :: Adana Şahinleri
 canli-mac :: Ahmet Yıldız
-canli-mac :: Ankara Aslanları
-canli-mac :: Ankara Eagles — Sakarya Yıldızları
-canli-mac :: Ankara Kartalları
-canli-mac :: Aydın Şahinleri
-canli-mac :: Balıkesir Kartalları
-canli-mac :: Balıkesir Kartalları — Adana Şahinleri
-canli-mac :: Bursa Kartalları
-canli-mac :: Bursa Kartalları — Eskişehir Boğaları
-canli-mac :: Denizli Kurtları
-canli-mac :: Enes Şen
-canli-mac :: Enes Şen (SF) — Overall: 71
-canli-mac :: Enes Şen (SF) → PF
-canli-mac :: Enes Şen (SF) → SG
-canli-mac :: Enes Şen (SF·OVR 71)
-canli-mac :: Eskişehir Boğaları
-canli-mac :: Eskişehir Yıldızları
-canli-mac :: Konya Aslanları
-canli-mac :: Konya Aslanları — Ankara Kartalları
-canli-mac :: Malatya Kurtları
-canli-mac :: Sakarya Yıldızları
+canli-mac :: Ankara Eagles — Şanlıurfa Şahinleri
+canli-mac :: Ankara Şimşekleri
+canli-mac :: Ankara Şimşekleri — Balıkesir Panterleri
+canli-mac :: Antalya Aslanları
+canli-mac :: Aydın Boğaları
+canli-mac :: Balıkesir Panterleri
+canli-mac :: Emre Özdemir
+canli-mac :: Emre Özdemir (C) — Overall: 70
+canli-mac :: Emre Özdemir (C) → PF
+canli-mac :: Emre Özdemir (C·OVR 70)
+canli-mac :: Erzurum Gençlik
+canli-mac :: Erzurum Gençlik — Antalya Spor
+canli-mac :: Gaziantep Şahinleri
+canli-mac :: Malatya Yıldızları
+canli-mac :: Sakarya Kurtları
 canli-mac :: Tekirdağ Boğaları
-canli-mac :: Türkiye • 17 yrs • 209cm · Pot 89
-canli-mac :: Türkiye • 20 yrs • 206cm · Pot 89
-canli-mac :: Türkiye • 27 yrs • 194cm
-canli-mac :: Türkiye • 36 yrs • 204cm
-canli-mac :: İzmir Aslanları
-canli-mac :: İzmir Spor
-canli-mac :: 🇵🇹 Gonçalo Marques
-canli-mac :: 🇵🇹 Vasco Gonçalves
-canli-mac :: 🇹🇷 Alperen Özdemir
+canli-mac :: Tekirdağ Kurtları
+canli-mac :: İstanbul Şimşekleri
+canli-mac :: İstanbul Şimşekleri — Adana Panterleri
+canli-mac :: İzmir Boğaları
+canli-mac :: Şanlıurfa Kartalları
+canli-mac :: Şanlıurfa Şahinleri
+canli-mac :: ⚡ Kobayashi – Özdemir (C role clash)
 canli-mac :: 🇹🇷 Türkiye
-canli-mac :: 🇹🇷 Türkiye • 19 yrs
+canli-mac :: 🇹🇷 Türkiye • 28 yrs
 canli-mac :: 🇹🇷 Türkçe
-canli-mac :: 🏛️ Adana Boğaları from
-canli-mac :: 🏛️ Adana Şahinleri from
-canli-mac :: 🏛️ Ankara Kartalları from
-canli-mac :: 🏛️ Aydın Şahinleri from
-canli-mac :: 🏛️ Balıkesir Kartalları from
-canli-mac :: 🏛️ Bursa Kartalları from
-canli-mac :: 🏛️ Eskişehir Yıldızları from
-canli-mac :: 🏛️ Malatya Kurtları from
-canli-mac :: 🏛️ Sakarya Yıldızları from
-canli-mac :: 🔔 1. çeyreğin ilk hücumu kuruluyor — Ankara Eagles 0 - 0 Eskişehir Yıldızları.
+canli-mac :: 🏛️ Antalya Aslanları from
+canli-mac :: 🏛️ Aydın Boğaları from
+canli-mac :: 🏛️ Balıkesir Panterleri from
+canli-mac :: 🏛️ Erzurum Gençlik from
+canli-mac :: 🏛️ Gaziantep Şahinleri from
+canli-mac :: 🏛️ Tekirdağ Kurtları from
+canli-mac :: 🏛️ Şanlıurfa Kartalları from
+canli-mac :: 🏛️ Şanlıurfa Şahinleri from
+canli-mac :: 🔔 1. çeyreğin ilk hücumu kuruluyor — Ankara Eagles 0 - 0 Sakarya Kurtları.
 login :: 🇹🇷 Türkçe
-modal:ayarlar :: Adana Boğaları
-modal:ayarlar :: Adana Şahinleri
 modal:ayarlar :: Ahmet Yıldız
-modal:ayarlar :: Ankara Aslanları
-modal:ayarlar :: Ankara Eagles — Sakarya Yıldızları
-modal:ayarlar :: Ankara Kartalları
-modal:ayarlar :: Aydın Şahinleri
-modal:ayarlar :: Balıkesir Kartalları
-modal:ayarlar :: Balıkesir Kartalları — Adana Şahinleri
-modal:ayarlar :: Bursa Kartalları
-modal:ayarlar :: Bursa Kartalları — Eskişehir Boğaları
-modal:ayarlar :: Denizli Kurtları
-modal:ayarlar :: Enes Şen
-modal:ayarlar :: Enes Şen (SF) — Overall: 71
-modal:ayarlar :: Enes Şen (SF) → PF
-modal:ayarlar :: Enes Şen (SF) → SG
-modal:ayarlar :: Enes Şen (SF·OVR 71)
-modal:ayarlar :: Eskişehir Boğaları
-modal:ayarlar :: Eskişehir Yıldızları
-modal:ayarlar :: Konya Aslanları
-modal:ayarlar :: Konya Aslanları — Ankara Kartalları
-modal:ayarlar :: Malatya Kurtları
-modal:ayarlar :: Sakarya Yıldızları
+modal:ayarlar :: Ankara Eagles — Şanlıurfa Şahinleri
+modal:ayarlar :: Ankara Şimşekleri
+modal:ayarlar :: Ankara Şimşekleri — Balıkesir Panterleri
+modal:ayarlar :: Antalya Aslanları
+modal:ayarlar :: Aydın Boğaları
+modal:ayarlar :: Balıkesir Panterleri
+modal:ayarlar :: Emre Özdemir
+modal:ayarlar :: Emre Özdemir (C) — Overall: 70
+modal:ayarlar :: Emre Özdemir (C) → PF
+modal:ayarlar :: Emre Özdemir (C·OVR 70)
+modal:ayarlar :: Erzurum Gençlik
+modal:ayarlar :: Erzurum Gençlik — Antalya Spor
+modal:ayarlar :: Gaziantep Şahinleri
+modal:ayarlar :: Malatya Yıldızları
+modal:ayarlar :: Sakarya Kurtları
 modal:ayarlar :: Tekirdağ Boğaları
-modal:ayarlar :: Türkiye • 17 yrs • 209cm · Pot 89
-modal:ayarlar :: Türkiye • 20 yrs • 206cm · Pot 89
-modal:ayarlar :: Türkiye • 27 yrs • 194cm
-modal:ayarlar :: Türkiye • 36 yrs • 204cm
-modal:ayarlar :: İzmir Aslanları
-modal:ayarlar :: İzmir Spor
-modal:ayarlar :: 🇵🇹 Gonçalo Marques
-modal:ayarlar :: 🇵🇹 Vasco Gonçalves
-modal:ayarlar :: 🇹🇷 Alperen Özdemir
+modal:ayarlar :: Tekirdağ Kurtları
+modal:ayarlar :: İstanbul Şimşekleri
+modal:ayarlar :: İstanbul Şimşekleri — Adana Panterleri
+modal:ayarlar :: İzmir Boğaları
+modal:ayarlar :: Şanlıurfa Kartalları
+modal:ayarlar :: Şanlıurfa Şahinleri
+modal:ayarlar :: ⚡ Kobayashi – Özdemir (C role clash)
 modal:ayarlar :: 🇹🇷 Türkiye
-modal:ayarlar :: 🇹🇷 Türkiye • 19 yrs
+modal:ayarlar :: 🇹🇷 Türkiye • 28 yrs
 modal:ayarlar :: 🇹🇷 Türkçe
-modal:ayarlar :: 🏛️ Adana Boğaları from
-modal:ayarlar :: 🏛️ Adana Şahinleri from
-modal:ayarlar :: 🏛️ Ankara Kartalları from
-modal:ayarlar :: 🏛️ Aydın Şahinleri from
-modal:ayarlar :: 🏛️ Balıkesir Kartalları from
-modal:ayarlar :: 🏛️ Bursa Kartalları from
-modal:ayarlar :: 🏛️ Eskişehir Yıldızları from
-modal:ayarlar :: 🏛️ Malatya Kurtları from
-modal:ayarlar :: 🏛️ Sakarya Yıldızları from
-modal:basarim :: Adana Boğaları
-modal:basarim :: Adana Şahinleri
+modal:ayarlar :: 🏛️ Antalya Aslanları from
+modal:ayarlar :: 🏛️ Aydın Boğaları from
+modal:ayarlar :: 🏛️ Balıkesir Panterleri from
+modal:ayarlar :: 🏛️ Erzurum Gençlik from
+modal:ayarlar :: 🏛️ Gaziantep Şahinleri from
+modal:ayarlar :: 🏛️ Tekirdağ Kurtları from
+modal:ayarlar :: 🏛️ Şanlıurfa Kartalları from
+modal:ayarlar :: 🏛️ Şanlıurfa Şahinleri from
 modal:basarim :: Ahmet Yıldız
-modal:basarim :: Ankara Aslanları
-modal:basarim :: Ankara Eagles — Sakarya Yıldızları
-modal:basarim :: Ankara Kartalları
-modal:basarim :: Aydın Şahinleri
-modal:basarim :: Balıkesir Kartalları
-modal:basarim :: Balıkesir Kartalları — Adana Şahinleri
-modal:basarim :: Bursa Kartalları
-modal:basarim :: Bursa Kartalları — Eskişehir Boğaları
-modal:basarim :: Denizli Kurtları
-modal:basarim :: Enes Şen
-modal:basarim :: Enes Şen (SF) — Overall: 71
-modal:basarim :: Enes Şen (SF) → PF
-modal:basarim :: Enes Şen (SF) → SG
-modal:basarim :: Enes Şen (SF·OVR 71)
-modal:basarim :: Eskişehir Boğaları
-modal:basarim :: Eskişehir Yıldızları
-modal:basarim :: Konya Aslanları
-modal:basarim :: Konya Aslanları — Ankara Kartalları
-modal:basarim :: Malatya Kurtları
-modal:basarim :: Sakarya Yıldızları
+modal:basarim :: Ankara Eagles — Şanlıurfa Şahinleri
+modal:basarim :: Ankara Şimşekleri
+modal:basarim :: Ankara Şimşekleri — Balıkesir Panterleri
+modal:basarim :: Antalya Aslanları
+modal:basarim :: Aydın Boğaları
+modal:basarim :: Balıkesir Panterleri
+modal:basarim :: Emre Özdemir
+modal:basarim :: Emre Özdemir (C) — Overall: 70
+modal:basarim :: Emre Özdemir (C) → PF
+modal:basarim :: Emre Özdemir (C·OVR 70)
+modal:basarim :: Erzurum Gençlik
+modal:basarim :: Erzurum Gençlik — Antalya Spor
+modal:basarim :: Gaziantep Şahinleri
+modal:basarim :: Malatya Yıldızları
+modal:basarim :: Sakarya Kurtları
 modal:basarim :: Tekirdağ Boğaları
-modal:basarim :: Türkiye • 17 yrs • 209cm · Pot 89
-modal:basarim :: Türkiye • 20 yrs • 206cm · Pot 89
-modal:basarim :: Türkiye • 27 yrs • 194cm
-modal:basarim :: Türkiye • 36 yrs • 204cm
-modal:basarim :: İzmir Aslanları
-modal:basarim :: İzmir Spor
-modal:basarim :: 🇵🇹 Gonçalo Marques
-modal:basarim :: 🇵🇹 Vasco Gonçalves
-modal:basarim :: 🇹🇷 Alperen Özdemir
+modal:basarim :: Tekirdağ Kurtları
+modal:basarim :: İstanbul Şimşekleri
+modal:basarim :: İstanbul Şimşekleri — Adana Panterleri
+modal:basarim :: İzmir Boğaları
+modal:basarim :: Şanlıurfa Kartalları
+modal:basarim :: Şanlıurfa Şahinleri
+modal:basarim :: ⚡ Kobayashi – Özdemir (C role clash)
 modal:basarim :: 🇹🇷 Türkiye
-modal:basarim :: 🇹🇷 Türkiye • 19 yrs
+modal:basarim :: 🇹🇷 Türkiye • 28 yrs
 modal:basarim :: 🇹🇷 Türkçe
-modal:basarim :: 🏛️ Adana Boğaları from
-modal:basarim :: 🏛️ Adana Şahinleri from
-modal:basarim :: 🏛️ Ankara Kartalları from
-modal:basarim :: 🏛️ Aydın Şahinleri from
-modal:basarim :: 🏛️ Balıkesir Kartalları from
-modal:basarim :: 🏛️ Bursa Kartalları from
-modal:basarim :: 🏛️ Eskişehir Yıldızları from
-modal:basarim :: 🏛️ Malatya Kurtları from
-modal:basarim :: 🏛️ Sakarya Yıldızları from
-modal:draft :: Adana Boğaları
-modal:draft :: Adana Şahinleri
+modal:basarim :: 🏛️ Antalya Aslanları from
+modal:basarim :: 🏛️ Aydın Boğaları from
+modal:basarim :: 🏛️ Balıkesir Panterleri from
+modal:basarim :: 🏛️ Erzurum Gençlik from
+modal:basarim :: 🏛️ Gaziantep Şahinleri from
+modal:basarim :: 🏛️ Tekirdağ Kurtları from
+modal:basarim :: 🏛️ Şanlıurfa Kartalları from
+modal:basarim :: 🏛️ Şanlıurfa Şahinleri from
 modal:draft :: Ahmet Yıldız
-modal:draft :: Ankara Aslanları
-modal:draft :: Ankara Eagles — Sakarya Yıldızları
-modal:draft :: Ankara Kartalları
-modal:draft :: Aydın Şahinleri
-modal:draft :: Balıkesir Kartalları
-modal:draft :: Balıkesir Kartalları — Adana Şahinleri
-modal:draft :: Bursa Kartalları
-modal:draft :: Bursa Kartalları — Eskişehir Boğaları
-modal:draft :: Denizli Kurtları
-modal:draft :: Enes Şen
-modal:draft :: Enes Şen (SF) — Overall: 71
-modal:draft :: Enes Şen (SF) → PF
-modal:draft :: Enes Şen (SF) → SG
-modal:draft :: Enes Şen (SF·OVR 71)
-modal:draft :: Eskişehir Boğaları
-modal:draft :: Eskişehir Yıldızları
-modal:draft :: Konya Aslanları
-modal:draft :: Konya Aslanları — Ankara Kartalları
-modal:draft :: Malatya Kurtları
-modal:draft :: Sakarya Yıldızları
+modal:draft :: Ankara Eagles — Şanlıurfa Şahinleri
+modal:draft :: Ankara Şimşekleri
+modal:draft :: Ankara Şimşekleri — Balıkesir Panterleri
+modal:draft :: Antalya Aslanları
+modal:draft :: Aydın Boğaları
+modal:draft :: Balıkesir Panterleri
+modal:draft :: Emre Özdemir
+modal:draft :: Emre Özdemir (C) — Overall: 70
+modal:draft :: Emre Özdemir (C) → PF
+modal:draft :: Emre Özdemir (C·OVR 70)
+modal:draft :: Erzurum Gençlik
+modal:draft :: Erzurum Gençlik — Antalya Spor
+modal:draft :: Gaziantep Şahinleri
+modal:draft :: Malatya Yıldızları
+modal:draft :: Sakarya Kurtları
 modal:draft :: Tekirdağ Boğaları
-modal:draft :: Türkiye • 17 yrs • 209cm · Pot 89
-modal:draft :: Türkiye • 20 yrs • 206cm · Pot 89
-modal:draft :: Türkiye • 27 yrs • 194cm
-modal:draft :: Türkiye • 36 yrs • 204cm
-modal:draft :: İzmir Aslanları
-modal:draft :: İzmir Spor
-modal:draft :: 🇵🇹 Gonçalo Marques
-modal:draft :: 🇵🇹 Vasco Gonçalves
-modal:draft :: 🇹🇷 Alperen Özdemir
+modal:draft :: Tekirdağ Kurtları
+modal:draft :: İstanbul Şimşekleri
+modal:draft :: İstanbul Şimşekleri — Adana Panterleri
+modal:draft :: İzmir Boğaları
+modal:draft :: Şanlıurfa Kartalları
+modal:draft :: Şanlıurfa Şahinleri
+modal:draft :: ⚡ Kobayashi – Özdemir (C role clash)
 modal:draft :: 🇹🇷 Türkiye
-modal:draft :: 🇹🇷 Türkiye • 19 yrs
+modal:draft :: 🇹🇷 Türkiye • 28 yrs
 modal:draft :: 🇹🇷 Türkçe
-modal:draft :: 🏛️ Adana Boğaları from
-modal:draft :: 🏛️ Adana Şahinleri from
-modal:draft :: 🏛️ Ankara Kartalları from
-modal:draft :: 🏛️ Aydın Şahinleri from
-modal:draft :: 🏛️ Balıkesir Kartalları from
-modal:draft :: 🏛️ Bursa Kartalları from
-modal:draft :: 🏛️ Eskişehir Yıldızları from
-modal:draft :: 🏛️ Malatya Kurtları from
-modal:draft :: 🏛️ Sakarya Yıldızları from
-modal:ilk5 :: Adana Boğaları
-modal:ilk5 :: Adana Şahinleri
+modal:draft :: 🏛️ Antalya Aslanları from
+modal:draft :: 🏛️ Aydın Boğaları from
+modal:draft :: 🏛️ Balıkesir Panterleri from
+modal:draft :: 🏛️ Erzurum Gençlik from
+modal:draft :: 🏛️ Gaziantep Şahinleri from
+modal:draft :: 🏛️ Tekirdağ Kurtları from
+modal:draft :: 🏛️ Şanlıurfa Kartalları from
+modal:draft :: 🏛️ Şanlıurfa Şahinleri from
 modal:ilk5 :: Ahmet Yıldız
-modal:ilk5 :: Ankara Aslanları
-modal:ilk5 :: Ankara Eagles — Sakarya Yıldızları
-modal:ilk5 :: Ankara Kartalları
-modal:ilk5 :: Aydın Şahinleri
-modal:ilk5 :: Balıkesir Kartalları
-modal:ilk5 :: Balıkesir Kartalları — Adana Şahinleri
-modal:ilk5 :: Bursa Kartalları
-modal:ilk5 :: Bursa Kartalları — Eskişehir Boğaları
-modal:ilk5 :: Denizli Kurtları
-modal:ilk5 :: Enes Şen
-modal:ilk5 :: Enes Şen (SF) — Overall: 71
-modal:ilk5 :: Enes Şen (SF) → PF
-modal:ilk5 :: Enes Şen (SF) → SG
-modal:ilk5 :: Enes Şen (SF·OVR 71)
-modal:ilk5 :: Eskişehir Boğaları
-modal:ilk5 :: Eskişehir Yıldızları
-modal:ilk5 :: Konya Aslanları
-modal:ilk5 :: Konya Aslanları — Ankara Kartalları
-modal:ilk5 :: Malatya Kurtları
-modal:ilk5 :: Sakarya Yıldızları
+modal:ilk5 :: Ankara Eagles — Şanlıurfa Şahinleri
+modal:ilk5 :: Ankara Şimşekleri
+modal:ilk5 :: Ankara Şimşekleri — Balıkesir Panterleri
+modal:ilk5 :: Antalya Aslanları
+modal:ilk5 :: Aydın Boğaları
+modal:ilk5 :: Balıkesir Panterleri
+modal:ilk5 :: Emre Özdemir
+modal:ilk5 :: Emre Özdemir (C) — Overall: 70
+modal:ilk5 :: Emre Özdemir (C) → PF
+modal:ilk5 :: Emre Özdemir (C·OVR 70)
+modal:ilk5 :: Erzurum Gençlik
+modal:ilk5 :: Erzurum Gençlik — Antalya Spor
+modal:ilk5 :: Gaziantep Şahinleri
+modal:ilk5 :: Malatya Yıldızları
+modal:ilk5 :: Sakarya Kurtları
 modal:ilk5 :: Tekirdağ Boğaları
-modal:ilk5 :: Türkiye • 17 yrs • 209cm · Pot 89
-modal:ilk5 :: Türkiye • 20 yrs • 206cm · Pot 89
-modal:ilk5 :: Türkiye • 27 yrs • 194cm
-modal:ilk5 :: Türkiye • 36 yrs • 204cm
-modal:ilk5 :: İzmir Aslanları
-modal:ilk5 :: İzmir Spor
-modal:ilk5 :: 🇵🇹 Gonçalo Marques
-modal:ilk5 :: 🇵🇹 Vasco Gonçalves
-modal:ilk5 :: 🇹🇷 Alperen Özdemir
+modal:ilk5 :: Tekirdağ Kurtları
+modal:ilk5 :: İstanbul Şimşekleri
+modal:ilk5 :: İstanbul Şimşekleri — Adana Panterleri
+modal:ilk5 :: İzmir Boğaları
+modal:ilk5 :: Şanlıurfa Kartalları
+modal:ilk5 :: Şanlıurfa Şahinleri
+modal:ilk5 :: ⚡ Kobayashi – Özdemir (C role clash)
 modal:ilk5 :: 🇹🇷 Türkiye
-modal:ilk5 :: 🇹🇷 Türkiye • 19 yrs
+modal:ilk5 :: 🇹🇷 Türkiye • 28 yrs
 modal:ilk5 :: 🇹🇷 Türkçe
-modal:ilk5 :: 🏛️ Adana Boğaları from
-modal:ilk5 :: 🏛️ Adana Şahinleri from
-modal:ilk5 :: 🏛️ Ankara Kartalları from
-modal:ilk5 :: 🏛️ Aydın Şahinleri from
-modal:ilk5 :: 🏛️ Balıkesir Kartalları from
-modal:ilk5 :: 🏛️ Bursa Kartalları from
-modal:ilk5 :: 🏛️ Eskişehir Yıldızları from
-modal:ilk5 :: 🏛️ Malatya Kurtları from
-modal:ilk5 :: 🏛️ Sakarya Yıldızları from
-modal:oyuncu :: Adana Boğaları
-modal:oyuncu :: Adana Şahinleri
+modal:ilk5 :: 🏛️ Antalya Aslanları from
+modal:ilk5 :: 🏛️ Aydın Boğaları from
+modal:ilk5 :: 🏛️ Balıkesir Panterleri from
+modal:ilk5 :: 🏛️ Erzurum Gençlik from
+modal:ilk5 :: 🏛️ Gaziantep Şahinleri from
+modal:ilk5 :: 🏛️ Tekirdağ Kurtları from
+modal:ilk5 :: 🏛️ Şanlıurfa Kartalları from
+modal:ilk5 :: 🏛️ Şanlıurfa Şahinleri from
 modal:oyuncu :: Ahmet Yıldız
-modal:oyuncu :: Ankara Aslanları
-modal:oyuncu :: Ankara Eagles — Sakarya Yıldızları
-modal:oyuncu :: Ankara Kartalları
-modal:oyuncu :: Aydın Şahinleri
-modal:oyuncu :: Balıkesir Kartalları
-modal:oyuncu :: Balıkesir Kartalları — Adana Şahinleri
-modal:oyuncu :: Bursa Kartalları
-modal:oyuncu :: Bursa Kartalları — Eskişehir Boğaları
-modal:oyuncu :: Denizli Kurtları
-modal:oyuncu :: Enes Şen
-modal:oyuncu :: Enes Şen (SF) — Overall: 71
-modal:oyuncu :: Enes Şen (SF) → PF
-modal:oyuncu :: Enes Şen (SF) → SG
-modal:oyuncu :: Enes Şen (SF·OVR 71)
-modal:oyuncu :: Eskişehir Boğaları
-modal:oyuncu :: Eskişehir Yıldızları
-modal:oyuncu :: Konya Aslanları
-modal:oyuncu :: Konya Aslanları — Ankara Kartalları
-modal:oyuncu :: Malatya Kurtları
-modal:oyuncu :: Sakarya Yıldızları
+modal:oyuncu :: Ankara Eagles — Şanlıurfa Şahinleri
+modal:oyuncu :: Ankara Şimşekleri
+modal:oyuncu :: Ankara Şimşekleri — Balıkesir Panterleri
+modal:oyuncu :: Antalya Aslanları
+modal:oyuncu :: Aydın Boğaları
+modal:oyuncu :: Balıkesir Panterleri
+modal:oyuncu :: Emre Özdemir
+modal:oyuncu :: Emre Özdemir (C) — Overall: 70
+modal:oyuncu :: Emre Özdemir (C) → PF
+modal:oyuncu :: Emre Özdemir (C·OVR 70)
+modal:oyuncu :: Erzurum Gençlik
+modal:oyuncu :: Erzurum Gençlik — Antalya Spor
+modal:oyuncu :: Gaziantep Şahinleri
+modal:oyuncu :: Malatya Yıldızları
+modal:oyuncu :: Sakarya Kurtları
 modal:oyuncu :: Tekirdağ Boğaları
-modal:oyuncu :: Türkiye • 17 yrs • 209cm · Pot 89
-modal:oyuncu :: Türkiye • 20 yrs • 206cm · Pot 89
-modal:oyuncu :: Türkiye • 27 yrs • 194cm
-modal:oyuncu :: Türkiye • 36 yrs • 204cm
-modal:oyuncu :: İzmir Aslanları
-modal:oyuncu :: İzmir Spor
-modal:oyuncu :: 🇵🇹 Gonçalo Marques
-modal:oyuncu :: 🇵🇹 Vasco Gonçalves
-modal:oyuncu :: 🇹🇷 Alperen Özdemir
+modal:oyuncu :: Tekirdağ Kurtları
+modal:oyuncu :: İstanbul Şimşekleri
+modal:oyuncu :: İstanbul Şimşekleri — Adana Panterleri
+modal:oyuncu :: İzmir Boğaları
+modal:oyuncu :: Şanlıurfa Kartalları
+modal:oyuncu :: Şanlıurfa Şahinleri
+modal:oyuncu :: ⚡ Kobayashi – Özdemir (C role clash)
 modal:oyuncu :: 🇹🇷 Türkiye
-modal:oyuncu :: 🇹🇷 Türkiye • 19 yrs
+modal:oyuncu :: 🇹🇷 Türkiye • 28 yrs
 modal:oyuncu :: 🇹🇷 Türkçe
-modal:oyuncu :: 🏛️ Adana Boğaları from
-modal:oyuncu :: 🏛️ Adana Şahinleri from
-modal:oyuncu :: 🏛️ Ankara Kartalları from
-modal:oyuncu :: 🏛️ Aydın Şahinleri from
-modal:oyuncu :: 🏛️ Balıkesir Kartalları from
-modal:oyuncu :: 🏛️ Bursa Kartalları from
-modal:oyuncu :: 🏛️ Eskişehir Yıldızları from
-modal:oyuncu :: 🏛️ Malatya Kurtları from
-modal:oyuncu :: 🏛️ Sakarya Yıldızları from
-modal:soyunma :: Adana Boğaları
-modal:soyunma :: Adana Şahinleri
+modal:oyuncu :: 🏛️ Antalya Aslanları from
+modal:oyuncu :: 🏛️ Aydın Boğaları from
+modal:oyuncu :: 🏛️ Balıkesir Panterleri from
+modal:oyuncu :: 🏛️ Erzurum Gençlik from
+modal:oyuncu :: 🏛️ Gaziantep Şahinleri from
+modal:oyuncu :: 🏛️ Tekirdağ Kurtları from
+modal:oyuncu :: 🏛️ Şanlıurfa Kartalları from
+modal:oyuncu :: 🏛️ Şanlıurfa Şahinleri from
 modal:soyunma :: Ahmet Yıldız
-modal:soyunma :: Ankara Aslanları
-modal:soyunma :: Ankara Eagles — Sakarya Yıldızları
-modal:soyunma :: Ankara Kartalları
-modal:soyunma :: Aydın Şahinleri
-modal:soyunma :: Balıkesir Kartalları
-modal:soyunma :: Balıkesir Kartalları — Adana Şahinleri
-modal:soyunma :: Bursa Kartalları
-modal:soyunma :: Bursa Kartalları — Eskişehir Boğaları
-modal:soyunma :: Denizli Kurtları
-modal:soyunma :: Enes Şen
-modal:soyunma :: Enes Şen (SF) — Overall: 71
-modal:soyunma :: Enes Şen (SF) → PF
-modal:soyunma :: Enes Şen (SF) → SG
-modal:soyunma :: Enes Şen (SF·OVR 71)
-modal:soyunma :: Eskişehir Boğaları
-modal:soyunma :: Eskişehir Yıldızları
-modal:soyunma :: Konya Aslanları
-modal:soyunma :: Konya Aslanları — Ankara Kartalları
-modal:soyunma :: Malatya Kurtları
-modal:soyunma :: Sakarya Yıldızları
+modal:soyunma :: Ankara Eagles — Şanlıurfa Şahinleri
+modal:soyunma :: Ankara Şimşekleri
+modal:soyunma :: Ankara Şimşekleri — Balıkesir Panterleri
+modal:soyunma :: Antalya Aslanları
+modal:soyunma :: Aydın Boğaları
+modal:soyunma :: Balıkesir Panterleri
+modal:soyunma :: Emre Özdemir
+modal:soyunma :: Emre Özdemir (C) — Overall: 70
+modal:soyunma :: Emre Özdemir (C) → PF
+modal:soyunma :: Emre Özdemir (C·OVR 70)
+modal:soyunma :: Erzurum Gençlik
+modal:soyunma :: Erzurum Gençlik — Antalya Spor
+modal:soyunma :: Gaziantep Şahinleri
+modal:soyunma :: Malatya Yıldızları
+modal:soyunma :: Sakarya Kurtları
 modal:soyunma :: Tekirdağ Boğaları
-modal:soyunma :: Türkiye • 17 yrs • 209cm · Pot 89
-modal:soyunma :: Türkiye • 20 yrs • 206cm · Pot 89
-modal:soyunma :: Türkiye • 27 yrs • 194cm
-modal:soyunma :: Türkiye • 36 yrs • 204cm
-modal:soyunma :: İzmir Aslanları
-modal:soyunma :: İzmir Spor
-modal:soyunma :: 🇵🇹 Gonçalo Marques
-modal:soyunma :: 🇵🇹 Vasco Gonçalves
-modal:soyunma :: 🇹🇷 Alperen Özdemir
+modal:soyunma :: Tekirdağ Kurtları
+modal:soyunma :: İstanbul Şimşekleri
+modal:soyunma :: İstanbul Şimşekleri — Adana Panterleri
+modal:soyunma :: İzmir Boğaları
+modal:soyunma :: Şanlıurfa Kartalları
+modal:soyunma :: Şanlıurfa Şahinleri
+modal:soyunma :: ⚡ Kobayashi – Özdemir (C role clash)
 modal:soyunma :: 🇹🇷 Türkiye
-modal:soyunma :: 🇹🇷 Türkiye • 19 yrs
+modal:soyunma :: 🇹🇷 Türkiye • 28 yrs
 modal:soyunma :: 🇹🇷 Türkçe
-modal:soyunma :: 🏛️ Adana Boğaları from
-modal:soyunma :: 🏛️ Adana Şahinleri from
-modal:soyunma :: 🏛️ Ankara Kartalları from
-modal:soyunma :: 🏛️ Aydın Şahinleri from
-modal:soyunma :: 🏛️ Balıkesir Kartalları from
-modal:soyunma :: 🏛️ Bursa Kartalları from
-modal:soyunma :: 🏛️ Eskişehir Yıldızları from
-modal:soyunma :: 🏛️ Malatya Kurtları from
-modal:soyunma :: 🏛️ Sakarya Yıldızları from
-modal:taktik :: Adana Boğaları
-modal:taktik :: Adana Şahinleri
+modal:soyunma :: 🏛️ Antalya Aslanları from
+modal:soyunma :: 🏛️ Aydın Boğaları from
+modal:soyunma :: 🏛️ Balıkesir Panterleri from
+modal:soyunma :: 🏛️ Erzurum Gençlik from
+modal:soyunma :: 🏛️ Gaziantep Şahinleri from
+modal:soyunma :: 🏛️ Tekirdağ Kurtları from
+modal:soyunma :: 🏛️ Şanlıurfa Kartalları from
+modal:soyunma :: 🏛️ Şanlıurfa Şahinleri from
 modal:taktik :: Ahmet Yıldız
-modal:taktik :: Ankara Aslanları
-modal:taktik :: Ankara Eagles — Sakarya Yıldızları
-modal:taktik :: Ankara Kartalları
-modal:taktik :: Aydın Şahinleri
-modal:taktik :: Balıkesir Kartalları
-modal:taktik :: Balıkesir Kartalları — Adana Şahinleri
-modal:taktik :: Bursa Kartalları
-modal:taktik :: Bursa Kartalları — Eskişehir Boğaları
-modal:taktik :: Denizli Kurtları
-modal:taktik :: Enes Şen
-modal:taktik :: Enes Şen (SF) — Overall: 71
-modal:taktik :: Enes Şen (SF) → PF
-modal:taktik :: Enes Şen (SF) → SG
-modal:taktik :: Enes Şen (SF·OVR 71)
-modal:taktik :: Eskişehir Boğaları
-modal:taktik :: Eskişehir Yıldızları
-modal:taktik :: Konya Aslanları
-modal:taktik :: Konya Aslanları — Ankara Kartalları
-modal:taktik :: Malatya Kurtları
-modal:taktik :: Sakarya Yıldızları
+modal:taktik :: Ankara Eagles — Şanlıurfa Şahinleri
+modal:taktik :: Ankara Şimşekleri
+modal:taktik :: Ankara Şimşekleri — Balıkesir Panterleri
+modal:taktik :: Antalya Aslanları
+modal:taktik :: Aydın Boğaları
+modal:taktik :: Balıkesir Panterleri
+modal:taktik :: Emre Özdemir
+modal:taktik :: Emre Özdemir (C) — Overall: 70
+modal:taktik :: Emre Özdemir (C) → PF
+modal:taktik :: Emre Özdemir (C·OVR 70)
+modal:taktik :: Erzurum Gençlik
+modal:taktik :: Erzurum Gençlik — Antalya Spor
+modal:taktik :: Gaziantep Şahinleri
+modal:taktik :: Malatya Yıldızları
+modal:taktik :: Sakarya Kurtları
 modal:taktik :: Tekirdağ Boğaları
-modal:taktik :: Türkiye • 17 yrs • 209cm · Pot 89
-modal:taktik :: Türkiye • 20 yrs • 206cm · Pot 89
-modal:taktik :: Türkiye • 27 yrs • 194cm
-modal:taktik :: Türkiye • 36 yrs • 204cm
-modal:taktik :: İzmir Aslanları
-modal:taktik :: İzmir Spor
-modal:taktik :: 🇵🇹 Gonçalo Marques
-modal:taktik :: 🇵🇹 Vasco Gonçalves
-modal:taktik :: 🇹🇷 Alperen Özdemir
+modal:taktik :: Tekirdağ Kurtları
+modal:taktik :: İstanbul Şimşekleri
+modal:taktik :: İstanbul Şimşekleri — Adana Panterleri
+modal:taktik :: İzmir Boğaları
+modal:taktik :: Şanlıurfa Kartalları
+modal:taktik :: Şanlıurfa Şahinleri
+modal:taktik :: ⚡ Kobayashi – Özdemir (C role clash)
 modal:taktik :: 🇹🇷 Türkiye
-modal:taktik :: 🇹🇷 Türkiye • 19 yrs
+modal:taktik :: 🇹🇷 Türkiye • 28 yrs
 modal:taktik :: 🇹🇷 Türkçe
-modal:taktik :: 🎯 Tactics — vs Eskişehir Yıldızları
-modal:taktik :: 🏛️ Adana Boğaları from
-modal:taktik :: 🏛️ Adana Şahinleri from
-modal:taktik :: 🏛️ Ankara Kartalları from
-modal:taktik :: 🏛️ Aydın Şahinleri from
-modal:taktik :: 🏛️ Balıkesir Kartalları from
-modal:taktik :: 🏛️ Bursa Kartalları from
-modal:taktik :: 🏛️ Eskişehir Yıldızları from
-modal:taktik :: 🏛️ Malatya Kurtları from
-modal:taktik :: 🏛️ Sakarya Yıldızları from
-sayfa:altyapi :: Adana Boğaları
-sayfa:altyapi :: Adana Şahinleri
-sayfa:altyapi :: Ankara Aslanları
-sayfa:altyapi :: Ankara Eagles — Sakarya Yıldızları
-sayfa:altyapi :: Ankara Kartalları
-sayfa:altyapi :: Aydın Şahinleri
-sayfa:altyapi :: Balıkesir Kartalları
-sayfa:altyapi :: Balıkesir Kartalları — Adana Şahinleri
-sayfa:altyapi :: Bursa Kartalları
-sayfa:altyapi :: Bursa Kartalları — Eskişehir Boğaları
-sayfa:altyapi :: Denizli Kurtları
-sayfa:altyapi :: Enes Şen
-sayfa:altyapi :: Eskişehir Boğaları
-sayfa:altyapi :: Eskişehir Yıldızları
-sayfa:altyapi :: Konya Aslanları
-sayfa:altyapi :: Konya Aslanları — Ankara Kartalları
-sayfa:altyapi :: Malatya Kurtları
-sayfa:altyapi :: Sakarya Yıldızları
+modal:taktik :: 🎯 Tactics — vs Sakarya Kurtları
+modal:taktik :: 🏛️ Antalya Aslanları from
+modal:taktik :: 🏛️ Aydın Boğaları from
+modal:taktik :: 🏛️ Balıkesir Panterleri from
+modal:taktik :: 🏛️ Erzurum Gençlik from
+modal:taktik :: 🏛️ Gaziantep Şahinleri from
+modal:taktik :: 🏛️ Tekirdağ Kurtları from
+modal:taktik :: 🏛️ Şanlıurfa Kartalları from
+modal:taktik :: 🏛️ Şanlıurfa Şahinleri from
+sayfa:altyapi :: Ankara Eagles — Şanlıurfa Şahinleri
+sayfa:altyapi :: Ankara Şimşekleri
+sayfa:altyapi :: Ankara Şimşekleri — Balıkesir Panterleri
+sayfa:altyapi :: Antalya Aslanları
+sayfa:altyapi :: Aydın Boğaları
+sayfa:altyapi :: Balıkesir Panterleri
+sayfa:altyapi :: Emre Özdemir
+sayfa:altyapi :: Erzurum Gençlik
+sayfa:altyapi :: Erzurum Gençlik — Antalya Spor
+sayfa:altyapi :: Gaziantep Şahinleri
+sayfa:altyapi :: Malatya Yıldızları
+sayfa:altyapi :: Sakarya Kurtları
 sayfa:altyapi :: Tekirdağ Boğaları
-sayfa:altyapi :: Türkiye • 17 yrs • 209cm · Pot 89
-sayfa:altyapi :: Türkiye • 20 yrs • 206cm · Pot 89
-sayfa:altyapi :: Türkiye • 27 yrs • 194cm
-sayfa:altyapi :: Türkiye • 36 yrs • 204cm
-sayfa:altyapi :: İzmir Aslanları
-sayfa:altyapi :: İzmir Spor
-sayfa:altyapi :: 🇵🇹 Gonçalo Marques
-sayfa:altyapi :: 🇵🇹 Vasco Gonçalves
-sayfa:altyapi :: 🇹🇷 Alperen Özdemir
+sayfa:altyapi :: Tekirdağ Kurtları
+sayfa:altyapi :: İstanbul Şimşekleri
+sayfa:altyapi :: İstanbul Şimşekleri — Adana Panterleri
+sayfa:altyapi :: İzmir Boğaları
+sayfa:altyapi :: Şanlıurfa Kartalları
+sayfa:altyapi :: Şanlıurfa Şahinleri
+sayfa:altyapi :: ⚡ Kobayashi – Özdemir (C role clash)
 sayfa:altyapi :: 🇹🇷 Türkiye
-sayfa:altyapi :: 🇹🇷 Türkiye • 19 yrs
+sayfa:altyapi :: 🇹🇷 Türkiye • 28 yrs
 sayfa:altyapi :: 🇹🇷 Türkçe
-sayfa:altyapi :: 🏛️ Adana Boğaları from
-sayfa:altyapi :: 🏛️ Adana Şahinleri from
-sayfa:altyapi :: 🏛️ Ankara Kartalları from
-sayfa:altyapi :: 🏛️ Aydın Şahinleri from
-sayfa:altyapi :: 🏛️ Balıkesir Kartalları from
-sayfa:altyapi :: 🏛️ Bursa Kartalları from
-sayfa:altyapi :: 🏛️ Eskişehir Yıldızları from
-sayfa:altyapi :: 🏛️ Malatya Kurtları from
-sayfa:altyapi :: 🏛️ Sakarya Yıldızları from
-sayfa:analiz :: Adana Boğaları
-sayfa:analiz :: Adana Şahinleri
+sayfa:altyapi :: 🏛️ Antalya Aslanları from
+sayfa:altyapi :: 🏛️ Aydın Boğaları from
+sayfa:altyapi :: 🏛️ Balıkesir Panterleri from
+sayfa:altyapi :: 🏛️ Erzurum Gençlik from
+sayfa:altyapi :: 🏛️ Gaziantep Şahinleri from
+sayfa:altyapi :: 🏛️ Tekirdağ Kurtları from
+sayfa:altyapi :: 🏛️ Şanlıurfa Kartalları from
+sayfa:altyapi :: 🏛️ Şanlıurfa Şahinleri from
 sayfa:analiz :: Ahmet Yıldız
-sayfa:analiz :: Ankara Aslanları
-sayfa:analiz :: Ankara Eagles — Sakarya Yıldızları
-sayfa:analiz :: Ankara Kartalları
-sayfa:analiz :: Aydın Şahinleri
-sayfa:analiz :: Balıkesir Kartalları
-sayfa:analiz :: Balıkesir Kartalları — Adana Şahinleri
-sayfa:analiz :: Bursa Kartalları
-sayfa:analiz :: Bursa Kartalları — Eskişehir Boğaları
-sayfa:analiz :: Denizli Kurtları
-sayfa:analiz :: Enes Şen
-sayfa:analiz :: Enes Şen (SF) — Overall: 71
-sayfa:analiz :: Enes Şen (SF) → PF
-sayfa:analiz :: Enes Şen (SF) → SG
-sayfa:analiz :: Enes Şen (SF·OVR 71)
-sayfa:analiz :: Eskişehir Boğaları
-sayfa:analiz :: Eskişehir Yıldızları
-sayfa:analiz :: Konya Aslanları
-sayfa:analiz :: Konya Aslanları — Ankara Kartalları
-sayfa:analiz :: Malatya Kurtları
-sayfa:analiz :: Sakarya Yıldızları
+sayfa:analiz :: Ankara Eagles — Şanlıurfa Şahinleri
+sayfa:analiz :: Ankara Şimşekleri
+sayfa:analiz :: Ankara Şimşekleri — Balıkesir Panterleri
+sayfa:analiz :: Antalya Aslanları
+sayfa:analiz :: Aydın Boğaları
+sayfa:analiz :: Balıkesir Panterleri
+sayfa:analiz :: Emre Özdemir
+sayfa:analiz :: Emre Özdemir (C) — Overall: 70
+sayfa:analiz :: Emre Özdemir (C) → PF
+sayfa:analiz :: Emre Özdemir (C·OVR 70)
+sayfa:analiz :: Erzurum Gençlik
+sayfa:analiz :: Erzurum Gençlik — Antalya Spor
+sayfa:analiz :: Gaziantep Şahinleri
+sayfa:analiz :: Malatya Yıldızları
+sayfa:analiz :: Sakarya Kurtları
 sayfa:analiz :: Tekirdağ Boğaları
-sayfa:analiz :: Türkiye • 17 yrs • 209cm · Pot 89
-sayfa:analiz :: Türkiye • 20 yrs • 206cm · Pot 89
-sayfa:analiz :: Türkiye • 27 yrs • 194cm
-sayfa:analiz :: Türkiye • 36 yrs • 204cm
-sayfa:analiz :: İzmir Aslanları
-sayfa:analiz :: İzmir Spor
-sayfa:analiz :: 🇵🇹 Gonçalo Marques
-sayfa:analiz :: 🇵🇹 Vasco Gonçalves
-sayfa:analiz :: 🇹🇷 Alperen Özdemir
+sayfa:analiz :: Tekirdağ Kurtları
+sayfa:analiz :: İstanbul Şimşekleri
+sayfa:analiz :: İstanbul Şimşekleri — Adana Panterleri
+sayfa:analiz :: İzmir Boğaları
+sayfa:analiz :: Şanlıurfa Kartalları
+sayfa:analiz :: Şanlıurfa Şahinleri
+sayfa:analiz :: ⚡ Kobayashi – Özdemir (C role clash)
 sayfa:analiz :: 🇹🇷 Türkiye
-sayfa:analiz :: 🇹🇷 Türkiye • 19 yrs
+sayfa:analiz :: 🇹🇷 Türkiye • 28 yrs
 sayfa:analiz :: 🇹🇷 Türkçe
-sayfa:analiz :: 🏛️ Adana Boğaları from
-sayfa:analiz :: 🏛️ Adana Şahinleri from
-sayfa:analiz :: 🏛️ Ankara Kartalları from
-sayfa:analiz :: 🏛️ Aydın Şahinleri from
-sayfa:analiz :: 🏛️ Balıkesir Kartalları from
-sayfa:analiz :: 🏛️ Bursa Kartalları from
-sayfa:analiz :: 🏛️ Eskişehir Yıldızları from
-sayfa:analiz :: 🏛️ Malatya Kurtları from
-sayfa:analiz :: 🏛️ Sakarya Yıldızları from
-sayfa:antrenman :: Adana Boğaları
-sayfa:antrenman :: Adana Şahinleri
+sayfa:analiz :: 🏛️ Antalya Aslanları from
+sayfa:analiz :: 🏛️ Aydın Boğaları from
+sayfa:analiz :: 🏛️ Balıkesir Panterleri from
+sayfa:analiz :: 🏛️ Erzurum Gençlik from
+sayfa:analiz :: 🏛️ Gaziantep Şahinleri from
+sayfa:analiz :: 🏛️ Tekirdağ Kurtları from
+sayfa:analiz :: 🏛️ Şanlıurfa Kartalları from
+sayfa:analiz :: 🏛️ Şanlıurfa Şahinleri from
 sayfa:antrenman :: Ahmet Yıldız
-sayfa:antrenman :: Ankara Aslanları
-sayfa:antrenman :: Ankara Eagles — Sakarya Yıldızları
-sayfa:antrenman :: Ankara Kartalları
-sayfa:antrenman :: Aydın Şahinleri
-sayfa:antrenman :: Balıkesir Kartalları
-sayfa:antrenman :: Balıkesir Kartalları — Adana Şahinleri
-sayfa:antrenman :: Bursa Kartalları
-sayfa:antrenman :: Bursa Kartalları — Eskişehir Boğaları
-sayfa:antrenman :: Denizli Kurtları
-sayfa:antrenman :: Enes Şen
-sayfa:antrenman :: Enes Şen (SF) — Overall: 71
-sayfa:antrenman :: Enes Şen (SF) → PF
-sayfa:antrenman :: Enes Şen (SF) → SG
-sayfa:antrenman :: Eskişehir Boğaları
-sayfa:antrenman :: Eskişehir Yıldızları
-sayfa:antrenman :: Konya Aslanları
-sayfa:antrenman :: Konya Aslanları — Ankara Kartalları
-sayfa:antrenman :: Malatya Kurtları
-sayfa:antrenman :: Sakarya Yıldızları
+sayfa:antrenman :: Ankara Eagles — Şanlıurfa Şahinleri
+sayfa:antrenman :: Ankara Şimşekleri
+sayfa:antrenman :: Ankara Şimşekleri — Balıkesir Panterleri
+sayfa:antrenman :: Antalya Aslanları
+sayfa:antrenman :: Aydın Boğaları
+sayfa:antrenman :: Balıkesir Panterleri
+sayfa:antrenman :: Emre Özdemir
+sayfa:antrenman :: Emre Özdemir (C) — Overall: 70
+sayfa:antrenman :: Emre Özdemir (C) → PF
+sayfa:antrenman :: Erzurum Gençlik
+sayfa:antrenman :: Erzurum Gençlik — Antalya Spor
+sayfa:antrenman :: Gaziantep Şahinleri
+sayfa:antrenman :: Malatya Yıldızları
+sayfa:antrenman :: Sakarya Kurtları
 sayfa:antrenman :: Tekirdağ Boğaları
-sayfa:antrenman :: Türkiye • 17 yrs • 209cm · Pot 89
-sayfa:antrenman :: Türkiye • 20 yrs • 206cm · Pot 89
-sayfa:antrenman :: Türkiye • 27 yrs • 194cm
-sayfa:antrenman :: Türkiye • 36 yrs • 204cm
-sayfa:antrenman :: İzmir Aslanları
-sayfa:antrenman :: İzmir Spor
-sayfa:antrenman :: 🇵🇹 Gonçalo Marques
-sayfa:antrenman :: 🇵🇹 Vasco Gonçalves
-sayfa:antrenman :: 🇹🇷 Alperen Özdemir
+sayfa:antrenman :: Tekirdağ Kurtları
+sayfa:antrenman :: İstanbul Şimşekleri
+sayfa:antrenman :: İstanbul Şimşekleri — Adana Panterleri
+sayfa:antrenman :: İzmir Boğaları
+sayfa:antrenman :: Şanlıurfa Kartalları
+sayfa:antrenman :: Şanlıurfa Şahinleri
+sayfa:antrenman :: ⚡ Kobayashi – Özdemir (C role clash)
 sayfa:antrenman :: 🇹🇷 Türkiye
-sayfa:antrenman :: 🇹🇷 Türkiye • 19 yrs
+sayfa:antrenman :: 🇹🇷 Türkiye • 28 yrs
 sayfa:antrenman :: 🇹🇷 Türkçe
-sayfa:antrenman :: 🏛️ Adana Boğaları from
-sayfa:antrenman :: 🏛️ Adana Şahinleri from
-sayfa:antrenman :: 🏛️ Ankara Kartalları from
-sayfa:antrenman :: 🏛️ Aydın Şahinleri from
-sayfa:antrenman :: 🏛️ Balıkesir Kartalları from
-sayfa:antrenman :: 🏛️ Bursa Kartalları from
-sayfa:antrenman :: 🏛️ Eskişehir Yıldızları from
-sayfa:antrenman :: 🏛️ Malatya Kurtları from
-sayfa:antrenman :: 🏛️ Sakarya Yıldızları from
-sayfa:arena :: Adana Boğaları
-sayfa:arena :: Adana Şahinleri
+sayfa:antrenman :: 🏛️ Antalya Aslanları from
+sayfa:antrenman :: 🏛️ Aydın Boğaları from
+sayfa:antrenman :: 🏛️ Balıkesir Panterleri from
+sayfa:antrenman :: 🏛️ Erzurum Gençlik from
+sayfa:antrenman :: 🏛️ Gaziantep Şahinleri from
+sayfa:antrenman :: 🏛️ Tekirdağ Kurtları from
+sayfa:antrenman :: 🏛️ Şanlıurfa Kartalları from
+sayfa:antrenman :: 🏛️ Şanlıurfa Şahinleri from
 sayfa:arena :: Ahmet Yıldız
-sayfa:arena :: Ankara Aslanları
-sayfa:arena :: Ankara Eagles — Sakarya Yıldızları
-sayfa:arena :: Ankara Kartalları
-sayfa:arena :: Aydın Şahinleri
-sayfa:arena :: Balıkesir Kartalları
-sayfa:arena :: Balıkesir Kartalları — Adana Şahinleri
-sayfa:arena :: Bursa Kartalları
-sayfa:arena :: Bursa Kartalları — Eskişehir Boğaları
-sayfa:arena :: Denizli Kurtları
-sayfa:arena :: Enes Şen
-sayfa:arena :: Enes Şen (SF) — Overall: 71
-sayfa:arena :: Enes Şen (SF) → PF
-sayfa:arena :: Enes Şen (SF) → SG
-sayfa:arena :: Eskişehir Boğaları
-sayfa:arena :: Eskişehir Yıldızları
-sayfa:arena :: Konya Aslanları
-sayfa:arena :: Konya Aslanları — Ankara Kartalları
-sayfa:arena :: Malatya Kurtları
-sayfa:arena :: Sakarya Yıldızları
+sayfa:arena :: Ankara Eagles — Şanlıurfa Şahinleri
+sayfa:arena :: Ankara Şimşekleri
+sayfa:arena :: Ankara Şimşekleri — Balıkesir Panterleri
+sayfa:arena :: Antalya Aslanları
+sayfa:arena :: Aydın Boğaları
+sayfa:arena :: Balıkesir Panterleri
+sayfa:arena :: Emre Özdemir
+sayfa:arena :: Emre Özdemir (C) — Overall: 70
+sayfa:arena :: Emre Özdemir (C) → PF
+sayfa:arena :: Erzurum Gençlik
+sayfa:arena :: Erzurum Gençlik — Antalya Spor
+sayfa:arena :: Gaziantep Şahinleri
+sayfa:arena :: Malatya Yıldızları
+sayfa:arena :: Sakarya Kurtları
 sayfa:arena :: Tekirdağ Boğaları
-sayfa:arena :: Türkiye • 17 yrs • 209cm · Pot 89
-sayfa:arena :: Türkiye • 20 yrs • 206cm · Pot 89
-sayfa:arena :: Türkiye • 27 yrs • 194cm
-sayfa:arena :: Türkiye • 36 yrs • 204cm
-sayfa:arena :: İzmir Aslanları
-sayfa:arena :: İzmir Spor
-sayfa:arena :: 🇵🇹 Gonçalo Marques
-sayfa:arena :: 🇵🇹 Vasco Gonçalves
-sayfa:arena :: 🇹🇷 Alperen Özdemir
+sayfa:arena :: Tekirdağ Kurtları
+sayfa:arena :: İstanbul Şimşekleri
+sayfa:arena :: İstanbul Şimşekleri — Adana Panterleri
+sayfa:arena :: İzmir Boğaları
+sayfa:arena :: Şanlıurfa Kartalları
+sayfa:arena :: Şanlıurfa Şahinleri
+sayfa:arena :: ⚡ Kobayashi – Özdemir (C role clash)
 sayfa:arena :: 🇹🇷 Türkiye
-sayfa:arena :: 🇹🇷 Türkiye • 19 yrs
+sayfa:arena :: 🇹🇷 Türkiye • 28 yrs
 sayfa:arena :: 🇹🇷 Türkçe
-sayfa:arena :: 🏛️ Adana Boğaları from
-sayfa:arena :: 🏛️ Adana Şahinleri from
-sayfa:arena :: 🏛️ Ankara Kartalları from
-sayfa:arena :: 🏛️ Aydın Şahinleri from
-sayfa:arena :: 🏛️ Balıkesir Kartalları from
-sayfa:arena :: 🏛️ Bursa Kartalları from
-sayfa:arena :: 🏛️ Eskişehir Yıldızları from
-sayfa:arena :: 🏛️ Malatya Kurtları from
-sayfa:arena :: 🏛️ Sakarya Yıldızları from
-sayfa:bilanco :: Adana Boğaları
-sayfa:bilanco :: Adana Şahinleri
+sayfa:arena :: 🏛️ Antalya Aslanları from
+sayfa:arena :: 🏛️ Aydın Boğaları from
+sayfa:arena :: 🏛️ Balıkesir Panterleri from
+sayfa:arena :: 🏛️ Erzurum Gençlik from
+sayfa:arena :: 🏛️ Gaziantep Şahinleri from
+sayfa:arena :: 🏛️ Tekirdağ Kurtları from
+sayfa:arena :: 🏛️ Şanlıurfa Kartalları from
+sayfa:arena :: 🏛️ Şanlıurfa Şahinleri from
 sayfa:bilanco :: Ahmet Yıldız
-sayfa:bilanco :: Ankara Aslanları
-sayfa:bilanco :: Ankara Eagles — Sakarya Yıldızları
-sayfa:bilanco :: Ankara Kartalları
-sayfa:bilanco :: Aydın Şahinleri
-sayfa:bilanco :: Balıkesir Kartalları
-sayfa:bilanco :: Balıkesir Kartalları — Adana Şahinleri
-sayfa:bilanco :: Bursa Kartalları
-sayfa:bilanco :: Bursa Kartalları — Eskişehir Boğaları
-sayfa:bilanco :: Denizli Kurtları
-sayfa:bilanco :: Enes Şen
-sayfa:bilanco :: Enes Şen (SF) — Overall: 71
-sayfa:bilanco :: Enes Şen (SF) → PF
-sayfa:bilanco :: Enes Şen (SF) → SG
-sayfa:bilanco :: Eskişehir Boğaları
-sayfa:bilanco :: Eskişehir Yıldızları
-sayfa:bilanco :: Konya Aslanları
-sayfa:bilanco :: Konya Aslanları — Ankara Kartalları
-sayfa:bilanco :: Malatya Kurtları
-sayfa:bilanco :: Sakarya Yıldızları
+sayfa:bilanco :: Ankara Eagles — Şanlıurfa Şahinleri
+sayfa:bilanco :: Ankara Şimşekleri
+sayfa:bilanco :: Ankara Şimşekleri — Balıkesir Panterleri
+sayfa:bilanco :: Antalya Aslanları
+sayfa:bilanco :: Aydın Boğaları
+sayfa:bilanco :: Balıkesir Panterleri
+sayfa:bilanco :: Emre Özdemir
+sayfa:bilanco :: Emre Özdemir (C) — Overall: 70
+sayfa:bilanco :: Emre Özdemir (C) → PF
+sayfa:bilanco :: Erzurum Gençlik
+sayfa:bilanco :: Erzurum Gençlik — Antalya Spor
+sayfa:bilanco :: Gaziantep Şahinleri
+sayfa:bilanco :: Malatya Yıldızları
+sayfa:bilanco :: Sakarya Kurtları
 sayfa:bilanco :: Tekirdağ Boğaları
-sayfa:bilanco :: Türkiye • 17 yrs • 209cm · Pot 89
-sayfa:bilanco :: Türkiye • 20 yrs • 206cm · Pot 89
-sayfa:bilanco :: Türkiye • 27 yrs • 194cm
-sayfa:bilanco :: Türkiye • 36 yrs • 204cm
-sayfa:bilanco :: İzmir Aslanları
-sayfa:bilanco :: İzmir Spor
-sayfa:bilanco :: 🇵🇹 Gonçalo Marques
-sayfa:bilanco :: 🇵🇹 Vasco Gonçalves
-sayfa:bilanco :: 🇹🇷 Alperen Özdemir
+sayfa:bilanco :: Tekirdağ Kurtları
+sayfa:bilanco :: İstanbul Şimşekleri
+sayfa:bilanco :: İstanbul Şimşekleri — Adana Panterleri
+sayfa:bilanco :: İzmir Boğaları
+sayfa:bilanco :: Şanlıurfa Kartalları
+sayfa:bilanco :: Şanlıurfa Şahinleri
+sayfa:bilanco :: ⚡ Kobayashi – Özdemir (C role clash)
 sayfa:bilanco :: 🇹🇷 Türkiye
-sayfa:bilanco :: 🇹🇷 Türkiye • 19 yrs
+sayfa:bilanco :: 🇹🇷 Türkiye • 28 yrs
 sayfa:bilanco :: 🇹🇷 Türkçe
-sayfa:bilanco :: 🏛️ Adana Boğaları from
-sayfa:bilanco :: 🏛️ Adana Şahinleri from
-sayfa:bilanco :: 🏛️ Ankara Kartalları from
-sayfa:bilanco :: 🏛️ Aydın Şahinleri from
-sayfa:bilanco :: 🏛️ Balıkesir Kartalları from
-sayfa:bilanco :: 🏛️ Bursa Kartalları from
-sayfa:bilanco :: 🏛️ Eskişehir Yıldızları from
-sayfa:bilanco :: 🏛️ Malatya Kurtları from
-sayfa:bilanco :: 🏛️ Sakarya Yıldızları from
-sayfa:dashboard :: Adana Boğaları
-sayfa:dashboard :: Adana Şahinleri
-sayfa:dashboard :: Ankara Aslanları
-sayfa:dashboard :: Ankara Eagles — Sakarya Yıldızları
-sayfa:dashboard :: Ankara Kartalları
-sayfa:dashboard :: Aydın Şahinleri
-sayfa:dashboard :: Balıkesir Kartalları
-sayfa:dashboard :: Balıkesir Kartalları — Adana Şahinleri
-sayfa:dashboard :: Bursa Kartalları
-sayfa:dashboard :: Bursa Kartalları — Eskişehir Boğaları
-sayfa:dashboard :: Denizli Kurtları
-sayfa:dashboard :: Enes Şen
-sayfa:dashboard :: Eskişehir Boğaları
-sayfa:dashboard :: Eskişehir Yıldızları
-sayfa:dashboard :: Konya Aslanları
-sayfa:dashboard :: Konya Aslanları — Ankara Kartalları
-sayfa:dashboard :: Malatya Kurtları
-sayfa:dashboard :: Sakarya Yıldızları
+sayfa:bilanco :: 🏛️ Antalya Aslanları from
+sayfa:bilanco :: 🏛️ Aydın Boğaları from
+sayfa:bilanco :: 🏛️ Balıkesir Panterleri from
+sayfa:bilanco :: 🏛️ Erzurum Gençlik from
+sayfa:bilanco :: 🏛️ Gaziantep Şahinleri from
+sayfa:bilanco :: 🏛️ Tekirdağ Kurtları from
+sayfa:bilanco :: 🏛️ Şanlıurfa Kartalları from
+sayfa:bilanco :: 🏛️ Şanlıurfa Şahinleri from
+sayfa:dashboard :: Ankara Eagles — Şanlıurfa Şahinleri
+sayfa:dashboard :: Ankara Şimşekleri
+sayfa:dashboard :: Ankara Şimşekleri — Balıkesir Panterleri
+sayfa:dashboard :: Antalya Aslanları
+sayfa:dashboard :: Aydın Boğaları
+sayfa:dashboard :: Balıkesir Panterleri
+sayfa:dashboard :: Emre Özdemir
+sayfa:dashboard :: Erzurum Gençlik
+sayfa:dashboard :: Erzurum Gençlik — Antalya Spor
+sayfa:dashboard :: Gaziantep Şahinleri
+sayfa:dashboard :: Malatya Yıldızları
+sayfa:dashboard :: Sakarya Kurtları
 sayfa:dashboard :: Tekirdağ Boğaları
-sayfa:dashboard :: İzmir Aslanları
-sayfa:dashboard :: İzmir Spor
-sayfa:dashboard :: 🇹🇷 Türkiye • 19 yrs
+sayfa:dashboard :: Tekirdağ Kurtları
+sayfa:dashboard :: İstanbul Şimşekleri
+sayfa:dashboard :: İstanbul Şimşekleri — Adana Panterleri
+sayfa:dashboard :: İzmir Boğaları
+sayfa:dashboard :: Şanlıurfa Kartalları
+sayfa:dashboard :: Şanlıurfa Şahinleri
+sayfa:dashboard :: ⚡ Kobayashi – Özdemir (C role clash)
+sayfa:dashboard :: 🇹🇷 Türkiye • 28 yrs
 sayfa:dashboard :: 🇹🇷 Türkçe
-sayfa:kadro :: Adana Boğaları
-sayfa:kadro :: Adana Şahinleri
-sayfa:kadro :: Ankara Aslanları
-sayfa:kadro :: Ankara Eagles — Sakarya Yıldızları
-sayfa:kadro :: Ankara Kartalları
-sayfa:kadro :: Aydın Şahinleri
-sayfa:kadro :: Balıkesir Kartalları
-sayfa:kadro :: Balıkesir Kartalları — Adana Şahinleri
-sayfa:kadro :: Bursa Kartalları
-sayfa:kadro :: Bursa Kartalları — Eskişehir Boğaları
-sayfa:kadro :: Denizli Kurtları
-sayfa:kadro :: Enes Şen
-sayfa:kadro :: Eskişehir Boğaları
-sayfa:kadro :: Eskişehir Yıldızları
-sayfa:kadro :: Konya Aslanları
-sayfa:kadro :: Konya Aslanları — Ankara Kartalları
-sayfa:kadro :: Malatya Kurtları
-sayfa:kadro :: Sakarya Yıldızları
+sayfa:kadro :: Ankara Eagles — Şanlıurfa Şahinleri
+sayfa:kadro :: Ankara Şimşekleri
+sayfa:kadro :: Ankara Şimşekleri — Balıkesir Panterleri
+sayfa:kadro :: Antalya Aslanları
+sayfa:kadro :: Aydın Boğaları
+sayfa:kadro :: Balıkesir Panterleri
+sayfa:kadro :: Emre Özdemir
+sayfa:kadro :: Erzurum Gençlik
+sayfa:kadro :: Erzurum Gençlik — Antalya Spor
+sayfa:kadro :: Gaziantep Şahinleri
+sayfa:kadro :: Malatya Yıldızları
+sayfa:kadro :: Sakarya Kurtları
 sayfa:kadro :: Tekirdağ Boğaları
-sayfa:kadro :: İzmir Aslanları
-sayfa:kadro :: İzmir Spor
+sayfa:kadro :: Tekirdağ Kurtları
+sayfa:kadro :: İstanbul Şimşekleri
+sayfa:kadro :: İstanbul Şimşekleri — Adana Panterleri
+sayfa:kadro :: İzmir Boğaları
+sayfa:kadro :: Şanlıurfa Kartalları
+sayfa:kadro :: Şanlıurfa Şahinleri
+sayfa:kadro :: ⚡ Kobayashi – Özdemir (C role clash)
 sayfa:kadro :: 🇹🇷 Türkiye
-sayfa:kadro :: 🇹🇷 Türkiye • 19 yrs
+sayfa:kadro :: 🇹🇷 Türkiye • 28 yrs
 sayfa:kadro :: 🇹🇷 Türkçe
-sayfa:lig :: Adana Boğaları
-sayfa:lig :: Adana Şahinleri
-sayfa:lig :: Ankara Aslanları
-sayfa:lig :: Ankara Eagles — Sakarya Yıldızları
-sayfa:lig :: Ankara Kartalları
-sayfa:lig :: Aydın Şahinleri
-sayfa:lig :: Balıkesir Kartalları
-sayfa:lig :: Balıkesir Kartalları — Adana Şahinleri
-sayfa:lig :: Bursa Kartalları
-sayfa:lig :: Bursa Kartalları — Eskişehir Boğaları
-sayfa:lig :: Denizli Kurtları
-sayfa:lig :: Enes Şen
-sayfa:lig :: Eskişehir Boğaları
-sayfa:lig :: Eskişehir Yıldızları
-sayfa:lig :: Konya Aslanları
-sayfa:lig :: Konya Aslanları — Ankara Kartalları
-sayfa:lig :: Malatya Kurtları
-sayfa:lig :: Sakarya Yıldızları
+sayfa:lig :: Ankara Eagles — Şanlıurfa Şahinleri
+sayfa:lig :: Ankara Şimşekleri
+sayfa:lig :: Ankara Şimşekleri — Balıkesir Panterleri
+sayfa:lig :: Antalya Aslanları
+sayfa:lig :: Aydın Boğaları
+sayfa:lig :: Balıkesir Panterleri
+sayfa:lig :: Emre Özdemir
+sayfa:lig :: Erzurum Gençlik
+sayfa:lig :: Erzurum Gençlik — Antalya Spor
+sayfa:lig :: Gaziantep Şahinleri
+sayfa:lig :: Malatya Yıldızları
+sayfa:lig :: Sakarya Kurtları
 sayfa:lig :: Tekirdağ Boğaları
-sayfa:lig :: İzmir Aslanları
-sayfa:lig :: İzmir Spor
+sayfa:lig :: Tekirdağ Kurtları
+sayfa:lig :: İstanbul Şimşekleri
+sayfa:lig :: İstanbul Şimşekleri — Adana Panterleri
+sayfa:lig :: İzmir Boğaları
+sayfa:lig :: Şanlıurfa Kartalları
+sayfa:lig :: Şanlıurfa Şahinleri
+sayfa:lig :: ⚡ Kobayashi – Özdemir (C role clash)
 sayfa:lig :: 🇹🇷 Türkiye
-sayfa:lig :: 🇹🇷 Türkiye • 19 yrs
+sayfa:lig :: 🇹🇷 Türkiye • 28 yrs
 sayfa:lig :: 🇹🇷 Türkçe
-sayfa:mac :: Adana Boğaları
-sayfa:mac :: Adana Şahinleri
-sayfa:mac :: Ankara Aslanları
-sayfa:mac :: Ankara Eagles — Sakarya Yıldızları
-sayfa:mac :: Ankara Kartalları
-sayfa:mac :: Aydın Şahinleri
-sayfa:mac :: Balıkesir Kartalları
-sayfa:mac :: Balıkesir Kartalları — Adana Şahinleri
-sayfa:mac :: Bursa Kartalları
-sayfa:mac :: Bursa Kartalları — Eskişehir Boğaları
-sayfa:mac :: Denizli Kurtları
-sayfa:mac :: Enes Şen
-sayfa:mac :: Eskişehir Boğaları
-sayfa:mac :: Eskişehir Yıldızları
-sayfa:mac :: Konya Aslanları
-sayfa:mac :: Konya Aslanları — Ankara Kartalları
-sayfa:mac :: Malatya Kurtları
-sayfa:mac :: Sakarya Yıldızları
+sayfa:mac :: Ankara Eagles — Şanlıurfa Şahinleri
+sayfa:mac :: Ankara Şimşekleri
+sayfa:mac :: Ankara Şimşekleri — Balıkesir Panterleri
+sayfa:mac :: Antalya Aslanları
+sayfa:mac :: Aydın Boğaları
+sayfa:mac :: Balıkesir Panterleri
+sayfa:mac :: Emre Özdemir
+sayfa:mac :: Erzurum Gençlik
+sayfa:mac :: Erzurum Gençlik — Antalya Spor
+sayfa:mac :: Gaziantep Şahinleri
+sayfa:mac :: Malatya Yıldızları
+sayfa:mac :: Sakarya Kurtları
 sayfa:mac :: Tekirdağ Boğaları
-sayfa:mac :: İzmir Aslanları
-sayfa:mac :: İzmir Spor
+sayfa:mac :: Tekirdağ Kurtları
+sayfa:mac :: İstanbul Şimşekleri
+sayfa:mac :: İstanbul Şimşekleri — Adana Panterleri
+sayfa:mac :: İzmir Boğaları
+sayfa:mac :: Şanlıurfa Kartalları
+sayfa:mac :: Şanlıurfa Şahinleri
+sayfa:mac :: ⚡ Kobayashi – Özdemir (C role clash)
 sayfa:mac :: 🇹🇷 Türkiye
-sayfa:mac :: 🇹🇷 Türkiye • 19 yrs
+sayfa:mac :: 🇹🇷 Türkiye • 28 yrs
 sayfa:mac :: 🇹🇷 Türkçe
-sayfa:market :: Adana Boğaları
-sayfa:market :: Adana Şahinleri
-sayfa:market :: Ankara Aslanları
-sayfa:market :: Ankara Eagles — Sakarya Yıldızları
-sayfa:market :: Ankara Kartalları
-sayfa:market :: Aydın Şahinleri
-sayfa:market :: Balıkesir Kartalları
-sayfa:market :: Balıkesir Kartalları — Adana Şahinleri
-sayfa:market :: Bursa Kartalları
-sayfa:market :: Bursa Kartalları — Eskişehir Boğaları
-sayfa:market :: Denizli Kurtları
-sayfa:market :: Enes Şen
-sayfa:market :: Eskişehir Boğaları
-sayfa:market :: Eskişehir Yıldızları
-sayfa:market :: Konya Aslanları
-sayfa:market :: Konya Aslanları — Ankara Kartalları
-sayfa:market :: Malatya Kurtları
-sayfa:market :: Sakarya Yıldızları
+sayfa:market :: Ankara Eagles — Şanlıurfa Şahinleri
+sayfa:market :: Ankara Şimşekleri
+sayfa:market :: Ankara Şimşekleri — Balıkesir Panterleri
+sayfa:market :: Antalya Aslanları
+sayfa:market :: Aydın Boğaları
+sayfa:market :: Balıkesir Panterleri
+sayfa:market :: Emre Özdemir
+sayfa:market :: Erzurum Gençlik
+sayfa:market :: Erzurum Gençlik — Antalya Spor
+sayfa:market :: Gaziantep Şahinleri
+sayfa:market :: Malatya Yıldızları
+sayfa:market :: Sakarya Kurtları
 sayfa:market :: Tekirdağ Boğaları
-sayfa:market :: Türkiye • 27 yrs • 194cm
-sayfa:market :: Türkiye • 36 yrs • 204cm
-sayfa:market :: İzmir Aslanları
-sayfa:market :: İzmir Spor
-sayfa:market :: 🇵🇹 Vasco Gonçalves
-sayfa:market :: 🇹🇷 Alperen Özdemir
+sayfa:market :: Tekirdağ Kurtları
+sayfa:market :: İstanbul Şimşekleri
+sayfa:market :: İstanbul Şimşekleri — Adana Panterleri
+sayfa:market :: İzmir Boğaları
+sayfa:market :: Şanlıurfa Kartalları
+sayfa:market :: Şanlıurfa Şahinleri
+sayfa:market :: ⚡ Kobayashi – Özdemir (C role clash)
 sayfa:market :: 🇹🇷 Türkiye
-sayfa:market :: 🇹🇷 Türkiye • 19 yrs
+sayfa:market :: 🇹🇷 Türkiye • 28 yrs
 sayfa:market :: 🇹🇷 Türkçe
-sayfa:market :: 🏛️ Adana Boğaları from
-sayfa:market :: 🏛️ Adana Şahinleri from
-sayfa:market :: 🏛️ Ankara Kartalları from
-sayfa:market :: 🏛️ Aydın Şahinleri from
-sayfa:market :: 🏛️ Balıkesir Kartalları from
-sayfa:market :: 🏛️ Bursa Kartalları from
-sayfa:market :: 🏛️ Eskişehir Yıldızları from
-sayfa:market :: 🏛️ Malatya Kurtları from
-sayfa:market :: 🏛️ Sakarya Yıldızları from
-sayfa:takim :: Adana Boğaları
-sayfa:takim :: Adana Şahinleri
-sayfa:takim :: Ankara Aslanları
-sayfa:takim :: Ankara Eagles — Sakarya Yıldızları
-sayfa:takim :: Ankara Kartalları
-sayfa:takim :: Aydın Şahinleri
-sayfa:takim :: Balıkesir Kartalları
-sayfa:takim :: Balıkesir Kartalları — Adana Şahinleri
-sayfa:takim :: Bursa Kartalları
-sayfa:takim :: Bursa Kartalları — Eskişehir Boğaları
-sayfa:takim :: Denizli Kurtları
-sayfa:takim :: Enes Şen
-sayfa:takim :: Eskişehir Boğaları
-sayfa:takim :: Eskişehir Yıldızları
-sayfa:takim :: Konya Aslanları
-sayfa:takim :: Konya Aslanları — Ankara Kartalları
-sayfa:takim :: Malatya Kurtları
-sayfa:takim :: Sakarya Yıldızları
+sayfa:market :: 🏛️ Antalya Aslanları from
+sayfa:market :: 🏛️ Aydın Boğaları from
+sayfa:market :: 🏛️ Balıkesir Panterleri from
+sayfa:market :: 🏛️ Erzurum Gençlik from
+sayfa:market :: 🏛️ Gaziantep Şahinleri from
+sayfa:market :: 🏛️ Tekirdağ Kurtları from
+sayfa:market :: 🏛️ Şanlıurfa Kartalları from
+sayfa:market :: 🏛️ Şanlıurfa Şahinleri from
+sayfa:takim :: Ankara Eagles — Şanlıurfa Şahinleri
+sayfa:takim :: Ankara Şimşekleri
+sayfa:takim :: Ankara Şimşekleri — Balıkesir Panterleri
+sayfa:takim :: Antalya Aslanları
+sayfa:takim :: Aydın Boğaları
+sayfa:takim :: Balıkesir Panterleri
+sayfa:takim :: Emre Özdemir
+sayfa:takim :: Erzurum Gençlik
+sayfa:takim :: Erzurum Gençlik — Antalya Spor
+sayfa:takim :: Gaziantep Şahinleri
+sayfa:takim :: Malatya Yıldızları
+sayfa:takim :: Sakarya Kurtları
 sayfa:takim :: Tekirdağ Boğaları
-sayfa:takim :: İzmir Aslanları
-sayfa:takim :: İzmir Spor
+sayfa:takim :: Tekirdağ Kurtları
+sayfa:takim :: İstanbul Şimşekleri
+sayfa:takim :: İstanbul Şimşekleri — Adana Panterleri
+sayfa:takim :: İzmir Boğaları
+sayfa:takim :: Şanlıurfa Kartalları
+sayfa:takim :: Şanlıurfa Şahinleri
+sayfa:takim :: ⚡ Kobayashi – Özdemir (C role clash)
 sayfa:takim :: 🇹🇷 Türkiye
-sayfa:takim :: 🇹🇷 Türkiye • 19 yrs
+sayfa:takim :: 🇹🇷 Türkiye • 28 yrs
 sayfa:takim :: 🇹🇷 Türkçe
 setup :: 🇹🇷 Türkçe
-tutorial :: Adana Boğaları
-tutorial :: Adana Şahinleri
-tutorial :: Ankara Aslanları
-tutorial :: Ankara Eagles — Sakarya Yıldızları
-tutorial :: Ankara Kartalları
-tutorial :: Aydın Şahinleri
-tutorial :: Balıkesir Kartalları
-tutorial :: Balıkesir Kartalları — Adana Şahinleri
-tutorial :: Bursa Kartalları
-tutorial :: Bursa Kartalları — Eskişehir Boğaları
-tutorial :: Denizli Kurtları
-tutorial :: Enes Şen
-tutorial :: Eskişehir Boğaları
-tutorial :: Eskişehir Yıldızları
-tutorial :: Konya Aslanları
-tutorial :: Konya Aslanları — Ankara Kartalları
-tutorial :: Malatya Kurtları
-tutorial :: Sakarya Yıldızları
+tutorial :: Ankara Eagles — Şanlıurfa Şahinleri
+tutorial :: Ankara Şimşekleri
+tutorial :: Ankara Şimşekleri — Balıkesir Panterleri
+tutorial :: Antalya Aslanları
+tutorial :: Aydın Boğaları
+tutorial :: Balıkesir Panterleri
+tutorial :: Emre Özdemir
+tutorial :: Erzurum Gençlik
+tutorial :: Erzurum Gençlik — Antalya Spor
+tutorial :: Gaziantep Şahinleri
+tutorial :: Malatya Yıldızları
+tutorial :: Sakarya Kurtları
 tutorial :: Tekirdağ Boğaları
-tutorial :: İzmir Aslanları
-tutorial :: İzmir Spor
-tutorial :: 🇹🇷 Türkiye • 19 yrs
+tutorial :: Tekirdağ Kurtları
+tutorial :: İstanbul Şimşekleri
+tutorial :: İstanbul Şimşekleri — Adana Panterleri
+tutorial :: İzmir Boğaları
+tutorial :: Şanlıurfa Kartalları
+tutorial :: Şanlıurfa Şahinleri
+tutorial :: ⚡ Kobayashi – Özdemir (C role clash)
+tutorial :: 🇹🇷 Türkiye • 28 yrs
 tutorial :: 🇹🇷 Türkçe

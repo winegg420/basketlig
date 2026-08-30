@@ -1109,56 +1109,65 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                     </g>
                     <text id="courtHomeName" x="470" y="300" text-anchor="middle" font-size="23" font-weight="900" letter-spacing="1" fill="rgba(255,255,255,0.15)"></text>
                   </g>
-                  <!-- NBA 94'×50' — tek ölçek s=8.8 px/ft; 3pt yayı oyun için ~196 px (köşe-boşluk) -->
+                  <!-- FIBA 28×15 m · tek ve EŞ ölçek s = 827.2/28 = 443.14/15 = 29.5429 px/m.
+                       Dikey ölçek eskiden 29,33 idi (%0,7 gerginlik): px olarak dairesel çizilen
+                       her yay metrede elips oluyordu — saha yüksekliği 440 → 443.14 yapılarak
+                       ölçek eşitlendi (F14-6).
+                       ⚠ 3 sayı yayı: bir SVG yayının yarıçapı iki ucu arasındaki kirişi
+                       kapsamıyorsa tarayıcı yarıçapı SESSİZCE büyütür ve merkezi kaydırır.
+                       Eski path'in iki ucu da dip çizgideydi (kiriş 403 px > 2·196) — bu yüzden
+                       ekrana çizilen yay potaya değil DİP ÇİZGİYE merkezliydi ve aynı çizgi
+                       üzerinde 5,26–7,63 m arasında değişiyordu. Yeni path köşe düzlüklerinden
+                       (kenardan 0,90 m) başlar; kiriş 389,96 < 2·199,41 olduğu için yarıçap
+                       büyütülmez ve yay gerçekten potaya 6,75 m'dir. Değiştirmeden önce
+                       `node tools/geometri-check.js` çalıştır. -->
                   <g stroke="rgba(255,255,255,0.97)" stroke-width="2.6" fill="none" stroke-linejoin="round">
-                    <rect id="cLine-bounds" x="56.4" y="30" width="827.2" height="440" rx="2"></rect>
-                    <line id="cLine-mid" x1="470" y1="30" x2="470" y2="470"></line>
-                    <circle id="cLine-center" cx="470" cy="250" r="48"></circle>
+                    <rect id="cLine-bounds" x="56.4" y="28.43" width="827.2" height="443.14" rx="2"></rect>
+                    <line id="cLine-mid" x1="470" y1="28.43" x2="470" y2="471.57"></line>
+                    <circle id="cLine-center" cx="470" cy="250" r="53.18"></circle>
                     <circle cx="470" cy="250" r="6" fill="rgba(255,255,255,0.22)" stroke="none"></circle>
                   </g>
                   <!-- Ev (sol) -->
                   <g stroke="rgba(255,255,255,0.95)" stroke-width="2.1" fill="none">
-                    <rect id="cLine-laneL" x="56.4" y="179.6" width="167.2" height="140.8" fill="rgba(239,68,68,0.11)" stroke="rgba(255,255,255,0.95)"></rect>
-                    <line id="cLine-ftLineL" x1="223.6" y1="179.6" x2="223.6" y2="320.4"></line>
-                    <path id="cLine-ftArcOutL" d="M 223.6 197.2 A 52.8 52.8 0 0 1 223.6 302.8" fill="none" stroke="rgba(255,255,255,0.65)" stroke-dasharray="6,5"></path>
-                    <line x1="108.2" y1="250" x2="142.2" y2="250" stroke="#fbbf24" stroke-width="3"></line>
-                    <circle cx="125.2" cy="250" r="17.6" stroke="#fbbf24" stroke-width="3"></circle>
-                    <line id="cLine-boardL" x1="91.6" y1="223.6" x2="91.6" y2="276.4" stroke-width="4" stroke="rgba(255,255,255,0.98)"></line>
+                    <rect id="cLine-laneL" x="56.4" y="177.62" width="171.35" height="144.76" fill="rgba(239,68,68,0.11)" stroke="rgba(255,255,255,0.95)"></rect>
+                    <line id="cLine-ftLineL" x1="227.75" y1="177.62" x2="227.75" y2="322.38"></line>
+                    <path id="cLine-ftArcOutL" d="M 227.75 196.82 A 53.18 53.18 0 0 1 227.75 303.18" fill="none" stroke="rgba(255,255,255,0.95)"></path>
+                    <path id="cLine-ftArcInL" d="M 227.75 196.82 A 53.18 53.18 0 0 0 227.75 303.18" fill="none" stroke="rgba(255,255,255,0.55)" stroke-dasharray="6,5"></path>
+                    <line id="cLine-boardL" x1="91.6" y1="223.41" x2="91.6" y2="276.59" stroke-width="4" stroke="rgba(255,255,255,0.98)"></line>
                     <circle id="cLine-rimL" cx="102.6" cy="250" r="6.6" stroke="#fbbf24" stroke-width="2.2"></circle>
-                    <path id="cLine-restrL" d="M 102.6 214.8 A 35.2 35.2 0 0 1 102.6 285.2" fill="none" stroke-width="1.9"></path>
+                    <path id="cLine-restrL" d="M 102.6 213.07 A 36.93 36.93 0 0 1 102.6 286.93" fill="none" stroke-width="1.9"></path>
                     <g id="cLine-hashL" stroke="rgba(255,255,255,0.75)" stroke-width="1.5">
-                      <line x1="118" y1="179.6" x2="118" y2="184"></line>
-                      <line x1="127.2" y1="179.6" x2="127.2" y2="184"></line>
-                      <line x1="153.2" y1="179.6" x2="153.2" y2="184"></line>
-                      <line x1="179.6" y1="179.6" x2="179.6" y2="184"></line>
-                      <line x1="118" y1="320.4" x2="118" y2="316"></line>
-                      <line x1="127.2" y1="320.4" x2="127.2" y2="316"></line>
-                      <line x1="153.2" y1="320.4" x2="153.2" y2="316"></line>
-                      <line x1="179.6" y1="320.4" x2="179.6" y2="316"></line>
+                      <line x1="108.1" y1="177.62" x2="108.1" y2="182.02"></line>
+                      <line x1="133.21" y1="177.62" x2="133.21" y2="182.02"></line>
+                      <line x1="158.32" y1="177.62" x2="158.32" y2="182.02"></line>
+                      <line x1="183.43" y1="177.62" x2="183.43" y2="182.02"></line>
+                      <line x1="108.1" y1="322.38" x2="108.1" y2="317.98"></line>
+                      <line x1="133.21" y1="322.38" x2="133.21" y2="317.98"></line>
+                      <line x1="158.32" y1="322.38" x2="158.32" y2="317.98"></line>
+                      <line x1="183.43" y1="322.38" x2="183.43" y2="317.98"></line>
                     </g>
-                    <path id="cLine-threeL" d="M 56.4 30 L 56.4 48.5 A 196 196 0 1 1 56.4 451.5 L 56.4 470" stroke-width="2.2"></path>
+                    <path id="cLine-threeL" d="M 56.4 55.02 L 144.41 55.02 A 199.41 199.41 0 0 1 144.41 444.98 L 56.4 444.98" stroke-width="2.2"></path>
                   </g>
                   <!-- Dep (sağ) -->
                   <g stroke="rgba(255,255,255,0.95)" stroke-width="2.1" fill="none">
-                    <rect id="cLine-laneR" x="716.4" y="179.6" width="167.2" height="140.8" fill="rgba(59,130,246,0.11)" stroke="rgba(255,255,255,0.95)"></rect>
-                    <line id="cLine-ftLineR" x1="716.4" y1="179.6" x2="716.4" y2="320.4"></line>
-                    <path id="cLine-ftArcOutR" d="M 716.4 197.2 A 52.8 52.8 0 0 0 716.4 302.8" fill="none" stroke="rgba(255,255,255,0.65)" stroke-dasharray="6,5"></path>
-                    <line x1="831.8" y1="250" x2="797.8" y2="250" stroke="#fbbf24" stroke-width="3"></line>
-                    <circle cx="814.8" cy="250" r="17.6" stroke="#fbbf24" stroke-width="3"></circle>
-                    <line id="cLine-boardR" x1="848.4" y1="223.6" x2="848.4" y2="276.4" stroke-width="4" stroke="rgba(255,255,255,0.98)"></line>
+                    <rect id="cLine-laneR" x="712.25" y="177.62" width="171.35" height="144.76" fill="rgba(59,130,246,0.11)" stroke="rgba(255,255,255,0.95)"></rect>
+                    <line id="cLine-ftLineR" x1="712.25" y1="177.62" x2="712.25" y2="322.38"></line>
+                    <path id="cLine-ftArcOutR" d="M 712.25 196.82 A 53.18 53.18 0 0 0 712.25 303.18" fill="none" stroke="rgba(255,255,255,0.95)"></path>
+                    <path id="cLine-ftArcInR" d="M 712.25 196.82 A 53.18 53.18 0 0 1 712.25 303.18" fill="none" stroke="rgba(255,255,255,0.55)" stroke-dasharray="6,5"></path>
+                    <line id="cLine-boardR" x1="848.4" y1="223.41" x2="848.4" y2="276.59" stroke-width="4" stroke="rgba(255,255,255,0.98)"></line>
                     <circle id="cLine-rimR" cx="837.4" cy="250" r="6.6" stroke="#fbbf24" stroke-width="2.2"></circle>
-                    <path id="cLine-restrR" d="M 837.4 214.8 A 35.2 35.2 0 0 0 837.4 285.2" fill="none" stroke-width="1.9"></path>
+                    <path id="cLine-restrR" d="M 837.4 213.07 A 36.93 36.93 0 0 0 837.4 286.93" fill="none" stroke-width="1.9"></path>
                     <g id="cLine-hashR" stroke="rgba(255,255,255,0.75)" stroke-width="1.5">
-                      <line x1="822" y1="179.6" x2="822" y2="184"></line>
-                      <line x1="812.8" y1="179.6" x2="812.8" y2="184"></line>
-                      <line x1="786.8" y1="179.6" x2="786.8" y2="184"></line>
-                      <line x1="760.4" y1="179.6" x2="760.4" y2="184"></line>
-                      <line x1="822" y1="320.4" x2="822" y2="316"></line>
-                      <line x1="812.8" y1="320.4" x2="812.8" y2="316"></line>
-                      <line x1="786.8" y1="320.4" x2="786.8" y2="316"></line>
-                      <line x1="760.4" y1="320.4" x2="760.4" y2="316"></line>
+                      <line x1="831.9" y1="177.62" x2="831.9" y2="182.02"></line>
+                      <line x1="806.79" y1="177.62" x2="806.79" y2="182.02"></line>
+                      <line x1="781.68" y1="177.62" x2="781.68" y2="182.02"></line>
+                      <line x1="756.57" y1="177.62" x2="756.57" y2="182.02"></line>
+                      <line x1="831.9" y1="322.38" x2="831.9" y2="317.98"></line>
+                      <line x1="806.79" y1="322.38" x2="806.79" y2="317.98"></line>
+                      <line x1="781.68" y1="322.38" x2="781.68" y2="317.98"></line>
+                      <line x1="756.57" y1="322.38" x2="756.57" y2="317.98"></line>
                     </g>
-                    <path id="cLine-threeR" d="M 883.6 30 L 883.6 48.5 A 196 196 0 1 0 883.6 451.5 L 883.6 470" stroke-width="2.2"></path>
+                    <path id="cLine-threeR" d="M 883.6 55.02 L 795.59 55.02 A 199.41 199.41 0 0 0 795.59 444.98 L 883.6 444.98" stroke-width="2.2"></path>
                   </g>
                   <g id="liveBall" transform="translate(470,250)" style="opacity:0;transition:transform 0.5s cubic-bezier(.34,.02,.28,1),opacity 0.3s;">
                     <circle r="11.5" fill="#e07b1e" stroke="#6b2810" stroke-width="1.6"></circle>
@@ -1433,19 +1442,19 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 <div class="notif" id="notif"></div>
 
-<script src="js/i18n.js?v=48"></script>
-<script src="js/i18n-dict.js?v=48"></script>
-<script src="js/i18n-commentary.js?v=48"></script>
-<script src="js/state.js?v=48"></script>
-<script src="js/economy.js?v=48"></script>
-<script src="js/persistence.js?v=48"></script>
-<script src="js/portraits.js?v=48"></script>
-<script src="js/roster-gen.js?v=48"></script>
-<script src="js/league.js?v=48"></script>
-<script src="js/match-prep.js?v=48"></script>
-<script src="js/render.js?v=48"></script>
-<script src="js/match-engine.js?v=48"></script>
-<script src="js/main.js?v=48"></script>
+<script src="js/i18n.js?v=49"></script>
+<script src="js/i18n-dict.js?v=49"></script>
+<script src="js/i18n-commentary.js?v=49"></script>
+<script src="js/state.js?v=49"></script>
+<script src="js/economy.js?v=49"></script>
+<script src="js/persistence.js?v=49"></script>
+<script src="js/portraits.js?v=49"></script>
+<script src="js/roster-gen.js?v=49"></script>
+<script src="js/league.js?v=49"></script>
+<script src="js/match-prep.js?v=49"></script>
+<script src="js/render.js?v=49"></script>
+<script src="js/match-engine.js?v=49"></script>
+<script src="js/main.js?v=49"></script>
 
 
 </body></html>

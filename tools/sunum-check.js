@@ -98,6 +98,8 @@ async function main() {
       sutAnlari: [],         // {t, pb} — şutlu pozisyonun canlandırılmaya başladığı an
       digerAnlar: [],        // {t, tip} — araya giren şutsuz olaylar
       outletKarar: [],       // {t, tasiyiciRol, pb, outlet, pgRol} — motorun kararı
+      ftAtis: [],            // {t, yerinde, ortM, enUzakM, hiz} — F14-7: serbest atış anı
+      ftSon: 0, sonMod: null,
       sonEvIx: -1
     };
     const rol = () => {
@@ -164,6 +166,32 @@ async function main() {
           }
         }
       } catch (e) {}
+      /* 5) F14-7: SERBEST ATIŞ, oyuncular yerleşmeden atılıyor muydu?
+         Ölçüm anı, topun şutörün elinden çıktığı ilk karedir (hold → shot geçişi, ölü top
+         dizilişinde). Bir seride 2.-3. atışta herkes zaten oturmuş olur; yalnız serinin
+         İLK atışı ölçülür (önceki atıştan 2,5 sn'den uzun boşluk). */
+      try {
+        const S = mState._sim, b = S && S.ball, sh = S && S.shooter;
+        const line = (typeof FT_LINE_X !== 'undefined' && S) ? _pt([FT_LINE_X, 250], S.offSide, false) : null;
+        const ftSahne = !!(S && !S.defTrack && sh && line && Math.hypot(sh.x - line[0], sh.y - line[1]) < 70);
+        const mod = b ? b.mode : null;
+        if (ftSahne && P.sonMod === 'held' && mod === 'shot') {
+          if (!P.ftSon || t - P.ftSon > 2500) {
+            const hepsi = (S.offP || []).concat(S.defP || []).filter(p => p && !p._oob);
+            const d = hepsi.map(p => Math.hypot(p.x - p.tx, p.y - p.ty));
+            const v = hepsi.map(p => Math.hypot(p.vx || 0, p.vy || 0));
+            if (hepsi.length) P.ftAtis.push({
+              t, n: hepsi.length,
+              yerinde: d.filter(x => x <= 8.86).length,             /* 0,30 m = 8,86 px */
+              ortM: d.reduce((a, c) => a + c, 0) / d.length / 29.5429,
+              enUzakM: Math.max.apply(null, d) / 29.5429,
+              hiz: v.reduce((a, c) => a + c, 0) / v.length,
+            });
+          }
+          P.ftSon = t;
+        }
+        P.sonMod = mod;
+      } catch (e) {}
       requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
@@ -210,7 +238,13 @@ async function main() {
       and1Sayisi: P.and1Olaylari.length, and1Sahneli,
       hucumRebSayisi: hucumReb.length, hucumReb14,
       scOrnek: P.scOrnek.length, bosGosterge,
-      tasiyiciDegisim: P.tasiyiciDizi.length
+      tasiyiciDegisim: P.tasiyiciDizi.length,
+      /* F14-7 */
+      ftOrnek: P.ftAtis.length,
+      ftYerinde: P.ftAtis.length ? P.ftAtis.reduce((a, c) => a + c.yerinde, 0) / P.ftAtis.length : null,
+      ftOrtM: P.ftAtis.length ? P.ftAtis.reduce((a, c) => a + c.ortM, 0) / P.ftAtis.length : null,
+      ftEnUzakM: P.ftAtis.length ? Math.max.apply(null, P.ftAtis.map(x => x.enUzakM)) : null,
+      ftHiz: P.ftAtis.length ? P.ftAtis.reduce((a, c) => a + c.hiz, 0) / P.ftAtis.length : null,
     };
   });
 
@@ -259,6 +293,18 @@ async function main() {
   } else {
     kayit('M14', 'Hücum ribaundunda şut saati 14 · gösterge boşalmıyor', m14Limit && gostergeTam,
       `hücum ribaundu ${R.hucumRebSayisi}, saat 14'e döndü: ${R.hucumReb14} · gösterge boş kare: ${R.bosGosterge}/${R.scOrnek}`);
+  }
+
+  // F14-7 — serbest atış, on oyuncu da yerine oturduktan sonra atılmalı
+  if (!R.ftOrnek) {
+    kayit('F14-7', 'Serbest atışta oyuncular yerleşiyor', false,
+      'ÖRNEK YOK — bu pencerede hiç serbest atış anı yakalanmadı; --ms değerini artır');
+  } else {
+    kayit('F14-7', 'Serbest atışta oyuncular yerleşiyor',
+      R.ftYerinde >= 9 && R.ftHiz < 15,
+      `${R.ftOrnek} seri · atış anında yerinde ${R.ftYerinde.toFixed(1)}/10 (hedef ≥ 9) · ` +
+      `ortalama uzaklık ${R.ftOrtM.toFixed(2)} m · en uzak ${R.ftEnUzakM.toFixed(2)} m · ` +
+      `jeton hızı ${R.ftHiz.toFixed(0)} px/sn (hedef < 15)`);
   }
 
   console.log(`  konsol hatası: ${hatalar.length}`, hatalar.length ? hatalar.slice(0, 3) : '');
