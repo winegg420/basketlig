@@ -1056,7 +1056,16 @@ function renderMarket(){
   });
   const cnt=document.getElementById('marketCountNum');
   if(cnt) cnt.textContent=String(G.marketPlayers.length);
-  document.getElementById('marketList').innerHTML=f.map(p=>{
+  /* F12-6: mobilde market 108 etkileşimli öğe içeriyordu (ekranda 33). Telefonda liste
+     10'ar oyuncu gösterilir, "Daha fazla" ile açılır; masaüstünde tüm liste eskisi gibi. */
+  const mobil=(typeof isMobileView==='function')&&isMobileView();
+  const sayfaBoy=10;
+  if(!mobil) G.marketShown=f.length;
+  else G.marketShown=Math.max(sayfaBoy,Math.min(Number(G.marketShown)||sayfaBoy,f.length));
+  const toplam=f.length;
+  const gorunen=mobil?f.slice(0,G.marketShown):f;
+  const dahaVar=mobil&&toplam>gorunen.length;
+  document.getElementById('marketList').innerHTML=gorunen.map(p=>{
     const st=starFromGenel(p.genel);
     const tag=p.listedFromUser?'<span style="font-size:9px;color:var(--gold);"> · oyuncu ilanı</span>':'<span style="font-size:9px;color:var(--text2);"> · serbest</span>';
     return `
@@ -1087,10 +1096,18 @@ function renderMarket(){
         <button class="btn-bid" onclick="event.stopPropagation();buyFromMarket('${p.id}')">TEKLİF VER</button>
       </div>
     </div>`;
-  }).join('');
+  }).join('')+(dahaVar
+    ? `<button type="button" class="btn-sm" onclick="marketShowMore()" style="width:100%;margin-top:10px;">Daha fazla (${toplam-gorunen.length} oyuncu)</button>`
+    : '');
   ensureClubTransferStock();
   renderClubTransfers();
   switchMarketTab(G.marketTab||'free');
+}
+
+/** F12-6: mobil market listesinde bir sayfa daha aç. */
+function marketShowMore(){
+  G.marketShown=(Number(G.marketShown)||10)+10;
+  renderMarket();
 }
 
 function switchMarketTab(tab){

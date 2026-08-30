@@ -45,8 +45,14 @@ tek gerçek kaynağı sunucu olan çok oyunculu şemaya genişletir.
 `generateMatchEvents()` bugün tarayıcıda çalışıyor ve sonucu yerel PRNG ile üretiyor. İki gerçek
 oyuncu karşılaşınca sonucu **kim** üretecek sorusunun tek doğru cevabı sunucudur.
 
+> **⚠ 36. oturum düzeltmesi:** Aşağıdaki "zaten Node'da çalıştırıyor" ifadesi yanlıştı —
+> `tools/box-band.js` Playwright ile başsız bir **tarayıcı** açıyor, saf Node değil. Motor
+> gerçekten tarayıcısız yüklenebiliyor (ölçüldü), ama iki engel var: rakip gücü takım adının
+> hash'inden üretiliyor (`pseudoTeamStrength`) ve motor küresel `G` durumuna bağlı.
+> Ayrıntı ve yapılacak dönüşüm: **`KARAR-SUNUCU.md` madde 3.0.**
+
 **İyi haber:** motor saf JavaScript ve tarayıcıya bağımlı değil — `tools/box-band.js`,
-`tools/season-loop.js` ve `tools/band.js` onu **zaten Node'da** çalıştırıyor. Yapılacak iş,
+`tools/season-loop.js` ve `tools/band.js` onu başsız ortamda çalıştırıyor. Yapılacak iş,
 bu harness'lerin yaptığını üretimde tekrarlamak:
 
 ```

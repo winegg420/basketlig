@@ -1319,6 +1319,11 @@ function showPage(page,btn){
     if(page==='arena')renderArena();
     if(page==='bilanco')renderBilanço();
     if(page==='analiz')renderAnalytics();
+    /* FAZ 12: alt sekme çubuğu işareti, mobil katlamalar, sabit birincil eylem, rozetler. */
+    try{ syncMobileTabs(page); }catch(e){}
+    try{ applyMobileFolds(); }catch(e){}
+    try{ applyMobileSticky(page); }catch(e){}
+    try{ updateMobileBadges(); }catch(e){}
     requestAnimationFrame(()=>{
       requestAnimationFrame(()=>{
         requestAnimationFrame(()=>charazayRunLayoutCalibration(page));
@@ -1494,6 +1499,9 @@ window.onload=()=>{
   /* F10-4/F10-7: analitik (varsayılan kapalı, yalnız yayında betik yükler) + service worker. */
   try{ initAnalytics(); }catch(e){}
   try{ registerServiceWorker(); }catch(e){}
+  /* FAZ 12: mobil katlamalar ve rozetler ilk açılışta da doğru olsun. */
+  try{ applyMobileFolds(); }catch(e){}
+  try{ updateMobileBadges(); }catch(e){}
   try{ const lp=document.getElementById("langPicker"); if(lp) lp.innerHTML=langPickerHtml(); }catch(e){}
   /* Loader görseli kapalı (display:none) — eski 1500+500ms sahte bekleme girişte gecikme yaratıyordu. */
   setTimeout(()=>{
@@ -1553,6 +1561,9 @@ window.onload=()=>{
     try{
       if(!document.getElementById('app')||document.getElementById('app').style.display==='none') return;
       charazayRunLayoutCalibration(charazayGetActivePageSlug());
+      /* FAZ 12: masaüstü ↔ mobil geçişinde katlama ve sabit eylem yeniden değerlendirilir. */
+      applyMobileFolds();
+      applyMobileSticky(charazayGetActivePageSlug());
     }catch(e){}
   });
 };
@@ -1634,5 +1645,106 @@ function registerServiceWorker(){
     if(!isProdHost()) return;
     if(new URLSearchParams(location.search||'').has('nosw')) return;
     navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }catch(e){}
+}
+
+/* ══ FAZ 12 — MOBİL ARAYÜZ ═══════════════════════════════════════════════════════════════
+   Telefonda oyuncu ayaküstü, tek elle, 30 saniyeliğine giriyor. Ölçülen sorun: her sayfa
+   değişimi 2 dokunuş, maç sayfasında birincil eylem 2,5 ekran aşağıda. */
+
+/** F12-1: alt sekme çubuğu — sayfaya git ve çubuğu işaretle (tek dokunuş). */
+function goTab(btn,page){
+  try{ closeSidebar(); }catch(e){}
+  const nav=document.querySelector('#sbNav button[data-page="'+page+'"]');
+  showPage(page,nav||null);
+  syncMobileTabs(page);
+}
+/** Aktif sekmeyi işaretle — kenar menüden ya da başka bir yoldan geçişte de çağrılır. */
+function syncMobileTabs(page){
+  try{
+    document.querySelectorAll('#mobileTabs .mt').forEach(b=>{
+      b.classList.toggle('active',b.dataset.tab===page);
+    });
+  }catch(e){}
+}
+
+/** F12-2: şut haritası açıklaması artık ⓘ düğmesinde (kalıcı metin 90 px yer yiyordu). */
+function showShotMapHelp(){
+  showAppModal(`<div class="modal-title">🎯 Şut haritası</div>
+    <p style="font-size:13px;color:var(--text2);line-height:1.6;">
+      <strong>O</strong> = isabetli şut, <strong>X</strong> = kaçan şut.<br>
+      Turuncu işaretler <strong>senin takımın</strong>, yeşil işaretler <strong>rakip</strong>.<br>
+      Canlı görünüm her çeyrek sıfırlanır; maç boyunca biriken şutlar için
+      <strong>Tüm maç</strong> ya da <strong>Ç1–Ç4</strong> filtresini seç.
+    </p>
+    <div style="display:flex;justify-content:flex-end;margin-top:14px;">
+      <button type="button" class="btn-sm" onclick="closeAppModal()">Kapat</button>
+    </div>`);
+}
+
+/** F12-3: sıradaki maçın taktik ekranını doğrudan aç (Kadro sayfasından tek dokunuş). */
+function openNextMatchTactics(){
+  try{
+    const m=(typeof findNextUserSeasonMatch==='function')?findNextUserSeasonMatch():null;
+    if(!m){ showNotif('Sıradaki maç yok — önce sezonu başlat.'); return; }
+    openMatchTactics(m.seasonMatchIx);
+  }catch(e){ showNotif('Taktik ekranı açılamadı.'); }
+}
+
+/** Mobil mi? (CSS eşiğiyle aynı) */
+function isMobileView(){
+  try{ return window.matchMedia('(max-width:768px)').matches; }catch(e){ return false; }
+}
+
+/** F12-2: maç içi istatistik ve şut filtreleri mobilde KAPALI başlar (44 px), masaüstünde açık. */
+function applyMobileFolds(){
+  try{
+    const mob=isMobileView();
+    ['macStatsFold','macFiltersFold'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(!el) return;
+      if(mob&&!el.dataset.userToggled) el.removeAttribute('open');
+      else if(!mob) el.setAttribute('open','');
+    });
+  }catch(e){}
+}
+
+/** F12-3: sayfanın birincil eylemi mobilde alt çubuğun üstünde sabit dursun. */
+const MOBILE_STICKY={
+  mac:'macActionRow',
+  kadro:'kadroActionRow',
+  market:'marketActionRow',
+  antrenman:'antrenmanActionRow'
+};
+function applyMobileSticky(page){
+  try{
+    document.querySelectorAll('.m-sticky').forEach(el=>el.classList.remove('m-sticky'));
+    if(!isMobileView()) return;
+    const id=MOBILE_STICKY[page];
+    if(!id) return;
+    const el=document.getElementById(id);
+    if(el) el.classList.add('m-sticky');
+  }catch(e){}
+}
+
+/** F12 bölüm 6: "bir şey yapmam gerekiyor mu?" — alt çubuktaki rozetler bunu cevaplar.
+    Kadro: sakat / düşük enerji oyuncu · Maç: oynanmayı bekleyen maç + gelen teklif. */
+function updateMobileBadges(){
+  try{
+    if(!G||!G.team) return;
+    const say={dashboard:0,kadro:0,mac:0,lig:0,market:0};
+    const ps=G.players||[];
+    say.kadro=ps.filter(p=>p&&(p.sakat||(Number(p.enerji||100)<45))).length;
+    if(Array.isArray(G.pendingOffers)) say.kadro+=G.pendingOffers.length;
+    if(G.season&&G.season.active&&typeof findNextUserSeasonMatch==='function'){
+      say.mac=findNextUserSeasonMatch()?1:0;
+    }
+    Object.keys(say).forEach(k=>{
+      const el=document.getElementById('mtBadge-'+k);
+      if(!el) return;
+      const n=say[k]|0;
+      el.textContent=n>9?'9+':String(n);
+      el.classList.toggle('on',n>0);
+    });
   }catch(e){}
 }

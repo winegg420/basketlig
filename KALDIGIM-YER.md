@@ -1,5 +1,5 @@
 # KALDIĞIM YER
-Son güncelleme: 2026-08-30 · 35. oturum — **açık iş yok, tüm testler yeşil**
+Son güncelleme: 2026-08-30 · 36. oturum — **PROMPT-CLAUDE-CODE.md bölüm 1-2 bitti**
 
 Talep belgeleri: `REVIZE-PAKETI.md` (FAZ 1-6) · `REVIZE-PAKETI-FAZ7.md` (maç dışı) ·
 `REVIZE-PAKETI-FAZ8.md` (oynanış testi) · `REVIZE-PAKETI-FAZ9.md` (uzun vadeli döngü) ·
@@ -45,6 +45,7 @@ ayrı bir fazdır.
 | `node tools/spacing-check.js` | saha dizilimi (aralık, yayılım, boya, markaj, ball-you-man) — tohumlu | ✓ **9/9** |
 | `node tools/spacing-check.js --bg` | arka plan sekmesinde dizilim (F11-1 gerileme testi) | ✓ geçti |
 | `node tools/faz11-check.js` | FAZ 11 (dizilim geometrisi, yetişme, kesme noktası, `startMatch` kilidi) | ✓ **13/13** |
+| `node tools/mobile-check.js` | FAZ 12 mobil (dokunma sayısı, maç sayfası düzeni, yoğunluk, 44 px) | ✓ **18/18** |
 | `node tools/sunum-check.js --ms=300000` | M9 outlet · M12 and-1 · M14 şut saati | ✓ **3/3** |
 | `node tools/visual-check.js` | masaüstü + mobil akış, konsol | ✓ çıkış kodu **0** |
 | `node tools/live-metrics.js --ms=360000` | senkron · kimlik · ışınlanma | ✓ orphan 0 · kimlik %100 · 0 kare |
@@ -155,7 +156,13 @@ sıfırdan derlenir); sonrakiler önbellekten hızlanır.
   eklerken `botClubEnsureDepth` içindeki geriye dönük doldurmaya da ekle. `BOT_ROSTER_DIST`
   başındaki İLK 7 SIRA tarihseldir — id/seed'ler ona bağlı, değiştirme.
 - **`cpuMatchScore()` tek kaynaktır** — bot-bot skor formülünü test de oradan çağırır.
-- **Script sürüm etiketi** her yayın öncesi artırılmalı — şu an **`?v=42`**; `faz8-check` A7 sınıyor.
+- **Script sürüm etiketi** her yayın öncesi artırılmalı — şu an **`?v=43`**; `faz8-check` A7 sınıyor.
+- **Mobil alt sekme çubuğu (F12-1)** `#mobileTabs`; yeni sayfa eklerken günlük kullanımdaysa
+  çubuğa, değilse hamburgerde bırak. `showPage` çubuğu, katlamaları, sabit eylemi ve rozetleri
+  kendisi tazeler — yeni sayfa eklerken ek bağlantı gerekmez.
+- **Mobilde ekranın altındaki 56 px çubuk vardır:** sabit konumlu yeni bir öğe koyarken
+  `bottom` değerini `calc(70px + env(safe-area-inset-bottom))` üzerinden ver, yoksa çubuğun
+  düğmelerini kapatırsın (bildirim kutusu bu yüzden `pointer-events:none` yapıldı).
   Aynı sürüm `sw.js` içindeki `SCRIPT_V`'de de geçer — ikisi ayrışırsa `faz10-check` A4 düşer.
 - **Service worker yalnız yayın sunucusunda kaydedilir** (`isProdHost()`); yerelde/testte kapalı,
   yoksa önbellek eski JS'i servis edip ölçümleri yanıltır. `?nosw=1` ile de kapatılabilir.

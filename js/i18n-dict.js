@@ -852,3 +852,18 @@ Object.assign(I18N_TR_EN,{
 '▶ Maçı sonuçlandır':'▶ Finish match',
 'Maç zaten oynanıyor.':'A match is already in progress.'
 });
+
+/* ── FAZ 12: mobil arayüz (alt sekme çubuğu, katlanır bölümler, kısayollar) ──────────── */
+Object.assign(I18N_TR_EN,{
+'Ana':'Home','Kadro':'Squad','Maç':'Match','Lig':'League','Market':'Market',
+'🏀 İlk 5’i Düzenle':'🏀 Edit Starting Five',
+'⚙ Taktik ayarla':'⚙ Set tactics',
+'📊 Maç içi istatistikler':'📊 In-game stats',
+'🎯 Şut haritası filtreleri':'🎯 Shot map filters',
+'🎯 Şut haritası':'🎯 Shot map',
+'Sıradaki maç yok — önce sezonu başlat.':'No upcoming match — start the season first.',
+'Taktik ekranı açılamadı.':'The tactics screen could not be opened.'
+});
+I18N_PHRASES.unshift(
+  [/^Daha fazla \((\d+) oyuncu\)$/,'Show more ($1 players)']
+);

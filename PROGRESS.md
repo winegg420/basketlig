@@ -2612,3 +2612,85 @@ Belgedeki teşhis ("set dizilimi hiç uygulanmıyor, `tSet` zamanlayıcısı dol
 doğru, mekanizması yanlıştı**; kodda tarif edilen yerde hata yoktu. Ölçüm koşulunu (arka plan
 sekmesi) yeniden üretmek, hem gerçek nedeni hem de belgedeki rakamların nereden geldiğini
 tek seferde gösterdi. **Bir hata raporunun ölçüm koşulu, raporun kendisi kadar önemlidir.**
+
+---
+
+# 36. OTURUM — 2026-08-30 · PROMPT-CLAUDE-CODE.md (5 bölüm)
+
+Talep: `PROMPT-CLAUDE-CODE.md` — beş bölüm sırayla, her bölüm sonunda kabul kapısı + commit.
+
+> **Not:** Belge `c2c46b3` commit'ine göre yazılmıştı ve "FAZ 11 hiç uygulanmadı, spacing-check
+> yok" diyordu. **Bölüm 1 (FAZ 11) bir önceki oturumda (`63e74af`) tamamlanmıştı**; bu oturumda
+> yalnız kabul kapısı yeniden koşuldu (spacing-check 9/9, band hash `ec630b3a512bb3b2` sabit).
+
+## BÖLÜM 2 — FAZ 12: MOBİL ARAYÜZ
+
+Kullanıcının cümlesi: *"application kısmının telefondaki mobilde kafa karıştırıcı olmaması
+lazım. Az tıkla her şey yapılabiliyor olması lazım ki oyunu sevsin."*
+
+### Önce ölçü aracı: `tools/mobile-check.js`
+390×844 dokunmatik viewport'ta çalışır ve dokunma sayısını **gerçekten tıklayarak** ölçer
+(varsayım değil): her adımda gerçek `click` atılır ve hedef durumun oluştuğu doğrulanır.
+18 ölçüm: gezinme, çekirdek işler, maç sayfası düzeni, bilgi yoğunluğu, dokunma hedefleri,
+market yoğunluğu, konsol.
+
+### F12-1 · Alt sekme çubuğu
+Mobilde ekranın altında 5'li sabit çubuk (56 px + `env(safe-area-inset-bottom)`): Ana · Kadro ·
+Maç · Lig · Market. Kenar menü masaüstünde aynen kalır; günlük kullanımda olmayan sayfalar
+(Altyapı, Antrenman, Arena, Bilanço, Analiz, Takım) hamburgerde kalır.
+**Her sayfa 2 dokunuş → 1 dokunuş.**
+
+Ayrıca **yapılacaklar rozeti**: Kadro sekmesinde sakat/düşük enerjili oyuncu + gelen teklif
+sayısı, Maç sekmesinde oynanmayı bekleyen maç. FAZ 12 belgesinin "bir şey yapmam gerekiyor mu?"
+sorusunun cevabı artık tek bakışta görünüyor.
+
+### F12-2 · Mobil maç sayfası yeniden sıralandı
+Ölçülen durum: tabela ekranın %45'i, saha %24'ü, `Maçı Başlat` **y≈2093 px** (2,5 ekran aşağıda).
+
+Yeni sıra CSS `order` ile kuruldu (DOM'a dokunulmadan): tabela → saha → eylem şeridi → hız →
+anlatım → çeyrek skorları → istatistik (katlanır) → şut filtreleri (katlanır).
+`#macCourtStatsRow` mobilde `display:contents` olur; böylece saha ve istatistik kutusu kartın
+kendi sıralamasına katılır.
+
+- Tabela dikeyden yataya: 380 px → **88 px**
+- Saha **tam genişlik** (sayfa + kart yan boşlukları negatif margin ile iptal), çerçeve 40 → 2 px
+- Kalıcı "O = isabetli şut…" yardım metni **ⓘ düğmesine** taşındı
+- İstatistik ve şut filtreleri `<details>` ile katlanır (mobilde kapalı, masaüstünde açık)
+
+**Ölçüm: birincil eylemin derinliği 2,5 ekran → 0,48 ekran.**
+
+> **Saha ekran payı — hedef matematiksel olarak ulaşılamaz.** Belge ">%30" istiyor. Saha SVG'sinin
+> en-boy oranı 3200/1900 = 1,684; ekran genişliği kadar geniş çizilse bile yüksekliği
+> (genişlik ÷ 1,684) ile sınırlı: 390 px'te **232 px = ekranın %27,4'ü**. Ölçüm bu yüzden
+> **geometrik tavana göre** verildi (tam genişlikte mi?): ölçülen **%27,3**, tavanın **%99,6'sı**.
+> Belgedeki oranların dikey pay olduğu, kendi tablosundan doğrulandı (380 px = %45, 200 px = %24).
+
+### F12-3 · Birincil eylem mobilde sabit
+`.m-sticky` sınıfı alt çubuğun hemen üstünde durur; sayfa değişiminde ilgili satıra uygulanır
+(Maç → eylem şeridi, Kadro → ilk 5/taktik, Antrenman → antrenman başlat).
+Kadro sayfasına **birincil eylem satırı** eklendi: ilk 5 eskiden yalnız
+Maçlar → Taktik ayarla → İlk 5 seç yolundan (4 dokunuş) açılıyordu, artık **2 dokunuş**.
+
+### F12-4 / F12-7 / F12-8 · Yoğunluk ve cila
+- Tek sayı gösteren kart yüksekliği ölçüldü: en yüksek **78 px** (hedef < 100) — mevcut düzen
+  mobilde zaten üçlü ızgaraya iniyordu; ek daraltma gerekmedi, ölçüm bunu doğruladı.
+- Üst bardaki `🔴 CANLI MAÇ` rozeti dar ekranda iki satıra bölünüp sayfa başlığının üstüne
+  biniyordu (ekran görüntüsüyle görüldü) → mobilde yalnız yanıp sönen nokta.
+- `SONRAKİ MAÇ` etiketi mutlak konumluydu, tarih satırının üstüne biniyordu → akışa alındı.
+- **44 px altı dokunma hedefi: 41 → 0.** Tek tek seçici saymak yerine `#pageStage` içindeki tüm
+  düğme/seçici/summary 44 px'e çekildi; yeni eklenen buton kuralı kendiliğinden alır.
+
+### F12-6 · Market
+Mobilde liste 10'ar oyuncu + "Daha fazla" (masaüstü aynen). Ölçüm: ilk ekranda **15**
+etkileşimli öğe (hedef ≤ 25), satın alma **2 dokunuş** (hedef ≤ 3).
+
+### Yan etki olarak bulunan gerçek hata
+Bildirim kutusu (`.notif`) `bottom:20px; right:20px` ile duruyordu ve **alt sekme çubuğunun
+Market düğmesini kapatıyordu** — dokunma testi bunu ilk koşuda yakaladı (tıklama 30 sn boyunca
+"notif intercepts pointer events" ile düştü). Bildirim artık `pointer-events:none` ve mobilde
+çubuğun üstünde duruyor. Bu, ölçüm aracı olmasa fark edilmeyecek bir hataydı.
+
+### Bölüm 2 doğrulama
+`mobile-check` **18/18** · `visual-check` 0 hata (masaüstü + mobil) · `faz6` 7/7 · `faz7` 8/8 ·
+`faz8` 6/6 · `faz10` 27/27 · `faz11` 13/13 · `i18n-scan` kalan Türkçe yalnız özel isim.
+Script sürümü `?v=42` → **`?v=43`** + `sw.js` `SCRIPT_V='43'`.

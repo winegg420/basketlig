@@ -602,7 +602,12 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 .btn-sm:hover{border-color:var(--accent);color:var(--accent);}
 .btn-danger{border-color:var(--red)!important;color:var(--red)!important;}
 
-.notif{position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--accent);border-radius:12px;padding:12px 18px;font-size:13px;z-index:9999;transform:translateX(200px);opacity:0;transition:all 0.3s;max-width:280px;}
+/* F12-1 yan etkisi: bildirim kutusu içerik değil BİLGİ taşır; tıklamayı engellememeli.
+   Mobilde alt sekme çubuğunun üstüne çıkar, yoksa "Market" sekmesini kapatıyordu. */
+.notif{position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--accent);border-radius:12px;padding:12px 18px;font-size:13px;z-index:9999;transform:translateX(200px);opacity:0;transition:all 0.3s;max-width:280px;pointer-events:none;}
+@media(max-width:768px){
+  .notif{bottom:calc(70px + env(safe-area-inset-bottom,0px));right:10px;left:10px;max-width:none;}
+}
 .pinj-banner{background:rgba(127,29,29,0.35);border:1px solid rgba(248,113,113,0.45);border-radius:8px;padding:7px 10px;margin:-4px 0 10px 0;font-size:11px;font-weight:700;color:#fecaca;line-height:1.35;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;word-break:break-word;}   /* F8-8: uzun sakatlık metni kartın dışına taşmasın */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:45;pointer-events:none;}
 .overlay.show{display:block;pointer-events:auto;}
@@ -666,6 +671,133 @@ tr:hover td{background:rgba(255,255,255,0.02);}
   .menu-btn{display:block;}
   .g2,.g3,.g4{grid-template-columns:1fr;}
 }
+
+/* ══ FAZ 12 — MOBİL ARAYÜZ ═══════════════════════════════════════════════════════════════
+   Ölçülen sorun (390×844): her sayfa değişimi 2 dokunuş (hamburger → öğe); maç sayfasında
+   tabela ekranın %45'ini, canlı saha %24'ünü kaplıyor ve "Maçı Başlat" y≈2093 px'de —
+   2,5 ekran aşağıda. Telefonda oyuncu ayaküstü, tek elle, 30 saniyeliğine giriyor. */
+
+/* F12-1: alt sekme çubuğu — masaüstünde yok, mobilde gezinmeyi 2 → 1 dokunuşa indirir. */
+#mobileTabs{display:none;}
+/* Katlanır bölümler yalnız mobilde katlanır; masaüstünde başlık satırı görünmez. */
+@media(min-width:769px){ .m-fold > summary{display:none;} }
+@media(max-width:768px){
+  #mobileTabs{
+    display:flex;
+    position:fixed;left:0;right:0;bottom:0;
+    height:calc(56px + env(safe-area-inset-bottom,0px));
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    background:var(--bg2);
+    border-top:1px solid var(--border);
+    z-index:60;
+  }
+  #mobileTabs .mt{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    background:none;border:none;color:var(--text2);
+    font-size:10px;font-weight:700;letter-spacing:.2px;
+    min-height:56px;padding:6px 2px;cursor:pointer;position:relative;
+  }
+  #mobileTabs .mt .mt-i{font-size:19px;line-height:1;}
+  #mobileTabs .mt.active{color:var(--accent);}
+  #mobileTabs .mt.active::before{
+    content:'';position:absolute;top:0;left:22%;right:22%;height:3px;
+    background:var(--accent);border-radius:0 0 3px 3px;
+  }
+  /* Yapılacaklar rozeti — "bir şey yapmam gerekiyor mu?" sorusunun cevabı (FAZ 12 bölüm 6). */
+  #mobileTabs .mt-badge{
+    position:absolute;top:5px;left:calc(50% + 6px);
+    min-width:16px;height:16px;padding:0 4px;
+    background:var(--red);color:#fff;border-radius:8px;
+    font-size:10px;font-weight:800;line-height:16px;text-align:center;
+    display:none;
+  }
+  #mobileTabs .mt-badge.on{display:block;}
+  /* Sayfa kaydırma kabının dibi çubuğun altında kalmasın. */
+  .page-stage > .page{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px));}
+
+  /* F12-3: birincil eylem alt çubuğun hemen üstünde sabit — kaydırma gerektirmez. */
+  .m-sticky{
+    position:sticky;
+    bottom:calc(62px + env(safe-area-inset-bottom,0px));
+    z-index:35;
+    background:linear-gradient(180deg,rgba(10,10,15,0) 0%,var(--bg) 22%,var(--bg) 100%);
+    padding:8px 0 6px;margin-bottom:0;
+  }
+
+  /* F12-2: maç sayfası yeniden sıralanır — tabela, saha ve eylem şeridi ilk ekranda.
+     .court-stats-row `display:contents` ile saydamlaşır; böylece saha ve istatistik kutusu
+     kartın kendi sıralamasına katılır (biri yukarı, diğeri katlanmış hâlde aşağı). */
+  #macLiveAnchor > div:first-child > .card:first-child{display:flex;flex-direction:column;}
+  #macCourtStatsRow{display:contents;}
+  #macLiveAnchor .card-title{order:0;}
+  #macLiveAnchor .scoreboard{order:1;}
+  #macLiveAnchor .court-container{order:2;}
+  #macLiveAnchor #macActionRow{order:3;}
+  #macLiveAnchor #macRateRow{order:4;}
+  #macLiveAnchor #coachingPanel{order:5;}
+  #macLiveAnchor .commentary{order:6;}
+  #macLiveAnchor #quarterScores{order:7;}
+  #macLiveAnchor .mac-live-stats{order:8;}
+  #macLiveAnchor #macFiltersFold{order:9;}
+  #macLiveAnchor #macShotKey{order:10;}
+  /* Kalıcı yardım metni ⓘ düğmesine taşındı (F12-2). */
+  #macShotLegend{display:none;}
+
+  /* Kompakt tabela: dikey üç blok yerine tek satır — 380 px → ~80 px. */
+  #macLiveAnchor .scoreboard{padding:8px 10px;gap:6px;flex-wrap:nowrap;}
+  #macLiveAnchor .score-side{min-width:0;flex:1;}
+  #macLiveAnchor .score-tname{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #macLiveAnchor .score-num{font-size:34px;}
+  #macLiveAnchor .score-mid{flex:0 0 auto;}
+  #macLiveAnchor .qlabel{font-size:10px;}
+  #macLiveAnchor .qtime{font-size:15px;}
+  /* Sahanın altın çerçevesi 40 px yer yiyordu → 2 px; ayrıca saha TAM GENİŞLİK olsun diye
+     sayfanın (20 px) ve kartın (18 px) yan boşlukları negatif kenar boşluğuyla iptal edilir.
+     390 px ekranda 940×500 sahanın en-boy oranı yüksekliği ~232 px'e sabitler — bu, sahanın
+     ulaşabileceği geometrik üst sınırdır (tools/mobile-check.js açıklamasına bak). */
+  #macLiveAnchor .court-container{
+    padding:2px;margin-bottom:8px;border-radius:0;
+    margin-left:-38px;margin-right:-38px;width:auto;max-width:none;
+  }
+  #macLiveAnchor .commentary{height:150px;}
+  /* Birincil eylem 0,5 ekran sınırının ALTINDA kalsın diye maç kartının iç boşlukları
+     ve başlık satırı mobilde sıkılaştırılır (~26 px kazanç). */
+  #macLiveAnchor .card{padding:10px;}
+  #macLiveAnchor .card-title{font-size:13px;margin-bottom:6px;}
+  #macLiveAnchor .court-container{margin-left:-30px;margin-right:-30px;}
+  /* Katlanır bölümler (istatistik + şut filtreleri) kapalıyken 44 px. */
+  .m-fold > summary{
+    list-style:none;cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px;
+    font-size:12px;font-weight:700;color:var(--text2);
+    border:1px solid var(--border);border-radius:10px;padding:0 12px;background:var(--bg3);
+  }
+  .m-fold > summary::-webkit-details-marker{display:none;}
+  .m-fold[open] > summary{margin-bottom:8px;}
+
+  /* F12-4: tek sayı gösteren kartlar 140 px yer kaplıyordu — üçü birlikte yarım ekran. */
+  .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .stat-row .stat{padding:10px 6px;text-align:center;min-height:0;}
+  .stat-row .stat .label,.stat-row .stat .stat-label{font-size:10px;opacity:.7;}
+  .stat-row .stat .value,.stat-row .stat .stat-value{font-size:20px;font-weight:800;line-height:1.1;}
+
+  /* "SONRAKİ MAÇ" etiketi mutlak konumluydu ve dar ekranda tarih satırının üstüne biniyordu. */
+  .dash-next .dn-tag{position:static;display:inline-block;margin-bottom:6px;}
+  .dn-meta{margin-bottom:8px;}
+  /* F12-7: üst bar başlığı iki satıra taşıyordu; "🔴 CANLI MAÇ" rozeti de dar ekranda
+     iki satıra bölünüp sayfa başlığının üstüne biniyordu (ekran görüntüsüyle görüldü).
+     Mobilde rozet yalnız yanıp sönen noktaya iner. */
+  .live-badge{white-space:nowrap;font-size:0;padding:6px;border-radius:50%;line-height:0;}
+  .live-badge::before{content:"🔴";font-size:12px;line-height:1;}
+  /* F12-7: üst bar başlığı iki satıra taşıyordu. */
+  .topbar h2{white-space:nowrap;font-size:clamp(14px,4.2vw,20px);overflow:hidden;text-overflow:ellipsis;}
+
+  /* F12-8: dokunma hedefleri. Tek tek seçici saymak yerine sayfa gövdesindeki TÜM
+     düğme/seçiciler 44 px'e çekilir — yeni eklenen bir buton da kuralı kendiliğinden alır
+     (ölçümde 41 öğe eşiğin altında kalmıştı). */
+  #pageStage button,#pageStage select,#pageStage summary,#mobileTabs button,
+  .market-tab,.fbtn,.btn-bid,.tb-icon,.upbtn,.mt,.m-fold > summary{min-height:44px;}
+}
+
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-track{background:var(--bg);}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
@@ -884,6 +1016,12 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             <span>Düşük</span><span>Orta</span><span>Yüksek</span>
           </div>
         </div>
+        <!-- F12-3: Kadro sayfasının birincil eylemleri. Eskiden ilk 5 yalnız Maçlar →
+             Taktik ayarla → İlk 5 seç yolundan (4 dokunuş) açılıyordu. -->
+        <div id="kadroActionRow" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+          <button type="button" class="btn-p" onclick="openLineupEditor()" style="flex:1;min-width:150px;padding:10px;font-size:13px;">🏀 İlk 5’i Düzenle</button>
+          <button type="button" class="btn-sm" onclick="openNextMatchTactics()" style="flex:1;min-width:130px;">⚙ Taktik ayarla</button>
+        </div>
         <div id="kadroPrepareBanner" class="kadro-prep-banner"></div>
         <div id="lockerRoomPanel" style="margin-bottom:12px;"></div>
         <div class="fbar" style="align-items:center;flex-wrap:wrap;">
@@ -936,8 +1074,9 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                 </div>
               </div>
               <div class="mac-qbox" id="quarterScores"></div>
-              <div class="shot-filters">
-                <span>Şut haritası:</span>
+              <details class="m-fold" id="macFiltersFold" open><summary>🎯 Şut haritası filtreleri</summary>
+              <div class="shot-filters" id="macShotFilters">
+                <span>Şut haritası:</span><button type="button" class="btn-sm" onclick="showShotMapHelp()" title="Şut haritası nasıl okunur?" style="padding:2px 9px;font-size:12px;">ⓘ</button>
                 <label><input type="radio" name="shotQ" value="live" checked onchange="setShotFilter(this.value)"> Canlı (bu çeyrek)</label>
                 <label><input type="radio" name="shotQ" value="all" onchange="setShotFilter(this.value)"> Tüm maç</label>
                 <label><input type="radio" name="shotQ" value="1" onchange="setShotFilter(this.value)"> Ç1</label>
@@ -946,10 +1085,11 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                 <label><input type="radio" name="shotQ" value="4" onchange="setShotFilter(this.value)"> Ç4</label>
                 <button type="button" class="btn-sm" id="theaterBtn" onclick="toggleMatchTheater()" style="padding:4px 11px;font-size:11px;margin-left:auto;">⛶ Büyük Ekran</button>
               </div>
-        <p style="font-size:11px;color:var(--text2);margin-bottom:8px;"><strong>O</strong> = isabetli şut, <strong>X</strong> = kaçan şut. Canlı görünüm her çeyrek sıfırlanır; maç boyunca biriken şutlar için <strong>Tüm maç</strong> ya da <strong>Ç1–Ç4</strong> seç.</p>
+              </details>
+        <p id="macShotLegend" style="font-size:11px;color:var(--text2);margin-bottom:8px;"><strong>O</strong> = isabetli şut, <strong>X</strong> = kaçan şut. Canlı görünüm her çeyrek sıfırlanır; maç boyunca biriken şutlar için <strong>Tüm maç</strong> ya da <strong>Ç1–Ç4</strong> seç.</p>
 
 
-              <div class="court-stats-row">
+              <div class="court-stats-row" id="macCourtStatsRow">
               <div class="court-container" style="margin-bottom:0;">
                 <svg id="courtSvg" viewBox="0 0 3200 1900" class="court-svg" preserveAspectRatio="xMidYMid meet" style="border-radius:6px;">
                   <rect width="3200" height="1900" fill="#111118"/>
@@ -1046,28 +1186,29 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                   </svg>
                 </svg>
               </div>
-              <div class="mac-live-stats">
+              <details class="m-fold mac-live-stats" id="macStatsFold" open>
+                <summary>📊 Maç içi istatistikler</summary>
                 <div class="card-title" style="margin-bottom:4px;">📊 Maç içi — Takım istatistikleri</div>
                 <p style="font-size:10px;color:var(--text2);margin-bottom:8px;">Ev / Deplasman (Charazay tarzı özet; maç ilerledikçe dolar)</p>
                 <table class="tbl-stat" id="boxScoreTablemac">
                   <thead><tr><th></th><th class="hs" id="bsHomeNamemac">Ev</th><th class="as" id="bsAwayNamemac">Dep</th></tr></thead>
                   <tbody id="boxScoreBodymac"></tbody>
                 </table>
+              </details>
               </div>
-              </div>
-              <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+              <div id="macShotKey" style="display:flex;gap:12px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
                 <span style="font-size:11px;color:var(--text2);"><b style="color:var(--accent);font-size:13px;">O</b> Bizim — isabet &nbsp; <b style="color:var(--accent);font-size:13px;">X</b> Bizim — kaçan</span>
                 <span style="font-size:11px;color:var(--text2);"><b style="color:#4ade80;font-size:13px;">O</b> Rakip — isabet &nbsp; <b style="color:#4ade80;font-size:13px;">X</b> Rakip — kaçan</span>
               </div>
 
-              <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+              <div id="macActionRow" style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
                 <button class="btn-p" id="startMatchBtn" onclick="startMatch()" style="flex:1;min-width:130px;padding:9px;font-size:13px;">▶ Maçı Başlat</button>
                 <button class="btn-sm" onclick="stopMatch()" style="flex:1;min-width:90px;">⏹ Durdur</button>
                 <button class="btn-sm" id="timeoutBtn" onclick="callTimeout()" style="flex:1;min-width:110px;" title="Mola al — oyuncular nefeslenir, enerji tazelenir; molada değişiklik serbest">⏸ Mola (5)</button>
                 <button class="btn-sm" id="manualCoachBtn" onclick="toggleManualCoach()" style="flex:1;min-width:130px;">🎧 Manuel Koçluk</button>
                 <button class="btn-sm" id="shareResultBtn" onclick="shareMatchResult()" style="flex:1;min-width:120px;display:none;" title="Maç sonucunu paylaş">📣 Sonucu Paylaş</button>
               </div>
-              <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+              <div id="macRateRow" style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
                 <span style="font-size:11px;color:var(--text2);">İzleme hızı:</span>
                 <button type="button" class="btn-sm match-rate" data-rate="1" onclick="setMatchRate(1,this)" style="padding:3px 10px;font-size:11px;">1×</button>
                 <button type="button" class="btn-sm match-rate" data-rate="1.5" onclick="setMatchRate(1.5,this)" style="padding:3px 10px;font-size:11px;">1.5×</button>
@@ -1192,7 +1333,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                 <option value="zeka">Zekâ</option><option value="liderlik">Liderlik</option>
               </select>
             </div>
-            <button class="btn-p" onclick="startIndividualTrain()" style="width:auto;padding:9px 20px;font-size:13px;">ANTRENMAN BAŞLAT</button>
+            <div id="antrenmanActionRow"><button class="btn-p" onclick="startIndividualTrain()" style="width:auto;padding:9px 20px;font-size:13px;">ANTRENMAN BAŞLAT</button></div>
             <div id="activeTrains" style="margin-top:14px;"></div>
           </div>
         </div>
@@ -1291,6 +1432,15 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       </div>
     </main>
   </div>
+  <!-- F12-1: mobil alt sekme çubuğu — masaüstünde gizli (CSS). Günlük kullanımdaki beş
+       sayfa tek dokunuşla açılır; kalan sayfalar hamburger menüde kalır. -->
+  <nav id="mobileTabs" aria-label="Ana gezinme">
+    <button type="button" class="mt active" data-tab="dashboard" onclick="goTab(this,&#39;dashboard&#39;)"><span class="mt-i">🏠</span>Ana<span class="mt-badge" id="mtBadge-dashboard"></span></button>
+    <button type="button" class="mt" data-tab="kadro" onclick="goTab(this,&#39;kadro&#39;)"><span class="mt-i">👥</span>Kadro<span class="mt-badge" id="mtBadge-kadro"></span></button>
+    <button type="button" class="mt" data-tab="mac" onclick="goTab(this,&#39;mac&#39;)"><span class="mt-i">🏀</span>Maç<span class="mt-badge" id="mtBadge-mac"></span></button>
+    <button type="button" class="mt" data-tab="lig" onclick="goTab(this,&#39;lig&#39;)"><span class="mt-i">🏆</span>Lig<span class="mt-badge" id="mtBadge-lig"></span></button>
+    <button type="button" class="mt" data-tab="market" onclick="goTab(this,&#39;market&#39;)"><span class="mt-i">💰</span>Market<span class="mt-badge" id="mtBadge-market"></span></button>
+  </nav>
 </div>
 
 <div id="appModalRoot" class="modal-backdrop" style="display:none;" onclick="if(event.target===this)closeAppModal()">
@@ -1304,19 +1454,19 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 <div class="notif" id="notif"></div>
 
-<script src="js/i18n.js?v=42"></script>
-<script src="js/i18n-dict.js?v=42"></script>
-<script src="js/i18n-commentary.js?v=42"></script>
-<script src="js/state.js?v=42"></script>
-<script src="js/economy.js?v=42"></script>
-<script src="js/persistence.js?v=42"></script>
-<script src="js/portraits.js?v=42"></script>
-<script src="js/roster-gen.js?v=42"></script>
-<script src="js/league.js?v=42"></script>
-<script src="js/match-prep.js?v=42"></script>
-<script src="js/render.js?v=42"></script>
-<script src="js/match-engine.js?v=42"></script>
-<script src="js/main.js?v=42"></script>
+<script src="js/i18n.js?v=43"></script>
+<script src="js/i18n-dict.js?v=43"></script>
+<script src="js/i18n-commentary.js?v=43"></script>
+<script src="js/state.js?v=43"></script>
+<script src="js/economy.js?v=43"></script>
+<script src="js/persistence.js?v=43"></script>
+<script src="js/portraits.js?v=43"></script>
+<script src="js/roster-gen.js?v=43"></script>
+<script src="js/league.js?v=43"></script>
+<script src="js/match-prep.js?v=43"></script>
+<script src="js/render.js?v=43"></script>
+<script src="js/match-engine.js?v=43"></script>
+<script src="js/main.js?v=43"></script>
 
 
 </body></html>
