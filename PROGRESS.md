@@ -3017,3 +3017,66 @@ Script sürümü **?v=47**.
 > **Yan hata (araç yakaladı):** ölü kod temizliği sırasında `openNextMatchTactics` da
 > silinmişti (bitişik bloktaydı); `mobile-check` "taktik açılmadı + pageerror" ile yakaladı,
 > geri alındı. Bitişik blokları toplu silerken sınırı satır satır doğrulamak gerekiyor.
+
+## FAZ 14 — CANLI MAÇ ANLATIMI DİL REVİZYONU (37. oturum)
+
+Talep: 4 gerçek Türkçe maç anlatımı transkriptinin (Türkiye–Litvanya, Warriors–Nuggets,
+Lakers–Rockets, FB–Monaco EL finali) yapısal analizinden çıkan üç fark.
+
+### F14-1 · Skor kapısı (`scGate`)
+Gerçek anlatımda skor tüm maçta ~6-8 kez söylenir; oyunda **her sayı cümlesinin sonunda**
+vardı. Kapı yalnız anlamlı anlarda açılır: son 2 dakika · çeyrek kapanışı (≤25 sn) ·
+8+ cevapsız seri · ilk kez çift hane/20 fark · periyodik hatırlatma (6-10 olayda bir).
+`%SC` boşalınca kalan boşluk ve `" !"` gibi bozuk noktalama `spikerLinePR`'da temizlenir.
+**Ölçüm: %53,2 → %15,6.**
+
+> İlk denemede kapı hiç kapanmadı (%53) — `_scG` sayacı `runPossession` kapsamındaydı ve her
+> pozisyonda sıfırlanıyordu. **Bu, `_runTeam` (F13-3) ile birebir aynı tuzak;** maç düzeyinde
+> tutulması gereken her sunum sayacı için artık kural: `narr` ile aynı kapsamda tanımla.
+
+### F14-2 · Zincir anlatım
+Gerçek anlatımın birimi 2-5 kelimelik parçadır ("Cedi güçlü gitti." / "İsabetli."). 356
+spiker cümlesi **korundu**; pozisyonların bir kısmı artık `AKIS_ON` (ön parça: geliş/perde/
+eşleşme/yüklenme) + `KISA_CEKIRDEK` (isabet/kaçış) ritmiyle anlatılıyor. Asistli pozisyonda
+zincir kullanılmaz (pasörün adı kaybolmasın); zincir modunda hamle ibaresi eklenmez.
+**Ölçüm: %0 → %34,1** (hedef %30-50; 0,40 olasılıkla %25 çıktı, 0,55'e alındı).
+Kısa çekirdekler bölge filtresinden geçmediği için içlerinde **mesafe/bölge iddiası yok**
+(FAZ 13'te düzeltilen "söz ile saha çelişmesi" tekrarlamasın) — ölçümle doğrulandı.
+
+### F14-3 · Spiker imzası + yorumcu
+Dört spiker aynı işi yapıyordu. Artık davranışla ayrışıyorlar (`SPIKERS[].davranis`):
+Coşkun isim tekrarı · Bilge istatistik · Cem espri · Reha seri. Her imza kendi eşiğinde ve
+**en az 8 sayı olayı arayla** (ilk ölçüm 22/maç idi). **Ölçüm: 8,1/maç** (hedef 3-12).
+Ayrıca ölü toplarda (faul, bonus, taktik) olayın NEDENİNİ söyleyen **yorumcu** satırı —
+yeni olay türü açılmadan mevcut metne eklenir. **Ölçüm: 2,2/maç** (hedef 2-8).
+
+### Ölçüm tablosu (20 maç · 4.918 metinli olay)
+
+| Ölçüt | Hedef | ÖNCE | SONRA |
+|---|---|---|---|
+| skor içeren şut/kaçırma olayı | < %20 | %53,2 | **%15,8** |
+| zincir (kısa parçalı) oranı | %30-50 | %0,0 | **%34,1** |
+| ortalama olay kelime sayısı | öncekinin altında | 11,03 | **10,47** |
+| bir kalıbın en çok tekrarı | fazla değil | 49 | **46** |
+| spiker imzası / maç | 3-12 | — | **8,1** |
+| yorumcu satırı / maç | 2-8 | 0 | **2,2** |
+
+### Tutarlılık
+çift boşluk 0 · bozuk noktalama 0 · doldurulmamış yer tutucu 0 · zincirde bölge iddiası 0 ·
+çeyrek başı/sonu, değişiklik ve maç sonu satırları skoru **hâlâ içeriyor** (324/324) ·
+`SPIKER_LINES` cümle sayısı **312 → 312** (hiçbiri silinmedi) · aynı tohum → birebir aynı
+olay dizisi · **aynı tohumla skor FAZ 14 öncesiyle aynı (90-83)** · `band.js` hash
+**değişmedi** (`fb393bdab878e699`) — yeni kodda `Math.random`/`rand()` yok, yalnız `pr`.
+
+### i18n
+`AKIS_ON`, `KISA_CEKIRDEK`, `IMZA_*`, `YORUMCU_LINES` içindeki **70 satırın tamamı**
+`js/i18n-commentary.js`'e eklendi (karşılıklar motordan okunarak üretildi; eksik giriş
+imkânsız) ve `localizeCatalogs()`'a kaydedildi. EN modunda havuzlarda Türkçe kalmadı.
+
+### Değişen dosyalar
+`js/match-engine.js` +165/-13 · `js/i18n-commentary.js` +75 · `js/i18n.js` +7 ·
+`charazay2.0.html` +13/-13 (sürüm) · `sw.js` +1/-1. Script sürümü **?v=48**.
+
+### Doğrulama
+`anlatim-check --n=30` 13/13 · `--freeze` 23/23 · `box-band --n=200` 11/11 ·
+`visual-check` 0 hata · `i18n-scan` temiz · `band.js` hash sabit.

@@ -196,6 +196,13 @@ function localizeCatalogs(){
   try{ mapStrArr(typeof REB_DEF_LINES!=='undefined'?REB_DEF_LINES:null); }catch(e){}
   try{ if(typeof MOVE_BY!=='undefined') Object.keys(MOVE_BY).forEach(k=>mapStrArr(MOVE_BY[k])); }catch(e){}
   try{ if(typeof ASSIST_PHRASES!=='undefined') Object.keys(ASSIST_PHRASES).forEach(k=>mapStrArr(ASSIST_PHRASES[k])); }catch(e){}
+  /* F14: zincir anlatım + spiker imzası + yorumcu havuzları. */
+  try{ if(typeof AKIS_ON!=='undefined') Object.keys(AKIS_ON).forEach(k=>mapStrArr(AKIS_ON[k])); }catch(e){}
+  try{ if(typeof KISA_CEKIRDEK!=='undefined') Object.keys(KISA_CEKIRDEK).forEach(k=>mapStrArr(KISA_CEKIRDEK[k])); }catch(e){}
+  try{ if(typeof YORUMCU_LINES!=='undefined') Object.keys(YORUMCU_LINES).forEach(k=>mapStrArr(YORUMCU_LINES[k])); }catch(e){}
+  try{ mapStrArr(typeof IMZA_ESPRI!=='undefined'?IMZA_ESPRI:null); }catch(e){}
+  try{ mapStrArr(typeof IMZA_ISTAT!=='undefined'?IMZA_ISTAT:null); }catch(e){}
+  try{ mapStrArr(typeof IMZA_SERI!=='undefined'?IMZA_SERI:null); }catch(e){}
 }
 
 /* ══ CANLI DOM ÇEVİRİSİ ═══════════════════════════════════════════════════════════════

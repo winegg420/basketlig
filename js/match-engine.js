@@ -1767,11 +1767,13 @@ function updateQuarterBoard(qh,qa,totH,totA){
 /* ── 4 spiker sistemi (Madde 11) + zengin anlatım havuzu (Madde 10) ──
    Her maçın başında bir spiker atanır; her spikerin kendi tonu ve cümle havuzu var.
    %S=atan, %B=blok yapan, %C=çalan, %SC=skor. */
+/* F14-3: `davranis` İÇ ANAHTARDIR, çevrilmez — localizeCatalogs yalnız ['ad','stil']
+   alanlarını çevirir. Spikerler artık sıfatla değil DAVRANIŞLA ayrışır (bkz. spikerImza). */
 const SPIKERS=[
-  {id:'cosku',ad:'Coşkun Bağrışan',stil:'Heyecanlı',emoji:'🔥'},
-  {id:'bilge',ad:'Bilge Hoca',stil:'Analitik',emoji:'🧠'},
-  {id:'cem',ad:'Esprili Cem',stil:'Esprili',emoji:'😄'},
-  {id:'reha',ad:'Klasik Reha',stil:'Resmî',emoji:'🎙️'}
+  {id:'cosku',ad:'Coşkun Bağrışan',stil:'Heyecanlı',emoji:'🔥',davranis:'isimTekrar'},
+  {id:'bilge',ad:'Bilge Hoca',stil:'Analitik',emoji:'🧠',davranis:'istatistik'},
+  {id:'cem',ad:'Esprili Cem',stil:'Esprili',emoji:'😄',davranis:'espri'},
+  {id:'reha',ad:'Klasik Reha',stil:'Resmî',emoji:'🎙️',davranis:'resmi'}
 ];
 /* İŞ 4: havuzlar ~2 katına çıkarıldı (özellikle score2/miss2/score3/miss3) ve hamle/şema
    kelimeleri (step-back, çalım, spin, pick-and-roll, transition, "dibe indi") core'lardan
@@ -2061,6 +2063,40 @@ function pickLine(pool,pr,memo,key){
   return (typeof t==='function')?t(pick):pick;
 }
 /* İŞ 4: asist ibareleri şemayla uyumlu ve ÇEŞİTLİ (eski monoton "X buldu; Y…" bitti). */
+/* ── F14-2: ZİNCİR ANLATIM ────────────────────────────────────────────────────────────
+   Gerçek Türkçe basketbol anlatımının temel birimi 2-5 kelimelik bir parçadır
+   ("Cedi güçlü gitti." / "Marilonis yüklendi." / "İsabetli."). Mevcut sistem her olay
+   için tek, 6-10 kelimelik uzun cümle üretiyordu; ritim yoktu. 356 spiker cümlesi
+   KORUNUR — pozisyonların bir kısmı artık bu kısa parçalı ritimle anlatılır.
+   ⚠ Kısa çekirdekler bölge filtresinden (_NEAR_WORDS/_CORNER_WORDS) GEÇMEZ; bu yüzden
+   içlerinde mesafe/bölge iddiası olan kelime BULUNMAMALI (köşe, boyalı alan, orta
+   mesafe, yay dışı…). FAZ 13'te düzeltilen "söz ile saha çelişmesi" tekrarlamasın. */
+const AKIS_ON={
+  gelis:  ['%S geldi.','%S topu aldı.','%S tepeye çıktı.','Top %S\'de.','%S ilerletiyor.','%S rakip yarı sahada.'],
+  perde:  ['Perde geldi.','%S perdeden çıktı.','Yüksek perde.','Perde arkasından %S.','İkili oyun.','%S perde istedi.'],
+  eslesme:['%S eşleşmeyi buldu.','%S pozisyon aldı.','%S sırtını döndü.','%S adamını sırtladı.','%S pozisyonu istedi.'],
+  yuklen: ['%S yüklendi.','%S daldı içeriye.','%S çembere gitti.','%S kat etti.','%S süratlendi.','%S dişini gösterdi.']
+};
+/* Kısa çekirdekler: zincir modunda uzun spiker cümlesinin yerini alır. */
+const KISA_CEKIRDEK={
+  score2:['İsabetli.','Bitirdi.','İki sayı.','Basket.','Tutturdu.','Sayıyı buldu.','Kolay bitirdi.'],
+  score3:['Üç sayı.','İsabetli, üçlük.','Bombayı bıraktı, girdi.','Cezayı kesti.','Üçlük geldi.'],
+  miss2: ['İsabet yok.','Kaçırdı.','Olmadı.','Kısa kaldı.','Çemberden döndü.','Demire takıldı.'],
+  miss3: ['Üçlük kaçtı.','İsabet yok.','Havada kaldı.','Demire geldi.','Uzun düştü.']
+};
+/** Ön parça + kısa çekirdek [+ skor] birleşimi. Yalnız sunum PRNG'si kullanır. */
+function zincirLine(kind,v,pr,memo){
+  try{
+    const uzak=(kind==='score3'||kind==='miss3');
+    const onHavuz=uzak
+      ? AKIS_ON.gelis.concat(AKIS_ON.perde)
+      : AKIS_ON.yuklen.concat(AKIS_ON.eslesme,AKIS_ON.perde);
+    const on=pickLine(onHavuz,pr,memo,'akis'+(uzak?'3':'2')).replace(/%S/g,v.s||'');
+    const cek=pickLine(KISA_CEKIRDEK[kind]||[''],pr,memo,'kisa'+kind);
+    return (on+' '+cek+(v.sc?' '+v.sc:'')).replace(/\s+([.!?,;])/g,'$1').replace(/\s{2,}/g,' ').trim();
+  }catch(e){ return ''; }
+}
+
 const ASSIST_PHRASES={
   spotup:['%A dış çevrede boşta bıraktı; ','%A servisini yaptı, ','%A kenara aktardı, ','%A pas trafiğini çözüp gördü; '],
   pnr:['%A pick&roll sonrası servis etti; ','%A ikili oyunla ortağını kullandı, ','%A perde arkasından buldu; ','%A blok sonrası dağıttı, '],
@@ -2095,8 +2131,54 @@ function spikerLinePR(spId,kind,v,pr,memo){
     if(f.length) pool=f;
   }
   const line=pickLine(pool,pr,memo,spId+kind);
-  return line.replace(/%SC/g,v.sc||'').replace(/%S/g,v.s||'').replace(/%B/g,v.b||'').replace(/%C/g,v.c||'');
+  /* F14-1: %SC boşaldığında cümle sonunda yalnız kalan boşluk ve " !" gibi bozuk
+     noktalama oluşuyordu — temizlenir. */
+  return line.replace(/%SC/g,v.sc||'').replace(/%S/g,v.s||'').replace(/%B/g,v.b||'').replace(/%C/g,v.c||'')
+             .replace(/\s+([.!?,;])/g,'$1').replace(/\s{2,}/g,' ').trim();
 }
+
+/* ── F14-3: SPİKER İMZASI ─────────────────────────────────────────────────────────────
+   Dört spiker aynı işi yapıyordu, yalnız sıfatları farklıydı; ayırt edilemiyorlardı.
+   Her imza YALNIZ kendi bağlam eşiği aşıldığında devreye girer, her cümlede değil:
+     Coşkun  → oyuncu üst üste 2+ isabet   → "Marco. Marco!" öneki
+     Bilge   → 2+ isabet ve 8+ sayı        → "— bu maçta 14 sayı." soneki
+     Cem     → 3+ isabet                   → kısa espri soneki
+     Reha    → 6+ cevapsız seri            → "8-0'lık seri." soneki                    */
+const IMZA_ESPRI=['Bunu sever.','Bugün eli çok sıcak.','Salon buna doydu.','Sıraya girdiler.','Durdurabilene aşk olsun.'];
+const IMZA_ISTAT=['— bu maçta %P sayı.','— %P sayıya geldi.','— %P sayısı oldu.'];
+const IMZA_SERI =['%R-0\'lık seri.','%R sayılık cevapsız seri.','Seri %R\'ya ulaştı.'];
+function spikerImza(SP,txt,ctx,pr,memo){
+  try{
+    if(!SP||!txt||!ctx) return txt;
+    /* Ölçüm: eşikler tek başına maç başına 22 imza üretiyordu (hedef 3-12) — imza ancak
+       en az 8 sayı olayı arayla tekrar eder; spikerin "tikleri" seyrek olmalı. */
+    if(ctx.cd>0) return txt;
+    switch(SP.davranis){
+      case 'isimTekrar':
+        if(ctx.heat>=2&&ctx.ad){ ctx.vur(); return ctx.ad+'. '+ctx.ad+'! '+txt; }
+        break;
+      case 'istatistik':
+        if(ctx.heat>=2&&ctx.pts>=8){ ctx.vur();
+          return txt+' '+pickLine(IMZA_ISTAT,pr,memo,'imzaB').replace('%P',String(ctx.pts)); }
+        break;
+      case 'espri':
+        if(ctx.heat>=3){ ctx.vur(); return txt+' '+pickLine(IMZA_ESPRI,pr,memo,'imzaC'); }
+        break;
+      case 'resmi':
+        if(ctx.run>=6){ ctx.vur(); return txt+' '+pickLine(IMZA_SERI,pr,memo,'imzaR').replace('%R',String(ctx.run)); }
+        break;
+    }
+  }catch(e){}
+  return txt;
+}
+
+/* F14-3: YORUMCU — ölü toplarda (faul, taktik) olayın NEDENİNİ söyleyen ikinci ses.
+   Yeni olay türü açılmaz; mevcut olayın metnine eklenir (render katmanına dokunulmaz). */
+const YORUMCU_LINES={
+  foul:['Erken faul yapmamak için beklediler, daha pahalıya ödediler.','Faul hakları doldu; artık her temas çizgiye gidiyor.','Agresif savunma ama riskli.','Ayak pozisyonu geçti, doğru karar.','Bu faul gereksizdi, hücum zaten bitiyordu.'],
+  tempo:['Ritim tamamen değişti bu bölümde.','Geçişlerde çok kolay sayı veriyorlar.','Sabırlı set oyunu doğru tercih burada.','Boyalı alanı kapatmayı başardılar.','Tempoyu düşürmek isteyecekler.'],
+  seri:['Bu seri moral olarak çok değerli.','Mola almazlarsa bu iş kopar.','Karşılık vermeleri şart.','Skor tabelasından çok, oyunun akışı değişti.']
+};
 
 /* ══ BÖLÜM 3 — MAÇ BAĞLAMI (KARAR-SUNUCU.md madde 3.0) ═════════════════════════════════
    Motor iki yerde küresel duruma bağlıydı:
@@ -2541,10 +2623,23 @@ function generateMatchEvents(rakip, opts){
   const prCh=a=>a[Math.floor(pr()*a.length)];
   const prChance=x=>pr()<x;
   /* Bağlam durumu: seri (cevapsız sayı), oyuncu sıcaklığı (art arda isabet), öneki throttle. */
-  const narr={runOff:null,run:0,heat:{},recent:{},ctxCd:0};
+  const narr={runOff:null,run:0,heat:{},recent:{},ctxCd:0,yorumCd:0,imzaCd:0};
+  /* F14-3: yorumcu ~%35 olasılıkla ve en az 5 olay arayla konuşur (ölü toplarda). */
+  const yorumEk=(tur)=>{
+    try{
+      if(narr.yorumCd>0){ narr.yorumCd--; return ''; }
+      if(!prChance(0.55)) return '';
+      const havuz=(_runPts>=8)?YORUMCU_LINES.seri:(YORUMCU_LINES[tur]||YORUMCU_LINES.tempo);
+      narr.yorumCd=4+Math.floor(pr()*3);
+      return ' 💬 '+pickLine(havuz,pr,narr.recent,'yorum');
+    }catch(e){ return ''; }
+  };
   /* F13-3: cevapsız sayı serisi MAÇ düzeyinde tutulur (pozisyon düzeyinde tutulunca her
      pozisyonda sıfırlanıyordu). Serbest atış ve teknik dahil her sayı hareketi buradan geçer. */
   let _runTeam=null,_runPts=0;
+  /* F14-1: skor kapısının sayaçları MAÇ düzeyinde tutulur. Pozisyon kapsamında tutulunca
+     her pozisyonda sıfırlanıyor ve kapı her sayıda açılıyordu (ölçüm: %53 — hedef <%20). */
+  const _scG={cd:0,gapMark:0};
   const _runEkle=(takim,n)=>{ if(n<=0) return; if(_runTeam===takim) _runPts+=n; else { _runTeam=takim; _runPts=n; } };
 
   /* Serbest atış metni AÇIKÇA "serbest atış" der — saha şutuyla karışmasın. */
@@ -2649,6 +2744,30 @@ function generateMatchEvents(rakip, opts){
     shooterHint=null;
     if(!shooter) shooter=userPos?uShooter():oShooter();
     const sc=()=>`(${homeScore} - ${awayScore})`;
+    /* F14-1: SKOR KAPISI — gerçek Türkçe anlatımda skor tüm maçta ~6-8 kez söylenir,
+       her sayıda değil. Mevcut sistem her sayı cümlesinin sonuna %SC koyuyordu; ölçülen
+       en büyük sahtelik kaynağı buydu. Kapı yalnız anlamlı anlarda açılır (son 2 dk,
+       çeyrek kapanışı, büyük seri, ilk kez çift hane/20 fark, periyodik hatırlatma);
+       aksi halde boş string döner ve %SC yer tutucusu temizlenir.
+       ⚠ Yalnız `pr` (sunum PRNG'si) kullanılır — maç sonucu etkilenmez. */
+    const scGate=(qq,tt)=>{
+      try{
+        const gap=Math.abs(homeScore-awayScore);
+        let ac=false;
+        if(qq>=4&&tt<=120)                 ac=true;   /* son 2 dakika */
+        else if(tt<=25)                    ac=true;   /* çeyrek kapanışı */
+        else if(_runPts>=8)                ac=true;   /* büyük cevapsız seri */
+        else if(gap>=20&&_scG.gapMark<20)  ac=true;   /* ilk kez 20 fark */
+        else if(gap>=10&&_scG.gapMark<10)  ac=true;   /* ilk kez çift hane */
+        else if(_scG.cd<=0)                ac=true;   /* periyodik hatırlatma */
+        if(ac){
+          _scG.cd=6+Math.floor(pr()*5);
+          if(gap>=20) _scG.gapMark=20; else if(gap>=10) _scG.gapMark=Math.max(_scG.gapMark,10);
+          return sc();
+        }
+        _scG.cd--; return '';
+      }catch(e){ return ''; }
+    };
     /* F13-3: seri sayacı SKORDAN beslenir. Eskiden `narr.run` yalnız sahadan atılan
        sayıları topluyor, serbest atışları ve teknikleri kaçırıyor, üstüne metin
        kurulurken bir basket GERİDEN okunuyordu: skor 13-0 iken anlatım "9-0" diyordu.
@@ -2862,15 +2981,37 @@ function generateMatchEvents(rakip, opts){
       /* Hamle ibaresi yalnız gerçekten yapılan (play.move) hamleye uygun; move dolu değilse
          asla move ibaresi çıkmaz (söz/görüntü tutarlı). */
       const movePhrase=(move&&MOVE_BY[move]&&prChance(0.5))?(pickLine(MOVE_BY[move],pr,narr.recent,'mv')+' '):'';
+      /* F14-2: pozisyonların ~%40'ı kısa parçalı zincirle anlatılır. Hamle ibaresi ya da
+         asist öneki zaten varsa zincir kullanılmaz (iki ritim üst üste binmesin). */
+      /* Asistli pozisyonlarda zincir kullanılmadığı için etkin oran seçilen olasılığın
+         altında kalıyor; ölçüm 0,40 ile %25 verdi (hedef %30-50) → 0,55. */
+      const _zincirMod=prChance(0.55);
       let txt;
       if(made){
-        if(is3){ const pasTxt=passer?assistPhrase(passer.isim,scheme,pr,narr.recent):''; txt=movePhrase+pasTxt+spikerLinePR(SP.id,'score3',{s:shooter.isim,sc:sc(),zone},pr,narr.recent); }
+        if(is3){
+          const pasTxt=passer?assistPhrase(passer.isim,scheme,pr,narr.recent):'';
+          const _v={s:shooter.isim,sc:scGate(q,t),zone};
+          txt=(_zincirMod&&!pasTxt)
+            ? zincirLine('score3',_v,pr,narr.recent)          /* zincir kendi ritmini kurar:
+                                                                 hamle ibaresi eklenmez */
+            : movePhrase+pasTxt+spikerLinePR(SP.id,'score3',_v,pr,narr.recent);
+        }
         else if(and1){ txt=`${shooter.isim} faule rağmen ${cls==='yakin'?'turnikeyi bitirdi':'şutu soktu'} — ${and1Made?'AND-1 tamam!':'ek atış kaçtı.'} (${_and1Foul}) ${sc()}`; }
-        else { const pasTxt=passer?assistPhrase(passer.isim,scheme,pr,narr.recent):''; txt=movePhrase+pasTxt+spikerLinePR(SP.id,'score2',{s:shooter.isim,sc:sc(),cls,zone},pr,narr.recent); }
+        else {
+          const pasTxt=passer?assistPhrase(passer.isim,scheme,pr,narr.recent):'';
+          const _v={s:shooter.isim,sc:scGate(q,t),cls,zone};
+          txt=(_zincirMod&&!pasTxt)
+            ? zincirLine('score2',_v,pr,narr.recent)
+            : movePhrase+pasTxt+spikerLinePR(SP.id,'score2',_v,pr,narr.recent);
+        }
       } else if(blocked){
         txt=spikerLinePR(SP.id,'block',{s:shooter.isim,b:blk.isim},pr,narr.recent);
       } else {
-        txt=spikerLinePR(SP.id,is3?'miss3':'miss2',{s:shooter.isim,cls,zone},pr,narr.recent);
+        const _k=is3?'miss3':'miss2';
+        const _v={s:shooter.isim,cls,zone};
+        txt=_zincirMod
+          ? zincirLine(_k,_v,pr,narr.recent)
+          : spikerLinePR(SP.id,_k,_v,pr,narr.recent);
       }
       txt=ctxPre+txt;
       if(fb) txt='⚡ Hızlı hücum! '+txt;
@@ -2880,6 +3021,17 @@ function generateMatchEvents(rakip, opts){
         if(narr.runOff!==userPos){ narr.runOff=userPos; narr.run=pts; } else narr.run+=pts;
         narr.heat[shooter.id]=(narr.heat[shooter.id]||0)+1;
       } else { narr.heat[shooter.id]=0; }
+      /* F14-3: imza, sıcaklık/seri sayaçları güncellendikten SONRA uygulanır — aksi halde
+         eşikler bir olay geç tetiklenir. */
+      if(made){
+        try{
+          const _st=((userPos?pstats:ostats)[shooter.id])||{};
+          if(narr.imzaCd>0) narr.imzaCd--;
+          txt=spikerImza(SP,txt,{ad:shooter.isim,heat:narr.heat[shooter.id]||0,
+                                 pts:_st.pts||0,run:_runPts||0,cd:narr.imzaCd||0,
+                                 vur:()=>{ narr.imzaCd=8; }},pr,narr.recent);
+        }catch(e){}
+      }
       events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,play,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q,fb:fb||undefined,pb:putback||undefined,blk:blocked||undefined,scheme,zone,move:move||undefined,contest,sid:shooter.id!=null?shooter.id:undefined,pid:(passer&&passer.id!=null)?passer.id:undefined,and1:and1?{made:and1Made}:undefined},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       _flushReb();   /* and-1 ek atışının ribaundu şut cümlesinden SONRA gelir */
       /* F13-1: kaçan şutların yalnız ~%22'sinde ribaund ANLATILIYORDU; kalan %78'de top
@@ -2930,14 +3082,14 @@ function generateMatchEvents(rakip, opts){
           if(ftRebound(userPos,B,D,nMade,2,q,t)) posNext=userPos;
           addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
           const lineX=offLeftAtQ(userPos,q,userIsHome)?210:730;
-          events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,...ftSplit(`🎯 Bonus! ${foulPrefix(_fp)} — ${foulingTeamName(defenderIsUser)} ceza durumunda, ${shooter.isim} çizgide.`,`${ftLine(nMade,2,shooter.isim)} ${sc()}`),q,t,home:homeScore,away:awayScore,
+          events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,...ftSplit(`🎯 Bonus! ${foulPrefix(_fp)} — ${foulingTeamName(defenderIsUser)} ceza durumunda, ${shooter.isim} çizgide.${yorumEk('foul')}`,`${ftLine(nMade,2,shooter.isim)} ${sc()}`),q,t,home:homeScore,away:awayScore,
             shots:[{x:lineX+rand(-10,10),y:242,made:nMade>=1,isHome:userPos,kind:'ft',q},{x:lineX+rand(-10,10),y:262,made:nMade===2,isHome:userPos,kind:'ft',q}],
             box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         _flushReb();
         } else {
           const cnt=defenderIsUser?(qFoulU[q]||0):(qFoulO[q]||0);
           posNext=userPos;   /* şutsuz faul: top hücum eden takımda kalır (yandan devam) */
-          events.push({type:'foul',text:`${foulPrefix(_fp)} · ${foulingTeamName(defenderIsUser)} bu çeyrek ${cnt}. takım faulü${cnt>=5?" · BONUS":""}. ${pickLine(FOUL_TAIL,pr,narr.recent,"ftail")}`,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+          events.push({type:'foul',text:`${foulPrefix(_fp)} · ${foulingTeamName(defenderIsUser)} bu çeyrek ${cnt}. takım faulü${cnt>=5?" · BONUS":""}. ${pickLine(FOUL_TAIL,pr,narr.recent,"ftail")}${yorumEk('foul')}`,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         }
       } else {
         /* Top kaybı / top çalma — sayı yok. Faz 3: yalnız AZALTMA çarpanı (set oyun / bölge savunması);
@@ -2972,14 +3124,14 @@ function generateMatchEvents(rakip, opts){
         } else {
           /* Top kaybı savuşturuldu — sabırlı/kontrollü pozisyon, top el değiştirmedi (sayı yok). */
           posNext=userPos;
-          events.push({type:'tactic',text:spikerLinePR(SP.id,'tactic',{},pr,narr.recent)+(userPos&&offStealKeep<1?' — sabırlı set oyunu.':''),q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+          events.push({type:'tactic',text:spikerLinePR(SP.id,'tactic',{},pr,narr.recent)+(userPos&&offStealKeep<1?' — sabırlı set oyunu.':'')+yorumEk('tempo'),q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         }
       }
 
     } else {
       /* Renk — mola/taktik vurgusu (pozisyon değişmez, oyun aynı topla sürer) */
       posNext=userPos;
-      events.push({type:'tactic',text:spikerLinePR(SP.id,'tactic',{},pr,narr.recent)+` (${prCh(['pick-and-roll','el presi','2-3 bölge','erken tempo','yayılma hücumu','çift perde'])})`,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      events.push({type:'tactic',text:spikerLinePR(SP.id,'tactic',{},pr,narr.recent)+` (${prCh(['pick-and-roll','el presi','2-3 bölge','erken tempo','yayılma hücumu','çift perde'])})`+yorumEk('tempo'),q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
     }
   }
 
