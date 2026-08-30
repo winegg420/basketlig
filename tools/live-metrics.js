@@ -196,7 +196,11 @@ function med(a){ return pct(a,0.5); }
     let idOk=0,idBad=0; const idBadOrn=[];
     /* Blok satırlarında anlatılan oyuncu SAVUNMACIDIR; topu hiçbir zaman taşımaz.
        Takım anonsları (çeyrek/mola/taktik) da bir oyuncuya bağlı değildir. */
-    const ANONS=/çeyrek başladı|Çeyrek bitti|Maç bitti|MOLA|taktik değiştirdi|Bugünün spikeri|Uzatma|Bonus!|değişiklik:|faulünü yaptı|blok|BLOK|Blok|şapkayı|ŞAPKAYI|geri çevirdi|engelledi|bloke|durduruldu|giremezsin|müdahale etti|blokladı|kapadı|silip|geri yolladı/i;
+    /* FAZ 13 (F13-4): faul satırları artık FAULÜ YAPAN savunmacının adını taşıyor
+       ("Faul — Ad (kişisel N)"). Faul yapan oyuncu topu tutan değildir — blok satırlarıyla
+       aynı gerekçeyle kimlik ölçümünün dışındadır. Eski dışlama kalıbı ("faulünü yaptı")
+       yeni metinle eşleşmiyordu ve ölçüm yanlışlıkla %93'e düşüyordu. */
+    const ANONS=/🔄|çeyrek başladı|Çeyrek bitti|DEVRE ARASI|Maç bitti|MOLA|taktik değiştirdi|Bugünün spikeri|Uzatma|Bonus!|değişiklik:|faulünü yaptı|Faul —|kişisel \d|takım faulü|blok|BLOK|Blok|şapkayı|ŞAPKAYI|geri çevirdi|engelledi|bloke|durduruldu|giremezsin|müdahale etti|blokladı|kapadı|silip|geri yolladı/i;
     P.comments.forEach(c=>{
       if(!c.holder) return;
       if(ANONS.test(c.txt)) return;   /* takım/anons satırı — kimlik ölçümüne girmez */

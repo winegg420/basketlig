@@ -9,24 +9,47 @@ Son commit `c2c46b3` (FAZ 10 B grubu). Uygulanmamış talep belgeleri:
 
 | Belge | Durum |
 |---|---|
+| `REVIZE-PAKETI-FAZ13.md` | **yeni** — canlı yayında ölçüldü, hiç uygulanmadı |
 | `REVIZE-PAKETI-FAZ11.md` | **hiç uygulanmadı** — `SET_5OUT` kodda yok |
 | `REVIZE-PAKETI-FAZ12.md` | **hiç uygulanmadı** — alt sekme çubuğu kodda yok |
 | `PLAN-LIG-YAPISI.md` | tasarım kararları verildi, **kod yok** |
 | `KARAR-SUNUCU.md` | sunucu kararı verildi (Supabase), **kod yok** |
 
-Eksik araçlar: `tools/spacing-check.js` ve `tools/mobile-check.js` **yok** — ikisi de yazılacak.
+Eksik araçlar: `tools/anlatim-check.js`, `tools/spacing-check.js` ve `tools/mobile-check.js`
+**yok** — üçü de yazılacak.
 
 ---
 
 ## SIRA — BU SIRAYI DEĞİŞTİRME
 
 ```
+BÖLÜM 0  FAZ 13 — canlı maç anlatımı + kilitlenme  ⟵ ÖNCE BU (REVIZE-PAKETI-FAZ13.md)
 BÖLÜM 1  FAZ 11 — canlı maç saha dizilimi      (kullanıcının 1 numaralı şikâyeti)
 BÖLÜM 2  FAZ 12 — mobil arayüz                 (kullanıcının 2 numaralı şikâyeti)
 BÖLÜM 3  Maç motorunu G'den ayır               (çok oyunculunun ön koşulu)
 BÖLÜM 4  db/schema.sql — lig veri modeli       (yalnız dosya, hesap açma yok)
 BÖLÜM 5  Belge güncellemeleri
 ```
+
+---
+
+# BÖLÜM 0 — FAZ 13 (ÖNCE BU)
+
+**Tam belge: `REVIZE-PAKETI-FAZ13.md`. Oku ve uygula.** 18 madde, canlı yayında ölçüldü.
+
+**Neden FAZ 11'den önce:**
+1. **FAZ 11'in metre ölçeği yanlış** (`33,57` yerine `29,54 px/m` olmalı — FAZ 13 madde 0).
+   Bu düzeltilmeden `spacing-check.js` yazılırsa tüm metre hedefleri hatalı çıkar.
+2. **F13-14: sekme arka plana alınınca maç kalıcı donuyor.** Kullanıcının ekranında şu anda
+   102 dakikadır donmuş bir maç var (`running=false`, `idx=16/198`, `visibilitychange`
+   dinleyicisi yok). Çok oyunculuda maç sonucu hiç üretilmez — en kritik madde budur.
+3. FAZ 13, FAZ 11'in F11-1 ve F11-4 maddelerini **güncel ölçümle doğruladı**, ama F11-2'yi
+   (aralık dar) **kısmen çürüttü** — ölçülen aralık 4,8–5,6 m, yani iyi. Asıl sorun takımın
+   potaya hiç yaklaşmaması. FAZ 11 uygulanırken önceliği buna göre ver.
+4. FAZ 13 ayrıca **üç yanlış alarmı** eledi (şut mesafeleri, serbest atış faul metni, saha
+   geometrisi — hepsi doğru). Bunlar aranmasın.
+
+FAZ 13'ün öncelik sırası kendi belgesindedir; oradaki sırayı uygula.
 
 **Neden bu sıra:** Bölüm 3 maç motorunun giriş sözleşmesini değiştiriyor, Bölüm 1 ise aynı
 motorun dizilim kodunu düzeltiyor. Önce dizilim düzelmezse, refactor sırasında bozuk davranış
@@ -391,7 +414,8 @@ kurulmuyor** — bu bölüm yalnız dosya üretir.
 ## Bölüm sonu tam regresyon (hepsi geçmeli)
 
 ```
-node tools/spacing-check.js            (YENİ — Bölüm 1)
+node tools/anlatim-check.js            (YENİ — Bölüm 0)
+node tools/spacing-check.js            (YENİ — Bölüm 1, 29.54 px/m ile)
 node tools/mobile-check.js             (YENİ — Bölüm 2)
 node tools/sim-node.js --n=50          (YENİ — Bölüm 3)
 node tools/season-loop.js --n=3 --runs=3

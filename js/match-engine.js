@@ -689,7 +689,10 @@ function _chase(tok,fn,maxSec){ const S=mState._sim; if(!S||!tok) return; S.chas
      MOTION             4,68 m           %30,6         1
    Köşeler dip çizgiye (x≈56), kanatlar/slotlar yay dışına (x≈276-300), pivot bloğa (x≈146). */
 const SET_SPREAD=[[296,132],[296,368],[ 56,462],[ 56, 38],[146,196]];  /* 4-out 1-in: guardlar slotta, pivot blokta */
-const SET_HORNS =[[302,250],[ 56, 38],[ 56,462],[188,176],[188,324]];  /* iki büyük dirseklerde, guardlar köşede */
+/* Dirsek noktaları boyanın KÖŞESİDİR: SVG'de boya y ∈ [179,6 · 320,4]. y=176/324 bandın bir
+   tık dışında kalıyor ve "boyada oyuncu" ölçüsüne girmiyordu (FAZ 13 madde 0 sonrası fark
+   edildi) — 186/314 hem gerçek dirsek hem boyanın içi. */
+const SET_HORNS =[[302,250],[ 56, 38],[ 56,462],[186,186],[186,314]];  /* iki büyük dirseklerde, guardlar köşede */
 const SET_POST  =[[292,342],[284,118],[ 56, 38],[ 58,458],[146,206]];  /* pivot düşük postta, top kanattan */
 const SET_MOTION=[[300,150],[288,352],[ 58, 46],[ 60,456],[172,246]];  /* kesme/blok trafiği, geniş */
 const SET_5OUT  =[[310,250],[276,104],[276,396],[ 56, 38],[ 56,462]];  /* beşi de yay dışında, boya boş */
@@ -968,7 +971,8 @@ function _inboundSpot(kind,offLeft,x,y){
     topluca koşuya kalkıyordu — "yumak" görüntüsünün ana sebebi buydu.) */
 function _startBreak(offIsUser){
   const S=mState._sim; if(!S) return;
-  const offLeft=(offIsUser===(mState.userIsHome!==false));
+  /* F13-10: yön çeyreğe bağlıdır — 2. yarıda potalar değişir. */
+  const offLeft=offLeftAtQ(offIsUser,(mState.quarter||1));
   const offP=offIsUser?S.home:S.away;
   const defP=offIsUser?S.away:S.home;
   S.offSide=offLeft; S.offP=offP; S.defP=defP; S.offIsUser=offIsUser;
@@ -1134,7 +1138,7 @@ function movePlayersForEvent(ev,paint){
       clearBallTimers();
       const off=_peekNextOff();
       mState._lastOff=off;
-      const offLeft=(off===(mState.userIsHome!==false));
+      const offLeft=offLeftAtQ(off,(ev&&ev.q)||mState.quarter||1);
       const offP=off?S.home:S.away;
       const defP=off?S.away:S.home;
       S.offSide=offLeft; S.offP=offP; S.defP=defP; S.offIsUser=off;
@@ -1153,7 +1157,7 @@ function movePlayersForEvent(ev,paint){
     const off=_eventOff(ev);
     mState._lastOff=off;
     /* Yön: kullanıcı takımı evse sola, deplasmansa sağa hücum eder. */
-    const offLeft=(off===(mState.userIsHome!==false));
+    const offLeft=offLeftAtQ(off,(ev&&ev.q)||mState.quarter||1);
     const offP=off?S.home:S.away;
     const defP=off?S.away:S.home;
     const posChanged=(S.offP!==offP);
@@ -1878,6 +1882,104 @@ const REB_OFF_LINES=[
   '%R sıçradı ve topu ikinci kez kazandı!',
   '%R rakibi arkasında bıraktı, top yine bizde!'
 ];
+/* F13-1/F13-8: artık HER kaçan şutun ribaundu anlatıldığı için kısa, tekrar etmeyen bir
+   havuz gerekiyor — renkli uzun kalıplar (yukarıdakiler) seyrek vurgular için saklandı.
+   %R = ribaundu alan oyuncu · %T = hücum sırası geçen takım. */
+/* F13-8: faul satırı TEK kalıba bağlıydı (bir maçtaki 11 faulün 11'i aynı cümle). Kuyruk
+   havuzu satırı çeşitlendirir; ön ek (oyuncu + kişisel faul) her zaman aynı biçimde kalır. */
+/* F13-6: çalma satırının ön eki — topu KAYBEDEN oyuncu her zaman söylenir. */
+const STEAL_LOSS=[
+  '%L pasını kontrol edemedi —',
+  '%L topu elinden kaçırdı —',
+  '%L pas hattını yanlış okudu —',
+  '%L topu korumakta zorlandı —',
+  '%L hatalı pas denedi —',
+  '%L topu ortada bıraktı —'
+];
+/* F13-7: devre arası ve çeyrek sonu için ayrı kalıp setleri (tek cümle tekrarı yerine). */
+const HALFTIME_LINES=[
+  'İkinci yarı için soyunma odasında taktik konuşulacak.',
+  'On beş dakikalık aranın ardından ikinci yarı başlayacak.',
+  'Koçlar tahtayı çıkardı; ikinci yarı planı yapılıyor.',
+  'Salon nefeslendi — ikinci yarıda tempo yükselir mi?',
+  'Devre arası: kim daha iyi toparlarsa maçı o alır.'
+];
+const QEND_LINES=[
+  'Taktik masasına dönülüyor.',
+  'Kısa bir ara, oyuncular kenara geliyor.',
+  'Koçlar son talimatları veriyor.',
+  'Skor tabelası yenileniyor, oyun az sonra sürecek.',
+  'Kenarda kısa bir değerlendirme yapılıyor.',
+  'Tribün ayakta; oyun bir sonraki çeyrekte sürüyor.'
+];
+/* F13-7: yorgunluk satırları — "%P" yorulan oyuncu. */
+const FATIGUE_LINES=[
+  '%P nefes nefese kaldı, bacakları ağırlaşıyor — kenar değişiklik düşünüyor.',
+  '%P dizlerine yaslandı; enerjisi düşüyor.',
+  '%P ter içinde, tempoya yetişmekte zorlanıyor.',
+  '%P yorgun görünüyor — dinlenmesi gerekebilir.',
+  '%P son pozisyonlarda geriden geldi; kondisyonu sınırda.'
+];
+const FOUL_TAIL=[
+  'Top yandan devam.',
+  'Oyun yandan sokmayla sürüyor.',
+  'Hakem düdüğü çaldı, top yandan.',
+  'Faul verildi; top çizgi dışından oyuna giriyor.',
+  'Kısa bir duraklama, top yandan.',
+  'Sert mücadele — hakem faulü gördü.'
+];
+/* F13-8: değişiklik ve çeyrek başı satırları tek kalıba bağlıydı (20 maçta 99 ve 80 tekrar). */
+const SUB_LINES=[
+  '🔄 %T değişiklik: %O %W kenara, yerine %I girdi.',
+  '🔄 %T kenardan müdahale: %I, %O\'nun yerine oyunda.',
+  '🔄 Rotasyon %T\'de: %O çıkıyor, %I giriyor.',
+  '🔄 %T taze güç istiyor — %I için %O kenara geliyor.',
+  '🔄 Değişiklik: %I sahaya, %O soluklanmaya.',
+  '🔄 %T beşliyi tazeliyor: %I ⇄ %O.'
+];
+const QSTART_LINES=[
+  '🔔 %Q. çeyrek başladı',
+  '🔔 %Q. periyot için düdük çaldı',
+  '🔔 %Q. çeyrek oyunu başlıyor',
+  '🔔 Top yeniden oyunda — %Q. çeyrek',
+  '🔔 %Q. çeyreğin ilk hücumu kuruluyor',
+  '🔔 Salon yerinde: %Q. çeyrek başlıyor'
+];
+const REB_DEF_SHORT=[
+  '%R ribaundu topladı, hücum sırası %T\'de.',
+  'Cam %R\'de; top %T\'ye geçiyor.',
+  '%R savunma ribaundunu aldı.',
+  'Top %R\'nin elinde — %T hücuma çıkıyor.',
+  '%R ribaundu çekti ve topu yukarı taşıyor.',
+  'Box-out tuttu, ribaund %R\'de.',
+  '%R camı kapattı, sıra %T\'de.',
+  'Kaçan şutu %R indirdi.',
+  '%R yükseldi, ribaund onda.',
+  'Top %R\'ye düştü; %T topu yukarı çıkarıyor.',
+  '%R rakibi arkasında tuttu ve ribaundu aldı.',
+  'Savunma ribaundu %R\'de.',
+  '%R camdan döneni topladı.',
+  'Ribaund %R — hücum %T\'ye geçti.',
+  '%R topu güvene aldı.',
+  'Pota altı %R\'nin; top %T\'de.',
+  '%R kaçan şutu kontrol etti.',
+  '%R temiz bir ribaundla camı kapattı.',
+  'Top %R\'de kaldı, %T hücuma dönüyor.'
+];
+const REB_OFF_SHORT=[
+  '%R hücum ribaundunu aldı — %T\'de ikinci şans!',
+  'Top yine %T\'de; ribaund %R\'nin.',
+  '%R kaçan topu boyada topladı, hücum sürüyor.',
+  'İkinci şans %T\'de — ribaund %R.',
+  '%R camdan döneni aldı, atak devam ediyor.',
+  'Hücum ribaundu %R\'de; %T bir daha deneyecek.',
+  '%R ısrar etti, top yine %T\'de!',
+  'Pota altında %R kazandı — ikinci şans.',
+  '%R kaçan şutu geri aldı, hücum sürüyor.',
+  '%R camlara asıldı; top %T\'de kalıyor.',
+  'İkinci top %R\'nin — %T yeniden kuruyor.',
+  '%R hücum camını kapattı.'
+];
 const REB_DEF_LINES=[
   '%R savunma ribaundunu güçlü aldı, cam tertemiz!',
   'Sağlam box-out; %R ribaundu topladı.',
@@ -1890,6 +1992,29 @@ const REB_DEF_LINES=[
 ];
 /* Anlatım-geometri tutarlılığı: yakın mesafe (turnike/smaç/pota altı) kalıpları yalnız
    pota dibindeki şutlarda, orta mesafe kalıpları yalnız uzak şutlarda kullanılır. */
+/* F13-9: köşe ifadeleri — yalnız corner3 bölgesinde kullanılır. */
+const _CORNER_WORDS=/köşe/i;
+/* Ortak köşe üçlüğü havuzu (F13-8): filtre sonrası spiker havuzuna eklenir. */
+const CORNER3_MADE=[
+  '%S köşede boştu, üçlük file! %SC',
+  '%S köşeden tetiği çekti — üç sayı! %SC',
+  '%S dip köşeden vurdu, üçlük! %SC',
+  '%S köşede ayakları hazırdı; üç! %SC',
+  '%S köşe üçlüğünü tereddütsüz attı. %SC',
+  '%S köşeden soğukkanlı — üç sayı. %SC',
+  'Kısa köşeden %S, üçlük içeride! %SC',
+  '%S köşede unutuldu ve cezasını kesti — üç! %SC'
+];
+const CORNER3_MISS=[
+  '%S köşeden denedi, olmadı.',
+  '%S köşe üçlüğünü kısa bıraktı.',
+  '%S dip köşeden ıskaladı.',
+  '%S köşede açıktı ama file dalgalanmadı.',
+  '%S köşe şutu çemberden döndü.',
+  '%S köşeden zorladı, girmedi.',
+  'Köşe üçlüğü %S için bugün gelmiyor.',
+  '%S köşeden attı — pota izin vermedi.'
+];
 const _NEAR_WORDS=/turnike|pota altı|potaya asıldı|boyalı alan|dibe|smaç|pota ile anlaştı|potaya "merhaba"/i;
 const _MID_WORDS=/orta mesafe|jump shot|uzaktan|kısa kaldı/i;
 function spikerLine(spId,kind,v){
@@ -1914,6 +2039,18 @@ function _mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(
 
 /* Şut bölgesi GERÇEK şut noktasından (çember uzaklığı+açı) türetilir → metin, iz ve
    animasyon aynı yeri gösterir. 3'lük: köşe/kanat/tepe; 2'lik: pota dibi/boya/orta mesafe. */
+/** F13-10: DEVRE ARASINDA SAHA DEĞİŞİMİ. Dört çeyrek boyunca aynı potaya hücum ediliyordu
+    (124 şutun 124'ü tek yönde) — basketbol izleyen herkesin ilk fark edeceği hata. Gerçek
+    kural: 1-2. çeyrek bir yön, 3-4. çeyrek (ve uzatmalar, 2. yarı yönüyle) ters yön.
+    `userIsHome` bayrağı bilinmiyorsa (eski çağrı) ev sahibi sola hücum eder varsayılır. */
+function offLeftAtQ(userPos,q,userIsHome){
+  const uih=(userIsHome===undefined)
+    ? ((typeof mState!=='undefined'&&mState&&mState.userIsHome!==false))
+    : !!userIsHome;
+  const ilkYari=(uih===!!userPos);      /* 1-2. çeyrekte kullanıcı ev sahibiyse sola hücum */
+  return (Number(q)>=3)?!ilkYari:ilkYari;
+}
+
 function classifyZone(xy,rimIsLeft,is3){
   const rim=rimIsLeft?RIM_L:RIM_R;
   const dx=Math.abs(xy.x-rim[0]), dy=Math.abs(xy.y-rim[1]);
@@ -1975,6 +2112,17 @@ function spikerLinePR(spId,kind,v,pr,memo){
   v=v||{};
   if(v.cls&&(kind==='score2'||kind==='miss2')){
     const f=pool.filter(t=>v.cls==='yakin'?!_MID_WORDS.test(t):!_NEAR_WORDS.test(t));
+    if(f.length) pool=f;
+  }
+  /* F13-9: "köşe üçlüğü" ifadesi bölgeden bağımsız seçiliyordu; kanattan ya da yay
+     tepesinden atılan şut için de "köşeden" deniyordu (ölçüm: 53 iddianın 32'si yanlış).
+     Bölge adı METİNDEN değil `shot.zone` alanından türetilir. */
+  if(v.zone&&(kind==='score3'||kind==='miss3')){
+    const koseMi=(v.zone==='corner3');
+    let f=pool.filter(t=>koseMi?_CORNER_WORDS.test(t):!_CORNER_WORDS.test(t));
+    /* Spiker başına yalnız 3-4 köşe kalıbı vardı; filtre açılınca köşe şutları aynı üç
+       cümleyi tekrarlıyordu (F13-8). Ortak köşe havuzu her spikerin kendi kalıplarına eklenir. */
+    if(koseMi) f=f.concat(kind==='score3'?CORNER3_MADE:CORNER3_MISS);
     if(f.length) pool=f;
   }
   const line=pickLine(pool,pr,memo,spId+kind);
@@ -2300,7 +2448,7 @@ function generateMatchEvents(rakip, opts){
     const ix=userCourt.indexOf(p);
     if(sub){ if(ix>=0) userCourt[ix]=sub; else userCourt.push(sub); subbedIds.add(sub.id); }
     else if(ix>=0) userCourt.splice(ix,1);
-    events.push({type:'foul',text:`⚠️ ${p.isim} 5. faulüne ulaştı ve oyundan atıldı${sub?` — yerine ${sub.isim} girdi.`:' — yedek kalmadı, eksik oynanıyor.'} (${homeScore} - ${awayScore})`,q,t:t||0,home:homeScore,away:awayScore,subOut:p.id,subIn:sub?sub.id:null,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+    events.push({type:'foul',text:`⚠️ Faul — ${p.isim} (kişisel 5) 🚫 — oyundan atıldı${sub?` — yerine ${sub.isim} girdi.`:' — yedek kalmadı, eksik oynanıyor.'} (${homeScore} - ${awayScore})`,q,t:t||0,home:homeScore,away:awayScore,subOut:p.id,subIn:sub?sub.id:null,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
   }
   /* A3: Rakip oyuncu da 5. faulde oyundan atılır ve yedeğiyle değişir (kullanıcıyla simetrik). */
   function oppFoulsOut(p,q,t){
@@ -2309,21 +2457,33 @@ function generateMatchEvents(rakip, opts){
     if(sub){ if(ix>=0) oppCourt[ix]=sub; else oppCourt.push(sub); if(sub.id) _oppPlayed.add(sub.id); }
     else if(ix>=0) oppCourt.splice(ix,1);
     /* Rakip bot havuzu G.players'ta yok — id yerine oyuncu nesnesi taşınır (saha jetonu değişimi için). */
-    events.push({type:'foul',text:`⚠️ ${rname} — ${p.isim} 5. faulüne ulaştı ve oyundan atıldı${sub?` — yerine ${sub.isim} girdi.`:' — rakibin yedeği kalmadı, eksik oynuyor.'} (${homeScore} - ${awayScore})`,q,t:t||0,home:homeScore,away:awayScore,subOutObj:p,subInObj:sub||null,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+    events.push({type:'foul',text:`⚠️ Faul — ${p.isim} (kişisel 5) 🚫 ${rname} — oyundan atıldı${sub?` — yerine ${sub.isim} girdi.`:' — rakibin yedeği kalmadı, eksik oynuyor.'} (${homeScore} - ${awayScore})`,q,t:t||0,home:homeScore,away:awayScore,subOutObj:p,subInObj:sub||null,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
   }
   /* Savunma faulü kaydı — defenderIsUser=!userPos. Faul yapan takımın somut oyuncusuna yüklenir. */
+  /* F13-4: faulü yapan oyuncu artık DÖNDÜRÜLÜR — anlatım "kim faul yaptı, kaçıncı kişisel
+     faulü" bilgisini basabilsin diye (12 fauldan 11'inde ad yoktu). Menajerlik oyununda bu
+     bilgi karar demek: 5 faulle oyun dışı, değişiklik gerekir. Sayaç mantığı değişmedi. */
   function recordFoul(defenderIsUser,q,t){
+    let secilen=null;
     if(defenderIsUser){
       qFoulU[q]=(qFoulU[q]||0)+1;
       const cand=userCourt.filter(p=>p&&(p.matchFouls||0)<foulLimit);
       const p=cand.length?(wPick(cand,foulW)||ch(cand)):userCourt[0];   /* FAZ A: faul disiplini */
-      if(p){ p.matchFouls=(p.matchFouls||0)+1; if(p.matchFouls>=foulLimit) userFoulsOut(p,q,t); }
+      if(p){ p.matchFouls=(p.matchFouls||0)+1; secilen=p; if(p.matchFouls>=foulLimit) userFoulsOut(p,q,t); }
     } else {
       qFoulO[q]=(qFoulO[q]||0)+1;
       const cand=oppCourt.filter(p=>p&&(p.matchFouls||0)<foulLimit);
       const p=cand.length?(wPick(cand,foulW)||ch(cand)):oppCourt[0];   /* FAZ A: faul disiplini */
-      if(p){ p.matchFouls=(p.matchFouls||0)+1; if(p.matchFouls>=foulLimit) oppFoulsOut(p,q,t); }
+      if(p){ p.matchFouls=(p.matchFouls||0)+1; secilen=p; if(p.matchFouls>=foulLimit) oppFoulsOut(p,q,t); }
     }
+    return secilen;
+  }
+  /* Faul satırının ortak ön eki: "Faul — Ad (kişisel N)" + 4./5. fauldeyse uyarı tonu. */
+  function foulPrefix(fp){
+    if(!fp) return 'Faul —';
+    const n=fp.matchFouls||1;
+    const uyari=n===4?' ⚠ dikkat, 4. faulü!':(n>=5?' 🚫 5. faul!':'');
+    return `Faul — ${fp.isim} (kişisel ${n})${uyari}`;
   }
   const inBonus=(defenderIsUser,q)=>(defenderIsUser?(qFoulU[q]||0):(qFoulO[q]||0))>=5;
   /* M19: serbest atış sonrası ribaund. Dönüş: hücum ribaundu alındıysa true. */
@@ -2336,7 +2496,28 @@ function generateMatchEvents(rakip, opts){
     else { D.reb++; if(userPos) bumpO(reb,'reb',1); else bumpP(reb,'reb',1); }
     /* Ribaund mücadelesinde sarkma faulü (küçük pay) */
     if(Math.random()<0.09){ (rebOff?D:B).foul++; }
+    /* F13-1 (tamamlayıcı): KAÇAN SON SERBEST ATIŞIN ribaundu da anlatılır. Eskiden yalnız
+       saha şutlarının ribaundu olay üretiyordu; kaçan serbest atıştan sonra top sessizce
+       el değiştiriyor, anlatım karşı takımın şutuna atlıyordu (and-1 sonrası tipik vaka). */
+    /* ⚠ SIRA: ftRebound, şut/serbest atış olayı DİZİYE EKLENMEDEN ÖNCE çağrılıyor (and-1'de
+       ek atışın sonucu şut cümlesinin içinde). Ribaundu burada eklersek anlatım "ribaund →
+       basket" sırasıyla ters okunur. Bu yüzden olay BEKLETİLİR ve _flushReb() ile şuttan
+       hemen sonra basılır. */
+    try{
+      const rebIsUser=rebOff?userPos:!userPos;
+      _pendingReb={type:'reb',dt:0,text:pickLine(rebOff?REB_OFF_SHORT:REB_DEF_SHORT,pr,narr.recent,rebOff?'rebO':'rebD')
+        .replace('%R',reb.isim).replace('%T',rebIsUser?MC.home.name:rname),
+        q,t,rebId:reb.id,rebIsUser,rebOff:!!rebOff};
+    }catch(e){}
     return rebOff;
+  }
+  /* Bekleyen serbest atış ribaundunu şut/atış cümlesinden SONRA diziye basar. */
+  let _pendingReb=null;
+  function _flushReb(){
+    if(!_pendingReb) return;
+    const e=_pendingReb; _pendingReb=null;
+    e.home=homeScore; e.away=awayScore; e.box=snap(); e.qh=cloneQx(qh); e.qa=cloneQx(qa);
+    events.push(e);
   }
   /* Kullanıcı oyuncularının sezon istatistikleri bu maç için burada toplanır. */
   const pstats=resume&&resume.pstats?resume.pstats:{};
@@ -2360,6 +2541,28 @@ function generateMatchEvents(rakip, opts){
     fu:{...qFoulU},fo:{...qFoulO}});
 
   const rname=rakip&&rakip.isim||'Rakip';
+  /* F13-7 yardımcıları: devre arası en skorer + yorgunluk adayı. İkisi de yalnız kutu
+     skoru ve stat okur; rastgelelik kullanmaz (maç matematiği etkilenmez). */
+  function _devreEnSkorer(){
+    let en=null,enP=-1;
+    try{
+      Object.keys(hB.pl||{}).forEach(id=>{
+        const st=hB.pl[id]; if(!st) return;
+        const pl=(MC.home.players||[]).find(x=>String(x.id)===String(id));
+        if(st.pts>enP){ enP=st.pts; en=pl?pl.isim:null; }
+      });
+    }catch(e){}
+    return (en&&enP>0)?{ad:en,p:enP}:null;
+  }
+  function _yorgunAday(q){
+    try{
+      if(q<2) return null;
+      /* Sahadaki EN DÜŞÜK dayanıklılıklı oyuncu; eşik 78 (70'te aday çoğu maçta çıkmıyordu). */
+      const aday=(userCourt||[]).filter(p=>p&&statN(p,'dayaniklilik')<78);
+      if(!aday.length) return null;
+      return aday.slice().sort((a,b)=>statN(a,'dayaniklilik')-statN(b,'dayaniklilik'))[0];
+    }catch(e){ return null; }
+  }
 
   /* Faz 1-3: sunum (anlatım/senaryo) rastgeleliği için AYRI deterministik üreteç.
      Böylece bağlam/hamle/anti-tekrar seçimleri global Math.random akışını (maç sonucu)
@@ -2370,6 +2573,10 @@ function generateMatchEvents(rakip, opts){
   const prChance=x=>pr()<x;
   /* Bağlam durumu: seri (cevapsız sayı), oyuncu sıcaklığı (art arda isabet), öneki throttle. */
   const narr={runOff:null,run:0,heat:{},recent:{},ctxCd:0};
+  /* F13-3: cevapsız sayı serisi MAÇ düzeyinde tutulur (pozisyon düzeyinde tutulunca her
+     pozisyonda sıfırlanıyordu). Serbest atış ve teknik dahil her sayı hareketi buradan geçer. */
+  let _runTeam=null,_runPts=0;
+  const _runEkle=(takim,n)=>{ if(n<=0) return; if(_runTeam===takim) _runPts+=n; else { _runTeam=takim; _runPts=n; } };
 
   /* Serbest atış metni AÇIKÇA "serbest atış" der — saha şutuyla karışmasın. */
   /* Serbest atış metni İKİYE ayrılır: `ftPre` düdük anında, `ftRes` (sonuç) son atış
@@ -2432,7 +2639,7 @@ function generateMatchEvents(rakip, opts){
           botState.restCd=6;
           const why=(out.matchFouls||0)>=3?`${out.matchFouls} faulle`:'dinlenmek için';
           events.push({type:'sub',off:false,botCoach:true,
-            text:`🔄 ${rname} değişiklik: ${out.isim} ${why} kenara, yerine ${inP.isim} girdi. (${homeScore} - ${awayScore})`,
+            text:pickLine(SUB_LINES,pr,narr.recent,'sub').replace('%T',rname).replace('%O',out.isim).replace('%W',why).replace('%I',inP.isim)+` (${homeScore} - ${awayScore})`,
             q,t,home:homeScore,away:awayScore,subOutObj:out,subInObj:inP,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         }
       }
@@ -2441,12 +2648,23 @@ function generateMatchEvents(rakip, opts){
   /* FAZ 1 / M1: pozisyonun TÜKETTİĞİ maç saati (sn) olaylara damgalanır. Canlı oynatım
      gecikmeyi bundan türetir; böylece "15 sn'lik pozisyon 3,5 sn'de oynandı" kopukluğu biter
      ve hız oranı olay tipinden bağımsız sabitlenir. */
+  /* F13-17: pozisyonun maç saati maliyeti (dt) o pozisyonun HER olayına ayrı ayrı
+     yazılıyordu. Üç olaylı bir pozisyon 3×dt sayılıyor, çeyrek dt toplamı 600 sn yerine
+     640-703 çıkıyordu; canlı izlemede de anlatım tabela saatinin gerisine düşüyordu
+     (aynı pozisyon üç kez "süre harcıyordu"). Artık maliyet olaylara PAYLAŞTIRILIR;
+     kendi dt'sini taşıyan olaylar (ör. ribaund, dt:0) paydan hariçtir. */
   function runPossessionV(q,t,dt){
     const s=events.length;
     runPossession(q,t);
+    let pay=0;
+    for(let i=s;i<events.length;i++){ if(events[i].dt===undefined) pay++; }
+    const birim=pay>0?dt/pay:dt;
     for(let i=s;i<events.length;i++){
       if(events[i].off===undefined) events[i].off=_lastOff;
-      if(events[i].dt===undefined) events[i].dt=dt;
+      if(events[i].dt===undefined){
+        events[i].dt=birim;      /* muhasebe: olayın gerçek maç saati payı (çeyrek toplamı=600) */
+        events[i].dtPos=dt;      /* SUNUM temposu: pozisyonun tamamı — canlı izleme hızı korunur */
+      }
     }
   }
   function runPossession(q,t){
@@ -2462,24 +2680,38 @@ function generateMatchEvents(rakip, opts){
     shooterHint=null;
     if(!shooter) shooter=userPos?uShooter():oShooter();
     const sc=()=>`(${homeScore} - ${awayScore})`;
-    const addU=(n)=>{ homeScore+=n; qh[q]+=n; };
-    const addO=(n)=>{ awayScore+=n; qa[q]+=n; };
+    /* F13-3: seri sayacı SKORDAN beslenir. Eskiden `narr.run` yalnız sahadan atılan
+       sayıları topluyor, serbest atışları ve teknikleri kaçırıyor, üstüne metin
+       kurulurken bir basket GERİDEN okunuyordu: skor 13-0 iken anlatım "9-0" diyordu.
+       Artık her sayı hareketi buradan geçiyor; iddia her zaman tabelayla tutuyor. */
+    const addU=(n)=>{ homeScore+=n; qh[q]+=n; _runEkle('h',n); };
+    const addO=(n)=>{ awayScore+=n; qa[q]+=n; _runEkle('a',n); };
     const addPts=(n)=>{ if(userPos) addU(n); else addO(n); };
 
     /* Faz 3 — Pres savunması: rakip pozisyonunda akış dışı ekstra top kaybı (kullanıcı çalar). */
     if(!userPos && defPressTO>0 && Math.random()<defPressTO){
       const stealer=wPick(userCourt,stlW)||uAny();   /* FAZ A: kilit savunmacı çalar */
+      /* F13-6: topu KAYBEDEN de söylenir — "kimden aldı?" sorusu ekranda kalmasın.
+         ⚠ Seçim SUNUM PRNG'si (pr) ile yapılır: `wPick`/`oAny` Math.random tüketir ve maç
+         sonucunun rastgele akışını kaydırırdı (band.js hash'i değişirdi). Anlatım seçimi
+         maç matematiğini asla etkilememeli. */
+      const _lcand=(oppCourt||[]).slice().sort((a,b)=>statN(a,'topSurme')-statN(b,'topSurme')).slice(0,3);
+      const _loser=_lcand[Math.floor(pr()*_lcand.length)]||_lcand[0]||oppCourt[0];
       B.to++; D.stl++;
       fastNext='steal';
-      events.push({type:'steal',text:`🔥 Pres tuttu — ${stealer.isim} topu çaldı! ${sc()}`,q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:true,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      events.push({type:'steal',text:`🔥 Pres tuttu — ${_loser.isim} pasını kontrol edemedi, ${stealer.isim} topu çaldı! ${sc()}`,q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:true,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       return;
     }
     /* Faz 3 — Hızlı hücum: acele şutta kullanıcı pozisyonunda ekstra top kaybı riski. */
     if(userPos && offRushTO>0 && Math.random()<offRushTO){
       const stealer=wPick(oppCourt,stlW)||oAny();    /* FAZ A: kilit savunmacı çalar */
+      /* F13-6 (aynı gerekçe): sunum PRNG'si ile seçilir, maç akışı kirlenmez. */
+      const _lcand=(userCourt||[]).slice().sort((a,b)=>statN(a,'topSurme')-statN(b,'topSurme')).slice(0,3);
+      const _loser=_lcand[Math.floor(pr()*_lcand.length)]||_lcand[0]||userCourt[0];
       B.to++; D.stl++;
       fastNext='steal';
-      events.push({type:'steal',text:`⚡ Erken hücumda hata — ${stealer.isim} topu kaptı. ${sc()}`,q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:false,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      /* F13-6: iki taraflı — kaybeden + kapan. */
+      events.push({type:'steal',text:`⚡ Erken hücumda hata — ${_loser.isim} topu elinden kaçırdı, ${stealer.isim} kaptı. ${sc()}`,q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:false,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       return;
     }
 
@@ -2536,7 +2768,7 @@ function generateMatchEvents(rakip, opts){
         const rm=(userPos===userIsHome)?RIM_L:RIM_R, dr=(userPos===userIsHome)?1:-1;
         const an=rand(-75,75)*Math.PI/180, rr=rand(14,58);
         xy={x:rm[0]+dr*Math.cos(an)*rr,y:rm[1]+Math.sin(an)*rr};
-      } else xy=randShotXY(userIsHome===userPos,is3,made,shooter.poz);
+      } else xy=randShotXY(offLeftAtQ(userPos,q,userIsHome),is3,made,shooter.poz);
       const pts=is3?3:2;
       let passer=null;
       if(made){
@@ -2551,10 +2783,13 @@ function generateMatchEvents(rakip, opts){
         else { bumpO(shooter,'pts',pts); if(passer){ B.ast++; bumpO(passer,'ast',1); } }
       }
       /* And-1 (yalnızca isabetli 2 sayıda) */
-      let and1=false, and1Made=false;
+      let and1=false, and1Made=false, _and1Foul='';
       const _dFoulMul=defenderIsUser?(dset.foul!=null?dset.foul:1):1;   /* FAZ B: pres faul riski ↑, pack ↓ */
       if(made&&!is3&&Math.random()<0.085*_dFoulMul){   /* M18: and-1 %12 → %8,5 */
-        and1=true; B.ftAtt++; D.foul++; recordFoul(defenderIsUser,q,t);
+        and1=true; B.ftAtt++; D.foul++; const _fp=recordFoul(defenderIsUser,q,t);
+        /* F13-5: and-1 faulü de sayaca yazılıyordu ama anlatımda görünmüyordu; oyuncunun
+           kişisel faul dizisi "1 → 3" gibi atlamalı görünüyordu. */
+        _and1Foul=foulPrefix(_fp);
         and1Made=ftMake(shooter);   /* M20: rakip de kendi serbest atış statından */
         if(and1Made){ B.ftMade++; addPts(1); if(userPos) bumpP(shooter,'pts',1); else bumpO(shooter,'pts',1); }
         else if(ftRebound(userPos,B,D,0,1,q,t)) posNext=userPos;
@@ -2563,26 +2798,28 @@ function generateMatchEvents(rakip, opts){
       if(!made&&!is3&&Math.random()<0.095*_dFoulMul){  /* M18: kaçan turnikede faul %15 → %9,5 */
         let nMade=0;
         if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++;   /* M20: iki taraf da aynı yoldan */
-        B.ftAtt+=2; B.ftMade+=nMade; D.foul++; recordFoul(defenderIsUser,q,t);
+        B.ftAtt+=2; B.ftMade+=nMade; D.foul++; const _fp=recordFoul(defenderIsUser,q,t);
         if(ftRebound(userPos,B,D,nMade,2,q,t)) posNext=userPos;
         addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
-        const lineX=(userPos===userIsHome)?210:730;
-        events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,...ftSplit(pickLine([`${shooter.isim} şut anında faul aldı — 2 serbest atış kullanacak.`,`${shooter.isim} şuttayken faul çaldı, çizgiye gidiyor.`,`Şut faulü — ${shooter.isim} 2 atış kullanacak.`,`${shooter.isim} bindirmede faul kazandı, 2 atış.`],pr,narr.recent,'ftsf'),`${ftLine(nMade,2,shooter.isim)} ${sc()}`),q,t,home:homeScore,away:awayScore,
+        const lineX=offLeftAtQ(userPos,q,userIsHome)?210:730;
+        events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,...ftSplit(`${foulPrefix(_fp)} · `+pickLine([`${shooter.isim} şutta faul aldı — 2 atış kullanacak.`,`${shooter.isim} şuttayken faul çaldı, çizgiye gidiyor.`,`şut faulü — ${shooter.isim} 2 atış kullanacak.`,`${shooter.isim} bindirmede faul kazandı, 2 atış.`],pr,narr.recent,'ftsf'),`${ftLine(nMade,2,shooter.isim)} ${sc()}`),q,t,home:homeScore,away:awayScore,
           shots:[{x:lineX+rand(-10,10),y:242,made:nMade>=1,isHome:userPos,kind:'ft',q},{x:lineX+rand(-10,10),y:262,made:nMade===2,isHome:userPos,kind:'ft',q}],
           box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+        _flushReb();
         return;
       }
       /* Madde 20: kaçan 3 sayı denemesinde savunma faulü → 3 serbest atış */
       if(!made&&is3&&Math.random()<0.05*_dFoulMul){    /* M18: üçlükte faul %8 → %5 */
         let nMade=0;
         for(let k=0;k<3;k++){ if(userPos?ftMake(shooter):(Math.random()<0.74)) nMade++; }
-        B.ftAtt+=3; B.ftMade+=nMade; D.foul++; recordFoul(defenderIsUser,q,t);
+        B.ftAtt+=3; B.ftMade+=nMade; D.foul++; const _fp=recordFoul(defenderIsUser,q,t);
         if(ftRebound(userPos,B,D,nMade,3,q,t)) posNext=userPos;
         addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
         const lineX=(userPos===userIsHome)?204:736;
-        events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,...ftSplit(`${shooter.isim} üç sayı denerken faul aldı — 3 atış:`,`${ftLine(nMade,3,shooter.isim)} ${sc()}`),q,t,home:homeScore,away:awayScore,
+        events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,...ftSplit(`${foulPrefix(_fp)} · ${shooter.isim} üç sayı denerken faul aldı — 3 atış:`,`${ftLine(nMade,3,shooter.isim)} ${sc()}`),q,t,home:homeScore,away:awayScore,
           shots:[{x:lineX+rand(-8,8),y:236,made:nMade>=1,isHome:userPos,kind:'ft',q},{x:lineX+rand(-8,8),y:250,made:nMade>=2,isHome:userPos,kind:'ft',q},{x:lineX+rand(-8,8),y:264,made:nMade>=3,isHome:userPos,kind:'ft',q}],
           box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+        _flushReb();
         return;
       }
       /* Blok / ribaund (kaçan şutlarda) */
@@ -2602,7 +2839,7 @@ function generateMatchEvents(rakip, opts){
       }
       /* Anlatım-geometri tutarlılığı: şut noktasının çembere uzaklığından sınıf çıkar.
          ≤90px (~2.7m) = "yakin" (turnike/smaç dili serbest); üstü = "orta" (turnike dili YASAK). */
-      const rimIsLeft=(userPos===userIsHome);
+      const rimIsLeft=offLeftAtQ(userPos,q,userIsHome);
       const _rim=rimIsLeft?RIM_L:RIM_R;
       const _rd=Math.hypot(xy.x-_rim[0],xy.y-_rim[1]);
       /* Faz 1: bölge gerçek şut noktasından; cls (yakın/orta/uzak) buradan türetilir. */
@@ -2642,11 +2879,16 @@ function generateMatchEvents(rakip, opts){
       if(made){
         narr.ctxCd=(narr.ctxCd||0)-1;
         const mg=Math.abs(homeScore-awayScore), hh=narr.heat[shooter.id]||0, cand=[];
-        if(narr.run>=8) cand.push(`🔥 ${narr.run}-0'lık seri!`);
+        /* Seri iddiası yalnız SAYI ATAN taraf seride ise ve skorla birebir tutuyorsa. */
+        const _seriBenim=(_runTeam===(userPos?'h':'a'));
+        if(_seriBenim&&_runPts>=8) cand.push(`🔥 ${_runPts}-0'lık seri!`);
         else if(mg>=18) cand.push(`Fark açıldı — ${mg} sayı.`);
         if(hh>=3) cand.push(`${shooter.isim} kızıştı — üst üste ${hh}. isabet!`);
         if(clutch&&mg<=4) cand.push('Kritik anlar, başa baş!');
-        if(cand.length&&narr.ctxCd<=0){ ctxPre=prCh(cand)+' '; narr.ctxCd=rand(3,6); }
+        /* ⚠ `rand(3,6)` MAÇ rastgeleliğini tüketiyordu: anlatım bağlam öneki ne sıklıkta
+           çıkarsa maçın rastgele akışı o kadar kayıyordu (F13-3 seri düzeltmesi hash'i bu
+           yüzden değiştirdi). Sunum kararları yalnız sunum PRNG'sini (pr) kullanmalı. */
+        if(cand.length&&narr.ctxCd<=0){ ctxPre=prCh(cand)+' '; narr.ctxCd=3+Math.floor(pr()*4); }
       }
       /* Hamle ibaresi yalnız gerçekten yapılan (play.move) hamleye uygun; move dolu değilse
          asla move ibaresi çıkmaz (söz/görüntü tutarlı). */
@@ -2654,12 +2896,12 @@ function generateMatchEvents(rakip, opts){
       let txt;
       if(made){
         if(is3){ const pasTxt=passer?assistPhrase(passer.isim,scheme,pr,narr.recent):''; txt=movePhrase+pasTxt+spikerLinePR(SP.id,'score3',{s:shooter.isim,sc:sc(),zone},pr,narr.recent); }
-        else if(and1){ txt=`${shooter.isim} faule rağmen ${cls==='yakin'?'turnikeyi bitirdi':'şutu soktu'} — ${and1Made?'AND-1 tamam!':'ek atış kaçtı.'} ${sc()}`; }
+        else if(and1){ txt=`${shooter.isim} faule rağmen ${cls==='yakin'?'turnikeyi bitirdi':'şutu soktu'} — ${and1Made?'AND-1 tamam!':'ek atış kaçtı.'} (${_and1Foul}) ${sc()}`; }
         else { const pasTxt=passer?assistPhrase(passer.isim,scheme,pr,narr.recent):''; txt=movePhrase+pasTxt+spikerLinePR(SP.id,'score2',{s:shooter.isim,sc:sc(),cls,zone},pr,narr.recent); }
       } else if(blocked){
         txt=spikerLinePR(SP.id,'block',{s:shooter.isim,b:blk.isim},pr,narr.recent);
       } else {
-        txt=spikerLinePR(SP.id,is3?'miss3':'miss2',{s:shooter.isim,cls},pr,narr.recent);
+        txt=spikerLinePR(SP.id,is3?'miss3':'miss2',{s:shooter.isim,cls,zone},pr,narr.recent);
       }
       txt=ctxPre+txt;
       if(fb) txt='⚡ Hızlı hücum! '+txt;
@@ -2670,33 +2912,47 @@ function generateMatchEvents(rakip, opts){
         narr.heat[shooter.id]=(narr.heat[shooter.id]||0)+1;
       } else { narr.heat[shooter.id]=0; }
       events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,play,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q,fb:fb||undefined,pb:putback||undefined,blk:blocked||undefined,scheme,zone,move:move||undefined,contest,sid:shooter.id!=null?shooter.id:undefined,pid:(passer&&passer.id!=null)?passer.id:undefined,and1:and1?{made:and1Made}:undefined},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
-      /* Kaçan şutlarda ~%22 renkli ribaund anlatımı (hücum/savunma). */
-      if(!made&&rebounder&&Math.random()<0.22){
-        const rl=pickLine(rebOff?REB_OFF_LINES:REB_DEF_LINES,pr,narr.recent,rebOff?'rebO':'rebD').replace('%R',rebounder.isim);
-        /* Sahnedeki jeton anlatımdaki oyuncuyla eşleşsin: kimlik + taraf event'e yazılır. */
+      _flushReb();   /* and-1 ek atışının ribaundu şut cümlesinden SONRA gelir */
+      /* F13-1: kaçan şutların yalnız ~%22'sinde ribaund ANLATILIYORDU; kalan %78'de top
+         sessizce el değiştiriyor, anlatım "biz kaçırdık → rakip sayı attı" diye atlıyordu
+         (198 olaylık maçta 44 kopukluk — şikâyetin merkezi buydu). Ribaund kutuya zaten
+         yazılıyordu, eksik olan yalnız OLAYDI. Artık her kaçan şut ribaundunu anlatıyor.
+
+         ⚠ Rastgelelik akışı korunuyor: eski %22 çekilişi (_rebAnlat) ve ona bağlı putback
+         çekilişi aynen yapılır — yalnız olay üretimi koşuldan çıkarıldı. Böylece maç
+         matematiği (skorlar, band.js hash'i) değişmez; değişen tek şey anlatımdır.
+         `dt:0` — ribaund, şut pozisyonunun İÇİNDE geçer, çeyrek saatine süre eklemez. */
+      const _rebAnlat=(!made&&rebounder)?(Math.random()<0.22):false;
+      if(!made&&rebounder){
         const rebIsUser=rebOff?userPos:!userPos;
-        events.push({type:'reb',text:rl,q,t,home:homeScore,away:awayScore,rebId:rebounder.id,rebIsUser,rebOff:!!rebOff,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});   /* M14: hücum ribaundunda şut saati 24 değil 14 */
-        /* Hücum ribaundu + anlatım basıldıysa: ~%55 aynı oyuncu pota dibinden tekrar dener (putback). */
-        if(rebOff&&rebounder.id!=null&&Math.random()<0.55) shooterHint=rebounder;
+        const havuz=_rebAnlat?(rebOff?REB_OFF_LINES:REB_DEF_LINES)
+                             :(rebOff?REB_OFF_SHORT:REB_DEF_SHORT);
+        const rl=pickLine(havuz,pr,narr.recent,rebOff?'rebO':'rebD')
+          .replace('%R',rebounder.isim)
+          .replace('%T',rebIsUser?MC.home.name:rname);
+        events.push({type:'reb',text:rl,dt:0,q,t,home:homeScore,away:awayScore,rebId:rebounder.id,rebIsUser,rebOff:!!rebOff,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});   /* M14: hücum ribaundunda şut saati 24 değil 14 */
+        /* Hücum ribaundu + renkli anlatım varsa: ~%55 aynı oyuncu pota dibinden tekrar dener. */
+        if(_rebAnlat&&rebOff&&rebounder.id!=null&&Math.random()<0.55) shooterHint=rebounder;
       }
 
     } else if(roll<0.805){
       /* Şut faulü — çizgide 2 serbest atış. M18: pay %10 → %6 (serbest atış enflasyonu). */
       let nMade=0;
       if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++;     /* M20: iki taraf da aynı yoldan */
-      B.ftAtt+=2; B.ftMade+=nMade; D.foul++; recordFoul(defenderIsUser,q,t);
+      B.ftAtt+=2; B.ftMade+=nMade; D.foul++; const _fp=recordFoul(defenderIsUser,q,t);
       if(ftRebound(userPos,B,D,nMade,2,q,t)) posNext=userPos;
       addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
-      const lineX=(userPos===userIsHome)?210:730;
-      events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,...ftSplit(pickLine(['Faul düdüğü — %S çizgide.','Faul var; %S serbest atış çizgisinde.','Savunma faulü — %S çizgiye gidiyor.','%S faul kazandı, çizgide.','Düdük çaldı; %S çizgide.'],pr,narr.recent,'ftpx').replace('%S',shooter.isim),`${ftLine(nMade,2,shooter.isim)} ${sc()}`),q,t,home:homeScore,away:awayScore,
+      const lineX=offLeftAtQ(userPos,q,userIsHome)?210:730;
+      events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,...ftSplit(`${foulPrefix(_fp)} · `+pickLine(['%S çizgide.','%S serbest atış çizgisinde.','%S çizgiye gidiyor.','%S faul kazandı, çizgide.','%S iki atış kullanacak.'],pr,narr.recent,'ftpx').replace('%S',shooter.isim),`${ftLine(nMade,2,shooter.isim)} ${sc()}`),q,t,home:homeScore,away:awayScore,
         shots:[{x:lineX+rand(-10,10),y:242,made:nMade>=1,isHome:userPos,kind:'ft',q},{x:lineX+rand(-10,10),y:262,made:nMade===2,isHome:userPos,kind:'ft',q}],
         box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+        _flushReb();
 
     } else if(roll<0.985){
       /* M17: bu dalın payı %6 → %14,5; içindeki top kaybı ağırlığı %68 → %82. */
       if(Math.random()<0.345){
         /* Şutsuz ortak faul — Madde 17: takım çeyrek faulü 5'i geçtiyse bonus (2 serbest atış). */
-        D.foul++; recordFoul(defenderIsUser,q,t);
+        D.foul++; const _fp=recordFoul(defenderIsUser,q,t);
         if(inBonus(defenderIsUser,q)){
           let nMade=0;
           if(userPos){ if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++; }
@@ -2704,14 +2960,15 @@ function generateMatchEvents(rakip, opts){
           B.ftAtt+=2; B.ftMade+=nMade;
           if(ftRebound(userPos,B,D,nMade,2,q,t)) posNext=userPos;
           addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
-          const lineX=(userPos===userIsHome)?210:730;
-          events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,...ftSplit(`🎯 Bonus! ${foulingTeamName(defenderIsUser)} çeyrek faul cezasında — ${shooter.isim} çizgide.`,`${ftLine(nMade,2,shooter.isim)} ${sc()}`),q,t,home:homeScore,away:awayScore,
+          const lineX=offLeftAtQ(userPos,q,userIsHome)?210:730;
+          events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,...ftSplit(`🎯 Bonus! ${foulPrefix(_fp)} — ${foulingTeamName(defenderIsUser)} ceza durumunda, ${shooter.isim} çizgide.`,`${ftLine(nMade,2,shooter.isim)} ${sc()}`),q,t,home:homeScore,away:awayScore,
             shots:[{x:lineX+rand(-10,10),y:242,made:nMade>=1,isHome:userPos,kind:'ft',q},{x:lineX+rand(-10,10),y:262,made:nMade===2,isHome:userPos,kind:'ft',q}],
             box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+        _flushReb();
         } else {
           const cnt=defenderIsUser?(qFoulU[q]||0):(qFoulO[q]||0);
           posNext=userPos;   /* şutsuz faul: top hücum eden takımda kalır (yandan devam) */
-          events.push({type:'foul',text:`Faul — ${foulingTeamName(defenderIsUser)} bu çeyrek ${cnt}. faulünü yaptı (5'te bonus başlar). Top yandan.`,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+          events.push({type:'foul',text:`${foulPrefix(_fp)} · ${foulingTeamName(defenderIsUser)} bu çeyrek ${cnt}. takım faulü${cnt>=5?" · BONUS":""}. ${pickLine(FOUL_TAIL,pr,narr.recent,"ftail")}`,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         }
       } else {
         /* Top kaybı / top çalma — sayı yok. Faz 3: yalnız AZALTMA çarpanı (set oyun / bölge savunması);
@@ -2727,7 +2984,10 @@ function generateMatchEvents(rakip, opts){
             const stealer=userPos?(wPick(oppCourt,stlW)||oAny()):(wPick(userCourt,stlW)||uAny());
             B.to++; D.stl++;
             fastNext='steal';
-            events.push({type:'steal',text:spikerLinePR(SP.id,'steal',{c:stealer.isim},pr,narr.recent),q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+            /* F13-6: top çalma iki farklı dille anlatılıyordu ve spiker kalıbında TOPU KAYBEDEN
+               hiç geçmiyordu ("Victor Kim müthiş bir top çalma!" — kimden aldı?). Artık her
+               çalma satırı iki taraflı: kaybeden + kapan. */
+            events.push({type:'steal',text:pickLine(STEAL_LOSS,pr,narr.recent,'stl2').replace('%L',loser.isim).replace('%C',stealer.isim)+' '+spikerLinePR(SP.id,'steal',{c:stealer.isim},pr,narr.recent),q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
           } else if(tur<0.86){
             B.to++;
             fastNext='steal';
@@ -2783,7 +3043,7 @@ function generateMatchEvents(rakip, opts){
       events.push({
         type:'quarter_start',
         /* FAZ B: çeyrek başında hangi setle oynandığı anlatıma girer (koçun kararı görünür olsun). */
-        text:`🔔 ${q}. çeyrek başladı — ${escMatch(MC.home.name)} ${homeScore} - ${awayScore} ${rname}.${pb&&pb.key!=='dengeli'?` ${escMatch(MC.home.name)} ${pb.ikon} ${pb.ad} setiyle çıkıyor.`:''}`,
+        text:pickLine(QSTART_LINES,pr,narr.recent,'qstart').replace('%Q',String(q))+` — ${escMatch(MC.home.name)} ${homeScore} - ${awayScore} ${rname}.${pb&&pb.key!=='dengeli'?` ${escMatch(MC.home.name)} ${pb.ikon} ${pb.ad} setiyle çıkıyor.`:''}`,
         q,t:MATCH_CLOCK_SEC,home:homeScore,away:awayScore,
         box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
       });
@@ -2803,12 +3063,35 @@ function generateMatchEvents(rakip, opts){
     }
 
     if(q<4){
+      /* F13-7: 2. çeyrek sonu DEVRE ARASIDIR — 1. ve 3. çeyrekle aynı cümle kullanılıyordu.
+         Devre arasında skor özeti, en skorer oyuncu ve ikinci yarı beklentisi verilir.
+         F13-8: diğer çeyrek sonları da tek kalıba bağlıydı; havuzdan seçilir. */
+      let qText;
+      if(q===2){
+        const _fark=homeScore-awayScore;
+        const _durum=_fark>0?`${escMatch(MC.home.name)} ${_fark} sayı önde`
+          :(_fark<0?`${rname} ${-_fark} sayı önde`:'skorlar eşit');
+        const _enIyi=_devreEnSkorer();
+        qText=`⏸ DEVRE ARASI — ${escMatch(MC.home.name)} ${homeScore} - ${awayScore} ${rname} (${_durum}).`
+          +(_enIyi?` İlk yarının en skoreri ${_enIyi.ad} (${_enIyi.p} sayı).`:'')
+          +` ${pickLine(HALFTIME_LINES,pr,narr.recent,"half")}`;
+      } else {
+        qText=`${q}. çeyrek bitti: ${escMatch(MC.home.name)} ${homeScore} - ${awayScore} ${rname}. ${pickLine(QEND_LINES,pr,narr.recent,"qend")}`;
+      }
       events.push({
         type:'quarter_end',
-        text:`Çeyrek bitti: ${escMatch(MC.home.name)} ${homeScore} - ${awayScore} ${rname}. Taktik masasına dönülüyor.`,
+        text:qText,
         q,t:0,home:homeScore,away:awayScore,
         box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
       });
+      /* F13-7: enerji sistemi motorda vardı ama anlatımda hiç görünmüyordu; oysa oyuncunun
+         değişiklik kararı buna bağlı. Dayanıklılığı düşük ve çok oynayan oyuncu için
+         yorgunluk satırı üretilir (sunum PRNG'si — maç matematiği etkilenmez). */
+      const _yorgun=_yorgunAday(q);
+      if(_yorgun&&prChance(0.72)){
+        events.push({type:'tactic',dt:0,text:pickLine(FATIGUE_LINES,pr,narr.recent,'fatigue').replace('%P',_yorgun.isim),
+          q,t:0,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      }
     }
   }
 
@@ -2839,6 +3122,7 @@ function generateMatchEvents(rakip, opts){
     if(otRound>=8 && homeScore===awayScore){
       if(Math.random()<0.5){ homeScore++; qh[qq]++; hB.ftMade++; hB.ftAtt++; } else { awayScore++; qa[qq]++; aB.ftMade++; aB.ftAtt++; }
       events.push({type:'free',text:`Son saniye serbest atışı sonucu belirledi — ${escMatch(MC.home.name)} ${homeScore} - ${awayScore} ${rname}.`,q:qq,t:0,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+        _flushReb();
       break;
     }
   }

@@ -49,8 +49,14 @@ const SEED_FN = (seed) => {
   };
 };
 
-/* Saha ölçüleri — SVG viewBox 0 0 940 500, gerçek saha 28 m × 15 m. */
-const PX_M = 940 / 28;                 /* 33,57 px = 1 m */
+/* ⚠ ÖLÇEK (FAZ 13 madde 0) — 940 viewBox genişliğidir, OYUN ALANI DEĞİL.
+   SVG'den okunan gerçek oyun alanı: x=56.4 · y=30 · width=827.2 · height=440
+     827,2 px ÷ 28 m = 29,54 px/m      440 px ÷ 15 m = 29,33 px/m   → ölçek ≈ 29,5 px/m
+   940/28 = 33,57 kullanmak tüm metre değerlerini %12 KÜÇÜK gösteriyordu (FAZ 11'in
+   "2,64 m aralık" ölçümü aslında 3,00 m). Saha geometrisi doğru; yanlış olan sabitti:
+   pota–dip çizgi 1,56 m · 3sy yayı 6,63 m · boya 5,66 m · SA çemberi 1,79 m (hepsi FIBA). */
+const PX_M = 827.2 / 28;               /* 29,54 px = 1 m */
+const RIM_X_SOL = 102.6, RIM_Y = 250;  /* sol pota merkezi (SVG'den) */
 const ORTA_MIN = 940 / 3, ORTA_MAX = 940 * 2 / 3;
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -127,14 +133,15 @@ function samplerKur() {
 const ort = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
 const yuzde = (n, t) => t ? (100 * n / t) : 0;
 
-/** Boya (key): dip çizgiden 5,8 m içeri, 4,9 m geniş — saldırılan potanın tarafında. */
+/** Boya (key) — metreden hesaplamak yerine SAHA SVG'sindeki gerçek dikdörtgen kullanılır:
+    sol boya  rect x=56.4 y=179.6 w=167.2 h=140.8  → x ≤ 223,6 · y ∈ [179,6 · 320,4]
+    (5,66 m derinlik · 4,77 m genişlik — FIBA'ya uygun; ölçek sabitinden bağımsız). */
+const BOYA_X_SOL = 223.6, BOYA_Y0 = 179.6, BOYA_Y1 = 320.4;
 function boyada(p, rimX) {
   const solaHucum = rimX < 470;
-  const derinlik = 5.8 * PX_M;         /* ≈195 px */
-  const yariGenislik = 2.45 * PX_M;    /* ≈82 px  */
   const x = p[0], y = p[1];
-  if (Math.abs(y - 250) > yariGenislik) return false;
-  return solaHucum ? (x <= derinlik) : (x >= 940 - derinlik);
+  if (y < BOYA_Y0 || y > BOYA_Y1) return false;
+  return solaHucum ? (x <= BOYA_X_SOL) : (x >= 940 - BOYA_X_SOL);
 }
 
 function ikiliMesafeler(pts, atla) {
@@ -187,6 +194,7 @@ function zarfAlani(pts) {
 function olc(frames, oturmusMs) {
   const setK = frames.filter(f => f.set && f.rimX != null && (!oturmusMs || f.setMs >= oturmusMs));
   if (!setK.length) return null;
+  const potaUzak = [];
   const ikiliOrt = [], ikiliMin = [], ikiliMinTopsuz = [], alanY = [], zarfY = [], ortaOran = [], carrierDef = [], markUzak = [], markOrt = [], markIcerdeOran = [];
   let boyaliKare = 0, offX = [];
   setK.forEach(f => {
@@ -201,6 +209,9 @@ function olc(frames, oturmusMs) {
     ortaOran.push(yuzde(ortada, f.off.length));
     if (f.off.some(p => boyada(p, f.rimX))) boyaliKare++;
     offX.push(ort(f.off.map(p => p[0])));
+    /* Potaya uzaklık: saldırılan pota (rimX) merkez alınır, iki yön de aynı ölçüye girer. */
+    const rimY = 250;
+    potaUzak.push(ort(f.off.map(p => Math.hypot(p[0] - f.rimX, p[1] - rimY))) / PX_M);
     if (f.carrierOff && f.carrier) {
       const en = Math.min.apply(null, f.def.map(p => Math.hypot(p[0] - f.carrier[0], p[1] - f.carrier[1])));
       carrierDef.push(en / PX_M);
@@ -219,7 +230,7 @@ function olc(frames, oturmusMs) {
     boyaKareOran: yuzde(boyaliKare, setK.length),
     offXOrt: ort(offX), rimXOrt: ort(setK.map(f => f.rimX)),
     carrierDef: carrierDef.length ? ort(carrierDef) : null,
-    markOrt: ort(markOrt), markUzakOran: ort(markUzak), markIcerde: ort(markIcerdeOran),
+    potaUzak: ort(potaUzak), markOrt: ort(markOrt), markUzakOran: ort(markUzak), markIcerde: ort(markIcerdeOran),
   };
 }
 
@@ -233,6 +244,9 @@ const HEDEFLER = [
   { ad: 'savunmacının adamına ortalama uzaklığı', al: r => r.markOrt, hedef: '< 3 m', gec: v => v < 3, br: 'm' },
   { ad: 'yerine oturmuş ama adamı > 5 m uzakta', al: r => r.markUzakOran, hedef: '%0', gec: v => v < 0.5, br: '%' },
   { ad: 'savunmacı adamı ile pota arasında', al: r => r.markIcerde, hedef: '≥ %85', gec: v => v >= 85, br: '%' },
+  /* FAZ 13 (F13-11): asıl şikâyet aralık değil, takımın potaya HİÇ yaklaşmamasıydı —
+     canlı ölçümde hücumun saldırdığı potaya ortalama uzaklığı 9,3 m idi. */
+  { ad: 'hücumun saldırdığı potaya ortalama uzaklığı', al: r => r.potaUzak, hedef: '≤ 7 m', gec: v => v <= 7, br: 'm' },
 ];
 
 (async () => {

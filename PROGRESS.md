@@ -2850,3 +2850,106 @@ matematiksel olarak ancak 3/3 ile tutturulabiliyor (0 / 33 / 67 / 100 dışında
 **Sonuç:** `sunum-check` M9 ölçüsü küçük örneklemde karar veremiyor. Düzeltilecek olan
 motor değil, aracın kapsam kuralı/penceresi (ya da motor kararının doğrudan sınanması).
 `season-loop` K2 ile birlikte **açık iş listesine** yazıldı.
+
+## BÖLÜM 0 — FAZ 13: CANLI MAÇ ANLATIMI VE GÖRSEL SUNUM
+
+`PROMPT-CLAUDE-CODE.md`'nin ikinci sürümü FAZ 13'ü **her şeyden önce** koydu. Talep belgesi
+`REVIZE-PAKETI-FAZ13.md`: 198 olaylık gerçek bir maç kod üzerinden çözümlenmiş, anlatımda 9,
+görselde 4, kilitlenme/arayüzde 5 sorun.
+
+### Yeni araç: `tools/anlatim-check.js` (13 denetim + `--freeze` ile 7 tarayıcı denetimi)
+
+Bu fazın bulgularının **hiçbiri** mevcut araçlarla yakalanmıyordu. Yeni araç maçı
+**tarayıcısız** üretip (sim-node ile aynı vm yükleyicisi, 30 maç ~1 sn) olay listesini
+metin olarak denetler. İlk koşuda **1/12** geçti — belgedeki her madde yeniden üretildi.
+
+### F13-14 · Sekme arka plana alınınca maç kalıcı donuyor (belgenin 1 numaralı maddesi)
+
+Ölçülen durum: `idx=16/198 · running=false · paused=false · hidden=true · son adımdan 6.121 sn`.
+M10 (sekme gizlenince kuyruğu duraklat) **yalnız `running` doğruyken** çalışıyordu; bayrak bir
+kez düşünce dönüşte kimse oynatmayı sürdürmüyordu. Üç katman eklendi:
+
+1. `resumeMatch()` — kaldığı olaydan devam eder (`canResumeMatch()` ile durum tespiti).
+2. `visibilitychange` — sekmeye dönüşte donmuş maç **kendiliğinden** sürdürülür.
+3. **Bekçi (watchdog)** — 2 sn'de bir oynatmanın aktığını doğrular; zamanlayıcı kaybolduysa
+   yeniden kurar, sürdürülemiyorsa butonu **"▶ Devam et"**e çevirir. Sessiz kilitlenme kalmadı.
+   Ayrıca `startMatch()` donmuş maçta yeni maç üretmez, kaldığı yerden sürdürür.
+
+### Madde 0 · FAZ 11'in metre ölçeği yanlıştı
+
+`940/28 = 33,57 px/m` viewBox genişliğinden hesaplanmıştı; oyun alanı `827,2 px` →
+**29,54 px/m**. Tüm mesafeler %12 küçük raporlanıyordu. `spacing-check.js` düzeltildi; ayrıca
+boya artık metreden değil **SVG'deki gerçek dikdörtgenden** (x≤223,6 · y∈[179,6–320,4])
+okunuyor. Yeni ölçü eklendi: **hücumun saldırdığı potaya ortalama uzaklığı ≤ 7 m** (F13-11'in
+"9,3 m" bulgusunun karşılığı) — ölçülen **6,39 m**.
+
+### Anlatım maddeleri
+
+| Madde | Durum | Ölçüm (20 maç) |
+|---|---|---|
+| **F13-1** kaçan şutun ribaundu anlatılmıyor (%22) | ✔ her kaçan şut + kaçan son serbest atış ribaund olayı üretir | kaçan 59,0 ↔ ribaund 59,9 |
+| **F13-2** açıklamasız ardışık aynı-takım şutu | ✔ | 0 vaka |
+| **F13-3** "9-0 seri" gerçekte 13-0 | ✔ seri artık SKORDAN hesaplanıyor (serbest atış dahil) | 28 iddia · 0 tutmayan |
+| **F13-4** faul satırında ad yok (12'de 11) | ✔ `Faul — Ad (kişisel N)` + 4./5. faulde uyarı | 533/533 satır |
+| **F13-5** faul sayacı atlıyor | ✔ serbest atışa yol açan faul de kendi adını söyler | 0 atlama |
+| **F13-6** çalma tek taraflı | ✔ her çalma satırı kaybeden + kapan | 408/408 |
+| **F13-7** devre arası yok, enerji hiç geçmiyor | ✔ ayrı devre arası kalıbı + yorgunluk satırları | 20/20 maç · 8 satır |
+| **F13-8** kalıp tekrarı (%70 benzersiz) | ✔ faul/değişiklik/çeyrek/ribaund/köşe havuzları | **%87 benzersiz** |
+| **F13-9** "köşe üçlüğü" köşede değil | ✔ bölge `shot.zone`'dan türetiliyor | 262 iddia · 0 yanlış |
+| **F13-10** takımlar saha değiştirmiyor | ✔ `offLeftAtQ()` — 2. yarıda potalar değişir | 0 maçta hata |
+| **F13-17** çeyrek 703 sn | ✔ (aşağıda) | 0 çeyrek aştı |
+
+### F13-17 — belgedeki teşhis ölçüm artefaktıymış, ama altında GERÇEK bir hata vardı
+
+Çeyrek `dt` toplamı 600'ü aşıyordu çünkü `runPossessionV` pozisyonun maliyetini o pozisyonun
+**HER olayına ayrı ayrı** yazıyordu: üç olaylı pozisyon 3×dt sayılıyordu. Yani "703 saniye"
+çift sayımdı. Ama aynı hata **canlı izlemede gerçekten** hissediliyordu: her olay pozisyonun
+tamamı kadar bekliyor, anlatım tabela saatinin gerisine düşüyordu.
+
+Düzeltme iki alanı ayırdı:
+- `dt` → olayın **maç saati payı** (çeyrek toplamı tam 600 sn),
+- `dtPos` → **sunum temposu** (pozisyonun tamamı; canlı izleme hızı korunur).
+
+Bu ayrım yapılmadan yalnız `dt` bölününce `live-metrics` syncRatio medyanı 3,3× → **6,8×**
+fırlamıştı (maç iki kat hızlı akıyordu). Ayrım sonrası medyan **3,86×** (hedef 2-5×).
+
+### F13-15 / F13-18 · Arayüz
+
+- **F13-15:** buton etiketleri artık tek durum makinesinden geliyor (`matchPlaybackState()`):
+  maç yok → *Maçı Başlat* · oynanıyor → *Maç Devam Ediyor* (pasif) · donmuş → *Devam et* ·
+  sonucu kilitli → *Maçı sonuçlandır*. Çelişen iki "Maçı Başlat" kalmadı.
+- **F13-18:** maç sürerken başka sayfaya gidip dönünce maç içi istatistik paneli
+  sıfırlanıyor, rakip adı "Deplasman" oluyordu — `showPage('mac')` paneli her açılışta boş
+  kutuyla eziyordu. Panel artık `mState.box` + `mState.rakipName` üzerinden doldurulur.
+  Araç bunu tarayıcıda sınıyor (sayfa değiştir → dön → panel birebir aynı).
+
+### band.js hash DEĞİŞTİ — beklenen, gerekçesi ölçüldü
+
+Yeni referans: **`fb393bdab878e699`** (eski `ec630b3a512bb3b2`).
+
+F13-1'in kendisi hash'i değiştirmedi (rastgelelik akışı bilerek korundu). Değişimin kaynağı
+ölçülerek bulundu: **anlatım bağlam öneki** (`🔥 N-0'lık seri` vb.) `rand(3,6)` ile MAÇ
+rastgeleliğini tüketiyordu; F13-3 serinin ne sıklıkta çıktığını değiştirince akış kaydı.
+Bu, sunum kararının maç matematiğini kirletmesi demekti — kalıcı çözüm olarak o çağrı da
+**sunum PRNG'sine (`pr`)** taşındı. Artık anlatım değişiklikleri maç sonucunu etkileyemez.
+
+`box-band --n=200` **11/11** (ribaund 31,3 — bandın içinde, çift sayım yok) ·
+skor ortalaması 93,5 / 76,8 (eskiden 93,1 / 74,4).
+
+### Yan kazanç: `sunum-check` M9 açık maddesi kapandı
+
+Önceki oturumda M9 (%67) küçük örneklem yüzünden karar verilemiyordu. F13-1 ribaund olaylarını
+görünür kıldığı için araç artık 3 yerine **20 vaka** ölçüyor: **%80 (hedef ≥ %80) ✓**.
+
+### Doğrulama
+
+`anlatim-check --n=30` **13/13** · `--freeze` **20/20** · `spacing-check` **10/10**
+(29,54 px/m ile) · `mobile-check` 18/18 · `sim-node` ✓ · `schema-check` 17/17 ·
+`faz6/7/8/10/11` ✓ · `m20` 6/6 · `visual-check` 0 hata · `box-band` 11/11 ·
+`live-metrics --ms=540000`: orphan 0 · kimlik %100 · top ışınlanması 0 kare · syncRatio
+medyan 3,86× ✓ · `i18n-scan` temiz.
+
+> **live-metrics'te iki ölçü tanımı güncellendi:** faul satırları artık faulü YAPAN
+> savunmacıyı adlandırıyor (F13-4) ve değişiklik satırları yeni kalıplarla geliyor; ikisi de
+> "topu tutan oyuncu" kimlik ölçüsünün dışındadır (bloklarla aynı gerekçe). Eski dışlama
+> kalıpları yeni metinlerle eşleşmediği için ölçüm yanlışlıkla %93'e düşmüştü.

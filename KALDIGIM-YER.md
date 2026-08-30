@@ -1,5 +1,5 @@
 # KALDIĞIM YER
-Son güncelleme: 2026-08-30 · 36. oturum — **PROMPT-CLAUDE-CODE.md beş bölümün tamamı bitti**
+Son güncelleme: 2026-08-30 · 36. oturum — **PROMPT-CLAUDE-CODE.md: BÖLÜM 0 (FAZ 13) dahil altı bölüm bitti**
 
 Talep belgeleri: `REVIZE-PAKETI.md` (FAZ 1-6) · `REVIZE-PAKETI-FAZ7.md` (maç dışı) ·
 `REVIZE-PAKETI-FAZ8.md` (oynanış testi) · `REVIZE-PAKETI-FAZ9.md` (uzun vadeli döngü) ·
@@ -48,11 +48,13 @@ ayrı bir fazdır.
 | `node tools/mobile-check.js` | FAZ 12 mobil (dokunma sayısı, maç sayfası düzeni, yoğunluk, 44 px) | ✓ **18/18** |
 | `node tools/sim-node.js --n=50` | **tarayıcısız** maç simülasyonu + determinizm (sunucu ön koşulu) | ✓ 50/50 |
 | `node tools/schema-check.js` | `db/schema.sql` sözdizimi + lig kuralları + RLS + bağlantı yok | ✓ **17/17** |
+| `node tools/anlatim-check.js` | **canlı maç anlatımı** (ribaund, seri, faul, çalma, çeşitlilik, saha değişimi) — tarayıcısız | ✓ **13/13** |
+| `node tools/anlatim-check.js --freeze` | sekme donması / kurtarma + maç içi panel kalıcılığı | ✓ **20/20** |
 | `node tools/sunum-check.js --ms=300000` | M9 outlet · M12 and-1 · M14 şut saati | ✓ **3/3** |
 | `node tools/visual-check.js` | masaüstü + mobil akış, konsol | ✓ çıkış kodu **0** |
 | `node tools/live-metrics.js --ms=360000` | senkron · kimlik · ışınlanma | ✓ orphan 0 · kimlik %100 · 0 kare |
 | `node tools/box-band.js --n=200` | denge bantları | ✓ **11/11** |
-| `node tools/band.js` | **sonuç değişmezliği** (hash) | `ec630b3a512bb3b2` |
+| `node tools/band.js` | **sonuç değişmezliği** (hash) | **`fb393bdab878e699`** (FAZ 13'te değişti) |
 | `node tools/i18n-scan.js` | EN modunda çeviri + **tarama kapsamı** | ✓ kalan Türkçe yalnız özel isim |
 
 > **Hash referansı:** SUNUM değişikliğinden sonra `band.js` **aynı** hash'i vermelidir.
@@ -88,10 +90,15 @@ bugün aynı commit'te tekrar üretilemiyor → aracın ekonomi ölçümünde to
 girdi var (muhtemelen takvim/tarih). **Önce aracın determinizmi doğrulanmalı, sonra denge.**
 Bu depoda dördüncü kez bir ölçüm aracının kendisi şüpheli.
 
-**`sunum-check` M9 küçük örneklemde karar veremiyor** — 10 dakikalık pencerede yalnız 3 vaka
-kapsama giriyor, 3 vakada %80 eşiği ancak 3/3 ile tutturulabiliyor. `c2c46b3` (FAZ 11 öncesi)
-ile karşılaştırıldı: **birebir aynı sonuç (2/3)**, yani gerileme değil. Aynı koşuda motorun
-kendi kararı **231/237 = %97,5**. Düzeltilecek olan aracın kapsam kuralı/penceresi.
+**~~`sunum-check` M9~~ — FAZ 13 ile KAPANDI.** F13-1 her kaçan şutun ribaundunu olay hâline
+getirdiği için araç artık 3 değil **20 vaka** ölçüyor: **%80 (hedef ≥ %80) ✓**. Örneklem
+sorunu kendiliğinden çözüldü.
+
+**`live-metrics` syncRatio YAYILIMI** (tipler arası fark 3,1× · hedef < 1,9×) — medyan
+**3,86×** hedef bandında (2-5×), orphan 0, kimlik %100, top ışınlanması 0 kare. Yayılımı
+`free` tipi (8 örnek) çekiyor; araç zaten "örnek sayısı düşük" uyarısı basıyor. FAZ 13
+öncesiyle karşılaştırması yapıldı (aşağıdaki nota bak) — ölçüm penceresi büyütülmeden
+yargıya varılmamalı.
 
 ## Sıradaki adım (öncelik sırasıyla)
 

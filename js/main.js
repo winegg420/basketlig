@@ -65,10 +65,11 @@ function setMatchButtonsRunning(running){
       /* F11-6: maç bitince/durunca etiket "⏳ Maç Devam Ediyor"da KALIYORDU. Buton aktif
          olduğu hâlde "maç sürüyor" yazdığı için oyun kilitlenmiş görünüyordu. */
       if(running) db.textContent='⏳ Maç Devam Ediyor';
-      else db.textContent=(G.pendingMatch&&pendingMatchIsNext())?'▶ Maçı sonuçlandır':'▶ Maçı Başlat';
     }
   }
-  if(!running) syncPendingMatchButton();
+  /* F13-15: etiketlerin TEK kaynağı durum makinesidir (maç yok / oynanıyor / donmuş /
+     sonucu kilitli). Böylece ekranda birbiriyle çelişen iki "Maçı Başlat" kalmaz. */
+  if(!running) syncMatchButtons();
 }
 /** F11-6: sıradaki maçın sonucu kilitli mi? (maç başlatılıp yarıda bırakılmış) */
 function pendingMatchIsNext(){
@@ -99,6 +100,8 @@ function startMatch(playoff){
      (olay zamanlayıcısı ölmüş ama bayrak açık kalmış) oyun KALICI olarak kilitleniyor,
      hiçbir bildirim de çıkmadığı için sebebi görünmüyordu. Artık takılı durum tespit edilip
      kurtarılıyor; gerçekten canlı maç varsa kullanıcıya söyleniyor. */
+  /* F13-14: maç ortada donmuşsa yeni maç üretme — kaldığı yerden sürdür. */
+  if(canResumeMatch()){ resumeMatch(); return; }
   if(mState.running){
     const canli=!!(matchEventTimer||mState.paused||(mState._sim&&mState._sim.raf));
     if(canli){ showNotif('Maç zaten oynanıyor.'); return; }
@@ -234,7 +237,9 @@ function startMatch(playoff){
         document.getElementById('liveScoreHome').textContent=ev.home;
         document.getElementById('liveScoreAway').textContent=ev.away;
       }
-      if(ev.box) renderBoxScore(ev.box.h,ev.box.a,G.team.isim,mState.rakipName);
+      /* F13-18: en son basılan kutu skor saklanır — sayfa değiştirip dönünce panel
+         sıfırdan değil bu kaynaktan doldurulur. */
+      if(ev.box){ mState.box=ev.box; renderBoxScore(ev.box.h,ev.box.a,G.team.isim,mState.rakipName); }
       if(ev.qh&&ev.qa) updateQuarterBoard(ev.qh,ev.qa,ev.home||0,ev.away||0);
     };
     const paint=(mode)=>{
@@ -334,7 +339,14 @@ function startMatch(playoff){
        Koreografi süresi (simMs) yalnız ALT SINIRDIR — hava atışı/serbest atış dizisi kesilmesin.
        Böylece faul/taktik/çalma gibi "ucuz" olaylar da saatten yedikleri kadar sürer;
        eskiden sabit 1300-1700 ms taban yüzünden 20-44× hızlanma oluyordu. */
-    const dtMs=(Number(ev.dt)>0?Number(ev.dt):12)*1000*MATCH_TIME_SCALE;
+    /* F13-1: `dt` TANIMLI ise (0 dahil) o geçerlidir; yalnız tanımsızsa 12 sn varsayılır.
+       Ribaund gibi "pozisyonun içinde geçen" olaylar dt:0 taşır — eskiden 0 da tanımsız
+       sayılıp 12 sn'ye düşüyor, her ribaund maça 3,6 sn ekliyordu. */
+    /* F13-17: `dt` olayın maç saati PAYIDIR (çeyrek toplamı 600 sn tutsun diye bölünür);
+       canlı izleme temposu ise POZİSYONUN tamamına göre kurulur (`dtPos`). İkisi ayrılmazsa
+       ya çeyrek toplamı şişer ya da maç iki kat hızlı akar (live-metrics syncRatio 6,8×). */
+    const _dtRaw=Number(ev.dtPos!=null?ev.dtPos:ev.dt);
+    const dtMs=(isFinite(_dtRaw)&&_dtRaw>=0?_dtRaw:12)*1000*MATCH_TIME_SCALE;
     const delay=Math.max(140,Math.max(simMs,dtMs)/rate);
     /* Maç saati olaylar arasında GERÇEK ZAMANDA akar (eskiden 10-20 sn'lik sıçramalar);
        şut saati de aynı akıştan beslenir. */
@@ -408,7 +420,18 @@ let _hiddenPause=false;
 if(typeof document!=='undefined'&&document.addEventListener){
   document.addEventListener('visibilitychange',function(){
     try{
-      if(typeof mState==='undefined'||!mState||!mState.running) return;
+      if(typeof mState==='undefined'||!mState) return;
+      /* F13-14: bayrak düşmüşse M10'un duraklat/sürdür mantığı hiç çalışmıyordu ve maç
+         sekmeye dönülse bile donmuş kalıyordu. Dönüşte önce KURTARMA denenir. */
+      if(!document.hidden&&!mState.running){
+        if(canResumeMatch()){
+          resumeMatch();
+          showNotif('Maç kaldığı yerden devam ediyor.');
+        }
+        syncMatchButtons();
+        return;
+      }
+      if(!mState.running) return;
       if(document.hidden){
         if(matchEventTimer){
           const gecen=Date.now()-(mState._stepAt||Date.now());
@@ -1308,9 +1331,18 @@ function showPage(page,btn){
     }
     if(page==='mac'){
       renderFixture();
-      if(G.team) renderBoxScore(emptyBox(),emptyBox(),G.team.isim,'Deplasman');
-      /* F11-6: kilitli sonuç varsa buton bunu söylesin (sayfa yenilendikten sonra da). */
-      syncPendingMatchButton();
+      /* F13-18: sayfa her açılışında maç içi istatistik paneli BOŞ kutu ile eziliyordu —
+         canlı maç sürerken başka sayfaya gidip dönen oyuncu paneli sıfırlanmış, rakip adını
+         "Deplasman" olmuş buluyordu (skor tabelası ve saha ise doğru kalıyordu: üç kaynak
+         üç farklı gerçek). Artık panel maç varken mState.box'tan yeniden doldurulur. */
+      if(G.team){
+        const _mb=(typeof mState!=='undefined'&&mState&&mState.box)?mState.box:null;
+        const _rk=(typeof mState!=='undefined'&&mState&&mState.rakipName)?mState.rakipName:'Deplasman';
+        if(_mb&&_mb.h&&_mb.a) renderBoxScore(_mb.h,_mb.a,G.team.isim,_rk);
+        else renderBoxScore(emptyBox(),emptyBox(),G.team.isim,_rk);
+      }
+      /* F11-6 / F13-15: buton durumu (kilitli sonuç, donmuş maç) sayfa açılışında tazelenir. */
+      syncMatchButtons();
     }
     if(page==='market')renderMarket();
     if(page==='kadro')renderRoster();
@@ -1502,6 +1534,8 @@ window.onload=()=>{
   /* FAZ 12: mobil katlamalar ve rozetler ilk açılışta da doğru olsun. */
   try{ applyMobileFolds(); }catch(e){}
   try{ updateMobileBadges(); }catch(e){}
+  /* F13-14: oynatma bekçisi — donmuş maç sessiz kalmasın. */
+  try{ startMatchWatchdog(); }catch(e){}
   try{ const lp=document.getElementById("langPicker"); if(lp) lp.innerHTML=langPickerHtml(); }catch(e){}
   /* Loader görseli kapalı (display:none) — eski 1500+500ms sahte bekleme girişte gecikme yaratıyordu. */
   setTimeout(()=>{
@@ -1747,4 +1781,98 @@ function updateMobileBadges(){
       el.classList.toggle('on',n>0);
     });
   }catch(e){}
+}
+
+/* ══ F13-14 — DONMUŞ MAÇI KURTARMA ═════════════════════════════════════════════════════
+   Ölçülen durum (canlı yayın): mState.idx=16/198 · running=false · paused=false ·
+   document.hidden=true · son adımdan bu yana 6.121 sn. Yani maç ortasında durmuş ve bir daha
+   kendiliğinden başlamamış; sekmeye dönmek de yetmemiş.
+
+   M10 (sekme gizlenince kuyruğu duraklat) yalnız `mState.running` DOĞRUYKEN çalışıyordu:
+   bayrak bir kez düşerse dönüşte kimse oynatmayı sürdürmüyor ve oyun sessizce kilitleniyor.
+
+   Üç katman:
+     1) `resumeMatch()` — kaldığı olaydan devam eder (olay listesi ve mState duruyor).
+     2) `visibilitychange` — sekmeye dönünce donmuş maçı KENDİLİĞİNDEN sürdürür.
+     3) Bekçi (watchdog) — zamanlayıcı herhangi bir nedenle kaybolduysa 2 sn içinde fark eder;
+        sürdürülemiyorsa butonu "▶ Devam et"e çevirir, sessiz kilitlenme kalmaz. */
+
+/** Maç ortada durmuş ve sürdürülebilir mi? (olay listesi + adım kapanışı hâlâ elimizde) */
+function canResumeMatch(){
+  try{
+    return !!(typeof mState!=='undefined'&&mState&&!mState.running&&!mState.paused
+      &&typeof mState.step==='function'
+      &&Array.isArray(mState.events)&&mState.events.length
+      &&mState.idx>0&&mState.idx<mState.events.length);
+  }catch(e){ return false; }
+}
+/** Donmuş maçı kaldığı yerden sürdür. */
+function resumeMatch(){
+  if(!canResumeMatch()){ showNotif('Sürdürülecek maç yok.'); return false; }
+  mState.running=true;
+  mState.paused=false;
+  clearMatchEventTimer();
+  try{
+    const st=document.getElementById('liveStatus');
+    if(st){ st.textContent='CANLI'; st.style.background='rgba(239,68,68,0.2)'; st.style.color='#f87171'; }
+    const bd=document.getElementById('liveBadge'); if(bd) bd.style.display='inline-block';
+    const _ml=document.getElementById('macLiveAnchor'); if(_ml) _ml.classList.add('live-on');
+  }catch(e){}
+  setMatchButtonsRunning(true);
+  try{ startCrowdAmbience(); }catch(e){}
+  try{ mState.step(); }catch(e){ dbg('resumeMatch',e); }
+  return true;
+}
+
+/** F13-14 katman 3 + F13-15: maç durumuna göre TEK birincil buton.
+    maç yok → Maçı Başlat · oynanıyor → (pasif) Maç Devam Ediyor · donmuş → Devam et ·
+    sonucu kilitli → Maçı sonuçlandır. */
+function matchPlaybackState(){
+  try{
+    if(typeof mState!=='undefined'&&mState&&mState.running) return 'running';
+    if(canResumeMatch()) return 'frozen';
+    if(typeof pendingMatchIsNext==='function'&&pendingMatchIsNext()) return 'pending';
+  }catch(e){}
+  return 'idle';
+}
+function syncMatchButtons(){
+  try{
+    const durum=matchPlaybackState();
+    const etiket={running:'⏳ Maç Devam Ediyor',frozen:'▶ Devam et',
+                  pending:'▶ Maçı sonuçlandır',idle:'▶ Maçı Başlat'}[durum];
+    const b=document.getElementById('startMatchBtn');
+    if(b){
+      b.disabled=(durum==='running');
+      b.textContent=etiket;
+      if(durum==='pending') b.title='Sonuç maç başında kilitlendi; bu maç yeniden oynanamaz. Basınca kilitli sonuç uygulanır.';
+      else if(durum==='frozen') b.title='Maç kaldığı yerde duruyor — basınca devam eder.';
+      else if(durum==='running') b.title='Maç canlı oynanıyor.';
+      else b.removeAttribute('title');
+    }
+    const card=document.getElementById('dashNextCard');
+    const db=card?card.querySelector('.dn-play'):null;
+    if(db){
+      db.disabled=(durum==='running');
+      db.textContent=etiket;
+    }
+  }catch(e){}
+}
+
+/* Bekçi: 2 sn'de bir oynatmanın gerçekten aktığını doğrular. Zamanlayıcı kaybolduysa
+   (istisna, sekme değişimi, tarayıcı kısıtlaması) yeniden kurar; sürdürülemeyen durumda
+   butonu "Devam et"e çevirir. Maç yokken hiçbir şey yapmaz. */
+let _matchWatchdog=null;
+function startMatchWatchdog(){
+  if(_matchWatchdog) return;
+  _matchWatchdog=setInterval(()=>{
+    try{
+      if(typeof mState==='undefined'||!mState||!Array.isArray(mState.events)||!mState.events.length) return;
+      if(mState.running&&!mState.paused&&!matchEventTimer&&typeof mState.step==='function'
+         &&mState.idx<mState.events.length){
+        const bosluk=Date.now()-(mState._stepAt||0);
+        if(bosluk>2500){ dbg('watchdog','zamanlayıcı kayıp — yeniden kuruldu'); mState.step(); }
+      }
+      syncMatchButtons();
+    }catch(e){}
+  },2000);
 }
