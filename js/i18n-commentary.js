@@ -538,3 +538,149 @@ Object.assign(I18N_TR_EN,{
 'Karşılık vermeleri şart.':'They have to answer.',
 'Skor tabelasından çok, oyunun akışı değişti.':'More than the scoreboard, the flow of the game has changed.'
 });
+
+/* ── B-1 (DENETIM-FAZ13): FAZ 13 ile gelen anlatım havuzlarının EN karşılıkları.
+   Bu havuzlar `localizeCatalogs()`a kaydedilmemişti; EN oyuncu canlı anlatımın %37,5'ini
+   Türkçe görüyordu ve "rakibi arkasında tuttu ve reboundingu aldı" gibi melez cümleler
+   çıkıyordu (kalıp katmanı Türkçe cümlenin İÇİNDEKİ tek kelimeyi çeviriyordu).
+   Yer tutucular (%L %P %T %O %W %I %Q %R %S %SC) iki dilde de korunur. ── */
+Object.assign(I18N_TR_EN,{
+'%L pasını kontrol edemedi —':'%L could not handle the pass —',
+'%L topu elinden kaçırdı —':'%L let the ball slip away —',
+'%L pas hattını yanlış okudu —':'%L misread the passing lane —',
+'%L topu korumakta zorlandı —':'%L struggled to protect the ball —',
+'%L hatalı pas denedi —':'%L tried a bad pass —',
+'%L topu ortada bıraktı —':'%L left the ball out there —',
+'İkinci yarı için soyunma odasında taktik konuşulacak.':'They will talk tactics in the locker room for the second half.',
+'On beş dakikalık aranın ardından ikinci yarı başlayacak.':'The second half begins after the fifteen-minute break.',
+'Koçlar tahtayı çıkardı; ikinci yarı planı yapılıyor.':'The coaches have the board out, planning the second half.',
+'Salon nefeslendi — ikinci yarıda tempo yükselir mi?':'The arena catches its breath — will the pace pick up after the break?',
+'Devre arası: kim daha iyi toparlarsa maçı o alır.':'Halftime: whoever regroups better takes this game.',
+'Taktik masasına dönülüyor.':'Back to the tactics board.',
+'Kısa bir ara, oyuncular kenara geliyor.':'A short break, the players come to the bench.',
+'Koçlar son talimatları veriyor.':'The coaches give their final instructions.',
+'Skor tabelası yenileniyor, oyun az sonra sürecek.':'The scoreboard resets, play resumes shortly.',
+'Kenarda kısa bir değerlendirme yapılıyor.':'A quick huddle on the sideline.',
+'Tribün ayakta; oyun bir sonraki çeyrekte sürüyor.':'The crowd is on its feet; play continues next quarter.',
+'%P nefes nefese kaldı, bacakları ağırlaşıyor — kenar değişiklik düşünüyor.':'%P is out of breath and his legs are heavy — the bench is thinking about a change.',
+'%P dizlerine yaslandı; enerjisi düşüyor.':'%P is bent over his knees; his energy is dropping.',
+'%P ter içinde, tempoya yetişmekte zorlanıyor.':'%P is drenched and struggling to keep up with the pace.',
+'%P yorgun görünüyor — dinlenmesi gerekebilir.':'%P looks tired — he may need a rest.',
+'%P son pozisyonlarda geriden geldi; kondisyonu sınırda.':'%P has been trailing the play; his conditioning is at its limit.',
+'Top yandan devam.':'Ball in from the side.',
+'Oyun yandan sokmayla sürüyor.':'Play resumes with a sideline inbound.',
+'Hakem düdüğü çaldı, top yandan.':'The whistle goes, ball in from the side.',
+'Faul verildi; top çizgi dışından oyuna giriyor.':'The foul is called; the ball comes back in from out of bounds.',
+'Kısa bir duraklama, top yandan.':'A brief stoppage, ball in from the side.',
+'Sert mücadele — hakem faulü gördü.':'A hard battle — the referee saw the foul.',
+'🔄 %T değişiklik: %O %W kenara, yerine %I girdi.':'🔄 %T substitution: %O %W to the bench, %I comes on.',
+'🔄 %T kenardan müdahale: %I, %O\'nun yerine oyunda.':'🔄 %T makes a move: %I is on for %O.',
+'🔄 Rotasyon %T\'de: %O çıkıyor, %I giriyor.':'🔄 %T rotate: %O off, %I on.',
+'🔄 %T taze güç istiyor — %I için %O kenara geliyor.':'🔄 %T want fresh legs — %O comes off for %I.',
+'🔄 Değişiklik: %I sahaya, %O soluklanmaya.':'🔄 Substitution: %I on, %O off for a breather.',
+'🔄 %T beşliyi tazeliyor: %I ⇄ %O.':'🔄 %T freshen up the lineup: %I ⇄ %O.',
+'🔔 %Q. çeyrek başladı':'🔔 Quarter %Q is under way',
+'🔔 %Q. periyot için düdük çaldı':'🔔 The whistle goes for quarter %Q',
+'🔔 %Q. çeyrek oyunu başlıyor':'🔔 Quarter %Q gets going',
+'🔔 Top yeniden oyunda — %Q. çeyrek':'🔔 Ball back in play — quarter %Q',
+'🔔 %Q. çeyreğin ilk hücumu kuruluyor':'🔔 The first possession of quarter %Q is being set up',
+'🔔 Salon yerinde: %Q. çeyrek başlıyor':'🔔 The arena is ready: quarter %Q begins',
+'%R ribaundu topladı, hücum sırası %T\'de.':'%R gathers the rebound, %T take over.',
+'Cam %R\'de; top %T\'ye geçiyor.':'The glass belongs to %R; the ball goes to %T.',
+'%R savunma ribaundunu aldı.':'%R takes the defensive rebound.',
+'Top %R\'nin elinde — %T hücuma çıkıyor.':'The ball is in %R’s hands — %T push forward.',
+'%R ribaundu çekti ve topu yukarı taşıyor.':'%R pulls it down and brings the ball up.',
+'Box-out tuttu, ribaund %R\'de.':'The box-out held, the rebound is %R’s.',
+'%R camı kapattı, sıra %T\'de.':'%R closes out the glass, %T are up.',
+'Kaçan şutu %R indirdi.':'%R brings down the miss.',
+'%R yükseldi, ribaund onda.':'%R rises up and takes the rebound.',
+'Top %R\'ye düştü; %T topu yukarı çıkarıyor.':'The ball falls to %R; %T bring it up.',
+'%R rakibi arkasında tuttu ve ribaundu aldı.':'%R sealed his man off and took the rebound.',
+'Savunma ribaundu %R\'de.':'The defensive rebound belongs to %R.',
+'%R camdan döneni topladı.':'%R collects the carom off the glass.',
+'Ribaund %R — hücum %T\'ye geçti.':'Rebound %R — the ball turns over to %T.',
+'%R topu güvene aldı.':'%R secures the ball.',
+'Pota altı %R\'nin; top %T\'de.':'The paint belongs to %R; the ball is with %T.',
+'%R kaçan şutu kontrol etti.':'%R controls the miss.',
+'%R temiz bir ribaundla camı kapattı.':'%R closes the glass with a clean rebound.',
+'Top %R\'de kaldı, %T hücuma dönüyor.':'The ball stays with %R, %T turn to offence.',
+'%R hücum ribaundunu aldı — %T\'de ikinci şans!':'%R takes the offensive board — a second chance for %T!',
+'Top yine %T\'de; ribaund %R\'nin.':'The ball is with %T again; the rebound is %R’s.',
+'%R kaçan topu boyada topladı, hücum sürüyor.':'%R gathers it in the paint, the possession lives on.',
+'İkinci şans %T\'de — ribaund %R.':'Second chance for %T — rebound %R.',
+'%R camdan döneni aldı, atak devam ediyor.':'%R takes the carom, the attack continues.',
+'Hücum ribaundu %R\'de; %T bir daha deneyecek.':'Offensive rebound %R; %T will go again.',
+'%R ısrar etti, top yine %T\'de!':'%R kept at it, the ball is %T’s again!',
+'Pota altında %R kazandı — ikinci şans.':'%R wins it under the rim — second chance.',
+'%R kaçan şutu geri aldı, hücum sürüyor.':'%R wins the miss back, the possession continues.',
+'%R camlara asıldı; top %T\'de kalıyor.':'%R crashed the glass; the ball stays with %T.',
+'İkinci top %R\'nin — %T yeniden kuruyor.':'The second ball is %R’s — %T reset.',
+'%R hücum camını kapattı.':'%R owns the offensive glass.',
+'%S köşede boştu, üçlük file! %SC':'%S was open in the corner — three, all net! %SC',
+'%S köşeden tetiği çekti — üç sayı! %SC':'%S pulls the trigger from the corner — three! %SC',
+'%S dip köşeden vurdu, üçlük! %SC':'%S fires from the baseline corner — three! %SC',
+'%S köşede ayakları hazırdı; üç! %SC':'%S had his feet set in the corner; three! %SC',
+'%S köşe üçlüğünü tereddütsüz attı. %SC':'%S took the corner three without hesitation. %SC',
+'%S köşeden soğukkanlı — üç sayı. %SC':'%S is ice cold from the corner — three points. %SC',
+'Kısa köşeden %S, üçlük içeride! %SC':'%S from the short corner — the three is good! %SC',
+'%S köşede unutuldu ve cezasını kesti — üç! %SC':'%S was left alone in the corner and made them pay — three! %SC',
+'%S köşeden denedi, olmadı.':'%S tried it from the corner, no good.',
+'%S köşe üçlüğünü kısa bıraktı.':'%S leaves the corner three short.',
+'%S dip köşeden ıskaladı.':'%S misses from the baseline corner.',
+'%S köşede açıktı ama file dalgalanmadı.':'%S was open in the corner but the net never moved.',
+'%S köşe şutu çemberden döndü.':'%S’s corner shot rattles out.',
+'%S köşeden zorladı, girmedi.':'%S forced it from the corner, no good.',
+'Köşe üçlüğü %S için bugün gelmiyor.':'The corner three is not falling for %S today.',
+'%S köşeden attı — pota izin vermedi.':'%S let it go from the corner — the rim said no.'
+});
+
+/* ── B-1 (DENETIM-FAZ13): ÜRETİLMİŞ anlatım cümleleri (isim/sayı gömülü) ───────────────
+   Havuz satırları sözlükten çevriliyor ama şablon dizesiyle (`${ad}`) kurulan cümleler
+   sözlüğe giremez; onlar KALIP ister. Bunlar yazılmadığı için EN oyuncu "Faul — X
+   (kişisel 2) · Y bu çeyrek 4. takım faulü." gibi satırları Türkçe görüyordu.
+   `unshift`: dizinin BAŞINA girerler — sondaki genel sözcük kalıpları (/ribaund/→rebounding
+   gibi) cümlenin ortasındaki tek kelimeyi çevirip "reboundingu aldı" melezini üretmesin. */
+I18N_PHRASES.unshift(
+  /* faul ön eki ve kuyruğu */
+  [/\(kişisel (\d+)\)/g,'(personal foul $1)'],
+  [/ ⚠ dikkat, (\d+)\. faulü!/g,' ⚠ careful, that is foul number $1!'],
+  [/ 🚫 (\d+)\. faul!/g,' 🚫 foul number $1!'],
+  [/ bu çeyrek (\d+)\. takım faulü/g,' — team foul $1 of the quarter'],
+  [/oyundan atıldı/g,'has fouled out'],
+  [/ — yerine /g,' — replaced by '],
+  [/yedek kalmadı, eksik oynanıyor\./g,'no substitutes left, playing a man short.'],
+  [/rakibin yedeği kalmadı, eksik oynuyor\./g,'the opponent has no substitutes left and plays a man short.'],
+  /* serbest atışa gidiş cümleleri */
+  [/ şutta faul aldı — (\d+) atış kullanacak\./g,' was fouled on the shot — $1 free throws.'],
+  [/ şuttayken faul çaldı, çizgiye gidiyor\./g,' is fouled on the shot and heads to the line.'],
+  [/şut faulü — /g,'shooting foul — '],
+  [/ bindirmede faul kazandı, (\d+) atış\./g,' draws the foul on the drive, $1 free throws.'],
+  [/ iki atış kullanacak\./g,' will take two free throws.'],
+  [/ serbest atış çizgisinde\./g,' is at the free throw line.'],
+  [/ çizgiye gidiyor\./g,' heads to the line.'],
+  /* değişiklik gerekçesi (SUB_LINES %W) */
+  [/dinlenmek için/g,'for a rest'],
+  [/(\d+) faulle/g,'with $1 fouls'],
+  /* devre arası / maç sonu */
+  [/ (\d+) sayı önde/g,' lead by $1'],
+  [/skorlar eşit/g,'the score is level'],
+  [/Maçın yıldızı \(MVP\):/g,'Player of the game (MVP):'],
+  [/(\d+) sayı, (\d+) asist, (\d+) ribaund\./g,'$1 points, $2 assists, $3 rebounds.'],
+  [/Ev sahasında galibiyet!/g,'A win at home!'],
+  [/Ev sahasında mağlubiyet\./g,'A loss at home.'],
+  [/Deplasmanda galibiyet!/g,'A win on the road!'],
+  [/Deplasmanda mağlubiyet\./g,'A loss on the road.'],
+  [/Beraberlik ile sona erdi\./g,'It ends in a draw.']
+);
+
+/* B-1 (devamı): şut cümlesinin ÖNÜNE eklenen bağlam etiketleri de şablonla kuruluyor. */
+I18N_PHRASES.unshift(
+  /* Simge öneki `_splitIconPrefix` tarafından soyulup gövde AYRICA çevrildiği için kalıp
+     simgeyi İÇERMEMELİ — içerince gövdeyle eşleşmez (ölçümde "⚡ Hızlı hücum!" böyle kaçtı). */
+  [/Hızlı hücum! /g,'Fast break! '],
+  [/İkinci şans! /g,'Second chance! '],
+  [/Kritik anlar, başa baş!/g,'Crunch time, neck and neck!'],
+  [/🔥 (\d+)-0'lık seri!/g,'🔥 a $1-0 run!'],
+  [/Fark açıldı — (\d+) sayı\./g,'The gap is opening — $1 points.'],
+  [/ kızıştı — üst üste (\d+)\. isabet!/g,' is heating up — $1 in a row!']
+);

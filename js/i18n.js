@@ -203,6 +203,20 @@ function localizeCatalogs(){
   try{ mapStrArr(typeof IMZA_ESPRI!=='undefined'?IMZA_ESPRI:null); }catch(e){}
   try{ mapStrArr(typeof IMZA_ISTAT!=='undefined'?IMZA_ISTAT:null); }catch(e){}
   try{ mapStrArr(typeof IMZA_SERI!=='undefined'?IMZA_SERI:null); }catch(e){}
+  /* B-1: FAZ 13 ile gelen havuzlar buraya HİÇ kaydedilmemişti — EN oyuncu canlı anlatımın
+     %37,5'ini Türkçe görüyordu. Yeni bir anlatım havuzu eklerken bu listeye de yaz;
+     `node tools/i18n-scan.js` artık canlı anlatım akışını da tarıyor ve %5 üstünü düşürür. */
+  try{ mapStrArr(typeof QSTART_LINES!=='undefined'?QSTART_LINES:null); }catch(e){}
+  try{ mapStrArr(typeof QEND_LINES!=='undefined'?QEND_LINES:null); }catch(e){}
+  try{ mapStrArr(typeof HALFTIME_LINES!=='undefined'?HALFTIME_LINES:null); }catch(e){}
+  try{ mapStrArr(typeof SUB_LINES!=='undefined'?SUB_LINES:null); }catch(e){}
+  try{ mapStrArr(typeof FATIGUE_LINES!=='undefined'?FATIGUE_LINES:null); }catch(e){}
+  try{ mapStrArr(typeof FOUL_TAIL!=='undefined'?FOUL_TAIL:null); }catch(e){}
+  try{ mapStrArr(typeof STEAL_LOSS!=='undefined'?STEAL_LOSS:null); }catch(e){}
+  try{ mapStrArr(typeof REB_DEF_SHORT!=='undefined'?REB_DEF_SHORT:null); }catch(e){}
+  try{ mapStrArr(typeof REB_OFF_SHORT!=='undefined'?REB_OFF_SHORT:null); }catch(e){}
+  try{ mapStrArr(typeof CORNER3_MADE!=='undefined'?CORNER3_MADE:null); }catch(e){}
+  try{ mapStrArr(typeof CORNER3_MISS!=='undefined'?CORNER3_MISS:null); }catch(e){}
 }
 
 /* ══ CANLI DOM ÇEVİRİSİ ═══════════════════════════════════════════════════════════════
