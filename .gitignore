@@ -41,3 +41,6 @@ assets/portraits/.dhash.json
 .venv-portre/
 
 tools/_e/
+
+# --- FAZ 23: yuz tespiti modeli (yeniden indirilebilir) ---
+tools/models/

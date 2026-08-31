@@ -3897,3 +3897,48 @@ yakaladı (54 → 55). FAZ 20'de yazılan kapı, yazıldığı ilk turda işe ya
 Ayrıca `lig-check` C bölümünün örneklemi 10 → **20 sezona** çıkarıldı: 200 takım-sezonda
 tek bir vaka %0,5 demek ve <%1 kapısı 0/0,5/1 arasında zıplayıp gürültü ölçüyordu.
 400 takım-sezonda ölçüm kararlı: **%0,00**.
+
+---
+
+## FAZ 23 — Portre tarzı deneme turu: DURDURULDU (2026-08-31)
+
+Baz commit `98a05f3`. Hedef 3 tarz × 4 portre = 12 deneme görseliydi. **Görsel üretilemedi**;
+kullanıcı talimatıyla durduruldu. Bu turun asıl çıktısı **ölçüm**.
+
+### Önceki turun teşhisi sayıyla doğrulandı
+YuNet (OpenCV `FaceDetectorYN`) kuruldu ve mevcut 465 portre ölçüldü: yüz yüksekliği
+karenin **%59-112'si**. Hedef %30-38. "Vesikalık" teşhisi doğru.
+
+### Ayar turunda ölçülenler
+| Deneme | Sonuç |
+|---|---|
+| `cfg 0` (turbo varsayılanı) | fon **-13,3** (köşeler merkezden AÇIK), yüz **%59** |
+| `cfg 0` + "wide shot" | kadraj düzeldi ama **forma tamamen kayboldu** (çıplak gövde) |
+| **512×768** | **bozuk çıktı — üst üste iki yüz**; bu modelde kare dışı en-boy güvenilmez |
+| `cfg 3.5` / 6 adım | forma **ve** koyu fon geldi (fon **29,0**), kadraj hâlâ yakın |
+| `cfg 3.5` + "wide shot from the waist up" | tek karede üçü birden tuttu (yüz ~%28) |
+
+**Kök neden:** turbo modeller `guidance_scale=0` ile çalışır ve o ayarda istem BAĞLAMIYOR —
+eklenen her kısıt bir öncekini dışarı itiyor. Önceki turda formanın kaybolmasının sebebi
+yalnız kadraj daraltması değilmiş; istem hiç bağlamıyormuş.
+
+### Neden 12 görsel çıkmadı
+Reçete tek atışta çalıştı ama **seri üretimde kararlı değil**. 13 denemenin tamamı elendi:
+
+| Red sebebi | Adet | Ölçülen |
+|---|---|---|
+| `yuz-orani` | 10 | %40, %56, %58, %63, %69, %87 (kapı %30-38) |
+| `forma-yazi` | 1 | %34 orana girdi, yazıdan elendi |
+| `kafa-ustu-kesik` | 1 | — |
+
+Fon ve forma çözüldü; kalan tek darboğaz **kadraj kararlılığı**. Yakın plan eğilimi
+SD-Turbo'nun kendi karakteri ve istemle güvenilir biçimde bastırılamıyor.
+
+### Açık karar
+- **A)** Kadraj kapısı %30-45'e gevşetilsin (kabul oranı yükselir, portreler bir tık yakın)
+- **B)** Kaynak değişsin — SDXL-Turbo kadraj denetiminde çok daha iyi ama 13,7 GB RAM'e
+  fp32 sığmıyor; fp16 CPU'da ~3-5 dk/görsel (12 deneme için uygun, 3.000 için değil)
+
+`tools/portre-deneme.py` (yüz tespitiyle kadraj + 6 eleme kapısı + karşılaştırma sayfası)
+depoda duruyor; karar verilince tek parametreyle sürdürülebilir.
+`assets/portraits/` klasörüne DOKUNULMADI — 465 portre yerinde.
