@@ -15,7 +15,7 @@ const vm = require('vm');
 const ROOT = path.resolve(__dirname, '..');
 const FILES = ['js/i18n.js', 'js/i18n-dict.js', 'js/i18n-commentary.js', 'js/names.js',
   'js/state.js', 'js/economy.js', 'js/persistence.js', 'js/portraits.js', 'js/roster-gen.js',
-  'js/league.js', 'js/match-prep.js', 'js/render.js', 'js/match-engine.js'];
+  'js/league.js', 'js/match-prep.js', 'js/render.js', 'js/turkce-ek.js', 'js/match-engine.js'];
 
 /* Tarayıcı kabuğu — modüller global kapsamda çalışır, DOM'a dokunanlar sessizce yutulur. */
 const stub = () => new Proxy(function () {}, {

@@ -1932,12 +1932,12 @@ const SPIKER_LINES={
   },
   bilge:{
     score2:['%S doğru okumayla pota altında bitirdi. %SC','%S boyalı alanda yüksek yüzdeli bitiriş. %SC','%S turnikeyi sakin tamamladı. %SC','%S pota altı pozisyonunu iyi kullandı. %SC','%S orta mesafe şutu, mekanik kusursuz. %SC','%S orta mesafeden yüksek yüzde. %SC','%S uzaktan dengeli bir jumper, iki. %SC','%S savunmanın açığını görüp bitirdi. %SC','%S sabırlı hücum, temiz iki. %SC','%S pozisyonu iyi okudu, iki. %SC','%S soğukkanlı bir bitiriş. %SC'],
-    score3:['%S ayakları hazır, ritimli üçlük. %SC','%S spacing mükemmeldi, açık üç. %SC','%S kusursuz mekanikle üç. %SC','%S savunmayı yaydı ve cezalandırdı. %SC','%S yüksek yüzdeli konumdan üç. %SC','%S dengeli çıkış, temiz üçlük. %SC','%S köşe üçlüğünü değerlendirdi. %SC','%S kanattan isabetli üç. %SC','%S sabırlı organizasyon, açık üçlük. %SC','%S doğru karar, yay dışından üç. %SC','%S ritmini buldu, üç sayı. %SC'],
+    score3:['%S ayakları hazır, ritimli üçlük. %SC','%S sahayı geniş kullandı, açık üç. %SC','%S kusursuz mekanikle üç. %SC','%S savunmayı yaydı ve cezalandırdı. %SC','%S yüksek yüzdeli konumdan üç. %SC','%S dengeli çıkış, temiz üçlük. %SC','%S köşe üçlüğünü değerlendirdi. %SC','%S kanattan isabetli üç. %SC','%S sabırlı organizasyon, açık üçlük. %SC','%S doğru karar, yay dışından üç. %SC','%S ritmini buldu, üç sayı. %SC'],
     miss2:['%S zorlama şut seçti, isabetsiz.','%S dengesi bozuktu, kaçtı.','%S savunma baskısında yüzde düştü.','%S bitiriş açısı kapalıydı.','%S acele etti, olmadı.','%S orta mesafeden kısa kaldı.','%S turnikede denge kaybı, kaçtı.','%S seçim hatalıydı, isabet yok.','%S ritim bozuldu, ıskaladı.','%S kontrolsüz şut, girmedi.'],
     miss3:['%S ayakları hazır değildi, kısa.','%S kontestli üçlük, düşük yüzde.','%S ritim tutmadı, ıskaladı.','%S seçim tartışılır, kaçtı.','%S dengesiz çıkış, isabet yok.','%S zorlama üçlük, girmedi.','%S yay dışından yüzde düşük, kaçtı.','%S erken şut, demire geldi.','%S kapalı pozisyondan zorladı, olmadı.'],
     block:['%B iyi zamanlama, temiz blok — %S durdu.','%B rotasyonu erken geldi, blokladı.','%B dikey savunma, kurallı blok.','%B okuma harika, %S engellendi.','%B yardım geldi ve blokladı.','%B pozisyonu tuttu, temiz blok.','%B disiplinli savunma, %S durduruldu.'],
     steal:['%C pas hattını kesti, kontrol onda.','%C okuması üst düzey, çaldı.','%C ellerini aktif kullandı, top kaybı.','%C savunma disiplini, topu aldı.','%C pasör hatasını cezalandırdı.','%C boşluğu okudu, top bizde.','%C erken rotasyonla topu kaptı.'],
-    tactic:['Set oyunu düzenleniyor, sabırlı hücum.','Savunma rotasyonu yeniden ayarlanıyor.','Tempo kontrolü — doğru karar.','Spacing yeniden kuruluyor, akıllı oyun.','Hücum organizasyonu netleşiyor.']
+    tactic:['Set oyunu düzenleniyor, sabırlı hücum.','Savunma rotasyonu yeniden ayarlanıyor.','Tempo kontrolü — doğru karar.','Açılma yeniden kuruluyor, akıllı oyun.','Hücum organizasyonu netleşiyor.']
   },
   cem:{
     score2:['%S potaya "merhaba" dedi, iki sayı! %SC','%S turnikede savunmayı seyirci bıraktı! %SC','%S pota ile anlaştı, iki! %SC','%S boyalı alanı ziyaret etti, iki! %SC','%S orta mesafeden "bu benden" dedi! %SC','%S orta mesafe şutunu fileye ısmarladı! %SC','%S uzaktan göz kırptı, iki! %SC','%S öyle bitirdi ki savunma özür diledi. %SC','%S savunma dönmeden yazdırdı! %SC','%S savunmaya "pardon" demedi! %SC','%S file ile tokalaştı, iki! %SC'],
@@ -1985,7 +1985,7 @@ const MOVE_LINES=[
 ];
 const REB_OFF_LINES=[
   '%R hücum ribaundunu çok yükseklerden çekti — ikinci şans bizde!',
-  'Muhteşem box-out; %R rakibini pazara yolladı, top yeniden bizde!',
+  'Muhteşem ribaunt bloğu; %R rakibini pazara yolladı, top yeniden bizde!',
   '%R camlara asıldı ve hücum ribaundunu kaptı!',
   '%R topu adeta tavandan indirdi, ekstra hücum!',
   '%R kaçan topu boyada avladı — ikinci şans!',
@@ -2024,6 +2024,77 @@ const QEND_LINES=[
   'Tribün ayakta; oyun bir sonraki çeyrekte sürüyor.'
 ];
 /* F13-7: yorgunluk satırları — "%P" yorulan oyuncu. */
+/* ── §7.4b: TAKTİK ADI CÜMLEYE DOKUSAL YERLEŞİR ───────────────────────────────────────
+   Eskiden taktik adı parantez içinde ekleniyordu: "Tempo kontrolü — doğru karar.
+   (erken tempo)" — ekranda geliştirici notu gibi duruyordu. Artık cümlenin içine girer:
+   "Erken tempoya geçtiler, doğru karar."
+   ⚠ Taktik adları CİNS İSİMDİR — kesme işareti ALMAZ ("erken tempoya", "erken tempo'ya"
+   değil). Bu yüzden turkEk() kullanılmaz; yönelme hâli tabloda hazır durur. */
+const TAKTIK_ADI=[
+  {ad:'ikili oyun',      e:'ikili oyuna'},
+  {ad:'el presi',        e:'el presine'},
+  {ad:'2-3 bölge',       e:'2-3 bölgeye'},
+  {ad:'erken tempo',     e:'erken tempoya'},
+  {ad:'yayılma hücumu',  e:'yayılma hücumuna'},
+  {ad:'çift perde',      e:'çift perdeye'}
+];
+/* %K = yönelme hâli (erken tempoya) · %KN = yalın hâl (erken tempo).
+   `devam:true` girişten sonra cümle SÜRER — spiker satırının ilk harfi küçülür.
+   `devam:false` girişin kendisi bir cümledir; spiker satırı büyük harfle başlar. */
+const TAKTIK_GIRIS=[
+  {t:'%K geçtiler, ',        devam:true},
+  {t:'%K döndüler, ',        devam:true},
+  {t:'%K geçiş yapıldı, ',   devam:true},
+  {t:'Kenardan işaret: %KN. ', devam:false},
+  {t:'%KN devrede. ',        devam:false}
+];
+/* ── §7.3: SAAT REFERANSI ─────────────────────────────────────────────────────────────
+   Ölçüm: 237 olayda saatten söz eden satır 2 taneydi (%0,8). Bu yüzden 4. çeyreğin son
+   3 dakikası 1. çeyrekle BİREBİR aynı tonda akıyordu — gerilim hiç kurulmuyordu.
+   Saat kapısı `scGate` ile aynı mantıkta çalışır: rastgele değil ANLAMLI anlarda açılır
+   (çeyrek sonuna 2 dk / 30 sn kala, son çeyrekte fark ≤6). Dil, gerçek Türkçe maç
+   anlatımının "süre" fiil bankasından gelir. Yalnız `pr` kullanır — sonuç değişmez. */
+const SAAT_LINES=[
+  'Süre daraldı.',
+  'Hücum süresi noktalanıyor.',
+  'Saat işliyor.',
+  'Süreyi eritiyorlar.',
+  'Saniyeler azalıyor.',
+  'Çeyrek biterken.',
+  'Süre biterken geldi.',
+  'Saat aleyhlerine çalışıyor.',
+  'Zaman daralıyor.',
+  'Son saniyeler.',
+  'Saati kullanıyorlar.',
+  'Süre bitmek üzere.'
+];
+/* Çeyrek kapanışı — her çeyreğin SON olayında saat mutlaka geçer (§7.3c). */
+const SAAT_QSON=[
+  'Çeyreğin son saniyeleri.',
+  'Süre bitiyor, son şans.',
+  'Saat sıfıra gidiyor.',
+  'Çeyrek kapanıyor.'
+];
+/* ── §7.3b: SON BÖLÜM TONU (4. çeyrek son 3 dakika) ──────────────────────────────────
+   Mevcut satırların YERİNE değil YANINA gelir; havuz daralmaz. */
+const SON_BOLUM={
+  gergin:[
+    'Kritik pozisyon.',
+    'Bu top çok önemli.',
+    'Savunma ayakta.',
+    'Salon nefesini tuttu.',
+    'Her şey buna bağlı.',
+    'Tansiyon tavanda.',
+    'Kimse oturmuyor.'
+  ],
+  yatismis:[
+    'Maç koptu.',
+    'Fark güvenli.',
+    'Skor tabelası konuştu.',
+    'İş bitti sayılır.',
+    'Kalan süre yetmez.'
+  ]
+};
 const FATIGUE_LINES=[
   '%P nefes nefese kaldı, bacakları ağırlaşıyor — kenar değişiklik düşünüyor.',
   '%P dizlerine yaslandı; enerjisi düşüyor.',
@@ -2042,8 +2113,8 @@ const FOUL_TAIL=[
 /* F13-8: değişiklik ve çeyrek başı satırları tek kalıba bağlıydı (20 maçta 99 ve 80 tekrar). */
 const SUB_LINES=[
   '🔄 %T değişiklik: %O %W kenara, yerine %I girdi.',
-  '🔄 %T kenardan müdahale: %I, %O\'nun yerine oyunda.',
-  '🔄 Rotasyon %T\'de: %O çıkıyor, %I giriyor.',
+  '🔄 %T kenardan müdahale: %I, %O{in} yerine oyunda.',
+  '🔄 Rotasyon %T{de}: %O çıkıyor, %I giriyor.',
   '🔄 %T taze güç istiyor — %I için %O kenara geliyor.',
   '🔄 Değişiklik: %I sahaya, %O soluklanmaya.',
   '🔄 %T beşliyi tazeliyor: %I ⇄ %O.'
@@ -2057,43 +2128,43 @@ const QSTART_LINES=[
   '🔔 Salon yerinde: %Q. çeyrek başlıyor'
 ];
 const REB_DEF_SHORT=[
-  '%R ribaundu topladı, hücum sırası %T\'de.',
-  'Cam %R\'de; top %T\'ye geçiyor.',
+  '%R ribaundu topladı, hücum sırası %T{de}.',
+  'Cam %R{de}; top %T{e} geçiyor.',
   '%R savunma ribaundunu aldı.',
-  'Top %R\'nin elinde — %T hücuma çıkıyor.',
+  'Top %R{in} elinde — %T hücuma çıkıyor.',
   '%R ribaundu çekti ve topu yukarı taşıyor.',
-  'Box-out tuttu, ribaund %R\'de.',
-  '%R camı kapattı, sıra %T\'de.',
+  'Rakibini arkada tuttu, ribaund %R{de}.',
+  '%R camı kapattı, sıra %T{de}.',
   'Kaçan şutu %R indirdi.',
   '%R yükseldi, ribaund onda.',
-  'Top %R\'ye düştü; %T topu yukarı çıkarıyor.',
+  'Top %R{e} düştü; %T topu yukarı çıkarıyor.',
   '%R rakibi arkasında tuttu ve ribaundu aldı.',
-  'Savunma ribaundu %R\'de.',
+  'Savunma ribaundu %R{de}.',
   '%R camdan döneni topladı.',
-  'Ribaund %R — hücum %T\'ye geçti.',
+  'Ribaund %R — hücum %T{e} geçti.',
   '%R topu güvene aldı.',
-  'Pota altı %R\'nin; top %T\'de.',
+  'Pota altı %R{in}; top %T{de}.',
   '%R kaçan şutu kontrol etti.',
   '%R temiz bir ribaundla camı kapattı.',
-  'Top %R\'de kaldı, %T hücuma dönüyor.'
+  'Top %R{de} kaldı, %T hücuma dönüyor.'
 ];
 const REB_OFF_SHORT=[
-  '%R hücum ribaundunu aldı — %T\'de ikinci şans!',
-  'Top yine %T\'de; ribaund %R\'nin.',
+  '%R hücum ribaundunu aldı — %T{de} ikinci şans!',
+  'Top yine %T{de}; ribaund %R{in}.',
   '%R kaçan topu boyada topladı, hücum sürüyor.',
-  'İkinci şans %T\'de — ribaund %R.',
+  'İkinci şans %T{de} — ribaund %R.',
   '%R camdan döneni aldı, atak devam ediyor.',
-  'Hücum ribaundu %R\'de; %T bir daha deneyecek.',
-  '%R ısrar etti, top yine %T\'de!',
+  'Hücum ribaundu %R{de}; %T bir daha deneyecek.',
+  '%R ısrar etti, top yine %T{de}!',
   'Pota altında %R kazandı — ikinci şans.',
   '%R kaçan şutu geri aldı, hücum sürüyor.',
-  '%R camlara asıldı; top %T\'de kalıyor.',
-  'İkinci top %R\'nin — %T yeniden kuruyor.',
+  '%R camlara asıldı; top %T{de} kalıyor.',
+  'İkinci top %R{in} — %T yeniden kuruyor.',
   '%R hücum camını kapattı.'
 ];
 const REB_DEF_LINES=[
   '%R savunma ribaundunu güçlü aldı, cam tertemiz!',
-  'Sağlam box-out; %R ribaundu topladı.',
+  'Sağlam ribaunt bloğu; %R ribaundu topladı.',
   '%R yükseldi ve defansif camı kapattı.',
   '%R ribaundu çekti, hızlı geçişe çıkıyor!',
   '%R camı süpürdü, top güvende.',
@@ -2138,7 +2209,7 @@ function spikerLine(spId,kind,v){
     if(f.length) pool=f;
   }
   /* %SC (skor) önce değiştirilmeli; yoksa %S onun içindeki "%S"i yiyip skoru "AdC"ye çevirir. */
-  return ch(pool).replace(/%SC/g,v.sc||'').replace(/%S/g,v.s||'').replace(/%B/g,v.b||'').replace(/%C/g,v.c||'');
+  return adKoy(ch(pool),{SC:v.sc,S:v.s,B:v.b,C:v.c});
 }
 
 /* ══ Faz 1-3 (23. oturum): tek "play" tanımlayıcısı + bağlam + anti-tekrar anlatım ══
@@ -2174,13 +2245,18 @@ function classifyZone(xy,rimIsLeft,is3){
 
 /* Hamle (self-create) ibareleri — hamle türüne göre; sahada gerçekten olan eyleme uygun
    olanı seçilir. Şut cümlesi oyuncu adıyla başladığından bunlar AD İÇERMEZ, tireyle bağlanır. */
+/* §7.4a + §7.4c: hamle önekleri hem UZUNDU (5-8 kelime, şut cümlesini 27 kelimeye
+   çıkarıyordu) hem de parantez içinde İngilizce terim taşıyordu — "(crossover)",
+   "(spin move)", "(step-back)". Gerçek anlatımın birimi 2-5 kelimelik parçadır;
+   önekler o ölçüye çekildi ve parantezli glosler kaldırıldı. Uzun biçimler
+   TAMAMEN silinmedi, her anahtarda en az bir "geniş" varyant duruyor. */
 const MOVE_BY={
-  crossover:['Art arda çalım (crossover) savunmayı çözdü —','Çaprazdan sert bir çalım attı, savunma dağıldı —','Çift krosover sonrası rakibini adeta pazara yolladı —'],
-  stepback:['Geriye çekilerek (step-back) alanı açtı —','Bir adım geri çekildi, savunmayla arasına mesafe koydu —'],
-  spin:['Dönerek (spin move) savunmadan sıyrıldı —'],
-  hesitation:['Beklet-yükle ile savunmayı ters ayak yakaladı —','Hesitasyon (bekletme) çalımıyla geçti —'],
-  drive:['Yıldırım gibi ilk adımla dibe indi —','Sert bir hücumla boyalı alana daldı —'],
-  postup:['Sırtı dönük pivot oyunuyla pozisyon aldı —','Düşük postta savunmacısını sırtlayıp döndü —']
+  crossover:['Çalımla geçti —','Çaprazdan sıyrıldı —','Art arda çalım, savunma dağıldı —'],
+  stepback:['Geriye çekildi —','Bir adım geri, alan açıldı —','Arasına mesafe koydu —'],
+  spin:['Dönerek sıyrıldı —','Etrafında döndü —'],
+  hesitation:['Bekletti ve geçti —','Ters ayak yakaladı —'],
+  drive:['Dibe indi —','Boyalı alana daldı —','İlk adımla yüklendi —'],
+  postup:['Sırtını döndü —','Postta sırtladı —','Düşük postta pozisyon aldı —']
 };
 
 /* Anti-tekrar seçici: bir havuzdan SON ~8 kalıbı (havuz küçükse daha az) tekrar seçmez.
@@ -2200,7 +2276,24 @@ function pickLine(pool,pr,memo,key){
   }
   /* FAZ F: satır içi anlatım havuzları (fonksiyon gövdesinde tanımlı diziler) da
      sözlükten geçer; %S/%B/%C yer tutucuları yerine konmadan ÖNCE çevrildiği için birebir eşleşir. */
-  return (typeof t==='function')?t(pick):pick;
+  /* §7.4b: havuzlar artık nesne de taşıyabiliyor (TAKTIK_GIRIS: {t, devam}).
+     Çeviri YALNIZ dizgelere uygulanır; nesneye t() çağrılırsa "[object Object]" çıkar. */
+  return (typeof pick==='string'&&typeof t==='function')?t(pick):pick;
+}
+/** §7.1: şablondaki adları yerine koyar.
+ *  ÖNCE `%X{durum}` çekim ekli yer tutucular (turkEk), SONRA düz `%X`.
+ *  Sıra önemli: düz değiştirme önce yapılırsa "%R{e}" içindeki %R adla dolar ve
+ *  geriye çözülemeyen "Ömer Polat{e}" kalır. */
+function adKoy(txt,map){
+  try{
+    let out=(typeof turkEkUygula==='function')?turkEkUygula(txt,map):String(txt==null?'':txt);
+    /* Anahtarlar UZUNDAN KISAYA: '%SC' önce gelmezse '%S' onun içindeki S'yi yer ve
+       skor 'AdC'ye dönüşür (F14-1'de bir kez yaşandı). */
+    Object.keys(map||{}).sort((x,y)=>y.length-x.length).forEach(k=>{
+      out=out.split('%'+k).join(map[k]==null?'':String(map[k]));
+    });
+    return out.replace(/\s+([.!?,;])/g,'$1').replace(/\s{2,}/g,' ').trim();
+  }catch(e){ return String(txt==null?'':txt); }
 }
 /* İŞ 4: asist ibareleri şemayla uyumlu ve ÇEŞİTLİ (eski monoton "X buldu; Y…" bitti). */
 /* ── F14-2: ZİNCİR ANLATIM ────────────────────────────────────────────────────────────
@@ -2212,7 +2305,7 @@ function pickLine(pool,pr,memo,key){
    içlerinde mesafe/bölge iddiası olan kelime BULUNMAMALI (köşe, boyalı alan, orta
    mesafe, yay dışı…). FAZ 13'te düzeltilen "söz ile saha çelişmesi" tekrarlamasın. */
 const AKIS_ON={
-  gelis:  ['%S geldi.','%S topu aldı.','%S tepeye çıktı.','Top %S\'de.','%S ilerletiyor.','%S rakip yarı sahada.'],
+  gelis:  ['%S geldi.','%S topu aldı.','%S topu yukarı taşıdı.','Top %S{de}.','%S ilerletiyor.','%S rakip yarı sahada.'],
   perde:  ['Perde geldi.','%S perdeden çıktı.','Yüksek perde.','Perde arkasından %S.','İkili oyun.','%S perde istedi.'],
   eslesme:['%S eşleşmeyi buldu.','%S pozisyon aldı.','%S sırtını döndü.','%S adamını sırtladı.','%S pozisyonu istedi.'],
   yuklen: ['%S yüklendi.','%S daldı içeriye.','%S çembere gitti.','%S kat etti.','%S süratlendi.','%S dişini gösterdi.']
@@ -2231,19 +2324,33 @@ function zincirLine(kind,v,pr,memo){
     const onHavuz=uzak
       ? AKIS_ON.gelis.concat(AKIS_ON.perde)
       : AKIS_ON.yuklen.concat(AKIS_ON.eslesme,AKIS_ON.perde);
-    const on=pickLine(onHavuz,pr,memo,'akis'+(uzak?'3':'2')).replace(/%S/g,v.s||'');
-    const cek=pickLine(KISA_CEKIRDEK[kind]||[''],pr,memo,'kisa'+kind);
+    const onHam=pickLine(onHavuz,pr,memo,'akis'+(uzak?'3':'2'));
+    /* §7.2: ön parçaların bir kısmı adsız ('Perde geldi.', 'Yüksek perde.', 'İkili oyun.')
+       ve kısa çekirdekler de adsız ('Kaçırdı.', 'Tutturdu.') — ikisi birleşince
+       "İkili oyun. Tutturdu." çıkıyor ve KİMİN attığı kayboluyor (263 olayda 15 kez).
+       Havuzu daraltmak çeşitliliği yer; onun yerine ad yoksa çekirdeğe fail eklenir. */
+    const adVar=onHam.indexOf('%S')>=0;
+    /* §7.4a: zincir, gerçek anlatımın 2-5 kelimelik parça ritmidir; orada spiker tam ad
+       değil TEK ad kullanır ("Cedi güçlü gitti." / "Marilonis yüklendi."). Uzun/resmî
+       cümlelerde tam ad korunur — ayrım bilinçli. */
+    const kisaAd=(typeof _tokShort==='function'&&v.s)?_tokShort(v.s):v.s;
+    const on=adKoy(onHam,{S:kisaAd});
+    let cek=pickLine(KISA_CEKIRDEK[kind]||[''],pr,memo,'kisa'+kind);
+    if(!adVar&&kisaAd&&cek){
+      /* Türkçe küçük harf: İ→i, I→ı. Tarayıcı yereli varsayılamaz (trKucuk). */
+      cek=kisaAd+' '+(typeof trKucuk==='function'?trKucuk(cek.charAt(0)):cek.charAt(0).toLowerCase())+cek.slice(1);
+    }
     return (on+' '+cek+(v.sc?' '+v.sc:'')).replace(/\s+([.!?,;])/g,'$1').replace(/\s{2,}/g,' ').trim();
   }catch(e){ return ''; }
 }
 
 const ASSIST_PHRASES={
   spotup:['%A dış çevrede boşta bıraktı; ','%A servisini yaptı, ','%A kenara aktardı, ','%A pas trafiğini çözüp gördü; '],
-  pnr:['%A pick&roll sonrası servis etti; ','%A ikili oyunla ortağını kullandı, ','%A perde arkasından buldu; ','%A blok sonrası dağıttı, '],
+  pnr:['%A ikili oyun sonrası servis etti; ','%A ikili oyunla ortağını kullandı, ','%A perde arkasından buldu; ','%A blok sonrası dağıttı, '],
   cut:['%A kes-geç pasıyla buldu; ','%A boşalan adamı gördü; ','%A savunma arasından geçirdi, ','%A zamanlı pasla ulaştırdı; '],
   postup:['%A posttan dışarı çıkardı; ','%A çift savunmayı bölüp gördü; '],
   transition:['%A hızlı çıkışta koşan adama attı, ','%A geçiş hücumunda gördü; '],
-  def:['%A buldu; ','%A drive edip dağıttı, ','%A servisinde ','%A boşta bıraktı; ']
+  def:['%A buldu; ','%A içeri dalıp dağıttı, ','%A servisinde ','%A boşta bıraktı; ']
 };
 function assistPhrase(name,scheme,pr,memo){
   const pool=(ASSIST_PHRASES[scheme]||[]).concat(ASSIST_PHRASES.def);
@@ -2273,8 +2380,7 @@ function spikerLinePR(spId,kind,v,pr,memo){
   const line=pickLine(pool,pr,memo,spId+kind);
   /* F14-1: %SC boşaldığında cümle sonunda yalnız kalan boşluk ve " !" gibi bozuk
      noktalama oluşuyordu — temizlenir. */
-  return line.replace(/%SC/g,v.sc||'').replace(/%S/g,v.s||'').replace(/%B/g,v.b||'').replace(/%C/g,v.c||'')
-             .replace(/\s+([.!?,;])/g,'$1').replace(/\s{2,}/g,' ').trim();
+  return adKoy(line,{SC:v.sc,S:v.s,B:v.b,C:v.c});
 }
 
 /* ── F14-3: SPİKER İMZASI ─────────────────────────────────────────────────────────────
@@ -2285,8 +2391,9 @@ function spikerLinePR(spId,kind,v,pr,memo){
      Cem     → 3+ isabet                   → kısa espri soneki
      Reha    → 6+ cevapsız seri            → "8-0'lık seri." soneki                    */
 const IMZA_ESPRI=['Bunu sever.','Bugün eli çok sıcak.','Salon buna doydu.','Sıraya girdiler.','Durdurabilene aşk olsun.'];
-const IMZA_ISTAT=['— bu maçta %P sayı.','— %P sayıya geldi.','— %P sayısı oldu.'];
-const IMZA_SERI =['%R-0\'lık seri.','%R sayılık cevapsız seri.','Seri %R\'ya ulaştı.'];
+/* §7.4d: "— 14 sayısı oldu." Türkçesi bozuktu (sayı "olmaz", ulaşılır). */
+const IMZA_ISTAT=['Böylece %P sayıya ulaştı.','Akşamki %P. sayısı.','Bu maçta %P sayısı var.','%P sayıya yükseldi.'];
+const IMZA_SERI =['%R-0\'lık seri.','%R sayılık cevapsız seri.','Seri %R{e} ulaştı.'];
 function spikerImza(SP,txt,ctx,pr,memo){
   try{
     if(!SP||!txt||!ctx) return txt;
@@ -2670,11 +2777,33 @@ function generateMatchEvents(rakip, opts){
     return secilen;
   }
   /* Faul satırının ortak ön eki: "Faul — Ad (kişisel N)" + 4./5. fauldeyse uyarı tonu. */
+  /* §7.4d: faul satırı KÜNYE gibi okunuyordu — "Faul — Uluç Demirel (kişisel 2)".
+     237 olayda 25 kez aynı biçim. Gerçek anlatımda faul bir CÜMLEDİR. Künye biçimi
+     bilgi değeri taşıdığı için tamamen kaldırılmaz; oranı yarının altına iner.
+     Sıra sayısı ('ikinci faulü') sayıdan türetilir, ayrı bir liste tutulmaz. */
+  const FOUL_SIRA=['ilk','ikinci','üçüncü','dördüncü','beşinci'];
+  const FOUL_SIRA_I=['ilki','ikincisi','üçüncüsü','dördüncüsü','beşincisi'];
+  /* Sonda nokta YOK: çağıran taraf ' · ' ile devam ettiriyor (künye biçimi de noktasız). */
+  const FOUL_CUMLE=[
+    '%A{in} %S faulü',
+    '%A yine faulde — bu %I',
+    'Hakem %A{i} gördü, %S faul',
+    '%A faul yaptı; maçtaki %S faulü'
+  ];
   function foulPrefix(fp){
-    if(!fp) return 'Faul —';
-    const n=fp.matchFouls||1;
-    const uyari=n===4?' ⚠ dikkat, 4. faulü!':(n>=5?' 🚫 5. faul!':'');
-    return `Faul — ${fp.isim} (kişisel ${n})${uyari}`;
+    try{
+      if(!fp) return 'Faul —';
+      const n=fp.matchFouls||1;
+      const uyari=n===4?' ⚠ dikkat, 4. faulü!':(n>=5?' 🚫 5. faul!':'');
+      /* 4. ve 5. faul uyarısı künye biçiminde daha okunaklı — orada cümleye geçilmez. */
+      if(n>=4||!prChance(0.66)) return `Faul — ${fp.isim} (kişisel ${n})${uyari}`;
+      const ix=Math.min(FOUL_SIRA.length-1,Math.max(0,n-1));
+      /* "yine faulde" ancak İKİNCİ faulden itibaren doğru; ilk faulde "Ramazan Üstün
+         yine faulde — bu ilki" çıkıyordu. */
+      const havuz=(n>=2)?FOUL_CUMLE:FOUL_CUMLE.filter(x=>x.indexOf('yine faulde')<0);
+      return adKoy(pickLine(havuz,pr,narr.recent,'foulc'),
+                   {A:fp.isim,S:FOUL_SIRA[ix],I:FOUL_SIRA_I[ix]});
+    }catch(e){ return 'Faul —'; }
   }
   const inBonus=(defenderIsUser,q)=>(defenderIsUser?(qFoulU[q]||0):(qFoulO[q]||0))>=5;
   /* M19: serbest atış sonrası ribaund. Dönüş: hücum ribaundu alındıysa true. */
@@ -2696,8 +2825,8 @@ function generateMatchEvents(rakip, opts){
        hemen sonra basılır. */
     try{
       const rebIsUser=rebOff?userPos:!userPos;
-      _pendingReb={type:'reb',dt:0,text:pickLine(rebOff?REB_OFF_SHORT:REB_DEF_SHORT,pr,narr.recent,rebOff?'rebO':'rebD')
-        .replace('%R',reb.isim).replace('%T',rebIsUser?MC.home.name:rname),
+      _pendingReb={type:'reb',dt:0,text:adKoy(pickLine(rebOff?REB_OFF_SHORT:REB_DEF_SHORT,pr,narr.recent,rebOff?'rebO':'rebD'),
+        {R:_tokShort(reb.isim),T:rebIsUser?MC.home.name:rname}),
         q,t,rebId:reb.id,rebIsUser,rebOff:!!rebOff};
     }catch(e){}
     return rebOff;
@@ -2780,6 +2909,11 @@ function generateMatchEvents(rakip, opts){
   /* F14-1: skor kapısının sayaçları MAÇ düzeyinde tutulur. Pozisyon kapsamında tutulunca
      her pozisyonda sıfırlanıyor ve kapı her sayıda açılıyordu (ölçüm: %53 — hedef <%20). */
   const _scG={cd:0,gapMark:0};
+  /* §7.3: saat kapısı ve son-bölüm tonu sayaçları MAÇ düzeyinde durur.
+     ⚠ Bu tuzağa iki kez düşüldü (F13-3 `_runTeam`, F14-1 `_scG`): sayaç runPossession
+     kapsamında tanımlanırsa her pozisyonda sıfırlanır, cooldown hiç çalışmaz ve kapı
+     ya sürekli açık ya sürekli kapalı kalır. `narr` ile aynı kapsamda olmalı. */
+  const _saatG={cd:0,say:0,sonQ:0,tonSay:0,tonCd:0};
   const _runEkle=(takim,n)=>{ if(n<=0) return; if(_runTeam===takim) _runPts+=n; else { _runTeam=takim; _runPts=n; } };
 
   /* Serbest atış metni AÇIKÇA "serbest atış" der — saha şutuyla karışmasın. */
@@ -2787,9 +2921,26 @@ function generateMatchEvents(rakip, opts){
      çemberden geçtiğinde basılır — spiker artık atış yapılmadan sonucunu söylemez.
      `text` eski birleşik hâliyle birebir aynı kalır (kayıt/özet uyumu). */
   const ftSplit=(pre,res)=>({text:pre+' '+res,ftPre:pre,ftRes:res});
-  const ftLine=(nMade,nAtt,who)=> nMade===nAtt?`${who} serbest atışlarda ${nMade}/${nAtt} — hepsi içeride.`
-    : nMade===0?`${who} serbest atışlarda ${nMade}/${nAtt}; seyirci sustu.`
-    : `${who} serbest atışlarda ${nMade}/${nAtt}.`;
+  /* §7.4d: serbest atış satırı neredeyse hep aynıydı — "X serbest atışlarda 2/2 —
+     hepsi içeride." 237 olayda 14 kez "serbest atışlarda", 10 kez "hepsi içeride"
+     geçiyordu; tabela gibi okunuyordu. Sonuç bilgisi (kaç/kaç) korunur, ifade çeşitlenir.
+     Yalnız `pr` kullanır. */
+  const FT_TAM=['ikisini de attı.','çizgiden şaşmadı.','iki atış iki sayı.','hepsi içeride.',
+    'hata yok.','tereddütsüz, ikisi de girdi.','soğukkanlı bitirdi.'];
+  const FT_TAM3=['üçünü de attı.','çizgiden şaşmadı.','üç atış üç sayı.','hepsi içeride.','hata yok.'];
+  const FT_YARIM=['birini kaçırdı.','sadece birini bıraktı.','yarısı geldi.','birini içeride tuttu.','tam olmadı.'];
+  const FT_SIFIR=['ikisi de gitti; seyirci sustu.','ikisi de dışarıda.','ikisini de kaçırdı.','hiçbiri girmedi.'];
+  const ftLine=(nMade,nAtt,who)=>{
+    try{
+      /* Ad ftPre'de zaten geçiyor ('… Batıkan Bayrak çizgide.'); ftRes'te tam adı
+         tekrarlamak olayı 20 kelimeye çıkarıyordu. Kısa ad hem yeterli hem doğal. */
+      const kisa=(typeof _tokShort==='function')?_tokShort(who):who;
+      const skor=`${kisa} çizgide ${nMade}/${nAtt} —`;
+      if(nMade===nAtt) return `${skor} ${pickLine(nAtt>=3?FT_TAM3:FT_TAM,pr,narr.recent,'fttam')}`;
+      if(nMade===0)    return `${skor} ${pickLine(FT_SIFIR,pr,narr.recent,'ftsifir')}`;
+      return `${skor} ${pickLine(FT_YARIM,pr,narr.recent,'ftyarim')}`;
+    }catch(e){ return `${who} çizgide ${nMade}/${nAtt}.`; }
+  };
 
   /* ── Tek pozisyon simülasyonu (gerçekçi FIBA temposu) ──
      Pozisyonların çoğu saha içi şutla biter; ribaund/asist/blok/faul kutuya ve anlatıma gömülür.
@@ -2843,7 +2994,7 @@ function generateMatchEvents(rakip, opts){
           botState.restCd=6;
           const why=(out.matchFouls||0)>=3?`${out.matchFouls} faulle`:'dinlenmek için';
           events.push({type:'sub',off:false,botCoach:true,
-            text:pickLine(SUB_LINES,pr,narr.recent,'sub').replace('%T',rname).replace('%O',out.isim).replace('%W',why).replace('%I',inP.isim)+` (${homeScore} - ${awayScore})`,
+            text:adKoy(pickLine(SUB_LINES,pr,narr.recent,'sub'),{T:rname,O:out.isim,W:why,I:inP.isim})+` (${homeScore} - ${awayScore})`,
             q,t,home:homeScore,away:awayScore,subOutObj:out,subInObj:inP,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         }
       }
@@ -2906,6 +3057,50 @@ function generateMatchEvents(rakip, opts){
           return sc();
         }
         _scG.cd--; return '';
+      }catch(e){ return ''; }
+    };
+    /* §7.3a: SAAT KAPISI — hedef %6-14 arası olayda saat geçsin, rastgele değil anlamlı
+       anlarda. Cooldown maç düzeyinde (`_saatG`) tutulur; scGate ile aynı desen. */
+    const saatGate=(qq,tt)=>{
+      try{
+        const gap=Math.abs(homeScore-awayScore);
+        /* Ağırlıklar ÖLÇÜLEREK ayarlandı. Maç başına 250 olay var, hedef %6-14 = 15-35
+           satır. Saat kapısı yalnız şut olaylarına takılı; aday şut sayısı maç başına
+           ~38 (t≤30: 8,8 · t≤120: 17,8 · 4Ç yakın skor: ~12). İlk denemede ağırlıklar
+           0,85/0,35/0,30 ve cooldown 3-6 idi → %2,4 çıktı, aday havuzunun küçüklüğü
+           hesaba katılmamıştı. */
+        /* §7.3c: çeyreğin SON olayında saat mutlaka geçer — cooldown'ı da atlar.
+           Bu, "4. çeyreğin son 3 dakikası 1. çeyrekle aynı tonda" şikâyetinin
+           en görünür yeri; kapanış anı hiçbir koşulda sessiz kalmamalı. */
+        if(tt<=10){ _saatG.cd=0; _saatG.say++; return ' '+pickLine(SAAT_QSON,pr,narr.recent,'saat'); }
+        let agirlik=0;
+        if(tt<=30)                      agirlik=0.92;  /* çeyrek sonuna 30 sn — en sık */
+        else if(tt<=120)                agirlik=0.62;  /* çeyrek sonuna 2 dk */
+        else if(qq>=4&&gap<=6)          agirlik=0.55;  /* son çeyrek, maç başa baş */
+        if(!agirlik) return '';
+        if(_saatG.cd>0){ _saatG.cd--; return ''; }
+        if(!prChance(agirlik)) return '';
+        _saatG.cd=1+Math.floor(pr()*2);
+        _saatG.say++;
+        return ' '+pickLine(tt<=30?SAAT_QSON:SAAT_LINES,pr,narr.recent,'saat');
+      }catch(e){ return ''; }
+    };
+    /* §7.3b: SON BÖLÜM TONU — 4. çeyrek son 3 dakikada farka göre gergin/yatışmış.
+       Mevcut cümlelerin YERİNE değil YANINA eklenir. Maç başına ≥3 hedefi var, bu
+       yüzden cooldown kısa (2 olay) ve olasılık yüksek. */
+    const tonGate=(qq,tt)=>{
+      try{
+        if(qq<4||tt>180) return '';
+        const gap=Math.abs(homeScore-awayScore);
+        if(gap>6&&gap<15) return '';                   /* arası: normal ton */
+        if(_saatG.tonCd>0){ _saatG.tonCd--; return ''; }
+        /* Ölçüm: cd=2 · p=0,55 ile maç başına 2,4 satır çıktı (hedef ≥3). 4Ç son 3 dk'da
+           ~21 olay var ama hepsi şut/ribaund değil ve fark 7-14 aralığındaysa ton hiç
+           basılmaz — bu yüzden kalan adaylarda oran yüksek tutulur. */
+        if(!prChance(0.78)) return '';
+        _saatG.tonCd=1;
+        _saatG.tonSay++;
+        return ' '+pickLine(gap<=6?SON_BOLUM.gergin:SON_BOLUM.yatismis,pr,narr.recent,'ton');
       }catch(e){ return ''; }
     };
     /* F13-3: seri sayacı SKORDAN beslenir. Eskiden `narr.run` yalnız sahadan atılan
@@ -3111,7 +3306,7 @@ function generateMatchEvents(rakip, opts){
         const _seriBenim=(_runTeam===(userPos?'h':'a'));
         if(_seriBenim&&_runPts>=8) cand.push(`🔥 ${_runPts}-0'lık seri!`);
         else if(mg>=18) cand.push(`Fark açıldı — ${mg} sayı.`);
-        if(hh>=3) cand.push(`${shooter.isim} kızıştı — üst üste ${hh}. isabet!`);
+        if(hh>=3) cand.push(`${_tokShort(shooter.isim)} eli sıcak — ${hh}. isabet!`);
         if(clutch&&mg<=4) cand.push('Kritik anlar, başa baş!');
         /* ⚠ `rand(3,6)` MAÇ rastgeleliğini tüketiyordu: anlatım bağlam öneki ne sıklıkta
            çıkarsa maçın rastgele akışı o kadar kayıyordu (F13-3 seri düzeltmesi hash'i bu
@@ -3124,38 +3319,48 @@ function generateMatchEvents(rakip, opts){
       /* F14-2: pozisyonların ~%40'ı kısa parçalı zincirle anlatılır. Hamle ibaresi ya da
          asist öneki zaten varsa zincir kullanılmaz (iki ritim üst üste binmesin). */
       /* Asistli pozisyonlarda zincir kullanılmadığı için etkin oran seçilen olasılığın
-         altında kalıyor; ölçüm 0,40 ile %25 verdi (hedef %30-50) → 0,55. */
-      const _zincirMod=prChance(0.55);
+         altında kalıyor; ölçüm 0,40 ile %25 verdi (hedef %30-50) → 0,55.
+         §7.4a: hedef %50-60'a çıkarıldı (gerçek anlatımın temel birimi 2-5 kelimelik
+         parçadır); 0,55 ile ölçülen %35,4 idi → 0,80. */
+      const _zincirMod=prChance(0.95);
+      /* §8 kapısı için zincir oranı METİNDEN tahmin edilemiyor: kısa ad kullanımı
+         (§7.4a) normal cümleleri de 'kısa ilk yan cümle' kalıbına sokuyor ve regex
+         tabanlı ölçüm %64 gibi yanlış bir sayı veriyordu. Bayrak üreticinin kendi
+         kararını taşır — ölçüm tahmine değil olguya bakar. */
+      let _zincirKul=false;
       let txt;
       if(made){
         if(is3){
-          const pasTxt=passer?assistPhrase(passer.isim,scheme,pr,narr.recent):'';
+          const pasTxt=passer?assistPhrase(_tokShort(passer.isim),scheme,pr,narr.recent):'';
           const _v={s:shooter.isim,sc:scGate(q,t),zone};
           txt=(_zincirMod&&!pasTxt)
-            ? zincirLine('score3',_v,pr,narr.recent)          /* zincir kendi ritmini kurar:
+            ? (_zincirKul=true,zincirLine('score3',_v,pr,narr.recent))          /* zincir kendi ritmini kurar:
                                                                  hamle ibaresi eklenmez */
             : movePhrase+pasTxt+spikerLinePR(SP.id,'score3',_v,pr,narr.recent);
         }
-        else if(and1){ txt=`${shooter.isim} faule rağmen ${cls==='yakin'?'turnikeyi bitirdi':'şutu soktu'} — ${and1Made?'AND-1 tamam!':'ek atış kaçtı.'} (${_and1Foul}) ${sc()}`; }
+        else if(and1){ txt=`${shooter.isim} faule rağmen ${cls==='yakin'?'turnikeyi bitirdi':'şutu soktu'} — ${and1Made?'devam sayısı tamam!':'ek atış kaçtı.'} (${_and1Foul}) ${sc()}`; }
         else {
-          const pasTxt=passer?assistPhrase(passer.isim,scheme,pr,narr.recent):'';
+          const pasTxt=passer?assistPhrase(_tokShort(passer.isim),scheme,pr,narr.recent):'';
           const _v={s:shooter.isim,sc:scGate(q,t),cls,zone};
           txt=(_zincirMod&&!pasTxt)
-            ? zincirLine('score2',_v,pr,narr.recent)
+            ? (_zincirKul=true,zincirLine('score2',_v,pr,narr.recent))
             : movePhrase+pasTxt+spikerLinePR(SP.id,'score2',_v,pr,narr.recent);
         }
       } else if(blocked){
-        txt=spikerLinePR(SP.id,'block',{s:shooter.isim,b:blk.isim},pr,narr.recent);
+        txt=spikerLinePR(SP.id,'block',{s:_tokShort(shooter.isim),b:_tokShort(blk.isim)},pr,narr.recent);
       } else {
         const _k=is3?'miss3':'miss2';
         const _v={s:shooter.isim,cls,zone};
         txt=_zincirMod
-          ? zincirLine(_k,_v,pr,narr.recent)
+          ? (_zincirKul=true,zincirLine(_k,_v,pr,narr.recent))
           : spikerLinePR(SP.id,_k,_v,pr,narr.recent);
       }
       txt=ctxPre+txt;
       if(fb) txt='⚡ Hızlı hücum! '+txt;
       else if(putback) txt='İkinci şans! '+txt;
+      /* §7.3: saat referansı ve son-bölüm tonu cümlenin SONUNA eklenir; mevcut
+         anlatımın hiçbiri kaldırılmaz. Yalnız `pr` kullanan kapılardır. */
+      txt+=saatGate(q,t)+tonGate(q,t);
       /* Faz 3: seri + sıcaklık takibi (yalnız karşılaştırma/sayaç — sonuç randomu değişmez). */
       if(made){
         if(narr.runOff!==userPos){ narr.runOff=userPos; narr.run=pts; } else narr.run+=pts;
@@ -3172,7 +3377,7 @@ function generateMatchEvents(rakip, opts){
                                  vur:()=>{ narr.imzaCd=8; }},pr,narr.recent);
         }catch(e){}
       }
-      events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,play,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q,fb:fb||undefined,pb:putback||undefined,blk:blocked||undefined,scheme,zone,move:move||undefined,contest,sid:shooter.id!=null?shooter.id:undefined,pid:(passer&&passer.id!=null)?passer.id:undefined,and1:and1?{made:and1Made}:undefined},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,play,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q,fb:fb||undefined,pb:putback||undefined,blk:blocked||undefined,scheme,zone,move:move||undefined,contest,sid:shooter.id!=null?shooter.id:undefined,pid:(passer&&passer.id!=null)?passer.id:undefined,and1:and1?{made:and1Made}:undefined,zincir:_zincirKul||undefined},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       _flushReb();   /* and-1 ek atışının ribaundu şut cümlesinden SONRA gelir */
       /* F13-1: kaçan şutların yalnız ~%22'sinde ribaund ANLATILIYORDU; kalan %78'de top
          sessizce el değiştiriyor, anlatım "biz kaçırdık → rakip sayı attı" diye atlıyordu
@@ -3188,10 +3393,12 @@ function generateMatchEvents(rakip, opts){
         const rebIsUser=rebOff?userPos:!userPos;
         const havuz=_rebAnlat?(rebOff?REB_OFF_LINES:REB_DEF_LINES)
                              :(rebOff?REB_OFF_SHORT:REB_DEF_SHORT);
-        const rl=pickLine(havuz,pr,narr.recent,rebOff?'rebO':'rebD')
-          .replace('%R',rebounder.isim)
-          .replace('%T',rebIsUser?MC.home.name:rname);
-        events.push({type:'reb',text:rl,dt:0,q,t,home:homeScore,away:awayScore,rebId:rebounder.id,rebIsUser,rebOff:!!rebOff,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});   /* M14: hücum ribaundunda şut saati 24 değil 14 */
+        const rl=adKoy(pickLine(havuz,pr,narr.recent,rebOff?'rebO':'rebD'),
+          {R:_tokShort(rebounder.isim),T:rebIsUser?MC.home.name:rname});
+        /* §7.3: ribaund da saat referansı için doğal bir yer — kapı aday havuzu
+           yalnız şutlara takılıyken %5'te kalıyordu (hedef %6-14). */
+        const rl2=rl+saatGate(q,t)+tonGate(q,t);
+        events.push({type:'reb',text:rl2,dt:0,q,t,home:homeScore,away:awayScore,rebId:rebounder.id,rebIsUser,rebOff:!!rebOff,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});   /* M14: hücum ribaundunda şut saati 24 değil 14 */
         /* Hücum ribaundu + renkli anlatım varsa: ~%55 aynı oyuncu pota dibinden tekrar dener. */
         if(_rebAnlat&&rebOff&&rebounder.id!=null&&Math.random()<0.55) shooterHint=rebounder;
       }
@@ -3229,7 +3436,11 @@ function generateMatchEvents(rakip, opts){
         } else {
           const cnt=defenderIsUser?(qFoulU[q]||0):(qFoulO[q]||0);
           posNext=userPos;   /* şutsuz faul: top hücum eden takımda kalır (yandan devam) */
-          events.push({type:'foul',text:`${foulPrefix(_fp)} · ${foulingTeamName(defenderIsUser)} bu çeyrek ${cnt}. takım faulü${cnt>=5?" · BONUS":""}. ${pickLine(FOUL_TAIL,pr,narr.recent,"ftail")}${yorumEk('foul')}`,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+          /* §7.4a: takım faulü sayacı HER faulde basılıyordu; cümlenin yarısı defter
+             tutmaya gidiyordu (faul olayı ortalama 19,2 kelime). Sayaç ancak bonusa
+             yaklaşırken (4+) bilgi taşır — öncesinde sessiz kalır. */
+          const _tf=(cnt>=4)?` · ${foulingTeamName(defenderIsUser)} bu çeyrek ${cnt}. takım faulü${cnt>=5?" · BONUS":""}.`:'';
+          events.push({type:'foul',text:`${foulPrefix(_fp)}${_tf||'.'} ${pickLine(FOUL_TAIL,pr,narr.recent,"ftail")}${yorumEk('foul')}${saatGate(q,t)}`,q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         }
       } else {
         /* Top kaybı / top çalma — sayı yok. Faz 3: yalnız AZALTMA çarpanı (set oyun / bölge savunması);
@@ -3248,18 +3459,18 @@ function generateMatchEvents(rakip, opts){
             /* F13-6: top çalma iki farklı dille anlatılıyordu ve spiker kalıbında TOPU KAYBEDEN
                hiç geçmiyordu ("Victor Kim müthiş bir top çalma!" — kimden aldı?). Artık her
                çalma satırı iki taraflı: kaybeden + kapan. */
-            events.push({type:'steal',text:pickLine(STEAL_LOSS,pr,narr.recent,'stl2').replace('%L',loser.isim).replace('%C',stealer.isim)+' '+spikerLinePR(SP.id,'steal',{c:stealer.isim},pr,narr.recent),q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+            events.push({type:'steal',text:pickLine(STEAL_LOSS,pr,narr.recent,'stl2').replace('%L',_tokShort(loser.isim)).replace('%C',_tokShort(stealer.isim))+' '+spikerLinePR(SP.id,'steal',{c:_tokShort(stealer.isim)},pr,narr.recent),q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
           } else if(tur<0.86){
             B.to++;
             fastNext='steal';
             const alan=userPos?(wPick(oppCourt,stlW)||oAny()):(wPick(userCourt,stlW)||uAny());
-            events.push({type:'steal',text:pickLine(['%S pasını kontrol edemedi — topu %R aldı.','%S kötü bir pas attı, %R topu aldı.','%S pasına %R araya girdi; hücum bitti.','%S pasında iletişim koptu — topu %R topladı.'],pr,narr.recent,'topas').replace('%S',loser.isim).replace(/%R/g,alan.isim),q,t,home:homeScore,away:awayScore,stealId:alan.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+            events.push({type:'steal',text:pickLine(['%S pasını kontrol edemedi — topu %R aldı.','%S kötü bir pas attı, %R topu aldı.','%S pasına %R araya girdi; hücum bitti.','%S pasında iletişim koptu — topu %R topladı.'],pr,narr.recent,'topas').replace('%S',_tokShort(loser.isim)).replace(/%R/g,_tokShort(alan.isim)),q,t,home:homeScore,away:awayScore,stealId:alan.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
           } else {
             B.to++;
             /* İhlallerin bir kısmı hücum faulüdür — faul hanesine de yazılmalı. */
             if(Math.random()<0.34) B.foul++;
             const alan2=userPos?(wPick(oppCourt,stlW)||oAny()):(wPick(userCourt,stlW)||uAny());
-            events.push({type:'steal',text:pickLine(['%S adım attı — düdük çaldı, topu %R kullanacak.','%S çift top yaptı; hücum bitti, topu %R kullanacak.','%S topu çizgi dışına kaçırdı — %R sokacak.','%S hücum faulü yaptı; top %R tarafına geçti.'],pr,narr.recent,'toviol').replace('%S',loser.isim).replace(/%R/g,alan2.isim),q,t,home:homeScore,away:awayScore,stealId:alan2.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+            events.push({type:'steal',text:pickLine(['%S adım attı — düdük çaldı, topu %R kullanacak.','%S çift top yaptı; hücum bitti, topu %R kullanacak.','%S topu çizgi dışına kaçırdı — %R sokacak.','%S hücum faulü yaptı; top %R tarafına geçti.'],pr,narr.recent,'toviol').replace('%S',_tokShort(loser.isim)).replace(/%R/g,_tokShort(alan2.isim)),q,t,home:homeScore,away:awayScore,stealId:alan2.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
           }
         } else {
           /* Top kaybı savuşturuldu — sabırlı/kontrollü pozisyon, top el değiştirmedi (sayı yok). */
@@ -3271,7 +3482,22 @@ function generateMatchEvents(rakip, opts){
     } else {
       /* Renk — mola/taktik vurgusu (pozisyon değişmez, oyun aynı topla sürer) */
       posNext=userPos;
-      events.push({type:'tactic',text:spikerLinePR(SP.id,'tactic',{},pr,narr.recent)+` (${prCh(['pick-and-roll','el presi','2-3 bölge','erken tempo','yayılma hücumu','çift perde'])})`+yorumEk('tempo'),q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      /* §7.4b: taktik adı artık parantezli etiket değil, cümlenin DOKUSU.
+         Önce: 'Tempo kontrolü — doğru karar. (erken tempo)' — geliştirici notu gibi.
+         Sonra: 'Erken tempoya geçtiler, doğru karar.'
+         Taktik adları cins isimdir, kesme işareti ALMAZ — turkEk kullanılmaz. */
+      const _tk=prCh(TAKTIK_ADI);
+      const _tkG=pickLine(TAKTIK_GIRIS,pr,narr.recent,'tkgiris')||TAKTIK_GIRIS[0];
+      const _tkGiris=String(_tkG.t).split('%KN').join(_tk.ad).split('%K').join(_tk.e);
+      let _tkSpiker=spikerLinePR(SP.id,'tactic',{},pr,narr.recent);
+      /* Giriş cümleyi SÜRDÜRÜYORSA spiker satırı küçük harfle devam eder; kendi başına
+         bir cümleyse büyük kalır. İlk sürümde ayrım yoktu ve iki bozuk biçim çıktı:
+         'Kenardan işaret: el presine. hücumda plan B…' ve 'yayılma hücumuna geçiş
+         yapıldı — yeni varyasyon…' (cümle başı küçük harf). */
+      if(_tkG.devam) _tkSpiker=(typeof trKucuk==='function'?trKucuk(_tkSpiker.charAt(0)):_tkSpiker.charAt(0).toLowerCase())+_tkSpiker.slice(1);
+      let _tkTxt=_tkGiris+_tkSpiker;
+      _tkTxt=(typeof trBuyukIlk==='function')?trBuyukIlk(_tkTxt):(_tkTxt.charAt(0).toUpperCase()+_tkTxt.slice(1));
+      events.push({type:'tactic',text:_tkTxt+yorumEk('tempo'),q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
     }
   }
 

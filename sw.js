@@ -17,7 +17,7 @@ const SCRIPT_V = '56';
 const CACHE = 'charazay-v' + SCRIPT_V;
 
 const JS_FILES = ['i18n', 'i18n-dict', 'i18n-commentary', 'names', 'state', 'economy', 'persistence',
-  'portraits', 'roster-gen', 'league', 'match-prep', 'render', 'match-engine', 'main'];
+  'portraits', 'roster-gen', 'league', 'match-prep', 'render', 'turkce-ek', 'match-engine', 'main'];
 
 const SHELL = ['./', 'charazay2.0.html', 'manifest.json',
   'assets/icon-192.png', 'assets/icon-512.png',
