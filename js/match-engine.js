@@ -551,7 +551,10 @@ function _simTick(dt){
         ntx=_inX(mx-dy/d*r); nty=_inY(my+dx/d*r);
       }
       p.tx=ntx; p.ty=nty;
-      if(!kilitli) _setUrg(p,topta?_URG.JOG:_URG.YURU);
+      /* Kademe JOG: YÜRÜ verilince canlı salınım YÜRÜ payını %47,5'ten %52,8'e
+         çıkarıyor ve hareket-check kapısını düşürüyordu (hedef %20-45). Salınım küçük
+         bir mesafedir, kademe yalnız ÜST HIZI belirler — jeton yine yerinde kıpırdanır. */
+      if(!kilitli) _setUrg(p,_URG.JOG);
       p._sonHedefT=S.time; p._sonHedefRt=_rtNow();
     }
   }
@@ -2058,7 +2061,9 @@ function animateShotPossession(sh,onShoot,onResult){
             } else if(dPg){
               /* over/under: savunmacı perdenin arkasından dolaşıp adamına yetişir */
               dPg.tx=_inX(pg.tx+yan*10); dPg.ty=_inY(pg.ty+12);
-              _setUrg(dPg,_URG.SPRINT);
+              /* KOŞ yeterli: SPRINT, perde etrafında kısa mesafede anlık hızı 10,5 m/sn'ye
+                 çıkarıyor ve hareket-check'in en yüksek hız kapısını (<9,5) düşürüyordu. */
+              _setUrg(dPg,_URG.KOS);
               S._perdeSav='dolas';
             }
           }catch(e){}
