@@ -18,6 +18,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const KAPI = require('./_lib/anlatim-kapilari.js');   /* FAZ 25 §8 okuyucuları */
 
 const ROOT = path.resolve(__dirname, '..');
 const arg = (ad, v) => { const m = process.argv.find(a => a.startsWith('--' + ad + '=')); return m ? Number(m.split('=')[1]) : v; };
@@ -97,6 +98,18 @@ function taraf(e) {
 const SUT = new Set(['score2', 'score3', 'miss2', 'miss3']);
 const KACAN = new Set(['miss2', 'miss3']);
 
+/* Kadro adları — 'top çalma iki taraflı' ölçümü büyük harfli her sözcüğü ad sanmasın
+   diye süzgeç. maclariUret'ten sonra doldurulur. */
+const KADRO_ADLARI = new Set();
+function kadroAdlariniDoldur(rosterler) {
+  KADRO_ADLARI.clear();
+  (rosterler || []).forEach(r => (r || []).forEach(pl => {
+    const ad = String((pl && pl.isim) || '').trim();
+    if (!ad) return;
+    ad.split(/\s+/).forEach(w => { if (w.length > 1) KADRO_ADLARI.add(w); });
+  }));
+}
+
 function analizEt(events) {
   const r = {
     sut: 0, kacan: 0, reb: 0, foul: 0, foulAdli: 0, steal: 0, stealCiftTarafli: 0,
@@ -162,17 +175,23 @@ function analizEt(events) {
          sözcük listesi yerine ad sayısı: kalıplar çeşitlendikçe ölçü bozulmasın. */
       /* Ad kalıbı Unicode büyük harfle kurulur: "LaMelo Lewis", "Nikola Jokić", "Đorđe Šarić"
          gibi adlar dar bir [A-ZÇĞİÖŞÜ] sınıfıyla kaçıyordu (ölçü yanlış düşük çıkıyordu). */
-      const adlar = tx.match(/\p{Lu}[\p{L}'’]+\s\p{Lu}[\p{L}'’]+/gu) || [];
-      if (new Set(adlar).size >= 2) r.stealCiftTarafli++;
+      /* FAZ 25 §7.4a: anlatım artık kısa ad kullanıyor; eski 'Ad Soyad' kalıbı 795
+         satırın hiçbirini yakalamıyordu (0/795). Niyet iki tarafın da anılması. */
+      if (KAPI.adlariBul(tx, KADRO_ADLARI).length >= 2) r.stealCiftTarafli++;
     }
-    if (/faul/i.test(tx) && (t === 'foul' || /Faul —/.test(tx))) {
+    /* FAZ 25 §7.4d: satır künye ('Faul — X (kişisel 2)') YA DA cümle ('X'in ikinci
+       faulü') biçiminde olabilir; kapının niyeti biçim değil, faulü yapanın anılması ve
+       sayacın atlamaması.
+       ⚠ Kapsam da düzeltildi: eski koşul 'Faul —' arıyordu, bu yüzden serbest atış
+       (type='free') ve and-1 satırlarındaki CÜMLE biçimli fauller sayaca hiç girmiyor,
+       araya giren faul görünmediği için sayaç 1→3 atlıyormuş gibi okunuyordu. */
+    const fo = /faul/i.test(tx) ? KAPI.foulOku(tx) : null;
+    if (fo || (t === 'foul' && /faul/i.test(tx))) {
       r.foul++;
-      const m = /Faul — ([^()]+?) \(kişisel (\d+)\)/.exec(tx);
-      if (m) {
+      if (fo) {
         r.foulAdli++;
-        const ad = m[1].trim(), no = Number(m[2]);
-        if (foulSay[ad] != null && no > foulSay[ad] + 1) r.foulAtlama++;
-        foulSay[ad] = no;
+        if (foulSay[fo.ad] != null && fo.no > foulSay[fo.ad] + 1) r.foulAtlama++;
+        foulSay[fo.ad] = fo.no;
       }
     }
     if (/devre aras/i.test(tx)) r.devreArasi++;
@@ -200,7 +219,9 @@ function analizEt(events) {
   const ctx = ortamKur();
   const ev = kadroUret(ctx, SEED0 ^ 0x1111);
   const dep = kadroUret(ctx, SEED0 ^ 0x2222);
+  kadroAdlariniDoldur([ev, dep]);
 
+  const tumEvents = [];   /* FAZ 25 §8 dil kapıları için (yalın kopya) */
   const TOPK = new Map();
   const T = { sut: 0, kacan: 0, reb: 0, foul: 0, foulAdli: 0, steal: 0, stealCiftTarafli: 0,
     rebsizTarafDegisimi: 0, ardisikAyniTakimSutu: 0, seriIddia: 0, seriYanlis: 0, devreArasi: 0,
@@ -210,6 +231,7 @@ function analizEt(events) {
       homeRoster: ev, awayRoster: dep, homeName: 'Ev Kartalları', awayName: 'Deplasman Kurtları',
       seed: SEED0 + i,
     });
+    (m.events||[]).forEach(e=>{ if(e&&e.text) tumEvents.push({type:e.type,text:e.text,q:e.q,t:e.t,shot:e.shot}); });
     const r = analizEt(m.events);
     ['sut', 'kacan', 'reb', 'foul', 'foulAdli', 'steal', 'stealCiftTarafli', 'rebsizTarafDegisimi',
       'ardisikAyniTakimSutu', 'seriIddia', 'seriYanlis', 'devreArasi', 'foulAtlama', 'enerjiSatiri', 'koseIddia', 'koseYanlis', 'olay']
@@ -440,6 +462,31 @@ function analizEt(events) {
   } else {
     console.log('\n  ℹ F13-14 (sekme donması) testi için: node tools/anlatim-check.js --freeze');
   }
+
+  /* ── FAZ 25 §8: DİL VE ÜSLUP KAPILARI ────────────────────────────────────────────
+     FAZ 13 ölçümleri yukarıda (tutarlılık); buradakiler dilin KENDİSİNİ ölçer.
+     Ayrı dosyada (tools/_lib/anlatim-kapilari.js) durur ki hangi ölçümün hangi
+     brifden geldiği kaybolmasın. */
+  console.log(String.fromCharCode(10)+"── FAZ 25: dil ve üslup ──");
+  const K = require('./_lib/anlatim-kapilari.js').olcumler(tumEvents, N);
+  ok('Türkçe ek uyumu hatası yok', K.ekHata.length === 0,
+     K.ekHata.length ? K.ekHata.slice(0, 4).join(' | ') : `${K.olay} olay tarandı`);
+  ok('failsiz anlatım satırı yok', K.failsiz.length === 0,
+     K.failsiz.length ? K.failsiz.slice(0, 3).join(' | ') : 'oyun olaylarının hepsinde fail var');
+  ok('saat referansı %6-14', K.saatOran >= 0.06 && K.saatOran <= 0.14,
+     `%${(K.saatOran * 100).toFixed(1)} (${K.saat}/${K.olay})`);
+  ok('4Ç son 3 dk ton satırı ≥3/maç', K.tonMac >= 3,
+     `${K.tonMac.toFixed(1)}/maç (${K.ton} satır)`);
+  ok('zincir oranı %50-60', K.zincirOran >= 0.50 && K.zincirOran <= 0.60,
+     `%${(K.zincirOran * 100).toFixed(1)} (${K.zincir}/${K.sut} şut)`);
+  ok('ortalama olay kelime sayısı <9', K.kelimeOrt < 9, K.kelimeOrt.toFixed(2));
+  ok('yabancı terim geçmiyor', Object.keys(K.yabanci).length === 0,
+     Object.keys(K.yabanci).length ? JSON.stringify(K.yabanci) : 'spacing/box-out/drive/roll/AND-1 yok');
+  ok('"hepsi içeride" ≤4/maç', K.hepsiIceridMac <= 4, `${K.hepsiIceridMac.toFixed(1)}/maç`);
+  ok('künye biçimli faul satırı ≤%50', K.foulKunyeOran <= 0.50,
+     `%${(K.foulKunyeOran * 100).toFixed(1)} (${K.foulKunye}/${K.foul})`);
+  ok('anlatım-saha çelişmesi yok', K.celiski.length === 0,
+     K.celiski.length ? K.celiski.slice(0, 3).join(' | ') : 'köşe/post/yakınlık iddiaları sahayla uyumlu');
 
   const dusen = sonuc.filter(s => !s.gecti);
   console.log('\n' + '='.repeat(66));

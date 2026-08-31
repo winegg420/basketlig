@@ -2602,7 +2602,10 @@ function adKoy(txt,map){
 const AKIS_ON={
   gelis:  ['%S geldi.','%S topu aldı.','%S topu yukarı taşıdı.','Top %S{de}.','%S ilerletiyor.','%S rakip yarı sahada.'],
   perde:  ['Perde geldi.','%S perdeden çıktı.','Yüksek perde.','Perde arkasından %S.','İkili oyun.','%S perde istedi.'],
-  eslesme:['%S eşleşmeyi buldu.','%S pozisyon aldı.','%S sırtını döndü.','%S adamını sırtladı.','%S pozisyonu istedi.'],
+  /* §7.5: 'sırtını döndü' / 'adamını sırtladı' POST OYUNU iddiasıdır ve zincir bölge
+     filtresinden geçmediği için spotup/pnr/cut pozisyonlarında da çıkıyordu. Bölge ve
+     şema iddiası taşımayan karşılıklarla değiştirildi (F13-9 ile aynı hata sınıfı). */
+  eslesme:['%S eşleşmeyi buldu.','%S pozisyon aldı.','%S adamını okudu.','%S üstünlüğü buldu.','%S pozisyonu istedi.'],
   yuklen: ['%S yüklendi.','%S daldı içeriye.','%S çembere gitti.','%S kat etti.','%S süratlendi.','%S dişini gösterdi.']
 };
 /* Kısa çekirdekler: zincir modunda uzun spiker cümlesinin yerini alır. */
@@ -2659,6 +2662,13 @@ function spikerLinePR(spId,kind,v,pr,memo){
   v=v||{};
   if(v.cls&&(kind==='score2'||kind==='miss2')){
     const f=pool.filter(t=>v.cls==='yakin'?!_MID_WORDS.test(t):!_NEAR_WORDS.test(t));
+    if(f.length) pool=f;
+  }
+  /* §7.5: BLOK cümlesi bölge süzgecinden geçmiyordu — üç sayılık deneme bloklanınca
+     "boyalı alanın kapısını kapadı!" çıkıyordu. Yay dışı denemede boya/pota dibi
+     iddiası taşıyan satırlar elenir. */
+  if(kind==='block'&&v.uzak){
+    const f=pool.filter(t=>!_NEAR_WORDS.test(t)&&!/boyalı alan|pota dib|çember/i.test(t));
     if(f.length) pool=f;
   }
   /* F13-9: "köşe üçlüğü" ifadesi bölgeden bağımsız seçiliyordu; kanattan ya da yay
@@ -3642,7 +3652,7 @@ function generateMatchEvents(rakip, opts){
             : movePhrase+pasTxt+spikerLinePR(SP.id,'score2',_v,pr,narr.recent);
         }
       } else if(blocked){
-        txt=spikerLinePR(SP.id,'block',{s:_tokShort(shooter.isim),b:_tokShort(blk.isim)},pr,narr.recent);
+        txt=spikerLinePR(SP.id,'block',{s:_tokShort(shooter.isim),b:_tokShort(blk.isim),uzak:is3},pr,narr.recent);
       } else {
         const _k=is3?'miss3':'miss2';
         const _v={s:shooter.isim,cls,zone};
