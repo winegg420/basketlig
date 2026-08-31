@@ -19,6 +19,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
+const SAHA = require('./_lib/saha-kapilari.js');   /* FAZ 25 §8 saha kapıları */
 
 const ROOT = path.resolve(__dirname, '..');
 const arg = (k, d) => { const a = process.argv.find(x => x.startsWith('--' + k + '=')); return a ? a.slice(k.length + 3) : d; };
@@ -204,6 +205,9 @@ async function main() {
     requestAnimationFrame(step);
   });
 
+  /* FAZ 25 §8: saha davranışı örnekleyicisi — ayrı bir rAF döngüsü, __SUNUM'a dokunmaz. */
+  await page.evaluate(SAHA.ORNEKLEYICI);
+
   await sleep(WATCH_MS);
 
   /* FAZ 19 §4.3: akış damgası ile tabela saati aynı olmalı. Canlıda tabela 5:17 (kalan)
@@ -287,6 +291,13 @@ async function main() {
     };
   });
 
+  const HAM = await page.evaluate(() => {
+    const P = window.__SAHA || {};
+    /* Map serileştirilemez — atılır (kapılar zaten kullanmıyor). */
+    return { tasima:P.tasima||[], donma:P.donma||[], sokma:P.sokma||[], ftDrib:P.ftDrib||[],
+             sirtDonuk:P.sirtDonuk||[], perde:P.perde||[], sema:P.sema||{} };
+  });
+
   await browser.close();
   server.close();
 
@@ -367,6 +378,51 @@ async function main() {
       `tabela ${Math.floor(o.tabela/60)}:${String(o.tabela%60).padStart(2,'0')} · ` +
       `akış "${o.akisTxt}" · damga farkı ${fark} sn (hedef |fark| ≤ 24, ikisi de geriye sayıyor)`);
   }
+
+  /* ── FAZ 25 §8: SAHA DAVRANIŞI KAPILARI ───────────────────────────────────────── */
+  const SK = SAHA.kapilar(HAM);
+
+  if (SK.tasima.n < 5) kayit('F25-1', 'Orta sahayı geçen topu 1/2/3 taşıyor', false,
+    `ÖRNEK YOK — yalnız ${SK.tasima.n} taşıma yakalandı; --ms değerini artır`);
+  else kayit('F25-1', 'Orta sahayı geçen topu 1/2/3 taşıyor', SK.tasima.oran >= 0.85,
+    `${SK.tasima.n} taşıma · %${(SK.tasima.oran*100).toFixed(1)} rol 0/1/2 (hedef ≥ %85)`);
+
+  kayit('F25-2', 'Set hücumunda donma yok (hedef ≥1,5 sn sabit kalmıyor)', SK.donma.n === 0,
+    SK.donma.n ? `${SK.donma.n} donma · en uzun ${SK.donma.enUzun.toFixed(2)} sn` + (process.argv.includes('--dbg')?' · rol '+JSON.stringify(HAM.donma.slice(0,6))+' /*__F25_2_DBG*/':'') : 'donma olayı 0');
+
+  if (!SK.sokma.n) kayit('F25-3', 'Kenardan sokmada takım yakın duruyor', false,
+    'ÖRNEK YOK — bu pencerede kenardan sokma yakalanmadı');
+  else kayit('F25-3', 'Kenardan sokmada takım yakın duruyor',
+    SK.sokma.ortM <= 15 && SK.sokma.yakin3 >= 0.9 &&
+    (SK.sokma.pasliOrnek === 0 || SK.sokma.uzunPas / SK.sokma.pasliOrnek < 0.05),
+    `${SK.sokma.n} sokma · ortalama ${SK.sokma.ortM.toFixed(1)} m (≤15) · 3+ yakın %${(SK.sokma.yakin3*100).toFixed(0)}` +
+    ` · 25 m+ ilk pas ${SK.sokma.uzunPas}/${SK.sokma.pasliOrnek}`);
+
+  if (!SK.ftDrib.n) kayit('F25-4', 'Serbest atışta sektirme 1-3', false,
+    'ÖRNEK YOK — bu pencerede serbest atış yakalanmadı');
+  else kayit('F25-4', 'Serbest atışta sektirme 1-3',
+    SK.ftDrib.min >= 1 && SK.ftDrib.max <= 3,
+    `${SK.ftDrib.n} atış rutini · sektirme ${SK.ftDrib.min}-${SK.ftDrib.max}`);
+
+  if (SK.sema.length < 2) kayit('F25-5', 'Şemalar farklı yörünge üretiyor', false,
+    `ÖRNEK YOK — yalnız ${SK.sema.length} şema yeterli kare topladı`);
+  else {
+    const boya = SK.sema.map(s => s.boyaOran), yay = SK.sema.map(s => s.yayOran);
+    const fb = Math.max.apply(null, boya) - Math.min.apply(null, boya);
+    const fy = Math.max.apply(null, yay) - Math.min.apply(null, yay);
+    kayit('F25-5', 'Şemalar farklı yörünge üretiyor', fb >= 0.03 || fy >= 0.03,
+      SK.sema.map(s => `${s.ad}: boya %${(s.boyaOran*100).toFixed(0)} · yay %${(s.yayOran*100).toFixed(0)}`).join(' | ') +
+      ` → fark boya ${(fb*100).toFixed(1)} puan · yay ${(fy*100).toFixed(1)} puan`);
+  }
+
+  if (!SK.sirtDonuk.n) kayit('F25-6a', "Post oyununda hücumcunun yönü potaya ters", false,
+    'ÖRNEK YOK — bu pencerede post oyunu yakalanmadı');
+  else kayit('F25-6a', "Post oyununda hücumcunun yönü potaya ters", SK.sirtDonuk.tersOran >= 0.8,
+    `${SK.sirtDonuk.n} kare · %${(SK.sirtDonuk.tersOran*100).toFixed(0)} sırtı potaya dönük (hedef ≥ %80)`);
+
+  kayit('F25-6b', 'Perdenin üç aşaması da görülüyor',
+    SK.perde.evreler.length === 3 && SK.perde.evreler.join(',') === '1,2,3',
+    `evreler [${SK.perde.evreler.join(',')}] · ${SK.perde.n} damga · devrilme ${SK.perde.roll} roll / ${SK.perde.pop} pop`);
 
   console.log(`  konsol hatası: ${hatalar.length}`, hatalar.length ? hatalar.slice(0, 3) : '');
 

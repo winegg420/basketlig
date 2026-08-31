@@ -471,6 +471,23 @@ function _simTick(dt){
       }
     }
   }
+  /* 1a) §1: TOPU KARŞI SAHAYA UZUN TAŞIMAZ — genel kapı.
+     Çıkış pası ribaund / çalma / sokma yollarında ayrı ayrı kuruldu, ama top pozisyon
+     içinde el değiştirip bir uzunda kalabiliyor ve orta sahayı o geçiyordu (ölçüm:
+     taşımaların %83,9'u 1/2/3, hedef ≥%85). Burada tek bir yerde: uzun, ORTA SAHAYA
+     yaklaşırken hâlâ topu sürüyorsa en yakın guard'a çıkarır.
+     Pota 4 m yakınsa (_cikisHedefi kuralı) pas aranmaz — uzun kendi bitirir. */
+  if(S.offP&&S.ball&&S.ball.mode==='held'){
+    const c=S.ball.carrier;
+    if(c&&!_tasiyabilir(c)&&S.time>=(S.cikisSonra||0)){
+      /* Orta saha şeridi: taşıyıcı kendi yarısından çıkmak üzere. */
+      const ortaya=Math.abs(c.x-COURT_MID)<150;
+      if(ortaya){
+        const hedef=_cikisHedefi(c,S.offP,_rim(S.offSide));
+        if(hedef){ S.cikisSonra=S.time+1.2; _ballPass(hedef,0.30); }
+      }
+    }
+  }
   /* 1b) §2: SET HÜCUMUNDA DONMA YOK.
      Sorun: top taşıyan üçlük yayına gelince duruyor ve koreografinin bir sonraki adımı
      (tSwing / tKey) gelene kadar HERKES kıpırdamadan bekliyordu — 1,5-2 sn'lik ölü kareler.
@@ -479,14 +496,26 @@ function _simTick(dt){
      Çözüm koreografiyi DEĞİŞTİRMEZ: dizilim noktasının ÇEVRESİNDE küçük (≤22 px ≈ 0,75 m)
      yeni hedefler verilir. Ortalama konum korunduğu için FAZ 11 aralık ölçümleri kaymaz.
      ⚠ Sahne PRNG'si (`_sr`) kullanılır — maçın rastgele akışı tüketilmez (B-5). */
-  if(S.canliSet&&S.offP&&S.time>=(S.canliSonra||0)){
-    S.canliSonra=S.time+0.85;
+  if(S.canliSet&&S.offP){
     const b=S.ball;
     for(const p of S.offP){
-      if(!p||p._oob||p._lock>S.time) continue;
-      /* Hedefi 1,2 sn'den uzun süredir değişmemiş olanlara yeni bir nokta ver. */
-      if(S.time-(p._sonHedefT||0)<1.42) continue;
-      if(b&&b.carrier===p&&S.time-(p._sonHedefT||0)<2.6) continue;   /* topçu: top zaten sekiyor */
+      if(!p||p._oob) continue;
+      /* KİLİT ("_lock") koreografinin "bu oyuncuyu yeniden yönlendirme" işaretidir —
+         "kıpırdamasın" değil. Kilitli oyuncular (şutörün bekleyişi 1,9 sn'ye kadar,
+         kesici 1,2 sn, perdeci 1,1 sn) tamamen atlanınca ekranda taş gibi duruyorlardı
+         (ölçüm: 48 donma, en uzun 1,52 sn). Kilitliye YALNIZ yerinde ağırlık aktarması
+         verilir: 5 px (≈0,17 m), kademe değişmez, dizilim ölçümü etkilenmez. */
+      const kilitli=(p._lock>S.time);
+      /* Hedefi 1,15 sn'den uzun süredir değişmemiş olana yeni bir nokta ver.
+         ⚠ Eşik kapının (1,5 sn) ALTINDA kalmalı ve araya ek bir "tur aralığı" GİRMEMELİ:
+         ilk sürümde 1,42 sn eşik + 0,85 sn tur aralığı vardı, en kötü durumda 2,27 sn
+         ediyordu. Churn'ü oyuncu başına eşik zaten sınırlıyor.
+         ⚠⚠ Eşik SAHNE saatinde (`S.time`) değil GERÇEK saatte ölçülür. Ölçüm gösterdi:
+         donma anında S.time farkı yalnız 0,67 sn iken kullanıcının gördüğü süre 1,50 sn
+         idi — sahne saati duvar saatinin ~0,45 katı akıyor. "Donmuş görünmek" bir SEYİRCİ
+         algısıdır, bu yüzden ölçüt de seyircinin saati olmalı (F15 "sahne saati ≠ maç
+         saati" dersinin bu maddeye düşen karşılığı). */
+      if(_rtNow()-(p._sonHedefRt||0)<1150) continue;
       const merkez=p._setTx!=null?[p._setTx,p._setTy]:[p.tx,p.ty];
       const topta=(b&&b.carrier===p);
       /* Topu tutan tepede daha geniş salınır (canlı dribbling); topsuzlar ufak düzeltme.
@@ -496,9 +525,27 @@ function _simTick(dt){
          hareketidir (topa flaş / geri açılma). */
       const rim=S.defRim||_rim(S.offSide);
       const dx=rim[0]-merkez[0], dy=rim[1]-merkez[1], d=Math.hypot(dx,dy)||1;
-      const r=(topta?10:9)*(_sr()*2-1);
-      _hedefAta(p,_inX(merkez[0]+dx/d*r),_inY(merkez[1]+dy/d*r),topta?_URG.JOG:_URG.YURU);
-      p._sonHedefT=S.time;
+      /* Topçunun salınımı KÜÇÜK: top zaten sekiyor, jetonu fazla oynatmak savunmacısını
+         kopartıyor ve markaj ölçümünü bozuyor. */
+      /* Genlik SIFIRA yakın düşerse hedef hiç değişmez ve donma sayacı sıfırlanmaz.
+         Rastgele işaret de yetmiyor: ardışık iki salınım aynı tarafa (ör. +4,2 ve +4,4)
+         düşünce tam sayıya yuvarlanan hedef AYNI kalıyordu. Yön her adımda ÇEVRİLİR —
+         hem en az 2×taban kadar gerçek yer değiştirme garanti olur hem de oyuncunun
+         ileri-geri ağırlık aktarması doğal görünür. */
+      const _tmax=kilitli?5:(topta?7:9), _tmin=kilitli?3:4;
+      p._nudgeYon=(p._nudgeYon===1)?-1:1;
+      const r=p._nudgeYon*(_tmin+(_tmax-_tmin)*_sr());
+      /* ⚠ `_hedefAta` KULLANILMAZ: nokta 26 px'ten yakınsa hedefi DEĞİŞTİRMEZ (F15-1,
+         "her pozisyonda yer değiştirme" kuralı) ve salınım ≤9 px olduğu için hedef hep
+         aynı kalıyordu — sayaç sıfırlanıyor ama jeton donuk duruyordu (ölçüm: 51 donma,
+         en uzun 1,52 sn). Burada kastedilen yer değiştirme değil, YERİNDE kıpırdanmadır;
+         hedef doğrudan yazılır ve kademe yürüyüş/jog'da kalır. */
+      /* Kilitli oyuncunun merkezi dizilim noktası değil, BULUNDUĞU yerdir — koreografinin
+         götürdüğü noktadan geri çekilmesin. */
+      const mx=kilitli?p.x:merkez[0], my=kilitli?p.y:merkez[1];
+      p.tx=_inX(mx+dx/d*r); p.ty=_inY(my+dy/d*r);
+      if(!kilitli) _setUrg(p,topta?_URG.JOG:_URG.YURU);
+      p._sonHedefT=S.time; p._sonHedefRt=_rtNow();
     }
   }
   /* 2) SAVUNMA CANLI TAKİBİ — top-sen-adam ilkesi:
@@ -632,6 +679,8 @@ function _simTick(dt){
      3) hızlı hareket ediyorsa → yüz gidiş yönüne
      4) aksi hâlde → yüz topa (oyuncular hep topu izler)
    Yön yumuşak döner (ani sıçrama olmasın); gösterge çember kenarındaki küçük işarettir. */
+/** Gerçek (duvar) saat, ms. Sahne saati kullanıcı algısıyla aynı hızda akmıyor. */
+function _rtNow(){ try{ return (typeof performance!=='undefined'&&performance.now)?performance.now():Date.now(); }catch(e){ return Date.now(); } }
 const _YON_HIZ=9.0;                 /* rad/sn — dönüş yumuşatma katsayısı */
 function _yonGuncelle(p,dt){
   try{
@@ -948,13 +997,19 @@ function _cikisHedefi(tasiyici,offP,rim){
     if(_tasiyabilir(tasiyici)) return null;                       /* zaten 1/2/3 */
     /* İstisna: uzun potaya 4 m'den yakınsa kendi bitirir, pas aramaz. */
     if(rim&&Math.hypot(tasiyici.x-rim[0],tasiyici.y-rim[1])<=_POTA_YAKIN_PX) return null;
-    let en=null,ed=1e9;
-    offP.forEach(p=>{
-      if(p===tasiyici||!_tasiyabilir(p)) return;
-      const d=Math.hypot(p.x-tasiyici.x,p.y-tasiyici.y);
-      if(d<ed){ ed=d; en=p; }
-    });
-    return en;
+    /* Öncelik GERÇEK guard'da (rol 0/1); yoksa SF (rol 2). M9 kapısı çıkış pasının
+       hedefinin guard olmasını şart koşuyor — sıralama yapılmadığında en yakın oyuncu
+       SF olabiliyor ve M9 %100'den %75'e düşüyordu. */
+    const sec=(roller)=>{
+      let en=null,ed=1e9;
+      offP.forEach(p=>{
+        if(p===tasiyici||roller.indexOf(p.role)<0) return;
+        const d=Math.hypot(p.x-tasiyici.x,p.y-tasiyici.y);
+        if(d<ed){ ed=d; en=p; }
+      });
+      return en;
+    };
+    return sec([0,1])||sec([2]);
   }catch(e){ return null; }
 }
 function _pickScreener(relay,mid,cutter,pg,rim){
@@ -1013,7 +1068,7 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
     offR.forEach((p,i)=>{
       if(!p||p._oob) return;
       const c=_pt(TRANS_OFF[i],offLeft,false);
-      p._setTx=p._setTy=null; p._sonHedefT=S.time;
+      p._setTx=p._setTy=null; p._sonHedefT=S.time; p._sonHedefRt=_rtNow(); p._sonHedefRt=_rtNow();
       _hedefAta(p,_jit(c[0],10),_jit(c[1],8),_URG.SPRINT);
       /* kanatlar (rol 1-2) önce kendi hizasında KENARA açılır, sonra kulvarda öne koşar */
       p._wp=(i===1||i===2)?[_inX(p.x+(offLeft?-58:58)),_inY(c[1])]:null;
@@ -1095,7 +1150,7 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
     if(!p||p._oob) return;                    /* topu sokan çizgi dışında kalır */
     p._wp=null;                               /* set kurulunca geçiş ara noktası biter */
     const c=B[i];
-    p._setTx=c[0]; p._setTy=c[1]; p._sonHedefT=S.time;
+    p._setTx=c[0]; p._setTy=c[1]; p._sonHedefT=S.time; p._sonHedefRt=_rtNow(); p._sonHedefRt=_rtNow();
     if(p===shooter){ _hedefAta(p,c[0],c[1],_URG.KOS); return; }
     /* Noktasına ZATEN yakınsa yeni hedef atanmaz (yerinde durur, mikro-salınım yapar).
        F11-2: eşik 40 px idi — iki oyuncu birbirine doğru 40'ar px sapabildiği için ölçülen
@@ -1734,6 +1789,9 @@ function animateShotPossession(sh,onShoot,onResult){
     const fastBreak=!putback&&!needInbound&&(!!sh.fb||(userAtt&&afterTurnover&&(tac.tempo==='hizli'||tac.odak==='hizli')));
     const iso=userAtt&&tac.focusPlayerId&&shooter.pl&&shooter.pl.id===tac.focusPlayerId;
     const scheme=sh.scheme||null;
+    /* §5/§8: sunum denetimi bu pozisyonun şemasını okur (yörünge farkı ölçümü).
+       Yalnız damgadır — davranışa hiç dokunmaz. */
+    try{ mState._semaAd=scheme||'diger'; }catch(e){}
     const mv=sh.move||null;
     const isPnr=(scheme==='pnr'||scheme==='handoff')&&!fastBreak&&!putback&&!iso;
 
