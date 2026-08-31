@@ -48,15 +48,32 @@ BOY = 256             # çıktı kenarı (kare)
 #   cfg 3.5 + "wide shot from the waist up" → üçü birden tuttu
 ADIM = 6
 KILAVUZ = 3.5
+# CFG > 1 olduğu için artık GERÇEK negatif istem kullanılabiliyor — turbo'nun cfg=0
+# varsayılanında bu kapı kapalıydı ve yazı yalnız eleme ile kovalanabiliyordu.
+# Forma görünür hâle gelince yazı riski de görünür oldu (ölçülen yazı enerjisi %15,2).
+NEGATIF = ("text, letters, numbers, words, logo, watermark, signature, "
+           "jersey lettering, team name, cropped head, close-up face")
 
 # ── Kadraj hedefleri (§3.1) ───────────────────────────────────────────────────────────
+# Kapı %30-45 (kullanıcı kararı, FAZ 23 ölçümünden sonra). Gerekçe: 13 denemenin
+# 10'u SADECE yüz oranından elendi (ölçülen %40-87) — SD-Turbo tutarlı biçimde yakın
+# plan üretiyor ve bu istemle bastırılamıyor. %38 tavanı bu modelde kabul oranını
+# neredeyse sıfırlıyordu. Hedef yine %34: kırpma mümkün olduğunca oraya çeker,
+# kapı ise %45'e kadar tolere eder.
 YUZ_ORAN_HEDEF = 0.34     # yüz yüksekliği / kare yüksekliği
-YUZ_ORAN_ALT, YUZ_ORAN_UST = 0.30, 0.38
+YUZ_ORAN_ALT, YUZ_ORAN_UST = 0.30, 0.45
 YUZ_MERKEZ_UST_PAY = 0.25 # yüz merkezi karenin üstten %25'ine oturur
 KAFA_USTU_PAY = 0.05      # tespit kutusunun üstünde en az bu kadar pay kalmalı (saç payı)
 
 # ── Eleme eşikleri (§4) ───────────────────────────────────────────────────────────────
-MAX_YAZI_ENERJI = 0.055
+# KANITLA YENİDEN KALİBRE EDİLDİ (FAZ 23): 0,055 eşiği formanın KADRAJ DIŞINDA olduğu
+# döneme aitti. Forma artık gerçekten görünüyor ve kumaş kıvrımları, yaka biyesi, renk
+# bloğu kenar enerjisi üretiyor. Elenen kare gözle incelendi: ÜZERİNDE YAZI YOK ama
+# ölçüm %17 verdi — yani kapı yazıyı değil kumaş detayını ölçüyordu.
+# Deneme turu için eşik yazısız tabanın (%17) belirgin üstüne çekildi.
+# ÜRETİM ÖNCESİ NOT: bu metrik yazı ile kumaşı ayıramıyor; 3.000'lik turdan önce
+# ayırt edici bir ölçüt gerekir (küçük, yatay tekrarlı, yüksek frekanslı yapı).
+MAX_YAZI_ENERJI = 0.25
 MIN_NETLIK = 60.0
 MIN_FON_KOYULUK = 6.0     # köşeler merkezden en az bu kadar koyu olmalı
 
@@ -126,8 +143,9 @@ def uret(tarz, kova, bant, tohum):
     import torch
     p = _boru()
     g = torch.Generator(device="cpu").manual_seed(tohum)
-    return p(prompt=istem(tarz, kova, bant, tohum), num_inference_steps=ADIM,
-             guidance_scale=KILAVUZ, height=URETIM, width=URETIM, generator=g).images[0]
+    return p(prompt=istem(tarz, kova, bant, tohum), negative_prompt=NEGATIF,
+             num_inference_steps=ADIM, guidance_scale=KILAVUZ,
+             height=URETIM, width=URETIM, generator=g).images[0]
 
 
 # ── Yüz tespiti ve YÜZE GÖRE kırpma (§3.1) ────────────────────────────────────────────
@@ -256,6 +274,12 @@ def main():
                 sureler.append(time.time() - t0)
                 if sebep:
                     redler[sebep] = redler.get(sebep, 0) + 1
+                    # Kalibrasyon: elenen kare de kaydedilir ki eşik GÖZLE doğrulanabilsin.
+                    # FAZ 17C dersi: eşiği kanıta bakmadan değiştirmek ters sonuç veriyor.
+                    try:
+                        rk = CIKTI / "_red"; rk.mkdir(parents=True, exist_ok=True)
+                        kirp.save(rk / f"{sebep}_{tarz}{ix+1}_{deneme}_yazi{o.get('yazi',0)*100:.0f}.png")
+                    except Exception: pass
                     print(f"  red[{sebep}] tarz {tarz} #{ix+1} yuzOran="
                           f"{o.get('yuzOran',0)*100:.0f}% yazi={o.get('yazi',0)*100:.1f}% "
                           f"fon={o.get('fonKoyu',0):.1f}", flush=True)
