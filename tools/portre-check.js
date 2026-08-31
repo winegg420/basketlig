@@ -81,6 +81,24 @@ yaz(uyumsuz.length === 0, uyumsuz.length ? uyumsuz.join(' · ') : `14 kova/bant 
 const eski = fs.readdirSync(OUT).filter(f => /^p_\d{4}\.jpg$/.test(f));
 yaz(eski.length === 0, eski.length ? `eski şemadan ${eski.length} dosya kaldı` : 'eski p_%04d.jpg şemasından dosya yok');
 
+/* FAZ 17B §3.2: hiçbir kovada bir bant 0 kalamaz. İlk partide 7 kovanın 5'inde HİÇ
+   kıdemli portre yoktu (kuz/beyaz/afr/lat/asya) — 30 yaşındaki bir Litvanyalıya genç
+   yüz düşüyordu. Kova toplamı ≥2 ise iki bandın da dolu olması ŞART. */
+const bantBos = [];
+const bantOran = [];
+for (const k of KOVALAR) {
+  const g = diskSayim[k].genc, ki = diskSayim[k].kidemli, t = g + ki;
+  if (t >= 2 && (g === 0 || ki === 0)) bantBos.push(`${k}: genc ${g} / kidemli ${ki}`);
+  if (t >= 20) bantOran.push([k, g / t]);
+}
+yaz(bantBos.length === 0, bantBos.length
+  ? 'boş bant: ' + bantBos.join(' · ')
+  : 'her kovada iki bant da dolu (kova toplamı ≥2 olanlarda)');
+const oranBozuk = bantOran.filter(([, o]) => o < 0.30 || o > 0.60);
+yaz(oranBozuk.length === 0, oranBozuk.length
+  ? 'genç payı %30-60 dışında: ' + oranBozuk.map(([k, o]) => `${k} %${(o*100).toFixed(0)}`).join(' · ')
+  : `genç/kıdemli payı hedefte (%45/%55 ± tolerans)${bantOran.length ? ' — ' + bantOran.map(([k, o]) => `${k} %${(o*100).toFixed(0)}`).join(' · ') : ' — ölçülecek kova yok'}`);
+
 /* Adı şemaya uymayan jpg olmamalı. */
 const kacak = fs.readdirSync(OUT).filter(f => f.endsWith('.jpg') && !/^(akd|siyah|kuz|beyaz|afr|lat|asya)_(genc|kidemli)_\d{4}\.jpg$/.test(f));
 yaz(kacak.length === 0, kacak.length ? `şema dışı dosya: ${kacak.slice(0, 5).join(', ')}` : 'tüm jpg adları <kova>_<bant>_<sıra>.jpg şemasında');
@@ -207,7 +225,27 @@ if (diskToplam === 0) {
 } else {
   not(`${diskToplam} portre var; parlaklık ölçümü üretim betiğinin raporunda verilir`);
   not('(bu denetçide görüntü çözücü yok — ölçüm generate-portraits çıktısındadır)');
+  /* FAZ 17B §1.4: dosya boyutu dağılımı. Aşırı küçük dosya boş/bozuk kare, aşırı büyük
+     dosya yüksek detay (çoğu zaman formada yazı/desen) işaretidir. */
+  const boyutlar = [];
+  for (const k of KOVALAR) for (const b of BANTLAR) {
+    for (let i = 0; i < diskSayim[k][b]; i++) {
+      try { boyutlar.push(fs.statSync(path.join(OUT, `${k}_${b}_${String(i).padStart(4,'0')}.jpg`)).size); } catch (e) {}
+    }
+  }
+  boyutlar.sort((a, b) => a - b);
+  const ortB = boyutlar.reduce((a, b) => a + b, 0) / Math.max(1, boyutlar.length);
+  const q = (p) => boyutlar[Math.min(boyutlar.length - 1, Math.floor(boyutlar.length * p))];
+  not(`dosya boyutu: ort ${(ortB/1024).toFixed(1)} KB · min ${(q(0)/1024).toFixed(1)} · medyan ${(q(0.5)/1024).toFixed(1)} · p95 ${(q(0.95)/1024).toFixed(1)} · max ${(q(1)/1024).toFixed(1)} KB`);
+  yaz(q(0) >= 3000, `en küçük dosya ${(q(0)/1024).toFixed(1)} KB (kapı ≥3 KB — boş/bozuk kare yok)`);
+  not(`toplam havuz: ${(boyutlar.reduce((a,b)=>a+b,0)/1048576).toFixed(1)} MB`);
 }
+
+/* FAZ 17B §1.4: OCR ile forma yazısı taraması */
+console.log('\nG) Forma yazısı taraması (OCR)');
+not('OCR yok (tesseract / pytesseract kurulu değil, Python da yok) — bu adım ATLANDI.');
+not('Yerine üretim betiğinde ÖLÇÜLEN kapı var: kumaş üzeri kenar enerjisi (MAX_YAZI_ENERJI)');
+not('artı kadraj zoomu göğsü büyük ölçüde çerçeve dışına alıyor.');
 
 console.log('\n' + '='.repeat(64));
 console.log(hata ? `✗ ${hata} kontrol başarısız` : `✓ tüm portre kontrolleri geçti${uyari ? ` (${uyari} bilgi notu)` : ''}`);

@@ -3637,3 +3637,71 @@ başına ≤2 · market 42 ülke) · `portre-check` ✓ · `isim-check` ✓ (43 
 mobil) · `i18n-scan` canlı anlatım %0,0, çevrilmemiş düğüm 1793 → **1352** (kalanların
 tamamı özel isim) · `faz10-check` 27/27 · `sunum-check` 4/4 · `anlatim-check` 12/13
 (yukarıdaki ölçüm notu). Script sürümü **?v=53**, `sw.js` `SCRIPT_V=53`.
+
+
+---
+
+## FAZ 17B — Forma markaları, bant dağılımı, market uyruğu (2026-08-31)
+
+Baz commit `7dea345`. FAZ 17'nin ilk 100'lük partisi incelenince üç kusur çıktı; ikisi
+üretim istemiyle, biri oyun mantığıyla ilgiliydi.
+
+### 1. Forma markaları — en öncelikli
+
+İlk 100 portrede **"LAKERS"** açıkça okunuyordu; ayrıca "LAKEAN" + Lakers renk düzeni,
+"OKLD", **Nike swoosh'u** ve bir sürü bozuk sahte yazı ("TIURV", "DAKIEIRI", "JUKTEIG")
+vardı. NBA takım adı ve Nike tescilli marka — Steam'e çıkacak üründe kabul edilemez.
+
+İstem kilitlendi (düz, tamamen boş lacivert forma + `?negative=` parametresi), **ama
+istem tek başına yetmedi**: yeni istemle üretilen ilk 5 karenin 4'ünde hâlâ yazı/amblem
+vardı. Bu yüzden iki katman eklendi:
+
+- **Kadraj zoomu** (`ZOOM=1.22`, `KADRAJ_UST=0.06`): çerçeve göğsün üstünde biter,
+  markanın basıldığı alan büyük ölçüde dışarıda kalır. Çıktı boyutu yine 256×230.
+- **Ölçülen eleme**: `MAX_FORMA_PARLAKLIK=115` (beyaz/açık forma) ve
+  `MAX_YAZI_ENERJI=0.030` (kumaş tonundaki bölgede Laplace kenar enerjisi).
+
+> **Ölçüt seçimi ölçümle yapıldı.** Naif "medyandan sapan piksel oranı" TERS sonuç
+> veriyordu: temiz kare %43,9, yazılı kare %25,3 — beyaz yaka biyesi ve arka plan boşluğu
+> temiz kareyi şişiriyordu. Doğru ayrım "kumaşın kendi tonundaki bölgede güçlü yerel
+> gradyan" — düz kumaşta sıfıra yakın, basılı yazıda yüksek.
+> Kalibrasyon (4 kare): forma 14 / %0,31 temiz · 86 / %1,99 temiz · 144 / %2,31 gri forma
+> + arka planda top · 212 / %3,77 beyaz forma + swoosh + yazı. Kapılar bu ayrımı yapıyor.
+
+Kırpma 256×250 → **256×230**. Arayüzdeki tüm portre kutuları `object-fit:cover` ve
+portre oranlı (70×88, 52×66, 44×56, 34×34 …) olduğu için kaynağı kısaltmak doğrudan
+görünen forma payını azaltır; bozulan yer yok. Tek intrinsic-oranlı öğe
+`.player-modal-hero` — o da kısalır, sorun değil.
+
+### 2. Basketbol topu
+`no ball, no basketball, empty hands, hands not visible` istemde; `ball, basketball,
+holding object` negatif istemde.
+
+### 3. Yaş bandı dağılımı
+İlk partide **7 kovanın 5'inde hiç kıdemli portre yoktu** (kuz/beyaz/afr/lat/asya).
+Kural: (a) bir kovada ikinci görsel daima diğer banda gider — hiçbir bant 0'da kalmaz,
+(b) sonrası %45/%55 hedefinden geri kalan bandı doldurur. `portre-check`'e kapı eklendi.
+
+### 4. Transfer marketi yerli oranı
+`milliyet-check` ölçtü: **200 market oyuncusunun 1'i yerli (%0,5)**. Sebep FAZ 17'de
+markete "küresel rastgele" denmesiydi — Türkiye 43 ülke içinde 1/43. Artık yerli payı
+sezona bağlı (`marketYerliOran`: %55 → %25) ve yabancıya OVR primi var.
+
+Ölçülen: sezon 1 **%58,8** yerli → sezon 3 %42,5 → sezon 6 **%25,8**.
+OVR sıralamasında ilk %20'de yabancı **%60**, son %20'de **%6**. Yabancı–yerli OVR farkı
+**4,1** (erişilemez değil).
+
+### 5-6. Üretim ve SERVİS SINIRI — kritik bulgu
+
+> **pollinations anonim kullanımda IP başına TEK istek kabul ediyor:**
+> `{"error":"Too Many Requests","message":"Queue full for IP: … 1 requests already
+> queued (max: 1). Get unlimited access at https://enter.pollinations.ai"}`
+
+Yani **paralellik mümkün değil**. Ölçülen süre **~43 sn/görsel**; eleme kapılarıyla
+birlikte kabul oranı ~%50 → **~90-100 sn/portre**. `--jobs` bayrağı 1'e kelepçelendi,
+sabırlı 429 geri çekilmesi (30/60/90/120 sn) ve istekler arası 2,5 sn nefes payı eklendi.
+
+Bu hızda **3.000 portre ≈ 75-80 saat** sürüyor — tek oturumda bitmiyor.
+`tools/portre-uret-hepsi.js` bu yüzden yazıldı: en geride kalan kovadan doldurur,
+**her 100 portrede commit + push** eder, kaldığı yerden devam eder, art arda 3 boş tur
+olursa durur (brif §6). Kesinti hâlinde iş kaybolmaz, koşu tekrar başlatılabilir.

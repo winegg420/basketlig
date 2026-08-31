@@ -429,8 +429,17 @@ function genSingleMarketPlayer(idx){
      kadro ortalamasının ~%90'ında kalır. */
   const g=Math.round(band.taban+(band.tavan-band.taban)*Math.pow(Math.random(),1.7));
   /* Bant tavanı KESİN sınırdır: g+2 kelepçelenmezse piyasa tavanı "kadro en iyisi + 6"yı aşıyordu. */
-  const minG=Math.max(40,Math.min(band.tavan-1,g-2)), maxG=Math.min(band.tavan,g+2);
-  const p=genPlayerBounded(ch(POZLAR),minG,maxG);
+  let minG=Math.max(40,Math.min(band.tavan-1,g-2)), maxG=Math.min(band.tavan,g+2);
+  /* FAZ 17B: uyruk kararı sezona bağlı ve DETERMİNİSTİK (prChance — rastgelelik tüketmez,
+     yoksa aynı tohum farklı market üretir ve band.js hash'i kayardı). */
+  const sezonNo=(G.season&&G.season.year)||1;
+  const yerli=prChance('mkt|'+idx+'|'+sezonNo+'|uyruk',marketYerliOran(sezonNo));
+  if(!yerli){
+    /* Yabancıya kalite primi: bant tavanı yine KESİN sınır, primden sonra da aşılmaz. */
+    minG=Math.max(40,Math.min(band.tavan-1,minG+MARKET_YABANCI_TABAN_PRIM));
+    maxG=Math.max(minG+1,Math.min(band.tavan+MARKET_YABANCI_TAVAN_PRIM,maxG+MARKET_YABANCI_TAVAN_PRIM));
+  }
+  const p=genPlayerBounded(ch(POZLAR),minG,maxG,yerli?LIG_EV_ULKE:null);
   p.fiyat=transferFeeKR(p);
   p.sure=rand(1,72);
   p.teklifler=rand(0,22);

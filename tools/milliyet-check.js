@@ -125,19 +125,50 @@ const E2 = run(`(function(){
 console.log(`    prUnit: p<0,10 oranı %${(E2.oran * 100).toFixed(2)} · en büyük desil sapması %${(E2.sapma * 100).toFixed(2)}`);
 yaz(E2.sapma <= 0.02, `prUnit desil sapması %${(E2.sapma * 100).toFixed(2)} (kapı ≤%2 — kümelenme yok)`);
 
-/* F) Transfer marketi — kota YOK, yalnız rapor */
-console.log('\nF) Transfer marketi ülke dağılımı (kota beklenmiyor — rapor)');
+/* F) Transfer marketi — FAZ 17B: sezona bağlı yerli payı + yabancı kalite primi */
+console.log('\nF) Transfer marketi uyruk dengesi (FAZ 17B)');
 const F = run(`(function(){
   G.players = genRoster();
-  const m = []; for (let i = 0; i < 200; i++) m.push(genSingleMarketPlayer(i));
-  const d = {}; m.forEach(p => { d[p.ulke] = (d[p.ulke]||0)+1; });
-  const yerli = m.filter(p => p.ulke === LIG_EV_ULKE).length;
-  return { n: m.length, yerli, d };
+  function olc(sezon){
+    G.season = { year: sezon };
+    const m = []; for (let i = 0; i < 400; i++) m.push(genSingleMarketPlayer(i));
+    const yerli = m.filter(p => p.ulke === LIG_EV_ULKE).length;
+    const s = m.slice().sort((a, b) => (b.genel||0) - (a.genel||0));
+    const dilim = Math.max(1, Math.round(s.length * 0.2));
+    const ustYab = s.slice(0, dilim).filter(p => p.ulke !== LIG_EV_ULKE).length / dilim;
+    const altYab = s.slice(-dilim).filter(p => p.ulke !== LIG_EV_ULKE).length / dilim;
+    const ovrYerli = m.filter(p => p.ulke === LIG_EV_ULKE);
+    const ovrYab = m.filter(p => p.ulke !== LIG_EV_ULKE);
+    const ort = a => a.length ? a.reduce((x, p) => x + (p.genel||0), 0) / a.length : 0;
+    const d = {}; m.forEach(p => { d[p.ulke] = (d[p.ulke]||0)+1; });
+    return { n: m.length, yerliPay: yerli / m.length, ustYab, altYab,
+             ortYerli: ort(ovrYerli), ortYab: ort(ovrYab),
+             enYuksek: s[0] ? s[0].genel : 0, cesit: Object.keys(d).length };
+  }
+  const r = { s1: olc(1), s3: olc(3), s6: olc(6) };
+  G.season = null;
+  return r;
 })()`);
-console.log(`    ${F.n} market oyuncusu · ${F.yerli} yerli (%${(F.yerli / F.n * 100).toFixed(1)})`);
-const ilk8 = Object.entries(F.d).sort((a, b) => b[1] - a[1]).slice(0, 8);
-console.log('    en çok: ' + ilk8.map(([k, v]) => `${k} ${v}`).join(' · '));
-yaz(Object.keys(F.d).length >= 20, `markette ${Object.keys(F.d).length} farklı ülke (küresel havuz çalışıyor)`);
+[['s1', 1], ['s3', 3], ['s6', 6]].forEach(([k, y]) => {
+  const r = F[k];
+  console.log(`    sezon ${y}: yerli %${(r.yerliPay*100).toFixed(1)} · yerli OVR ort ${r.ortYerli.toFixed(1)} · yabancı OVR ort ${r.ortYab.toFixed(1)} · ${r.cesit} ülke`);
+});
+yaz(F.s1.yerliPay >= 0.45 && F.s1.yerliPay <= 0.65,
+  `sezon 1 yerli payı %${(F.s1.yerliPay*100).toFixed(1)} (kapı %45-65)`);
+yaz(F.s6.yerliPay >= 0.20 && F.s6.yerliPay <= 0.32,
+  `sezon 6 yerli payı %${(F.s6.yerliPay*100).toFixed(1)} (kapı %20-32)`);
+yaz(F.s3.yerliPay < F.s1.yerliPay && F.s6.yerliPay < F.s3.yerliPay,
+  `yerli payı sezonla azalıyor: %${(F.s1.yerliPay*100).toFixed(1)} → %${(F.s3.yerliPay*100).toFixed(1)} → %${(F.s6.yerliPay*100).toFixed(1)}`);
+/* Üst dilim yabancı ağırlıklı olmalı — "ithal edilmeye değecek oyuncu" kuralı. */
+console.log(`    sezon 1 · OVR sıralamasında ilk %20'de yabancı %${(F.s1.ustYab*100).toFixed(0)} · son %20'de %${(F.s1.altYab*100).toFixed(0)}`);
+yaz(F.s1.ustYab > F.s1.altYab,
+  `ilk %20 yabancı payı (%${(F.s1.ustYab*100).toFixed(0)}) > son %20 (%${(F.s1.altYab*100).toFixed(0)})`);
+yaz(F.s1.ortYab > F.s1.ortYerli,
+  `yabancı OVR ortalaması yerliden yüksek (${F.s1.ortYab.toFixed(1)} > ${F.s1.ortYerli.toFixed(1)})`);
+/* Aşırıya kaçmasın: yabancı üstünlüğü ölçülü kalmalı, erişilemez olmamalı. */
+yaz(F.s1.ortYab - F.s1.ortYerli <= 12,
+  `yabancı–yerli OVR farkı ${(F.s1.ortYab - F.s1.ortYerli).toFixed(1)} (kapı ≤12 — erişilemez olmasın)`);
+yaz(F.s1.cesit >= 20, `markette ${F.s1.cesit} farklı ülke`);
 
 /* G) Kullanıcıya yabancı sınırı YOK */
 console.log('\nG) Kullanıcı kadrosunda yabancı sınırı');

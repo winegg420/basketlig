@@ -33,3 +33,6 @@ dist-desktop/
 
 # --- Ortam değişkenleri / gizli anahtarlar ---
 .env
+
+# --- Portre dHash onbellegi (yeniden uretilebilir) ---
+assets/portraits/.dhash.json

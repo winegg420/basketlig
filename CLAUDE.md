@@ -81,7 +81,8 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/milliyet-check.js` | **FAZ 17 milliyet denetçisi** — lig kadroları/draft/altyapı %100 ev ülkesi, bot yabancı oranı ve tavanı, `prUnit` desil dağılımı, market ülke dağılımı, 43 ülke ↔ `NAME_POOLS`. Milliyet kuralı değişince çalıştır. |
 | `tools/portre-check.js` | **FAZ 17 portre denetçisi** — manifest ↔ disk uyumu, `ULKE_KOVA` bütünlüğü (43 ülke, toplam 1.0), seçilen kovanın ülkeye uygunluğu, yaşlanınca portrenin değişmemesi, yedek zincirinde canlı API olmaması. |
 | `tools/isim-check.js` | **FAZ 17 isim havuzu denetçisi** — ülke başına ≥150×140, liste içi tekrarsızlık, `ULKELER` ↔ `NAME_POOLS` birebir örtüşme, 5.000 çekilişte benzersizlik ≥%99. |
-| `tools/generate-portraits.js` | Portre üretimi + işleme (kova bazlı). Bu makinede Python kurulu olmadığı için `.py` sürümünün çalışan Node karşılığı; aynı dosya adlarını, eşikleri ve manifest'i üretir. |
+| `tools/generate-portraits.js` | Portre üretimi + işleme (kova bazlı). Bu makinede Python kurulu olmadığı için `.py` sürümünün çalışan Node karşılığı; aynı dosya adlarını, eşikleri ve manifest'i üretir. **Tek akış zorunlu** — servis IP başına tek istek kabul ediyor. |
+| `tools/portre-uret-hepsi.js` | **Havuzu kotaya tamamlayan koşucu** — en geride kalan kovadan doldurur, her dilimde commit + push eder, kaldığı yerden devam eder. `--hedef=3000 --dilim=100`. |
 | `tools/i18n-scan.js` | **EN modunda çeviri denetimi** — tüm sayfa/modal/canlı maçı gezip çevrilmemiş metin düğümlerini raporlar. Dil değişikliğinden sonra çalıştır. |
 | `tools/measure.js` / `tools/band.js` | Canlı sunum ölçümü + **sonuç değişmezliği** (kanonik tohum imzası / 200 maç skor hash'i). Sunum değişikliklerinden sonra ikisi de aynı hash'i vermeli. `band.js` referans hash: **`89b5436137c1da14`** (varsayılan tohum 987654321; **FAZ 17 sonrası** — eski değerler: `fb393bdab878e699` FAZ 13-16, `ec630b3a512bb3b2` FAZ 13 öncesi). *FAZ 17'de hash bilerek değişti: isim havuzu ülke başına 256'dan 21.000 kombinasyona çıkınca `ensureUniquePlayerNames` içindeki ad çakışması yeniden-çekilişleri neredeyse sıfıra indi ve rastgelelik akışı kaydı. Milliyet seçiminin kendisi akışı KAYDIRMAZ — `genPlayer` ülke sabitlense bile `ch(ULKELER)` çekilişini yapar, sonucu sonra ezer.* *32. oturum: `if(SEED)` koruması + varsayılan 0 yüzünden tohum hiç kurulmuyordu, araç her çalıştırmada farklı hash veriyordu — düzeltildi.* |
 | `*.bat`, `OYUNU-AC.txt` | Windows başlatıcılar / kullanıcı yardım notu. |
@@ -189,6 +190,25 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   aynı dilime düşer. Karıştırıcı eklenmeden bot yabancı kapısı doğru oranda (%11,5)
   açılıyor ama açılışlar birkaç takımda yığılıp tavana çarpıyordu; gerçekleşen oran %2,3'tü.
   `prMix` (murmur3 finalizer türevi) eklendi — ölçülen %8,8, desil sapması %1.
+- **Portre üretimi tek akıştır (FAZ 17B ölçümü):** pollinations anonim kullanımda **IP
+  başına TEK istek** kabul ediyor; ikincisi anında `429 "Queue full for IP … (max: 1)"`
+  döner. Ölçülen süre **~43 sn/görsel**; eleme kapılarıyla birlikte **~90-100 sn/portre**.
+  `--jobs` bayrağı kabul edilir ama **1'e kelepçelidir** — paralellik denemek yalnız 429
+  üretip toplam süreyi uzatır (FAZ 17'de `--jobs=6` ile koşulan parti bu yüzden boşa
+  emek harcamıştı). Aynı anda **iki üretici çalıştırma**: ikisi birbirini 429'a düşürür.
+- **Forma yazısı/markası istemle çözülmez (FAZ 17B dersi):** "no text, no logo" yazmak
+  yetmiyor — kilitli istemle üretilen ilk 5 karenin 4'ünde hâlâ yazı/amblem, birinde
+  **Nike swoosh'u** vardı; daha öncekilerde "LAKERS" okunuyordu. Çözüm iki katmanlı:
+  (a) **kadraj zoomu** (`ZOOM`/`KADRAJ_UST`) göğsü çerçeve dışına iter,
+  (b) **ölçülen eleme**: `MAX_FORMA_PARLAKLIK` (beyaz/açık forma) ve `MAX_YAZI_ENERJI`
+  (kumaş tonundaki bölgede Laplace kenar enerjisi). Naif "medyandan sapan piksel oranı"
+  İŞE YARAMAZ — beyaz yaka biyesi temiz kareyi en yüksek skora çıkarıyordu (ölçüldü:
+  temiz %43,9, yazılı %25,3 — ters sonuç).
+- **Market uyruk dengesi (FAZ 17B):** market "küresel rastgele" bırakılırsa Türkiye 43
+  ülke içinde 1/43'e düşer — ölçümde 200 oyuncunun 1'i yerliydi (%0,5) ve yeni "Yerli"
+  filtresi boş geliyordu. Yerli payı sezona bağlıdır (`marketYerliOran`: sezon 1 %55 →
+  sezon 6+ %25) ve yabancıya OVR primi verilir (`MARKET_YABANCI_*_PRIM`) ki üst sıralar
+  yabancı ağırlıklı olsun. Değiştirince `milliyet-check` F bölümü ölçer.
 - **Portre bir kez seçilir (FAZ 17):** ülke (`ULKE_KOVA` dağılımı) + yaş bandı ile seçilir,
   sonuç oyuncunun `portreBand` / `portreDosya` alanlarına YAZILIR ve bir daha hesaplanmaz.
   Sebebi: manifest'e yeni parti eklendiğinde modulo kayar; dosya adı saklanmasaydı kayıtlı

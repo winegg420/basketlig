@@ -7,6 +7,25 @@ const LIG_EV_ULKE='Türkiye';
 function ULKE_BUL(ad){ const a=String(ad||''); return ULKELER.find(u=>u.ad===a)||null; }
 /* FAZ 17: bot takımların yabancı sınırı — botlar marketteki iyi yabancıları tüketmesin,
    oyuna yeni başlayan kullanıcıya kadro malzemesi kalsın. */
+/* ── FAZ 17B: TRANSFER MARKETİ UYRUK DENGESİ ─────────────────────────────────────────
+   FAZ 17'de market "küresel rastgele" bırakılmıştı ve Türkiye 43 ülke içinde 1/43 ≈ %2,3
+   şansa düşüyordu: ölçümde 200 market oyuncusunun YALNIZ 1'i yerli çıktı (%0,5). Sonuç
+   tutarsızdı — lig %100 Türk kuruluyor ama market neredeyse tamamen yabancıydı, yeni
+   "Yerli" filtresi boş geliyordu ve kullanıcı ilk gün ligin karakterine hiç benzemeyen
+   bir liste görüyordu. Artık yerli payı sezon 1'de yüksek başlar, sezonlar geçtikçe
+   yabancılar birikirken azalır. */
+const MARKET_YERLI_BASLANGIC=0.55;  /* sezon 1 */
+const MARKET_YERLI_DUSUS=0.06;      /* her sezon düşüş */
+const MARKET_YERLI_TABAN=0.25;      /* alt sınır (sezon 6+) */
+function marketYerliOran(sezon){
+  return Math.max(MARKET_YERLI_TABAN,
+    MARKET_YERLI_BASLANGIC-MARKET_YERLI_DUSUS*Math.max(0,(sezon|0)-1));
+}
+/* Yabancı ithal edilmeye DEĞECEK oyuncu olmalı: market OVR'ye göre sıralandığında üst
+   sıralar yabancı, alt sıralar yerli ağırlıklı olsun. Prim ölçülü tutuldu — yabancılar
+   erişilemez pahalılıkta olmamalı, yeni kullanıcı birkaç sezon sonra alabilmeli. */
+const MARKET_YABANCI_TABAN_PRIM=6;  /* yabancının OVR alt sınırına eklenir */
+const MARKET_YABANCI_TAVAN_PRIM=4;  /* yabancının OVR üst sınırına eklenir */
 const BOT_YABANCI_MAX=2;      /* bir bot takımda en fazla kaç yabancı */
 const BOT_YABANCI_ORAN=0.10;  /* bot transferlerinin yabancı olma olasılığı */
 const TR_ULKE={ad:'Türkiye',b:'🇹🇷'};

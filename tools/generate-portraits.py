@@ -81,7 +81,7 @@ HEDEF_PARLAKLIK = 120.0     # fon eşitleme hedefi
 MIN_NETLIK = 90.0           # Laplace varyansı — altındaki bulanık sayılır
 DHASH_MIN_MESAFE = 8        # bu Hamming mesafesinden yakın olan "aşırı benzer" sayılır
 GENISLIK, YUKSEKLIK = 256, 320
-KIRP_YUKSEKLIK = 250        # 256x320 → 256x250 (giysi payı azalır, yüz büyür)
+KIRP_YUKSEKLIK = 230        # FAZ 17B: 256x320 → 256x230 (forma payı azalır, yüz büyür)
 
 
 # ══ 1) ÜRETİM — kaynak değişirse yalnız burası değişir ════════════════════════════════
@@ -242,9 +242,16 @@ def main() -> None:
         denenen += 1
         # Bant seçimi DİSKTEKİ duruma bakar, sayaç turuna değil. Sabit tur küçük
         # partilerde bozuluyordu: bir kovaya 8 tane istendiğinde 8'i de "genc" oluyordu.
+        # FAZ 17B §3: (a) bir kovada ikinci görsel daima diğer banda gider — hiçbir
+        # bant 0'da kalmaz; (b) sonrası %45/%55 hedefinden geri kalan bandı doldurur.
         var_genc, var_kid = sonraki_sira(kova, "genc"), sonraki_sira(kova, "kidemli")
         toplam_v = var_genc + var_kid
-        bant = "genc" if toplam_v == 0 or var_genc / toplam_v < GENC_PAY else "kidemli"
+        if toplam_v == 0 or var_genc == 0:
+            bant = "genc"
+        elif var_kid == 0:
+            bant = "kidemli"
+        else:
+            bant = "genc" if var_genc / toplam_v < GENC_PAY else "kidemli"
         i += 1
         ham = uret_bir(kova, bant, sonraki_sira(kova, bant) + denenen)
         if not ham:
