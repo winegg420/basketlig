@@ -3835,3 +3835,65 @@ Kolay/Normal/Zor seçicisi kurulum ekranından ve Ayarlar modalından çıkarıl
 bırakıldı çünkü onlarca çağıran var ve eski kayıtlarda `G.difficulty='zor'` olabilir;
 nötrlemek, çağrıları tek tek sökmekten hem küçük hem güvenli. Zorluk artık yorgunluk →
 sakatlık riski dinamiğinden gelir.
+
+
+---
+
+## FAZ 22 — Tam ekran gezisi bulguları (2026-08-31)
+
+Baz commit `ef87d3b`. Kaynak: Bursa Fatihi kariyeriyle 11 ekranın tek tek gezilmesi.
+
+### 1. Koçlar Türk değildi (en öncelikli)
+%100 Türk bir ligde 6 koçun 5'i yabancıydı ("Carlos Ruiz", "Mike Johnson", "Trae Wilson",
+"LaMelo Okonkwo"). İki ayrı sebep vardı:
+- Takım koçlarının adı **sabit bir dizide** gömülüydü — her kariyerde aynı üç ad, ikisi yabancı.
+- Koç pazarı ve izciler genel `ILK`/`SY` havuzundan besleniyordu; bu havuz FAZ 17 §3.4
+  marka temizliğinden **geçmemişti** (oyuncu havuzları temizlenmişti).
+
+`personelUlkesi()` ve `personelAdi()` eklendi: ad artık `NAME_POOLS`'tan, yani oyuncularla
+aynı kaynaktan geliyor. Kariyer başındaki takım koçları %100 yerli; yabancı yalnız pazardan
+ve bot oranıyla (%10) gelebiliyor (§1.6). Koç kartlarına ülke etiketi eklendi.
+
+**Öncesi:** Ahmet Yıldız · Carlos Ruiz · Mike Johnson · Trae Wilson · James Miller · LaMelo Okonkwo
+**Sonrası:** Muhammet Taş · Rahmi Çiftçi · Ozan İnce · Osman Çiftçi · Halil Genç · Erkan Tekin (hepsi 🇹🇷)
+
+> Marka kapısı yazılırken ilk liste fazla genişti ve "Jayson", "Joel" gibi **yaygın ilk
+> adları** riskli sayıyordu. FAZ 17 §3.4 kuralı ayırt edici SOYADLARI hedefliyor, yaygın
+> adlara izin veriyor; liste buna göre daraltıldı, yoksa denetim riski değil gürültüyü ölçer.
+
+### 2. Bilanço toplamı
+Ekranda 9.697 KR/hf maaş gideri yazıyor ama toplama girmiyordu; kullanıcı "+891 KR
+kârdayım" diye okuyordu. Sebep sunum: gerçekleşen ve tahmini kalemler aynı listede,
+aynı biçimdeydi. Artık ayrı kartlar var ve **haftalık net beklenti** ile "kasa ~N hafta
+yeter" satırı eklendi — iflas gerilimi görülebilir oldu.
+
+### 3. Arena doluluğu
+1.276 taraftarlı kulüp 5.000 kişilik arenayı %90 dolduruyordu; doluluk formülü taraftar
+sayısına hiç bakmıyordu. Tek kaynak `arenaDolulukOrani()` yazıldı (form + bilet fiyatı +
+taraftar tavanı) ve gelir hesabı da oradan okuyor (formül iki yerde kopyalanmıştı).
+Taraftar tabanı 1.000 → 2.800: **başlangıç geliri 5.400 KR olarak AYNI kaldı**, değişen şey
+arena büyüdükçe doluluğun taraftara takılması (12.000 kapasitede %40). Etiket de düzeltildi:
+"Doluluk (forma göre)" → "Doluluk (taraftar + form + bilet fiyatı)".
+
+### 4. Analiz
+"93.0 vs 94" tutarsızlığının kaynağı grafik **eksen etiketiydi**: tek değerde bant
+`min-1`/`max+1` açılıyor ve etiket açılmış banttan basılıyordu. Kart doğruydu. Çizim bandı
+açılmaya devam ediyor, etiketler gerçek veriyi yazıyor. 3 maçtan az veride grafik yerine
+bilgi metni gösteriliyor.
+
+### 5. Küçük bulgular
+Altyapı yaş tavanı 20 → **18** (ve o bandın güç tavanı 72 → 68; 20 yaş + OVR 69 altyapı
+değil A takım seviyesiydi) · kenar çubuğu "20/20" → "**20/20 takım**" · sponsor satırı
+(oyunun kendi adı) kaldırıldı · arena fiyatları `ecoRoundPretty` ile yuvarlandı
+(17.083 → **17.000**, 34.375 → 34.000, 66.667 → 67.000, 129.167 → 129.000).
+
+**§5.2 (altyapı portre bandı) kullanıcı kararıyla ERTELENDİ** — portre üretimi durdurulduğu
+için yeni kova açılmadı.
+
+### Not: surum-check kendini kanıtladı
+Bu turda JS değiştirilip sürüm artırılmadığında `surum-check` denetimi DÜŞÜRDÜ ve hatayı
+yakaladı (54 → 55). FAZ 20'de yazılan kapı, yazıldığı ilk turda işe yaradı.
+
+Ayrıca `lig-check` C bölümünün örneklemi 10 → **20 sezona** çıkarıldı: 200 takım-sezonda
+tek bir vaka %0,5 demek ve <%1 kapısı 0/0,5/1 arasında zıplayıp gürültü ölçüyordu.
+400 takım-sezonda ölçüm kararlı: **%0,00**.

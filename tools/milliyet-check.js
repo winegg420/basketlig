@@ -170,6 +170,69 @@ yaz(F.s1.ortYab - F.s1.ortYerli <= 12,
   `yabancı–yerli OVR farkı ${(F.s1.ortYab - F.s1.ortYerli).toFixed(1)} (kapı ≤12 — erişilemez olmasın)`);
 yaz(F.s1.cesit >= 20, `markette ${F.s1.cesit} farklı ülke`);
 
+/* ── F2) Koç ve izci milliyeti (FAZ 22 §1) ─────────────────────────────────────────── */
+console.log('\nF2) Koç / izci milliyeti ve isim kaynağı');
+const F2 = run(`(function(){
+  const takimKoc = genCoaches();
+  const pazarKoc = genCoachMarket();
+  const kocla = [].concat(takimKoc, pazarKoc);
+  const izciler = genScoutMarket();
+  const hepsi = kocla.concat(izciler);
+  const yerli = hepsi.filter(c => c.ulke === LIG_EV_ULKE).length;
+  const ulkesiz = hepsi.filter(c => !c.ulke).length;
+  /* Ad, kendi ülkesinin havuzundan mı geliyor? */
+  let havuzdan = 0;
+  hepsi.forEach(c => {
+    const p = NAME_POOLS[c.ulke]; if (!p) return;
+    const par = String(c.ad || '').split(' ');
+    const ilk = par[0], sy = par.slice(1).join(' ');
+    if (p.ilk.indexOf(ilk) >= 0 || p.sy.indexOf(sy) >= 0) havuzdan++;
+  });
+  /* 200 koç üret: yabancı payı bot kuralıyla aynı bantta kalmalı */
+  let n = 0, yab = 0;
+  for (let i = 0; i < 100; i++) {
+    genCoaches().forEach(c => { n++; if (c.ulke !== LIG_EV_ULKE) yab++; });
+  }
+  return { toplam: hepsi.length, yerli, ulkesiz, havuzdan,
+           takimYerli: takimKoc.filter(c=>c.ulke===LIG_EV_ULKE).length, takimN: takimKoc.length,
+           kocAdlari: kocla.map(c => c.ad + ' · ' + c.ulke),
+           yabanciOran: yab / Math.max(1, n) };
+})()`);
+console.log('    örnek: ' + F2.kocAdlari.slice(0, 4).join(' · '));
+yaz(F2.ulkesiz === 0, `${F2.toplam} personelin hepsinde ulke alanı var (eksik ${F2.ulkesiz})`);
+/* §1.6: kariyer başındaki TAKIM koçları %100 yerli; pazarda ~%10 yabancı serbest. */
+yaz(F2.takimYerli === F2.takimN,
+  `kariyer başındaki takım koçlarının %100'ü ${EV} (${F2.takimYerli}/${F2.takimN})`);
+yaz(F2.yerli / F2.toplam >= 0.85,
+  `personelin %${(F2.yerli/F2.toplam*100).toFixed(0)}'i ${EV} (pazarda az sayıda yabancı serbest)`);
+yaz(F2.havuzdan === F2.toplam,
+  `${F2.toplam} personelin ${F2.havuzdan} tanesinin adı kendi ülkesinin havuzundan`);
+yaz(F2.yabanciOran <= 0.12,
+  `uzun vadede yabancı personel payı %${(F2.yabanciOran*100).toFixed(1)} (kapı ≤%12, bot kuralıyla aynı)`);
+
+/* Marka riski: tek bir yaşayan sporcuyla özdeşleşmiş ad personelde de olmamalı.
+   Canlıda koç pazarında "LaMelo Okonkwo" çıkmıştı — oyuncu havuzları FAZ 17 §3.4'te
+   temizlenmişti ama koç/izci genel ILK/SY havuzundan besleniyordu. */
+/* Ölçüt AYIRT EDİCİ adlardır (FAZ 17 §3.4): tek bir yaşayan sporcuyla neredeyse
+   özdeşleşmiş, günlük hayatta nadir görülen adlar. Yaygın ilk adlar (Jayson, Joel, Luka,
+   Nikola, Jonas, Victor) BİLEREK dışarıda — bunlar milyonlarca kişinin adı ve kimseyi
+   işaret etmez; listeye alınırsa denetim gerçek riski değil gürültüyü ölçer. */
+const RISKLI = ['LaMelo','Giannis','Shai','Trae','Domantas','Hakeem','Kwame','Cedi',
+  'Alperen','Antetokounmpo','Doncic','Dončić','Jokic','Jokić','Okonkwo','Sabonis',
+  'Valanciunas','Valančiūnas','Gilgeous','Yabusele','Varejao','Varejão','Campazzo'];
+const F3 = run(`(function(){
+  const adlar = [];
+  for (let i = 0; i < 60; i++) {
+    [].concat(genCoaches(), genCoachMarket(), genScoutMarket()).forEach(c => adlar.push(String(c.ad||'')));
+  }
+  return adlar;
+})()`);
+const bulunan = Array.from(new Set(F3.filter(ad =>
+  RISKLI.some(r => ad.split(/\s+/).indexOf(r) >= 0))));
+yaz(bulunan.length === 0,
+  bulunan.length ? 'riskli ad: ' + bulunan.slice(0, 5).join(', ')
+                 : `${F3.length} personel adında gerçek sporcuyla özdeşleşmiş ad yok`);
+
 /* G) Kullanıcıya yabancı sınırı YOK */
 console.log('\nG) Kullanıcı kadrosunda yabancı sınırı');
 const G_ = run(`typeof rosterHasRoom === 'function' ? String(rosterHasRoom) : ''`);

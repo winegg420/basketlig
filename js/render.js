@@ -486,10 +486,22 @@ function renderTeamFixturePanel(){
   el.innerHTML=fixtureGroupedHtml(annotateFixtureClick(buildFixtureRows()));
 }
 
+/** FAZ 22 §1: koç kartında ülke etiketi — oyuncu kartlarında bayrak vardı, koçlarda yoktu. */
+function kocBayrak(c){
+  const ad=(c&&c.ulke)||(typeof LIG_EV_ULKE!=='undefined'?LIG_EV_ULKE:'');
+  const u=(typeof ULKE_BUL==='function')?ULKE_BUL(ad):null;
+  return escMatch(((u&&u.b)?u.b+' ':'')+ad);
+}
+
 function genCoaches(){
+  /* FAZ 22 §1: adlar SABİT dizideydi ('Ahmet Yıldız','Carlos Ruiz','Mike Johnson') —
+     üçünden ikisi yabancı, üstelik her kariyerde aynı. Artık ülkeye bağlı üretiliyor. */
   return KOC_T.slice(0,3).map((k,i)=>{
     const sev=rand(1,5);
-    return {...k,id:'c'+i,ad:['Ahmet Yıldız','Carlos Ruiz','Mike Johnson'][i],seviye:sev,maas:Math.round(45+sev*18+sev*sev*2),skor:sev*10+rand(0,15),gecmis:[]};
+    /* FAZ 22 §1.6: KARİYER BAŞINDAKİ takım koçları %100 yerli — oyuncu kadrosuyla aynı
+       kural. Yabancı personel yalnız PAZARDAN gelir (aşağıda, %10 oranıyla). */
+    const ulke=LIG_EV_ULKE;
+    return {...k,id:'c'+i,ulke,ad:personelAdi(ulke),seviye:sev,maas:Math.round(45+sev*18+sev*sev*2),skor:sev*10+rand(0,15),gecmis:[]};
   });
 }
 
@@ -502,7 +514,8 @@ function genCoachMarket(){
     const past=rand(0,3);
     const gecmis=[];
     for(let g=0;g<past;g++) gecmis.push({sezon:'geçmiş',basari:ch(['Şampiyonluk','Playoff','Lig 1.liği'])});
-    return {...k,id:'cm'+i,ad:`${ch(ILK)} ${ch(SY)}`,seviye:sev,maas,satisFiyat:satis,skor:sev*10+past*12+rand(0,15),gecmis};
+    const ulke=personelUlkesi('koc|pazar|'+i+'|'+sev);
+    return {...k,id:'cm'+i,ulke,ad:personelAdi(ulke),seviye:sev,maas,satisFiyat:satis,skor:sev*10+past*12+rand(0,15),gecmis};
   });
 }
 /** Koç CV'sine başarı ekler ve skorunu artırır (sezon/playoff kazanımında çağrılır). */
@@ -1404,7 +1417,7 @@ function renderAntrenman(){
     ?G.coaches.map((c,i)=>`<div class="coach-card">
       <div class="coach-header">
         <div class="coach-avatar"><img src="${coachAvatar(c)}" ${coachAvatarAttrs(c)} alt=""></div>
-        <div><div class="coach-name">${c.ad}</div><div class="coach-spec">${c.ikon} ${c.isim}</div></div>
+        <div><div class="coach-name">${c.ad}</div><div class="coach-flag">${kocBayrak(c)}</div><div class="coach-spec">${c.ikon} ${c.isim}</div></div>
       </div>
       <div class="coach-stat"><span style="color:var(--text2);">Uzmanlık</span><span style="font-size:11px;">${c.bonus}</span></div>
       <div class="coach-stat"><span style="color:var(--text2);">Seviye</span><span style="color:var(--gold);">${c.seviye}</span></div>
@@ -1418,7 +1431,7 @@ function renderAntrenman(){
     <div class="coach-card">
       <div class="coach-header">
         <div class="coach-avatar"><img src="${coachAvatar(c)}" ${coachAvatarAttrs(c)} alt=""></div>
-        <div><div class="coach-name">${c.ad}</div><div class="coach-spec">${c.ikon} ${c.uzm}</div></div>
+        <div><div class="coach-name">${c.ad}</div><div class="coach-flag">${kocBayrak(c)}</div><div class="coach-spec">${c.ikon} ${c.uzm}</div></div>
       </div>
       <div class="coach-stat"><span style="color:var(--text2);">Bonus</span><span style="font-size:11px;">${c.bonus}</span></div>
       <div class="coach-stat"><span style="color:var(--text2);">Seviye</span><span style="color:var(--gold);">${c.seviye}</span></div>
@@ -1495,12 +1508,24 @@ function playbookCardHtml(pb,cur,court,kind){
     ${fitPct!=null?`<div class="pb-fit">Kadro uyumu: <strong style="color:${fitCol};">%${fitPct}</strong> <span style="opacity:.7;">(${pb.uyum.ad})</span></div>`:''}
   </button>`;
 }
+/** FAZ 22 §4.2: tek maçla grafikler ekranı kaplıyor ve içinde tek nokta duruyordu.
+ *  Trend okumak için en az 3 nokta gerekir; altında grafik yerine kısa bilgi gösterilir. */
+const TREND_MIN_MAC=3;
+function trendYetersizHtml(){
+  return '<div class="trend-az">Trend grafiği için en az '+TREND_MIN_MAC+' maç gerekiyor.</div>';
+}
 function svgLineChart(vals,opts){
   opts=opts||{};
+  if(!opts.trendDegil&&vals&&vals.length>0&&vals.length<TREND_MIN_MAC) return trendYetersizHtml();
   const w=opts.w||560,h=opts.h||150,pad=opts.pad||26;
   if(!vals||vals.length<1) return '<div style="color:var(--text2);font-size:12px;padding:16px;text-align:center;">Veri yok — birkaç maç oyna, grafikler burada oluşur.</div>';
   let min=opts.min!=null?opts.min:Math.min(...vals);
   let max=opts.max!=null?opts.max:Math.max(...vals);
+  /* FAZ 22 §4.1: ETİKETLER gerçek veriyi göstermeli. Tek maç oynandığında kart "93.0"
+     derken grafiğin üst etiketi "94" diyordu — çünkü aşağıdaki bant açma (max+1) sonrası
+     etiket açılmış banttan basılıyordu. Aynı veriden iki farklı sayı görünüyordu.
+     Çizim bandı yine açılır (çizgi tabana yapışmasın), etiketler ise gerçek min/max. */
+  const etiketMin=min, etiketMax=max;
   /* F7-30: tüm değerler eşitse çizgi tabana yapışıyor ve üst/alt etiket aynı sayıyı
      gösteriyordu — bandı simetrik aç, çizgi ortada dursun. */
   if(max===min){ min=max-1; max=max+1; }
@@ -1513,8 +1538,8 @@ function svgLineChart(vals,opts){
   const area=vals.length>1?`<polyline fill="none" stroke="${col}" stroke-width="2.5" points="${pts}"/>`:'';
   const dots=vals.map((v,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${vals.length>30?'1.6':'3'}" fill="${col}"/>`).join('');
   return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;display:block;">
-    <text x="2" y="12" fill="var(--text2)" font-size="10">${(opts.fmt?opts.fmt(max):max)}</text>
-    <text x="2" y="${h-4}" fill="var(--text2)" font-size="10">${(opts.fmt?opts.fmt(min):min)}</text>
+    <text x="2" y="12" fill="var(--text2)" font-size="10">${(opts.fmt?opts.fmt(etiketMax):etiketMax)}</text>
+    <text x="2" y="${h-4}" fill="var(--text2)" font-size="10">${(opts.fmt?opts.fmt(etiketMin):etiketMin)}</text>
     ${zeroLine}${area}${dots}
   </svg>`;
 }
@@ -1618,13 +1643,23 @@ function renderArena(){
   document.getElementById('arCap2').textContent=fmtn(a.kap);
   document.getElementById('arenaLvl').textContent=a.s;
   document.getElementById('capFill').style.width=(a.s/5*100)+'%';
-  const form=recentUserForm(5);
-  const seasonPlayed=(G.wins+G.losses)||0;
-  const seasonWr=seasonPlayed?G.wins/Math.max(1,seasonPlayed):0.5;
-  const wr=form!=null?form*0.7+seasonWr*0.3:seasonWr;
-  const occ=Math.max(0.35,Math.min(0.98,(0.55+wr*0.35)*ticketDemandFactor()));
+  /* FAZ 22 §3: doluluk tek kaynaktan (arenaDolulukOrani) — formül önceden burada ve
+     homeTicketIncome içinde ayrı ayrı duruyordu. */
+  const occ=arenaDolulukOrani();
   const dol=document.getElementById('arenaDoluluk');
-  if(dol) dol.textContent='%'+Math.round(occ*100);
+  if(dol){
+    dol.textContent='%'+Math.round(occ*100);
+    const seyirci=Math.round(occ*((G.arena&&G.arena.kap)||5000));
+    dol.title=seyirci+' kişi';
+  }
+  const dnot=document.getElementById('arenaDolulukNot');
+  if(dnot){
+    const fsx=getFanBaseStats();
+    const tavan=(fsx.count*1.6)/Math.max(1,(G.arena&&G.arena.kap)||5000);
+    dnot.textContent=(tavan<=occ+0.001)
+      ? 'Taraftar sayısı doluluğu sınırlıyor — taraftar büyümeden arena büyütmek geliri artırmaz.'
+      : '';
+  }
   const priceNames=['Çok ucuz','Ucuz','Normal','Pahalı','Çok pahalı'];
   const lvl=ticketPriceLevel();
   const plbl=document.getElementById('ticketPriceLbl');
@@ -1690,10 +1725,38 @@ function renderBilanço(){
   const tGid=giderler.reduce((s,i)=>s+i.v,0);
   const net=tG-tGid;
   const bos='<div class="brow"><span class="blbl" style="color:var(--text2);">Henüz hareket yok — maç oynadıkça dolar</span><span class="bval"></span></div>';
-  document.getElementById('gelirler').innerHTML=(gelirler.length?gelirler.map(i=>`<div class="brow"><span class="blbl">${i.l}</span><span class="bval gelir">+${fmtn(i.v)} KR</span></div>`).join(''):bos)
-    +`<div class="brow" style="opacity:0.75;"><span class="blbl">🎟️ Sıradaki ev maçı bilet tahmini</span><span class="bval gelir">~${fmtn(homeTicketIncome())} KR</span></div>`;
-  document.getElementById('giderler').innerHTML=(giderler.length?giderler.map(i=>`<div class="brow"><span class="blbl">${i.l}</span><span class="bval gider">-${fmtn(i.v)} KR</span></div>`).join(''):bos)
-    +`<div class="brow" style="opacity:0.75;"><span class="blbl">🧾 Haftalık sabit gider (maaş+bakım)</span><span class="bval gider">-${fmtn(w.top)} KR/hf</span></div>`;
+  /* FAZ 22 §2: tahmini/düzenli kalemler artık GERÇEKLEŞEN listelerinde DEĞİL — ikisi
+     karışınca "Toplam" satırı ekrandaki rakamları saymıyormuş gibi görünüyordu. */
+  document.getElementById('gelirler').innerHTML=(gelirler.length?gelirler.map(i=>`<div class="brow"><span class="blbl">${i.l}</span><span class="bval gelir">+${fmtn(i.v)} KR</span></div>`).join(''):bos);
+  document.getElementById('giderler').innerHTML=(giderler.length?giderler.map(i=>`<div class="brow"><span class="blbl">${i.l}</span><span class="bval gider">-${fmtn(i.v)} KR</span></div>`).join(''):bos);
+  /* Düzenli / tahmini kart — haftalık tekrarlayan kalemler ve net beklenti.
+     Kullanıcının en çok ihtiyacı olan sayı bu: kasa kaç hafta yeter? */
+  const bilet=homeTicketIncome();
+  const haftalikNet=bilet-w.top;
+  const dz=document.getElementById('duzenliKalemler');
+  if(dz){
+    dz.innerHTML=
+      `<div class="brow"><span class="blbl">🧾 Haftalık sabit gider (maaş + bakım)</span><span class="bval gider">-${fmtn(w.top)} KR/hf</span></div>`+
+      `<div class="brow"><span class="blbl">🎟️ Sıradaki ev maçı bilet geliri (tahmin)</span><span class="bval gelir">~${fmtn(bilet)} KR</span></div>`;
+  }
+  const hn=document.getElementById('haftalikNet');
+  if(hn){
+    hn.textContent=(haftalikNet>=0?'+':'')+fmtn(haftalikNet)+' KR/hf';
+    hn.style.color=haftalikNet>=0?'var(--green)':'var(--red)';
+    hn.style.fontFamily="'Bebas Neue','Arial Narrow',Impact,sans-serif";
+    hn.style.fontSize='26px';
+  }
+  const kd=document.getElementById('kasaDayanma');
+  if(kd){
+    if(haftalikNet<0){
+      const hafta=Math.floor((Number(G.coins)||0)/Math.abs(haftalikNet));
+      kd.textContent=`Kasa bu gidişle ~${hafta} hafta yeter`;
+      kd.style.color=hafta<=6?'var(--red)':'var(--text2)';
+    }else{
+      kd.textContent='Kasa büyüyor';
+      kd.style.color='var(--green)';
+    }
+  }
   document.getElementById('topGelir').textContent='+'+fmtn(tG)+' KR';
   document.getElementById('topGider').textContent='-'+fmtn(tGid)+' KR';
   const nd=document.getElementById('netDurum');

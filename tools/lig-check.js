@@ -143,10 +143,10 @@ yaz(B.oDegerleri.length === 1, `her takımın oynadığı maç sayısı eşit ($
 yaz(B.tutmayan.length === 0, `o = g + m her takımda tutuyor (${B.tutmayan.length} sapma)`);
 
 /* ── C) Lig dengesi — 10 sezon ─────────────────────────────────────────────────────── */
-console.log('\nC) Lig dengesi — 10 sezon (§2.3 hedefleri)');
+console.log('\nC) Lig dengesi — 20 sezon (§2.3 hedefleri)');
 const C = run(`(function(){
   const farklar=[]; let ucSifir=0, sezon=0, takimSayisi=0;
-  for(let s=0;s<10;s++){
+  for(let s=0;s<20;s++){
     let guard=0;
     while(G.season.matches.some(m=>!m.played) && guard++<400){
       const m=G.season.matches.find(x=>!x.played); if(!m) break; simulateCpuMatch(m);

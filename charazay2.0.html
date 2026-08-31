@@ -570,6 +570,9 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 /* COACH CARD */
 .coach-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;}
 .coach-header{display:flex;gap:12px;align-items:center;margin-bottom:12px;}
+.trend-az{padding:22px 16px;text-align:center;color:var(--text2);font-size:12px;background:var(--bg3);border-radius:9px;border:1px dashed var(--border);}
+.bkart-alt{font-size:11px;color:var(--text2);margin:-6px 0 8px;}
+.coach-flag{font-size:10px;color:var(--text2);margin-top:1px;}
 .coach-avatar{width:54px;height:54px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:24px;border:2px solid var(--gold);flex-shrink:0;overflow:hidden;}
 .coach-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;}
 .market-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
@@ -1377,7 +1380,8 @@ tr:hover td{background:rgba(255,255,255,0.02);}
               <div class="card-title">💰 Gelir Tahmini</div>
               <div class="brow"><span class="blbl">Kapasite</span><span class="bval" id="arCap2">5,000</span></div>
               <div class="brow"><span class="blbl">Taraftar grubu</span><span class="bval" id="arenaFanCard">—</span></div>
-              <div class="brow"><span class="blbl">Doluluk (forma göre)</span><span class="bval" id="arenaDoluluk">%55</span></div>
+              <div class="brow"><span class="blbl">Doluluk (taraftar + form + bilet fiyatı)</span><span class="bval" id="arenaDoluluk">%55</span></div>
+              <div id="arenaDolulukNot" style="font-size:11px;color:var(--gold);margin:-4px 0 6px;"></div>
               <div class="brow"><span class="blbl">Bilet Fiyatı</span><span class="bval" id="ticketPriceLbl">Normal</span></div>
               <div id="ticketPriceCtrl" style="display:flex;gap:5px;margin:4px 0 8px;flex-wrap:wrap;"></div>
               <div class="brow"><span class="blbl">Maç Başı Gelir</span><span class="bval gelir" id="ticketInc">— KR</span></div>
@@ -1391,14 +1395,16 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <div class="page" id="page-bilanco">
         <div class="g2">
           <div class="card">
-            <div class="card-title" style="color:var(--green);">💚 GELİRLER</div>
+            <div class="card-title" style="color:var(--green);">💚 GERÇEKLEŞEN GELİR</div>
+            <div class="bkart-alt">Son 28 oyun günü</div>
             <div id="gelirler"></div>
             <div style="margin-top:12px;padding-top:12px;border-top:2px solid var(--green);display:flex;justify-content:space-between;">
               <strong>Toplam</strong><span class="bval gelir" id="topGelir">0 KR</span>
             </div>
           </div>
           <div class="card">
-            <div class="card-title" style="color:var(--red);">❤️ GİDERLER</div>
+            <div class="card-title" style="color:var(--red);">❤️ GERÇEKLEŞEN GİDER</div>
+            <div class="bkart-alt">Son 28 oyun günü</div>
             <div id="giderler"></div>
             <div style="margin-top:12px;padding-top:12px;border-top:2px solid var(--red);display:flex;justify-content:space-between;">
               <strong>Toplam</strong><span class="bval gider" id="topGider">0 KR</span>
@@ -1407,8 +1413,20 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         </div>
         <div class="card" style="margin-top:14px;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div><div class="card-title" style="margin:0;">NET DURUM</div><div style="font-size:11px;color:var(--text2);">Son 28 oyun günü — gerçek işlemler</div></div>
+            <div><div class="card-title" style="margin:0;">NET DURUM</div><div style="font-size:11px;color:var(--text2);">Son 28 oyun günü — gerçekleşen işlemler</div></div>
             <div style="font-family:&#39;Bebas Neue&#39;,sans-serif;font-size:44px;" id="netDurum">+0 KR</div>
+          </div>
+        </div>
+        <!-- FAZ 22 §2: düzenli/tahmini kalemler AYRI. Önceden dört satır aynı listedeydi ve
+             "Toplam" yalnız gerçekleşenleri sayıyordu; ekranda 9.697 KR/hf maaş gideri
+             yazdığı hâlde toplama girmiyor, kullanıcı "+891 KR kârdayım" diye okuyordu. -->
+        <div class="card" style="margin-top:14px;">
+          <div class="card-title">🔁 DÜZENLİ / TAHMİNİ</div>
+          <div class="bkart-alt">Her hafta tekrarlayan kalemler — yukarıdaki toplama dâhil değildir</div>
+          <div id="duzenliKalemler"></div>
+          <div style="margin-top:12px;padding-top:12px;border-top:2px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+            <div><strong>Haftalık net beklenti</strong><div id="kasaDayanma" style="font-size:11px;color:var(--text2);"></div></div>
+            <span class="bval" id="haftalikNet">0 KR/hf</span>
           </div>
         </div>
         <div class="card" style="margin-top:14px;">
@@ -1446,20 +1464,20 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 <div class="notif" id="notif"></div>
 
-<script src="js/i18n.js?v=54"></script>
-<script src="js/i18n-dict.js?v=54"></script>
-<script src="js/i18n-commentary.js?v=54"></script>
-<script src="js/names.js?v=54"></script>
-<script src="js/state.js?v=54"></script>
-<script src="js/economy.js?v=54"></script>
-<script src="js/persistence.js?v=54"></script>
-<script src="js/portraits.js?v=54"></script>
-<script src="js/roster-gen.js?v=54"></script>
-<script src="js/league.js?v=54"></script>
-<script src="js/match-prep.js?v=54"></script>
-<script src="js/render.js?v=54"></script>
-<script src="js/match-engine.js?v=54"></script>
-<script src="js/main.js?v=54"></script>
+<script src="js/i18n.js?v=55"></script>
+<script src="js/i18n-dict.js?v=55"></script>
+<script src="js/i18n-commentary.js?v=55"></script>
+<script src="js/names.js?v=55"></script>
+<script src="js/state.js?v=55"></script>
+<script src="js/economy.js?v=55"></script>
+<script src="js/persistence.js?v=55"></script>
+<script src="js/portraits.js?v=55"></script>
+<script src="js/roster-gen.js?v=55"></script>
+<script src="js/league.js?v=55"></script>
+<script src="js/match-prep.js?v=55"></script>
+<script src="js/render.js?v=55"></script>
+<script src="js/match-engine.js?v=55"></script>
+<script src="js/main.js?v=55"></script>
 
 
 </body></html>

@@ -177,6 +177,28 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   "reboundingu aldı" melezini üretmesin). Simge önekli metinlerde kalıp **simgeyi
   içermemeli** — `_splitIconPrefix` simgeyi soyup gövdeyi ayrı çevirir.
   `node tools/i18n-scan.js` artık canlı anlatım akışını da tarar (kapı: Türkçe < %5).
+- **Personel de oyuncularla aynı milliyet kuralına tabidir (FAZ 22 §1):** koç ve izci
+  adları ya SABİT bir dizide gömülüydü ('Ahmet Yıldız','Carlos Ruiz','Mike Johnson') ya da
+  genel `ILK`/`SY` havuzundan çekiliyordu; ülke hiç hesaba katılmıyordu ve %100 Türk bir
+  ligde 6 koçun 5'i yabancı çıkıyordu. Üstelik genel havuz FAZ 17 §3.4 marka temizliğinden
+  GEÇMEMİŞTİ ("LaMelo Okonkwo"). Artık `personelUlkesi()` + `personelAdi()` kullanılır:
+  ad `NAME_POOLS`'tan gelir, kariyer başındaki takım koçları %100 yerlidir, yabancı yalnız
+  pazardan ve bot oranıyla (%10) gelir. Yeni bir personel türü eklersen aynı ikiliyi kullan.
+- **Bilanço: gerçekleşen ≠ düzenli (FAZ 22 §2):** tahmini/düzenli kalemler (haftalık maaş,
+  bilet tahmini) GERÇEKLEŞEN listelerine karıştırılmaz. Karıştığında "Toplam" ekrandaki
+  rakamları saymıyormuş gibi görünüyor ve kullanıcı haftada 9.697 KR kaybederken
+  "+891 KR kârdayım" diye okuyordu. Düzenli kalemler ayrı kartta, altında **haftalık net
+  beklenti** ve kasanın kaç hafta yeteceği yazar.
+- **Doluluk taraftar tabanını aşamaz (FAZ 22 §3):** doluluk formülü yalnız forma bakıyordu;
+  1.276 taraftarlı kulüp 5.000 kişilik arenayı %90 dolduruyordu. Artık tek kaynak
+  `arenaDolulukOrani()` (form + bilet fiyatı + **taraftar tavanı**), gelir ve ekran aynı
+  fonksiyondan okur. Taraftar tabanı 1.000 → 2.800 yapıldı ki başlangıç geliri (5.400 KR)
+  DEĞİŞMESİN; değişen şey, arena büyüdükçe doluluğun taraftara takılması — büyük arena
+  açmak artık önce taraftar büyütmeyi gerektirir.
+- **Grafik ekseni gerçek veriyi göstermeli (FAZ 22 §4.1):** tek değerde bant açılıyor
+  (`min-1`/`max+1`) ve ETİKET açılmış banttan basılıyordu; kart "93.0" derken grafik "94"
+  diyordu. Çizim bandı açılır, etiketler `etiketMin`/`etiketMax` ile gerçek veriyi yazar.
+  3 maçtan az veride grafik yerine bilgi metni gösterilir (`TREND_MIN_MAC`).
 - **JS DEĞİŞTİYSE SÜRÜMÜ ARTIR (FAZ 20 dersi — pahalıya mal oldu):** PWA service worker
   `js/*.js` dosyalarını **önce önbellek** ile servis eder ve anahtar `?v=N`'dir.
   FAZ 17B ve FAZ 19'da JS değişti ama `?v=` ve `SCRIPT_V` **53'te kaldı**; siteye dönen

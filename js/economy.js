@@ -27,11 +27,7 @@ function recentUserForm(n){
   }catch(e){ return null; }
 }
 function homeTicketIncome(){
-  const form=recentUserForm(5);
-  const seasonPlayed=(G.wins+G.losses)||0;
-  const seasonWr=seasonPlayed?G.wins/Math.max(1,seasonPlayed):0.5;
-  const wr=form!=null?form*0.7+seasonWr*0.3:seasonWr;
-  const occ=Math.max(0.35,Math.min(0.98,(0.55+wr*0.35)*ticketDemandFactor()));
+  const occ=arenaDolulukOrani();
   const budgetMul=(Number(G.budgetPenalty)||0)>0?0.90:1; /* Faz 4.3: başkan bütçe kısıtı sezonu */
   /* B5: zorluk gelir çarpanı (normal = 1). */
   const zorGelir=(typeof difficultyCfg==='function')?(difficultyCfg().gelir||1):1;
@@ -43,6 +39,24 @@ function ticketPriceFactor(){
   /* 0:Çok ucuz .. 4:Çok pahalı. Fiyat çarpanı gelire, ayrı doluluk cezası occ'a uygulanır. */
   const lvl=ticketPriceLevel();
   return [0.7,0.85,1.0,1.2,1.45][lvl];
+}
+/** FAZ 22 §3: bir maça gelebilecek en fazla seyirci, taraftar tabanının katı ile sınırlı.
+ *  Çekirdek taraftar + az sayıda gündelik seyirci; 1.276 taraftarlı kulübün 4.500 kişilik
+ *  seyirci toplaması gerçekçi değildi. */
+const TARAFTAR_KATSAYI=1.6;
+/** Doluluk oranı — form, bilet fiyatı VE taraftar tabanının ortak sonucu.
+ *  Ekran ile gelir hesabı aynı fonksiyondan okur (önceden formül iki yerde kopyalanmıştı;
+ *  biri değişirse diğeri sessizce eskirdi). */
+function arenaDolulukOrani(){
+  const form=recentUserForm(5);
+  const seasonPlayed=(G.wins+G.losses)||0;
+  const seasonWr=seasonPlayed?G.wins/Math.max(1,seasonPlayed):0.5;
+  const wr=form!=null?form*0.7+seasonWr*0.3:seasonWr;
+  const formTabanli=(0.55+wr*0.35)*ticketDemandFactor();
+  const kap=(G.arena&&G.arena.kap)||5000;
+  let taraftarTavani=1;
+  try{ taraftarTavani=(getFanBaseStats().count*TARAFTAR_KATSAYI)/Math.max(1,kap); }catch(e){}
+  return Math.max(0.20,Math.min(0.98,formTabanli,taraftarTavani));
 }
 function ticketDemandFactor(){
   const lvl=ticketPriceLevel();

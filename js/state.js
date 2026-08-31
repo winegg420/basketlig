@@ -165,6 +165,13 @@ const START_KR=50000;
 const ECO_REF_KR=2400;
 const ECO_MUL=START_KR/ECO_REF_KR;
 function ecoRound(x){ return Math.max(1, Math.round(Number(x)*ECO_MUL)); }
+/** FAZ 22 §5.5: arena yükseltme fiyatları 17.083 / 34.375 / 66.667 / 129.167 gibi
+ *  hesaplanmış ondalıklar hâlinde görünüyordu — fiyat listesi gibi durmuyordu.
+ *  Bin sayısı ≥10.000 ise en yakın bine, altındaysa en yakın yüze yuvarlanır. */
+function ecoRoundPretty(x){
+  const v=ecoRound(x);
+  return v>=10000?Math.round(v/1000)*1000:Math.round(v/100)*100;
+}
 /** Paket A (13. oturum): kulüp gider enflasyonu — sezonlar ilerledikçe maaş piyasası ve
     arena bakımı pahalanır (+%4/sezon, tavan ×2.2 ≈ 31. sezon). Gelir kalemleri sabit kalır;
     böylece uzun vadede kasa otomatik şişmez, iyi yönetim yine kâr eder. Yalnız YENİ

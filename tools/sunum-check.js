@@ -352,10 +352,16 @@ async function main() {
       'ÖRNEK YOK — canlı maçta damga ya da tabela okunamadı');
   } else {
     const o = saatOrnek[0];
-    const fark = Math.abs(o.tabela - o.akis);
-    kayit('F19-4', 'Akış damgası tabela saatiyle aynı', fark <= 2,
+    const fark = o.akis - o.tabela;          /* damga geçmişte ise POZİTİF */
+    /* Kusur şuydu: tabela kalan süreyi geriye, akış geçen süreyi ileri sayıyordu — aynı an
+       iki farklı sayı (tabela 5:17 · akış 4:43). Artık ikisi de KALAN süredir. "Fark = 0"
+       beklenemez: damga olayın anını dondurur, tabela o andan beri akmaya devam eder.
+       Doğru değişmez: damga tabelanın İLERİSİNDE olmayacak (geçen süre anlamında geride
+       kalacak) ve gecikme bir pozisyonu (24 sn) aşmayacak. */
+    kayit('F19-4', 'Akış damgası tabelayla aynı yönde (kalan süre)',
+      fark >= -1 && fark <= 24,
       `tabela ${Math.floor(o.tabela/60)}:${String(o.tabela%60).padStart(2,'0')} · ` +
-      `akış "${o.akisTxt}" · fark ${fark} sn (hedef ≤2)`);
+      `akış "${o.akisTxt}" · damga gecikmesi ${fark} sn (hedef 0-24, ikisi de geriye sayıyor)`);
   }
 
   console.log(`  konsol hatası: ${hatalar.length}`, hatalar.length ? hatalar.slice(0, 3) : '');

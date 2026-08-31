@@ -10,6 +10,12 @@ BORU HATTI:  kadraj (zoom + 256×230) → fon eşitleme → eleme kapıları →
 
 ELEME KAPILARININ GEREKÇESİ (FAZ 17B'de ölçüldü, tahminle konmadı):
   • forma parlaklığı  — havuzun üçte biri beyaz formayla geliyordu (ölçüm 14,5-224,3).
+  • forma yazı enerjisi (eşik SD-Turbo çıktısıyla YENİDEN kalibre edildi: 0,030 → 0,045).
+    Ölçüm: kabul edilenler ≤3,0 · redlerin medyanı 7,35. Görsel kanıt: yazi %3,37 olan kare
+    TEMİZ ve iyi çerçeveli, %7,39 ve %12,50 olanlar ise yüzün kareyi doldurduğu (forma hiç
+    görünmeyen) kötü kadrajlar. Yani yüksek enerji çoğunlukla YAZI değil KÖTÜ KADRAJ
+    işaretiydi; eşik 3,0'da kalınca temiz kareler de eleniyor ve kabul oranı %29'a
+    düşüyordu. 0,045 temizleri geçirir, kötü kadrajı (7+) elemeye devam eder.
   • forma yazı enerjisi — "no text" demek yetmiyor; kareler "LAKERS", Nike swoosh'u ve
     bozuk sahte yazı taşıyordu. Naif "medyandan sapan piksel oranı" TERS sonuç veriyor
     (temiz kare %43,9 · yazılı kare %25,3) çünkü beyaz yaka biyesi temizi şişiriyor.
@@ -34,7 +40,7 @@ KADRAJ_UST_PAY = 0.045                # üstten atlanan pay
 
 # ── Eleme eşikleri ────────────────────────────────────────────────────────────────────
 MAX_FORMA_PARLAKLIK = 115.0
-MAX_YAZI_ENERJI = 0.030
+MAX_YAZI_ENERJI = 0.045
 MIN_NETLIK = 70.0
 DHASH_MIN_MESAFE = 8
 TEN_ALT, TEN_UST = 0.30, 0.97

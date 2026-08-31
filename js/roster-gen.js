@@ -1,7 +1,8 @@
 const STAT_KEYS=['hucum','savunma','ribaund','topCalma','pas','hiz','kondisyon','dayaniklilik','sutIsabeti','serbest','topSurme','blok','zeka','liderlik'];
 const STAT_LABELS={hucum:'Hücum',savunma:'Savunma',ribaund:'Ribaund',topCalma:'Top Çalma',pas:'Pas',hiz:'Hız',kondisyon:'Kondisyon',dayaniklilik:'Dayanıklılık',sutIsabeti:'Şut İsabeti',serbest:'Serbest Atış',topSurme:'Top Sürme',blok:'Blok',zeka:'Zekâ',liderlik:'Liderlik'};
 /** bk = haftalık bakım (KR, ham); m = yükseltme bedeli. Bilet geliri artışı yükseltmeyi ~yarım sezonda amorti eder. */
-const ARENA_LVL=[{s:1,isim:'Küçük Arena',kap:5000,m:0,bk:150},{s:2,isim:'Orta Arena',kap:10000,m:ecoRound(820),bk:300},{s:3,isim:'Büyük Arena',kap:15000,m:ecoRound(1650),bk:500},{s:4,isim:'Dev Arena',kap:20000,m:ecoRound(3200),bk:800},{s:5,isim:'Mega Arena',kap:30000,m:ecoRound(6200),bk:1200}];
+/* FAZ 22 §5.5: yükseltme bedelleri yuvarlak gösterilir (ecoRoundPretty). */
+const ARENA_LVL=[{s:1,isim:'Küçük Arena',kap:5000,m:0,bk:150},{s:2,isim:'Orta Arena',kap:10000,m:ecoRoundPretty(820),bk:300},{s:3,isim:'Büyük Arena',kap:15000,m:ecoRoundPretty(1650),bk:500},{s:4,isim:'Dev Arena',kap:20000,m:ecoRoundPretty(3200),bk:800},{s:5,isim:'Mega Arena',kap:30000,m:ecoRoundPretty(6200),bk:1200}];
 /** stat: haftalık koç bonusunun işlediği özellik (null = altyapı çarpanı). Maaşlar ham KR/hafta. */
 const KOC_T=[{isim:'Hücum Koçu',ulke:LIG_EV_ULKE,ikon:'⚔️',uzm:'Hücum',stat:'hucum',bonus:'Haftada zayıf oyunculara +1 Hücum',maas:120},{isim:'Savunma Koçu',ulke:LIG_EV_ULKE,ikon:'🛡️',uzm:'Savunma',stat:'savunma',bonus:'Haftada zayıf oyunculara +1 Savunma',maas:120},{isim:'Kondisyon Koçu',ulke:LIG_EV_ULKE,ikon:'🏃',uzm:'Kondisyon',stat:'kondisyon',bonus:'Haftada zayıf oyunculara +1 Kondisyon',maas:90},{isim:'Şut Koçu',ulke:LIG_EV_ULKE,ikon:'🎯',uzm:'Şut İsabeti',stat:'sutIsabeti',bonus:'Haftada zayıf oyunculara +1 Şut',maas:135},{isim:'Altyapı Koçu',ulke:LIG_EV_ULKE,ikon:'🌱',uzm:'Altyapı',stat:null,bonus:'Altyapı +%5 gelişim',maas:150}];
 const ANTRENMAN_T=[{isim:'Hücum Antrenmanı',ikon:'⚔️',etki:'hucum',gun:5,maliyet:0},{isim:'Savunma Antrenmanı',ikon:'🛡️',etki:'savunma',gun:5,maliyet:0},{isim:'Kondisyon Koşusu',ikon:'🏃',etki:'kondisyon',gun:4,maliyet:0},{isim:'Çift Antrenman',ikon:'💪',etki:'all',gun:6,maliyet:ecoRound(42)}];
@@ -223,10 +224,26 @@ function refreshRole(p){ if(p){ p.rol=computeRole(p); p.eg=computeTendencies(p);
 
 /* Faz 5.1: Bölgesel izci ağı — her izci bir bölgeye odaklı; kalite keşif hızını/isabetini belirler. */
 const SCOUT_REGIONS=['Yerli (Türkiye)','Avrupa','Amerika','Global Genç Yetenek'];
+/** FAZ 22 §1: personel (koç/izci) uyruğu. Canlıda 6 koçun 5'i yabancıydı ("Carlos Ruiz",
+ *  "Mike Johnson", "Trae Wilson", "LaMelo Okonkwo") — oysa lig %100 Türk. Sebep: koç adları
+ *  ya SABİT bir dizide gömülüydü ya da genel ILK/SY havuzundan çekiliyordu; ülke hiç
+ *  hesaba katılmıyordu. Artık oyuncularla aynı kural ve aynı isim kaynağı geçerli. */
+function personelUlkesi(tohum){
+  const yabanci=prChance('personel|'+tohum,BOT_YABANCI_ORAN);
+  if(!yabanci) return LIG_EV_ULKE;
+  const u=prPick('personel|ulke|'+tohum,ULKELER);
+  return (u&&u.ad)||LIG_EV_ULKE;
+}
+/** Personel adı — oyuncularla AYNI havuzdan (NAME_POOLS). Böylece tek bir yaşayan
+ *  sporcuyla özdeşleşmiş adlar (FAZ 17 §3.4'te temizlenen "LaMelo" gibi) personelde de
+ *  görünmez; genel ILK/SY havuzu bu temizlikten geçmemişti. */
+function personelAdi(ulke){ return randomNameFor(ulke); }
+
 function genScout(tag){
   const kalite=rand(1,5);
   const maas=Math.round(40+kalite*22+kalite*kalite*2);
-  return {id:'sc'+String(tag)+Math.random().toString(36).slice(2,7),ad:`${ch(ILK)} ${ch(SY)}`,bolge:ch(SCOUT_REGIONS),kalite,maas,atama:'market'};
+  const ulke=personelUlkesi('izci|'+tag);
+  return {id:'sc'+String(tag)+Math.random().toString(36).slice(2,7),ad:personelAdi(ulke),ulke,bolge:ch(SCOUT_REGIONS),kalite,maas,atama:'market'};
 }
 function genScoutMarket(){
   return Array.from({length:5}).map((_,i)=>{ const s=genScout('m'+i); s.satisFiyat=Math.round(300+s.kalite*s.kalite*120+s.maas*2); return s; });
@@ -371,9 +388,11 @@ function genSingleYouth(potBoost){
   } else if(roll<0.22){
     minO=50; maxO=60; pLo=82; pHi=93; yLo=15; yHi=18; prospect=true;
   } else if(roll<0.48){
-    minO=54; maxO=64; pLo=76; pHi=89; yLo=16; yHi=19; prospect=roll<0.32;
+    minO=54; maxO=64; pLo=76; pHi=89; yLo=16; yHi=18; prospect=roll<0.32;   /* FAZ 22 §5.1: tavan 19 → 18 */
   } else {
-    minO=56; maxO=72; pLo=71; pHi=84; yLo=17; yHi=20; prospect=false;
+    /* FAZ 22 §5.1: 20 yaş + OVR 72 altyapı değil A takım seviyesiydi. Yaş tavanı 18,
+       güç tavanı da buna uygun biçimde kırpıldı — altyapı "gelecek vadeden genç" kalsın. */
+    minO=56; maxO=68; pLo=71; pHi=84; yLo=17; yHi=18; prospect=false;
   }
   /* FAZ 17: altyapı oyuncusu kulübün kendi ülkesinden gelir (draft ile aynı gerekçe). */
   const p=genPlayerBounded(ch(POZLAR),minO,maxO,LIG_EV_ULKE);
@@ -751,7 +770,12 @@ function getFanBaseStats(){
   const key=G.team.tblKey||'tbl';
   const rows=buildLeagueRows(key);
   const rank=rows.findIndex(t=>t.isUser);
-  const count=1000+G.wins*180+(rank>=0?rank*12:0);
+  /* FAZ 22 §3: taban 1.000 → 2.800. Eski değer arena kapasitesiyle çelişiyordu ve doluluk
+     hesabına hiç girmediği için kimse fark etmiyordu. Yeni taban, başlangıç dolulugunu
+     (%90) ve dolayısıyla bilet gelirini DEĞİŞTİRMEZ: 2.800 × TARAFTAR_KATSAYI(1,6) = 4.480,
+     5.000 kapasitenin %89,6'sı. Değişen şey, arena büyüdükçe doluluğun taraftar tabanına
+     takılması — büyük arena açmak artık önce taraftar büyütmeyi gerektiriyor. */
+  const count=2800+G.wins*180+(rank>=0?rank*12:0);
   let group='Yerel oluşum';
   if(count>=75000) group='Mega kitlesi';
   else if(count>=45000) group='Ulusal çekim gücü';

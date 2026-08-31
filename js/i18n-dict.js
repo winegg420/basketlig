@@ -69,6 +69,14 @@ const I18N_TR_EN={
 'bu kadroyla ulaşacağı seviye':'level it will reach with this squad','seviyesine doğru':'toward level',
 'Önceki sürüme ait kayıt uyumsuz olduğu için temizlendi.':'A save from a previous version was incompatible and has been cleared.',
 /* FAZ 20 §7 */
+/* FAZ 22 §4.2 */
+'Trend grafiği için en az 3 maç gerekiyor.':'A trend chart needs at least 3 games.',
+/* FAZ 22 §2: bilanço gerçekleşen / düzenli ayrımı */
+'💚 GERÇEKLEŞEN GELİR':'💚 REALISED INCOME','❤️ GERÇEKLEŞEN GİDER':'❤️ REALISED EXPENSES',
+'Son 28 oyun günü':'Last 28 game days','Son 28 oyun günü — gerçekleşen işlemler':'Last 28 game days — realised transactions',
+'🔁 DÜZENLİ / TAHMİNİ':'🔁 RECURRING / ESTIMATED','Her hafta tekrarlayan kalemler — yukarıdaki toplama dâhil değildir':'Weekly recurring items — not included in the total above',
+'Haftalık net beklenti':'Weekly net outlook','Kasa büyüyor':'Balance is growing',
+'🧾 Haftalık sabit gider (maaş + bakım)':'🧾 Weekly fixed cost (wages + upkeep)','🎟️ Sıradaki ev maçı bilet geliri (tahmin)':'🎟️ Next home game ticket income (estimate)',
 'Sezon başlamadı':'Season has not started','Sezon başlamadı — sıralama ilk maçlardan sonra oluşur.':'Season has not started — standings appear after the first games.',
 'Bu filtreye uyan oyuncu yok.':'No player matches this filter.','Filtreleri temizle':'Clear filters','Transfer marketi şu an boş.':'The transfer market is empty right now.',
 'Maaş ↓':'Wage ↓',
@@ -365,6 +373,8 @@ const I18N_PHRASES=[
      /\bKaradağ\b/ ve /İsveç\b/ HİÇ eşleşmiyordu. Sınırlar Türkçe harfleri kapsayacak
      şekilde açık yazıldı. UZUN KALIP ÖNCE: 'Türkiye Basketbol Ligi' tek başına 'Türkiye'
      kalıbına yakalanıp "Turkey Basketbol Ligi" melezi üretiyordu (B-1 dersi). */
+  /* FAZ 22 §2: kasa dayanma süresi — sayı içerdiği için kalıp */
+  [/Kasa bu gidişle ~(d+) hafta yeter/g,'Balance lasts ~$1 more weeks at this rate'],
   [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Türkiye Basketbol Ligi(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Turkish Basketball League'],
   [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Türkiye(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Turkey'],
   [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Rusya(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Russia'],

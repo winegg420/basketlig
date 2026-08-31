@@ -209,7 +209,7 @@ function renderLeagueSidebar(){
     const teams=(st.subs.tbl&&st.subs.tbl.teams)||[];
     const cnt=teams.filter(Boolean).length;
     html+=`<section class="lt-block"><button type="button" class="lt-h">${tblOpen?'▼':'▶'} TBL</button>`;
-    html+=`<div class="lt-body${tblOpen?' open':''}"><div class="league-slot${userKey==='tbl'?' user':''}" data-lig="tbl">${sidebarSlotLabel('tbl')} · ${cnt}/${LEAGUE_SIZE}${userKey==='tbl'?' · sen':''}</div></div></section>`;
+    html+=`<div class="lt-body${tblOpen?' open':''}"><div class="league-slot${userKey==='tbl'?' user':''}" data-lig="tbl">${sidebarSlotLabel('tbl')} · ${cnt}/${LEAGUE_SIZE} takım${userKey==='tbl'?' · sen':''}</div></div></section>`;
   }
   for(let d=1;d<=SIDEBAR_DIV_MAX_VISIBLE;d++){
     const open=!userInTbl&&userDiv===d;
@@ -220,7 +220,7 @@ function renderLeagueSidebar(){
       const teams=(st.subs[k]&&st.subs[k].teams)||[];
       const cnt=teams.filter(Boolean).length;
       const userHere=(k===userKey);
-      html+=`<div class="league-slot${userHere?' user':''}" data-lig="${k}">${sidebarSlotLabel(k)} · ${cnt}/${LEAGUE_SIZE}${userHere?' · sen':''}</div>`;
+      html+=`<div class="league-slot${userHere?' user':''}" data-lig="${k}">${sidebarSlotLabel(k)} · ${cnt}/${LEAGUE_SIZE} takım${userHere?' · sen':''}</div>`;
     }
     html+='</div></section>';
   }
@@ -351,7 +351,6 @@ function renderTeamDetailPage(){
     ['🌱 Altyapı',`<button type="button" class="linklike" onclick="gotoAltyapiPage()">Altyapı →</button>`],
     ['⚔️ Rakip (ör.)',rival],
     ['🏀 Arena',`${G.arena.isim||'Arena'} — ${fmtn(G.arena.kap)} kişi`],
-    ['📣 Sponsor','Charazay 2.0'],
     ['🌍 Ülke','🇹🇷 Türkiye'],
     ['👥 Taraftar grubu',`${fs.group} · ~${fmtn(fan)} taraftar`],
     ['📊 Taraftar havası',fanLbl+' <div class="chem-bar" style="margin-top:6px;"><div class="chem-fill" style="width:'+Math.min(100,G.chemistry)+'%;"></div></div>'],
