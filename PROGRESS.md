@@ -3942,3 +3942,146 @@ SD-Turbo'nun kendi karakteri ve istemle güvenilir biçimde bastırılamıyor.
 `tools/portre-deneme.py` (yüz tespitiyle kadraj + 6 eleme kapısı + karşılaştırma sayfası)
 depoda duruyor; karar verilince tek parametreyle sürdürülebilir.
 `assets/portraits/` klasörüne DOKUNULMADI — 465 portre yerinde.
+
+---
+
+## FAZ 24 — FAZ 22 doğrulaması + isim/arena/analiz kapanışı (2026-08-31)
+
+Brifin altı bölümü de uygulandı. Portre üretimi brif dışı bırakıldı, `assets/portraits/`
+klasörüne dokunulmadı.
+
+### §2 — Eski genel isim havuzu (ILK / SY) tamamen kaldırıldı
+
+Kök sebep: FAZ 17'de marka temizliği YALNIZ `NAME_POOLS` üzerinde yapılmıştı; `js/state.js`
+içindeki `ILK`/`SY` ikilisi gözden kaçıp canlı kalmıştı. 32 ilk ismin neredeyse tamamı aktif
+NBA yıldızının adıydı ve üç yeri besliyordu: lig haberleri, ekonomi olayları ve
+`randomNameFor`un sessiz yedek dalı. Canlıda görülen: %100 Türk bir ligde "Ja Clark".
+
+- `ILK` / `SY` sabitleri silindi (`js/state.js`).
+- `js/league.js:172` (lig haberi) ve `js/economy.js:215` (ekonomi olayı) artık
+  `randomNameFor(LIG_EV_ULKE)` çağırıyor.
+- `randomNameFor` yedek dalı yeniden yazıldı: havuzu olmayan ülke **sabit bir listeye değil**
+  ev ülkesinin havuzuna düşer ve `console.warn` basar (sessiz bozulma yerine görünür uyarı).
+
+### §2.4 — NBA kara listesi havuzlardan da temizlendi
+
+FAZ 22'de "Jayson/Joel sıradan adlardır" diye kendi kara listemi daraltmıştım; brif listeyi
+açıkça sayıp "hiçbir üretilen isimde geçmiyor" dediği için karar brifin. 43 ülkede **43 ad**
+kültürel karşılığıyla değiştirildi (havuz boyu ve doku korunarak, birebir):
+
+| Ülke | Değişen |
+|---|---|
+| ABD | Jayson→Terrell · Devin→Darnell · Damian→Deshawn · Cade→Cornell · Donovan→Roderick · Victor→Demarcus |
+| Sırbistan/Hırvatistan/Slovenya/Karadağ/Bosna/K. Makedonya/Bulgaristan | Nikola, Luka, Jokić → Radoslav, Ratomir, Tvrtko, Slavoljub, Bogomil, Dobrivoj, Blagota, Milisav, Bećir, Blagojce, Parvan, Kovačić, Vukotić |
+| Diğer 14 ülke | Joel, Victor, Damian, Paolo, Shai, Domantas, Okonkwo karşılıkları |
+
+`Nikola` Sırpçanın en yaygın erkek adıdır; çıkarılması kültürel doku açısından bir kayıptır,
+brifin kapısı gereği yapıldı — kayda geçiriliyor.
+
+### §3 — Havuzlarda kadın adı
+
+4 ad değiştirildi (Işıl→Işıtan, Laurine→Lucien, Fang→Fangyu, Jing→Jingtao). Gerçekten iki
+cinsiyetli ya da kendi dilinde erkek olan adlara **dokunulmadı** (İbranice Omer/Gal/Shai/Ziv,
+Çince Yan/Hui, Türkçe Deniz, İtalyanca-Gürcüce Nino, Romence Adi, Japonca Yuki) — hepsini
+listeye almak denetimi gerçek kusuru değil gürültüyü ölçer hâle getirir ve havuzu daraltırdı.
+
+### §4 — Eski kayıtlarda koç/izci adı onarımı
+
+Canlıda Türk bayraklı "Mike Johnson" görünüyordu: ad genel havuzdan gelmişti, `ulke` alanı ise
+FAZ 17 göçünde ev ülkesi diye dolduruldu. Eklenenler:
+
+- `personelAdiUygunMu(ad, ulke)` — ad kendi ülkesinin havuzuyla tutarlı mı (havuzu olmayan
+  ülkeyi yargılamaz).
+- `personelAdiSabit(ulke, tohum)` — **deterministik** (`prPick`, `rand()` değil): aynı kayıt
+  her açılışta aynı adı verir, yoksa oyuncu koçunun adının her açılışta değiştiğini görür.
+- `faz24PersonelAdiOnar()` — kayıt yüklemesinde `faz17KocUlkeDoldur`un hemen ardından çalışır;
+  **yalnız adı** değiştirir. Seviye, maaş, skor, geçmiş, atama, satış fiyatı ve kimlik korunur
+  (denetçi bunu kaynak taramasıyla da sınıyor).
+
+### §5 — Seyirci taraftar tabanını aşamaz
+
+İki gerçek kusur bulundu:
+
+1. `TARAFTAR_KATSAYI` 1,6 idi — 2.800 taraftarlı kulüp 4.480 kişi ağırlıyordu.
+2. **Daha ciddi olanı:** doluluğun %20 tabanı `Math.max(0.20, Math.min(...))` ile en DIŞTA
+   duruyor ve taraftar tavanını eziyordu. 800 taraftarlı bir kulüp 30.000'lik arenada
+   %20 = 6.000 seyirci topluyordu. Taban artık yalnız form dalına uygulanıyor, tavan **en
+   sonda**.
+
+Gelir nötr tutuldu: taraftar tabanı eski TAVANIN kendisiyle eşitlendi (2.800 × 1,6 = **4.480**,
+maç başına 180 × 1,6 = **288**). Böylece doluluk, bilet geliri ve uzun vadeli ekonomi bire bir
+korunuyor; değişen tek şey "taraftar" sayısının artık gerçekten gelebilecek kitleyi göstermesi.
+İlk denemede taban 4.700/300 seçilmişti — `season-loop` K2'yi 2,25×'ten 2,43×'e itti, geri
+alındı.
+
+`js/render.js` içindeki kopya `1.6` sabiti de `TARAFTAR_KATSAYI`ya bağlandı (FAZ 22'nin "tek
+kaynak" düzeltmesi yarım kalmıştı).
+
+### §6 — Analiz sayı tutarlılığı doğrulandı
+
+Kart "Sayı ort. (attı)" ile grafik "Attığı sayı" zaten aynı diziden besleniyor; FAZ 22 §4.1'in
+etiket düzeltmesi (etiketler ÇİZİM için açılan banttan değil gerçek min/max'tan) yerinde. 3
+maçlık veriyle (88/93/101 → ort. 94,0 · etiket 101/88) ölçüldü.
+
+### Yeni denetçiler
+
+- `tools/arena-check.js` — 125 arena×fiyat×form birleşiminde seyirci ≤ taraftar, doluluk
+  sınırları, sezon başı gelirinin değişmezliği (4.350 KR), `TARAFTAR_KATSAYI` tek kaynak.
+- `tools/analiz-check.js` — kart/grafik aynı kaynak, eksen etiketleri, sınır durumları
+  (tek maç → "trend için yetersiz", tüm maçlar eşit, veri yok).
+- `tools/isim-check.js` — F (ILK/SY kalıntısı), G (kara liste), H (kadın adı), I (personel adı
+  onarımı) bölümleri eklendi; `console.warn` gürültüsü susturuldu.
+
+### Düzeltilen kararsız / eskimiş kapılar
+
+- **`faz6-check` F2** kalıcı kırmızı yanıyordu: FAZ 20'de zorluk seçicisi kullanıcı kararıyla
+  kaldırılmıştı, kapı hâlâ çarpanların ARTMASINI arıyordu. Yeni ölçüt kararın kendisi: hangi
+  `difficulty` değeri atanırsa atansın oyun nötr kalmalı (eski kayıttaki `difficulty:'zor'`
+  alanı dengeyi sessizce bozmasın).
+- **`sunum-check` F19-4** aynı kodda +8/+5 ile −9/−12 arasında salınıyordu. Ölçüt yanlıştı:
+  tabela SAHNE saatini, damga son OLAYIN maç saatini gösterir; sahne olayın gerisinde de
+  önünde de olabilir (F11-1). Kapı `fark >= -1` yerine `|fark| ≤ 24` oldu — yön değil
+  büyüklük ölçülüyor.
+- **`CLAUDE.md` band.js referans hash'i** eskimişti: FAZ 19 lig dengesi düzeltmesi
+  (`cpuMatchScore` kırpması 35→20, `pseudoTeamStrength` bandı 42→20) skorları bilerek
+  değiştirmişti. `89b5436137c1da14` → **`99bb9ceb67917bd0`**.
+
+### Sürüm damgası
+
+`?v=` ve `SCRIPT_V` 55 → **56**. `surum-check` yine yakaladı (hash değişmiş, sürüm sabit) —
+bu kapı üçüncü kez iş gördü.
+
+### Denetim sonuçları
+
+Geçen: `sim-node` · `isim-check` (I bölümü dâhil) · `milliyet-check` · `lig-check` ·
+`analiz-check` · `arena-check` · `schema-check` · `i18n-scan` (Türkçe %0,0) · `surum-check` ·
+`visual-check` (masaüstü+mobil, 0 konsol hatası) · `faz6-check` 7/7 · `faz7-check` ·
+`faz8-check` · `faz10-check` 27/27 · `faz11-check` 13/13 · `mobile-check` 18/18 ·
+`geometri-check` · `m20-check` · `sunum-check` 5/5 (`--ms=420000`; varsayılan 240 sn
+penceresinde M12/F14-7 örnek açlığından kararsız).
+
+`band.js` hash'i **değişmedi** — HEAD ile birebir `99bb9ceb67917bd0` (worktree ile
+karşılaştırıldı). FAZ 24 maç sonucuna dokunmadı.
+
+**FAZ 24 dışında kalan, HEAD'de de düşen kapılar** (worktree ile doğrulandı, bu oturumda
+oluşmadı):
+
+| Kapı | Ölçüm | Hedef |
+|---|---|---|
+| `anlatim-check` benzersiz kalıp | %82,7 | ≥%85 |
+| `hareket-check` ortalama hız | 1,24 m/sn | 1,3–2,1 |
+| `hareket-check` YÜRÜ payı | %47,5 | %20–45 |
+| `spacing-check` markaj mesafesi | 1,98 m | <1,8 |
+| `spacing-check` ball-you-man | %82,9 | ≥%85 |
+| `spacing-check` orta üçte bir | %20,9 | <%20 |
+| `spacing-check` potaya uzaklık | 7,11 m | ≤7 |
+| `season-loop` K2 (pasif kasa) | medyan 2,35× (HEAD 2,25×) | ≤2× |
+
+`season-loop` K2 tohumlu değil — aynı kodda 11,25× ve 11,53× verdi; koşular arası gürültü
+farkı domine ediyor. Taraftar tavanı HEAD ile sayısal olarak birebir aynı olduğu için FAZ 24
+bu kapıya ekonomik katkı yapmıyor.
+
+### Sırada bekleyenler
+
+- FAZ 18 / FAZ 21 anlatım dili işi (ertelendi) — `anlatim-check` %85 kapısı buna bağlı.
+- FAZ 23 portre tarzı kararı — kullanıcı "dursun, sonra karar veririm" dedi; 465 portre yerinde.

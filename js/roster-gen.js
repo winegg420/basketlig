@@ -238,6 +238,27 @@ function personelUlkesi(tohum){
  *  sporcuyla özdeşleşmiş adlar (FAZ 17 §3.4'te temizlenen "LaMelo" gibi) personelde de
  *  görünmez; genel ILK/SY havuzu bu temizlikten geçmemişti. */
 function personelAdi(ulke){ return randomNameFor(ulke); }
+/** FAZ 24 §4: bir personel adının kendi ülkesinin havuzuyla tutarlı olup olmadığı.
+ *  Eski kayıtlarda ad genel ILK/SY havuzundan geldiği için ülkeyle ilgisi yoktu;
+ *  "ulke" alanı FAZ 17'de doldurulunca ad ile bayrak birbirini tutmaz oldu. */
+function personelAdiUygunMu(ad,ulke){
+  try{
+    const pool=NAME_POOLS[String(ulke||"")];
+    if(!pool) return true;                      /* havuzu olmayan ülkeyi yargılama */
+    const par=String(ad||"").trim().split(/\s+/);
+    if(par.length<2) return false;
+    return pool.ilk.indexOf(par[0])>=0 && pool.sy.indexOf(par.slice(1).join(" "))>=0;
+  }catch(e){ return true; }
+}
+/** Aynı personel için her yüklemede AYNI adı üretir (tohum: id + ülke).
+ *  rand() kullanılmaz — kayıt yüklemesi maçın rastgele akışını tüketmemeli. */
+function personelAdiSabit(ulke,tohum){
+  try{
+    const pool=NAME_POOLS[String(ulke||"")]||NAME_POOLS[LIG_EV_ULKE]||NAME_POOLS["Türkiye"];
+    if(!pool) return "";
+    return prPick("personel|ad|ilk|"+tohum,pool.ilk)+" "+prPick("personel|ad|sy|"+tohum,pool.sy);
+  }catch(e){ return ""; }
+}
 
 function genScout(tag){
   const kalite=rand(1,5);
@@ -770,12 +791,15 @@ function getFanBaseStats(){
   const key=G.team.tblKey||'tbl';
   const rows=buildLeagueRows(key);
   const rank=rows.findIndex(t=>t.isUser);
-  /* FAZ 22 §3: taban 1.000 → 2.800. Eski değer arena kapasitesiyle çelişiyordu ve doluluk
-     hesabına hiç girmediği için kimse fark etmiyordu. Yeni taban, başlangıç dolulugunu
-     (%90) ve dolayısıyla bilet gelirini DEĞİŞTİRMEZ: 2.800 × TARAFTAR_KATSAYI(1,6) = 4.480,
-     5.000 kapasitenin %89,6'sı. Değişen şey, arena büyüdükçe doluluğun taraftar tabanına
-     takılması — büyük arena açmak artık önce taraftar büyütmeyi gerektiriyor. */
-  const count=2800+G.wins*180+(rank>=0?rank*12:0);
+  /* FAZ 24 §5: seyirci artık taraftar tabanını AŞAMAZ (TARAFTAR_KATSAYI 1,6 → 1,0).
+     Taban 2.800 kalsaydı 5.000 kişilik arenanın tavanı %89,6'dan %56'ya düşer ve bilet
+     geliri sebepsiz erirdi. Bu yüzden taban eski TAVANIN kendisiyle eşitlendi:
+     2.800 × 1,6 = 4.480 ve maç başına 180 × 1,6 = 288. Böylece doluluk, bilet geliri ve
+     uzun vadeli ekonomi bire bir korunur (season-loop K2 ile ölçüldü), değişen tek şey
+     "taraftar" sayısının artık gerçekten gelebilecek kitleyi göstermesi. Arena büyüdükçe
+     (10.000+) taban yeniden bağlayıcı olur: büyük arena açmadan önce taraftar büyütmek
+     gerekir. */
+  const count=4480+G.wins*288+(rank>=0?rank*19:0);
   let group='Yerel oluşum';
   if(count>=75000) group='Mega kitlesi';
   else if(count>=45000) group='Ulusal çekim gücü';

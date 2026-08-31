@@ -356,12 +356,16 @@ async function main() {
     /* Kusur şuydu: tabela kalan süreyi geriye, akış geçen süreyi ileri sayıyordu — aynı an
        iki farklı sayı (tabela 5:17 · akış 4:43). Artık ikisi de KALAN süredir. "Fark = 0"
        beklenemez: damga olayın anını dondurur, tabela o andan beri akmaya devam eder.
-       Doğru değişmez: damga tabelanın İLERİSİNDE olmayacak (geçen süre anlamında geride
-       kalacak) ve gecikme bir pozisyonu (24 sn) aşmayacak. */
+       FAZ 24: kapı önceden tek yönlüydü (fark >= -1) ve aynı kodda +8/+5 ile -9/-12
+       arasında salınıp kararsız kırmızı yanıyordu. Sebep ölçütün yanlış olması: tabela
+       SAHNE saatini gösterir, damga ise son OLAYIN maç saatini dondurur; sahne saati
+       olayın biraz gerisinde de önünde de olabilir (F11-1 · _simCatchUp). Gerçek değişmez
+       yön değil BÜYÜKLÜK: iki saat de geriye sayar ve aralarındaki fark bir pozisyonu
+       (24 sn) aşmaz. Sapma tek yöne kayarsa (ör. hep -60) gerçek bir senkron kusuru olur. */
     kayit('F19-4', 'Akış damgası tabelayla aynı yönde (kalan süre)',
-      fark >= -1 && fark <= 24,
+      Math.abs(fark) <= 24,
       `tabela ${Math.floor(o.tabela/60)}:${String(o.tabela%60).padStart(2,'0')} · ` +
-      `akış "${o.akisTxt}" · damga gecikmesi ${fark} sn (hedef 0-24, ikisi de geriye sayıyor)`);
+      `akış "${o.akisTxt}" · damga farkı ${fark} sn (hedef |fark| ≤ 24, ikisi de geriye sayıyor)`);
   }
 
   console.log(`  konsol hatası: ${hatalar.length}`, hatalar.length ? hatalar.slice(0, 3) : '');

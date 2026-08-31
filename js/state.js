@@ -50,8 +50,13 @@ const SEHIR=['İstanbul','Ankara','İzmir','Bursa','Antalya','Adana','Konya','Ga
 const LIG_T=['Basket','Spor','Yıldızları','Kartalları','Aslanları','Şimşekleri','Boğaları',
   'Panterleri','Şahinleri','Kurtları','BK','Gençlik','Koleji','Belediyespor','Üniversite',
   'Doğanları','Atmacaları','Ejderleri'];
-const ILK=['Marcus','James','Kevin','Luka','Nikola','Joel','Trae','Jayson','Devin','Damian','Tyler','Darius','Cade','Paolo','Victor','Anthony','Donovan','Shai','Ja','LaMelo','Yuki','Chen','Hakeem','Kwame','Diego','Andre','Giannis','Domantas','Rudy','Jonas','Bogdan','Dennis'];
-const SY=['Johnson','Williams','Smith','Brown','Jones','Davis','Miller','Wilson','Anderson','Garcia','Martinez','Robinson','Clark','Rodriguez','Lewis','Tiongko','Okonkwo','Nakamura','Kim','Diallo','Kowalski','Silva','Fernandes'];
+/* FAZ 24 §2: ILK / SY genel isim havuzları SİLİNDİ.
+   FAZ 17 §3.4'te marka temizliği yapıldı ama yalnız NAME_POOLS üzerinde; bu ikili gözden
+   kaçtı ve canlı kaldı. 32 ilk ismin neredeyse tamamı aktif NBA yıldızının adıydı (Luka,
+   Nikola, Joel, Trae, Jayson, Shai, Ja, LaMelo, Giannis, Domantas…), Türkçe karakter oranı
+   %0'dı. Üç yeri besliyordu: lig haberleri (league.js), ekonomi olayları (economy.js) ve
+   randomNameFor'un YEDEK DALI (aşağıda). Sonuç: %100 Türk bir ligde "Ja Clark adlı genci
+   A takıma çıkardı" gibi haberler. Artık tek isim kaynağı NAME_POOLS. */
 const TR_ILK=['Mehmet','Serkan','Burak','Can','Emre','Ali','Oğuz','Kaan','Berk','Mert','Arda','Enes','Furkan','Alperen','Cedi'];
 const TR_SY=['Yılmaz','Kaya','Demir','Şahin','Çelik','Öztürk','Arslan','Doğan','Kılıç','Aslan'];
 
@@ -62,10 +67,19 @@ const TR_SY=['Yılmaz','Kaya','Demir','Şahin','Çelik','Öztürk','Arslan','Do�
    ILK/SY genel havuzu koç/izci/haber isimleri için (bayraksız bağlam) olduğu gibi duruyor. */
 /* FAZ 17: NAME_POOLS js/names.js'e taşındı (boyut: 43 ülke × 150 ad × 140 soyad).
    randomNameFor burada kalır — havuz dosyası state.js'ten ÖNCE yüklenir. */
-/** Ülkeye uygun rastgele "Ad Soyad". Ülke havuzda yoksa genel ILK/SY havuzuna düşer. */
+/** Ülkeye uygun rastgele "Ad Soyad".
+ *  FAZ 24 §2.3: yedek dal artık SABİT LİSTEYE DÜŞMÜYOR. Eskiden bilinmeyen bir ülke
+ *  sessizce NBA adı üretiyordu — bu bir mayındı: 43 ülkenin hepsi kapsansa da yeni bir
+ *  ülke eklendiği gün fark edilmeden geri gelirdi. Sıra: istenen ülke → ligin ev ülkesi →
+ *  Türkiye. Bilinmeyen ülke ayrıca konsola UYARI yazar; sessiz yedek bir daha gizlenmesin. */
 function randomNameFor(ulkeAd){
-  const pool=NAME_POOLS[String(ulkeAd||'')];
-  return pool?`${ch(pool.ilk)} ${ch(pool.sy)}`:`${ch(ILK)} ${ch(SY)}`;
+  const ad=String(ulkeAd||'');
+  let pool=NAME_POOLS[ad];
+  if(!pool){
+    try{ console.warn('randomNameFor: isim havuzu olmayan ülke →',ad||'(boş)'); }catch(e){}
+    pool=NAME_POOLS[typeof LIG_EV_ULKE!=='undefined'?LIG_EV_ULKE:'Türkiye']||NAME_POOLS['Türkiye'];
+  }
+  return `${ch(pool.ilk)} ${ch(pool.sy)}`;
 }
 
 const TBL_STORAGE_KEY='charazay_tbl_v5';   /* FAZ 17: milliyet kuralı — eski kayıt sessizce yok sayılır */

@@ -726,6 +726,7 @@ function _applyGameStateInner(d){
   try{ ensureRoles(G.players); ensureRoles(G.youth); ensureRoles(G.marketPlayers); ensureRoles(G.clubTransferPlayers); }catch(e){}
   /* FAZ 17: koçta ülke alanı yoksa doldurulur (portre seçimi ülkeye bağlı). */
   faz17KocUlkeDoldur();
+  faz24PersonelAdiOnar();
   ensureMarketStock();
   if(G.team) ensureYouthStock();
   /* F7-7 (istismar): "boşsa üret" kuralı ücretsiz reroll kapısıydı — tüm koçları kov,
@@ -780,6 +781,23 @@ function faz17KocUlkeDoldur(){
       if(Array.isArray(list)) list.forEach(c=>{ if(c&&!c.ulke) c.ulke=LIG_EV_ULKE; });
     });
   }catch(e){}
+}
+/** FAZ 24 §4: eski kayıtlarda personel adı ile ülkesi uyuşmuyor — ad genel ILK/SY
+ *  havuzundan gelmişti, ülke ise FAZ 17 göçünde ev ülkesi olarak dolduruldu. Sonuç:
+ *  Türk bayraklı "Mike Johnson". Burada YALNIZ ad değişir; seviye, maaş, skor, geçmiş,
+ *  atama, satış fiyatı ve kimlik olduğu gibi kalır. */
+function faz24PersonelAdiOnar(){
+  try{
+    [G.coaches,G.coachMarket,G.scouts,G.scoutMarket].forEach((list,li)=>{
+      if(!Array.isArray(list)) return;
+      list.forEach((c,i)=>{
+        if(!c||!c.ulke) return;
+        if(personelAdiUygunMu(c.ad,c.ulke)) return;
+        const yeni=personelAdiSabit(c.ulke,String(c.id||(li+"|"+i))+"|"+c.ulke);
+        if(yeni) c.ad=yeni;
+      });
+    });
+  }catch(e){ dbg("faz24PersonelAdiOnar",e); }
 }
 function bootstrapAppUi(){
   cleanupDevTelemetryKeys();

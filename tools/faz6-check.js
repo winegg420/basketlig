@@ -6,7 +6,7 @@
  *
  *  F1  B4 · Sezon sonu bireysel ödülleri (MVP, en skorer/asistçi/ribaundçu, ideal beşli,
  *          yılın genci, EN GELİŞEN) üretiliyor
- *  F2  B5 · Zorluk seviyesi çarpanları fiilen etkiliyor (bütçe, rakip, sakatlık, piyasa, hedef)
+ *  F2  B5 · Zorluk kaldırıldı (FAZ 20) — hiçbir difficulty değeri dengeyi kaydırmıyor
  *  F3  C2 · Manuel koçlukta ilk yarı istatistikleri korunuyor
  *  F4  Steam · Kayıt bütünlüğü — soyunma odası alanları (sit/söz/moral/ilişki) kayıt turunda
  *          kaybolmuyor (belgede "sessiz veri kaybı" riski olarak işaretli)
@@ -173,15 +173,19 @@ async function main() {
       const kayitli = d.difficulty;
       return { kolay, normal, zor, kayitli, surum: d.v };
     });
-    const artan = D.kolay.rakip < D.normal.rakip && D.normal.rakip < D.zor.rakip
-      && D.kolay.sakat < D.normal.sakat && D.normal.sakat < D.zor.sakat
-      && D.kolay.butce > D.normal.butce && D.normal.butce > D.zor.butce
-      && D.kolay.tavan > D.zor.tavan;
-    kayit('F2', 'B5 · Zorluk seviyesi çarpanları fiilen etkiliyor',
-      artan && D.kayitli === 'zor' && D.surum >= 8,
+    /* FAZ 20 (kullanıcı kararı "A) Seçiciyi kaldır"): zorluk seçicisi kaldırıldı ve
+       difficultyCfg() artık her zaman DIFFICULTY.normal döndürüyor. Bu kapı eskiden
+       çarpanların ARTMASINI arıyordu; kaldırılmış özelliği sınadığı için kalıcı kırmızı
+       yanıyordu. Yeni ölçüt kararın kendisi: hangi değer atanırsa atansın oyun nötr
+       kalmalı — aksi hâlde eski kayıttaki difficulty:'zor' alanı dengeyi sessizce bozar. */
+    const notr = D.kolay.rakip === 1 && D.normal.rakip === 1 && D.zor.rakip === 1
+      && D.kolay.sakat === D.zor.sakat && D.kolay.butce === D.zor.butce
+      && D.kolay.tavan === D.zor.tavan;
+    kayit('F2', 'B5 · Zorluk kaldırıldı — hiçbir değer dengeyi kaydırmıyor',
+      notr && D.surum >= 8,
       `rakip gücü ${D.kolay.rakip}/${D.normal.rakip}/${D.zor.rakip} · sakatlık ${D.kolay.sakat}/${D.normal.sakat}/${D.zor.sakat}` +
       ` · bütçe ${D.kolay.butce}/${D.normal.butce}/${D.zor.butce} · piyasa tavanı ${D.kolay.tavan}/${D.normal.tavan}/${D.zor.tavan}` +
-      ` · kayıtta: ${D.kayitli} (v${D.surum})`);
+      ` · eski kayıt alanı yok sayılıyor (v${D.surum})`);
 
     // F3 — manuel koçlukta ilk yarı istatistikleri korunuyor mu
     const C = await page.evaluate(() => {

@@ -1655,7 +1655,7 @@ function renderArena(){
   const dnot=document.getElementById('arenaDolulukNot');
   if(dnot){
     const fsx=getFanBaseStats();
-    const tavan=(fsx.count*1.6)/Math.max(1,(G.arena&&G.arena.kap)||5000);
+    const tavan=(fsx.count*TARAFTAR_KATSAYI)/Math.max(1,(G.arena&&G.arena.kap)||5000);
     dnot.textContent=(tavan<=occ+0.001)
       ? 'Taraftar sayısı doluluğu sınırlıyor — taraftar büyümeden arena büyütmek geliri artırmaz.'
       : '';

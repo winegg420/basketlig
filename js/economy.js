@@ -40,10 +40,11 @@ function ticketPriceFactor(){
   const lvl=ticketPriceLevel();
   return [0.7,0.85,1.0,1.2,1.45][lvl];
 }
-/** FAZ 22 §3: bir maça gelebilecek en fazla seyirci, taraftar tabanının katı ile sınırlı.
- *  Çekirdek taraftar + az sayıda gündelik seyirci; 1.276 taraftarlı kulübün 4.500 kişilik
- *  seyirci toplaması gerçekçi değildi. */
-const TARAFTAR_KATSAYI=1.6;
+/** FAZ 24 §5: bir maça gelebilecek en fazla seyirci = taraftar tabanı. Katsayı 1,6 iken
+ *  2.800 taraftarlı kulüp 4.480 kişi ağırlayabiliyordu — taraftardan çok seyirci.
+ *  Tavan artık tabanın KENDİSİ; karşılığında taban 2.800 → 4.700 büyütüldü, böylece
+ *  başlangıç doluluğu (form kaynaklı ~%72) ve bilet geliri değişmez. */
+const TARAFTAR_KATSAYI=1.0;
 /** Doluluk oranı — form, bilet fiyatı VE taraftar tabanının ortak sonucu.
  *  Ekran ile gelir hesabı aynı fonksiyondan okur (önceden formül iki yerde kopyalanmıştı;
  *  biri değişirse diğeri sessizce eskirdi). */
@@ -56,7 +57,11 @@ function arenaDolulukOrani(){
   const kap=(G.arena&&G.arena.kap)||5000;
   let taraftarTavani=1;
   try{ taraftarTavani=(getFanBaseStats().count*TARAFTAR_KATSAYI)/Math.max(1,kap); }catch(e){}
-  return Math.max(0.20,Math.min(0.98,formTabanli,taraftarTavani));
+  /* FAZ 24 §5: %20 tabanı YALNIZ form dalına uygulanır. Eskiden dışta durduğu için
+     taraftar tavanını eziyordu: 800 taraftarlı kulüp 30.000 kişilik arenada %20 = 6.000
+     seyirci topluyordu. Tavan en SONDA uygulanır — seyirci taraftarı hiçbir koşulda aşamaz. */
+  const formDali=Math.max(0.20,Math.min(0.98,formTabanli));
+  return Math.max(0,Math.min(formDali,taraftarTavani));
 }
 function ticketDemandFactor(){
   const lvl=ticketPriceLevel();
@@ -212,7 +217,8 @@ function aiWeeklyLeagueActivity(){
       if(delta>0.5){
         const fee=rand(4000,80000);
         const tr=botClubTransfer(t,G.team.tblKey);
-        const isim=tr?tr.inP.isim:`${ch(ILK)} ${ch(SY)}`;
+        /* FAZ 24 §2: gerçek transfer yoksa üretilen ad da ev ülkesinden. */
+        const isim=tr?tr.inP.isim:randomNameFor(LIG_EV_ULKE);
         /* FAZ C: haber artık kulübün MEVKİ İHTİYACINI da anlatıyor. */
         const POZ_AD={PG:'oyun kurucu',SG:'şutör guard',SF:'kısa forvet',PF:'uzun forvet',C:'pivot'};
         const detay=tr?` (OVR ${tr.inP.genel}${tr.poz?`, ${POZ_AD[tr.poz]||tr.poz} ihtiyacı`:''}, ${tr.outP.isim} yerine)`:'';

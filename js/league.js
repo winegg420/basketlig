@@ -169,7 +169,8 @@ function maybeSimOtherTransfers(){
   if(!peers.length||Math.random()>0.5) return;
   const t1=escMatch(ch(peers));
   const t2=escMatch(ch(peers.filter(n=>n!==t1))||t1);
-  const oyuncu=escMatch(`${ch(ILK)} ${ch(SY)}`);
+  /* FAZ 24 §2: lig haberindeki oyuncu adı da ligin ev ülkesinden gelir. */
+  const oyuncu=escMatch(randomNameFor(LIG_EV_ULKE));
   const lig=escMatch(formatTblSlotLabel(G.team.tblKey));   /* iç anahtar değil, okunabilir lig adı */
   const kalip=[
     ()=>_newsBox('blue','💰',`<strong>${t1}</strong> — ${lig} — <strong>${fmtn(rand(4000,80000))} KR</strong> ile <strong>${oyuncu}</strong> için anlaşma duyurdu.`),
