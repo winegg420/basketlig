@@ -217,6 +217,15 @@ function localizeCatalogs(){
   try{ mapStrArr(typeof REB_OFF_SHORT!=='undefined'?REB_OFF_SHORT:null); }catch(e){}
   try{ mapStrArr(typeof CORNER3_MADE!=='undefined'?CORNER3_MADE:null); }catch(e){}
   try{ mapStrArr(typeof CORNER3_MISS!=='undefined'?CORNER3_MISS:null); }catch(e){}
+  /* FAZ 25: saat referansı, son bölüm tonu, taktik girişi, serbest atış ve faul havuzları.
+     B-1 dersi: yeni bir anlatım havuzu buraya kaydedilmezse EN oyuncu o satırları
+     Türkçe görür ve `i18n-scan` canlı anlatım kapısı düşer. */
+  try{ mapStrArr(typeof SAAT_LINES!=='undefined'?SAAT_LINES:null); }catch(e){}
+  try{ mapStrArr(typeof SAAT_QSON!=='undefined'?SAAT_QSON:null); }catch(e){}
+  try{ if(typeof SON_BOLUM!=='undefined') Object.keys(SON_BOLUM).forEach(k=>mapStrArr(SON_BOLUM[k])); }catch(e){}
+  /* TAKTIK_ADI/TAKTIK_GIRIS nesne dizileridir — alan bazında çevrilir. */
+  try{ mapArr(typeof TAKTIK_ADI!=='undefined'?TAKTIK_ADI:null,['ad','e']); }catch(e){}
+  try{ mapArr(typeof TAKTIK_GIRIS!=='undefined'?TAKTIK_GIRIS:null,['t']); }catch(e){}
 }
 
 /* ══ CANLI DOM ÇEVİRİSİ ═══════════════════════════════════════════════════════════════

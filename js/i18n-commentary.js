@@ -679,6 +679,74 @@ I18N_PHRASES.unshift(
 );
 
 /* B-1 (devamı): şut cümlesinin ÖNÜNE eklenen bağlam etiketleri de şablonla kuruluyor. */
+
+/* ══ FAZ 25 — yeni anlatım havuzlarının EN karşılıkları ══ */
+/* ── FAZ 25: saat referansı (SAAT_LINES / SAAT_QSON) ── */
+Object.assign(I18N_TR_EN,{"Süre daraldı.":"The clock is tightening."});
+Object.assign(I18N_TR_EN,{"Hücum süresi noktalanıyor.":"The shot clock is winding down."});
+Object.assign(I18N_TR_EN,{"Saat işliyor.":"The clock is running."});
+Object.assign(I18N_TR_EN,{"Süreyi eritiyorlar.":"They are burning the clock."});
+Object.assign(I18N_TR_EN,{"Saniyeler azalıyor.":"The seconds are ticking away."});
+Object.assign(I18N_TR_EN,{"Çeyrek biterken.":"As the quarter closes."});
+Object.assign(I18N_TR_EN,{"Süre biterken geldi.":"It came as time was running out."});
+Object.assign(I18N_TR_EN,{"Saat aleyhlerine çalışıyor.":"The clock is working against them."});
+Object.assign(I18N_TR_EN,{"Zaman daralıyor.":"Time is running short."});
+Object.assign(I18N_TR_EN,{"Son saniyeler.":"The final seconds."});
+Object.assign(I18N_TR_EN,{"Saati kullanıyorlar.":"They are working the clock."});
+Object.assign(I18N_TR_EN,{"Süre bitmek üzere.":"Time is almost up."});
+Object.assign(I18N_TR_EN,{"Çeyreğin son saniyeleri.":"The last seconds of the quarter."});
+Object.assign(I18N_TR_EN,{"Süre bitiyor, son şans.":"Time is up, one last chance."});
+Object.assign(I18N_TR_EN,{"Saat sıfıra gidiyor.":"The clock is heading to zero."});
+Object.assign(I18N_TR_EN,{"Çeyrek kapanıyor.":"The quarter is closing."});
+/* ── FAZ 25: son bölüm tonu (SON_BOLUM) ── */
+Object.assign(I18N_TR_EN,{"Kritik pozisyon.":"A critical possession."});
+Object.assign(I18N_TR_EN,{"Bu top çok önemli.":"This possession matters."});
+Object.assign(I18N_TR_EN,{"Savunma ayakta.":"The defense is up on its feet."});
+Object.assign(I18N_TR_EN,{"Salon nefesini tuttu.":"The arena is holding its breath."});
+Object.assign(I18N_TR_EN,{"Her şey buna bağlı.":"It all comes down to this."});
+Object.assign(I18N_TR_EN,{"Tansiyon tavanda.":"The tension is at its peak."});
+Object.assign(I18N_TR_EN,{"Kimse oturmuyor.":"Nobody is sitting down."});
+Object.assign(I18N_TR_EN,{"Maç koptu.":"The game has broken open."});
+Object.assign(I18N_TR_EN,{"Fark güvenli.":"The lead is safe."});
+Object.assign(I18N_TR_EN,{"Skor tabelası konuştu.":"The scoreboard has spoken."});
+Object.assign(I18N_TR_EN,{"İş bitti sayılır.":"This one is all but over."});
+Object.assign(I18N_TR_EN,{"Kalan süre yetmez.":"There is not enough time left."});
+/* ── FAZ 25: taktik adları ve girişleri (TAKTIK_ADI / TAKTIK_GIRIS) ── */
+Object.assign(I18N_TR_EN,{"ikili oyun":"the pick and roll"});
+Object.assign(I18N_TR_EN,{"ikili oyuna":"to the pick and roll"});
+Object.assign(I18N_TR_EN,{"el presi":"the full-court press"});
+Object.assign(I18N_TR_EN,{"el presine":"to the full-court press"});
+Object.assign(I18N_TR_EN,{"2-3 bölge":"the 2-3 zone"});
+Object.assign(I18N_TR_EN,{"2-3 bölgeye":"to the 2-3 zone"});
+Object.assign(I18N_TR_EN,{"erken tempo":"early offense"});
+Object.assign(I18N_TR_EN,{"erken tempoya":"to early offense"});
+Object.assign(I18N_TR_EN,{"yayılma hücumu":"the spread offense"});
+Object.assign(I18N_TR_EN,{"yayılma hücumuna":"to the spread offense"});
+Object.assign(I18N_TR_EN,{"çift perde":"the double screen"});
+Object.assign(I18N_TR_EN,{"çift perdeye":"to the double screen"});
+/* ── FAZ 25: serbest atış sonucu (FT_*) ── */
+Object.assign(I18N_TR_EN,{"ikisini de attı.":"he made them both."});
+Object.assign(I18N_TR_EN,{"çizgiden şaşmadı.":"no misses from the line."});
+Object.assign(I18N_TR_EN,{"iki atış iki sayı.":"two shots, two points."});
+Object.assign(I18N_TR_EN,{"hata yok.":"no mistakes."});
+Object.assign(I18N_TR_EN,{"tereddütsüz, ikisi de girdi.":"no hesitation, both good."});
+Object.assign(I18N_TR_EN,{"soğukkanlı bitirdi.":"ice cold from the stripe."});
+Object.assign(I18N_TR_EN,{"üçünü de attı.":"he made all three."});
+Object.assign(I18N_TR_EN,{"üç atış üç sayı.":"three shots, three points."});
+Object.assign(I18N_TR_EN,{"birini kaçırdı.":"he missed one."});
+Object.assign(I18N_TR_EN,{"sadece birini bıraktı.":"only one of them dropped."});
+Object.assign(I18N_TR_EN,{"yarısı geldi.":"half of them good."});
+Object.assign(I18N_TR_EN,{"birini içeride tuttu.":"he kept one in."});
+Object.assign(I18N_TR_EN,{"tam olmadı.":"not quite."});
+Object.assign(I18N_TR_EN,{"ikisi de gitti; seyirci sustu.":"both gone; the crowd goes quiet."});
+Object.assign(I18N_TR_EN,{"ikisi de dışarıda.":"both of them off the mark."});
+Object.assign(I18N_TR_EN,{"ikisini de kaçırdı.":"he missed them both."});
+Object.assign(I18N_TR_EN,{"hiçbiri girmedi.":"none of them dropped."});
+/* ── FAZ 25: zincir ön parçası (AKIS_ON) ── */
+Object.assign(I18N_TR_EN,{"%S topu yukarı taşıdı.":"%S brings it up."});
+Object.assign(I18N_TR_EN,{"%S adamını okudu.":"%S reads his man."});
+Object.assign(I18N_TR_EN,{"%S üstünlüğü buldu.":"%S finds the advantage."});
+
 I18N_PHRASES.unshift(
   /* Simge öneki `_splitIconPrefix` tarafından soyulup gövde AYRICA çevrildiği için kalıp
      simgeyi İÇERMEMELİ — içerince gövdeyle eşleşmez (ölçümde "⚡ Hızlı hücum!" böyle kaçtı). */
@@ -688,4 +756,24 @@ I18N_PHRASES.unshift(
   [/🔥 (\d+)-0'lık seri!/g,'🔥 a $1-0 run!'],
   [/Fark açıldı — (\d+) sayı\./g,'The gap is opening — $1 points.'],
   [/ kızıştı — üst üste (\d+)\. isabet!/g,' is heating up — $1 in a row!']
+);
+
+/* FAZ 25: şablonla kurulan cümleler — kalıp BAŞA konur ki sondaki genel sözcük
+   kalıpları cümlenin ortasındaki tek kelimeyi çevirip melez üretmesin (B-1 dersi). */
+I18N_PHRASES.unshift(
+  [/(.+) çizgide (\d+)\/(\d+) —/g, '$1 at the line, $2 of $3 —'],
+  [/^(.+)'(?:in|ın|un|ün|nin|nın|nun|nün) (ilk|ikinci|üçüncü|dördüncü|beşinci) faulü/g, "$1's $2 foul"],
+  [/(.+) yine faulde — bu (ilki|ikincisi|üçüncüsü|dördüncüsü|beşincisi)/g, '$1 fouls again — that is his $2'],
+  [/Hakem (.+)['’](?:i|ı|u|ü|yi|yı|yu|yü) gördü, (ilk|ikinci|üçüncü|dördüncü|beşinci) faul/g, 'The referee calls $1 — $2 foul'],
+  [/(.+) faul yaptı; maçtaki (ilk|ikinci|üçüncü|dördüncü|beşinci) faulü/g, '$1 commits his $2 foul of the game'],
+  [/Kenardan işaret: (.+)\. /g, 'A signal from the bench: $1. '],
+  [/(.+) devrede\. /g, '$1 is on. '],
+  [/(.+) geçtiler, /g, 'They switch $1, '],
+  [/(.+) döndüler, /g, 'They turn $1, '],
+  [/(.+) geçiş yapıldı, /g, 'A switch $1, '],
+  [/Böylece (\d+) sayıya ulaştı\./g, 'That takes him to $1 points.'],
+  [/Akşamki (\d+)\. sayısı\./g, 'His $1th point of the night.'],
+  [/Bu maçta (\d+) sayısı var\./g, 'He has $1 points tonight.'],
+  [/(\d+) sayıya yükseldi\./g, 'Up to $1 points now.'],
+  [/ eli sıcak — (\d+)\. isabet!/g, ' has the hot hand — $1 in a row!']
 );
