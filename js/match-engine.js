@@ -583,6 +583,22 @@ function _simTick(dt){
 
 /* ── Top: durum makinesi ─────────────────────────────────────────────────── */
 function _ball(){ return mState._sim.ball; }
+/** §4: serbest atış rutini — atıcı 1-3 kez sektirir, sonra topu tutar.
+    Sektirme periyodu `_ballStep`'teki 'held' dalından gelir: ω≈8,2 rad/sn ve |sin|
+    kullanıldığı için bir sekme ≈ 0,383 sn. Sayı SAHNE PRNG'sinden (`_srand`) çekilir —
+    `Math.random`/`rand` kullanılırsa maçın rastgele akışı kayar (B-5 dersi). */
+const _FT_SEKME_SN=0.383;
+function _ftSektir(shooter){
+  try{
+    const S=mState._sim; if(!S||!shooter) return 0;
+    const b=_ball();
+    const adet=_srand(1,3);
+    b.noDrib=false;
+    b.dribBitis=S.time+adet*_FT_SEKME_SN;
+    S._ftDrib={adet,bitis:b.dribBitis};      /* sunum-check okur; davranışı etkilemez */
+    return adet*_FT_SEKME_SN;
+  }catch(e){ return 0; }
+}
 function _ballHold(p,noDrib){
   const b=_ball(); if(!p) return;
   const d=Math.hypot(b.x-p.x,b.y-p.y);
@@ -624,8 +640,12 @@ function _ballStep(dt){
       if(!p){ b.mode='loose'; b.vx=b.vy=0; b.vh=0; break; }
       const sp=Math.hypot(p.vx,p.vy);
       const ux=sp>10?p.vx/sp:1, uy=sp>10?p.vy/sp:0;
+      /* §4: serbest atışta atıcı SÜREKLİ sektiriyordu (dribbling varsayılan açık ve
+         `noDrib` hiç verilmiyordu). Gerçekte 1-3 kez sektirir, sonra topu tutar ve atar.
+         `dribBitis` sahne saatidir; süre dolunca top ele alınır ve öyle kalır. */
+      if(b.dribBitis!=null&&S.time>=b.dribBitis){ b.noDrib=true; b.dribBitis=null; }
       if(b.noDrib){
-        /* ölü top / kenardan sokma: top göğüs-baş hizasında, sekmez */
+        /* ölü top / kenardan sokma / serbest atış öncesi: top göğüs hizasında, sekmez */
         b.x=p.x+ux*4; b.y=p.y+uy*4; b.h=17;
       } else {
         /* topu gövdenin hafif önünde ve yan tarafında sürer */
@@ -837,6 +857,32 @@ const FT_OFF_S=[[152,177],[152,323],[306,140],[306,360]];
     ya da kanattaki şutör topa çağrılınca dizilimin bir KÖŞESİ boşalıyor, hücumun kapladığı
     alan çöküyordu (ölçüm: dizilim %34 → sahada %20). İçerideki oyuncu zaten dizilimin
     çevresinde değil, ortasındadır; perdeye o çıkınca aralık bozulmaz. */
+/* ── §1: TOP TAŞIMA ROLLERİ ──────────────────────────────────────────────────────────
+   Sorun: topu sahada kim tutuyorsa o sürüyordu; pivot yarı sahadan yarı sahaya top
+   sürüyordu. Gerçek basketbolda topu 1-2-3 numara taşır; 4 ve 5 ribaundu alır ve
+   ÇIKIŞ (outlet) PASI verir. Bu kural ribaund sonrası zaten vardı (M9, animateShotPossession);
+   burada top kaybı / çalma / kenardan sokma yolları için ortak hâle getirilir. */
+const _TASIYICI_ROL=[0,1,2];          /* PG · SG · SF — topu karşı sahaya bunlar taşır */
+const _POTA_YAKIN_PX=118;             /* ≈ 4 m (29,5429 px/m) — bu mesafede uzun kendi bitirir */
+/** Oyuncu topu karşı sahaya taşıyabilir mi? */
+function _tasiyabilir(p){ return !!p && _TASIYICI_ROL.indexOf(p.role)>=0; }
+/** Uzun oyuncu topu aldıysa çıkış pası verilecek en yakın guard'ı bulur.
+    Dönüş null ise pas gerekmiyor (taşıyıcı zaten guard, ya da pota 4 m'den yakın). */
+function _cikisHedefi(tasiyici,offP,rim){
+  try{
+    if(!tasiyici||!offP||!offP.length) return null;
+    if(_tasiyabilir(tasiyici)) return null;                       /* zaten 1/2/3 */
+    /* İstisna: uzun potaya 4 m'den yakınsa kendi bitirir, pas aramaz. */
+    if(rim&&Math.hypot(tasiyici.x-rim[0],tasiyici.y-rim[1])<=_POTA_YAKIN_PX) return null;
+    let en=null,ed=1e9;
+    offP.forEach(p=>{
+      if(p===tasiyici||!_tasiyabilir(p)) return;
+      const d=Math.hypot(p.x-tasiyici.x,p.y-tasiyici.y);
+      if(d<ed){ ed=d; en=p; }
+    });
+    return en;
+  }catch(e){ return null; }
+}
 function _pickScreener(relay,mid,cutter,pg,rim){
   const uygun=(relay||[]).filter(p=>p&&p!==mid&&p!==cutter);
   if(!uygun.length) return (relay||[]).find(p=>p!==mid)||null;
@@ -1145,7 +1191,37 @@ function _inboundSetup(spot,offP,exclude){
   _setUrg(inb,_URG.KOS); inb.tx=spot.x; inb.ty=spot.y;
   /* F15-1: ETA jetonun GERÇEK hızından; eski taban (120 px/sn) yeni ölçekte fazla iyimser. */
   inb._inbEta=Math.min(2.4,bd/Math.max(40,inb.maxV||inb.baseV||_PL_MAXV)+0.28);
+  _sokmaYerlesimi(spot,offP,inb);
   return inb;
+}
+/* ── §3: KENARDAN SOKMA YERLEŞİMİ ────────────────────────────────────────────────────
+   Sorun: top kenardan sokulurken bazen BÜTÜN oyuncular rakip yarı sahaya geçiyor ve ilk
+   top yarı saha ötesine atılarak sokuluyordu. Gerçekte sokucunun etrafında en az üç
+   takım arkadaşı bulunur; uzun taç pası ancak savunma geride kalmışsa atılır.
+   Burada yalnız 15 m'nin DIŞINDA kalanlar içeri çekilir — dizilime (FAZ 11) dokunulmaz. */
+const _SOKMA_MAX_PX=443;      /* 15 m × 29,5429 px/m */
+const _SOKMA_HEDEF_PX=310;    /* ≈ 10,5 m — çekilen oyuncunun yerleşeceği halka */
+const _SOKMA_MIN_YAKIN=3;     /* sokucu dışında bu kadar oyuncu yakında durmalı */
+function _sokmaYerlesimi(spot,offP,inb){
+  try{
+    if(!spot||!offP||!offP.length) return;
+    const digerleri=offP.filter(p=>p&&p!==inb);
+    const uzak=(p)=>Math.hypot(p.x-spot.x,p.y-spot.y);
+    const yakin=digerleri.filter(p=>uzak(p)<=_SOKMA_MAX_PX);
+    let eksik=_SOKMA_MIN_YAKIN-yakin.length;
+    if(eksik<=0) return;
+    /* En yakın uzaktakiler çekilir — böylece hücumun geri kalanı yerinde kalır ve
+       geçiş niyeti tamamen bozulmaz. */
+    digerleri.filter(p=>uzak(p)>_SOKMA_MAX_PX)
+      .sort((a,b)=>uzak(a)-uzak(b))
+      .forEach(p=>{
+        if(eksik<=0) return;
+        const dx=p.x-spot.x, dy=p.y-spot.y, d=Math.hypot(dx,dy)||1;
+        /* Sokma noktasının KENDİ yarı sahasında kal: yönü koru, yarıçapı kıs. */
+        _hedefAta(p,_inX(spot.x+dx/d*_SOKMA_HEDEF_PX),_inY(spot.y+dy/d*_SOKMA_HEDEF_PX),_URG.KOS);
+        eksik--;
+      });
+  }catch(e){}
 }
 /** Kalıntı çizgi-dışı izinlerini temizle (sokma yarıda kaldıysa oyuncu kalıcı OOB kalmasın).
     `except` = o an gerçekten topu sokmakla görevli oyuncu (izni korunur). */
@@ -1158,8 +1234,32 @@ function _clearOob(except){
     p._retTx=p._retTy=null;
   });
 }
+/** §3: sokma pasının hedefi 15 m'yi aşmamalı. Aşıyorsa aynı takımdan, sokma noktasına
+    yakın bir taşıyıcı (1/2/3) tercih edilir. Uzun taç pası yalnız savunma GERİDE
+    kalmışsa (hızlı hücum niyeti) serbesttir — o durumda hedef değiştirilmez. */
+function _sokmaHedefi(inb,to,offP,defP){
+  try{
+    if(!inb||!to) return to;
+    const d=Math.hypot(to.x-inb.x,to.y-inb.y);
+    if(d<=_SOKMA_MAX_PX) return to;
+    /* Savunma geride mi? Hedefe en yakın savunmacı 8 m'den uzaksa gerçek hızlı hücumdur. */
+    let ed=1e9;
+    (defP||[]).forEach(p=>{ const k=Math.hypot(p.x-to.x,p.y-to.y); if(k<ed) ed=k; });
+    if(ed>236) return to;                                    /* 8 m — savunma yetişmemiş */
+    let en=null,eu=1e9;
+    (offP||[]).forEach(p=>{
+      if(p===inb||!_tasiyabilir(p)) return;
+      const k=Math.hypot(p.x-inb.x,p.y-inb.y);
+      if(k<=_SOKMA_MAX_PX&&k<eu){ eu=k; en=p; }
+    });
+    return en||to;
+  }catch(e){ return to; }
+}
 function _inboundPass(inb,to,dur){
   const S=mState._sim;
+  try{
+    if(S) to=_sokmaHedefi(inb,to,S.offP||[],S.defP||[])||to;
+  }catch(e){}
   /* Güvenlik: sokucu topa henüz yetişmediyse pas çizgi dışından atılmış gibi görünsün
      diye top ona verilir (birkaç px'lik düzeltme, görünmez). */
   if(S&&inb&&S.ball.carrier!==inb){
@@ -1332,7 +1432,9 @@ function movePlayersForEvent(ev,paint){
         steps.push({at:0.10,fn:()=>{ _ballHold(shooter); P('pre'); }});
         _markPainted();
       }
-      steps.push({at:tBase-0.20,fn:()=>{ _ballHold(shooter); }});
+      /* §4: topu alır ve 1-3 kez sektirir; süre dolunca top elde kalır ve atış gelir. */
+      steps.push({at:tBase-0.60,fn:()=>{ _ballHold(shooter); _ftSektir(shooter); }});
+      steps.push({at:tBase-0.05,fn:()=>{ const _b=_ball(); _b.noDrib=true; _b.dribBitis=null; }});
       let last=tBase;
       shots.forEach((sh,i)=>{
         const t0=tBase+0.55+i*1.05;      /* gerçek serbest atış ritmi (~1 sn arayla) */
@@ -1356,7 +1458,10 @@ function movePlayersForEvent(ev,paint){
         }});
         /* M5: atislar arasi top cemberden aticiya ISINLANMAZ (b.carrier dogrudan atanmisti,
            ~135 px tek kare sicramasi); hakem topu geri verir — gorunur kisa pas. */
-        if(i<shots.length-1) steps.push({at:t0+0.70,fn:()=>{ _ballHold(shooter); }});
+        if(i<shots.length-1){
+          steps.push({at:t0+0.70,fn:()=>{ _ballHold(shooter); _ftSektir(shooter); }});
+          steps.push({at:t0+1.00,fn:()=>{ const _b=_ball(); _b.noDrib=true; _b.dribBitis=null; }});
+        }
       });
       _markMarks();
       /* son atış isabetliyse: rakip dip çizgiden sokacak */
@@ -1403,8 +1508,17 @@ function movePlayersForEvent(ev,paint){
       const b=S.ball;
       const dx=thief.x-b.x, dy=thief.y-b.y, dd=Math.hypot(dx,dy)||1;
       _ballLoose(dx/dd*150+_srand(-40,40),dy/dd*150+_srand(-40,40),60);
-      /* Top kapıldığı an: cümle + karşı yöne hücum aynı karede başlar. */
-      _chase(thief,()=>{ if(P){ P(); } _startBreak(thiefIsUser); },2.2);
+      /* Top kapıldığı an: cümle + karşı yöne hücum aynı karede başlar.
+         §1.2: topu kapan UZUNSA (PF/C) karşı sahaya kendi sürmez — en yakın guard'a
+         çıkış pası atar. Ribaund sonrası bu kural zaten vardı (M9); çalma yolunda yoktu. */
+      _chase(thief,()=>{
+        if(P){ P(); }
+        _startBreak(thiefIsUser);
+        try{
+          const hedef=_cikisHedefi(thief,S.offP||[],_rim(S.offSide));
+          if(hedef) _script([{at:0.30,fn:()=>{ try{ _ballPass(hedef,0.30); }catch(e){} }}]);
+        }catch(e){}
+      },2.2);
       if(P) _markPainted();
       S.inb=null;
       return 1250;
@@ -1660,7 +1774,14 @@ function animateShotPossession(sh,onShoot,onResult){
         inb._oob=true;                       /* çizgi dışı izni sürüyor */
         if(!S.chase){ inb.tx=spot.x; inb.ty=spot.y; }
       }
-      if(pg===inb) pg=offR.find(p=>p!==inb&&p!==shooter)||offR.find(p=>p!==inb)||pg;
+      /* §1.2: sokma pası ROL SIRASINA göre bir taşıyıcıya (1/2/3) gider. Eskiden dizideki
+         ilk uygun oyuncu seçiliyordu; sokucu guard olduğunda top pivota atılıyor ve
+         karşı sahaya pivot sürüyordu. */
+      if(pg===inb||!_tasiyabilir(pg)){
+        pg=offR.find(p=>p!==inb&&p!==shooter&&_tasiyabilir(p))
+          ||offR.find(p=>p!==inb&&_tasiyabilir(p))
+          ||offR.find(p=>p!==inb&&p!==shooter)||offR.find(p=>p!==inb)||pg;
+      }
       const heldByInb=(b.carrier===inb);
       const dGrab=heldByInb?0:Math.hypot(inb.x-b.x,inb.y-b.y);
       const dSpot=Math.hypot((heldByInb?inb.x:b.x)-spot.x,(heldByInb?inb.y:b.y)-spot.y);
