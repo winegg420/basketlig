@@ -1552,7 +1552,15 @@ window.onload=()=>{
   try{ registerServiceWorker(); }catch(e){}
   /* FAZ 17: portre manifesti (kova/bant dosya sayıları) — sabit havuz boyu yerine dosyadan.
      Gelmezse oyun durmaz, portreler SVG yedeğine düşer. */
-  try{ loadPortreManifest(); }catch(e){}
+  /* Manifest fetch ile ASENKRON gelir: ilk boyama ondan önce olursa portreler SVG
+     yedeğine düşer ve bir daha çizilene kadar öyle kalırdı. Manifest gelince açık olan
+     sayfa bir kez tazelenir (yalnız gerçekten yeni geldiyse). */
+  try{
+    loadPortreManifest().then(m=>{
+      if(!m) return;
+      try{ showPage(charazayGetActivePageSlug()); }catch(e){}
+    });
+  }catch(e){}
   /* FAZ 12: mobil katlamalar ve rozetler ilk açılışta da doğru olsun. */
   try{ applyMobileFolds(); }catch(e){}
   try{ updateMobileBadges(); }catch(e){}
