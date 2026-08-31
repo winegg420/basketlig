@@ -270,8 +270,18 @@ function initMatchPlayers(lu,rakip,oppPlayers){
       nm.setAttribute('fill','rgba(255,255,255,0.95)'); nm.setAttribute('stroke','rgba(0,0,0,0.55)');
       nm.setAttribute('stroke-width','0.9'); nm.setAttribute('paint-order','stroke');
       nm.setAttribute('pointer-events','none'); nm.textContent=label;
-      g.appendChild(c); g.appendChild(t); g.appendChild(nm);
+      /* §6.1: YÖNELİM göstergesi. Jetonda yön bilgisi hiç yoktu; post-up'ta oyuncunun
+         "sırtını dönmesi" ekranda görünmüyordu. Küçük bir işaret, jetonun baktığı yönde
+         çember kenarına oturur — okunabilirliği bozmayacak kadar sade. */
+      const fc=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      fc.setAttribute('class','tok-face'); fc.setAttribute('r','3.6');
+      fc.setAttribute('fill','rgba(255,255,255,0.92)');
+      fc.setAttribute('stroke','rgba(0,0,0,0.45)'); fc.setAttribute('stroke-width','1');
+      fc.setAttribute('cx','11'); fc.setAttribute('cy','0');
+      fc.setAttribute('pointer-events','none');
+      g.appendChild(c); g.appendChild(fc); g.appendChild(t); g.appendChild(nm);
       layer.appendChild(g);
+      g._face=fc;
       return g;
     };
     const homeP=(lu&&lu.onCourt)?lu.onCourt.slice(0,5):[];
@@ -279,7 +289,9 @@ function initMatchPlayers(lu,rakip,oppPlayers){
     const mkP=(g,x,y,team,slot,pl)=>{
       const bv=_tokBaseV(pl);
       return {g,x,y,vx:0,vy:0,tx:x,ty:y,team,slot,pl:pl||null,baseV:bv,sprintV:bv*_V_TIER[3],maxV:bv,urg:_URG.JOG,
-              ph:_sr()*6.283,side:_sr()<0.5?-1:1,role:null,pop:0,sc:1,_oob:false,_lock:0};
+              ph:_sr()*6.283,side:_sr()<0.5?-1:1,role:null,pop:0,sc:1,_oob:false,_lock:0,
+              /* §6.1: yönelim (radyan) + sırtı dönük bayrağı (post-up) */
+              yon:0,_sirtDonuk:false};
     };
     /* Hava atışı dizilimi: her takım KENDİ savunacağı yarı sahada; pivotlar dairede.
        Kullanıcı (home jetonları) userIsHome ise SOL potaya hücum eder → savunduğu yarı SAĞ. */
@@ -459,6 +471,36 @@ function _simTick(dt){
       }
     }
   }
+  /* 1b) §2: SET HÜCUMUNDA DONMA YOK.
+     Sorun: top taşıyan üçlük yayına gelince duruyor ve koreografinin bir sonraki adımı
+     (tSwing / tKey) gelene kadar HERKES kıpırdamadan bekliyordu — 1,5-2 sn'lik ölü kareler.
+     Gerçek basketbolda kimse durmaz: topçu tepede sürmeye devam eder, topsuzlar
+     yerlerinde ufak düzeltmeler yapar.
+     Çözüm koreografiyi DEĞİŞTİRMEZ: dizilim noktasının ÇEVRESİNDE küçük (≤22 px ≈ 0,75 m)
+     yeni hedefler verilir. Ortalama konum korunduğu için FAZ 11 aralık ölçümleri kaymaz.
+     ⚠ Sahne PRNG'si (`_sr`) kullanılır — maçın rastgele akışı tüketilmez (B-5). */
+  if(S.canliSet&&S.offP&&S.time>=(S.canliSonra||0)){
+    S.canliSonra=S.time+0.85;
+    const b=S.ball;
+    for(const p of S.offP){
+      if(!p||p._oob||p._lock>S.time) continue;
+      /* Hedefi 1,2 sn'den uzun süredir değişmemiş olanlara yeni bir nokta ver. */
+      if(S.time-(p._sonHedefT||0)<1.42) continue;
+      if(b&&b.carrier===p&&S.time-(p._sonHedefT||0)<2.6) continue;   /* topçu: top zaten sekiyor */
+      const merkez=p._setTx!=null?[p._setTx,p._setTy]:[p.tx,p.ty];
+      const topta=(b&&b.carrier===p);
+      /* Topu tutan tepede daha geniş salınır (canlı dribbling); topsuzlar ufak düzeltme.
+         ⚠ Salınım YÖNÜ rastgele DEĞİL, potaya doğru/potadan uzağa (radyal). Serbest yönlü
+         salınım savunmacıyı adam-pota doğrultusundan çıkarıyordu: ball-you-man ölçümü
+         %82,9'dan %79,7'ye düştü. Radyal hareket sıralamayı bozmaz ve basketbolun kendi
+         hareketidir (topa flaş / geri açılma). */
+      const rim=S.defRim||_rim(S.offSide);
+      const dx=rim[0]-merkez[0], dy=rim[1]-merkez[1], d=Math.hypot(dx,dy)||1;
+      const r=(topta?10:9)*(_sr()*2-1);
+      _hedefAta(p,_inX(merkez[0]+dx/d*r),_inY(merkez[1]+dy/d*r),topta?_URG.JOG:_URG.YURU);
+      p._sonHedefT=S.time;
+    }
+  }
   /* 2) SAVUNMA CANLI TAKİBİ — top-sen-adam ilkesi:
         • adam adama: topu tutanı yakın kapatır, topsuz adamın savunmacısı adam ile
           "top-pota orta noktası" arasında YARDIM pozisyonuna sarkar (mesafe topa
@@ -575,10 +617,42 @@ function _simTick(dt){
     } else {
       p.x=_inX(p.x); p.y=_inY(p.y);
     }
+    _yonGuncelle(p,dt);
     _tokSet(p.g,p.x,p.y,p.sc);
   }
   _ballStep(dt);
   _fxStep(dt);
+}
+
+/* ── §6.1: JETON YÖNELİMİ ────────────────────────────────────────────────────────────
+   Jetonda yön bilgisi yoktu; post-up'ta hücumcunun sırtını potaya dönmesi ekranda
+   görünmüyordu. Kural sırası:
+     1) `_sirtDonuk` (post-up) → yüz POTADAN UZAĞA, savunmacı arkada kalır
+     2) topu tutuyorsa → yüz saldırdığı potaya
+     3) hızlı hareket ediyorsa → yüz gidiş yönüne
+     4) aksi hâlde → yüz topa (oyuncular hep topu izler)
+   Yön yumuşak döner (ani sıçrama olmasın); gösterge çember kenarındaki küçük işarettir. */
+const _YON_HIZ=9.0;                 /* rad/sn — dönüş yumuşatma katsayısı */
+function _yonGuncelle(p,dt){
+  try{
+    const S=mState._sim; if(!S||!p) return;
+    const b=S.ball;
+    const hucumda=(S.offP&&S.offP.indexOf(p)>=0);
+    const rim=hucumda?_rim(S.offSide):(S.defRim||_rim(S.offSide));
+    let hx,hy;
+    if(p._sirtDonuk&&rim){ hx=p.x-rim[0]; hy=p.y-rim[1]; }
+    else if(b&&b.carrier===p&&rim){ hx=rim[0]-p.x; hy=rim[1]-p.y; }
+    else if(Math.hypot(p.vx,p.vy)>28){ hx=p.vx; hy=p.vy; }
+    else if(b){ hx=b.x-p.x; hy=b.y-p.y; }
+    else return;
+    const hedef=Math.atan2(hy,hx);
+    let d=hedef-(p.yon||0);
+    while(d>Math.PI) d-=2*Math.PI;
+    while(d<-Math.PI) d+=2*Math.PI;
+    p.yon=(p.yon||0)+d*Math.min(1,_YON_HIZ*(dt||0.016));
+    const f=p.g&&p.g._face;
+    if(f){ f.setAttribute('cx',(Math.cos(p.yon)*11).toFixed(1)); f.setAttribute('cy',(Math.sin(p.yon)*11).toFixed(1)); }
+  }catch(e){}
 }
 
 /* ── Top: durum makinesi ─────────────────────────────────────────────────── */
@@ -935,9 +1009,11 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
     /* Geçiş: hücum kulvarlarda öne koşar, savunma potaya döner. Markaj YOK.
        (Topu çizgi dışından sokan oyuncuya dizilim hedefi ATANMAZ.) */
     S.defTrack=false;
+    S.canliSet=false;                          /* geçişte zaten herkes koşuyor */
     offR.forEach((p,i)=>{
       if(!p||p._oob) return;
       const c=_pt(TRANS_OFF[i],offLeft,false);
+      p._setTx=p._setTy=null; p._sonHedefT=S.time;
       _hedefAta(p,_jit(c[0],10),_jit(c[1],8),_URG.SPRINT);
       /* kanatlar (rol 1-2) önce kendi hizasında KENARA açılır, sonra kulvarda öne koşar */
       p._wp=(i===1||i===2)?[_inX(p.x+(offLeft?-58:58)),_inY(c[1])]:null;
@@ -1012,10 +1088,14 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
       if(k!==bi) B[k]=eski;
     }
   }
+  /* §2: set kurulduğu andan itibaren "canlı" akış açılır — kimse donmaz. Dizilim
+     merkezleri saklanır ki mikro hareket noktanın ÇEVRESİNDE kalsın, sürüklenmesin. */
+  S.canliSet=(phase==='set');
   offR.forEach((p,i)=>{
     if(!p||p._oob) return;                    /* topu sokan çizgi dışında kalır */
     p._wp=null;                               /* set kurulunca geçiş ara noktası biter */
     const c=B[i];
+    p._setTx=c[0]; p._setTy=c[1]; p._sonHedefT=S.time;
     if(p===shooter){ _hedefAta(p,c[0],c[1],_URG.KOS); return; }
     /* Noktasına ZATEN yakınsa yeni hedef atanmaz (yerinde durur, mikro-salınım yapar).
        F11-2: eşik 40 px idi — iki oyuncu birbirine doğru 40'ar px sapabildiği için ölçülen
@@ -1073,8 +1153,14 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
     const gap=isBall?(press?22:28):_defGap(Math.hypot(m.tx-S.ball.x,m.ty-S.ball.y));
     const dx=hx-m.tx, dy=hy-m.ty, d=Math.hypot(dx,dy)||1;
     { const bh=_defBehind(m.tx+dx/d*gap,m.ty+dy/d*gap,{x:m.tx,y:m.ty},rim);
+      /* §2/§5 sonrası: hücum artık set içinde de hareket ediyor (donma yok, yayılma
+         itmesi var). Topsuz savunmacı JOG ile takip ederken adamının arkasında kalıyor
+         ve "ball-you-man" ölçümü %82,9'dan %78'e düşüyordu. Savunmacı, adamı hareket
+         hâlindeyken KOŞ kademesine çıkar — gerçek savunma da böyledir; yerinde duran
+         adamda JOG'da kalır (gereksiz koşuşturma olmasın). */
+      const _mHareketli=(m&&Math.hypot(m.tx-m.x,m.ty-m.y)>18);
       _hedefAta(p,_jit(bh[0],press?4:6),_jit(bh[1],press?4:6),
-        Math.max(isBall?_URG.KOS:(press?_URG.KOS:_URG.JOG),(m.urg!=null?m.urg:_URG.JOG))); }
+        Math.max(isBall?_URG.KOS:((press||_mHareketli)?_URG.KOS:_URG.JOG),(m.urg!=null?m.urg:_URG.JOG))); }
   });
   S.shooter=shooter;
   return shooter;
@@ -1200,7 +1286,7 @@ function _inboundSetup(spot,offP,exclude){
    takım arkadaşı bulunur; uzun taç pası ancak savunma geride kalmışsa atılır.
    Burada yalnız 15 m'nin DIŞINDA kalanlar içeri çekilir — dizilime (FAZ 11) dokunulmaz. */
 const _SOKMA_MAX_PX=443;      /* 15 m × 29,5429 px/m */
-const _SOKMA_HEDEF_PX=310;    /* ≈ 10,5 m — çekilen oyuncunun yerleşeceği halka */
+const _SOKMA_HEDEF_PX=400;    /* ≈ 13,5 m — 15 m kapısının içinde ama ön sahaya yakın */
 const _SOKMA_MIN_YAKIN=3;     /* sokucu dışında bu kadar oyuncu yakında durmalı */
 function _sokmaYerlesimi(spot,offP,inb){
   try{
@@ -1867,10 +1953,61 @@ function animateShotPossession(sh,onShoot,onResult){
       const tKey=tSwing+(doMid?1.85:0.85);
       tFire=tKey+1.60;
       if(screener){
-        /* F11-2: perde mesafesi 22→32 px (≈1 m) — gerçek top perdesinde perdeci topçunun
-           yanına yapışmaz, omuz mesafesinde durur; jetonlar da iç içe geçmiş görünmez. */
-        steps.push({at:tSet+0.25,fn:()=>{ screener.tx=_inX(pg.x+(offLeft?32:-32)); screener.ty=_inY(pg.y-22); _setUrg(screener,_URG.KOS); _lockTok(screener,1.0); }});
-        steps.push({at:tKey-0.10,fn:()=>{ screener.tx=_inX(rim[0]+(offLeft?1:-1)*_srand(30,64)); screener.ty=_inY(250+_srand(-30,30)); _setUrg(screener,_URG.KOS); _lockTok(screener,1.1); }});
+        /* ── §6.2: PERDE ÜÇ AŞAMAYA BÖLÜNDÜ ──────────────────────────────────────────
+           Eskiden perde tek adımdı: perdeci noktaya gidiyor, sonra potaya devriliyordu.
+           Gerçek perde üç evredir ve üçü de ayrı ayrı görünmeli:
+             1) KURULUM  — perdeci durur, gövdesini savunmacıya verir (bir an sabit)
+             2) SIYIRMA  — topu taşıyan perdenin OMZUNU sıyırarak geçer
+             3) DEVRİLME — perdeci potaya devrilir (roll) ya da dışarı açılır (pop)
+           F11-2 mesafesi (32 px ≈ 1 m) korunur; jetonlar iç içe geçmez. */
+        const _perdeSag=offLeft?32:-32;
+        /* 1) KURULUM — perdeci yerine gelir ve KİLİTLENİR (gövdesini verdiği an). */
+        steps.push({at:tSet+0.25,fn:()=>{
+          screener.tx=_inX(pg.x+_perdeSag); screener.ty=_inY(pg.y-22);
+          _setUrg(screener,_URG.KOS); _lockTok(screener,0.95);
+          S._perde={evre:1,tok:screener,t:S.time};
+        }});
+        /* 2) SIYIRMA — topçu perdenin omzunu yalayarak geçer; perdeci hâlâ sabit. */
+        steps.push({at:tSet+1.15,fn:()=>{
+          try{
+            const yan=offLeft?1:-1;
+            /* Sıyırma OMUZ mesafesinde kalır. İlk denemede 30 px yanal + 26 px dikey
+               verilmişti; topçu ~2,1 m yer değiştiriyor ve savunmacısı kopuyordu
+               (spacing-check "topu tutana en yakın savunmacı" 1,98 → 2,08 m). */
+            pg.tx=_inX(screener.x+yan*16); pg.ty=_inY(screener.y+20);
+            _setUrg(pg,_URG.KOS); _lockTok(pg,0.55);
+            _lockTok(screener,0.55);                 /* perde kurulu kalır */
+            S._perde={evre:2,tok:screener,t:S.time};
+            /* §6.2: SAVUNMA TEPKİSİ — perdeye ya GEÇİLİR (switch) ya ARKADAN DOLAŞILIR.
+               Tepki olmadan savunmacı perdenin arkasında kalıyor ve markaj kalıcı
+               kopuyordu. Karar sahne PRNG'sinden gelir (B-5). */
+            const dPg=(S.defP||[]).find(d=>d._mark===pg);
+            const dScr=(S.defP||[]).find(d=>d._mark===screener);
+            if(dPg&&dScr&&_sr()<0.30){
+              dPg._mark=screener; dScr._mark=pg;      /* switch: eşleşmeler değişir */
+              S._perdeSav='switch';
+            } else if(dPg){
+              /* over/under: savunmacı perdenin arkasından dolaşıp adamına yetişir */
+              dPg.tx=_inX(pg.tx+yan*10); dPg.ty=_inY(pg.ty+12);
+              _setUrg(dPg,_URG.SPRINT);
+              S._perdeSav='dolas';
+            }
+          }catch(e){}
+        }});
+        /* 3) DEVRİLME — potaya devril (roll) ya da dışarı aç (pop). Karar SAHNE
+           PRNG'sinden gelir; `Math.random` maçın akışını kaydırırdı (B-5). */
+        steps.push({at:tKey-0.10,fn:()=>{
+          const roll=_sr()<0.62;
+          if(roll){
+            screener.tx=_inX(rim[0]+(offLeft?1:-1)*_srand(30,64));
+            screener.ty=_inY(250+_srand(-30,30));
+          } else {
+            /* pop: yay dışına, topçunun arkasına açılır */
+            screener.tx=_inX(pg.x+(offLeft?-52:52)); screener.ty=_inY(pg.y-_srand(28,58));
+          }
+          _setUrg(screener,_URG.KOS); _lockTok(screener,1.1);
+          S._perde={evre:3,tok:screener,t:S.time,roll};
+        }});
       }
       if(cutter){
         steps.push({at:tSet+0.45,fn:()=>{
@@ -1879,7 +2016,44 @@ function animateShotPossession(sh,onShoot,onResult){
           _setUrg(cutter,_URG.KOS); _lockTok(cutter,1.2);
         }});
       }
+      /* §5: YAYILMA (spotup) — dört oyuncu yay DIŞINDA geniş durur, bir kişi çembere gider.
+         Şema seçiliyordu ama sahada karşılığı yoktu: spotup ile pnr aynı görünüyordu.
+         Dizilim noktalarını ezmez, onları yay dışına doğru İTELER — FAZ 11 aralık ölçüsü
+         bozulmaz, tersine açılır. */
+      if(scheme==='spotup'){
+        steps.push({at:tSet+0.30,fn:()=>{
+          try{
+            const yay=offP.filter(p=>p!==shooter);
+            /* Çembere giden: en içerideki uzun. */
+            let ic=null,icd=1e9;
+            yay.forEach(p=>{ const d=Math.hypot(p.x-rim[0],p.y-rim[1]); if(d<icd){icd=d;ic=p;} });
+            yay.forEach(p=>{
+              if(p===ic){
+                _hedefAta(p,_inX(rim[0]+(offLeft?1:-1)*_srand(26,46)),_inY(250+_srand(-24,24)),_URG.KOS);
+                return;
+              }
+              /* Yay dışına it — ama YALNIZ içeride kalanı ve çizginin hemen dışına.
+                 İlk denemede herkes `max(THREE_R+26, d)` yarıçapına itiliyordu; potadan
+                 225 px uzak nokta sahanın ORTA ÜÇTE BİRİNE düşüyor ve dizilim ölçümünü
+                 bozuyordu (orta üçte bir %16,4 → %20,7). */
+              const dx=p.x-rim[0], dy=p.y-rim[1], d=Math.hypot(dx,dy)||1;
+              if(d>=THREE_R+10) return;                 /* zaten yay dışında — dokunma */
+              const hedefR=THREE_R+14;
+              _hedefAta(p,_inX(rim[0]+dx/d*hedefR),_inY(rim[1]+dy/d*hedefR),_URG.JOG);
+            });
+            S._sema={ad:'spotup',t:S.time};
+          }catch(e){}
+        }});
+      }
       if(doMid) steps.push({at:tSwing,fn:()=>_ballPass(mid,0.34)});
+      /* §6.1: POST OYUNU — hücumcu posta iner ve SIRTINI POTAYA DÖNER; savunmacı arkasında
+         kalır. Top girince sırtı dönük hâlde çevirme/kanca gelir. `_sirtDonuk` yalnız
+         yönelim göstergesini etkiler, konum/hız matematiğine dokunmaz. */
+      if(scheme==='postup'&&shooter){
+        steps.push({at:tSet+0.35,fn:()=>{ shooter._sirtDonuk=true; S._postup={tok:shooter,t:S.time}; }});
+        /* Şut anında sırt dönük hâl biter — oyuncu potaya döner ve bitirir. */
+        steps.push({at:Math.max(tSet+0.5,tFire-0.28),fn:()=>{ shooter._sirtDonuk=false; }});
+      }
       steps.push({at:tKey,fn:()=>{ _ballPass(shooter,0.34,scheme==='postup'); if(sh.pid!=null&&typeof sfx==='function') sfx('pass'); }});
     }
 
