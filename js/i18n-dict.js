@@ -68,6 +68,8 @@ const I18N_TR_EN={
 /* FAZ 19 §7.3: kimya kutusu sadeleştirildi */
 'bu kadroyla ulaşacağı seviye':'level it will reach with this squad','seviyesine doğru':'toward level',
 'Önceki sürüme ait kayıt uyumsuz olduğu için temizlendi.':'A save from a previous version was incompatible and has been cleared.',
+/* FAZ 20 §7 */
+'Sezon başlamadı':'Season has not started','Sezon başlamadı — sıralama ilk maçlardan sonra oluşur.':'Season has not started — standings appear after the first games.',
 'Bu filtreye uyan oyuncu yok.':'No player matches this filter.','Filtreleri temizle':'Clear filters','Transfer marketi şu an boş.':'The transfer market is empty right now.',
 'Maaş ↓':'Wage ↓',
 '-- Oyuncu seç --':'-- Select a player --',

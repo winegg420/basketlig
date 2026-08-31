@@ -83,14 +83,36 @@ const ESKI_KAYIT_ANAHTARLARI=[
   'charazay_game_save','charazay_game_save_v1','charazay_game_save_v2',
   'charazay_tbl','charazay_tbl_v1','charazay_tbl_v2','charazay_tbl_v3','charazay_tbl_v4'
 ];
-/** Desteklenmeyen anahtarları siler; silinen sayısını döndürür. */
+/** Şu an KULLANILAN charazay_* anahtarları — bunlar korunur, geri kalanı silinir. */
+function guncelKayitAnahtarlari(){
+  const l=[GAME_SAVE_KEY,TBL_STORAGE_KEY,CLUB_CACHE_KEY,NEWS_SESSION_KEY];
+  try{ if(typeof SETTINGS_KEY!=='undefined') l.push(SETTINGS_KEY); }catch(e){}
+  try{ if(typeof ACH_KEY!=='undefined') l.push(ACH_KEY); }catch(e){}
+  try{ if(typeof SLOT_KEY_PREFIX!=='undefined') l.push(SLOT_KEY_PREFIX); }catch(e){}
+  return l.filter(Boolean);
+}
+/** Desteklenmeyen anahtarları siler; silinen sayısını döndürür.
+ *  FAZ 20 §5: sabit liste YETMİYORDU — canlıda charazay_game_save_v2 ve charazay_tbl_v4
+ *  hâlâ duruyordu. Artık tüm charazay_* anahtarları taranır; güncel olanlar, kayıt
+ *  slotları ve analitik dışındakiler (yani eski SÜRÜM anahtarları) silinir. */
 function eskiKayitlariTemizle(){
   let n=0;
   try{
-    ESKI_KAYIT_ANAHTARLARI.forEach(k=>{
-      if(k===GAME_SAVE_KEY||k===TBL_STORAGE_KEY) return;
-      if(localStorage.getItem(k)!=null){ localStorage.removeItem(k); n++; }
-    });
+    const guncel=guncelKayitAnahtarlari();
+    const korunacak=(k)=>{
+      if(guncel.indexOf(k)>=0) return true;
+      /* kayıt slotları ve kullanıcı ayarları sürümlü değildir — korunur */
+      if(/^charazay_(slot|ayar|settings|ach|basarim|analytics)/.test(k)) return true;
+      /* güncel anahtarlardan biriyle aynı önekli ve aynı sürümlü ise koru */
+      return guncel.some(g=>k===g);
+    };
+    const silinecek=[];
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(!k||k.indexOf('charazay_')!==0) continue;
+      if(!korunacak(k)) silinecek.push(k);
+    }
+    silinecek.forEach(k=>{ try{ localStorage.removeItem(k); n++; }catch(e){} });
   }catch(e){}
   return n;
 }
@@ -119,11 +141,13 @@ const DIFFICULTY={
 };
 const DIFFICULTY_KEYS=['kolay','normal','zor'];
 /** Geçerli zorluk ayarını döndürür (kayıtta yoksa normal). */
+/* FAZ 20 §8 (kullanıcı kararı A): zorluk seçicisi kaldırıldı; oyun DAİMA nötr dengede
+   çalışır. DIFFICULTY tablosu ve difficultyCfg() imzası yerinde bırakıldı — çağıran onlarca
+   yer var ve eski kayıtlarda G.difficulty='zor' yazıyor olabilir; burada nötrlemek, o
+   çağrıları tek tek sökmekten hem küçük hem güvenli bir değişiklik. Zorluk artık
+   yorgunluk → sakatlık riski dinamiğinden gelir. */
 function difficultyCfg(){
-  try{
-    const k=(typeof G!=='undefined'&&G&&G.difficulty)||'normal';
-    return DIFFICULTY[k]||DIFFICULTY.normal;
-  }catch(e){ return DIFFICULTY.normal; }
+  return DIFFICULTY.normal;
 }
 /* F9-3: A takım kadro üst sınırı. Sınır dolduğunda yeni katılım engellenir ve kullanıcı
    karar vermeye zorlanır (kimi göndereceksin?) — bu aynı zamanda zayıf oyuncuyu gönderip

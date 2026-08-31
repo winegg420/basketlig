@@ -645,8 +645,19 @@ function totalRounds(){
 
 /** FAZ 19 §1: kullanıcının lig sırası (1..N) — bulunamazsa null.
  *  Tek yerden okunur: Ana Panel "Lig Sırası" kartı, başkan hedefi kutusu ve lig tablosu. */
+/** Sezonda oynanmış maç var mı? FAZ 20 §7: yokken sıralama anlamsızdır. */
+function sezonBasladiMi(){
+  try{
+    const m=G.season&&G.season.matches;
+    return !!(m&&m.some(x=>x&&x.played));
+  }catch(e){ return false; }
+}
+/** FAZ 20 §7: hiç maç oynanmadan Ana Panel "Şu an 3. sıra" yazıyordu — 20 takımın hepsi
+ *  0-0 iken 3. sıra keyfî ve kafa karıştırıcı (sıra yalnız ada göre çözülen eşitlikten
+ *  geliyordu). Sezon başlamadıysa artık null döner ve ekranlar "—" gösterir. */
 function userLigSirasi(ligKey){
   try{
+    if(!sezonBasladiMi()) return null;
     const k=ligKey||(G.team&&G.team.tblKey)||'tbl';
     const rows=buildLeagueRows(k);
     const ix=rows.findIndex(r=>r.isUser);

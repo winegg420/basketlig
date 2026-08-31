@@ -496,6 +496,18 @@ function emptyStandingsRow(){ return {o:0,g:0,m:0,sf:0,sa:0}; }
  *  Onarım: SEZON otoritedir. Aktif sezonun standings anahtarları TBL deposundaki adlarla
  *  uyuşmuyorsa depo sezona göre yeniden yazılır — böylece fikstür, puan durumu, kulüp
  *  sayfaları ve renkler tek kaynaktan beslenir. */
+/** FAZ 20 §6: yeni kariyer kurulurken haber akışını ve kulüp önbelleğini sıfırlar.
+ *  Canlıda sıfırdan kurulan "Bursa Fatihi" kariyerinin Ana Panel haber akışında ÖNCEKİ
+ *  kariyerin maç sonucu görünüyordu ("dasd 85-73 Konya Spor · Tur 17/19"). Sebep: haber
+ *  akışı sessionStorage'da, kulüp önbelleği localStorage'da birikiyor ve kariyer
+ *  değişiminde temizlenmiyordu — iki depo da oyun kaydından bağımsız yaşıyor. */
+function kariyerAkislariniSifirla(){
+  try{ sessionStorage.removeItem(NEWS_SESSION_KEY); }catch(e){}
+  try{ localStorage.removeItem(CLUB_CACHE_KEY); }catch(e){}
+  try{ if(typeof invalidateClubCacheMem==='function') invalidateClubCacheMem(); }catch(e){}
+  try{ const el=document.getElementById('newsList'); if(el) el.innerHTML=''; }catch(e){}
+}
+
 function ligAdlariniOnar(){
   try{
     if(!G.team||!G.team.tblKey) return false;

@@ -34,7 +34,7 @@ const ctx = {
     setItem: (k, v) => { store[k] = String(v); },
     removeItem: k => { delete store[k]; },
   },
-  sessionStorage: { getItem: () => null, setItem: () => {}, removeItem: () => {} },
+  sessionStorage: (function(){var m={};return{getItem:k=>(k in m?m[k]:null),setItem:(k,v)=>{m[k]=String(v);},removeItem:k=>{delete m[k];}};})(),
   document: stub(), navigator: { onLine: true },
   location: { search: '?test=1', hostname: 'localhost' },
   fetch: undefined, performance: { now: () => 0 },
@@ -107,15 +107,21 @@ const A2 = run(`(function(){
   const sonrasi = getTblState().subs[G.team.tblKey].teams.filter(Boolean);
   const seaAdlar = Object.keys(G.season.standings);
   const kalanFark = seaAdlar.filter(n=>sonrasi.indexOf(n)<0).length;
+  const siraOncesi = userLigSirasi(G.team.tblKey);   /* hiç maç yok → null olmalı (§7) */
+  let oynanan=0;
+  for(const m of G.season.matches){ if(oynanan>=2) break; simulateCpuMatch(m); oynanan++; }
   return { satir:bozukRows.length, veriliBozuk, kalanFark,
            kullaniciSatirda: bozukRows.some(r=>r.isUser),
+           siraOncesi,
            sira: userLigSirasi(G.team.tblKey) };
 })()`);
 yaz(A2.satir === 20, `bozulmadan sonra tablo yine ${A2.satir} satır`);
 yaz(A2.veriliBozuk === 20, `20 satırın ${A2.veriliBozuk} tanesinde veri var ("—" yok)`);
 yaz(A2.kullaniciSatirda, 'kullanıcının takımı tabloda görünüyor');
 yaz(A2.kalanFark === 0, `onarım sonrası depo ↔ sezon farkı ${A2.kalanFark}`);
-yaz(A2.sira != null && A2.sira >= 1 && A2.sira <= 20, `Ana Panel sırası ${A2.sira} (1..20 arası, "—" değil)`);
+/* FAZ 20 §7: hiç maç oynanmadan sıra gösterilmez — 20 takım 0-0 iken "3. sıra" keyfîydi. */
+yaz(A2.siraOncesi === null, 'sezon başlamadan sıra yok (null → ekranda "—")');
+yaz(A2.sira != null && A2.sira >= 1 && A2.sira <= 20, `maç oynandıktan sonra sıra ${A2.sira} (1..20 arası)`);
 
 /* ── B) Tablo tutarlılığı — bir sezon oynanır ──────────────────────────────────────── */
 console.log('\nB) Sezon oynandıktan sonra tablo tutarlılığı');
@@ -168,6 +174,26 @@ yaz(C.ort >= 10 && C.ort <= 13, `ortalama sayı farkı ${C.ort.toFixed(1)} (hede
 yaz(C.buyuk < 0.25, `20+ farkla biten maç %${(C.buyuk*100).toFixed(1)} (hedef <%25)`);
 yaz(C.kucuk > 0.25, `5 ve altı farkla biten maç %${(C.kucuk*100).toFixed(1)} (hedef >%25)`);
 yaz(C.ucSifirOran < 0.01, `16-0 / 0-16 takım oranı %${(C.ucSifirOran*100).toFixed(2)} (hedef <%1)`);
+
+/* ── D2) Kariyer değişiminde haber akışı (FAZ 20 §6) ───────────────────────────────── */
+console.log('\nD2) Yeni kariyerde önceki kariyerin haberi kalmamalı');
+const D2 = run(`(function(){
+  /* Önceki kariyerin haberini üret */
+  pushLeagueNewsLine('<div>🏀 dasd 85-73 Konya Spor · Gün 21</div>');
+  const oncesi = (sessionStorage.getItem(NEWS_SESSION_KEY)||'');
+  const kulupOnce = localStorage.getItem(CLUB_CACHE_KEY);
+  kariyerAkislariniSifirla();
+  const sonrasi = (sessionStorage.getItem(NEWS_SESSION_KEY)||'');
+  return {
+    oncesindeVardi: oncesi.indexOf('dasd')>=0,
+    sonrasindaYok: sonrasi.indexOf('dasd')<0,
+    kulupOnbellekTemiz: localStorage.getItem(CLUB_CACHE_KEY)==null,
+    kulupOnceVardi: kulupOnce!=null
+  };
+})()`);
+yaz(D2.oncesindeVardi, 'test kurgusu: önceki kariyerin haberi akışa yazıldı');
+yaz(D2.sonrasindaYok, 'kariyer sıfırlamasından sonra önceki takım adı akışta YOK');
+yaz(D2.kulupOnbellekTemiz, 'kulüp önbelleği (CLUB_CACHE_KEY) de temizlendi');
 
 /* ── D) Şehir tekrarı ──────────────────────────────────────────────────────────────── */
 console.log('\nD) Takım adlarında şehir tekrarı (§3)');

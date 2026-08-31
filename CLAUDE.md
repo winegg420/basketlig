@@ -83,6 +83,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/isim-check.js` | **FAZ 17 isim havuzu denetçisi** — ülke başına ≥150×140, liste içi tekrarsızlık, `ULKELER` ↔ `NAME_POOLS` birebir örtüşme, 5.000 çekilişte benzersizlik ≥%99. |
 | `tools/generate-portraits.js` | Portre üretimi + işleme (kova bazlı). Bu makinede Python kurulu olmadığı için `.py` sürümünün çalışan Node karşılığı; aynı dosya adlarını, eşikleri ve manifest'i üretir. **Tek akış zorunlu** — servis IP başına tek istek kabul ediyor. |
 | `tools/portre-uret-hepsi.js` | **Havuzu kotaya tamamlayan koşucu** — en geride kalan kovadan doldurur, her dilimde commit + push eder, kaldığı yerden devam eder. `--hedef=3000 --dilim=100`. |
+| `tools/surum-check.js` | **FAZ 20 sürüm damgası denetçisi** — HTML `?v=` ↔ `sw.js` SCRIPT_V uyumu, HTML script listesi ↔ sw.js önbellek listesi, ve **yayın dosyaları değiştiği hâlde sürüm artmadıysa DÜŞER** (içerik hash'i `tools/.surum-hash.json`). Sürümü artırdıktan sonra `--yaz` ile kaydı tazele. |
 | `tools/lig-check.js` | **FAZ 19 lig denetçisi** — standings ↔ fikstür tek kaynak, ayrışma senaryosunda onarım, tablo tutarlılığı (o = g + m), 10 sezonluk denge kapıları (ortalama fark, 20+/5- oranı, 16-0 takım), şehir tekrarı. Lig/tablo/denge değişince çalıştır. |
 | `tools/portre-uret-yerel.py` | **FAZ 17C yerel portre üretimi** (SD-Turbo, CPU). Kova kotaları, bant dengesi, kaldığı yerden devam, dilim başına commit+push. Boru hattı `tools/portre_boru.py`. |
 | `tools/portre_boru.py` | Portre işleme boru hattı (kadraj, fon eşitleme, eleme kapıları). Üretim kaynağı değişse de bu modül aynı kalır. |
@@ -176,6 +177,27 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   "reboundingu aldı" melezini üretmesin). Simge önekli metinlerde kalıp **simgeyi
   içermemeli** — `_splitIconPrefix` simgeyi soyup gövdeyi ayrı çevirir.
   `node tools/i18n-scan.js` artık canlı anlatım akışını da tarar (kapı: Türkçe < %5).
+- **JS DEĞİŞTİYSE SÜRÜMÜ ARTIR (FAZ 20 dersi — pahalıya mal oldu):** PWA service worker
+  `js/*.js` dosyalarını **önce önbellek** ile servis eder ve anahtar `?v=N`'dir.
+  FAZ 17B ve FAZ 19'da JS değişti ama `?v=` ve `SCRIPT_V` **53'te kaldı**; siteye dönen
+  her kullanıcı FAZ 17 kodunu çalıştırmaya devam etti. Maç saati düzeltmesi, market
+  yerli oranı ve eski kayıt temizliği KODDA VARDI ama tarayıcıya hiç ulaşmadı — FAZ 20
+  brifi bu üç maddeyi haklı olarak "uygulanmamış" diye raporladı. Artık
+  `node tools/surum-check.js` bunu yakalar: içerik hash'i değişip sürüm sabit kalırsa
+  denetim DÜŞER. Sürümü artırınca `--yaz` ile kaydı tazele.
+- **Zorluk seçici YOK (FAZ 20 §8, kullanıcı kararı A):** Kolay/Normal/Zor seçicisi hem
+  kurulum ekranından hem Ayarlar'dan kaldırıldı. Zorluk klasik bir kaydırıcıdan değil,
+  **yorgunluk temelli dinamik sakatlık riskinden** gelir — rotasyon yönetimi gerçek karar
+  olsun diye. `DIFFICULTY` tablosu ve `difficultyCfg()` imzası YERİNDE bırakıldı (onlarca
+  çağıran var, eski kayıtlarda `G.difficulty='zor'` olabilir); `difficultyCfg()` artık
+  daima `DIFFICULTY.normal` döndürür. Yeni bir zorluk çarpanı EKLEME.
+- **Kariyer akışları oyun kaydından bağımsız yaşar (FAZ 20 §6):** haber akışı
+  `sessionStorage` (NEWS_SESSION_KEY), kulüp önbelleği `localStorage` (CLUB_CACHE_KEY)
+  içindedir. Yeni kariyer kurulurken `kariyerAkislariniSifirla()` çağrılmazsa önceki
+  kariyerin maç sonucu yeni Ana Panel'de görünür. Yeni bir kalıcı akış eklersen oraya yaz.
+- **Sıralama sezon başlamadan gösterilmez (FAZ 20 §7):** 20 takım 0-0 iken "3. sıra"
+  yalnız ad sıralamasından geliyordu ve keyfîydi. `sezonBasladiMi()` false ise
+  `userLigSirasi()` null döner; ekranlar "—" ve "Sezon başlamadı" gösterir.
 - **Lig adlarında TEK KAYNAK (FAZ 19 §1 dersi):** aynı ligin takım adları iki yerde
   duruyordu — TBL deposu (`sub.teams` → `genLigTeams`) ve `G.season.standings`. İkisi
   ayrı depolarda (localStorage TBL anahtarı vs oyun kaydı) olduğu için biri yenilenince

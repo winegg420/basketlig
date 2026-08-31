@@ -88,6 +88,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .setup-box h2{font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:34px;color:var(--accent);letter-spacing:3px;margin-bottom:6px;}
 /* B5: zorluk seçici — kurulum ekranı ve Ayarlar modalı ortak kullanır. */
 .diff-picker{display:flex;gap:8px;flex-wrap:wrap;}
+.lig-bilgi{padding:10px 12px;margin-bottom:8px;background:var(--bg3);border-radius:8px;border-left:3px solid var(--blue);font-size:12px;color:var(--text2);}
 .diff-opt{flex:1;min-width:96px;background:var(--bg3);border:2px solid var(--border);border-radius:10px;padding:10px 8px;cursor:pointer;text-align:center;transition:border-color .14s,transform .12s;}
 .diff-opt:hover{transform:translateY(-1px);}
 .diff-opt.selected{border-color:var(--accent);background:rgba(249,115,22,0.12);}
@@ -293,7 +294,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .pcard:hover{border-color:var(--accent);transform:translateY(-2px);}
 .pcard-top{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start;}
 .pimg-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
-.pimg{width:70px;height:88px;border-radius:10px;object-fit:cover;border:2px solid var(--accent);background:var(--bg4);flex-shrink:0;}
+.pimg{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2288%22%20height%3D%22112%22%20viewBox%3D%220%200%2088%20112%22%3E%3Crect%20width%3D%2288%22%20height%3D%22112%22%20fill%3D%22%231e293b%22%2F%3E%3Ccircle%20cx%3D%2244%22%20cy%3D%2244%22%20r%3D%2216%22%20fill%3D%22%23334155%22%2F%3E%3Cpath%20d%3D%22M16%20106c0-17%2012-27%2028-27s28%2010%2028%2027z%22%20fill%3D%22%23334155%22%2F%3E%3C%2Fsvg%3E");background-size:cover;background-position:center;width:70px;height:88px;border-radius:10px;object-fit:cover;border:2px solid var(--accent);background:var(--bg4);flex-shrink:0;}
 .pimg-cap{font-size:10px;font-weight:800;color:var(--accent);text-align:center;margin-top:3px;letter-spacing:0.5px;}
 .mavatar-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
 .overall-badge{position:absolute;top:10px;right:10px;font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:26px;}
@@ -545,7 +546,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 .mcard{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;gap:12px;align-items:center;margin-bottom:8px;transition:all 0.2s;}
 .mcard:hover{border-color:var(--accent);}
 .bos-filtre{padding:28px 16px;text-align:center;color:var(--text2);font-size:13px;background:var(--bg3);border-radius:10px;border:1px dashed var(--border);}
-.mavatar{width:52px;height:66px;border-radius:8px;object-fit:cover;border:2px solid var(--accent);background:var(--bg4);}
+.mavatar{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2288%22%20height%3D%22112%22%20viewBox%3D%220%200%2088%20112%22%3E%3Crect%20width%3D%2288%22%20height%3D%22112%22%20fill%3D%22%231e293b%22%2F%3E%3Ccircle%20cx%3D%2244%22%20cy%3D%2244%22%20r%3D%2216%22%20fill%3D%22%23334155%22%2F%3E%3Cpath%20d%3D%22M16%20106c0-17%2012-27%2028-27s28%2010%2028%2027z%22%20fill%3D%22%23334155%22%2F%3E%3C%2Fsvg%3E");background-size:cover;background-position:center;width:52px;height:66px;border-radius:8px;object-fit:cover;border:2px solid var(--accent);background:var(--bg4);}
 .minfo{flex:1;}
 .mprice{text-align:right;min-width:110px;}
 .pval{font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:22px;color:var(--gold);}
@@ -826,12 +827,9 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     <p style="color:var(--text2);font-size:13px;margin-bottom:26px;">Takım adını ve rengini seç. 15 oyuncun otomatik oluşturulacak.</p>
     <div class="fg"><label>Takım Adı</label><input id="teamName" placeholder="örn: Ankara Kartallar"></div>
     <div class="fg"><label>Menajer Adın (isteğe bağlı)</label><input id="managerNameInput" placeholder="örn: Ahmet"></div>
-    <!-- B5: zorluk seviyesi — kariyer başında seçilir, Ayarlar'dan sonra değiştirilebilir. -->
-    <div class="fg">
-      <label>Zorluk Seviyesi</label>
-      <div id="setupDifficulty" class="diff-picker"></div>
-      <p id="setupDifficultyDesc" style="font-size:11px;color:var(--text2);margin-top:6px;line-height:1.5;"></p>
-    </div>
+    <!-- FAZ 20 §8 (kullanıcı kararı A): zorluk seçicisi KALDIRILDI. Zorluk klasik bir
+         kaydırıcıdan değil, yorgunluk temelli dinamik sakatlık riskinden gelir; rotasyon
+         yönetimi gerçek karar olsun diye. -->
     <div class="fg">
       <label>Takım Rengi</label>
       <div class="color-picker">
@@ -1231,6 +1229,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <div class="card-title">🏆 Lig puan durumu</div>
           <p id="ligScopeLine" style="font-size:12px;color:var(--text2);margin-bottom:6px;"></p>
           <div id="ligFrozenBanner" style="display:none;font-size:12px;font-weight:600;color:var(--gold);margin-bottom:10px;padding:10px 12px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.35);border-radius:10px;">🏁 Sezon bitti — tablo kilitlendi. Bir sonraki sezon otomatik açılacak.</div>
+          <div id="ligSezonBilgi"></div>
           <div id="ligTableWrap" class="tw lig-standings-wrap"><table>
             <thead><tr><th>#</th><th>Takım</th><th>O</th><th>G</th><th>M</th><th>+</th><th>-</th><th>Av</th><th>Puan</th></tr></thead>
             <tbody id="ligTable"></tbody>
@@ -1447,20 +1446,20 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 <div class="notif" id="notif"></div>
 
-<script src="js/i18n.js?v=53"></script>
-<script src="js/i18n-dict.js?v=53"></script>
-<script src="js/i18n-commentary.js?v=53"></script>
-<script src="js/names.js?v=53"></script>
-<script src="js/state.js?v=53"></script>
-<script src="js/economy.js?v=53"></script>
-<script src="js/persistence.js?v=53"></script>
-<script src="js/portraits.js?v=53"></script>
-<script src="js/roster-gen.js?v=53"></script>
-<script src="js/league.js?v=53"></script>
-<script src="js/match-prep.js?v=53"></script>
-<script src="js/render.js?v=53"></script>
-<script src="js/match-engine.js?v=53"></script>
-<script src="js/main.js?v=53"></script>
+<script src="js/i18n.js?v=54"></script>
+<script src="js/i18n-dict.js?v=54"></script>
+<script src="js/i18n-commentary.js?v=54"></script>
+<script src="js/names.js?v=54"></script>
+<script src="js/state.js?v=54"></script>
+<script src="js/economy.js?v=54"></script>
+<script src="js/persistence.js?v=54"></script>
+<script src="js/portraits.js?v=54"></script>
+<script src="js/roster-gen.js?v=54"></script>
+<script src="js/league.js?v=54"></script>
+<script src="js/match-prep.js?v=54"></script>
+<script src="js/render.js?v=54"></script>
+<script src="js/match-engine.js?v=54"></script>
+<script src="js/main.js?v=54"></script>
 
 
 </body></html>

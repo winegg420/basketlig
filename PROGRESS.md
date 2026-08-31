@@ -3772,3 +3772,66 @@ ayırt edilemiyordu) · kimya kutusundaki "(sabit)" ifadesi sadeleştirildi ·
 **§7.5 puanlama kullanıcı onayıyla FIBA'ya çevrildi: galibiyet 2, mağlubiyet 1.**
 "Maçı Başlat" pasifleştirme kodu (`setMatchButtonsRunning`) zaten mevcuttu — canlıdaki
 gözlem eski dağıtımdan; kod tarafında değişiklik gerekmedi.
+
+
+---
+
+## FAZ 20 — FAZ 19 doğrulaması + kalan kusurlar (2026-08-31)
+
+Baz commit `7370d69`. Kaynak: basketlig.vercel.app'te sıfırdan kurulan kariyer.
+
+### 0. ASIL BULGU — üç madde "uygulanmamış" değildi, KULLANICIYA ULAŞMAMIŞTI
+
+Brif §3 (maç saati), §4 (market yerli oranı) ve §5 (eski kayıt temizliği) için
+"uygulanmamış" diyordu. Kod kontrol edildi: **üçü de yazılmıştı** (FAZ 17B `a7a76b8`,
+FAZ 19 `7370d69`). Eksik olan tek şey **sürüm damgasıydı**.
+
+PWA service worker `js/*.js` dosyalarını *önce önbellek* ile servis eder ve önbellek
+anahtarı `?v=N`'dir. FAZ 17'de 53'e çıkarılan bu numara FAZ 17B ve FAZ 19'da
+**artırılmadı** — siteye dönen her kullanıcı FAZ 17 JavaScript'ini çalıştırmaya devam
+etti. Düzeltmeler depoda vardı, tarayıcıda yoktu.
+
+**Bu benim hatam.** CLAUDE.md zaten "SCRIPT_V'yi de artır" diyordu; FAZ 17'de yaptım,
+sonraki iki fazda unuttum. Sürüm 53 → **54** yapıldı ve tekrarını önlemek için
+`tools/surum-check.js` yazıldı: yayınlanan dosyaların içerik hash'i
+`tools/.surum-hash.json`'da tutulur; içerik değişip sürüm sabit kalırsa denetim DÜŞER.
+Ayrıca HTML script listesi ile sw.js önbellek listesinin birebir olduğunu da sınar.
+
+### 2. Portre boş kutusu — brifin kendi düzeltmesi
+Brif bu tespitin yanlış olduğunu bildirdi (ölçüm `loading="lazy"` yüzünden ekran
+dışındaki görselleri bozuk saymış). Düzeltme yapılmadı; yalnız istenen iyileştirme:
+`.pimg` ve `.mavatar` kutularına **soluk silüet arka planı** kondu, yükleme anındaki
+boşluk artık göze batmıyor.
+
+### 4. Market yerli oranı
+Kod zaten doğruydu (FAZ 17B §4). Sürüm bump'ından sonra ölçülen:
+
+| | Yerli payı |
+|---|---|
+| Sezon 1 | **%59,5** (kapı %45-65) |
+| Sezon 3 | %44,0 |
+| Sezon 6 | **%25,5** (kapı %20-32) |
+
+OVR sıralamasında ilk %20'de yabancı **%53**, son %20'de **%5**. Yabancı–yerli OVR farkı
+**4,5** (erişilemez değil). Canlıda görülen %2,5 tamamen önbellekten geliyordu.
+
+### 5. Eski kayıt anahtarları
+Sabit liste yetmiyordu. Artık tüm `charazay_*` anahtarları taranıyor; güncel sürüm
+anahtarları, kayıt slotları ve ayarlar korunup geri kalan **sürümlü** anahtarlar siliniyor.
+
+### 6. Yeni kariyerde eski kariyerin haberi
+Haber akışı `sessionStorage`'da, kulüp önbelleği `localStorage`'da — ikisi de oyun
+kaydından bağımsız. `kariyerAkislariniSifirla()` eklendi ve `createTeam` başında
+çağrılıyor. Kapı `lig-check` D2'ye kondu (brif schema-check demişti; orada oyun
+modüllerini yükleyen harness yok, lig-check'te var — sapma raporlandı).
+
+### 7. Sezon başlamadan sıra
+`sezonBasladiMi()` eklendi; false ise `userLigSirasi()` null döner. Ana Panel "—",
+başkan hedefi "Sezon başlamadı", lig tablosunun üstünde bilgi satırı.
+
+### 8. Zorluk seçici — kullanıcı kararı: KALDIRILDI
+Kolay/Normal/Zor seçicisi kurulum ekranından ve Ayarlar modalından çıkarıldı.
+`difficultyCfg()` artık daima `DIFFICULTY.normal` döndürür — tablo ve imza yerinde
+bırakıldı çünkü onlarca çağıran var ve eski kayıtlarda `G.difficulty='zor'` olabilir;
+nötrlemek, çağrıları tek tek sökmekten hem küçük hem güvenli. Zorluk artık yorgunluk →
+sakatlık riski dinamiğinden gelir.

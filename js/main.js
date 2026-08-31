@@ -1431,6 +1431,7 @@ function difficultyPickerHtml(secili,onclickFn){
 }
 /** Kurulum ekranındaki seçiciyi çizer. */
 function renderSetupDifficulty(){
+  /* FAZ 20 §8: kutu HTML'den kaldırıldı; fonksiyon çağrı yerlerini bozmamak için duruyor. */
   const box=document.getElementById('setupDifficulty');
   if(!box) return;
   box.innerHTML=difficultyPickerHtml(_setupDifficulty,'selectSetupDifficulty');
@@ -1448,6 +1449,7 @@ function setDifficulty(k){
   G.difficulty=k;
   scheduleGameSave();
   const d=DIFFICULTY[k];
+  /* FAZ 20 §8: Ayarlar'daki zorluk kutusu da kaldırıldı; setDifficulty çağrılırsa sessiz kalır. */
   const box=document.getElementById('ayarDifficulty');
   if(box) box.innerHTML=difficultyPickerHtml(k,'setDifficulty');
   const desc=document.getElementById('ayarDifficultyDesc');
@@ -1469,12 +1471,20 @@ function createTeam(){
      başlıyordu. Elle alan listesi kırılgandı (biri unutulursa sessizce devrediyor), bu
      yüzden TEK kaynak: varsayılan durumun derin kopyası. İleride eklenen alanlar da kapsanır. */
   const ayarlar=Object.assign({sound:true,autosaveSec:12},G.settings||{});   /* ses/otokayıt kullanıcı tercihi — korunur */
+  /* FAZ 20 §6: haber akışı (sessionStorage) ve kulüp önbelleği (localStorage) oyun
+     kaydından BAĞIMSIZ depolarda yaşıyor; sıfırlanmazsa yeni kariyerin Ana Panel'inde
+     önceki kariyerin maç sonucu görünüyordu ("dasd 85-73 Konya Spor · Tur 17/19"). */
+  kariyerAkislariniSifirla();
   G=defaultGameState();
   G.settings=ayarlar;
   G.selectedColor=renk;
-  /* B5: kurulum ekranında seçilen zorluk kariyere yazılır ve başlangıç bütçesine uygulanır. */
-  G.difficulty=DIFFICULTY[_setupDifficulty]?_setupDifficulty:'normal';
-  G.coins=Math.round(START_KR*(difficultyCfg().butce||1));
+  /* FAZ 20 §8 (kullanıcı kararı A): zorluk SEÇİCİSİ kaldırıldı. Zorluk artık klasik bir
+     kaydırıcıdan değil, yorgunluk temelli dinamik sakatlık riskinden gelir — rotasyon
+     yönetimi gerçek karar hâline gelsin diye. Kariyer daima nötr dengeyle kurulur;
+     DIFFICULTY tablosu 'normal' satırıyla (tüm çarpanlar 1/0) YERİNDE bırakıldı ki
+     difficultyCfg() çağıran mevcut kod bozulmasın ve eski kayıtlar okunabilsin. */
+  G.difficulty='normal';
+  G.coins=START_KR;
   G.managerName=managerName;
   G.joinedAt=new Date().toISOString();
   G.lastActive=G.joinedAt;

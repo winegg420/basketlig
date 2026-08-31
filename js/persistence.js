@@ -197,11 +197,6 @@ function openSettingsModal(){
   showAppModal(`<div class="modal-title">⚙️ Ayarlar</div>
     <div style="display:flex;flex-direction:column;gap:12px;">
       <div style="padding:12px;background:var(--bg3);border-radius:10px;">
-        <div style="font-size:13px;margin-bottom:7px;">🎚️ Zorluk Seviyesi</div>
-        <div id="ayarDifficulty" class="diff-picker"></div>
-        <div id="ayarDifficultyDesc" style="font-size:10px;color:var(--text2);margin-top:6px;line-height:1.5;"></div>
-      </div>
-      <div style="padding:12px;background:var(--bg3);border-radius:10px;">
         <div style="font-size:13px;margin-bottom:7px;">🌍 Dil / Language</div>
         <div class="lang-row" style="justify-content:flex-start;">${langPickerHtml()}</div>
         <div style="font-size:10px;color:var(--text2);margin-top:6px;">Dil değişince oyun yeniden yüklenir — ilerlemen korunur.</div>

@@ -64,11 +64,13 @@ function renderDashboardSummary(){
     ['dS','sbS'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=sirapan!=null?String(sirapan):'-'; });
     const pt=G.presidentTarget;
     if(pt&&pt.targetRank){
-      const sira=sirapan!=null?sirapan:'—';
-      const iyi=(sira!=='—'&&sira<=pt.targetRank);
+      /* FAZ 20 §7: sezon başlamadan sıra gösterilmez. */
+      const iyi=(sirapan!=null&&sirapan<=pt.targetRank);
+      const durum=sirapan!=null
+        ? `Şu an <strong style="color:${iyi?'var(--green)':'var(--red)'};">${sirapan}. sıra</strong> · hedef ${pt.targetRank}. sıra`
+        : `<span style="color:var(--text2);">Sezon başlamadı</span> · hedef ${pt.targetRank}. sıra`;
       parts.push(kutu('Başkan hedefi',
-        `<div>${escMatch(pt.label||'')}</div>
-         <div style="margin-top:4px;">Şu an <strong style="color:${iyi?'var(--green)':'var(--red)'};">${sira}. sıra</strong> · hedef ${pt.targetRank}. sıra</div>`));
+        `<div>${escMatch(pt.label||'')}</div><div style="margin-top:4px;">${durum}</div>`));
     }
   }catch(e){ dbg('dash summary',e); }
   box.innerHTML=parts.join('');
@@ -1313,8 +1315,14 @@ function renderLig(){
       <td style="font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:18px;color:var(--accent);">${t.puan}</td>
     </tr>`;
   }).join('');
+  /* FAZ 20 §7: sezon başlamadıysa sıralama anlamsız — kart "—", tabloya bilgi satırı. */
+  const basladi=(typeof sezonBasladiMi==='function')?sezonBasladiMi():true;
   const uix=rows.findIndex(t=>t.isUser);
-  ['dS','sbS'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=uix>=0?String(uix+1):'-'; });
+  ['dS','sbS'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=(basladi&&uix>=0)?String(uix+1):'—'; });
+  try{
+    const bilgi=document.getElementById('ligSezonBilgi');
+    if(bilgi) bilgi.innerHTML=basladi?'':'<div class="lig-bilgi">Sezon başlamadı — sıralama ilk maçlardan sonra oluşur.</div>';
+  }catch(e){}
 }
 
 function renderAntrenman(){
