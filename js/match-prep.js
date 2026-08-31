@@ -447,9 +447,17 @@ function maybeLockerRoomCrisis(){
   }catch(e){ dbg('crisis',e); return false; }
 }
 
+/* FAZ 19 §2: BOT TAKIM GÜCÜ DAĞILIMI DARALTILDI.
+   Ölçüldü: eski formül 58 + (hash%4200)/100 → güç aralığı 58-100, yani 42 PUANLIK yelpaze.
+   İki takım arasındaki fark 35'e kadar çıkabiliyor, cpuMatchScore bunu diff×0.52 ile skora
+   çeviriyordu — tek başına 18 sayılık fark. Sonuç: 16 maçlık sezonda bir takım 16-0, iki
+   takım 0-16; ortalama sayı farkı 21,4 (gerçek lig ~10-11), maçların %51,9'u 20+ farkla
+   bitiyordu. Lig anlamsızlaşıyordu.
+   Yelpaze 42 → 20 puana indirildi (58-78). Bu, rastgele gürültü EKLEMEDEN yapıldı; güç
+   sinyali duruyor, yalnız ölçeği gerçekçi. Sonuçlar deterministik kalır. */
 function pseudoTeamStrength(isim,tblKey){
   /* Madde 9: bot menajerin itibarı (hazır geçmiş) takıma küçük bir güç katkısı sağlar. */
-  return 58+(seqFromName(String(isim),tblKey||'tbl')%4200)/100+botManagerTitles(isim)*0.4;
+  return 58+(seqFromName(String(isim),tblKey||'tbl')%2000)/100+botManagerTitles(isim)*0.4;
 }
 
 /* F8-3: lig sonuçları aşırı kutuplaşmıştı — 8 maçta hem 8-0 hem 0-8 çıkıyor, galibiyet
@@ -460,10 +468,13 @@ function pseudoTeamStrength(isim,tblKey){
    Skor formülü AYRI bir saf fonksiyonda: hem motor hem tools/faz8-check.js aynı kaynağı
    kullansın (kopyalanan formül, motor değişince sessizce eskir). */
 function cpuMatchScore(hr,ar){
-  const diff=Math.max(-35,Math.min(35,hr-ar));
+  /* FAZ 19 §2: güç→skor dönüşümü yumuşatıldı. Kelepçe 35 → 20 (yeni güç yelpazesiyle
+     uyumlu) ve katsayı 0,26 → 0,25; böylece küçük OVR farkı büyük skor farkına
+     dönüşmüyor. Gürültü DEĞİŞMEDİ — denge, güç dağılımını daraltarak sağlandı. */
+  const diff=Math.max(-20,Math.min(20,hr-ar));
   const gunFormu=()=>rand(-6,6)+(Math.random()<0.14?rand(-7,7):0);   /* nadir "sürpriz günü" */
-  let hs=Math.round(86+rand(-10,10)+gunFormu()+diff*0.26+2);   /* +2 ev sahibi avantajı */
-  let as=Math.round(86+rand(-10,10)+gunFormu()-diff*0.26);
+  let hs=Math.round(86+rand(-10,10)+gunFormu()+diff*0.25+2);   /* +2 ev sahibi avantajı */
+  let as=Math.round(86+rand(-10,10)+gunFormu()-diff*0.22);
   hs=Math.max(58,Math.min(125,hs));
   as=Math.max(58,Math.min(125,as));
   if(hs===as){ if(rand(0,1)) hs+=rand(2,6); else as+=rand(2,6); }  /* beraberlik → uzatma benzeri kırılma */

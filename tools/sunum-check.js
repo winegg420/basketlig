@@ -206,6 +206,24 @@ async function main() {
 
   await sleep(WATCH_MS);
 
+  /* FAZ 19 §4.3: akış damgası ile tabela saati aynı olmalı. Canlıda tabela 5:17 (kalan)
+     gösterirken akış 1P 4:43 (geçen) yazıyordu — toplamları 10:00 olduğu için tutarlıydı
+     ama kullanıcı iki farklı saat görüyordu. Damga artık kalan süreyi gösteriyor. */
+  const saatOrnek = await page.evaluate(() => {
+    const ayr = (txt) => {
+      const m = /(\d+):(\d{2})/.exec(String(txt || ''));
+      return m ? (+m[1]) * 60 + (+m[2]) : null;
+    };
+    const out = [];
+    const tab = document.getElementById('liveTime');
+    const ilk = document.querySelector('#commentary .ci .ci-time');
+    if (tab && ilk) {
+      const t = ayr(tab.textContent), a = ayr(ilk.textContent);
+      if (t != null && a != null) out.push({ tabela: t, akis: a, akisTxt: ilk.textContent.trim() });
+    }
+    return out;
+  });
+
   const R = await page.evaluate(() => {
     const P = window.__SUNUM;
     // M9: ribaund anından sonraki 3,5 sn içinde uzun(3/4) → guard(0/1) taşıyıcı geçişi
@@ -326,6 +344,18 @@ async function main() {
       `${R.ftOrnek} seri · atış anında yerinde ${R.ftYerinde.toFixed(1)}/10 (hedef ≥ 9) · ` +
       `ortalama uzaklık ${R.ftOrtM.toFixed(2)} m · en uzak ${R.ftEnUzakM.toFixed(2)} m · ` +
       `jeton hızı ${R.ftHiz.toFixed(0)} px/sn (hedef < 15)`);
+  }
+
+  // FAZ 19 §4.3 — akış damgası ile tabela saati aynı olmalı (kalan süre, geriye sayım)
+  if (!saatOrnek.length) {
+    kayit('F19-4', 'Akış damgası tabela saatiyle aynı', false,
+      'ÖRNEK YOK — canlı maçta damga ya da tabela okunamadı');
+  } else {
+    const o = saatOrnek[0];
+    const fark = Math.abs(o.tabela - o.akis);
+    kayit('F19-4', 'Akış damgası tabela saatiyle aynı', fark <= 2,
+      `tabela ${Math.floor(o.tabela/60)}:${String(o.tabela%60).padStart(2,'0')} · ` +
+      `akış "${o.akisTxt}" · fark ${fark} sn (hedef ≤2)`);
   }
 
   console.log(`  konsol hatası: ${hatalar.length}`, hatalar.length ? hatalar.slice(0, 3) : '');

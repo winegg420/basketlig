@@ -37,11 +37,19 @@ const POZ_TR={PG:'Organizatör',SG:'Şutör',SF:'K. Forvet',PF:'G. Forvet',C:'Pi
    dört Kayseri takımı) ve İstanbul, Ankara, Antalya hiç yoktu — Türkiye ligi hissi vermiyor,
    üretilmiş görünüyordu. Havuz 24 şehre çıkarıldı; lig kurulumu ayrıca şehir başına en fazla
    2 takım uyguluyor (genUniqueClubName). */
+/* FAZ 19 §3: canlı ligde 20 takım ~8 şehirden üretilmişti — Kayseri ×4, Konya ×4,
+   Diyarbakır ×3. Aynı ligde dört Kayseri takımı ucuz duruyor. Havuz 24 → 32 şehre
+   çıkarıldı (Türkiye'de basketbol geçmişi olan iller); "aynı ligde en fazla 2 takım"
+   kuralı genUniqueClubName'de zaten uygulanıyor, artık havuz ona yetiyor. */
 const SEHIR=['İstanbul','Ankara','İzmir','Bursa','Antalya','Adana','Konya','Gaziantep',
   'Kayseri','Eskişehir','Samsun','Trabzon','Diyarbakır','Mersin','Denizli','Sakarya',
-  'Manisa','Balıkesir','Malatya','Erzurum','Şanlıurfa','Aydın','Tekirdağ','Kocaeli'];
+  'Manisa','Balıkesir','Malatya','Erzurum','Şanlıurfa','Aydın','Tekirdağ','Kocaeli',
+  'Afyonkarahisar','Muğla','Zonguldak','Elazığ','Sivas','Ordu','Çorum','Kütahya'];
 /** Bot kulüp adı ekleri — genRandomClubName bunu kullanır (eksikti; yeni oyunda takım kurma çöküyordu). */
-const LIG_T=['Basket','Spor','Yıldızları','Kartalları','Aslanları','Şimşekleri','Boğaları','Panterleri','Şahinleri','Kurtları','BK','Gençlik'];
+/* FAZ 19 §3: sonek havuzu da genişletildi — 32 şehir × 18 sonek, tekrar hissi azalır. */
+const LIG_T=['Basket','Spor','Yıldızları','Kartalları','Aslanları','Şimşekleri','Boğaları',
+  'Panterleri','Şahinleri','Kurtları','BK','Gençlik','Koleji','Belediyespor','Üniversite',
+  'Doğanları','Atmacaları','Ejderleri'];
 const ILK=['Marcus','James','Kevin','Luka','Nikola','Joel','Trae','Jayson','Devin','Damian','Tyler','Darius','Cade','Paolo','Victor','Anthony','Donovan','Shai','Ja','LaMelo','Yuki','Chen','Hakeem','Kwame','Diego','Andre','Giannis','Domantas','Rudy','Jonas','Bogdan','Dennis'];
 const SY=['Johnson','Williams','Smith','Brown','Jones','Davis','Miller','Wilson','Anderson','Garcia','Martinez','Robinson','Clark','Rodriguez','Lewis','Tiongko','Okonkwo','Nakamura','Kim','Diallo','Kowalski','Silva','Fernandes'];
 const TR_ILK=['Mehmet','Serkan','Burak','Can','Emre','Ali','Oğuz','Kaan','Berk','Mert','Arda','Enes','Furkan','Alperen','Cedi'];
@@ -66,6 +74,26 @@ const TBL_COMP_NAME='Türkiye Basketbol Ligi';
 const CLUB_CACHE_KEY='charazay_club_public_v1';
 const NEWS_SESSION_KEY='charazay_news_sess_v1';
 const GAME_SAVE_KEY='charazay_game_save_v3'; /* FAZ 17: milliyet + portre şeması — göç yok, eski anahtar yok sayılır */
+/* FAZ 19 §6: DESTEKLENMEYEN SÜRÜM ANAHTARLARI.
+   Canlıda hem charazay_game_save_v2 hem v3, hem charazay_tbl_v4 hem _v5 yan yana duruyordu.
+   "Sessizce yok say" yetmiyor: eski kayıt yer kaplıyor, tarayıcı kotasını yiyor ve bir
+   sonraki şema değişiminde hangisinin geçerli olduğu karışıyor. Artık açılışta siliniyor
+   ve kullanıcıya tek satırlık bilgi veriliyor (sessizce silmek de doğru değil). */
+const ESKI_KAYIT_ANAHTARLARI=[
+  'charazay_game_save','charazay_game_save_v1','charazay_game_save_v2',
+  'charazay_tbl','charazay_tbl_v1','charazay_tbl_v2','charazay_tbl_v3','charazay_tbl_v4'
+];
+/** Desteklenmeyen anahtarları siler; silinen sayısını döndürür. */
+function eskiKayitlariTemizle(){
+  let n=0;
+  try{
+    ESKI_KAYIT_ANAHTARLARI.forEach(k=>{
+      if(k===GAME_SAVE_KEY||k===TBL_STORAGE_KEY) return;
+      if(localStorage.getItem(k)!=null){ localStorage.removeItem(k); n++; }
+    });
+  }catch(e){}
+  return n;
+}
 const IDB_NAME='charazay_idb_v1';
 const IDB_STORE_G='game';
 const MATCH_CLOCK_SEC=600;   /* Regülasyon çeyrek süresi — FIBA 10 dk (gerçekçi skorlar için) */

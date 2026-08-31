@@ -627,7 +627,11 @@ function seqFromName(isim,ligKey){
   return hash32(String(isim)+ligKey)%100000;
 }
 
-function standingPuan(row){ return (row.g||0)*2; }
+/* FAZ 19 §7.5 (kullanıcı kararı): FIBA/TBL puanlaması — galibiyet 2, MAĞLUBİYET 1.
+   Önceden 2/0 idi; oyun FIBA kurallarını hedeflediği için kullanıcı 2/1'e geçilmesini
+   onayladı. Sıralama ölçütleri değişmedi (puan → ikili maç → averaj → atılan sayı);
+   yalnız puan farkları daralır, bu yüzden averaj daha sık belirleyici olur. */
+function standingPuan(row){ return (row.g||0)*2+(row.m||0); }
 /* C5: Tur sayısı fikstürden dinamik türetilir (farklı takım sayılı liglerde "/19" kırılmaz). */
 function totalRounds(){
   try{
@@ -639,7 +643,20 @@ function totalRounds(){
   return LEAGUE_SIZE-1;
 }
 
+/** FAZ 19 §1: kullanıcının lig sırası (1..N) — bulunamazsa null.
+ *  Tek yerden okunur: Ana Panel "Lig Sırası" kartı, başkan hedefi kutusu ve lig tablosu. */
+function userLigSirasi(ligKey){
+  try{
+    const k=ligKey||(G.team&&G.team.tblKey)||'tbl';
+    const rows=buildLeagueRows(k);
+    const ix=rows.findIndex(r=>r.isUser);
+    return ix>=0?ix+1:null;
+  }catch(e){ return null; }
+}
+
 function buildLeagueRows(ligKey){
+  /* FAZ 19 §1: satırlar basılmadan önce adlar sezona göre onarılır (tek kaynak). */
+  try{ if(typeof ligAdlariniOnar==='function') ligAdlariniOnar(); }catch(e){}
   const sub=getTblState().subs[ligKey];
   if(!sub) return [];
   const colors=['#3b82f6','#22c55e','#ef4444','#8b5cf6','#fbbf24','#ec4899','#14b8a6'];
@@ -661,6 +678,24 @@ function buildLeagueRows(ligKey){
     }
     return {isim,isUser,idx,g:'—',m:'—',sf:'—',sa:'—',av:'—',puan:'—',o:'—',renk,bos:false};
   });
+  /* FAZ 19 §1: onarım bir sebeple çalışamadıysa (ör. sezon yarım) sezonda olup depoda
+     olmayan takım TABLODAN DÜŞMESİN — kullanıcının kendi takımı bile kayboluyordu. */
+  if(useSea){
+    const vars=new Set(rows.map(r=>r.isim));
+    Object.keys(sea.standings).forEach((isim,i)=>{
+      if(!isim||vars.has(isim)) return;
+      const r=sea.standings[isim];
+      const av=(r.sf||0)-(r.sa||0);
+      const isUser=G.team&&isim===G.team.isim;
+      rows.push({isim,isUser,idx:rows.length,g:String(r.g),m:String(r.m),sf:String(r.sf),
+        sa:String(r.sa),av:(av>0?'+':'')+av,puan:String(standingPuan(r)),o:String(r.o),
+        renk:isUser&&G.team?G.team.renk:colors[seqFromName(isim+i,ligKey)%colors.length],bos:false});
+    });
+    /* Depoda olup sezonda olmayan (verisiz) fazlalık satırlar tabloyu 20'nin üstüne
+       çıkarmasın — sezon otorite olduğu için onlar düşer. */
+    const seaSet=new Set(Object.keys(sea.standings));
+    for(let i=rows.length-1;i>=0;i--){ if(!rows[i].bos&&!seaSet.has(rows[i].isim)) rows.splice(i,1); }
+  }
   /* C4: Eşit puanda önce ikili maç (head-to-head), sonra genel averaj sıralar (FIBA mantığı). */
   const seaMatches=(useSea&&sea.matches)?sea.matches:null;
   const h2h=(an,bn)=>{

@@ -753,8 +753,16 @@ function addComment(txt,type='',key){
   const q=ev.q||mState.quarter;
   const clk=q<=4?MATCH_CLOCK_SEC:OT_CLOCK_SEC;
   const t=ev.t!==undefined?ev.t:clk;
-  const dm=Math.floor((clk-t)/60);
-  const ds=(clk-t)%60;
+  /* FAZ 19 §4: anlatım damgası KALAN süreyi gösterir. Önceden (clk - t) ile GEÇEN süre
+     yazılıyordu; skor tabelası kalan süreyi geriye sayarken akış ileri sayıyordu ve aynı an
+     iki farklı sayı olarak görünüyordu (tabela 5:17 · akış 4:43). Toplamları 10:00 olduğu
+     için sayılar tutarlıydı ama kullanıcı akışın tabeladan 34 sn ileride olduğunu sanıyordu.
+     Ayrıca açılış satırları "0:00" damgalıydı — geriye sayan bir tabelada "süre bitti"
+     demek. Motor zaten ev.t alanında KALAN saniyeyi tutuyor; çeviri kaldırıldı, açılış
+     satırları artık 10:00 damgalı. FIBA yayın standardı da geriye sayımdır. */
+  const kalanSn=Math.max(0,Math.min(clk,Math.ceil(t)));
+  const dm=Math.floor(kalanSn/60);
+  const ds=kalanSn%60;
   /* FAZ F: çeyrek/uzatma etiketi dile göre (TR: 1P/U1 · EN: Q1/OT1) */
   const _en=(typeof isEN==='function'&&isEN());
   const qLbl=q<=4?(_en?('Q'+q):(q+'P')):((_en?'OT':'U')+String(q-4));
@@ -1550,6 +1558,11 @@ window.onload=()=>{
   /* F10-4/F10-7: analitik (varsayılan kapalı, yalnız yayında betik yükler) + service worker. */
   try{ initAnalytics(); }catch(e){}
   try{ registerServiceWorker(); }catch(e){}
+  /* FAZ 19 §6: önceki sürüme ait kayıtlar temizlenir ve kullanıcı bilgilendirilir. */
+  try{
+    const silinen=eskiKayitlariTemizle();
+    if(silinen>0) setTimeout(()=>{ try{ showNotif('Önceki sürüme ait kayıt uyumsuz olduğu için temizlendi.'); }catch(e){} },1200);
+  }catch(e){}
   /* FAZ 17: portre manifesti (kova/bant dosya sayıları) — sabit havuz boyu yerine dosyadan.
      Gelmezse oyun durmaz, portreler SVG yedeğine düşer. */
   /* Manifest fetch ile ASENKRON gelir: ilk boyama ondan önce olursa portreler SVG

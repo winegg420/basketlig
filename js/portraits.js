@@ -248,11 +248,25 @@ function portreSec(seed,salt,ulke,yas){
   const i=Math.abs(hash32(String(seed)+'|'+String(salt??'')+'|portre'))%n;
   return portreDosyaAdi(kova,band,i);
 }
+/** Saklanan portre adı GÜNCEL havuzda var mı? (kova/bant sayısına göre)
+ *  FAZ 19 §5.2: havuz yeniden kurulduğunda (FAZ 17C'de tüm dosyalar silinip SD-Turbo ile
+ *  sıfırdan üretildi) eski kayıttaki portreDosya artık olmayan bir sıraya işaret ediyor;
+ *  <img> 404 alıyor ve markette turuncu çerçeveli BOŞ KUTU görünüyordu. */
+function portreDosyaGecerliMi(dosya){
+  const m=/([a-z]+)_([a-z]+)_(\d{4})\.jpg$/.exec(String(dosya||''));
+  if(!m) return false;
+  const n=portreKovaSayisi(m[1],m[2]);
+  return n>0 && parseInt(m[3],10)<n;
+}
 /** Oyuncuya portre alanlarını BİR KEZ yazar (varsa dokunmaz). Eski kayıtta alan yoksa
- *  ilk okumada burada hesaplanır — §8.5 geriye dönük güvenlik. */
+ *  ilk okumada burada hesaplanır — §8.5 geriye dönük güvenlik.
+ *  FAZ 19 §5.2: "bir kez yaz" kuralının TEK istisnası, saklanan adın güncel havuzda
+ *  bulunmamasıdır. Var olmayan bir dosyada ısrar etmek boş kutu demek; o durumda ad
+ *  yeniden hesaplanır. Havuz büyürken adlar yine sabit kalır (geçerli oldukları sürece). */
 function portreAta(p){
   if(!p||typeof p!=='object') return p;
   if(!p.portreBand) p.portreBand=portreBandFromYas(p.yas);
+  if(p.portreDosya&&PORTRE_MANIFEST&&!portreDosyaGecerliMi(p.portreDosya)) p.portreDosya=null;
   if(!p.portreDosya){
     const d=portreSec(p.seed,p.id,p.ulke,p.portreBand==='genc'?20:30);
     if(d) p.portreDosya=d;
@@ -271,19 +285,33 @@ function portreKomsu(dosya){
 
 /** Yedek zinciri: yerel dosya → AYNI kovadan komşu dosya → SVG (son çare).
  *  FAZ 17: canlı görsel API basamağı ve çevrimiçi/çevrimdışı kontrolü kaldırıldı. */
+/* En son çare — SVG üreteci de patlarsa bile kutu boş kalmasın (düz gri kart). */
+const PORTRE_SON_CARE='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="88" height="112" viewBox="0 0 88 112">'+
+  '<rect width="88" height="112" rx="9" fill="#334155"/>'+
+  '<circle cx="44" cy="42" r="17" fill="#475569"/>'+
+  '<path d="M14 104c0-18 13-28 30-28s30 10 30 28z" fill="#475569"/></svg>');
+/** Yedek zinciri: yerel dosya → AYNI kovadan komşu → SVG → düz gri kart.
+ *  FAZ 19 §5.2: canlıda market kartlarının bir kısmında zincir hiç devreye girmiyor ve
+ *  turuncu çerçeveli boş kutu kalıyordu. Zincir artık her adımda ilerlemeyi GARANTİ eder:
+ *  komşu yoksa/aynı dosyaysa doğrudan SVG'ye düşülür, SVG üreteci hata verirse düz karta. */
 function playerAvatarSvgFallback(el){
   if(!el||!el.dataset) return;
   const step=Number(el.dataset.avStep||0);
+  if(step>=2){ el.onerror=null; el.src=PORTRE_SON_CARE; return; }
   try{
     if(!window.__charazaySvgPortraits&&step===0){
       const komsu=portreKomsu(el.dataset.avFile||'');
-      if(komsu){ el.dataset.avStep='1'; el.src=komsu; return; }
+      /* komşu, başarısız olan dosyanın kendisiyse döngüye girmesin */
+      if(komsu&&komsu!==el.dataset.avFile){ el.dataset.avStep='1'; el.src=komsu; return; }
     }
   }catch(e){}
+  el.dataset.avStep='2';
   let opts={};
   try{ opts=JSON.parse(el.dataset.avOpts||'{}'); }catch(e){}
-  el.src=basketballPortraitDataUri(el.dataset.avSeed||'',el.dataset.avSalt||'',opts);
-  el.onerror=null;
+  try{
+    el.src=basketballPortraitDataUri(el.dataset.avSeed||'',el.dataset.avSalt||'',opts);
+  }catch(e){ el.src=PORTRE_SON_CARE; el.onerror=null; }
 }
 /** opts.p verilirse portre ülke+yaşa göre seçilir ve oyuncuya yazılır; verilmezse
  *  opts.ulke / opts.yas okunur. Hiçbiri yoksa SVG yedeğine düşülür. */

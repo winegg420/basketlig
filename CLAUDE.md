@@ -83,6 +83,9 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/isim-check.js` | **FAZ 17 isim havuzu denetçisi** — ülke başına ≥150×140, liste içi tekrarsızlık, `ULKELER` ↔ `NAME_POOLS` birebir örtüşme, 5.000 çekilişte benzersizlik ≥%99. |
 | `tools/generate-portraits.js` | Portre üretimi + işleme (kova bazlı). Bu makinede Python kurulu olmadığı için `.py` sürümünün çalışan Node karşılığı; aynı dosya adlarını, eşikleri ve manifest'i üretir. **Tek akış zorunlu** — servis IP başına tek istek kabul ediyor. |
 | `tools/portre-uret-hepsi.js` | **Havuzu kotaya tamamlayan koşucu** — en geride kalan kovadan doldurur, her dilimde commit + push eder, kaldığı yerden devam eder. `--hedef=3000 --dilim=100`. |
+| `tools/lig-check.js` | **FAZ 19 lig denetçisi** — standings ↔ fikstür tek kaynak, ayrışma senaryosunda onarım, tablo tutarlılığı (o = g + m), 10 sezonluk denge kapıları (ortalama fark, 20+/5- oranı, 16-0 takım), şehir tekrarı. Lig/tablo/denge değişince çalıştır. |
+| `tools/portre-uret-yerel.py` | **FAZ 17C yerel portre üretimi** (SD-Turbo, CPU). Kova kotaları, bant dengesi, kaldığı yerden devam, dilim başına commit+push. Boru hattı `tools/portre_boru.py`. |
+| `tools/portre_boru.py` | Portre işleme boru hattı (kadraj, fon eşitleme, eleme kapıları). Üretim kaynağı değişse de bu modül aynı kalır. |
 | `tools/i18n-scan.js` | **EN modunda çeviri denetimi** — tüm sayfa/modal/canlı maçı gezip çevrilmemiş metin düğümlerini raporlar. Dil değişikliğinden sonra çalıştır. |
 | `tools/measure.js` / `tools/band.js` | Canlı sunum ölçümü + **sonuç değişmezliği** (kanonik tohum imzası / 200 maç skor hash'i). Sunum değişikliklerinden sonra ikisi de aynı hash'i vermeli. `band.js` referans hash: **`89b5436137c1da14`** (varsayılan tohum 987654321; **FAZ 17 sonrası** — eski değerler: `fb393bdab878e699` FAZ 13-16, `ec630b3a512bb3b2` FAZ 13 öncesi). *FAZ 17'de hash bilerek değişti: isim havuzu ülke başına 256'dan 21.000 kombinasyona çıkınca `ensureUniquePlayerNames` içindeki ad çakışması yeniden-çekilişleri neredeyse sıfıra indi ve rastgelelik akışı kaydı. Milliyet seçiminin kendisi akışı KAYDIRMAZ — `genPlayer` ülke sabitlense bile `ch(ULKELER)` çekilişini yapar, sonucu sonra ezer.* *32. oturum: `if(SEED)` koruması + varsayılan 0 yüzünden tohum hiç kurulmuyordu, araç her çalıştırmada farklı hash veriyordu — düzeltildi.* |
 | `*.bat`, `OYUNU-AC.txt` | Windows başlatıcılar / kullanıcı yardım notu. |
@@ -173,6 +176,31 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   "reboundingu aldı" melezini üretmesin). Simge önekli metinlerde kalıp **simgeyi
   içermemeli** — `_splitIconPrefix` simgeyi soyup gövdeyi ayrı çevirir.
   `node tools/i18n-scan.js` artık canlı anlatım akışını da tarar (kapı: Türkçe < %5).
+- **Lig adlarında TEK KAYNAK (FAZ 19 §1 dersi):** aynı ligin takım adları iki yerde
+  duruyordu — TBL deposu (`sub.teams` → `genLigTeams`) ve `G.season.standings`. İkisi
+  ayrı depolarda (localStorage TBL anahtarı vs oyun kaydı) olduğu için biri yenilenince
+  ayrışıyorlardı: canlıda kesişim 3 isimdi, puan durumunun 17 satırı "—" gösteriyor,
+  kullanıcının takımı tabloda hiç görünmüyor, Ana Panel'de sıra "-" kalıyordu.
+  Kural: **aktif sezon otoritedir.** `ligAdlariniOnar()` depoyu sezona göre eşitler ve
+  `buildLeagueRows` her çizimden önce onu çağırır. Sıra tek yerden okunur:
+  `userLigSirasi()`. Yeni bir ekran lig adı/istatistiği gösterecekse `G.season`'dan okusun.
+- **Bot-bot skoru güç dağılımına aşırı bağlıydı (FAZ 19 §2 ölçümü):**
+  `pseudoTeamStrength` 58-100 arası **42 puanlık** yelpaze üretiyor, `cpuMatchScore` bunu
+  `diff×0.52` ile skora çeviriyordu. Sonuç: ortalama sayı farkı 21,4 · maçların %51,9'u
+  20+ farkla bitiyor · 16 maçlık sezonda bir takım 16-0, iki takım 0-16. Yelpaze **20
+  puana** (58-78), katsayı **0,25**'e indirildi; gürültü DEĞİŞMEDİ (denge rastgelelikle
+  değil, dağılımı daraltarak sağlandı). Ölçülen: fark **10,6** · 20+ **%12,3** · 5- **%31,6**
+  · 16-0 takım **%0,5**. Değiştirince `lig-check` C bölümü ölçer.
+- **Maç saati tek yönlüdür (FAZ 19 §4):** motor `ev.t` alanında **KALAN** saniyeyi tutar.
+  Anlatım damgası bunu geçen süreye çevirmemeli — tabela geriye sayarken akış ileri
+  sayınca kullanıcı iki farklı saat görüyordu (tabela 5:17 · akış 4:43). FIBA yayın
+  standardı geriye sayımdır; açılış satırları `1P 10:00` damgalıdır. `sunum-check` F19-4.
+- **Puanlama FIBA'dır (FAZ 19 §7.5, kullanıcı kararı):** galibiyet 2, **mağlubiyet 1**
+  (`standingPuan`). Puan farkları daraldığı için averaj daha sık belirleyici olur.
+- **Portre adı geçersizse yenilenir (FAZ 19 §5.2):** "bir kez yaz, bir daha değiştirme"
+  kuralının tek istisnası, saklanan `portreDosya`nın güncel havuzda BULUNMAMASIDIR
+  (havuz yeniden kurulunca oluyor). Var olmayan dosyada ısrar boş kutu demekti.
+  Yedek zinciri her adımda ilerlemeyi garanti eder: komşu → SVG → düz gri kart.
 - **Milliyet (FAZ 17):** *lig kurulurken içindeki her oyuncu ligin ev ülkesindendir* —
   yabancılar yalnız sezon başladıktan sonra transferle gelir. Ev ülkesi tek sabittedir
   (`LIG_EV_ULKE`, `js/state.js`); `'Türkiye'` dizgisini koda gömme. `genPlayer(poz, ulke)`

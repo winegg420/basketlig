@@ -58,14 +58,13 @@ function renderDashboardSummary(){
     parts.push(kutu('Kadro uyarıları',uyari.length?uyari.join(''):'<span style="color:var(--green);">✅ Kadro sağlıklı ve formda.</span>'));
 
     /* 4) Başkan hedefi ilerlemesi */
+    /* FAZ 19 §1: sıra tek kaynaktan (userLigSirasi) okunur ve Ana Panel kartı da burada
+       tazelenir — kullanıcı lig sayfasına hiç uğramasa bile "-" kalmasın. */
+    const sirapan=userLigSirasi(G.team.tblKey||'tbl');
+    ['dS','sbS'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=sirapan!=null?String(sirapan):'-'; });
     const pt=G.presidentTarget;
     if(pt&&pt.targetRank){
-      let sira='—';
-      try{
-        const rows=buildLeagueRows(G.team.tblKey||'tbl');
-        const ix=rows.findIndex(r=>r.isUser);
-        if(ix>=0) sira=ix+1;
-      }catch(e){}
+      const sira=sirapan!=null?sirapan:'—';
       const iyi=(sira!=='—'&&sira<=pt.targetRank);
       parts.push(kutu('Başkan hedefi',
         `<div>${escMatch(pt.label||'')}</div>
@@ -949,14 +948,14 @@ function renderLockerRoomPanel(){
   el.innerHTML=`<div style="padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
       <strong style="font-size:13px;">🧬 Soyunma Odası</strong>
-      <span style="font-size:11px;color:var(--text2);">Kimya <strong style="color:${col};">${cur}</strong>/100 · hedef ${t} (${yon})</span>
+      <span style="font-size:11px;color:var(--text2);">Kimya <strong style="color:${col};">${cur}</strong>/100 · ${yon==='sabit'?`bu kadroyla ulaşacağı seviye ${t}`:`${t} seviyesine doğru ${yon}`}</span>
     </div>
     <div style="font-size:10px;color:var(--text2);margin-bottom:7px;">Kimya; moral ortalaması, liderlik, süre alamayanlar ve rol çakışmalarından hesaplanır. Maç başına en fazla ±3 hareket eder.</div>
     <div style="margin-bottom:6px;">
-      ${rel.dost.slice(0,3).map(d=>chip('🤝 '+escMatch(d.a.isim.split(' ').pop())+' – '+escMatch(d.b.isim.split(' ').pop()),'var(--green)')).join('')||chip('Belirgin dostluk yok')}
+      ${rel.dost.slice(0,3).map(d=>chip('🤝 '+escMatch(d.a.isim)+' – '+escMatch(d.b.isim),'var(--green)')).join('')||chip('Belirgin dostluk yok')}
     </div>
     <div style="margin-bottom:6px;">
-      ${rel.catisma.slice(0,3).map(d=>chip('⚡ '+escMatch(d.a.isim.split(' ').pop())+' – '+escMatch(d.b.isim.split(' ').pop())+' ('+d.a.poz+' rol çakışması)','var(--red)')).join('')||chip('Sürtüşme yok')}
+      ${rel.catisma.slice(0,3).map(d=>chip('⚡ '+escMatch(d.a.isim)+' – '+escMatch(d.b.isim)+' ('+d.a.poz+' rol çakışması)','var(--red)')).join('')||chip('Sürtüşme yok')}
     </div>
     ${huzursuz.length?`<div style="font-size:11px;color:var(--red);margin-top:6px;">😖 Huzursuz: ${huzursuz.map(p=>escMatch(p.isim)).join(', ')}</div>`:''}
     ${bekleyen.length?`<div style="font-size:11px;color:var(--gold);margin-top:4px;">⏳ Süre bekleyen: ${bekleyen.map(p=>escMatch(p.isim)+' ('+p.sit+' maç)').join(', ')}</div>`:''}
@@ -1080,6 +1079,20 @@ function renderMarket(){
   const toplam=f.length;
   const gorunen=mobil?f.slice(0,G.marketShown):f;
   const dahaVar=mobil&&toplam>gorunen.length;
+  /* FAZ 19 §5.1: filtre sonuç vermeyince liste BOMBOŞ bir beyaz alan oluyordu (canlıda
+     "Yerli" seçilince görülen durum) — kullanıcı oyunun bozulduğunu sanıyor. Artık her
+     filtre için açıklama ve tek tıkla temizleme var. */
+  if(!gorunen.length){
+    const filtreVar=(pozF!=='all')||(ulkeF!=='all');
+    document.getElementById('marketList').innerHTML=
+      `<div class="bos-filtre">${filtreVar
+        ? 'Bu filtreye uyan oyuncu yok.<br><button type="button" class="btn-sm" style="margin-top:8px;" onclick="marketFiltreleriTemizle()">Filtreleri temizle</button>'
+        : 'Transfer marketi şu an boş.'}</div>`;
+    ensureClubTransferStock();
+    renderClubTransfers();
+    switchMarketTab(G.marketTab||'free');
+    return;
+  }
   document.getElementById('marketList').innerHTML=gorunen.map(p=>{
     const st=starFromGenel(p.genel);
     const tag=p.listedFromUser?'<span style="font-size:9px;color:var(--gold);"> · oyuncu ilanı</span>':'<span style="font-size:9px;color:var(--text2);"> · serbest</span>';
@@ -1117,6 +1130,23 @@ function renderMarket(){
   ensureClubTransferStock();
   renderClubTransfers();
   switchMarketTab(G.marketTab||'free');
+}
+
+/** FAZ 19 §5.1: mevki + uyruk filtrelerini tek seferde sıfırlar. */
+function marketFiltreleriTemizle(){
+  G.marketPozFilter='all';
+  G.marketUlkeFilter='all';
+  G.marketShown=10;
+  try{
+    document.querySelectorAll('#page-market .fbtn:not(.msort):not(.ctf)').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('#page-market .fbtn.mnat').forEach(b=>{
+      if((b.getAttribute('onclick')||'').indexOf("'all'")>=0) b.classList.add('active');
+    });
+    document.querySelectorAll('#page-market .fbtn:not(.msort):not(.mnat):not(.ctf)').forEach(b=>{
+      if((b.getAttribute('onclick')||'').indexOf("'all'")>=0) b.classList.add('active');
+    });
+  }catch(e){}
+  renderMarket();
 }
 
 /** F12-6: mobil market listesinde bir sayfa daha aç. */
@@ -1284,7 +1314,7 @@ function renderLig(){
     </tr>`;
   }).join('');
   const uix=rows.findIndex(t=>t.isUser);
-  ['dS','sbS'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=uix>=0?uix+1:'-'; });
+  ['dS','sbS'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=uix>=0?String(uix+1):'-'; });
 }
 
 function renderAntrenman(){

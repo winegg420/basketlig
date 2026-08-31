@@ -480,6 +480,52 @@ function renderTeamRosterMini(){
 
 function emptyStandingsRow(){ return {o:0,g:0,m:0,sf:0,sa:0}; }
 
+/** FAZ 19 §1: LİG ADLARINDA TEK KAYNAK ONARIMI.
+ *
+ *  Bulgu (canlı ölçüm): puan durumu 20 satır basıyor ama yalnız 3'ünde veri var, kullanıcının
+ *  takımı tabloda hiç yok, Ana Panel'de lig sırası "-" görünüyordu. Sebep iki ayrı takım
+ *  evreni: ekran TBL deposundaki adları (sub.teams → genLigTeams) basıyor, istatistik ise
+ *  G.season.standings'te duruyordu. İkisinin kesişimi 3 isimdi; veri görünen 3 satır tam
+ *  olarak onlardı.
+ *
+ *  Sezon KURULURKEN ikisi aynıdır (startLeagueSeason: names = sub.teams). Ayrışma sonradan
+ *  oluyor: TBL deposu ayrı bir localStorage anahtarında ve o anahtar yenilenince (FAZ 17'de
+ *  v4 → v5 yükseltmesi) yeni rastgele adlarla baştan üretiliyor, oysa G.season kayıtta
+ *  hayatta kalıyor. İki depo bağımsız olduğu için her temizlik bunu tekrar üretebilir.
+ *
+ *  Onarım: SEZON otoritedir. Aktif sezonun standings anahtarları TBL deposundaki adlarla
+ *  uyuşmuyorsa depo sezona göre yeniden yazılır — böylece fikstür, puan durumu, kulüp
+ *  sayfaları ve renkler tek kaynaktan beslenir. */
+function ligAdlariniOnar(){
+  try{
+    if(!G.team||!G.team.tblKey) return false;
+    const sea=G.season;
+    if(!sea||!sea.standings) return false;
+    const seaAdlar=Object.keys(sea.standings).filter(Boolean);
+    if(seaAdlar.length!==LEAGUE_SIZE) return false;
+    const st=getTblState();
+    const sub=st.subs[G.team.tblKey];
+    if(!sub||!Array.isArray(sub.teams)) return false;
+    const depo=sub.teams.filter(Boolean);
+    const fark=seaAdlar.filter(n=>depo.indexOf(n)<0).length + depo.filter(n=>seaAdlar.indexOf(n)<0).length;
+    if(fark===0) return false;
+    /* Kullanıcının takımı deposundaki yerini korusun; kalan slotlar sezon sırasıyla dolar. */
+    const kullanici=G.team.isim;
+    const digerleri=seaAdlar.filter(n=>n!==kullanici);
+    const yeni=new Array(LEAGUE_SIZE).fill(null);
+    let userIx=sub.teams.indexOf(kullanici);
+    if(userIx<0||userIx>=LEAGUE_SIZE) userIx=LEAGUE_SIZE-1;
+    yeni[userIx]=seaAdlar.indexOf(kullanici)>=0?kullanici:digerleri.shift();
+    for(let i=0,j=0;i<LEAGUE_SIZE;i++){ if(yeni[i]==null) yeni[i]=digerleri[j++]||null; }
+    sub.teams=yeni;
+    try{ localStorage.setItem(TBL_STORAGE_KEY,JSON.stringify(st)); }catch(e){}
+    if(typeof invalidateClubCacheMem==='function') invalidateClubCacheMem();
+    G.ligTeams=genLigTeams();
+    dbg('ligAdlariniOnar','lig adlari sezona gore esitlendi ('+fark+' fark)');
+    return true;
+  }catch(e){ dbg('ligAdlariniOnar',e); return false; }
+}
+
 function initStandingsForTeams(names){
   const o={};
   names.forEach(n=>{ if(n) o[n]=emptyStandingsRow(); });

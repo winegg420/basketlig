@@ -49,12 +49,13 @@ const GENC_PAY = 0.45;              /* %45 genç / %55 kıdemli */
    Forma TEK: düz, tamamen boş lacivert kolsuz forma. Fon TEK: nötr orta gri.
    Yazı/logo/marka/top olumsuzlamaları hem istemin içinde hem negatif istemde. */
 const FON = 'neutral medium gray studio background';
-const GIYSI = 'plain solid dark navy sleeveless athletic jersey, completely blank, ' +
+const GIYSI = 'plain solid very dark navy almost black sleeveless athletic jersey, completely blank, ' +
   'no text, no letters, no numbers, no logo, no emblem, no brand, no team name, ' +
   'no sponsor, plain fabric';
 /* Negatif istem — pollinations ?negative= destekliyorsa ayrı gönderilir; desteklemese
    bile aynı olumsuzlamalar GIYSI ve KUYRUK içinde gömülü durur (çift güvence). */
-const NEGATIF = 'text, letters, numbers, words, logo, brand, trademark, nike, adidas, ' +
+const NEGATIF = 'white jersey, light jersey, grey jersey, bright uniform, ' +
+  'text, letters, numbers, words, logo, brand, trademark, nike, adidas, ' +
   'jersey text, team name, NBA, basketball ball, ball, watermark, signature, ' +
   'holding object, two people, group';
 const KUYRUK = 'photorealistic, front facing, chest up portrait only, soft even lighting, ' +
@@ -109,15 +110,19 @@ function eksen(kova, bant, sira, tuz, dizi){
        4'ünde hâlâ yazı/amblem vardı, birinde Nike swoosh'u. Kadraj yakınlaştırılır,
        çerçeve göğsün üstünde biter; markanın basıldığı alan büyük ölçüde dışarıda kalır.
    (b) ELEME — kalan kareler ölçülüp elenir (KUMAŞ ÜZERİ kenar enerjisi, aşağıda). */
-const ZOOM = 1.22;                /* kadraj yakınlaştırma — yüz büyür, göğüs çıkar */
-const KADRAJ_UST = 0.06;          /* kaynak karede üstten pay (0=tepeden) */
+/* ZOOM 1.22 yetmedi: ilk tam partide 40 denemenin 13'ü forma yazısından, 11'i açık
+   formadan elendi (kabul %20, 109 sn/portre → 3.000 için ~90 saat). Kadraj sıkılaşınca
+   yazının basıldığı göğüs alanı neredeyse tamamen çerçeve dışında kalır; hem risk hem
+   eleme oranı düşer. KADRAJ_UST kafanın tepesi kesilmesin diye birlikte ayarlandı. */
+const ZOOM = 1.38;                /* kadraj yakınlaştırma — yüz büyür, göğüs çıkar */
+const KADRAJ_UST = 0.10;          /* kaynak karede üstten pay (0=tepeden) */
 const MAX_YAZI_ENERJI = 0.030;    /* kumaş üzeri güçlü kenar oranı — üstü elenir */
 const ISTEK_ARASI_MS = 2500;      /* başarılı istekten sonra nefes payı */
 const BACKOFF_429_MS = 30000;     /* kuyruk doluysa ilk bekleme; katlanarak artar */
 const HATA_ORANI_KAPISI = 0.20;   /* %20'yi aşarsa dur (brif §6) */
 const HATA_PENCERESI = 40;        /* son kaç denemede ölçülür */
 const HEDEF_PARLAKLIK = 120;
-const MIN_NETLIK = 90;
+const MIN_NETLIK = 70;
 const DHASH_MIN_MESAFE = 8;
 /* Forma koyuluk kapısı. İstem "sade koyu lacivert forma" diyor ama model buna UYMUYOR:
    ilk 100'lük partide göğüs bölgesi parlaklığı 14,5 ile 224,3 arasında ölçüldü (medyan
@@ -207,22 +212,33 @@ window.__isle = async function(dataUrl){
   const x1 = c1.getContext('2d', { willReadFrequently: true });
   x1.drawImage(c0, sx, sy, sw, sh, 0, 0, W, KH);
 
-  function fonMedyan(data){
-    const v = [];
+  /* Fon eşitleme (FAZ 17B, ikinci sürüm). İlk sürüm kenar şeridinin MEDYANINI 120'ye
+     çekiyordu ama RAPOR aynı şeridin ORTALAMASINI yazıyordu; şeride giren saç/omuz
+     ortalamayı aşağı çektiği için çıktı 107,7 görünüyordu (hedef 118-122).
+     Şimdi arka plan pikselleri SINIFLANDIRILIYOR: kenar şeridinde, şerit medyanına
+     yakın (±30) olanlar "arka plan" sayılır; saç, omuz ve forma dışarıda kalır.
+     Hedef, bu kümenin ORTALAMASIDIR — yani raporlanan sayı ile düzeltilen sayı aynı. */
+  function fonPiksel(data){
+    const ham = [];
     for (let y = 0; y < KH; y++) for (let x = 0; x < W; x++) {
-      /* yalnız ÜST yarının yan şeritleri + üst şerit: alt köşelerde omuz var */
       const kenar = ((x < W*0.10 || x > W*0.90) && y < KH*0.62) || y < KH*0.08;
       if (!kenar) continue;
       const i = (y*W + x) * 4;
-      v.push(0.299*data[i] + 0.587*data[i+1] + 0.114*data[i+2]);
+      ham.push(0.299*data[i] + 0.587*data[i+1] + 0.114*data[i+2]);
     }
-    v.sort((a, b) => a - b);
-    return v.length ? v[Math.floor(v.length / 2)] : 128;
+    if (!ham.length) return { ort: 128, std: 0, n: 0 };
+    const sirali = ham.slice().sort((a, b) => a - b);
+    const med = sirali[Math.floor(sirali.length / 2)];
+    const bg = ham.filter(v => Math.abs(v - med) <= 30);
+    const kume = bg.length > 50 ? bg : ham;
+    const ort = kume.reduce((a, b) => a + b, 0) / kume.length;
+    const std = Math.sqrt(kume.reduce((a, b) => a + (b - ort) ** 2, 0) / kume.length);
+    return { ort, std, n: kume.length };
   }
-  for (let gecis = 0; gecis < 2; gecis++) {
+  for (let gecis = 0; gecis < 3; gecis++) {
     const im = x1.getImageData(0, 0, W, KH);
-    const fark = ${HEDEF_PARLAKLIK} - fonMedyan(im.data);
-    if (Math.abs(fark) < 0.5) break;
+    const fark = ${HEDEF_PARLAKLIK} - fonPiksel(im.data).ort;
+    if (Math.abs(fark) < 0.4) break;
     const q = im.data;
     for (let i = 0; i < q.length; i += 4) {
       q[i]   = Math.max(0, Math.min(255, q[i]   + fark));
@@ -234,13 +250,8 @@ window.__isle = async function(dataUrl){
   const k = x1.getImageData(0, 0, W, KH).data;
   const L = (i) => 0.299*k[i] + 0.587*k[i+1] + 0.114*k[i+2];
   /* fon ölçümü (kırpılmış hâlde, raporlama ve doğrulama için) */
-  let fT = 0, fN = 0, kareT = 0;
-  for (let y = 0; y < KH; y++) for (let x = 0; x < W; x++) {
-    if (!(((x < W*0.10 || x > W*0.90) && y < KH*0.62) || y < KH*0.08)) continue;
-    const v = L((y*W + x) * 4); fT += v; kareT += v*v; fN++;
-  }
-  const fonOrt = fT / Math.max(1, fN);
-  const fonStd = Math.sqrt(Math.max(0, kareT/Math.max(1,fN) - fonOrt*fonOrt));
+  const fonIst = fonPiksel(k);
+  const fonOrt = fonIst.ort, fonStd = fonIst.std;
   /* netlik: Laplace varyansı */
   let lT = 0, lK = 0, lN = 0;
   for (let y = 1; y < KH-1; y++) for (let x = 1; x < W-1; x++) {
@@ -425,10 +436,11 @@ async function main() {
       if (!r || !r.jpeg) { elenen.bozuk++; continue; }
       const OLC = process.argv.includes('--olc');
       if (OLC) console.log(`   olcum ten=${(r.tenOran*100).toFixed(0)}% forma=${r.formaParlaklik.toFixed(0)} yazi=${(r.yaziEnerji*100).toFixed(2)}% netlik=${r.netlik.toFixed(0)}`);
-      if (!(r.tenOran >= 0.30 && r.tenOran <= 0.97)) { elenen.yuz++; continue; }
-      if (r.formaParlaklik > MAX_FORMA_PARLAKLIK) { elenen.acikForma++; continue; }
-      if (r.yaziEnerji > MAX_YAZI_ENERJI) { elenen.formaYazi++; continue; }
-      if (r.netlik < MIN_NETLIK) { elenen.bulanik++; continue; }
+      const red = (sebep) => process.stdout.write(`   red[${sebep}] forma=${r.formaParlaklik.toFixed(0)} yazi=${(r.yaziEnerji*100).toFixed(2)}% ten=${(r.tenOran*100).toFixed(0)}% netlik=${r.netlik.toFixed(0)}\n`);
+      if (!(r.tenOran >= 0.30 && r.tenOran <= 0.97)) { elenen.yuz++; red('yuz'); continue; }
+      if (r.formaParlaklik > MAX_FORMA_PARLAKLIK) { elenen.acikForma++; red('acikForma'); continue; }
+      if (r.yaziEnerji > MAX_YAZI_ENERJI) { elenen.formaYazi++; red('formaYazi'); continue; }
+      if (r.netlik < MIN_NETLIK) { elenen.bulanik++; red('bulanik'); continue; }
       if (hashler[bant].some(h => hamming(h, r.hash) < DHASH_MIN_MESAFE)) { elenen.benzer++; continue; }
       const sira = sonrakiSira(kova, bant);        /* elenen numara atlanmaz */
       const ad = dosyaAdi(kova, bant, sira);

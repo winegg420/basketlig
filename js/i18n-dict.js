@@ -64,6 +64,11 @@ const I18N_TR_EN={
 'Sırala (tekrar tıkla ⇄):':'Sort (click again ⇄):',
 /* FAZ 17: transfer marketi uyruk filtresi ('Tümü' zaten yukarıda). */
 'Uyruk:':'Nationality:','Yerli':'Domestic','Global':'Foreign',
+/* FAZ 19 §5.1: boş filtre durumu */
+/* FAZ 19 §7.3: kimya kutusu sadeleştirildi */
+'bu kadroyla ulaşacağı seviye':'level it will reach with this squad','seviyesine doğru':'toward level',
+'Önceki sürüme ait kayıt uyumsuz olduğu için temizlendi.':'A save from a previous version was incompatible and has been cleared.',
+'Bu filtreye uyan oyuncu yok.':'No player matches this filter.','Filtreleri temizle':'Clear filters','Transfer marketi şu an boş.':'The transfer market is empty right now.',
 'Maaş ↓':'Wage ↓',
 '-- Oyuncu seç --':'-- Select a player --',
 'Oyuncu Seç':'Select Player',

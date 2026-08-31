@@ -36,3 +36,8 @@ dist-desktop/
 
 # --- Portre dHash onbellegi (yeniden uretilebilir) ---
 assets/portraits/.dhash.json
+
+# --- FAZ 17C: yerel portre uretimi (sanal ortam + model onbellegi) ---
+.venv-portre/
+
+tools/_e/

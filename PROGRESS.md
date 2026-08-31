@@ -3705,3 +3705,70 @@ Bu hızda **3.000 portre ≈ 75-80 saat** sürüyor — tek oturumda bitmiyor.
 `tools/portre-uret-hepsi.js` bu yüzden yazıldı: en geride kalan kovadan doldurur,
 **her 100 portrede commit + push** eder, kaldığı yerden devam eder, art arda 3 boş tur
 olursa durur (brif §6). Kesinti hâlinde iş kaybolmaz, koşu tekrar başlatılabilir.
+
+
+---
+
+## FAZ 19 — Canlı site gezisi bulguları (2026-08-31)
+
+Baz commit `a7a76b8`. Kaynak: basketlig.vercel.app'te kayıtlı kariyerle yapılan gezi.
+
+### 1. Lig puan durumu tamamen bozuktu (en öncelikli)
+
+Puan durumunda 20 satırdan yalnız 3'ünde veri vardı, kullanıcının takımı tabloda hiç
+görünmüyordu, Ana Panel'de lig sırası "-" kalıyordu.
+
+**Kök neden: iki ayrı takım evreni.** Ekran TBL deposundaki adları (`sub.teams` →
+`genLigTeams`), istatistik ise `G.season.standings`'i kullanıyordu. Sezon KURULURKEN
+ikisi aynı (`startLeagueSeason`: `names = sub.teams`), ama iki depo ayrı: TBL adı
+localStorage'da, sezon oyun kaydında. Biri yenilenince (FAZ 17'de `TBL_STORAGE_KEY`
+v4 → v5) TBL deposu yeni rastgele adlarla baştan üretiliyor, sezon hayatta kalıyor.
+Kesişim 3 isimdi — veri görünen 3 satır tam olarak onlardı.
+
+**Çözüm — sezon otoritedir.** `ligAdlariniOnar()` (js/league.js) depoyu sezona göre
+eşitler; `buildLeagueRows` her çizimden önce çağırır. Onarım çalışamazsa bile sezonda
+olup depoda olmayan takım tabloya EKLENİR (kullanıcının takımı bile kayboluyordu),
+depoda olup sezonda olmayan verisiz satır düşer. Sıra artık tek yerden okunuyor:
+`userLigSirasi()` — Ana Panel kartı, başkan hedefi ve lig tablosu aynı sayıyı görür ve
+kart lig sayfasına hiç uğranmasa da dolar.
+
+### 2. Lig dengesi
+
+| Ölçü | Önce | Sonra | Hedef |
+|---|---|---|---|
+| Ortalama sayı farkı | 21,4 | **10,6** | 10-13 |
+| 20+ farkla biten | %51,9 | **%12,3** | <%25 |
+| 5 ve altı farkla biten | %15,6 | **%31,6** | >%25 |
+| 16-0 / 0-16 takım | 3 takım | **%0,5** | <%1 |
+
+İki kök neden de doğrulandı: `pseudoTeamStrength` **42 puanlık** yelpaze üretiyordu
+(58-100) ve `cpuMatchScore` bunu `diff×0.52` ile skora çeviriyordu. Yelpaze 20 puana,
+katsayı 0,25'e indirildi. **Gürültü değiştirilmedi** — denge rastgelelik ekleyerek değil,
+dağılımı daraltarak sağlandı; sonuçlar deterministik.
+
+### 3. Takım adları
+Şehir havuzu 24 → **32**, sonek havuzu 12 → **18**. "Aynı ligde en fazla 2 takım" kuralı
+zaten vardı ama havuz ona yetmiyordu (Kayseri ×4, Konya ×4).
+
+### 4. Maç saati
+Anlatım damgası GEÇEN süreyi yazıyordu (`clk - t`), tabela KALAN süreyi geriye sayıyordu:
+aynı an tabela 5:17, akış 4:43. Motor `ev.t`'de zaten kalan saniyeyi tutuyor; çeviri
+kaldırıldı. Açılış satırları artık `1P 10:00`. `sunum-check`'e F19-4 kapısı eklendi.
+
+### 5. Transfer marketi
+"Yerli" filtresi bomboş beyaz alan veriyordu. Artık her filtre için açıklama ve tek tıkla
+temizleme var (`marketFiltreleriTemizle`). Portre boş kutusu: havuz yeniden kurulunca
+saklanan `portreDosya` olmayan bir sıraya işaret ediyordu — geçersiz ad artık yenileniyor
+ve yedek zinciri her adımda ilerlemeyi garanti ediyor (komşu → SVG → düz gri kart).
+
+### 6. Eski kayıt
+Desteklenmeyen sürüm anahtarları (`_v2`, `_v4` …) açılışta **siliniyor** ve kullanıcıya
+tek satırlık bilgi veriliyor. "Sessizce yok say" yetmiyordu: yer kaplıyor ve karışıklık
+yaratıyordu.
+
+### 7. Küçük kusurlar
+Kimya rozetleri tam ad kullanıyor (aynı soyadlı iki oyuncu "Martinez – Martinez" olarak
+ayırt edilemiyordu) · kimya kutusundaki "(sabit)" ifadesi sadeleştirildi ·
+**§7.5 puanlama kullanıcı onayıyla FIBA'ya çevrildi: galibiyet 2, mağlubiyet 1.**
+"Maçı Başlat" pasifleştirme kodu (`setMatchButtonsRunning`) zaten mevcuttu — canlıdaki
+gözlem eski dağıtımdan; kod tarafında değişiklik gerekmedi.
