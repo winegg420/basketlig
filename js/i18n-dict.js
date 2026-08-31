@@ -62,6 +62,8 @@ const I18N_TR_EN={
 'Görünüm:':'View:',
 'Tümü':'All',
 'Sırala (tekrar tıkla ⇄):':'Sort (click again ⇄):',
+/* FAZ 17: transfer marketi uyruk filtresi ('Tümü' zaten yukarıda). */
+'Uyruk:':'Nationality:','Yerli':'Domestic','Global':'Foreign',
 'Maaş ↓':'Wage ↓',
 '-- Oyuncu seç --':'-- Select a player --',
 'Oyuncu Seç':'Select Player',
@@ -259,7 +261,7 @@ const I18N_TR_EN={
 'Hücum Koçu':'Offense Coach','Savunma Koçu':'Defense Coach','Kondisyon Koçu':'Strength Coach','Şut Koçu':'Shooting Coach','Altyapı Koçu':'Youth Coach',
 'Küçük Arena':'Small Arena','Orta Arena':'Mid Arena','Büyük Arena':'Big Arena','Dev Arena':'Major Arena','Mega Arena':'Mega Arena',
 'Temel Akademi':'Basic Academy','Gelişmiş Akademi':'Advanced Academy','Elit Akademi':'Elite Academy','Uluslararası Kamp':'International Camp',
-'Yerli (Türkiye)':'Domestic','Avrupa':'Europe','Amerika':'Americas','Global Genç Yetenek':'Global Youth',
+'Türkiye Basketbol Ligi':'Turkish Basketball League','Yerli (Türkiye)':'Domestic','Avrupa':'Europe','Amerika':'Americas','Global Genç Yetenek':'Global Youth',
 /* Spikerler */
 'Coşkun Bağrışan':'Chuck Roarer','Bilge Hoca':'The Professor','Esprili Cem':'Witty Sam','Klasik Reha':'Classic Ray',
 'Heyecanlı':'Excitable','Analitik':'Analytical','Esprili':'Witty','Resmî':'Formal',
@@ -348,7 +350,33 @@ const I18N_PHRASES=[
   [/\bHırvatistan\b/g,'Croatia'],[/\bSlovenya\b/g,'Slovenia'],[/\bNijerya\b/g,'Nigeria'],[/\bFilipinler\b/g,'Philippines'],
   [/\bJaponya\b/g,'Japan'],[/(^|[\s(·•])Çin\b/g,'$1China'],[/\bGüney Kore\b/g,'South Korea'],
   [/\bLitvanya\b/g,'Lithuania'],[/\bBelçika\b/g,'Belgium'],[/\bPolonya\b/g,'Poland'],[/\bMeksika\b/g,'Mexico'],
-  [/\bPortekiz\b/g,'Portugal'],[/(^|[\s(·•])İngiltere\b/g,'$1England']
+  [/\bPortekiz\b/g,'Portugal'],[/(^|[\s(·•])İngiltere\b/g,'$1England'],
+  /* FAZ 17: ülke listesi 26 → 43. Yeni 17 ülke + eksik kalan Türkiye buraya eklendi;
+     yoksa EN modunda oyuncu kartında "Romanya · 24 yrs" gibi melez satırlar kalıyordu.
+     Adı İngilizcede aynı olanlar (Senegal) kalıp istemez.
+     SINIR NOTU: \b ASCII tabanlıdır — 'ğ' ve 'ç' sözcük karakteri sayılmaz, bu yüzden
+     /\bKaradağ\b/ ve /İsveç\b/ HİÇ eşleşmiyordu. Sınırlar Türkçe harfleri kapsayacak
+     şekilde açık yazıldı. UZUN KALIP ÖNCE: 'Türkiye Basketbol Ligi' tek başına 'Türkiye'
+     kalıbına yakalanıp "Turkey Basketbol Ligi" melezi üretiyordu (B-1 dersi). */
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Türkiye Basketbol Ligi(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Turkish Basketball League'],
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Türkiye(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Turkey'],
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Rusya(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Russia'],
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Ukrayna(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Ukraine'],
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])İsrail(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Israel'],
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Letonya(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Latvia'],
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Estonya(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Estonia'],
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Bosna\-Hersek(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Bosnia and Herzegovina'],
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Karadağ(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Montenegro'],
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Gürcistan(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Georgia'],
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Çekya(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Czechia'],
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Slovakya(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Slovakia'],
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Finlandiya(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Finland'],
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Macaristan(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Hungary'],
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Bulgaristan(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Bulgaria'],
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Romanya(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Romania'],
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Kuzey Makedonya(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1North Macedonia'],
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Arnavutluk(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Albania'],
+  [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])İsveç(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Sweden']
 ];
 
 /* Ek birebir karşılıklar (F2) — üretilen arayüzde sık görünen tam metinler */

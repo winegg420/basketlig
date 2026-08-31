@@ -3,7 +3,7 @@ const STAT_LABELS={hucum:'Hücum',savunma:'Savunma',ribaund:'Ribaund',topCalma:'
 /** bk = haftalık bakım (KR, ham); m = yükseltme bedeli. Bilet geliri artışı yükseltmeyi ~yarım sezonda amorti eder. */
 const ARENA_LVL=[{s:1,isim:'Küçük Arena',kap:5000,m:0,bk:150},{s:2,isim:'Orta Arena',kap:10000,m:ecoRound(820),bk:300},{s:3,isim:'Büyük Arena',kap:15000,m:ecoRound(1650),bk:500},{s:4,isim:'Dev Arena',kap:20000,m:ecoRound(3200),bk:800},{s:5,isim:'Mega Arena',kap:30000,m:ecoRound(6200),bk:1200}];
 /** stat: haftalık koç bonusunun işlediği özellik (null = altyapı çarpanı). Maaşlar ham KR/hafta. */
-const KOC_T=[{isim:'Hücum Koçu',ikon:'⚔️',uzm:'Hücum',stat:'hucum',bonus:'Haftada zayıf oyunculara +1 Hücum',maas:120},{isim:'Savunma Koçu',ikon:'🛡️',uzm:'Savunma',stat:'savunma',bonus:'Haftada zayıf oyunculara +1 Savunma',maas:120},{isim:'Kondisyon Koçu',ikon:'🏃',uzm:'Kondisyon',stat:'kondisyon',bonus:'Haftada zayıf oyunculara +1 Kondisyon',maas:90},{isim:'Şut Koçu',ikon:'🎯',uzm:'Şut İsabeti',stat:'sutIsabeti',bonus:'Haftada zayıf oyunculara +1 Şut',maas:135},{isim:'Altyapı Koçu',ikon:'🌱',uzm:'Altyapı',stat:null,bonus:'Altyapı +%5 gelişim',maas:150}];
+const KOC_T=[{isim:'Hücum Koçu',ulke:LIG_EV_ULKE,ikon:'⚔️',uzm:'Hücum',stat:'hucum',bonus:'Haftada zayıf oyunculara +1 Hücum',maas:120},{isim:'Savunma Koçu',ulke:LIG_EV_ULKE,ikon:'🛡️',uzm:'Savunma',stat:'savunma',bonus:'Haftada zayıf oyunculara +1 Savunma',maas:120},{isim:'Kondisyon Koçu',ulke:LIG_EV_ULKE,ikon:'🏃',uzm:'Kondisyon',stat:'kondisyon',bonus:'Haftada zayıf oyunculara +1 Kondisyon',maas:90},{isim:'Şut Koçu',ulke:LIG_EV_ULKE,ikon:'🎯',uzm:'Şut İsabeti',stat:'sutIsabeti',bonus:'Haftada zayıf oyunculara +1 Şut',maas:135},{isim:'Altyapı Koçu',ulke:LIG_EV_ULKE,ikon:'🌱',uzm:'Altyapı',stat:null,bonus:'Altyapı +%5 gelişim',maas:150}];
 const ANTRENMAN_T=[{isim:'Hücum Antrenmanı',ikon:'⚔️',etki:'hucum',gun:5,maliyet:0},{isim:'Savunma Antrenmanı',ikon:'🛡️',etki:'savunma',gun:5,maliyet:0},{isim:'Kondisyon Koşusu',ikon:'🏃',etki:'kondisyon',gun:4,maliyet:0},{isim:'Çift Antrenman',ikon:'💪',etki:'all',gun:6,maliyet:ecoRound(42)}];
 const MAX_COACHES=5; /* Madde 29: teknik ekip üst sınırı (5 uzmanlık, her birinden en fazla 1) */
 /* ── Sakatlık kataloğu (Madde 5) — gerçek spor sakatlıkları; sabit iyileşme gün aralığı + şiddet.
@@ -234,7 +234,8 @@ function genScoutMarket(){
 
 /* Faz 6: Draft adayı — genç (18-20), düşük mevcut OVR ama yüksek gizli potansiyel (scouting'e bağlı). */
 function genDraftProspect(i){
-  const p=genPlayer(ch(POZLAR),false);
+  /* FAZ 17: draft adayları daima ligin ev ülkesinden — altyapıdan gelirler. */
+  const p=genPlayer(ch(POZLAR),LIG_EV_ULKE);
   p.yas=rand(18,20);
   p.id='dr'+String(i)+Math.random().toString(36).slice(2,7);
   p.seed='draft_'+String(i)+Math.random().toString(36).slice(2,7);
@@ -249,8 +250,19 @@ function genDraftProspect(i){
 }
 /* Pozisyona göre gerçekçi boy (cm) / kilo (kg) aralıkları — Madde 4 */
 const HW_RANGE={PG:[[178,196],[75,92]],SG:[[188,203],[82,98]],SF:[[196,208],[88,105]],PF:[[201,213],[95,115]],C:[[206,223],[100,130]]};
-function genPlayer(poz=null,tr=false){
-  const ulke=tr?TR_ULKE:ch(ULKELER);
+/* FAZ 17: ikinci parametre artık boolean değil, ÜLKE.
+     - string        → o ülkeden üret ('Türkiye')
+     - true          → geriye dönük uyum, Türkiye demek
+     - null / false  → küresel rastgele (yalnız transfer piyasası kullanır)
+   DETERMİNİZM NOTU: ülke sabitlense bile ch(ULKELER) yine ÇAĞRILIR. Ülke seçimi maçın/kadronun
+   rastgele akışından bir adım tüketiyordu; çağrıyı atlamak tüm akışı kaydırır ve band.js
+   hash'i ile sim-node ortalamaları değişirdi. Çekiliş yapılır, sonuç sonra ezilir. */
+function genPlayer(poz=null,ulkeArg=null){
+  const rastgeleUlke=ch(ULKELER);
+  let ulke=rastgeleUlke;
+  if(ulkeArg===true) ulke=ULKE_BUL(LIG_EV_ULKE)||rastgeleUlke;
+  else if(typeof ulkeArg==='string') ulke=ULKE_BUL(ulkeArg)||rastgeleUlke;
+  if(!ulke) ulke=rastgeleUlke;
   const p=poz||ch(POZLAR);
   const yas=rand(18,36);
   const isim=randomNameFor(ulke.ad); /* Madde 5: isim artık oyuncunun ülkesiyle uyumlu */
@@ -271,7 +283,9 @@ function genPlayer(poz=null,tr=false){
   const seed='pl'+id+hash32(isim+yas);
   /* Madde 4: boy/kilo pozisyonla uyumlu üretilir (önceden tüm pozisyonlar için 185-220cm/80-120kg sabitti). */
   const [hR,wR]=HW_RANGE[p]||[[185,220],[80,120]];
-  const out={id,isim,poz:p,yas,ulke:ulke.ad,bayrak:ulke.b,boy:rand(hR[0],hR[1]),kilo:rand(wR[0],wR[1]),seed,maas,...stats,genel,mood,enerji:100,potansiyel:rand(genel,Math.min(99,genel+20)),formDay:0,kontratSezon:rand(1,3),kisilik:ch(KISILIK_KEYS),sezon:{mac:0,pts:0,ast:0,reb:0}};
+  /* FAZ 17: portre yaş bandı ÜRETİM ANINDA dondurulur — oyuncu yaşlansa da yüzü
+     değişmez. Dosya adı (portreDosya) manifest yüklendikten sonra portreAta ile yazılır. */
+  const out={id,isim,poz:p,yas,ulke:ulke.ad,bayrak:ulke.b,portreBand:portreBandFromYas(yas),boy:rand(hR[0],hR[1]),kilo:rand(wR[0],wR[1]),seed,maas,...stats,genel,mood,enerji:100,potansiyel:rand(genel,Math.min(99,genel+20)),formDay:0,kontratSezon:rand(1,3),kisilik:ch(KISILIK_KEYS),sezon:{mac:0,pts:0,ast:0,reb:0}};
   return ensureRole(out); /* FAZ A: rol + eğilimler statlardan türetilir */
 }
 
@@ -287,23 +301,29 @@ function ensureUniquePlayerNames(players){
     while(takenNames.has(p.isim)&&g++<400){ p.isim=randomNameFor(p.ulke); }
     takenNames.add(p.isim);
     /* Foto index seed+id'den türer; grup içinde benzersiz kalması için seed'i kaydır. */
+    /* FAZ 17: foto tekilliği havuz index'i değil SEÇİLEN DOSYA üzerinden. Kova/bant
+       başına dosya sayısı azsa (ilk partilerde olur) sonsuz döngüye girmemek için 40 deneme. */
     try{
-      let idx=portraitPoolIndex(p.seed,p.id), g2=0;
-      while(takenPhotos.has(idx)&&g2<PORTRAIT_POOL_SIZE&&g2++<PORTRAIT_POOL_SIZE){
+      p.portreBand=null; p.portreDosya=null;
+      portreAta(p);
+      let g2=0;
+      while(p.portreDosya&&takenPhotos.has(p.portreDosya)&&g2++<40){
         p.seed=String(p.seed||'')+'~'+g2;
-        idx=portraitPoolIndex(p.seed,p.id);
+        p.portreDosya=null; portreAta(p);
       }
-      takenPhotos.add(idx);
+      if(p.portreDosya) takenPhotos.add(p.portreDosya);
     }catch(e){}
   });
   return players;
 }
 
-function genPlayerBounded(poz,minG,maxG){
-  let p=genPlayer(poz,false);
+/* FAZ 17: ülke parametresi eklendi. Varsayılan BİLEREK 'Türkiye' DEĞİL — çağıran açıkça
+   versin, böylece ileride başka lig eklenince burası sessizce Türk üretmez. */
+function genPlayerBounded(poz,minG,maxG,ulkeArg=null){
+  let p=genPlayer(poz,ulkeArg);
   let guard=0;
   while(guard++<90 && (p.genel<minG||p.genel>maxG)){
-    p=genPlayer(poz,false);
+    p=genPlayer(poz,ulkeArg);
   }
   if(p.genel<minG||p.genel>maxG){
     const tgt=rand(minG,maxG);
@@ -322,7 +342,9 @@ function genPlayerBounded(poz,minG,maxG){
 
 function genRoster(){
   const dist=['PG','PG','SG','SG','SG','SF','SF','SF','PF','PF','PF','C','C','C','C'];
-  const players=dist.map(pos=>genPlayer(pos,false));
+  /* FAZ 17 çekirdek kural: lig kurulurken içindeki HER oyuncu ligin ev ülkesindendir.
+     Yabancılar yalnızca sezon başladıktan sonra transfer yoluyla gelir. */
+  const players=dist.map(pos=>genPlayer(pos,LIG_EV_ULKE));
   const target=rand(70,73);
   let it=0;
   while(it++<200){
@@ -353,7 +375,8 @@ function genSingleYouth(potBoost){
   } else {
     minO=56; maxO=72; pLo=71; pHi=84; yLo=17; yHi=20; prospect=false;
   }
-  const p=genPlayerBounded(ch(POZLAR),minO,maxO);
+  /* FAZ 17: altyapı oyuncusu kulübün kendi ülkesinden gelir (draft ile aynı gerekçe). */
+  const p=genPlayerBounded(ch(POZLAR),minO,maxO,LIG_EV_ULKE);
   p.yas=rand(yLo,yHi);
   let pot=rand(pLo,pHi)+potBoost;
   pot=Math.max(pot,p.genel+11,Math.min(99,p.genel+rand(12,28)));

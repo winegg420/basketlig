@@ -48,7 +48,13 @@ function botClubEnsureDepth(roster,ck){
   const seed=hash32(ck);
   let eklendi=false;
   for(let i=roster.length;i<BOT_ROSTER_DIST.length;i++){
-    const p=genPlayer(BOT_ROSTER_DIST[i]);
+    /* FAZ 17: bot kadrolar ev ülkesi ağırlıklı. Yabancı payı BOT_YABANCI_ORAN, takım başına
+       en fazla BOT_YABANCI_MAX. Böylece botlar marketteki iyi yabancıları tüketmez ve oyuna
+       yeni başlayan kullanıcıya kadro malzemesi kalır.
+       Karar prChance ile deterministiktir; doğrudan rastgelelik çağrısı kadro akışını kaydırırdı. */
+    const yabanciSayisi=roster.filter(x=>x&&x.ulke&&x.ulke!==LIG_EV_ULKE).length;
+    const yabanciOlsun=yabanciSayisi<BOT_YABANCI_MAX&&prChance(ck+'|yabanci|'+i,BOT_YABANCI_ORAN);
+    const p=genPlayer(BOT_ROSTER_DIST[i],yabanciOlsun?null:LIG_EV_ULKE);
     p.id='b'+seed+'_'+i;
     p.seed='b'+ck+i;
     p.maas=salaryKRFromGenel(p.genel);
@@ -127,7 +133,7 @@ function openLigGroupModal(ligKey){
 function openClubPublicModal(teamName,ligKey){
   const prof=getBotClubProfile(teamName,ligKey);
   const logo=prof.logoUrl?`<img src="${prof.logoUrl.replace(/"/g,'')}" alt="${escMatch(teamName)} logosu" style="max-width:100px;border-radius:8px;" referrerpolicy="no-referrer" onerror="this.style.display='none'">`:`<div style="width:72px;height:72px;border-radius:12px;background:${prof.renk};"></div>`;
-  const roster=prof.roster.map(p=>`<div style="display:flex;gap:8px;align-items:center;padding:6px;background:var(--bg3);border-radius:8px;margin-bottom:4px;"><div class="mavatar-wrap"><img src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} style="width:44px;height:56px;border-radius:6px;object-fit:cover;"><span style="font-size:9px;font-weight:700;color:var(--accent);">OVR ${p.genel}</span></div><div style="font-size:12px;"><strong>${p.bayrak} ${p.isim}</strong><br><span style="color:var(--text2);">${p.poz} · ${p.genel}</span></div></div>`).join('');
+  const roster=prof.roster.map(p=>`<div style="display:flex;gap:8px;align-items:center;padding:6px;background:var(--bg3);border-radius:8px;margin-bottom:4px;"><div class="mavatar-wrap"><img src="${playerAvatar(p.seed,p.id,{ovr:p.genel,p:p})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel,p:p})} style="width:44px;height:56px;border-radius:6px;object-fit:cover;"><span style="font-size:9px;font-weight:700;color:var(--accent);">OVR ${p.genel}</span></div><div style="font-size:12px;"><strong>${p.bayrak} ${p.isim}</strong><br><span style="color:var(--text2);">${p.poz} · ${p.genel}</span></div></div>`).join('');
   const mgr=prof.human
     ?`<p style="font-size:11px;color:var(--blue);margin:6px 0 0;">👔 Menajer: ${escMatch(G.managerName||'Menajer')} · itibar ${Number(G.managerRep)||0}</p>`
     :(()=>{ const r=botManagerRepText(teamName); return `<p style="font-size:11px;color:var(--blue);margin:6px 0 0;">👔 Menajer: ${r.text} · ${r.titles} kupa geçmişi</p>`; })();
@@ -139,7 +145,7 @@ function openPlayerInspectModal(pid){
   const p=G.players.find(x=>x.id===pid);
   if(!p) return;
   const stats=STAT_KEYS.map(k=>`<div class="sitem"><span class="sname">${STAT_LABELS[k]}</span><span class="sval ${sv(p[k])}">${p[k]}</span></div>`).join('');
-  showAppModal(`<div class="modal-title">${p.isim}</div><div style="display:flex;gap:14px;flex-wrap:wrap;"><div class="pimg-wrap"><img src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} style="width:90px;height:112px;border-radius:10px;border:2px solid var(--accent);object-fit:cover;"><div class="pimg-cap">OVR ${p.genel}</div></div><div style="flex:1;min-width:200px;font-size:13px;line-height:1.55;"><p style="margin:0 0 6px;">${p.bayrak} ${p.ulke} · ${p.yas} yaş · ${p.boy}cm / ${p.kilo}kg</p><p style="margin:0 0 6px;"><span class="pbadge pos-${p.poz.toLowerCase()}">${p.poz}</span> · <strong style="color:var(--accent);font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:20px;">OVR ${p.genel}</strong> · ${starFromGenel(p.genel)}★</p><p style="margin:0 0 6px;">Potansiyel: ${p.potansiyel||'—'}</p><p style="margin:0 0 6px;">Enerji (maç yorgunluğu): <strong>${Math.round(Number(p.enerji)||100)}</strong>/100</p><p style="margin:0 0 6px;">Maaş: <strong style="color:var(--gold);">${fmtn(p.maas)}</strong> KR/hf${p.kontratSezon!=null?` · 📄 ${p.kontratSezon} sezon`:''}</p>${p.sezon&&p.sezon.mac?`<p style="margin:0 0 6px;color:var(--blue);">📊 Sezon: ${p.sezon.mac} maç · ${(p.sezon.pts/p.sezon.mac).toFixed(1)} sayı · ${(p.sezon.ast/p.sezon.mac).toFixed(1)} asist ort.</p>`:''}<p style="margin:0;">Psikoloji: <span style="color:${moodColor(p.mood)};">${moodText(p.mood)}</span></p></div></div><div class="sgrid" style="margin-top:14px;">${stats}</div>`);
+  showAppModal(`<div class="modal-title">${p.isim}</div><div style="display:flex;gap:14px;flex-wrap:wrap;"><div class="pimg-wrap"><img src="${playerAvatar(p.seed,p.id,{ovr:p.genel,p:p})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel,p:p})} style="width:90px;height:112px;border-radius:10px;border:2px solid var(--accent);object-fit:cover;"><div class="pimg-cap">OVR ${p.genel}</div></div><div style="flex:1;min-width:200px;font-size:13px;line-height:1.55;"><p style="margin:0 0 6px;">${p.bayrak} ${p.ulke} · ${p.yas} yaş · ${p.boy}cm / ${p.kilo}kg</p><p style="margin:0 0 6px;"><span class="pbadge pos-${p.poz.toLowerCase()}">${p.poz}</span> · <strong style="color:var(--accent);font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:20px;">OVR ${p.genel}</strong> · ${starFromGenel(p.genel)}★</p><p style="margin:0 0 6px;">Potansiyel: ${p.potansiyel||'—'}</p><p style="margin:0 0 6px;">Enerji (maç yorgunluğu): <strong>${Math.round(Number(p.enerji)||100)}</strong>/100</p><p style="margin:0 0 6px;">Maaş: <strong style="color:var(--gold);">${fmtn(p.maas)}</strong> KR/hf${p.kontratSezon!=null?` · 📄 ${p.kontratSezon} sezon`:''}</p>${p.sezon&&p.sezon.mac?`<p style="margin:0 0 6px;color:var(--blue);">📊 Sezon: ${p.sezon.mac} maç · ${(p.sezon.pts/p.sezon.mac).toFixed(1)} sayı · ${(p.sezon.ast/p.sezon.mac).toFixed(1)} asist ort.</p>`:''}<p style="margin:0;">Psikoloji: <span style="color:${moodColor(p.mood)};">${moodText(p.mood)}</span></p></div></div><div class="sgrid" style="margin-top:14px;">${stats}</div>`);
 }
 
 function pushLeagueNewsLine(html){
@@ -454,7 +460,7 @@ function renderTeamRosterMini(){
   w.innerHTML=list.map(p=>`
     <div class="team-rmini" data-pid="${p.id}">
       <div class="mavatar-wrap" style="align-items:center;">
-      <img src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} width="52" height="64" loading="lazy" style="border-radius:8px;border:2px solid var(--accent);object-fit:cover;">
+      <img src="${playerAvatar(p.seed,p.id,{ovr:p.genel,p:p})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel,p:p})} width="52" height="64" loading="lazy" style="border-radius:8px;border:2px solid var(--accent);object-fit:cover;">
       <span style="font-size:9px;font-weight:800;color:var(--accent);margin-top:2px;">OVR ${p.genel}</span>
       </div>
       <div style="min-width:0;">
@@ -883,14 +889,14 @@ function lineupSlotHtml(i){
   }
   const p=_lineupPlayerById(id);
   if(!p){ _lineupEdit.slots[i]=null; return lineupSlotHtml(i); }
-  const av=playerAvatar(p.seed,p.id,{});
+  const av=playerAvatar(p.seed,p.id,{p:p});
   /* Paket 3: uyum rozeti — doğal poz sessiz, ikincil poz mavi "2", yabancı poz sarı "!" (performans düşer). */
   const fit=(p.poz===s.poz)?'':(p.ikincilPoz===s.poz
     ?'<span style="position:absolute;top:-6px;right:-6px;background:var(--blue);color:#fff;font-size:9px;font-weight:800;border-radius:50%;width:15px;height:15px;display:flex;align-items:center;justify-content:center;" title="İkincil pozisyon (-%4)">2</span>'
     :'<span style="position:absolute;top:-6px;right:-6px;background:var(--gold);color:#111;font-size:9px;font-weight:800;border-radius:50%;width:15px;height:15px;display:flex;align-items:center;justify-content:center;" title="Yabancı pozisyon (-%10)">!</span>');
   return `<div class="lu-slot filled" data-luslot="${i}" style="${pos}" onpointerdown="lineupPointerDown(event,'${id}','slot',${i})" onclick="lineupSlotTap(${i})" title="${escMatch(p.isim)} — sürükle ya da tıkla (yedeğe al)">
     ${fit}<span class="lu-slot-badge">${s.poz}</span>
-    <img class="lu-av" src="${av}" ${playerAvatarImgAttrs(p.seed,p.id,{})}>
+    <img class="lu-av" src="${av}" ${playerAvatarImgAttrs(p.seed,p.id,{p:p})}>
     <span class="lu-nm">${escMatch(p.isim)}</span>
     <span class="lu-sub">OVR ${p.genel}</span>
     <span class="lu-sub">${enerjiRozetHtml(p,true)}</span>
@@ -898,12 +904,12 @@ function lineupSlotHtml(i){
 }
 function lineupBenchCardHtml(id){
   const p=_lineupPlayerById(id); if(!p) return '';
-  const av=playerAvatar(p.seed,p.id,{});
+  const av=playerAvatar(p.seed,p.id,{p:p});
   /* F7-10: sürükleme yalnız tutamaktan başlar; kartın kalanı dikey kaydırmaya açık
      (eskiden .lu-card touch-action:none olduğu için mobilde yedek listesi kaydırılamıyordu). */
   return `<div class="lu-card" data-lucard="${id}" onclick="lineupBenchTap('${id}')" title="Tutamaktan sürükle ya da tıkla">
     <span class="lu-grip" onpointerdown="lineupPointerDown(event,'${id}','bench',-1)" aria-hidden="true">⠿</span>
-    <img class="lu-av" src="${av}" ${playerAvatarImgAttrs(p.seed,p.id,{})}>
+    <img class="lu-av" src="${av}" ${playerAvatarImgAttrs(p.seed,p.id,{p:p})}>
     <span class="lu-info"><b>${escMatch(p.isim)}</b><small>${p.poz} · OVR ${p.genel} · ${enerjiRozetHtml(p,true)}</small></span>
   </div>`;
 }
@@ -1011,7 +1017,7 @@ function lineupPointerDown(ev,id,from,slotIx){
     : document.querySelector('[data-lucard="'+CSS.escape(id)+'"]');
   const ghost=document.createElement('div');
   ghost.className='lu-ghost';
-  ghost.innerHTML=`<img src="${playerAvatar(p.seed,p.id,{})}" alt=""><b>${escMatch(p.isim)}</b>`;
+  ghost.innerHTML=`<img src="${playerAvatar(p.seed,p.id,{p:p})}" alt=""><b>${escMatch(p.isim)}</b>`;
   document.body.appendChild(ghost);
   _luDrag={id,from,slotIx,ghost,srcEl,startX:ev.clientX,startY:ev.clientY};
   _luPositionGhost(ev.clientX,ev.clientY);

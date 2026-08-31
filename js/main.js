@@ -1550,6 +1550,9 @@ window.onload=()=>{
   /* F10-4/F10-7: analitik (varsayılan kapalı, yalnız yayında betik yükler) + service worker. */
   try{ initAnalytics(); }catch(e){}
   try{ registerServiceWorker(); }catch(e){}
+  /* FAZ 17: portre manifesti (kova/bant dosya sayıları) — sabit havuz boyu yerine dosyadan.
+     Gelmezse oyun durmaz, portreler SVG yedeğine düşer. */
+  try{ loadPortreManifest(); }catch(e){}
   /* FAZ 12: mobil katlamalar ve rozetler ilk açılışta da doğru olsun. */
   try{ applyMobileFolds(); }catch(e){}
   try{ updateMobileBadges(); }catch(e){}

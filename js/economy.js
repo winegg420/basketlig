@@ -124,7 +124,12 @@ function botClubTransfer(teamName,ligKey){
     /* Güçlü kulüp daha iddialı transfer yapar; zayıf kulüp mütevazı kalır. */
     const iddia=Math.max(2,Math.round((güç-58)*0.55))+rand(1,7);
     const target=Math.min(95,Math.max(52,(eski.genel||65)+iddia));
-    const np=genPlayerBounded(eski.poz||ch(POZLAR),Math.max(50,target-2),target+2);
+    /* FAZ 17 (§4.3): bot transferi de ev ülkesi ağırlıklıdır — kadro derinliği ile aynı kural.
+       Değiştirilecek oyuncu (eski) sayımdan düşülür, yoksa yabancıyı yabancıyla değiştiren
+       bot tavana takılıp bir daha asla yabancı alamazdı. */
+    const yabanciSayisi=roster.filter((p,i)=>i!==wi&&p&&p.ulke&&p.ulke!==LIG_EV_ULKE).length;
+    const yabanciOlsun=yabanciSayisi<BOT_YABANCI_MAX&&prChance(ck+'|tr|'+wi+'|'+((eski&&eski.id)||''),BOT_YABANCI_ORAN);
+    const np=genPlayerBounded(eski.poz||ch(POZLAR),Math.max(50,target-2),target+2,yabanciOlsun?null:LIG_EV_ULKE);
     np.id='b'+hash32(ck+wi+Date.now())+'_'+wi;
     np.seed='bt'+ck+wi+(Date.now()%100000);
     np.maas=salaryKRFromGenel(np.genel);

@@ -1,5 +1,34 @@
 {
-  "version": 1,
-  "count": 201,
-  "pattern": "p_%04d.jpg"
+  "version": 2,
+  "buckets": {
+    "akd": {
+      "genc": 5,
+      "kidemli": 0
+    },
+    "siyah": {
+      "genc": 0,
+      "kidemli": 0
+    },
+    "kuz": {
+      "genc": 0,
+      "kidemli": 0
+    },
+    "beyaz": {
+      "genc": 0,
+      "kidemli": 0
+    },
+    "afr": {
+      "genc": 0,
+      "kidemli": 0
+    },
+    "lat": {
+      "genc": 0,
+      "kidemli": 0
+    },
+    "asya": {
+      "genc": 0,
+      "kidemli": 0
+    }
+  },
+  "pattern": "%s_%s_%04d.jpg"
 }

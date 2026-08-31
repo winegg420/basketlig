@@ -1,418 +1,1352 @@
-canli-mac :: Adana Spor — Mersin Boğaları
+canli-mac :: (Witty). The game begins with the tip-off. Ankara Eagles as the away side; Gökhan Yener at the circle, Ali Özbek sets up the first possession. The stands are packed.
 canli-mac :: Ahmet Yıldız
-canli-mac :: Ankara Boğaları
-canli-mac :: Ankara Kartalları
-canli-mac :: Bursa Şahinleri
-canli-mac :: Diyarbakır Basket
-canli-mac :: Eskişehir Panterleri
-canli-mac :: Eskişehir Spor
-canli-mac :: Gaziantep Şahinleri
-canli-mac :: Kocaeli Kartalları
-canli-mac :: Kocaeli Kartalları — Eskişehir Panterleri
-canli-mac :: Mersin Boğaları
-canli-mac :: Sakarya Kurtları
-canli-mac :: Sakarya Şahinleri
-canli-mac :: İstanbul BK
-canli-mac :: 🇵🇹 Gonçalo Brito
-canli-mac :: 🇹🇷 Türkiye
+canli-mac :: Ali Özbek
+canli-mac :: Ali Özbek (PG) — Overall: 71
+canli-mac :: Ali Özbek (PG) → SG
+canli-mac :: Ali Özbek (PG·OVR 71)
+canli-mac :: Antalya Gençlik
+canli-mac :: Avcı
+canli-mac :: Balcı
+canli-mac :: Bursa Gençlik
+canli-mac :: Denizli Boğaları
+canli-mac :: Denizli Boğaları — Bursa Gençlik
+canli-mac :: Diyarbakır Gençlik
+canli-mac :: Diyarbakır Kurtları
+canli-mac :: Enes Çetin
+canli-mac :: Enes Çetin (C) — Overall: 68
+canli-mac :: Enes Çetin (C) → PF
+canli-mac :: Enes Çetin (C·OVR 68)
+canli-mac :: Eren Yalın (C)
+canli-mac :: Fikret Çetin
+canli-mac :: Fikret Çetin (SF) — Overall: 68
+canli-mac :: Fikret Çetin (SF) → PF
+canli-mac :: Fikret Çetin (SF) → SG
+canli-mac :: Fikret Çetin (SF·OVR 68)
+canli-mac :: Gökhan Yener
+canli-mac :: Gökhan Yener (C) — Overall: 71
+canli-mac :: Gökhan Yener (C) → PF
+canli-mac :: Gökhan Yener (C·OVR 71)
+canli-mac :: Hüsnü Erdem
+canli-mac :: Hüsnü Erdem (PF) — Overall: 72
+canli-mac :: Hüsnü Erdem (PF) → C
+canli-mac :: Hüsnü Erdem (PF) → SF
+canli-mac :: Hüsnü Erdem (PF·OVR 72)
+canli-mac :: Manisa Aslanları
+canli-mac :: Muhammet Tatlı
+canli-mac :: Muhammet Tatlı (PF) — Overall: 69
+canli-mac :: Muhammet Tatlı (PF) → C
+canli-mac :: Muhammet Tatlı (PF) → SF
+canli-mac :: Muhammet Tatlı (PF·OVR 69)
+canli-mac :: Oğuzhan Avcı
+canli-mac :: Oğuzhan Avcı (SF) — Overall: 72
+canli-mac :: Oğuzhan Avcı (SF) → PF
+canli-mac :: Oğuzhan Avcı (SF) → SG
+canli-mac :: Oğuzhan Avcı (SF·OVR 72)
+canli-mac :: Sakarya Boğaları
+canli-mac :: Sakarya Boğaları — Tekirdağ Şimşekleri
+canli-mac :: Sönmez
+canli-mac :: Tekirdağ Basket
+canli-mac :: Tekirdağ Şimşekleri
+canli-mac :: Tolga Yalın
+canli-mac :: Tolga Yalın (SF) — Overall: 72
+canli-mac :: Tolga Yalın (SF) → PF
+canli-mac :: Tolga Yalın (SF) → SG
+canli-mac :: Tolga Yalın (SF·OVR 72)
+canli-mac :: Uludağ
+canli-mac :: Vedat Bektaş
+canli-mac :: Vedat Bektaş (C) — Overall: 68
+canli-mac :: Vedat Bektaş (C) → PF
+canli-mac :: Vedat Bektaş (C·OVR 68)
+canli-mac :: Özbek
+canli-mac :: Özgür Turgut
+canli-mac :: Özgür Turgut (C) — Overall: 71
+canli-mac :: Özgür Turgut (C) → PF
+canli-mac :: Özgür Turgut (C·OVR 71)
+canli-mac :: İlhan Hakyemez
+canli-mac :: İlhan Hakyemez (PG) — Overall: 69
+canli-mac :: İlhan Hakyemez (PG) → SG
+canli-mac :: İlhan Hakyemez (PG·OVR 69)
+canli-mac :: İlker Karaca
+canli-mac :: İlker Karaca (PF) — Overall: 72
+canli-mac :: İlker Karaca (PF) → C
+canli-mac :: İlker Karaca (PF) → SF
+canli-mac :: İlker Karaca (PF·OVR 72)
+canli-mac :: İstanbul Aslanları
+canli-mac :: İstanbul Aslanları — Adana Panterleri
+canli-mac :: İstanbul Şahinleri
+canli-mac :: İzmir Aslanları
+canli-mac :: Şanlıurfa Kartalları
+canli-mac :: 🇩🇪 Benjamin König
+canli-mac :: 🇹🇷 Alparslan Sevinç
+canli-mac :: 🇹🇷 Batıkan Yüksel
+canli-mac :: 🇹🇷 Berk Avcı
+canli-mac :: 🇹🇷 Cem Kırca
+canli-mac :: 🇹🇷 Davut Koçak
+canli-mac :: 🇹🇷 Dursun Öcal
+canli-mac :: 🇹🇷 Efe Baş
+canli-mac :: 🇹🇷 Furkan Çakır
+canli-mac :: 🇹🇷 Hamza Savaş
+canli-mac :: 🇹🇷 Koray Sarı
+canli-mac :: 🇹🇷 Mert Kılınç
+canli-mac :: 🇹🇷 Mustafa Doğan
+canli-mac :: 🇹🇷 Oğuzhan Köse
 canli-mac :: 🇹🇷 Türkçe
-canli-mac :: 🏛️ Ankara Boğaları from
-canli-mac :: 🏛️ Ankara Kartalları from
-canli-mac :: 🏛️ Gaziantep Şahinleri from
-canli-mac :: 🏛️ Sakarya Şahinleri from
-canli-mac :: 🏛️ İstanbul BK from
-canli-mac :: 🔔 The whistle goes for quarter 1 — Ankara Eagles 0 - 0 Mersin Boğaları.
+canli-mac :: 🇹🇷 Yağız Güngör
+canli-mac :: 🇹🇷 İsmail Demir
+canli-mac :: 🏛️ Antalya Gençlik from
+canli-mac :: 🏛️ Sakarya Boğaları from
+canli-mac :: 🏛️ Tekirdağ Şimşekleri from
+canli-mac :: 🏛️ İstanbul Şahinleri from
+canli-mac :: 🏛️ İzmir Aslanları from
+canli-mac :: 🏛️ Şanlıurfa Kartalları from
+canli-mac :: 🔔 The first possession of quarter 1 is being set up — Ankara Eagles 0 - 0 Şanlıurfa Kartalları.
+canli-mac :: 🤝 Çetin – Bektaş
+canli-mac :: 🤝 Özbek – Tatlı
 login :: 🇹🇷 Türkçe
-modal:ayarlar :: Adana Spor — Mersin Boğaları
 modal:ayarlar :: Ahmet Yıldız
-modal:ayarlar :: Ankara Boğaları
-modal:ayarlar :: Ankara Kartalları
-modal:ayarlar :: Bursa Şahinleri
-modal:ayarlar :: Diyarbakır Basket
-modal:ayarlar :: Eskişehir Panterleri
-modal:ayarlar :: Eskişehir Spor
-modal:ayarlar :: Gaziantep Şahinleri
-modal:ayarlar :: Kocaeli Kartalları
-modal:ayarlar :: Kocaeli Kartalları — Eskişehir Panterleri
-modal:ayarlar :: Mersin Boğaları
-modal:ayarlar :: Sakarya Kurtları
-modal:ayarlar :: Sakarya Şahinleri
-modal:ayarlar :: İstanbul BK
-modal:ayarlar :: 🇵🇹 Gonçalo Brito
-modal:ayarlar :: 🇹🇷 Türkiye
+modal:ayarlar :: Ali Özbek
+modal:ayarlar :: Ali Özbek (PG) — Overall: 71
+modal:ayarlar :: Ali Özbek (PG) → SG
+modal:ayarlar :: Ali Özbek (PG·OVR 71)
+modal:ayarlar :: Antalya Gençlik
+modal:ayarlar :: Bursa Gençlik
+modal:ayarlar :: Denizli Boğaları
+modal:ayarlar :: Denizli Boğaları — Bursa Gençlik
+modal:ayarlar :: Diyarbakır Gençlik
+modal:ayarlar :: Diyarbakır Kurtları
+modal:ayarlar :: Enes Çetin
+modal:ayarlar :: Enes Çetin (C) — Overall: 68
+modal:ayarlar :: Enes Çetin (C) → PF
+modal:ayarlar :: Enes Çetin (C·OVR 68)
+modal:ayarlar :: Fikret Çetin
+modal:ayarlar :: Fikret Çetin (SF) — Overall: 68
+modal:ayarlar :: Fikret Çetin (SF) → PF
+modal:ayarlar :: Fikret Çetin (SF) → SG
+modal:ayarlar :: Fikret Çetin (SF·OVR 68)
+modal:ayarlar :: Gökhan Yener
+modal:ayarlar :: Gökhan Yener (C) — Overall: 71
+modal:ayarlar :: Gökhan Yener (C) → PF
+modal:ayarlar :: Gökhan Yener (C·OVR 71)
+modal:ayarlar :: Hüsnü Erdem
+modal:ayarlar :: Hüsnü Erdem (PF) — Overall: 72
+modal:ayarlar :: Hüsnü Erdem (PF) → C
+modal:ayarlar :: Hüsnü Erdem (PF) → SF
+modal:ayarlar :: Hüsnü Erdem (PF·OVR 72)
+modal:ayarlar :: Manisa Aslanları
+modal:ayarlar :: Muhammet Tatlı
+modal:ayarlar :: Muhammet Tatlı (PF) — Overall: 69
+modal:ayarlar :: Muhammet Tatlı (PF) → C
+modal:ayarlar :: Muhammet Tatlı (PF) → SF
+modal:ayarlar :: Muhammet Tatlı (PF·OVR 69)
+modal:ayarlar :: Oğuzhan Avcı
+modal:ayarlar :: Oğuzhan Avcı (SF) — Overall: 72
+modal:ayarlar :: Oğuzhan Avcı (SF) → PF
+modal:ayarlar :: Oğuzhan Avcı (SF) → SG
+modal:ayarlar :: Oğuzhan Avcı (SF·OVR 72)
+modal:ayarlar :: Sakarya Boğaları
+modal:ayarlar :: Sakarya Boğaları — Tekirdağ Şimşekleri
+modal:ayarlar :: Tekirdağ Basket
+modal:ayarlar :: Tekirdağ Şimşekleri
+modal:ayarlar :: Tolga Yalın
+modal:ayarlar :: Tolga Yalın (SF) — Overall: 72
+modal:ayarlar :: Tolga Yalın (SF) → PF
+modal:ayarlar :: Tolga Yalın (SF) → SG
+modal:ayarlar :: Tolga Yalın (SF·OVR 72)
+modal:ayarlar :: Vedat Bektaş
+modal:ayarlar :: Vedat Bektaş (C) — Overall: 68
+modal:ayarlar :: Vedat Bektaş (C) → PF
+modal:ayarlar :: Vedat Bektaş (C·OVR 68)
+modal:ayarlar :: Özgür Turgut
+modal:ayarlar :: Özgür Turgut (C) — Overall: 71
+modal:ayarlar :: Özgür Turgut (C) → PF
+modal:ayarlar :: Özgür Turgut (C·OVR 71)
+modal:ayarlar :: İlhan Hakyemez
+modal:ayarlar :: İlhan Hakyemez (PG) — Overall: 69
+modal:ayarlar :: İlhan Hakyemez (PG) → SG
+modal:ayarlar :: İlhan Hakyemez (PG·OVR 69)
+modal:ayarlar :: İlker Karaca
+modal:ayarlar :: İlker Karaca (PF) — Overall: 72
+modal:ayarlar :: İlker Karaca (PF) → C
+modal:ayarlar :: İlker Karaca (PF) → SF
+modal:ayarlar :: İlker Karaca (PF·OVR 72)
+modal:ayarlar :: İstanbul Aslanları
+modal:ayarlar :: İstanbul Aslanları — Adana Panterleri
+modal:ayarlar :: İstanbul Şahinleri
+modal:ayarlar :: İzmir Aslanları
+modal:ayarlar :: Şanlıurfa Kartalları
+modal:ayarlar :: 🇩🇪 Benjamin König
+modal:ayarlar :: 🇹🇷 Alparslan Sevinç
+modal:ayarlar :: 🇹🇷 Berk Avcı
+modal:ayarlar :: 🇹🇷 Davut Koçak
+modal:ayarlar :: 🇹🇷 Dursun Öcal
+modal:ayarlar :: 🇹🇷 Efe Baş
+modal:ayarlar :: 🇹🇷 Furkan Çakır
+modal:ayarlar :: 🇹🇷 Koray Sarı
+modal:ayarlar :: 🇹🇷 Mert Kılınç
+modal:ayarlar :: 🇹🇷 Mustafa Doğan
 modal:ayarlar :: 🇹🇷 Türkçe
-modal:ayarlar :: 🏛️ Ankara Boğaları from
-modal:ayarlar :: 🏛️ Ankara Kartalları from
-modal:ayarlar :: 🏛️ Gaziantep Şahinleri from
-modal:ayarlar :: 🏛️ Sakarya Şahinleri from
-modal:ayarlar :: 🏛️ İstanbul BK from
-modal:basarim :: Adana Spor — Mersin Boğaları
+modal:ayarlar :: 🇹🇷 Yağız Güngör
+modal:ayarlar :: 🏛️ Antalya Gençlik from
+modal:ayarlar :: 🏛️ Sakarya Boğaları from
+modal:ayarlar :: 🏛️ Tekirdağ Şimşekleri from
+modal:ayarlar :: 🏛️ İstanbul Şahinleri from
+modal:ayarlar :: 🏛️ İzmir Aslanları from
+modal:ayarlar :: 🏛️ Şanlıurfa Kartalları from
+modal:ayarlar :: 🤝 Çetin – Bektaş
+modal:ayarlar :: 🤝 Özbek – Tatlı
 modal:basarim :: Ahmet Yıldız
-modal:basarim :: Ankara Boğaları
-modal:basarim :: Ankara Kartalları
-modal:basarim :: Bursa Şahinleri
-modal:basarim :: Diyarbakır Basket
-modal:basarim :: Eskişehir Panterleri
-modal:basarim :: Eskişehir Spor
-modal:basarim :: Gaziantep Şahinleri
-modal:basarim :: Kocaeli Kartalları
-modal:basarim :: Kocaeli Kartalları — Eskişehir Panterleri
-modal:basarim :: Mersin Boğaları
-modal:basarim :: Sakarya Kurtları
-modal:basarim :: Sakarya Şahinleri
-modal:basarim :: İstanbul BK
-modal:basarim :: 🇵🇹 Gonçalo Brito
-modal:basarim :: 🇹🇷 Türkiye
+modal:basarim :: Ali Özbek
+modal:basarim :: Ali Özbek (PG) — Overall: 71
+modal:basarim :: Ali Özbek (PG) → SG
+modal:basarim :: Ali Özbek (PG·OVR 71)
+modal:basarim :: Antalya Gençlik
+modal:basarim :: Bursa Gençlik
+modal:basarim :: Denizli Boğaları
+modal:basarim :: Denizli Boğaları — Bursa Gençlik
+modal:basarim :: Diyarbakır Gençlik
+modal:basarim :: Diyarbakır Kurtları
+modal:basarim :: Enes Çetin
+modal:basarim :: Enes Çetin (C) — Overall: 68
+modal:basarim :: Enes Çetin (C) → PF
+modal:basarim :: Enes Çetin (C·OVR 68)
+modal:basarim :: Fikret Çetin
+modal:basarim :: Fikret Çetin (SF) — Overall: 68
+modal:basarim :: Fikret Çetin (SF) → PF
+modal:basarim :: Fikret Çetin (SF) → SG
+modal:basarim :: Fikret Çetin (SF·OVR 68)
+modal:basarim :: Gökhan Yener
+modal:basarim :: Gökhan Yener (C) — Overall: 71
+modal:basarim :: Gökhan Yener (C) → PF
+modal:basarim :: Gökhan Yener (C·OVR 71)
+modal:basarim :: Hüsnü Erdem
+modal:basarim :: Hüsnü Erdem (PF) — Overall: 72
+modal:basarim :: Hüsnü Erdem (PF) → C
+modal:basarim :: Hüsnü Erdem (PF) → SF
+modal:basarim :: Hüsnü Erdem (PF·OVR 72)
+modal:basarim :: Manisa Aslanları
+modal:basarim :: Muhammet Tatlı
+modal:basarim :: Muhammet Tatlı (PF) — Overall: 69
+modal:basarim :: Muhammet Tatlı (PF) → C
+modal:basarim :: Muhammet Tatlı (PF) → SF
+modal:basarim :: Muhammet Tatlı (PF·OVR 69)
+modal:basarim :: Oğuzhan Avcı
+modal:basarim :: Oğuzhan Avcı (SF) — Overall: 72
+modal:basarim :: Oğuzhan Avcı (SF) → PF
+modal:basarim :: Oğuzhan Avcı (SF) → SG
+modal:basarim :: Oğuzhan Avcı (SF·OVR 72)
+modal:basarim :: Sakarya Boğaları
+modal:basarim :: Sakarya Boğaları — Tekirdağ Şimşekleri
+modal:basarim :: Tekirdağ Basket
+modal:basarim :: Tekirdağ Şimşekleri
+modal:basarim :: Tolga Yalın
+modal:basarim :: Tolga Yalın (SF) — Overall: 72
+modal:basarim :: Tolga Yalın (SF) → PF
+modal:basarim :: Tolga Yalın (SF) → SG
+modal:basarim :: Tolga Yalın (SF·OVR 72)
+modal:basarim :: Vedat Bektaş
+modal:basarim :: Vedat Bektaş (C) — Overall: 68
+modal:basarim :: Vedat Bektaş (C) → PF
+modal:basarim :: Vedat Bektaş (C·OVR 68)
+modal:basarim :: Özgür Turgut
+modal:basarim :: Özgür Turgut (C) — Overall: 71
+modal:basarim :: Özgür Turgut (C) → PF
+modal:basarim :: Özgür Turgut (C·OVR 71)
+modal:basarim :: İlhan Hakyemez
+modal:basarim :: İlhan Hakyemez (PG) — Overall: 69
+modal:basarim :: İlhan Hakyemez (PG) → SG
+modal:basarim :: İlhan Hakyemez (PG·OVR 69)
+modal:basarim :: İlker Karaca
+modal:basarim :: İlker Karaca (PF) — Overall: 72
+modal:basarim :: İlker Karaca (PF) → C
+modal:basarim :: İlker Karaca (PF) → SF
+modal:basarim :: İlker Karaca (PF·OVR 72)
+modal:basarim :: İstanbul Aslanları
+modal:basarim :: İstanbul Aslanları — Adana Panterleri
+modal:basarim :: İstanbul Şahinleri
+modal:basarim :: İzmir Aslanları
+modal:basarim :: Şanlıurfa Kartalları
+modal:basarim :: 🇩🇪 Benjamin König
+modal:basarim :: 🇹🇷 Alparslan Sevinç
+modal:basarim :: 🇹🇷 Berk Avcı
+modal:basarim :: 🇹🇷 Davut Koçak
+modal:basarim :: 🇹🇷 Dursun Öcal
+modal:basarim :: 🇹🇷 Efe Baş
+modal:basarim :: 🇹🇷 Furkan Çakır
+modal:basarim :: 🇹🇷 Koray Sarı
+modal:basarim :: 🇹🇷 Mert Kılınç
+modal:basarim :: 🇹🇷 Mustafa Doğan
 modal:basarim :: 🇹🇷 Türkçe
-modal:basarim :: 🏛️ Ankara Boğaları from
-modal:basarim :: 🏛️ Ankara Kartalları from
-modal:basarim :: 🏛️ Gaziantep Şahinleri from
-modal:basarim :: 🏛️ Sakarya Şahinleri from
-modal:basarim :: 🏛️ İstanbul BK from
-modal:draft :: Adana Spor — Mersin Boğaları
+modal:basarim :: 🇹🇷 Yağız Güngör
+modal:basarim :: 🏛️ Antalya Gençlik from
+modal:basarim :: 🏛️ Sakarya Boğaları from
+modal:basarim :: 🏛️ Tekirdağ Şimşekleri from
+modal:basarim :: 🏛️ İstanbul Şahinleri from
+modal:basarim :: 🏛️ İzmir Aslanları from
+modal:basarim :: 🏛️ Şanlıurfa Kartalları from
+modal:basarim :: 🤝 Çetin – Bektaş
+modal:basarim :: 🤝 Özbek – Tatlı
 modal:draft :: Ahmet Yıldız
-modal:draft :: Ankara Boğaları
-modal:draft :: Ankara Kartalları
-modal:draft :: Bursa Şahinleri
-modal:draft :: Diyarbakır Basket
-modal:draft :: Eskişehir Panterleri
-modal:draft :: Eskişehir Spor
-modal:draft :: Gaziantep Şahinleri
-modal:draft :: Kocaeli Kartalları
-modal:draft :: Kocaeli Kartalları — Eskişehir Panterleri
-modal:draft :: Mersin Boğaları
-modal:draft :: Sakarya Kurtları
-modal:draft :: Sakarya Şahinleri
-modal:draft :: İstanbul BK
-modal:draft :: 🇵🇹 Gonçalo Brito
-modal:draft :: 🇹🇷 Türkiye
+modal:draft :: Ali Özbek
+modal:draft :: Ali Özbek (PG) — Overall: 71
+modal:draft :: Ali Özbek (PG) → SG
+modal:draft :: Ali Özbek (PG·OVR 71)
+modal:draft :: Antalya Gençlik
+modal:draft :: Bursa Gençlik
+modal:draft :: Denizli Boğaları
+modal:draft :: Denizli Boğaları — Bursa Gençlik
+modal:draft :: Diyarbakır Gençlik
+modal:draft :: Diyarbakır Kurtları
+modal:draft :: Enes Çetin
+modal:draft :: Enes Çetin (C) — Overall: 68
+modal:draft :: Enes Çetin (C) → PF
+modal:draft :: Enes Çetin (C·OVR 68)
+modal:draft :: Eren Yalın (C)
+modal:draft :: Fikret Çetin
+modal:draft :: Fikret Çetin (SF) — Overall: 68
+modal:draft :: Fikret Çetin (SF) → PF
+modal:draft :: Fikret Çetin (SF) → SG
+modal:draft :: Fikret Çetin (SF·OVR 68)
+modal:draft :: Gökhan Yener
+modal:draft :: Gökhan Yener (C) — Overall: 71
+modal:draft :: Gökhan Yener (C) → PF
+modal:draft :: Gökhan Yener (C·OVR 71)
+modal:draft :: Hüsnü Erdem
+modal:draft :: Hüsnü Erdem (PF) — Overall: 72
+modal:draft :: Hüsnü Erdem (PF) → C
+modal:draft :: Hüsnü Erdem (PF) → SF
+modal:draft :: Hüsnü Erdem (PF·OVR 72)
+modal:draft :: Manisa Aslanları
+modal:draft :: Muhammet Tatlı
+modal:draft :: Muhammet Tatlı (PF) — Overall: 69
+modal:draft :: Muhammet Tatlı (PF) → C
+modal:draft :: Muhammet Tatlı (PF) → SF
+modal:draft :: Muhammet Tatlı (PF·OVR 69)
+modal:draft :: Oğuzhan Avcı
+modal:draft :: Oğuzhan Avcı (SF) — Overall: 72
+modal:draft :: Oğuzhan Avcı (SF) → PF
+modal:draft :: Oğuzhan Avcı (SF) → SG
+modal:draft :: Oğuzhan Avcı (SF·OVR 72)
+modal:draft :: Sakarya Boğaları
+modal:draft :: Sakarya Boğaları — Tekirdağ Şimşekleri
+modal:draft :: Tekirdağ Basket
+modal:draft :: Tekirdağ Şimşekleri
+modal:draft :: Tolga Yalın
+modal:draft :: Tolga Yalın (SF) — Overall: 72
+modal:draft :: Tolga Yalın (SF) → PF
+modal:draft :: Tolga Yalın (SF) → SG
+modal:draft :: Tolga Yalın (SF·OVR 72)
+modal:draft :: Vedat Bektaş
+modal:draft :: Vedat Bektaş (C) — Overall: 68
+modal:draft :: Vedat Bektaş (C) → PF
+modal:draft :: Vedat Bektaş (C·OVR 68)
+modal:draft :: Özgür Turgut
+modal:draft :: Özgür Turgut (C) — Overall: 71
+modal:draft :: Özgür Turgut (C) → PF
+modal:draft :: Özgür Turgut (C·OVR 71)
+modal:draft :: İlhan Hakyemez
+modal:draft :: İlhan Hakyemez (PG) — Overall: 69
+modal:draft :: İlhan Hakyemez (PG) → SG
+modal:draft :: İlhan Hakyemez (PG·OVR 69)
+modal:draft :: İlker Karaca
+modal:draft :: İlker Karaca (PF) — Overall: 72
+modal:draft :: İlker Karaca (PF) → C
+modal:draft :: İlker Karaca (PF) → SF
+modal:draft :: İlker Karaca (PF·OVR 72)
+modal:draft :: İstanbul Aslanları
+modal:draft :: İstanbul Aslanları — Adana Panterleri
+modal:draft :: İstanbul Şahinleri
+modal:draft :: İzmir Aslanları
+modal:draft :: Şanlıurfa Kartalları
+modal:draft :: 🇩🇪 Benjamin König
+modal:draft :: 🇹🇷 Alparslan Sevinç
+modal:draft :: 🇹🇷 Batıkan Yüksel
+modal:draft :: 🇹🇷 Berk Avcı
+modal:draft :: 🇹🇷 Cem Kırca
+modal:draft :: 🇹🇷 Davut Koçak
+modal:draft :: 🇹🇷 Dursun Öcal
+modal:draft :: 🇹🇷 Efe Baş
+modal:draft :: 🇹🇷 Furkan Çakır
+modal:draft :: 🇹🇷 Hamza Savaş
+modal:draft :: 🇹🇷 Koray Sarı
+modal:draft :: 🇹🇷 Mert Kılınç
+modal:draft :: 🇹🇷 Mustafa Doğan
+modal:draft :: 🇹🇷 Oğuzhan Köse
 modal:draft :: 🇹🇷 Türkçe
-modal:draft :: 🏛️ Ankara Boğaları from
-modal:draft :: 🏛️ Ankara Kartalları from
-modal:draft :: 🏛️ Gaziantep Şahinleri from
-modal:draft :: 🏛️ Sakarya Şahinleri from
-modal:draft :: 🏛️ İstanbul BK from
-modal:ilk5 :: Adana Spor — Mersin Boğaları
+modal:draft :: 🇹🇷 Yağız Güngör
+modal:draft :: 🇹🇷 İsmail Demir
+modal:draft :: 🏛️ Antalya Gençlik from
+modal:draft :: 🏛️ Sakarya Boğaları from
+modal:draft :: 🏛️ Tekirdağ Şimşekleri from
+modal:draft :: 🏛️ İstanbul Şahinleri from
+modal:draft :: 🏛️ İzmir Aslanları from
+modal:draft :: 🏛️ Şanlıurfa Kartalları from
+modal:draft :: 🤝 Çetin – Bektaş
+modal:draft :: 🤝 Özbek – Tatlı
 modal:ilk5 :: Ahmet Yıldız
-modal:ilk5 :: Ankara Boğaları
-modal:ilk5 :: Ankara Kartalları
-modal:ilk5 :: Bursa Şahinleri
-modal:ilk5 :: Diyarbakır Basket
-modal:ilk5 :: Eskişehir Panterleri
-modal:ilk5 :: Eskişehir Spor
-modal:ilk5 :: Gaziantep Şahinleri
-modal:ilk5 :: Kocaeli Kartalları
-modal:ilk5 :: Kocaeli Kartalları — Eskişehir Panterleri
-modal:ilk5 :: Mersin Boğaları
-modal:ilk5 :: Sakarya Kurtları
-modal:ilk5 :: Sakarya Şahinleri
-modal:ilk5 :: İstanbul BK
-modal:ilk5 :: 🇵🇹 Gonçalo Brito
-modal:ilk5 :: 🇹🇷 Türkiye
+modal:ilk5 :: Ali Özbek
+modal:ilk5 :: Ali Özbek (PG) — Overall: 71
+modal:ilk5 :: Ali Özbek (PG) → SG
+modal:ilk5 :: Ali Özbek (PG·OVR 71)
+modal:ilk5 :: Antalya Gençlik
+modal:ilk5 :: Bursa Gençlik
+modal:ilk5 :: Denizli Boğaları
+modal:ilk5 :: Denizli Boğaları — Bursa Gençlik
+modal:ilk5 :: Diyarbakır Gençlik
+modal:ilk5 :: Diyarbakır Kurtları
+modal:ilk5 :: Enes Çetin
+modal:ilk5 :: Enes Çetin (C) — Overall: 68
+modal:ilk5 :: Enes Çetin (C) → PF
+modal:ilk5 :: Enes Çetin (C·OVR 68)
+modal:ilk5 :: Fikret Çetin
+modal:ilk5 :: Fikret Çetin (SF) — Overall: 68
+modal:ilk5 :: Fikret Çetin (SF) → PF
+modal:ilk5 :: Fikret Çetin (SF) → SG
+modal:ilk5 :: Fikret Çetin (SF·OVR 68)
+modal:ilk5 :: Gökhan Yener
+modal:ilk5 :: Gökhan Yener (C) — Overall: 71
+modal:ilk5 :: Gökhan Yener (C) → PF
+modal:ilk5 :: Gökhan Yener (C·OVR 71)
+modal:ilk5 :: Hüsnü Erdem
+modal:ilk5 :: Hüsnü Erdem (PF) — Overall: 72
+modal:ilk5 :: Hüsnü Erdem (PF) → C
+modal:ilk5 :: Hüsnü Erdem (PF) → SF
+modal:ilk5 :: Hüsnü Erdem (PF·OVR 72)
+modal:ilk5 :: Manisa Aslanları
+modal:ilk5 :: Muhammet Tatlı
+modal:ilk5 :: Muhammet Tatlı (PF) — Overall: 69
+modal:ilk5 :: Muhammet Tatlı (PF) → C
+modal:ilk5 :: Muhammet Tatlı (PF) → SF
+modal:ilk5 :: Muhammet Tatlı (PF·OVR 69)
+modal:ilk5 :: Oğuzhan Avcı
+modal:ilk5 :: Oğuzhan Avcı (SF) — Overall: 72
+modal:ilk5 :: Oğuzhan Avcı (SF) → PF
+modal:ilk5 :: Oğuzhan Avcı (SF) → SG
+modal:ilk5 :: Oğuzhan Avcı (SF·OVR 72)
+modal:ilk5 :: Sakarya Boğaları
+modal:ilk5 :: Sakarya Boğaları — Tekirdağ Şimşekleri
+modal:ilk5 :: Tekirdağ Basket
+modal:ilk5 :: Tekirdağ Şimşekleri
+modal:ilk5 :: Tolga Yalın
+modal:ilk5 :: Tolga Yalın (SF) — Overall: 72
+modal:ilk5 :: Tolga Yalın (SF) → PF
+modal:ilk5 :: Tolga Yalın (SF) → SG
+modal:ilk5 :: Tolga Yalın (SF·OVR 72)
+modal:ilk5 :: Vedat Bektaş
+modal:ilk5 :: Vedat Bektaş (C) — Overall: 68
+modal:ilk5 :: Vedat Bektaş (C) → PF
+modal:ilk5 :: Vedat Bektaş (C·OVR 68)
+modal:ilk5 :: Özgür Turgut
+modal:ilk5 :: Özgür Turgut (C) — Overall: 71
+modal:ilk5 :: Özgür Turgut (C) → PF
+modal:ilk5 :: Özgür Turgut (C·OVR 71)
+modal:ilk5 :: İlhan Hakyemez
+modal:ilk5 :: İlhan Hakyemez (PG) — Overall: 69
+modal:ilk5 :: İlhan Hakyemez (PG) → SG
+modal:ilk5 :: İlhan Hakyemez (PG·OVR 69)
+modal:ilk5 :: İlker Karaca
+modal:ilk5 :: İlker Karaca (PF) — Overall: 72
+modal:ilk5 :: İlker Karaca (PF) → C
+modal:ilk5 :: İlker Karaca (PF) → SF
+modal:ilk5 :: İlker Karaca (PF·OVR 72)
+modal:ilk5 :: İstanbul Aslanları
+modal:ilk5 :: İstanbul Aslanları — Adana Panterleri
+modal:ilk5 :: İstanbul Şahinleri
+modal:ilk5 :: İzmir Aslanları
+modal:ilk5 :: Şanlıurfa Kartalları
+modal:ilk5 :: 🇩🇪 Benjamin König
+modal:ilk5 :: 🇹🇷 Alparslan Sevinç
+modal:ilk5 :: 🇹🇷 Berk Avcı
+modal:ilk5 :: 🇹🇷 Davut Koçak
+modal:ilk5 :: 🇹🇷 Dursun Öcal
+modal:ilk5 :: 🇹🇷 Efe Baş
+modal:ilk5 :: 🇹🇷 Furkan Çakır
+modal:ilk5 :: 🇹🇷 Koray Sarı
+modal:ilk5 :: 🇹🇷 Mert Kılınç
+modal:ilk5 :: 🇹🇷 Mustafa Doğan
 modal:ilk5 :: 🇹🇷 Türkçe
-modal:ilk5 :: 🏛️ Ankara Boğaları from
-modal:ilk5 :: 🏛️ Ankara Kartalları from
-modal:ilk5 :: 🏛️ Gaziantep Şahinleri from
-modal:ilk5 :: 🏛️ Sakarya Şahinleri from
-modal:ilk5 :: 🏛️ İstanbul BK from
-modal:oyuncu :: Adana Spor — Mersin Boğaları
+modal:ilk5 :: 🇹🇷 Yağız Güngör
+modal:ilk5 :: 🏛️ Antalya Gençlik from
+modal:ilk5 :: 🏛️ Sakarya Boğaları from
+modal:ilk5 :: 🏛️ Tekirdağ Şimşekleri from
+modal:ilk5 :: 🏛️ İstanbul Şahinleri from
+modal:ilk5 :: 🏛️ İzmir Aslanları from
+modal:ilk5 :: 🏛️ Şanlıurfa Kartalları from
+modal:ilk5 :: 🤝 Çetin – Bektaş
+modal:ilk5 :: 🤝 Özbek – Tatlı
 modal:oyuncu :: Ahmet Yıldız
-modal:oyuncu :: Ankara Boğaları
-modal:oyuncu :: Ankara Kartalları
-modal:oyuncu :: Bursa Şahinleri
-modal:oyuncu :: Diyarbakır Basket
-modal:oyuncu :: Eskişehir Panterleri
-modal:oyuncu :: Eskişehir Spor
-modal:oyuncu :: Gaziantep Şahinleri
-modal:oyuncu :: Kocaeli Kartalları
-modal:oyuncu :: Kocaeli Kartalları — Eskişehir Panterleri
-modal:oyuncu :: Mersin Boğaları
-modal:oyuncu :: Sakarya Kurtları
-modal:oyuncu :: Sakarya Şahinleri
-modal:oyuncu :: İstanbul BK
-modal:oyuncu :: 🇵🇹 Gonçalo Brito
-modal:oyuncu :: 🇹🇷 Türkiye
+modal:oyuncu :: Ali Özbek
+modal:oyuncu :: Ali Özbek (PG) — Overall: 71
+modal:oyuncu :: Ali Özbek (PG) → SG
+modal:oyuncu :: Ali Özbek (PG·OVR 71)
+modal:oyuncu :: Antalya Gençlik
+modal:oyuncu :: Bursa Gençlik
+modal:oyuncu :: Denizli Boğaları
+modal:oyuncu :: Denizli Boğaları — Bursa Gençlik
+modal:oyuncu :: Diyarbakır Gençlik
+modal:oyuncu :: Diyarbakır Kurtları
+modal:oyuncu :: Enes Çetin
+modal:oyuncu :: Enes Çetin (C) — Overall: 68
+modal:oyuncu :: Enes Çetin (C) → PF
+modal:oyuncu :: Enes Çetin (C·OVR 68)
+modal:oyuncu :: Fikret Çetin
+modal:oyuncu :: Fikret Çetin (SF) — Overall: 68
+modal:oyuncu :: Fikret Çetin (SF) → PF
+modal:oyuncu :: Fikret Çetin (SF) → SG
+modal:oyuncu :: Fikret Çetin (SF·OVR 68)
+modal:oyuncu :: Gökhan Yener
+modal:oyuncu :: Gökhan Yener (C) — Overall: 71
+modal:oyuncu :: Gökhan Yener (C) → PF
+modal:oyuncu :: Gökhan Yener (C·OVR 71)
+modal:oyuncu :: Hüsnü Erdem
+modal:oyuncu :: Hüsnü Erdem (PF) — Overall: 72
+modal:oyuncu :: Hüsnü Erdem (PF) → C
+modal:oyuncu :: Hüsnü Erdem (PF) → SF
+modal:oyuncu :: Hüsnü Erdem (PF·OVR 72)
+modal:oyuncu :: Manisa Aslanları
+modal:oyuncu :: Muhammet Tatlı
+modal:oyuncu :: Muhammet Tatlı (PF) — Overall: 69
+modal:oyuncu :: Muhammet Tatlı (PF) → C
+modal:oyuncu :: Muhammet Tatlı (PF) → SF
+modal:oyuncu :: Muhammet Tatlı (PF·OVR 69)
+modal:oyuncu :: Oğuzhan Avcı
+modal:oyuncu :: Oğuzhan Avcı (SF) — Overall: 72
+modal:oyuncu :: Oğuzhan Avcı (SF) → PF
+modal:oyuncu :: Oğuzhan Avcı (SF) → SG
+modal:oyuncu :: Oğuzhan Avcı (SF·OVR 72)
+modal:oyuncu :: Sakarya Boğaları
+modal:oyuncu :: Sakarya Boğaları — Tekirdağ Şimşekleri
+modal:oyuncu :: Tekirdağ Basket
+modal:oyuncu :: Tekirdağ Şimşekleri
+modal:oyuncu :: Tolga Yalın
+modal:oyuncu :: Tolga Yalın (SF) — Overall: 72
+modal:oyuncu :: Tolga Yalın (SF) → PF
+modal:oyuncu :: Tolga Yalın (SF) → SG
+modal:oyuncu :: Tolga Yalın (SF·OVR 72)
+modal:oyuncu :: Vedat Bektaş
+modal:oyuncu :: Vedat Bektaş (C) — Overall: 68
+modal:oyuncu :: Vedat Bektaş (C) → PF
+modal:oyuncu :: Vedat Bektaş (C·OVR 68)
+modal:oyuncu :: Özgür Turgut
+modal:oyuncu :: Özgür Turgut (C) — Overall: 71
+modal:oyuncu :: Özgür Turgut (C) → PF
+modal:oyuncu :: Özgür Turgut (C·OVR 71)
+modal:oyuncu :: İlhan Hakyemez
+modal:oyuncu :: İlhan Hakyemez (PG) — Overall: 69
+modal:oyuncu :: İlhan Hakyemez (PG) → SG
+modal:oyuncu :: İlhan Hakyemez (PG·OVR 69)
+modal:oyuncu :: İlker Karaca
+modal:oyuncu :: İlker Karaca (PF) — Overall: 72
+modal:oyuncu :: İlker Karaca (PF) → C
+modal:oyuncu :: İlker Karaca (PF) → SF
+modal:oyuncu :: İlker Karaca (PF·OVR 72)
+modal:oyuncu :: İstanbul Aslanları
+modal:oyuncu :: İstanbul Aslanları — Adana Panterleri
+modal:oyuncu :: İstanbul Şahinleri
+modal:oyuncu :: İzmir Aslanları
+modal:oyuncu :: Şanlıurfa Kartalları
+modal:oyuncu :: 🇩🇪 Benjamin König
+modal:oyuncu :: 🇹🇷 Ali Özbek
+modal:oyuncu :: 🇹🇷 Alparslan Sevinç
+modal:oyuncu :: 🇹🇷 Berk Avcı
+modal:oyuncu :: 🇹🇷 Davut Koçak
+modal:oyuncu :: 🇹🇷 Dursun Öcal
+modal:oyuncu :: 🇹🇷 Efe Baş
+modal:oyuncu :: 🇹🇷 Furkan Çakır
+modal:oyuncu :: 🇹🇷 Koray Sarı
+modal:oyuncu :: 🇹🇷 Mert Kılınç
+modal:oyuncu :: 🇹🇷 Mustafa Doğan
 modal:oyuncu :: 🇹🇷 Türkçe
-modal:oyuncu :: 🏛️ Ankara Boğaları from
-modal:oyuncu :: 🏛️ Ankara Kartalları from
-modal:oyuncu :: 🏛️ Gaziantep Şahinleri from
-modal:oyuncu :: 🏛️ Sakarya Şahinleri from
-modal:oyuncu :: 🏛️ İstanbul BK from
-modal:soyunma :: Adana Spor — Mersin Boğaları
+modal:oyuncu :: 🇹🇷 Yağız Güngör
+modal:oyuncu :: 🏛️ Antalya Gençlik from
+modal:oyuncu :: 🏛️ Sakarya Boğaları from
+modal:oyuncu :: 🏛️ Tekirdağ Şimşekleri from
+modal:oyuncu :: 🏛️ İstanbul Şahinleri from
+modal:oyuncu :: 🏛️ İzmir Aslanları from
+modal:oyuncu :: 🏛️ Şanlıurfa Kartalları from
+modal:oyuncu :: 🤝 Çetin – Bektaş
+modal:oyuncu :: 🤝 Özbek – Tatlı
 modal:soyunma :: Ahmet Yıldız
-modal:soyunma :: Ankara Boğaları
-modal:soyunma :: Ankara Kartalları
-modal:soyunma :: Bursa Şahinleri
-modal:soyunma :: Diyarbakır Basket
-modal:soyunma :: Eskişehir Panterleri
-modal:soyunma :: Eskişehir Spor
-modal:soyunma :: Gaziantep Şahinleri
-modal:soyunma :: Kocaeli Kartalları
-modal:soyunma :: Kocaeli Kartalları — Eskişehir Panterleri
-modal:soyunma :: Mersin Boğaları
-modal:soyunma :: Sakarya Kurtları
-modal:soyunma :: Sakarya Şahinleri
-modal:soyunma :: İstanbul BK
-modal:soyunma :: 🇵🇹 Gonçalo Brito
-modal:soyunma :: 🇹🇷 Türkiye
+modal:soyunma :: Ali Özbek
+modal:soyunma :: Ali Özbek (PG) — Overall: 71
+modal:soyunma :: Ali Özbek (PG) → SG
+modal:soyunma :: Ali Özbek (PG·OVR 71)
+modal:soyunma :: Antalya Gençlik
+modal:soyunma :: Bursa Gençlik
+modal:soyunma :: Denizli Boğaları
+modal:soyunma :: Denizli Boğaları — Bursa Gençlik
+modal:soyunma :: Diyarbakır Gençlik
+modal:soyunma :: Diyarbakır Kurtları
+modal:soyunma :: Enes Çetin
+modal:soyunma :: Enes Çetin (C) — Overall: 68
+modal:soyunma :: Enes Çetin (C) → PF
+modal:soyunma :: Enes Çetin (C·OVR 68)
+modal:soyunma :: Fikret Çetin
+modal:soyunma :: Fikret Çetin (SF) — Overall: 68
+modal:soyunma :: Fikret Çetin (SF) → PF
+modal:soyunma :: Fikret Çetin (SF) → SG
+modal:soyunma :: Fikret Çetin (SF·OVR 68)
+modal:soyunma :: Gökhan Yener
+modal:soyunma :: Gökhan Yener (C) — Overall: 71
+modal:soyunma :: Gökhan Yener (C) → PF
+modal:soyunma :: Gökhan Yener (C·OVR 71)
+modal:soyunma :: Hüsnü Erdem
+modal:soyunma :: Hüsnü Erdem (PF) — Overall: 72
+modal:soyunma :: Hüsnü Erdem (PF) → C
+modal:soyunma :: Hüsnü Erdem (PF) → SF
+modal:soyunma :: Hüsnü Erdem (PF·OVR 72)
+modal:soyunma :: Manisa Aslanları
+modal:soyunma :: Muhammet Tatlı
+modal:soyunma :: Muhammet Tatlı (PF) — Overall: 69
+modal:soyunma :: Muhammet Tatlı (PF) → C
+modal:soyunma :: Muhammet Tatlı (PF) → SF
+modal:soyunma :: Muhammet Tatlı (PF·OVR 69)
+modal:soyunma :: Oğuzhan Avcı
+modal:soyunma :: Oğuzhan Avcı (SF) — Overall: 72
+modal:soyunma :: Oğuzhan Avcı (SF) → PF
+modal:soyunma :: Oğuzhan Avcı (SF) → SG
+modal:soyunma :: Oğuzhan Avcı (SF·OVR 72)
+modal:soyunma :: Sakarya Boğaları
+modal:soyunma :: Sakarya Boğaları — Tekirdağ Şimşekleri
+modal:soyunma :: Tekirdağ Basket
+modal:soyunma :: Tekirdağ Şimşekleri
+modal:soyunma :: Tolga Yalın
+modal:soyunma :: Tolga Yalın (SF) — Overall: 72
+modal:soyunma :: Tolga Yalın (SF) → PF
+modal:soyunma :: Tolga Yalın (SF) → SG
+modal:soyunma :: Tolga Yalın (SF·OVR 72)
+modal:soyunma :: Vedat Bektaş
+modal:soyunma :: Vedat Bektaş (C) — Overall: 68
+modal:soyunma :: Vedat Bektaş (C) → PF
+modal:soyunma :: Vedat Bektaş (C·OVR 68)
+modal:soyunma :: Özgür Turgut
+modal:soyunma :: Özgür Turgut (C) — Overall: 71
+modal:soyunma :: Özgür Turgut (C) → PF
+modal:soyunma :: Özgür Turgut (C·OVR 71)
+modal:soyunma :: İlhan Hakyemez
+modal:soyunma :: İlhan Hakyemez (PG) — Overall: 69
+modal:soyunma :: İlhan Hakyemez (PG) → SG
+modal:soyunma :: İlhan Hakyemez (PG·OVR 69)
+modal:soyunma :: İlker Karaca
+modal:soyunma :: İlker Karaca (PF) — Overall: 72
+modal:soyunma :: İlker Karaca (PF) → C
+modal:soyunma :: İlker Karaca (PF) → SF
+modal:soyunma :: İlker Karaca (PF·OVR 72)
+modal:soyunma :: İstanbul Aslanları
+modal:soyunma :: İstanbul Aslanları — Adana Panterleri
+modal:soyunma :: İstanbul Şahinleri
+modal:soyunma :: İzmir Aslanları
+modal:soyunma :: Şanlıurfa Kartalları
+modal:soyunma :: 🇩🇪 Benjamin König
+modal:soyunma :: 🇹🇷 Alparslan Sevinç
+modal:soyunma :: 🇹🇷 Berk Avcı
+modal:soyunma :: 🇹🇷 Davut Koçak
+modal:soyunma :: 🇹🇷 Dursun Öcal
+modal:soyunma :: 🇹🇷 Efe Baş
+modal:soyunma :: 🇹🇷 Furkan Çakır
+modal:soyunma :: 🇹🇷 Koray Sarı
+modal:soyunma :: 🇹🇷 Mert Kılınç
+modal:soyunma :: 🇹🇷 Mustafa Doğan
 modal:soyunma :: 🇹🇷 Türkçe
-modal:soyunma :: 🏛️ Ankara Boğaları from
-modal:soyunma :: 🏛️ Ankara Kartalları from
-modal:soyunma :: 🏛️ Gaziantep Şahinleri from
-modal:soyunma :: 🏛️ Sakarya Şahinleri from
-modal:soyunma :: 🏛️ İstanbul BK from
-modal:taktik :: Adana Spor — Mersin Boğaları
+modal:soyunma :: 🇹🇷 Yağız Güngör
+modal:soyunma :: 🏛️ Antalya Gençlik from
+modal:soyunma :: 🏛️ Sakarya Boğaları from
+modal:soyunma :: 🏛️ Tekirdağ Şimşekleri from
+modal:soyunma :: 🏛️ İstanbul Şahinleri from
+modal:soyunma :: 🏛️ İzmir Aslanları from
+modal:soyunma :: 🏛️ Şanlıurfa Kartalları from
+modal:soyunma :: 🤝 Çetin – Bektaş
+modal:soyunma :: 🤝 Özbek – Tatlı
 modal:taktik :: Ahmet Yıldız
-modal:taktik :: Ankara Boğaları
-modal:taktik :: Ankara Kartalları
-modal:taktik :: Bursa Şahinleri
-modal:taktik :: Diyarbakır Basket
-modal:taktik :: Eskişehir Panterleri
-modal:taktik :: Eskişehir Spor
-modal:taktik :: Gaziantep Şahinleri
-modal:taktik :: Kocaeli Kartalları
-modal:taktik :: Kocaeli Kartalları — Eskişehir Panterleri
-modal:taktik :: Mersin Boğaları
-modal:taktik :: Sakarya Kurtları
-modal:taktik :: Sakarya Şahinleri
-modal:taktik :: İstanbul BK
-modal:taktik :: 🇵🇹 Gonçalo Brito
-modal:taktik :: 🇹🇷 Türkiye
+modal:taktik :: Ali Özbek
+modal:taktik :: Ali Özbek (PG) — Overall: 71
+modal:taktik :: Ali Özbek (PG) → SG
+modal:taktik :: Ali Özbek (PG·OVR 71)
+modal:taktik :: Antalya Gençlik
+modal:taktik :: Bursa Gençlik
+modal:taktik :: Denizli Boğaları
+modal:taktik :: Denizli Boğaları — Bursa Gençlik
+modal:taktik :: Diyarbakır Gençlik
+modal:taktik :: Diyarbakır Kurtları
+modal:taktik :: Enes Çetin
+modal:taktik :: Enes Çetin (C) — Overall: 68
+modal:taktik :: Enes Çetin (C) → PF
+modal:taktik :: Enes Çetin (C·OVR 68)
+modal:taktik :: Fikret Çetin
+modal:taktik :: Fikret Çetin (SF) — Overall: 68
+modal:taktik :: Fikret Çetin (SF) → PF
+modal:taktik :: Fikret Çetin (SF) → SG
+modal:taktik :: Fikret Çetin (SF·OVR 68)
+modal:taktik :: Gökhan Yener
+modal:taktik :: Gökhan Yener (C) — Overall: 71
+modal:taktik :: Gökhan Yener (C) → PF
+modal:taktik :: Gökhan Yener (C·OVR 71)
+modal:taktik :: Hüsnü Erdem
+modal:taktik :: Hüsnü Erdem (PF) — Overall: 72
+modal:taktik :: Hüsnü Erdem (PF) → C
+modal:taktik :: Hüsnü Erdem (PF) → SF
+modal:taktik :: Hüsnü Erdem (PF·OVR 72)
+modal:taktik :: Manisa Aslanları
+modal:taktik :: Muhammet Tatlı
+modal:taktik :: Muhammet Tatlı (PF) — Overall: 69
+modal:taktik :: Muhammet Tatlı (PF) → C
+modal:taktik :: Muhammet Tatlı (PF) → SF
+modal:taktik :: Muhammet Tatlı (PF·OVR 69)
+modal:taktik :: Oğuzhan Avcı
+modal:taktik :: Oğuzhan Avcı (SF) — Overall: 72
+modal:taktik :: Oğuzhan Avcı (SF) → PF
+modal:taktik :: Oğuzhan Avcı (SF) → SG
+modal:taktik :: Oğuzhan Avcı (SF·OVR 72)
+modal:taktik :: Sakarya Boğaları
+modal:taktik :: Sakarya Boğaları — Tekirdağ Şimşekleri
+modal:taktik :: Tekirdağ Basket
+modal:taktik :: Tekirdağ Şimşekleri
+modal:taktik :: Tolga Yalın
+modal:taktik :: Tolga Yalın (SF) — Overall: 72
+modal:taktik :: Tolga Yalın (SF) → PF
+modal:taktik :: Tolga Yalın (SF) → SG
+modal:taktik :: Tolga Yalın (SF·OVR 72)
+modal:taktik :: Vedat Bektaş
+modal:taktik :: Vedat Bektaş (C) — Overall: 68
+modal:taktik :: Vedat Bektaş (C) → PF
+modal:taktik :: Vedat Bektaş (C·OVR 68)
+modal:taktik :: Özgür Turgut
+modal:taktik :: Özgür Turgut (C) — Overall: 71
+modal:taktik :: Özgür Turgut (C) → PF
+modal:taktik :: Özgür Turgut (C·OVR 71)
+modal:taktik :: İlhan Hakyemez
+modal:taktik :: İlhan Hakyemez (PG) — Overall: 69
+modal:taktik :: İlhan Hakyemez (PG) → SG
+modal:taktik :: İlhan Hakyemez (PG·OVR 69)
+modal:taktik :: İlker Karaca
+modal:taktik :: İlker Karaca (PF) — Overall: 72
+modal:taktik :: İlker Karaca (PF) → C
+modal:taktik :: İlker Karaca (PF) → SF
+modal:taktik :: İlker Karaca (PF·OVR 72)
+modal:taktik :: İstanbul Aslanları
+modal:taktik :: İstanbul Aslanları — Adana Panterleri
+modal:taktik :: İstanbul Şahinleri
+modal:taktik :: İzmir Aslanları
+modal:taktik :: Şanlıurfa Kartalları
+modal:taktik :: 🇩🇪 Benjamin König
+modal:taktik :: 🇹🇷 Alparslan Sevinç
+modal:taktik :: 🇹🇷 Berk Avcı
+modal:taktik :: 🇹🇷 Davut Koçak
+modal:taktik :: 🇹🇷 Dursun Öcal
+modal:taktik :: 🇹🇷 Efe Baş
+modal:taktik :: 🇹🇷 Furkan Çakır
+modal:taktik :: 🇹🇷 Koray Sarı
+modal:taktik :: 🇹🇷 Mert Kılınç
+modal:taktik :: 🇹🇷 Mustafa Doğan
 modal:taktik :: 🇹🇷 Türkçe
-modal:taktik :: 🎯 Tactics — vs Mersin Boğaları
-modal:taktik :: 🏛️ Ankara Boğaları from
-modal:taktik :: 🏛️ Ankara Kartalları from
-modal:taktik :: 🏛️ Gaziantep Şahinleri from
-modal:taktik :: 🏛️ Sakarya Şahinleri from
-modal:taktik :: 🏛️ İstanbul BK from
-sayfa:altyapi :: Adana Spor — Mersin Boğaları
-sayfa:altyapi :: Ankara Boğaları
-sayfa:altyapi :: Ankara Kartalları
-sayfa:altyapi :: Bursa Şahinleri
-sayfa:altyapi :: Diyarbakır Basket
-sayfa:altyapi :: Eskişehir Panterleri
-sayfa:altyapi :: Eskişehir Spor
-sayfa:altyapi :: Gaziantep Şahinleri
-sayfa:altyapi :: Kocaeli Kartalları
-sayfa:altyapi :: Kocaeli Kartalları — Eskişehir Panterleri
-sayfa:altyapi :: Mersin Boğaları
-sayfa:altyapi :: Sakarya Kurtları
-sayfa:altyapi :: Sakarya Şahinleri
-sayfa:altyapi :: İstanbul BK
-sayfa:altyapi :: 🇵🇹 Gonçalo Brito
-sayfa:altyapi :: 🇹🇷 Türkiye
+modal:taktik :: 🇹🇷 Yağız Güngör
+modal:taktik :: 🎯 Tactics — vs Şanlıurfa Kartalları
+modal:taktik :: 🏛️ Antalya Gençlik from
+modal:taktik :: 🏛️ Sakarya Boğaları from
+modal:taktik :: 🏛️ Tekirdağ Şimşekleri from
+modal:taktik :: 🏛️ İstanbul Şahinleri from
+modal:taktik :: 🏛️ İzmir Aslanları from
+modal:taktik :: 🏛️ Şanlıurfa Kartalları from
+modal:taktik :: 🤝 Çetin – Bektaş
+modal:taktik :: 🤝 Özbek – Tatlı
+sayfa:altyapi :: Ali Özbek
+sayfa:altyapi :: Antalya Gençlik
+sayfa:altyapi :: Bursa Gençlik
+sayfa:altyapi :: Denizli Boğaları
+sayfa:altyapi :: Denizli Boğaları — Bursa Gençlik
+sayfa:altyapi :: Diyarbakır Gençlik
+sayfa:altyapi :: Diyarbakır Kurtları
+sayfa:altyapi :: Enes Çetin
+sayfa:altyapi :: Fikret Çetin
+sayfa:altyapi :: Gökhan Yener
+sayfa:altyapi :: Hüsnü Erdem
+sayfa:altyapi :: Manisa Aslanları
+sayfa:altyapi :: Muhammet Tatlı
+sayfa:altyapi :: Oğuzhan Avcı
+sayfa:altyapi :: Sakarya Boğaları
+sayfa:altyapi :: Sakarya Boğaları — Tekirdağ Şimşekleri
+sayfa:altyapi :: Tekirdağ Basket
+sayfa:altyapi :: Tekirdağ Şimşekleri
+sayfa:altyapi :: Tolga Yalın
+sayfa:altyapi :: Vedat Bektaş
+sayfa:altyapi :: Özgür Turgut
+sayfa:altyapi :: İlhan Hakyemez
+sayfa:altyapi :: İlker Karaca
+sayfa:altyapi :: İstanbul Aslanları
+sayfa:altyapi :: İstanbul Aslanları — Adana Panterleri
+sayfa:altyapi :: İstanbul Şahinleri
+sayfa:altyapi :: İzmir Aslanları
+sayfa:altyapi :: Şanlıurfa Kartalları
+sayfa:altyapi :: 🇩🇪 Benjamin König
+sayfa:altyapi :: 🇹🇷 Alparslan Sevinç
+sayfa:altyapi :: 🇹🇷 Berk Avcı
+sayfa:altyapi :: 🇹🇷 Davut Koçak
+sayfa:altyapi :: 🇹🇷 Dursun Öcal
+sayfa:altyapi :: 🇹🇷 Efe Baş
+sayfa:altyapi :: 🇹🇷 Furkan Çakır
+sayfa:altyapi :: 🇹🇷 Koray Sarı
+sayfa:altyapi :: 🇹🇷 Mert Kılınç
+sayfa:altyapi :: 🇹🇷 Mustafa Doğan
 sayfa:altyapi :: 🇹🇷 Türkçe
-sayfa:altyapi :: 🏛️ Ankara Boğaları from
-sayfa:altyapi :: 🏛️ Ankara Kartalları from
-sayfa:altyapi :: 🏛️ Gaziantep Şahinleri from
-sayfa:altyapi :: 🏛️ Sakarya Şahinleri from
-sayfa:altyapi :: 🏛️ İstanbul BK from
-sayfa:analiz :: Adana Spor — Mersin Boğaları
+sayfa:altyapi :: 🇹🇷 Yağız Güngör
+sayfa:altyapi :: 🏛️ Antalya Gençlik from
+sayfa:altyapi :: 🏛️ Sakarya Boğaları from
+sayfa:altyapi :: 🏛️ Tekirdağ Şimşekleri from
+sayfa:altyapi :: 🏛️ İstanbul Şahinleri from
+sayfa:altyapi :: 🏛️ İzmir Aslanları from
+sayfa:altyapi :: 🏛️ Şanlıurfa Kartalları from
+sayfa:altyapi :: 🤝 Çetin – Bektaş
+sayfa:altyapi :: 🤝 Özbek – Tatlı
 sayfa:analiz :: Ahmet Yıldız
-sayfa:analiz :: Ankara Boğaları
-sayfa:analiz :: Ankara Kartalları
-sayfa:analiz :: Bursa Şahinleri
-sayfa:analiz :: Diyarbakır Basket
-sayfa:analiz :: Eskişehir Panterleri
-sayfa:analiz :: Eskişehir Spor
-sayfa:analiz :: Gaziantep Şahinleri
-sayfa:analiz :: Kocaeli Kartalları
-sayfa:analiz :: Kocaeli Kartalları — Eskişehir Panterleri
-sayfa:analiz :: Mersin Boğaları
-sayfa:analiz :: Sakarya Kurtları
-sayfa:analiz :: Sakarya Şahinleri
-sayfa:analiz :: İstanbul BK
-sayfa:analiz :: 🇵🇹 Gonçalo Brito
-sayfa:analiz :: 🇹🇷 Türkiye
+sayfa:analiz :: Ali Özbek
+sayfa:analiz :: Ali Özbek (PG) — Overall: 71
+sayfa:analiz :: Ali Özbek (PG) → SG
+sayfa:analiz :: Ali Özbek (PG·OVR 71)
+sayfa:analiz :: Antalya Gençlik
+sayfa:analiz :: Bursa Gençlik
+sayfa:analiz :: Denizli Boğaları
+sayfa:analiz :: Denizli Boğaları — Bursa Gençlik
+sayfa:analiz :: Diyarbakır Gençlik
+sayfa:analiz :: Diyarbakır Kurtları
+sayfa:analiz :: Enes Çetin
+sayfa:analiz :: Enes Çetin (C) — Overall: 68
+sayfa:analiz :: Enes Çetin (C) → PF
+sayfa:analiz :: Enes Çetin (C·OVR 68)
+sayfa:analiz :: Fikret Çetin
+sayfa:analiz :: Fikret Çetin (SF) — Overall: 68
+sayfa:analiz :: Fikret Çetin (SF) → PF
+sayfa:analiz :: Fikret Çetin (SF) → SG
+sayfa:analiz :: Fikret Çetin (SF·OVR 68)
+sayfa:analiz :: Gökhan Yener
+sayfa:analiz :: Gökhan Yener (C) — Overall: 71
+sayfa:analiz :: Gökhan Yener (C) → PF
+sayfa:analiz :: Gökhan Yener (C·OVR 71)
+sayfa:analiz :: Hüsnü Erdem
+sayfa:analiz :: Hüsnü Erdem (PF) — Overall: 72
+sayfa:analiz :: Hüsnü Erdem (PF) → C
+sayfa:analiz :: Hüsnü Erdem (PF) → SF
+sayfa:analiz :: Hüsnü Erdem (PF·OVR 72)
+sayfa:analiz :: Manisa Aslanları
+sayfa:analiz :: Muhammet Tatlı
+sayfa:analiz :: Muhammet Tatlı (PF) — Overall: 69
+sayfa:analiz :: Muhammet Tatlı (PF) → C
+sayfa:analiz :: Muhammet Tatlı (PF) → SF
+sayfa:analiz :: Muhammet Tatlı (PF·OVR 69)
+sayfa:analiz :: Oğuzhan Avcı
+sayfa:analiz :: Oğuzhan Avcı (SF) — Overall: 72
+sayfa:analiz :: Oğuzhan Avcı (SF) → PF
+sayfa:analiz :: Oğuzhan Avcı (SF) → SG
+sayfa:analiz :: Oğuzhan Avcı (SF·OVR 72)
+sayfa:analiz :: Sakarya Boğaları
+sayfa:analiz :: Sakarya Boğaları — Tekirdağ Şimşekleri
+sayfa:analiz :: Tekirdağ Basket
+sayfa:analiz :: Tekirdağ Şimşekleri
+sayfa:analiz :: Tolga Yalın
+sayfa:analiz :: Tolga Yalın (SF) — Overall: 72
+sayfa:analiz :: Tolga Yalın (SF) → PF
+sayfa:analiz :: Tolga Yalın (SF) → SG
+sayfa:analiz :: Tolga Yalın (SF·OVR 72)
+sayfa:analiz :: Vedat Bektaş
+sayfa:analiz :: Vedat Bektaş (C) — Overall: 68
+sayfa:analiz :: Vedat Bektaş (C) → PF
+sayfa:analiz :: Vedat Bektaş (C·OVR 68)
+sayfa:analiz :: Özgür Turgut
+sayfa:analiz :: Özgür Turgut (C) — Overall: 71
+sayfa:analiz :: Özgür Turgut (C) → PF
+sayfa:analiz :: Özgür Turgut (C·OVR 71)
+sayfa:analiz :: İlhan Hakyemez
+sayfa:analiz :: İlhan Hakyemez (PG) — Overall: 69
+sayfa:analiz :: İlhan Hakyemez (PG) → SG
+sayfa:analiz :: İlhan Hakyemez (PG·OVR 69)
+sayfa:analiz :: İlker Karaca
+sayfa:analiz :: İlker Karaca (PF) — Overall: 72
+sayfa:analiz :: İlker Karaca (PF) → C
+sayfa:analiz :: İlker Karaca (PF) → SF
+sayfa:analiz :: İlker Karaca (PF·OVR 72)
+sayfa:analiz :: İstanbul Aslanları
+sayfa:analiz :: İstanbul Aslanları — Adana Panterleri
+sayfa:analiz :: İstanbul Şahinleri
+sayfa:analiz :: İzmir Aslanları
+sayfa:analiz :: Şanlıurfa Kartalları
+sayfa:analiz :: 🇩🇪 Benjamin König
+sayfa:analiz :: 🇹🇷 Alparslan Sevinç
+sayfa:analiz :: 🇹🇷 Berk Avcı
+sayfa:analiz :: 🇹🇷 Davut Koçak
+sayfa:analiz :: 🇹🇷 Dursun Öcal
+sayfa:analiz :: 🇹🇷 Efe Baş
+sayfa:analiz :: 🇹🇷 Furkan Çakır
+sayfa:analiz :: 🇹🇷 Koray Sarı
+sayfa:analiz :: 🇹🇷 Mert Kılınç
+sayfa:analiz :: 🇹🇷 Mustafa Doğan
 sayfa:analiz :: 🇹🇷 Türkçe
-sayfa:analiz :: 🏛️ Ankara Boğaları from
-sayfa:analiz :: 🏛️ Ankara Kartalları from
-sayfa:analiz :: 🏛️ Gaziantep Şahinleri from
-sayfa:analiz :: 🏛️ Sakarya Şahinleri from
-sayfa:analiz :: 🏛️ İstanbul BK from
-sayfa:antrenman :: Adana Spor — Mersin Boğaları
+sayfa:analiz :: 🇹🇷 Yağız Güngör
+sayfa:analiz :: 🏛️ Antalya Gençlik from
+sayfa:analiz :: 🏛️ Sakarya Boğaları from
+sayfa:analiz :: 🏛️ Tekirdağ Şimşekleri from
+sayfa:analiz :: 🏛️ İstanbul Şahinleri from
+sayfa:analiz :: 🏛️ İzmir Aslanları from
+sayfa:analiz :: 🏛️ Şanlıurfa Kartalları from
+sayfa:analiz :: 🤝 Çetin – Bektaş
+sayfa:analiz :: 🤝 Özbek – Tatlı
 sayfa:antrenman :: Ahmet Yıldız
-sayfa:antrenman :: Ankara Boğaları
-sayfa:antrenman :: Ankara Kartalları
-sayfa:antrenman :: Bursa Şahinleri
-sayfa:antrenman :: Diyarbakır Basket
-sayfa:antrenman :: Eskişehir Panterleri
-sayfa:antrenman :: Eskişehir Spor
-sayfa:antrenman :: Gaziantep Şahinleri
-sayfa:antrenman :: Kocaeli Kartalları
-sayfa:antrenman :: Kocaeli Kartalları — Eskişehir Panterleri
-sayfa:antrenman :: Mersin Boğaları
-sayfa:antrenman :: Sakarya Kurtları
-sayfa:antrenman :: Sakarya Şahinleri
-sayfa:antrenman :: İstanbul BK
-sayfa:antrenman :: 🇵🇹 Gonçalo Brito
-sayfa:antrenman :: 🇹🇷 Türkiye
+sayfa:antrenman :: Ali Özbek
+sayfa:antrenman :: Ali Özbek (PG) — Overall: 71
+sayfa:antrenman :: Ali Özbek (PG) → SG
+sayfa:antrenman :: Antalya Gençlik
+sayfa:antrenman :: Bursa Gençlik
+sayfa:antrenman :: Denizli Boğaları
+sayfa:antrenman :: Denizli Boğaları — Bursa Gençlik
+sayfa:antrenman :: Diyarbakır Gençlik
+sayfa:antrenman :: Diyarbakır Kurtları
+sayfa:antrenman :: Enes Çetin
+sayfa:antrenman :: Enes Çetin (C) — Overall: 68
+sayfa:antrenman :: Enes Çetin (C) → PF
+sayfa:antrenman :: Fikret Çetin
+sayfa:antrenman :: Fikret Çetin (SF) — Overall: 68
+sayfa:antrenman :: Fikret Çetin (SF) → PF
+sayfa:antrenman :: Fikret Çetin (SF) → SG
+sayfa:antrenman :: Gökhan Yener
+sayfa:antrenman :: Gökhan Yener (C) — Overall: 71
+sayfa:antrenman :: Gökhan Yener (C) → PF
+sayfa:antrenman :: Hüsnü Erdem
+sayfa:antrenman :: Hüsnü Erdem (PF) — Overall: 72
+sayfa:antrenman :: Hüsnü Erdem (PF) → C
+sayfa:antrenman :: Hüsnü Erdem (PF) → SF
+sayfa:antrenman :: Manisa Aslanları
+sayfa:antrenman :: Muhammet Tatlı
+sayfa:antrenman :: Muhammet Tatlı (PF) — Overall: 69
+sayfa:antrenman :: Muhammet Tatlı (PF) → C
+sayfa:antrenman :: Muhammet Tatlı (PF) → SF
+sayfa:antrenman :: Oğuzhan Avcı
+sayfa:antrenman :: Oğuzhan Avcı (SF) — Overall: 72
+sayfa:antrenman :: Oğuzhan Avcı (SF) → PF
+sayfa:antrenman :: Oğuzhan Avcı (SF) → SG
+sayfa:antrenman :: Sakarya Boğaları
+sayfa:antrenman :: Sakarya Boğaları — Tekirdağ Şimşekleri
+sayfa:antrenman :: Tekirdağ Basket
+sayfa:antrenman :: Tekirdağ Şimşekleri
+sayfa:antrenman :: Tolga Yalın
+sayfa:antrenman :: Tolga Yalın (SF) — Overall: 72
+sayfa:antrenman :: Tolga Yalın (SF) → PF
+sayfa:antrenman :: Tolga Yalın (SF) → SG
+sayfa:antrenman :: Vedat Bektaş
+sayfa:antrenman :: Vedat Bektaş (C) — Overall: 68
+sayfa:antrenman :: Vedat Bektaş (C) → PF
+sayfa:antrenman :: Özgür Turgut
+sayfa:antrenman :: Özgür Turgut (C) — Overall: 71
+sayfa:antrenman :: Özgür Turgut (C) → PF
+sayfa:antrenman :: İlhan Hakyemez
+sayfa:antrenman :: İlhan Hakyemez (PG) — Overall: 69
+sayfa:antrenman :: İlhan Hakyemez (PG) → SG
+sayfa:antrenman :: İlker Karaca
+sayfa:antrenman :: İlker Karaca (PF) — Overall: 72
+sayfa:antrenman :: İlker Karaca (PF) → C
+sayfa:antrenman :: İlker Karaca (PF) → SF
+sayfa:antrenman :: İstanbul Aslanları
+sayfa:antrenman :: İstanbul Aslanları — Adana Panterleri
+sayfa:antrenman :: İstanbul Şahinleri
+sayfa:antrenman :: İzmir Aslanları
+sayfa:antrenman :: Şanlıurfa Kartalları
+sayfa:antrenman :: 🇩🇪 Benjamin König
+sayfa:antrenman :: 🇹🇷 Alparslan Sevinç
+sayfa:antrenman :: 🇹🇷 Berk Avcı
+sayfa:antrenman :: 🇹🇷 Davut Koçak
+sayfa:antrenman :: 🇹🇷 Dursun Öcal
+sayfa:antrenman :: 🇹🇷 Efe Baş
+sayfa:antrenman :: 🇹🇷 Furkan Çakır
+sayfa:antrenman :: 🇹🇷 Koray Sarı
+sayfa:antrenman :: 🇹🇷 Mert Kılınç
+sayfa:antrenman :: 🇹🇷 Mustafa Doğan
 sayfa:antrenman :: 🇹🇷 Türkçe
-sayfa:antrenman :: 🏛️ Ankara Boğaları from
-sayfa:antrenman :: 🏛️ Ankara Kartalları from
-sayfa:antrenman :: 🏛️ Gaziantep Şahinleri from
-sayfa:antrenman :: 🏛️ Sakarya Şahinleri from
-sayfa:antrenman :: 🏛️ İstanbul BK from
-sayfa:arena :: Adana Spor — Mersin Boğaları
+sayfa:antrenman :: 🇹🇷 Yağız Güngör
+sayfa:antrenman :: 🏛️ Antalya Gençlik from
+sayfa:antrenman :: 🏛️ Sakarya Boğaları from
+sayfa:antrenman :: 🏛️ Tekirdağ Şimşekleri from
+sayfa:antrenman :: 🏛️ İstanbul Şahinleri from
+sayfa:antrenman :: 🏛️ İzmir Aslanları from
+sayfa:antrenman :: 🏛️ Şanlıurfa Kartalları from
+sayfa:antrenman :: 🤝 Çetin – Bektaş
+sayfa:antrenman :: 🤝 Özbek – Tatlı
 sayfa:arena :: Ahmet Yıldız
-sayfa:arena :: Ankara Boğaları
-sayfa:arena :: Ankara Kartalları
-sayfa:arena :: Bursa Şahinleri
-sayfa:arena :: Diyarbakır Basket
-sayfa:arena :: Eskişehir Panterleri
-sayfa:arena :: Eskişehir Spor
-sayfa:arena :: Gaziantep Şahinleri
-sayfa:arena :: Kocaeli Kartalları
-sayfa:arena :: Kocaeli Kartalları — Eskişehir Panterleri
-sayfa:arena :: Mersin Boğaları
-sayfa:arena :: Sakarya Kurtları
-sayfa:arena :: Sakarya Şahinleri
-sayfa:arena :: İstanbul BK
-sayfa:arena :: 🇵🇹 Gonçalo Brito
-sayfa:arena :: 🇹🇷 Türkiye
+sayfa:arena :: Ali Özbek
+sayfa:arena :: Ali Özbek (PG) — Overall: 71
+sayfa:arena :: Ali Özbek (PG) → SG
+sayfa:arena :: Antalya Gençlik
+sayfa:arena :: Bursa Gençlik
+sayfa:arena :: Denizli Boğaları
+sayfa:arena :: Denizli Boğaları — Bursa Gençlik
+sayfa:arena :: Diyarbakır Gençlik
+sayfa:arena :: Diyarbakır Kurtları
+sayfa:arena :: Enes Çetin
+sayfa:arena :: Enes Çetin (C) — Overall: 68
+sayfa:arena :: Enes Çetin (C) → PF
+sayfa:arena :: Fikret Çetin
+sayfa:arena :: Fikret Çetin (SF) — Overall: 68
+sayfa:arena :: Fikret Çetin (SF) → PF
+sayfa:arena :: Fikret Çetin (SF) → SG
+sayfa:arena :: Gökhan Yener
+sayfa:arena :: Gökhan Yener (C) — Overall: 71
+sayfa:arena :: Gökhan Yener (C) → PF
+sayfa:arena :: Hüsnü Erdem
+sayfa:arena :: Hüsnü Erdem (PF) — Overall: 72
+sayfa:arena :: Hüsnü Erdem (PF) → C
+sayfa:arena :: Hüsnü Erdem (PF) → SF
+sayfa:arena :: Manisa Aslanları
+sayfa:arena :: Muhammet Tatlı
+sayfa:arena :: Muhammet Tatlı (PF) — Overall: 69
+sayfa:arena :: Muhammet Tatlı (PF) → C
+sayfa:arena :: Muhammet Tatlı (PF) → SF
+sayfa:arena :: Oğuzhan Avcı
+sayfa:arena :: Oğuzhan Avcı (SF) — Overall: 72
+sayfa:arena :: Oğuzhan Avcı (SF) → PF
+sayfa:arena :: Oğuzhan Avcı (SF) → SG
+sayfa:arena :: Sakarya Boğaları
+sayfa:arena :: Sakarya Boğaları — Tekirdağ Şimşekleri
+sayfa:arena :: Tekirdağ Basket
+sayfa:arena :: Tekirdağ Şimşekleri
+sayfa:arena :: Tolga Yalın
+sayfa:arena :: Tolga Yalın (SF) — Overall: 72
+sayfa:arena :: Tolga Yalın (SF) → PF
+sayfa:arena :: Tolga Yalın (SF) → SG
+sayfa:arena :: Vedat Bektaş
+sayfa:arena :: Vedat Bektaş (C) — Overall: 68
+sayfa:arena :: Vedat Bektaş (C) → PF
+sayfa:arena :: Özgür Turgut
+sayfa:arena :: Özgür Turgut (C) — Overall: 71
+sayfa:arena :: Özgür Turgut (C) → PF
+sayfa:arena :: İlhan Hakyemez
+sayfa:arena :: İlhan Hakyemez (PG) — Overall: 69
+sayfa:arena :: İlhan Hakyemez (PG) → SG
+sayfa:arena :: İlker Karaca
+sayfa:arena :: İlker Karaca (PF) — Overall: 72
+sayfa:arena :: İlker Karaca (PF) → C
+sayfa:arena :: İlker Karaca (PF) → SF
+sayfa:arena :: İstanbul Aslanları
+sayfa:arena :: İstanbul Aslanları — Adana Panterleri
+sayfa:arena :: İstanbul Şahinleri
+sayfa:arena :: İzmir Aslanları
+sayfa:arena :: Şanlıurfa Kartalları
+sayfa:arena :: 🇩🇪 Benjamin König
+sayfa:arena :: 🇹🇷 Alparslan Sevinç
+sayfa:arena :: 🇹🇷 Berk Avcı
+sayfa:arena :: 🇹🇷 Davut Koçak
+sayfa:arena :: 🇹🇷 Dursun Öcal
+sayfa:arena :: 🇹🇷 Efe Baş
+sayfa:arena :: 🇹🇷 Furkan Çakır
+sayfa:arena :: 🇹🇷 Koray Sarı
+sayfa:arena :: 🇹🇷 Mert Kılınç
+sayfa:arena :: 🇹🇷 Mustafa Doğan
 sayfa:arena :: 🇹🇷 Türkçe
-sayfa:arena :: 🏛️ Ankara Boğaları from
-sayfa:arena :: 🏛️ Ankara Kartalları from
-sayfa:arena :: 🏛️ Gaziantep Şahinleri from
-sayfa:arena :: 🏛️ Sakarya Şahinleri from
-sayfa:arena :: 🏛️ İstanbul BK from
-sayfa:bilanco :: Adana Spor — Mersin Boğaları
+sayfa:arena :: 🇹🇷 Yağız Güngör
+sayfa:arena :: 🏛️ Antalya Gençlik from
+sayfa:arena :: 🏛️ Sakarya Boğaları from
+sayfa:arena :: 🏛️ Tekirdağ Şimşekleri from
+sayfa:arena :: 🏛️ İstanbul Şahinleri from
+sayfa:arena :: 🏛️ İzmir Aslanları from
+sayfa:arena :: 🏛️ Şanlıurfa Kartalları from
+sayfa:arena :: 🤝 Çetin – Bektaş
+sayfa:arena :: 🤝 Özbek – Tatlı
 sayfa:bilanco :: Ahmet Yıldız
-sayfa:bilanco :: Ankara Boğaları
-sayfa:bilanco :: Ankara Kartalları
-sayfa:bilanco :: Bursa Şahinleri
-sayfa:bilanco :: Diyarbakır Basket
-sayfa:bilanco :: Eskişehir Panterleri
-sayfa:bilanco :: Eskişehir Spor
-sayfa:bilanco :: Gaziantep Şahinleri
-sayfa:bilanco :: Kocaeli Kartalları
-sayfa:bilanco :: Kocaeli Kartalları — Eskişehir Panterleri
-sayfa:bilanco :: Mersin Boğaları
-sayfa:bilanco :: Sakarya Kurtları
-sayfa:bilanco :: Sakarya Şahinleri
-sayfa:bilanco :: İstanbul BK
-sayfa:bilanco :: 🇵🇹 Gonçalo Brito
-sayfa:bilanco :: 🇹🇷 Türkiye
+sayfa:bilanco :: Ali Özbek
+sayfa:bilanco :: Ali Özbek (PG) — Overall: 71
+sayfa:bilanco :: Ali Özbek (PG) → SG
+sayfa:bilanco :: Antalya Gençlik
+sayfa:bilanco :: Bursa Gençlik
+sayfa:bilanco :: Denizli Boğaları
+sayfa:bilanco :: Denizli Boğaları — Bursa Gençlik
+sayfa:bilanco :: Diyarbakır Gençlik
+sayfa:bilanco :: Diyarbakır Kurtları
+sayfa:bilanco :: Enes Çetin
+sayfa:bilanco :: Enes Çetin (C) — Overall: 68
+sayfa:bilanco :: Enes Çetin (C) → PF
+sayfa:bilanco :: Fikret Çetin
+sayfa:bilanco :: Fikret Çetin (SF) — Overall: 68
+sayfa:bilanco :: Fikret Çetin (SF) → PF
+sayfa:bilanco :: Fikret Çetin (SF) → SG
+sayfa:bilanco :: Gökhan Yener
+sayfa:bilanco :: Gökhan Yener (C) — Overall: 71
+sayfa:bilanco :: Gökhan Yener (C) → PF
+sayfa:bilanco :: Hüsnü Erdem
+sayfa:bilanco :: Hüsnü Erdem (PF) — Overall: 72
+sayfa:bilanco :: Hüsnü Erdem (PF) → C
+sayfa:bilanco :: Hüsnü Erdem (PF) → SF
+sayfa:bilanco :: Manisa Aslanları
+sayfa:bilanco :: Muhammet Tatlı
+sayfa:bilanco :: Muhammet Tatlı (PF) — Overall: 69
+sayfa:bilanco :: Muhammet Tatlı (PF) → C
+sayfa:bilanco :: Muhammet Tatlı (PF) → SF
+sayfa:bilanco :: Oğuzhan Avcı
+sayfa:bilanco :: Oğuzhan Avcı (SF) — Overall: 72
+sayfa:bilanco :: Oğuzhan Avcı (SF) → PF
+sayfa:bilanco :: Oğuzhan Avcı (SF) → SG
+sayfa:bilanco :: Sakarya Boğaları
+sayfa:bilanco :: Sakarya Boğaları — Tekirdağ Şimşekleri
+sayfa:bilanco :: Tekirdağ Basket
+sayfa:bilanco :: Tekirdağ Şimşekleri
+sayfa:bilanco :: Tolga Yalın
+sayfa:bilanco :: Tolga Yalın (SF) — Overall: 72
+sayfa:bilanco :: Tolga Yalın (SF) → PF
+sayfa:bilanco :: Tolga Yalın (SF) → SG
+sayfa:bilanco :: Vedat Bektaş
+sayfa:bilanco :: Vedat Bektaş (C) — Overall: 68
+sayfa:bilanco :: Vedat Bektaş (C) → PF
+sayfa:bilanco :: Özgür Turgut
+sayfa:bilanco :: Özgür Turgut (C) — Overall: 71
+sayfa:bilanco :: Özgür Turgut (C) → PF
+sayfa:bilanco :: İlhan Hakyemez
+sayfa:bilanco :: İlhan Hakyemez (PG) — Overall: 69
+sayfa:bilanco :: İlhan Hakyemez (PG) → SG
+sayfa:bilanco :: İlker Karaca
+sayfa:bilanco :: İlker Karaca (PF) — Overall: 72
+sayfa:bilanco :: İlker Karaca (PF) → C
+sayfa:bilanco :: İlker Karaca (PF) → SF
+sayfa:bilanco :: İstanbul Aslanları
+sayfa:bilanco :: İstanbul Aslanları — Adana Panterleri
+sayfa:bilanco :: İstanbul Şahinleri
+sayfa:bilanco :: İzmir Aslanları
+sayfa:bilanco :: Şanlıurfa Kartalları
+sayfa:bilanco :: 🇩🇪 Benjamin König
+sayfa:bilanco :: 🇹🇷 Alparslan Sevinç
+sayfa:bilanco :: 🇹🇷 Berk Avcı
+sayfa:bilanco :: 🇹🇷 Davut Koçak
+sayfa:bilanco :: 🇹🇷 Dursun Öcal
+sayfa:bilanco :: 🇹🇷 Efe Baş
+sayfa:bilanco :: 🇹🇷 Furkan Çakır
+sayfa:bilanco :: 🇹🇷 Koray Sarı
+sayfa:bilanco :: 🇹🇷 Mert Kılınç
+sayfa:bilanco :: 🇹🇷 Mustafa Doğan
 sayfa:bilanco :: 🇹🇷 Türkçe
-sayfa:bilanco :: 🏛️ Ankara Boğaları from
-sayfa:bilanco :: 🏛️ Ankara Kartalları from
-sayfa:bilanco :: 🏛️ Gaziantep Şahinleri from
-sayfa:bilanco :: 🏛️ Sakarya Şahinleri from
-sayfa:bilanco :: 🏛️ İstanbul BK from
-sayfa:dashboard :: Adana Spor — Mersin Boğaları
-sayfa:dashboard :: Ankara Boğaları
-sayfa:dashboard :: Ankara Kartalları
-sayfa:dashboard :: Bursa Şahinleri
-sayfa:dashboard :: Diyarbakır Basket
-sayfa:dashboard :: Eskişehir Panterleri
-sayfa:dashboard :: Eskişehir Spor
-sayfa:dashboard :: Gaziantep Şahinleri
-sayfa:dashboard :: Kocaeli Kartalları
-sayfa:dashboard :: Kocaeli Kartalları — Eskişehir Panterleri
-sayfa:dashboard :: Mersin Boğaları
-sayfa:dashboard :: Sakarya Kurtları
-sayfa:dashboard :: Sakarya Şahinleri
-sayfa:dashboard :: İstanbul BK
+sayfa:bilanco :: 🇹🇷 Yağız Güngör
+sayfa:bilanco :: 🏛️ Antalya Gençlik from
+sayfa:bilanco :: 🏛️ Sakarya Boğaları from
+sayfa:bilanco :: 🏛️ Tekirdağ Şimşekleri from
+sayfa:bilanco :: 🏛️ İstanbul Şahinleri from
+sayfa:bilanco :: 🏛️ İzmir Aslanları from
+sayfa:bilanco :: 🏛️ Şanlıurfa Kartalları from
+sayfa:bilanco :: 🤝 Çetin – Bektaş
+sayfa:bilanco :: 🤝 Özbek – Tatlı
+sayfa:dashboard :: Ali Özbek
+sayfa:dashboard :: Antalya Gençlik
+sayfa:dashboard :: Bursa Gençlik
+sayfa:dashboard :: Denizli Boğaları
+sayfa:dashboard :: Denizli Boğaları — Bursa Gençlik
+sayfa:dashboard :: Diyarbakır Gençlik
+sayfa:dashboard :: Diyarbakır Kurtları
+sayfa:dashboard :: Enes Çetin
+sayfa:dashboard :: Fikret Çetin
+sayfa:dashboard :: Gökhan Yener
+sayfa:dashboard :: Hüsnü Erdem
+sayfa:dashboard :: Manisa Aslanları
+sayfa:dashboard :: Muhammet Tatlı
+sayfa:dashboard :: Oğuzhan Avcı
+sayfa:dashboard :: Sakarya Boğaları
+sayfa:dashboard :: Sakarya Boğaları — Tekirdağ Şimşekleri
+sayfa:dashboard :: Tekirdağ Basket
+sayfa:dashboard :: Tekirdağ Şimşekleri
+sayfa:dashboard :: Tolga Yalın
+sayfa:dashboard :: Vedat Bektaş
+sayfa:dashboard :: Özgür Turgut
+sayfa:dashboard :: İlhan Hakyemez
+sayfa:dashboard :: İlker Karaca
+sayfa:dashboard :: İstanbul Aslanları
+sayfa:dashboard :: İstanbul Aslanları — Adana Panterleri
+sayfa:dashboard :: İstanbul Şahinleri
+sayfa:dashboard :: İzmir Aslanları
+sayfa:dashboard :: Şanlıurfa Kartalları
 sayfa:dashboard :: 🇹🇷 Türkçe
-sayfa:kadro :: Adana Spor — Mersin Boğaları
-sayfa:kadro :: Ankara Boğaları
-sayfa:kadro :: Ankara Kartalları
-sayfa:kadro :: Bursa Şahinleri
-sayfa:kadro :: Diyarbakır Basket
-sayfa:kadro :: Eskişehir Panterleri
-sayfa:kadro :: Eskişehir Spor
-sayfa:kadro :: Gaziantep Şahinleri
-sayfa:kadro :: Kocaeli Kartalları
-sayfa:kadro :: Kocaeli Kartalları — Eskişehir Panterleri
-sayfa:kadro :: Mersin Boğaları
-sayfa:kadro :: Sakarya Kurtları
-sayfa:kadro :: Sakarya Şahinleri
-sayfa:kadro :: İstanbul BK
-sayfa:kadro :: 🇹🇷 Türkiye
+sayfa:dashboard :: 🤝 Çetin – Bektaş
+sayfa:dashboard :: 🤝 Özbek – Tatlı
+sayfa:kadro :: Ali Özbek
+sayfa:kadro :: Antalya Gençlik
+sayfa:kadro :: Bursa Gençlik
+sayfa:kadro :: Denizli Boğaları
+sayfa:kadro :: Denizli Boğaları — Bursa Gençlik
+sayfa:kadro :: Diyarbakır Gençlik
+sayfa:kadro :: Diyarbakır Kurtları
+sayfa:kadro :: Enes Çetin
+sayfa:kadro :: Fikret Çetin
+sayfa:kadro :: Gökhan Yener
+sayfa:kadro :: Hüsnü Erdem
+sayfa:kadro :: Manisa Aslanları
+sayfa:kadro :: Muhammet Tatlı
+sayfa:kadro :: Oğuzhan Avcı
+sayfa:kadro :: Sakarya Boğaları
+sayfa:kadro :: Sakarya Boğaları — Tekirdağ Şimşekleri
+sayfa:kadro :: Tekirdağ Basket
+sayfa:kadro :: Tekirdağ Şimşekleri
+sayfa:kadro :: Tolga Yalın
+sayfa:kadro :: Vedat Bektaş
+sayfa:kadro :: Özgür Turgut
+sayfa:kadro :: İlhan Hakyemez
+sayfa:kadro :: İlker Karaca
+sayfa:kadro :: İstanbul Aslanları
+sayfa:kadro :: İstanbul Aslanları — Adana Panterleri
+sayfa:kadro :: İstanbul Şahinleri
+sayfa:kadro :: İzmir Aslanları
+sayfa:kadro :: Şanlıurfa Kartalları
 sayfa:kadro :: 🇹🇷 Türkçe
-sayfa:lig :: Adana Spor — Mersin Boğaları
-sayfa:lig :: Ankara Boğaları
-sayfa:lig :: Ankara Kartalları
-sayfa:lig :: Bursa Şahinleri
-sayfa:lig :: Diyarbakır Basket
-sayfa:lig :: Eskişehir Panterleri
-sayfa:lig :: Eskişehir Spor
-sayfa:lig :: Gaziantep Şahinleri
-sayfa:lig :: Kocaeli Kartalları
-sayfa:lig :: Kocaeli Kartalları — Eskişehir Panterleri
-sayfa:lig :: Mersin Boğaları
-sayfa:lig :: Sakarya Kurtları
-sayfa:lig :: Sakarya Şahinleri
-sayfa:lig :: İstanbul BK
-sayfa:lig :: 🇹🇷 Türkiye
+sayfa:kadro :: 🤝 Çetin – Bektaş
+sayfa:kadro :: 🤝 Özbek – Tatlı
+sayfa:lig :: Ali Özbek
+sayfa:lig :: Antalya Gençlik
+sayfa:lig :: Bursa Gençlik
+sayfa:lig :: Denizli Boğaları
+sayfa:lig :: Denizli Boğaları — Bursa Gençlik
+sayfa:lig :: Diyarbakır Gençlik
+sayfa:lig :: Diyarbakır Kurtları
+sayfa:lig :: Enes Çetin
+sayfa:lig :: Fikret Çetin
+sayfa:lig :: Gökhan Yener
+sayfa:lig :: Hüsnü Erdem
+sayfa:lig :: Manisa Aslanları
+sayfa:lig :: Muhammet Tatlı
+sayfa:lig :: Oğuzhan Avcı
+sayfa:lig :: Sakarya Boğaları
+sayfa:lig :: Sakarya Boğaları — Tekirdağ Şimşekleri
+sayfa:lig :: Tekirdağ Basket
+sayfa:lig :: Tekirdağ Şimşekleri
+sayfa:lig :: Tolga Yalın
+sayfa:lig :: Vedat Bektaş
+sayfa:lig :: Özgür Turgut
+sayfa:lig :: İlhan Hakyemez
+sayfa:lig :: İlker Karaca
+sayfa:lig :: İstanbul Aslanları
+sayfa:lig :: İstanbul Aslanları — Adana Panterleri
+sayfa:lig :: İstanbul Şahinleri
+sayfa:lig :: İzmir Aslanları
+sayfa:lig :: Şanlıurfa Kartalları
 sayfa:lig :: 🇹🇷 Türkçe
-sayfa:mac :: Adana Spor — Mersin Boğaları
-sayfa:mac :: Ankara Boğaları
-sayfa:mac :: Ankara Kartalları
-sayfa:mac :: Bursa Şahinleri
-sayfa:mac :: Diyarbakır Basket
-sayfa:mac :: Eskişehir Panterleri
-sayfa:mac :: Eskişehir Spor
-sayfa:mac :: Gaziantep Şahinleri
-sayfa:mac :: Kocaeli Kartalları
-sayfa:mac :: Kocaeli Kartalları — Eskişehir Panterleri
-sayfa:mac :: Mersin Boğaları
-sayfa:mac :: Sakarya Kurtları
-sayfa:mac :: Sakarya Şahinleri
-sayfa:mac :: İstanbul BK
-sayfa:mac :: 🇹🇷 Türkiye
+sayfa:lig :: 🤝 Çetin – Bektaş
+sayfa:lig :: 🤝 Özbek – Tatlı
+sayfa:mac :: Ali Özbek
+sayfa:mac :: Antalya Gençlik
+sayfa:mac :: Bursa Gençlik
+sayfa:mac :: Denizli Boğaları
+sayfa:mac :: Denizli Boğaları — Bursa Gençlik
+sayfa:mac :: Diyarbakır Gençlik
+sayfa:mac :: Diyarbakır Kurtları
+sayfa:mac :: Enes Çetin
+sayfa:mac :: Fikret Çetin
+sayfa:mac :: Gökhan Yener
+sayfa:mac :: Hüsnü Erdem
+sayfa:mac :: Manisa Aslanları
+sayfa:mac :: Muhammet Tatlı
+sayfa:mac :: Oğuzhan Avcı
+sayfa:mac :: Sakarya Boğaları
+sayfa:mac :: Sakarya Boğaları — Tekirdağ Şimşekleri
+sayfa:mac :: Tekirdağ Basket
+sayfa:mac :: Tekirdağ Şimşekleri
+sayfa:mac :: Tolga Yalın
+sayfa:mac :: Vedat Bektaş
+sayfa:mac :: Özgür Turgut
+sayfa:mac :: İlhan Hakyemez
+sayfa:mac :: İlker Karaca
+sayfa:mac :: İstanbul Aslanları
+sayfa:mac :: İstanbul Aslanları — Adana Panterleri
+sayfa:mac :: İstanbul Şahinleri
+sayfa:mac :: İzmir Aslanları
+sayfa:mac :: Şanlıurfa Kartalları
 sayfa:mac :: 🇹🇷 Türkçe
-sayfa:market :: Adana Spor — Mersin Boğaları
-sayfa:market :: Ankara Boğaları
-sayfa:market :: Ankara Kartalları
-sayfa:market :: Bursa Şahinleri
-sayfa:market :: Diyarbakır Basket
-sayfa:market :: Eskişehir Panterleri
-sayfa:market :: Eskişehir Spor
-sayfa:market :: Gaziantep Şahinleri
-sayfa:market :: Kocaeli Kartalları
-sayfa:market :: Kocaeli Kartalları — Eskişehir Panterleri
-sayfa:market :: Mersin Boğaları
-sayfa:market :: Sakarya Kurtları
-sayfa:market :: Sakarya Şahinleri
-sayfa:market :: İstanbul BK
-sayfa:market :: 🇵🇹 Gonçalo Brito
-sayfa:market :: 🇹🇷 Türkiye
+sayfa:mac :: 🤝 Çetin – Bektaş
+sayfa:mac :: 🤝 Özbek – Tatlı
+sayfa:market :: Ali Özbek
+sayfa:market :: Antalya Gençlik
+sayfa:market :: Bursa Gençlik
+sayfa:market :: Denizli Boğaları
+sayfa:market :: Denizli Boğaları — Bursa Gençlik
+sayfa:market :: Diyarbakır Gençlik
+sayfa:market :: Diyarbakır Kurtları
+sayfa:market :: Enes Çetin
+sayfa:market :: Fikret Çetin
+sayfa:market :: Gökhan Yener
+sayfa:market :: Hüsnü Erdem
+sayfa:market :: Manisa Aslanları
+sayfa:market :: Muhammet Tatlı
+sayfa:market :: Oğuzhan Avcı
+sayfa:market :: Sakarya Boğaları
+sayfa:market :: Sakarya Boğaları — Tekirdağ Şimşekleri
+sayfa:market :: Tekirdağ Basket
+sayfa:market :: Tekirdağ Şimşekleri
+sayfa:market :: Tolga Yalın
+sayfa:market :: Vedat Bektaş
+sayfa:market :: Özgür Turgut
+sayfa:market :: İlhan Hakyemez
+sayfa:market :: İlker Karaca
+sayfa:market :: İstanbul Aslanları
+sayfa:market :: İstanbul Aslanları — Adana Panterleri
+sayfa:market :: İstanbul Şahinleri
+sayfa:market :: İzmir Aslanları
+sayfa:market :: Şanlıurfa Kartalları
+sayfa:market :: 🇩🇪 Benjamin König
+sayfa:market :: 🇹🇷 Koray Sarı
 sayfa:market :: 🇹🇷 Türkçe
-sayfa:market :: 🏛️ Ankara Boğaları from
-sayfa:market :: 🏛️ Ankara Kartalları from
-sayfa:market :: 🏛️ Gaziantep Şahinleri from
-sayfa:market :: 🏛️ Sakarya Şahinleri from
-sayfa:market :: 🏛️ İstanbul BK from
-sayfa:takim :: Adana Spor — Mersin Boğaları
-sayfa:takim :: Ankara Boğaları
-sayfa:takim :: Ankara Kartalları
-sayfa:takim :: Bursa Şahinleri
-sayfa:takim :: Diyarbakır Basket
-sayfa:takim :: Eskişehir Panterleri
-sayfa:takim :: Eskişehir Spor
-sayfa:takim :: Gaziantep Şahinleri
-sayfa:takim :: Kocaeli Kartalları
-sayfa:takim :: Kocaeli Kartalları — Eskişehir Panterleri
-sayfa:takim :: Mersin Boğaları
-sayfa:takim :: Sakarya Kurtları
-sayfa:takim :: Sakarya Şahinleri
-sayfa:takim :: İstanbul BK
-sayfa:takim :: 🇹🇷 Türkiye
+sayfa:market :: 🏛️ Antalya Gençlik from
+sayfa:market :: 🏛️ Sakarya Boğaları from
+sayfa:market :: 🏛️ Tekirdağ Şimşekleri from
+sayfa:market :: 🏛️ İstanbul Şahinleri from
+sayfa:market :: 🏛️ İzmir Aslanları from
+sayfa:market :: 🏛️ Şanlıurfa Kartalları from
+sayfa:market :: 🤝 Çetin – Bektaş
+sayfa:market :: 🤝 Özbek – Tatlı
+sayfa:takim :: Ali Özbek
+sayfa:takim :: Antalya Gençlik
+sayfa:takim :: Bursa Gençlik
+sayfa:takim :: Denizli Boğaları
+sayfa:takim :: Denizli Boğaları — Bursa Gençlik
+sayfa:takim :: Diyarbakır Gençlik
+sayfa:takim :: Diyarbakır Kurtları
+sayfa:takim :: Enes Çetin
+sayfa:takim :: Fikret Çetin
+sayfa:takim :: Gökhan Yener
+sayfa:takim :: Hüsnü Erdem
+sayfa:takim :: Manisa Aslanları
+sayfa:takim :: Muhammet Tatlı
+sayfa:takim :: Oğuzhan Avcı
+sayfa:takim :: Sakarya Boğaları
+sayfa:takim :: Sakarya Boğaları — Tekirdağ Şimşekleri
+sayfa:takim :: Tekirdağ Basket
+sayfa:takim :: Tekirdağ Şimşekleri
+sayfa:takim :: Tolga Yalın
+sayfa:takim :: Vedat Bektaş
+sayfa:takim :: Özgür Turgut
+sayfa:takim :: İlhan Hakyemez
+sayfa:takim :: İlker Karaca
+sayfa:takim :: İstanbul Aslanları
+sayfa:takim :: İstanbul Aslanları — Adana Panterleri
+sayfa:takim :: İstanbul Şahinleri
+sayfa:takim :: İzmir Aslanları
+sayfa:takim :: Şanlıurfa Kartalları
 sayfa:takim :: 🇹🇷 Türkçe
+sayfa:takim :: 🤝 Çetin – Bektaş
+sayfa:takim :: 🤝 Özbek – Tatlı
 setup :: 🇹🇷 Türkçe
-tutorial :: Adana Spor — Mersin Boğaları
-tutorial :: Ankara Boğaları
-tutorial :: Ankara Kartalları
-tutorial :: Bursa Şahinleri
-tutorial :: Diyarbakır Basket
-tutorial :: Eskişehir Panterleri
-tutorial :: Eskişehir Spor
-tutorial :: Gaziantep Şahinleri
-tutorial :: Kocaeli Kartalları
-tutorial :: Kocaeli Kartalları — Eskişehir Panterleri
-tutorial :: Mersin Boğaları
-tutorial :: Sakarya Kurtları
-tutorial :: Sakarya Şahinleri
-tutorial :: İstanbul BK
+tutorial :: Ali Özbek
+tutorial :: Antalya Gençlik
+tutorial :: Bursa Gençlik
+tutorial :: Denizli Boğaları
+tutorial :: Denizli Boğaları — Bursa Gençlik
+tutorial :: Diyarbakır Gençlik
+tutorial :: Diyarbakır Kurtları
+tutorial :: Enes Çetin
+tutorial :: Fikret Çetin
+tutorial :: Gökhan Yener
+tutorial :: Hüsnü Erdem
+tutorial :: Manisa Aslanları
+tutorial :: Muhammet Tatlı
+tutorial :: Oğuzhan Avcı
+tutorial :: Sakarya Boğaları
+tutorial :: Sakarya Boğaları — Tekirdağ Şimşekleri
+tutorial :: Tekirdağ Basket
+tutorial :: Tekirdağ Şimşekleri
+tutorial :: Tolga Yalın
+tutorial :: Vedat Bektaş
+tutorial :: Özgür Turgut
+tutorial :: İlhan Hakyemez
+tutorial :: İlker Karaca
+tutorial :: İstanbul Aslanları
+tutorial :: İstanbul Aslanları — Adana Panterleri
+tutorial :: İstanbul Şahinleri
+tutorial :: İzmir Aslanları
+tutorial :: Şanlıurfa Kartalları
 tutorial :: 🇹🇷 Türkçe
+tutorial :: 🤝 Çetin – Bektaş
+tutorial :: 🤝 Özbek – Tatlı

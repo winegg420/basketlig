@@ -3464,3 +3464,176 @@ yakın kapatmalı — `spacing-check` şartı). **%25,3 → %4,0.**
 `live-metrics` ✓ · `realism-check` 0 ihlal · `geometri-check` 19/19 · `faz7/8/10/11` ✓ ·
 `m20` ✓ · `schema` 17/17 · `mobile-check` 18/18 · `visual-check` 0 hata · `i18n-scan` %0,0.
 Script sürümü **?v=52**.
+
+---
+
+## FAZ 17 — Milliyet sistemi + isim havuzları + portre havuzu (2026-08-31)
+
+Baz commit `f503c44` (FAZ 16). Brifin sırası izlendi: önce kod (§1-7), sonra portre boru
+hattı (§8), en son görsel üretimi (§9).
+
+### 1. Milliyet — çekirdek kural
+
+> **Lig kurulurken içindeki her oyuncu, o ligin ev ülkesinden olur.** Yabancılar yalnızca
+> sezon başladıktan sonra transfer yoluyla gelir.
+
+**Bulunan hata:** `genPlayer(poz, tr=false)` — ikinci parametre kod tabanında hiçbir yerden
+`true` geçilmiyordu, beş çağıran da `false` veriyordu. Ülke `ch(ULKELER)` ile rastgele
+seçiliyor, Türkiye'nin şansı **1/26 ≈ %3,8** oluyordu: 15 kişilik kadroda ortalama **0,6
+Türk**. `TR_ULKE` ölü koddu.
+
+**Yapılan:** ikinci parametre boolean'dan ÜLKE'ye çevrildi (`string` → o ülke, `true` →
+geriye dönük Türkiye, `null/false` → küresel rastgele). `ULKE_BUL(ad)` yardımcısı ve tek
+kaynak `LIG_EV_ULKE='Türkiye'` sabiti eklendi — `'Türkiye'` dizgisi artık koda gömülmüyor.
+`genRoster`, `genDraftProspect`, `genSingleYouth` (altyapı) `LIG_EV_ULKE` geçirir;
+`genPlayerBounded` ülke parametresi aldı ve **varsayılanı bilerek Türkiye YAPILMADI** —
+çağıran açıkça versin, ileride başka lig eklenince sessizce Türk üretmesin.
+
+**Determinizm kararı (önemli):** `genPlayer` ülke sabitlense bile `ch(ULKELER)` çekilişini
+**yine yapar**, sonucu sonra ezer. Çekilişi atlamak maçın rastgele akışını bir adım kaydırır
+ve `band.js` hash'i ile `sim-node` ortalamaları değişirdi. F13-3 (anlatım) ve B-5 (sahne)
+derslerinin milliyet karşılığı.
+
+### 2. Ülke listesi 26 → 43
+
+`ULKELER`'e 17 ülke eklendi (Rusya, Ukrayna, İsrail, Letonya, Bosna-Hersek, Karadağ,
+Gürcistan, Çekya, Finlandiya, Estonya, Macaristan, Bulgaristan, Romanya, Kuzey Makedonya,
+Arnavutluk, Slovakya, İsveç). Her biri için isim havuzu (§3) ve portre kovası (§8) yazıldı.
+
+### 3. İsim havuzları — 256 → 21.000 kombinasyon
+
+`NAME_POOLS` `js/state.js`'ten **yeni `js/names.js`** dosyasına taşındı (boyut) ve
+`state.js`'ten ÖNCE yüklenecek şekilde script sırasına, `sw.js` `JS_FILES`'a, `sim-node` ve
+`anlatim-check` modül listelerine eklendi.
+
+Ülke başına **16×16 = 256** kombinasyondan **150 ad × 140 soyad = 21.000**'e çıkarıldı;
+43 ülke, **12.982 dizgi**. Sezon 1'de tek başına ~285 Türk isim üretiliyor, 20 sezonda
+~1.500 — eski havuz ilk sezonda tükeniyor ve "her takımda aynı soyad" hissi veriyordu.
+
+**Steam riski temizlendi:** tek bir yaşayan profesyonelle özdeşleşmiş soyadları havuzlardan
+çıkarıldı (Antetokounmpo, Dončić, Jokić, Sabonis, Valančiūnas, Gilgeous, Yabusele, Varejão,
+Yao+Ming, Campazzo, Sochan, Hachimura vb.). Yerlerine o ülkede nüfus düzeyinde yaygın,
+kimseye özgü olmayan adlar kondu. Yaygın soyadları (Yılmaz, Kaya, Silva, Müller, Kim,
+Nowak) kaldı — bunlar bir kişiyi işaret etmez.
+
+Eski havuzlarda ayrıca kadın adları ve **soyadı olarak kullanılmış ilk isimler** vardı;
+bunlar da ayıklandı. Çin ve Kore soyad listeleri baştan yazıldı (eski liste uydurma
+`Xu Shi` / `Kang Hee` türü kayıtlar içeriyordu).
+
+### 4. Bot takımlar — yabancı sınırı
+
+Bot kadro derinliği ve **bot transferi** (`botClubTransfer`, `js/economy.js`) ev ülkesi
+ağırlıklı: `BOT_YABANCI_ORAN=0.10`, `BOT_YABANCI_MAX=2`. Amaç botların marketteki iyi
+yabancıları tüketmemesi. Bot transferinde değiştirilen oyuncu sayımdan düşülür — yoksa
+yabancıyı yabancıyla değiştiren bot tavana takılıp bir daha asla yabancı alamıyordu.
+
+Karar `prChance` ile deterministiktir (yeni `prUnit`/`prChance`/`prPick`/`prWeighted`
+yardımcıları, `js/state.js`) — hash'ten türer, rastgelelik tüketmez.
+
+> **`prUnit` karıştırıcısı — ölçümle bulundu.** İlk sürüm doğrudan `hash32` kullanıyordu.
+> `milliyet-check` bot yabancı oranını **%2,3** ölçtü (hedef ~%10). Sebep: djb2-xor son
+> karakteri XOR'lar, bu yüzden yalnız son karakteri değişen anahtarlar (`…|yabanci|0..9`)
+> aynı dilime düşüyor. Kapı doğru oranda (**%11,5**) açılıyor ama açılışlar birkaç takımda
+> yığılıp 2 yabancı tavanına çarpıyor, **183 açılış boşa gidiyordu**. `prMix` (murmur3
+> finalizer türevi) eklendi → **%8,8**, desil sapması %1.
+
+### 5. Draft ve altyapı — %100 yerli
+
+`genDraftProspect` ve `genSingleYouth` artık `LIG_EV_ULKE` geçirir (altyapıdan gelirler).
+
+### 6. Transfer marketi
+
+Kota **yok** — havuz OVR'ye göre dolar, ülke fark etmez; üst sıraların yabancı ağırlıklı
+olması istenen davranıştır. Kullanıcı kadrosunda da sınır yok (sınır yalnız botlarda).
+Market ekranına **Tümü / Yerli / Global** filtresi eklendi (`filterMarketUlke`); mevcut
+mevki filtresi ve OVR/Maaş sıralamasıyla birlikte çalışır, seçim `G.marketUlkeFilter`'da
+durduğu için ekran yenilenince kaybolmaz. i18n: `Uyruk:` · `Yerli` · `Global`.
+
+### 7. Koçlar ve kayıt
+
+`KOC_T` kayıtlarına `ulke` alanı eklendi (varsayılan ligin ev ülkesi); `coachAvatar`
+ülkeyi portre seçimine geçirir ve koç portresi **daima kıdemli bandından** gelir. Eski
+kayıtta alan yoksa okurken `LIG_EV_ULKE` atanır (`faz17KocUlkeDoldur`).
+
+Kayıt şeması sürümü yükseltildi: `charazay_game_save_v2 → v3`, `charazay_tbl_v4 → v5`.
+**Göç kodu yazılmadı** (brif §7.2) — eski anahtar sessizce yok sayılır.
+
+### 8. Portre sistemi
+
+Eski 201 JPEG **silindi** (`git rm`, commit `17af1b9`'dan geri alınabilir). Yeni şema:
+`<kova>_<yasBandi>_<sıra>.jpg`, 7 kova (`akd siyah kuz beyaz afr lat asya`) × 2 bant
+(`genc` 18-25 / `kidemli` 26-36). `manifest.json` sürüm 2, kova×bant sayılarını tutar ve
+**üretim betiği yazar** — `PORTRAIT_POOL_SIZE=201` sabiti kaldırıldı, oyun manifest'i okur.
+
+`ULKE_KOVA` (43 ülke, her dağılımın toplamı 1,0) ülkeyi kovaya dağıtır. Seçim
+`prWeighted` ile deterministiktir.
+
+> **Portre BİR KEZ seçilir.** `portreBand` oyuncu üretilirken dondurulur (yaş artsa da
+> yüz değişmez), `portreDosya` ilk okumada yazılır ve bir daha hesaplanmaz. Sebebi:
+> manifest'e yeni parti eklendiğinde modulo kayar; dosya adı oyuncuda saklanmasaydı
+> kayıtlı kariyerlerdeki **bütün yüzler değişirdi**. Havuza dosya eklerken yeniden
+> numaralama yok.
+
+**Yedek zinciri kısaldı:** `yerel dosya → AYNI kovadan komşu dosya → SVG`. Canlı görsel API
+basamağı (`playerPortraitPhotoUrl`, `navigator.onLine`) ve `PORTRAIT_ETH`/`PORTRAIT_JERSEY`
+sabitleri **silindi** — çevrimdışı oyun ve Steam paketi için. Komşu dosya daima aynı kova +
+aynı bant içinden gelir (yoksa Türk oyuncuya Asyalı yüz düşerdi).
+
+`playerAvatarImgAttrs` artık `loading="lazy" decoding="async"` üretir (3.000 portrelik
+havuzda kadro/market ekranı bunsuz ağırlaşır) ve yedek zinciri için `data-av-file` taşır.
+
+**Üretim boru hattı:** üret → fon parlaklığını eşitle (hedef ~120) → 256×320'den 256×250'ye
+dar kırp → bozuk/bulanık/yüzsüz/aşırı benzer olanı ele → manifest'i güncelle. İstem
+kilitlendi: fon TEK (`neutral medium gray studio background`), giysi TEK AİLE (sade koyu
+lacivert forma) — eski havuzda fon parlaklığı 10,9-155,2 arasında geziniyordu (14 kat) ve
+8 farklı giysi vardı. Elenen dosyanın numarası atlanmaz.
+
+**Lisans notu** `tools/generate-portraits.py` başına ve `assets/portraits/README.md`'ye
+yazıldı: pollinations.ai'nin ticari kullanım lisansı belirsiz; kullanıcı bunu bilerek
+kabul etti (önce web, Steam öncesinde gerekirse kaynak değişir). Bu yüzden üretim adımı
+ayrı bir fonksiyonda durur — kaynak değişirse boru hattının geri kalanı aynı kalır.
+
+### Kendi inisiyatifimle doldurulan boşluklar
+
+1. **`prUnit` karıştırıcısı** — yukarıda; ölçüm olmasa kural sessizce yanlış çalışacaktı.
+2. **Bot transferi (§4.3)** — brif "varsa bul ve uygula" diyordu; `botClubTransfer` vardı,
+   aynı kural uygulandı.
+3. **17 yeni ülkenin EN çevirisi + eksik kalan `Türkiye`** — `I18N_PHRASES`'e eklendi;
+   yoksa EN modunda "Romanya · 24 yrs" melez satırları kalıyordu.
+4. **i18n sınır hatası** — `\b` ASCII tabanlıdır, `ğ`/`ç` sözcük karakteri sayılmaz:
+   `/\bKaradağ\b/` ve `/İsveç\b/` **hiç eşleşmiyordu**. Sınırlar Türkçe harfleri kapsayacak
+   şekilde açık yazıldı. Ayrıca `Türkiye Basketbol Ligi` kalıbı `Türkiye`'den ÖNCE konuldu
+   — yoksa `TBL_COMP_NAME` "Turkey Basketbol Ligi" melezine dönüyordu (B-1 dersi).
+5. **`tools/generate-portraits.js`** — bu makinede Python kurulu değil ve `node_modules`
+   içinde görüntü kütüphanesi yok. `.py` sürümü brifin istediği gibi yazıldı; çalışan Node
+   karşılığı Playwright'ın headless Chromium'unda `<canvas>` ile aynı boru hattını uygular.
+
+### `anlatim-check` ölçüm düzeltmesi — dikkat
+
+`anlatim-check` "benzersiz kalıp / olay" ölçütü **şişiyordu**. İsim silme kalıbı ASCII+TR
+harflerine bakıyordu; `č/ć/š/ž/ū` geçen soyadları (Jokić, Šarić, Valančiūnas) **yarım**
+siliniyor, artan harf her satırı benzersiz yapıyordu — ölçülen şey şablon çeşitliliği değil
+**oyuncu adı çeşitliliğiydi**. Kalıp Unicode'a çevrildi.
+
+Gerçek değerler: **FAZ 16 tabanı %82,5 · FAZ 17 %82,7**. Yani %85 kapısı hiçbir zaman
+gerçekten geçilmemişti; eksik **anlatım şablonu sayısındadır** ve FAZ 13'ten kalmadır.
+FAZ 17 gerilemesi değil — taban değerin bir tık üstünde. **Kapı bilerek düşürülmedi**:
+doldurulacak açık görünsün. Bu, FAZ 17 kapsamı dışında ayrı bir iş.
+
+### Doğrulama
+
+`sim-node --n=100 --seed=42` → **87,2-80,0 · 249 olay/maç**, hata 0, `G durumu değişmedi:
+EVET`, aynı tohum aynı maç ✓. Brif referansı 86,7-80,7 · 251 → **±1,5 bandında**.
+
+> **Tohum 42 skoru 92-64 → 90-67 değişti; bu beklenen ve kaçınılmaz.** Milliyet seçimi
+> akışı kaydırmıyor (çekiliş korunuyor), ama **isim havuzu 256 → 21.000 kombinasyona
+> çıkınca** `ensureUniquePlayerNames` içindeki ad çakışması yeniden-çekilişleri neredeyse
+> sıfıra indi ve rastgelelik akışı kaydı. Aynı sebeple `band.js` hash'i
+> `fb393bdab878e699` → **`89b5436137c1da14`** oldu (CLAUDE.md güncellendi).
+
+`milliyet-check` ✓ (lig %100 Türk · draft 50/50 · altyapı 60/60 · bot yabancı %8,8, takım
+başına ≤2 · market 42 ülke) · `portre-check` ✓ · `isim-check` ✓ (43 ülke, 5.000 çekilişte
+%99,84 benzersiz) · `schema-check` 17/17 · `visual-check` **0 konsol hatası** (masaüstü +
+mobil) · `i18n-scan` canlı anlatım %0,0, çevrilmemiş düğüm 1793 → **1352** (kalanların
+tamamı özel isim) · `faz10-check` 27/27 · `sunum-check` 4/4 · `anlatim-check` 12/13
+(yukarıdaki ölçüm notu). Script sürümü **?v=53**, `sw.js` `SCRIPT_V=53`.

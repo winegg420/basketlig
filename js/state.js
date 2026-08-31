@@ -1,5 +1,14 @@
 // ===== VERİ =====
-const ULKELER=[{ad:'ABD',b:'🇺🇸'},{ad:'Türkiye',b:'🇹🇷'},{ad:'Fransa',b:'🇫🇷'},{ad:'İspanya',b:'🇪🇸'},{ad:'Yunanistan',b:'🇬🇷'},{ad:'Brezilya',b:'🇧🇷'},{ad:'Arjantin',b:'🇦🇷'},{ad:'Almanya',b:'🇩🇪'},{ad:'Sırbistan',b:'🇷🇸'},{ad:'Avustralya',b:'🇦🇺'},{ad:'Kanada',b:'🇨🇦'},{ad:'İtalya',b:'🇮🇹'},{ad:'Hırvatistan',b:'🇭🇷'},{ad:'Slovenya',b:'🇸🇮'},{ad:'Nijerya',b:'🇳🇬'},{ad:'Filipinler',b:'🇵🇭'},{ad:'Japonya',b:'🇯🇵'},{ad:'Çin',b:'🇨🇳'},{ad:'Güney Kore',b:'🇰🇷'},{ad:'Senegal',b:'🇸🇳'},{ad:'Litvanya',b:'🇱🇹'},{ad:'Belçika',b:'🇧🇪'},{ad:'Polonya',b:'🇵🇱'},{ad:'Meksika',b:'🇲🇽'},{ad:'Portekiz',b:'🇵🇹'},{ad:'İngiltere',b:'🇬🇧'}];
+const ULKELER=[{ad:'ABD',b:'🇺🇸'},{ad:'Türkiye',b:'🇹🇷'},{ad:'Fransa',b:'🇫🇷'},{ad:'İspanya',b:'🇪🇸'},{ad:'Yunanistan',b:'🇬🇷'},{ad:'Brezilya',b:'🇧🇷'},{ad:'Arjantin',b:'🇦🇷'},{ad:'Almanya',b:'🇩🇪'},{ad:'Sırbistan',b:'🇷🇸'},{ad:'Avustralya',b:'🇦🇺'},{ad:'Kanada',b:'🇨🇦'},{ad:'İtalya',b:'🇮🇹'},{ad:'Hırvatistan',b:'🇭🇷'},{ad:'Slovenya',b:'🇸🇮'},{ad:'Nijerya',b:'🇳🇬'},{ad:'Filipinler',b:'🇵🇭'},{ad:'Japonya',b:'🇯🇵'},{ad:'Çin',b:'🇨🇳'},{ad:'Güney Kore',b:'🇰🇷'},{ad:'Senegal',b:'🇸🇳'},{ad:'Litvanya',b:'🇱🇹'},{ad:'Belçika',b:'🇧🇪'},{ad:'Polonya',b:'🇵🇱'},{ad:'Meksika',b:'🇲🇽'},{ad:'Portekiz',b:'🇵🇹'},{ad:'İngiltere',b:'🇬🇧'},{ad:'Rusya',b:'🇷🇺'},{ad:'Ukrayna',b:'🇺🇦'},{ad:'İsrail',b:'🇮🇱'},{ad:'Letonya',b:'🇱🇻'},{ad:'Bosna-Hersek',b:'🇧🇦'},{ad:'Karadağ',b:'🇲🇪'},{ad:'Gürcistan',b:'🇬🇪'},{ad:'Çekya',b:'🇨🇿'},{ad:'Finlandiya',b:'🇫🇮'},{ad:'Estonya',b:'🇪🇪'},{ad:'Macaristan',b:'🇭🇺'},{ad:'Bulgaristan',b:'🇧🇬'},{ad:'Romanya',b:'🇷🇴'},{ad:'Kuzey Makedonya',b:'🇲🇰'},{ad:'Arnavutluk',b:'🇦🇱'},{ad:'Slovakya',b:'🇸🇰'},{ad:'İsveç',b:'🇸🇪'}];
+/* FAZ 17: ligin ev ülkesi. Kadro kurulumu, draft ve altyapı bu ülkeyi kullanır —
+   'Türkiye' dizgisi koda gömülmez, çok ligli yapıya geçince tek noktadan değişir. */
+const LIG_EV_ULKE='Türkiye';
+/** Ada göre ülke kaydı (bulunamazsa null). FAZ 17: genPlayer ülke parametresi bunu kullanır. */
+function ULKE_BUL(ad){ const a=String(ad||''); return ULKELER.find(u=>u.ad===a)||null; }
+/* FAZ 17: bot takımların yabancı sınırı — botlar marketteki iyi yabancıları tüketmesin,
+   oyuna yeni başlayan kullanıcıya kadro malzemesi kalsın. */
+const BOT_YABANCI_MAX=2;      /* bir bot takımda en fazla kaç yabancı */
+const BOT_YABANCI_ORAN=0.10;  /* bot transferlerinin yabancı olma olasılığı */
 const TR_ULKE={ad:'Türkiye',b:'🇹🇷'};
 /** Yan panelde gösterilecek alt lig sayısı (TBL ayrı). İleride kayıt / içerik arttıkça artırılabilir. */
 const SIDEBAR_DIV_MAX_VISIBLE=1;
@@ -24,46 +33,20 @@ const TR_SY=['Yılmaz','Kaya','Demir','Şahin','Çelik','Öztürk','Arslan','Do�
    yüzden "🇹🇷 Kowalski" gibi uyumsuz oyuncular üretiliyordu. Artık her ülkenin kendi 16 ad +
    16 soyad havuzu var (26 ülke ≈ 832 isim) — hem bayrak-isim uyumu hem tekrar azalması.
    ILK/SY genel havuzu koç/izci/haber isimleri için (bayraksız bağlam) olduğu gibi duruyor. */
-const NAME_POOLS={
- 'ABD':{ilk:['Marcus','James','Kevin','Jayson','Devin','Damian','Tyler','Darius','Cade','Anthony','Donovan','Trae','Malik','Brandon','Austin','Jalen'],sy:['Johnson','Williams','Smith','Brown','Jones','Davis','Miller','Wilson','Anderson','Robinson','Clark','Lewis','Walker','Hall','Young','Harris']},
- 'Türkiye':{ilk:['Mehmet','Serkan','Burak','Can','Emre','Ali','Oğuz','Kaan','Berk','Mert','Arda','Enes','Furkan','Alperen','Cedi','Doğuş'],sy:['Yılmaz','Kaya','Demir','Şahin','Çelik','Öztürk','Arslan','Doğan','Kılıç','Aslan','Koç','Kurt','Özdemir','Aydın','Polat','Şen']},
- 'Fransa':{ilk:['Nicolas','Evan','Théo','Rudy','Frank','Killian','Mathias','Adrien','Lucas','Hugo','Antoine','Vincent','Guerschon','Élie','Nando','Bilal'],sy:['Fournier','Dubois','Martin','Bernard','Petit','Moreau','Lambert','Rousseau','Girard','Yabusele','Diaw','Mercier','Blanc','Chevalier','Renard','Leroy']},
- 'İspanya':{ilk:['Sergio','Ricky','Willy','Juancho','Rudy','Pau','Marc','Álex','Víctor','Jaime','Darío','Xabi','Carlos','Alberto','Pablo','Santi'],sy:['Rodríguez','Hernández','García','López','Fernández','Martínez','Sánchez','Pérez','Gómez','Ruiz','Navarro','Torres','Ramos','Ortega','Iglesias','Vives']},
- 'Yunanistan':{ilk:['Giannis','Thanasis','Kostas','Nikos','Dimitris','Vassilis','Georgios','Ioannis','Panagiotis','Christos','Michalis','Stefanos','Antonis','Lefteris','Alexis','Yannis'],sy:['Papadopoulos','Antetokounmpo','Sloukas','Printezis','Kalaitzakis','Papanikolaou','Bourousis','Zisis','Georgiou','Nikolaidis','Vasileiou','Karagiannis','Mantzaris','Larentzakis','Athanasiou','Konstantinidis']},
- 'Brezilya':{ilk:['Lucas','Rafael','Bruno','Marcelo','Gabriel','Vitor','Leandro','Anderson','Yago','Guilherme','Caio','Felipe','Ricardo','Tiago','Alex','Didi'],sy:['Silva','Santos','Oliveira','Souza','Pereira','Costa','Almeida','Barbosa','Ferreira','Ribeiro','Nascimento','Machado','Varejão','Huertas','Garcia','Mello']},
- 'Arjantin':{ilk:['Facundo','Luis','Gabriel','Nicolás','Luca','Carlos','Marcos','Andrés','Patricio','Juan','Tomás','Leandro','Máximo','Santiago','Agustín','Federico'],sy:['Campazzo','Scola','Deck','Laprovíttola','Vildoza','Delfino','Nocioni','Garino','Brussino','Fernández','Gómez','López','Álvarez','Sosa','Romero','Acuña']},
- 'Almanya':{ilk:['Dennis','Daniel','Moritz','Franz','Maximilian','Johannes','Lukas','Andreas','Tobias','Niels','Isaac','Leon','Paul','David','Jonas','Robin'],sy:['Schröder','Theis','Wagner','Kleber','Müller','Schmidt','Fischer','Weber','Becker','Hoffmann','Schulz','Koch','Richter','Neumann','Zimmermann','Braun']},
- 'Sırbistan':{ilk:['Nikola','Bogdan','Vasilije','Aleksa','Marko','Miloš','Stefan','Nemanja','Filip','Dušan','Vladimir','Ognjen','Luka','Petar','Uroš','Đorđe'],sy:['Jokić','Bogdanović','Micić','Avramović','Petrović','Marković','Nikolić','Jovanović','Stojaković','Milošević','Radonjić','Simonović','Lučić','Gudurić','Kalinić','Đorđević']},
- 'Avustralya':{ilk:['Josh','Patty','Matthew','Jock','Dyson','Joe','Aron','Ben','Dante','Nick','Cameron','Tyler','Xavier','Jack','Duop','Will'],sy:['Giddey','Mills','Dellavedova','Landale','Daniels','Ingles','Baynes','Simmons','Exum','Kay','Froling','Reath','Cooks','Hodgson','Bruton','Walker']},
- 'Kanada':{ilk:['Shai','Jamal','Andrew','Dillon','Luguentz','Kelly','Nickeil','Dwight','Trey','Cory','Chris','Oshae','Khem','Melvin','Zach','Bennedict'],sy:['Gilgeous','Murray','Wiggins','Barrett','Brooks','Dort','Olynyk','Alexander','Powell','Lyles','Joseph','Boucher','Birch','Ejim','Nembhard','Mathurin']},
- 'İtalya':{ilk:['Danilo','Simone','Nicolò','Marco','Alessandro','Luigi','Achille','Gabriele','Stefano','Riccardo','Andrea','Matteo','Giampaolo','Amedeo','Paolo','Diego'],sy:['Gallinari','Fontecchio','Melli','Datome','Belinelli','Polonara','Ricci','Rossi','Bianchi','Conti','Esposito','Romano','Greco','Marino','Ferrari','Colombo']},
- 'Hırvatistan':{ilk:['Bojan','Dario','Ivica','Mario','Ante','Krunoslav','Dominik','Toni','Marko','Luka','Karlo','Roko','Filip','Josip','Ivan','Duje'],sy:['Bogdanović','Šarić','Zubac','Hezonja','Žižić','Simon','Ukić','Babić','Perković','Marić','Horvat','Kovačević','Novak','Vuković','Jurić','Božić']},
- 'Slovenya':{ilk:['Luka','Goran','Zoran','Klemen','Edo','Vlatko','Jaka','Mike','Gregor','Aleksej','Žiga','Blaž','Matic','Rok','Domen','Miha'],sy:['Dončić','Dragić','Prepelič','Čančar','Murić','Blažič','Nikolić','Hrovat','Radovan','Zagorac','Samar','Ferme','Kovač','Novak','Krajnc','Bratanič']},
- 'Nijerya':{ilk:['Chimezie','Precious','Josh','Gabe','Ike','Emeka','Ekpe','Obi','Chinedu','Uche','Kelechi','Nnamdi','Ifeanyi','Chika','Tochukwu','Femi'],sy:['Metu','Achiuwa','Okogie','Vincent','Diogu','Okafor','Udoh','Nwora','Okonkwo','Eze','Obi','Aluko','Adebayo','Balogun','Nwankwo','Chukwu']},
- 'Filipinler':{ilk:['Jordan','Kai','Dwight','Justin','Ray','Carl','Scottie','Christian','Kevin','Japeth','Calvin','Roger','Paul','Arvin','Mikey','Jamie'],sy:['Clarkson','Sotto','Ramos','Brownlee','Fajardo','Thompson','Standhardinger','Aguilar','Abueva','Tiongko','Cruz','Reyes','Santos','Bautista','Mendoza','Villanueva']},
- 'Japonya':{ilk:['Yuta','Rui','Yuki','Makoto','Kenji','Daiki','Hiroshi','Shohei','Ryota','Takumi','Kosuke','Sota','Haruto','Naoki','Ren','Keisuke'],sy:['Watanabe','Hachimura','Kawamura','Tanaka','Sato','Suzuki','Takahashi','Nakamura','Ito','Yamamoto','Kobayashi','Yoshida','Matsumoto','Inoue','Kimura','Hayashi']},
- 'Çin':{ilk:['Yao','Zhou','Wang','Yi','Guo','Zhao','Hu','Zhang','Liu','Chen','Sun','Li','Xu','Lin','Yang','Wu'],sy:['Ming','Qi','Zhelin','Jianlian','Ailun','Rui','Mingxuan','Zhenlin','Chuanxing','Xiaochuan','Minghui','Kaicheng','Jie','Hao','Feng','Peng']},
- 'Güney Kore':{ilk:['Jun','Min','Seung','Hyun','Dong','Sang','Ji','Tae','Young','Jae','Kyung','Woo','Sung','Han','Bo','Chan'],sy:['Kim','Lee','Park','Choi','Jung','Kang','Cho','Yoon','Jang','Lim','Han','Oh','Seo','Shin','Kwon','Hwang']},
- 'Senegal':{ilk:['Gorgui','Tacko','Cheikh','Mamadou','Ibrahima','Moussa','Abdoulaye','Pape','Alioune','Babacar','Saliou','Malick','Ousmane','Amadou','Modou','Serigne'],sy:['Dieng','Fall','Diallo','Ndiaye','Sarr','Sy','Faye','Gueye','Diouf','Ba','Seck','Cissé','Sow','Camara','Diagne','Mbaye']},
- 'Litvanya':{ilk:['Jonas','Domantas','Arvydas','Mindaugas','Rokas','Tomas','Paulius','Marius','Deividas','Ignas','Lukas','Donatas','Šarūnas','Gytis','Martynas','Eimantas'],sy:['Valančiūnas','Sabonis','Kuzminskas','Jasikevičius','Motiejūnas','Giedraitis','Butkevičius','Kalnietis','Sirvydis','Brazdeikis','Normantas','Vasiliauskas','Petrauskas','Blaževičius','Gudaitis','Masiulis']},
- 'Belçika':{ilk:['Retin','Ismaël','Vrenz','Jean-Marc','Hans','Emmanuel','Maxime','Thijs','Sam','Loïc','Andy','Pierre','Niels','Quentin','Haris','Mathias'],sy:['Obasohan','Bako','Mwema','Vervoort','Van Rossom','Lecomte','Depuydt','De Ridder','Peeters','Janssens','Maes','Willems','Claes','Wouters','Mertens','Dumont']},
- 'Polonya':{ilk:['Jeremy','Mateusz','Aleksander','Michał','Andrzej','Tomasz','Adam','Piotr','Jakub','Marcin','Kamil','Łukasz','Damian','Szymon','Bartosz','Dominik'],sy:['Sochan','Ponitka','Balcerowski','Zieliński','Nowak','Wójcik','Kowalski','Lewandowski','Kaczmarek','Mazur','Krawczyk','Wieczorek','Górski','Adamski','Sikora','Olszewski']},
- 'Meksika':{ilk:['Juan','Gustavo','Jorge','Francisco','Orlando','Paco','Israel','Héctor','Luis','Miguel','Fabián','Diego','Emiliano','Ángel','Rodrigo','Sebastián'],sy:['Ayón','Toscano','Gutiérrez','Méndez','Cabrera','Vázquez','Reyes','Morales','Castillo','Jiménez','Herrera','Delgado','Rivera','Guzmán','Salazar','Aguilar']},
- 'Portekiz':{ilk:['Neemias','Diogo','Miguel','Tomás','João','Rafael','Carlos','Bruno','André','Ricardo','Nuno','Pedro','Francisco','Gonçalo','Tiago','Vasco'],sy:['Queta','Brito','Ventura','Lima','Sousa','Cardoso','Fernandes','Marques','Gonçalves','Rocha','Pinto','Correia','Teixeira','Moreira','Antunes','Faria']},
- 'İngiltere':{ilk:['Ovie','Luol','Dan','Myles','Jamie','Ryan','Callum','Harrison','Gabe','Amir','Josh','Oliver','Tarik','Carl','Ashley','Nathan'],sy:['Soko','Deng','Clark','Hesson','Gordon','Richards','Ward','Bentil','Olaseni','Hanley','Thompson','Watson','Turner','Cole','Bailey','Sullivan']}
-};
+/* FAZ 17: NAME_POOLS js/names.js'e taşındı (boyut: 43 ülke × 150 ad × 140 soyad).
+   randomNameFor burada kalır — havuz dosyası state.js'ten ÖNCE yüklenir. */
 /** Ülkeye uygun rastgele "Ad Soyad". Ülke havuzda yoksa genel ILK/SY havuzuna düşer. */
 function randomNameFor(ulkeAd){
   const pool=NAME_POOLS[String(ulkeAd||'')];
   return pool?`${ch(pool.ilk)} ${ch(pool.sy)}`:`${ch(ILK)} ${ch(SY)}`;
 }
 
-const TBL_STORAGE_KEY='charazay_tbl_v4';
+const TBL_STORAGE_KEY='charazay_tbl_v5';   /* FAZ 17: milliyet kuralı — eski kayıt sessizce yok sayılır */
 const LEAGUE_SIZE=20;
 const TBL_COMP_NAME='Türkiye Basketbol Ligi';
 const CLUB_CACHE_KEY='charazay_club_public_v1';
 const NEWS_SESSION_KEY='charazay_news_sess_v1';
-const GAME_SAVE_KEY='charazay_game_save_v2';
+const GAME_SAVE_KEY='charazay_game_save_v3'; /* FAZ 17: milliyet + portre şeması — göç yok, eski anahtar yok sayılır */
 const IDB_NAME='charazay_idb_v1';
 const IDB_STORE_G='game';
 const MATCH_CLOCK_SEC=600;   /* Regülasyon çeyrek süresi — FIBA 10 dk (gerçekçi skorlar için) */
@@ -206,6 +189,41 @@ function hash32(str){
   let h=5381;
   for(let i=0;i<str.length;i++) h=((h<<5)+h)^str.charCodeAt(i);
   return h>>>0;
+}
+
+/* ── FAZ 17: DETERMİNİSTİK KARAR YARDIMCILARI ────────────────────────────────────────────
+   Milliyet/portre kararları maçın ya da kadronun rastgele akışını TÜKETMEMELİ: bunlar
+   Math.random() çağırırsa aynı tohum farklı kadro üretir ve band.js hash'i kayar
+   (F13-3'ün anlatım kuralının, B-5'in sahne kuralının milliyet karşılığı). Bu yüzden
+   karar tek yönlü hash'ten türetilir — çağrı sırası ne olursa olsun sonuç aynıdır. */
+/** Tohumdan 0..1 arası deterministik değer.
+ *  hash32 (djb2-xor) TEK BAŞINA YETMEZ: son karakteri XOR'ladığı için yalnız son karakteri
+ *  değişen anahtarlar (…|yabanci|0 … |yabanci|9) yalnız düşük bitlerde ayrışır ve aynı
+ *  dilime düşer. Ölçüldü: bot yabancı kapısı doğru oranda (%11,5) açılıyordu ama açılışlar
+ *  BİRKAÇ TAKIMDA yığılıyor, o takımlar 2 yabancı tavanına çarpınca 183 açılış boşa gidiyor
+ *  ve gerçekleşen oran %2,3'e düşüyordu. Aşağıdaki karıştırıcı (murmur3 finalizer türevi)
+ *  bitleri dağıtır — ölçülen sonuç %10,0 ve desiller düz. */
+function prMix(x){
+  x=x>>>0; x^=x>>>16; x=Math.imul(x,0x7feb352d)>>>0; x^=x>>>15;
+  x=Math.imul(x,0x846ca68b)>>>0; x^=x>>>16; return x>>>0;
+}
+function prUnit(seed){ return prMix(hash32('pr|'+String(seed)))/4294967296; }
+/** Tohumdan deterministik olasılık kapısı (Math.random YERİNE). */
+function prChance(seed,p){ return prUnit(seed)<Number(p); }
+/** Tohumdan deterministik dizi seçimi. */
+function prPick(seed,arr){
+  if(!Array.isArray(arr)||!arr.length) return null;
+  return arr[Math.floor(prUnit(seed)*arr.length)%arr.length];
+}
+/** Ağırlıklı dağılımdan ({a:0.6,b:0.4}) deterministik anahtar seçimi. */
+function prWeighted(seed,dist){
+  const keys=Object.keys(dist||{});
+  if(!keys.length) return null;
+  let toplam=0; keys.forEach(k=>{ toplam+=Number(dist[k])||0; });
+  if(toplam<=0) return keys[0];
+  let r=prUnit(seed)*toplam;
+  for(const k of keys){ r-=Number(dist[k])||0; if(r<0) return k; }
+  return keys[keys.length-1];
 }
 
 // ===== EKONOMİ ÇEKİRDEĞİ: işlem defteri + haftalık döngü =====

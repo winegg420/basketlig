@@ -45,7 +45,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 - Grafikler **inline SVG** (basketbol sahası, şut haritası, portre yedekleri) ve CSS.
 - Ses: **Web Audio API** (`sfx()` — basit osilatör tonları).
 - Kalıcılık: **localStorage** (durum) + **IndexedDB** (büyük string), sürüm geçiş migrasyonları var (`migrateEconomyV3ToV4` vb.).
-- Dış kaynaklar: Google Fonts (Bebas Neue / Inter). Oyuncu portreleri `assets/portraits/` (201 yerel JPEG, `manifest.json`).
+- Dış kaynaklar: Google Fonts (Bebas Neue / Inter). Oyuncu portreleri `assets/portraits/` — **FAZ 17'den beri kova + yaş bandı şemasıyla** adlandırılır (`<kova>_<bant>_<sıra>.jpg`), sayılar `manifest.json` (sürüm 2) içinde; kodda sabit havuz boyu YOK.
 
 ## Depo yapısı
 
@@ -78,8 +78,12 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `sw.js`, `manifest.json` | **PWA** — önbellek (HTML: önce ağ · js/font/ikon: önce önbellek) + ana ekrana ekleme. `sw.js` içindeki `SCRIPT_V`, HTML'deki `?v=` ile **aynı olmalı**. |
 | `PLAN-COK-OYUNCULU.md` | **Çok oyunculu mimari planı** (Supabase şeması, fikstür zamanlayıcısı, sunucu tarafı simülasyon). Sunucu kodu yazılmadı. |
 | `tools/sunum-check.js` | **Canlı sunum davranış denetçisi** (M9 çıkış pası · M12 AND-1 ek atışı · M14 şut saati). Bu maddeler maç sonucunu değiştirmediği için `band`/`box-band` onları göremez — sunum değişikliğinden sonra çalıştır. |
+| `tools/milliyet-check.js` | **FAZ 17 milliyet denetçisi** — lig kadroları/draft/altyapı %100 ev ülkesi, bot yabancı oranı ve tavanı, `prUnit` desil dağılımı, market ülke dağılımı, 43 ülke ↔ `NAME_POOLS`. Milliyet kuralı değişince çalıştır. |
+| `tools/portre-check.js` | **FAZ 17 portre denetçisi** — manifest ↔ disk uyumu, `ULKE_KOVA` bütünlüğü (43 ülke, toplam 1.0), seçilen kovanın ülkeye uygunluğu, yaşlanınca portrenin değişmemesi, yedek zincirinde canlı API olmaması. |
+| `tools/isim-check.js` | **FAZ 17 isim havuzu denetçisi** — ülke başına ≥150×140, liste içi tekrarsızlık, `ULKELER` ↔ `NAME_POOLS` birebir örtüşme, 5.000 çekilişte benzersizlik ≥%99. |
+| `tools/generate-portraits.js` | Portre üretimi + işleme (kova bazlı). Bu makinede Python kurulu olmadığı için `.py` sürümünün çalışan Node karşılığı; aynı dosya adlarını, eşikleri ve manifest'i üretir. |
 | `tools/i18n-scan.js` | **EN modunda çeviri denetimi** — tüm sayfa/modal/canlı maçı gezip çevrilmemiş metin düğümlerini raporlar. Dil değişikliğinden sonra çalıştır. |
-| `tools/measure.js` / `tools/band.js` | Canlı sunum ölçümü + **sonuç değişmezliği** (kanonik tohum imzası / 200 maç skor hash'i). Sunum değişikliklerinden sonra ikisi de aynı hash'i vermeli. `band.js` referans hash: **`fb393bdab878e699`** (varsayılan tohum 987654321; FAZ 13 sonrası — eski değer `ec630b3a512bb3b2` idi, F13-3 anlatım dalının maç rastgeleliğini tüketmesi giderilince değişti). *32. oturum: `if(SEED)` koruması + varsayılan 0 yüzünden tohum hiç kurulmuyordu, araç her çalıştırmada farklı hash veriyordu — düzeltildi.* |
+| `tools/measure.js` / `tools/band.js` | Canlı sunum ölçümü + **sonuç değişmezliği** (kanonik tohum imzası / 200 maç skor hash'i). Sunum değişikliklerinden sonra ikisi de aynı hash'i vermeli. `band.js` referans hash: **`89b5436137c1da14`** (varsayılan tohum 987654321; **FAZ 17 sonrası** — eski değerler: `fb393bdab878e699` FAZ 13-16, `ec630b3a512bb3b2` FAZ 13 öncesi). *FAZ 17'de hash bilerek değişti: isim havuzu ülke başına 256'dan 21.000 kombinasyona çıkınca `ensureUniquePlayerNames` içindeki ad çakışması yeniden-çekilişleri neredeyse sıfıra indi ve rastgelelik akışı kaydı. Milliyet seçiminin kendisi akışı KAYDIRMAZ — `genPlayer` ülke sabitlense bile `ch(ULKELER)` çekilişini yapar, sonucu sonra ezer.* *32. oturum: `if(SEED)` koruması + varsayılan 0 yüzünden tohum hiç kurulmuyordu, araç her çalıştırmada farklı hash veriyordu — düzeltildi.* |
 | `*.bat`, `OYUNU-AC.txt` | Windows başlatıcılar / kullanıcı yardım notu. |
 | `PROGRESS.md` | **Oturum günlüğü** — yapılanlar, kararlar, nedenleri. Her oturumda güncelle. |
 | `RAPOR-EKSIKLER.md` | Tam sürüm için eksik/hata denetim raporu (öncelik sıralı). |
@@ -97,7 +101,8 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
 | `js/state.js` | Sabitler (`LEAGUE_SIZE=20`, `MATCH_CLOCK_SEC=600`, `OT_CLOCK_SEC=300`, `START_KR`, `ECO_MUL`, storage anahtarları), `ecoRound`, IndexedDB, kimlik/maaş/hash yardımcıları. |
 | `js/economy.js` | Ekonomi: `txn`, bilet (`homeTicketIncome`,`ticket*`), `weeklyWageBill`, bot transfer, `processEconomyWeeks`, `processBankruptcy` (kademeli iflas). |
 | `js/persistence.js` | Başarımlar, `sfx`, ayarlar, kayıt slotları, öğretici, `serializeGameState`/`applyGameState`/migrasyon, `bootstrapAppUi`. |
-| `js/portraits.js` | Portre data-URI + avatar yardımcıları, `PORTRAIT_POOL_SIZE=201`. |
+| `js/names.js` | **Ülkeye özgü isim havuzları** — 43 ülke × 150 ad × 140 soyad (12.982 dizgi, ülke başına ≥21.000 kombinasyon). `state.js`'ten ÖNCE yüklenir. |
+| `js/portraits.js` | Portre data-URI + avatar yardımcıları, **ülke→kova dağılımı (`ULKE_KOVA`)**, `portreSec`/`portreAta`, manifest yükleme. Sabit havuz boyu yok. |
 | `js/roster-gen.js` | Oyun sabitleri (`STAT_KEYS`,`ARENA_LVL`,`KOC_T`,`INJURIES`), global `G`, `genPlayer/genRoster/genYouth/genMarket`, TBL durumu, `buildLeagueRows`, terfi/düşme. |
 | `js/league.js` | Lig modalları, haber/sidebar, takım detay sayfası, `genRoundRobinMatches`, fikstür, `openMatchTactics`/`saveMatchTactics`, ilk-5 editörü. |
 | `js/match-prep.js` | `updateStandingsFromResult`, `computeRosterOfrDef`, `matchLineup`, `simulateCpuMatch`, yorgunluk/sakatlık, playoff, `startLeagueSeason`. |
@@ -167,6 +172,32 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   "reboundingu aldı" melezini üretmesin). Simge önekli metinlerde kalıp **simgeyi
   içermemeli** — `_splitIconPrefix` simgeyi soyup gövdeyi ayrı çevirir.
   `node tools/i18n-scan.js` artık canlı anlatım akışını da tarar (kapı: Türkçe < %5).
+- **Milliyet (FAZ 17):** *lig kurulurken içindeki her oyuncu ligin ev ülkesindendir* —
+  yabancılar yalnız sezon başladıktan sonra transferle gelir. Ev ülkesi tek sabittedir
+  (`LIG_EV_ULKE`, `js/state.js`); `'Türkiye'` dizgisini koda gömme. `genPlayer(poz, ulke)`
+  ikinci parametresi artık boolean değil ÜLKE (`true` = geriye dönük Türkiye, `null` =
+  küresel rastgele — yalnız transfer piyasası). Kadro/draft/altyapı `LIG_EV_ULKE` geçirir.
+  Bot takımlarda yabancı payı `BOT_YABANCI_ORAN`, tavan `BOT_YABANCI_MAX`; kullanıcıda sınır
+  YOK. Değişiklikten sonra `node tools/milliyet-check.js`.
+- **Milliyet kararı akışı kaydırmaz (FAZ 17 dersi):** `genPlayer` ülke sabitlense bile
+  `ch(ULKELER)` çekilişini YAPAR ve sonucu sonra ezer. Çekilişi atlamak maçın rastgele
+  akışını bir adım kaydırır, `band.js` hash'i ve `sim-node` ortalamaları değişir
+  (F13-3 / B-5 dersinin milliyet karşılığı). Karar kapıları `prChance`/`prWeighted` ile
+  kurulur — bunlar hash'ten türer, rastgelelik TÜKETMEZ.
+- **`prUnit` karıştırıcısız kullanılamaz (FAZ 17 ölçümü):** `hash32` (djb2-xor) son
+  karakteri XOR'ladığı için yalnız son karakteri değişen anahtarlar (`…|yabanci|0..9`)
+  aynı dilime düşer. Karıştırıcı eklenmeden bot yabancı kapısı doğru oranda (%11,5)
+  açılıyor ama açılışlar birkaç takımda yığılıp tavana çarpıyordu; gerçekleşen oran %2,3'tü.
+  `prMix` (murmur3 finalizer türevi) eklendi — ölçülen %8,8, desil sapması %1.
+- **Portre bir kez seçilir (FAZ 17):** ülke (`ULKE_KOVA` dağılımı) + yaş bandı ile seçilir,
+  sonuç oyuncunun `portreBand` / `portreDosya` alanlarına YAZILIR ve bir daha hesaplanmaz.
+  Sebebi: manifest'e yeni parti eklendiğinde modulo kayar; dosya adı saklanmasaydı kayıtlı
+  kariyerlerdeki bütün yüzler değişirdi. Havuza dosya eklerken **yeniden numaralama yok**.
+  Yedek zinciri yalnız iki basamak: yerel dosya → AYNI kovadan komşu dosya → SVG. Canlı
+  görsel API basamağı kaldırıldı (çevrimdışı + Steam). Değişiklikten sonra `portre-check`.
+- **i18n sınırları ASCII değildir (FAZ 17 dersi):** `\b` için `ğ`/`ç` sözcük karakteri
+  SAYILMAZ — `/\bKaradağ\b/` ve `/İsveç\b/` hiç eşleşmiyordu. Türkçe harfle başlayan ya da
+  biten kalıplarda sınırı açık yaz: `(^|[^A-Za-zÇĞİÖŞÜçğıöşü])…(?![A-Za-zÇĞİÖŞÜçğıöşü])`.
 - **Dizilim koordinatları** `SET_*` sabitlerindedir (`match-engine.js`); değiştirince `faz11-check` B1 (geometri) ve `spacing-check` ile ölç. Koreografi adımı eklerken (kesme, perde, şutör hamlesi) dizilimin ÇEVRESİNİ boşaltmamaya dikkat et — köşedeki oyuncuyu topa çağırmak aralığı çökertir.
 
 ## Bilinen eksikler

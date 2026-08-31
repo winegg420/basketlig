@@ -131,76 +131,194 @@ ${numSvg}
 </svg>`;
   return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 }
-/** assets/portraits/ içindeki gerçek dosya sayısıyla eşit tutulmalı (tools/generate-portraits.py). */
-const PORTRAIT_POOL_SIZE=201;
-const PORTRAIT_POOL_BASE='assets/portraits/p_';
-const PORTRAIT_ETH=['African American man','Turkish man','Japanese man','Irish man','Nigerian man','Colombian man','Russian man','Italian man','Brazilian man','German man','Spanish man','Korean man','French man','Greek man','Polish man','Mexican man','Canadian man','Australian man','Serbian man','Lithuanian man'];
-const PORTRAIT_JERSEY=['blue white basketball jersey','green basketball jersey','red white basketball jersey','purple yellow basketball jersey','black athletic shirt','grey hoodie','white t-shirt','orange basketball jersey'];
-function portraitPoolIndex(seed,salt){
-  return Math.abs(hash32(String(seed)+'|'+String(salt??'')+'|photoPool'))%PORTRAIT_POOL_SIZE;
+/* ══ FAZ 17 — PORTRE SİSTEMİ ═══════════════════════════════════════════════════════════
+   Eskiden portre YALNIZCA seed hash'inden seçiliyordu: ülke ve yaş hesaba katılmıyordu,
+   201 görselin tamamı tek havuzdaydı ve Türk oyuncuya Nijeryalı yüz düşebiliyordu. Ayrıca
+   yedek zincirinin üçüncü basamağı canlı bir görsel API çağrısıydı — çevrimdışı oyunda ve
+   Steam paketinde kabul edilemez.
+
+   Yeni şema: görseller KOVA + YAŞ BANDI klasörlemesiyle adlandırılır
+     <kova>_<yasBandi>_<sira>.jpg     örn. akd_genc_0001.jpg
+   Kovalar: akd · siyah · kuz · beyaz · afr · lat · asya   (bkz. ULKE_KOVA)
+   Yaş bandı: genc (18-25) · kidemli (26-36)
+
+   SEÇİM BİR KEZ YAPILIR: oyuncu üretilirken portreBand ve portreDosya alanları yazılır ve
+   bir daha hesaplanmaz. Sebebi manifest'e yeni parti eklendiğinde modulo'nun kayması —
+   dosya adını oyuncuda saklamasaydık kayıtlı kariyerlerdeki TÜM yüzler değişirdi. */
+
+/** Ülke → portre kovası dağılımı. Her dağılımın toplamı 1.0 olmalı (portre-check sınıyor).
+ *  Listede olmayan ülke ULKE_KOVA_VARSAYILAN'a düşer. */
+const ULKE_KOVA={
+  'Türkiye':        {akd:1.00},
+  'ABD':            {siyah:0.72, beyaz:0.20, lat:0.08},
+  'Kanada':         {beyaz:0.60, siyah:0.30, asya:0.10},
+  'Fransa':         {akd:0.30, kuz:0.25, afr:0.45},
+  'İngiltere':      {beyaz:0.55, afr:0.35, asya:0.10},
+  'Belçika':        {kuz:0.55, afr:0.45},
+  'İspanya':        {akd:0.85, lat:0.10, afr:0.05},
+  'Portekiz':       {akd:0.75, afr:0.25},
+  'İtalya':         {akd:0.90, afr:0.10},
+  'Yunanistan':     {akd:0.90, afr:0.10},
+  'Almanya':        {kuz:0.70, akd:0.15, afr:0.15},
+  'İsveç':          {kuz:0.80, afr:0.20},
+  'Finlandiya':     {kuz:0.95, afr:0.05},
+  'Estonya':        {kuz:1.00},
+  'Letonya':        {kuz:1.00},
+  'Litvanya':       {kuz:1.00},
+  'Polonya':        {kuz:1.00},
+  'Çekya':          {kuz:1.00},
+  'Slovakya':       {kuz:1.00},
+  'Macaristan':     {kuz:0.90, akd:0.10},
+  'Rusya':          {kuz:0.90, asya:0.10},
+  'Ukrayna':        {kuz:1.00},
+  'Sırbistan':      {akd:0.55, kuz:0.45},
+  'Hırvatistan':    {akd:0.60, kuz:0.40},
+  'Slovenya':       {akd:0.45, kuz:0.55},
+  'Bosna-Hersek':   {akd:0.65, kuz:0.35},
+  'Karadağ':        {akd:0.70, kuz:0.30},
+  'Kuzey Makedonya':{akd:0.85, kuz:0.15},
+  'Arnavutluk':     {akd:0.95, kuz:0.05},
+  'Bulgaristan':    {akd:0.60, kuz:0.40},
+  'Romanya':        {akd:0.55, kuz:0.45},
+  'Gürcistan':      {akd:0.90, kuz:0.10},
+  'İsrail':         {akd:0.85, kuz:0.10, beyaz:0.05},
+  'Brezilya':       {lat:0.55, akd:0.20, afr:0.25},
+  'Arjantin':       {lat:0.50, akd:0.35, kuz:0.15},
+  'Meksika':        {lat:1.00},
+  'Nijerya':        {afr:1.00},
+  'Senegal':        {afr:1.00},
+  'Japonya':        {asya:1.00},
+  'Çin':            {asya:1.00},
+  'Güney Kore':     {asya:1.00},
+  'Filipinler':     {asya:0.90, lat:0.10},
+  'Avustralya':     {beyaz:0.75, asya:0.15, afr:0.10}
+};
+const ULKE_KOVA_VARSAYILAN={akd:0.50, kuz:0.50};
+const PORTRE_KOVALAR=['akd','siyah','kuz','beyaz','afr','lat','asya'];
+const PORTRE_BANTLAR=['genc','kidemli'];
+const PORTRE_BASE='assets/portraits/';
+/** Genç/kıdemli sınırı — oyuncu yaşı rand(18,36). 25 dahil genç. */
+const PORTRE_GENC_UST=25;
+
+/* Manifest ARTIK KODDA DEĞİL: sayılar assets/portraits/manifest.json'dan okunur, üretim
+   betiği orayı günceller. Böylece yeni parti eklerken js dosyasına elle sayı girilmez
+   (eski sabit havuz-boyu değerinin sürekli kaymasının sebebi buydu). */
+let PORTRE_MANIFEST=null;
+/** Manifest'i doğrudan ver (Node denetçileri ve testler için — tarayıcıda fetch kullanılır). */
+function setPortreManifest(m){ PORTRE_MANIFEST=(m&&typeof m==='object')?m:null; return PORTRE_MANIFEST; }
+/** Bir kovanın/bandın dosya sayısı; manifest yoksa 0. */
+function portreKovaSayisi(kova,band){
+  try{ return Number(((PORTRE_MANIFEST||{}).buckets||{})[kova][band])||0; }catch(e){ return 0; }
 }
-function playerPortraitFile(seed,salt){
-  const i=portraitPoolIndex(seed,salt);
-  return PORTRAIT_POOL_BASE+String(i).padStart(4,'0')+'.jpg';
+/** Manifest'i yükler. Hata durumunda sessizce SVG yedeğine düşülür — oyun durmaz. */
+function loadPortreManifest(){
+  if(PORTRE_MANIFEST) return Promise.resolve(PORTRE_MANIFEST);
+  try{
+    if(typeof fetch!=='function') return Promise.resolve(null);
+    return fetch(PORTRE_BASE+'manifest.json',{cache:'no-cache'})
+      .then(r=>r.ok?r.json():null)
+      .then(j=>setPortreManifest(j))
+      .catch(()=>null);
+  }catch(e){ return Promise.resolve(null); }
 }
-function playerPortraitPhotoUrl(seed,salt){
-  const raw=String(seed)+'|'+String(salt??'')+'|v2';
-  const h1=hash32(raw);
-  const h2=hash32(raw.split('').reverse().join(''));
-  const eth=PORTRAIT_ETH[h1%PORTRAIT_ETH.length];
-  const jersey=PORTRAIT_JERSEY[(h1>>>8)%PORTRAIT_JERSEY.length];
-  const look=['short hair','curly hair','buzz cut','beard','clean shaven','strong jawline','athletic build'][(h2>>>4)%7];
-  const age=19+(h2%17);
-  const prompt=encodeURIComponent(
-    'professional basketball player portrait headshot, '+eth+', '+jersey+', '+look+
-    ', age '+age+', neutral light gray studio background, photorealistic, front facing, chest up, soft lighting, no text, no watermark'
-  );
-  return 'https://image.pollinations.ai/prompt/'+prompt+'?seed='+h1+'&width=256&height=320&nologo=true';
+
+/** Yaş → bant. Bant oyuncu ÜRETİLİRKEN dondurulur; sonraki sezonlarda yaş artsa da değişmez. */
+function portreBandFromYas(yas){ return (Number(yas)||26)<=PORTRE_GENC_UST?'genc':'kidemli'; }
+/** Ülkenin kova dağılımından deterministik kova seçimi (prWeighted → hash32, rastgelelik yemez). */
+function portreKovaSec(seed,ulke){
+  const dist=ULKE_KOVA[String(ulke||'')]||ULKE_KOVA_VARSAYILAN;
+  const k=(typeof prWeighted==='function')?prWeighted(String(seed)+'|kova',dist):null;
+  return (k&&PORTRE_KOVALAR.indexOf(k)>=0)?k:'akd';
 }
-/** Yedek zinciri: yerel dosya → komşu yerel dosya → canlı API (çevrimiçiyse) → SVG (son çare).
- *  Amaç: aynı kadroda foto/karikatür karışımı olmaması — SVG'ye yalnızca hiçbir foto yüklenemezse düşülür. */
+/** Dosya adı kalıbı: <kova>_<band>_<4 hane>.jpg */
+function portreDosyaAdi(kova,band,sira){
+  return PORTRE_BASE+kova+'_'+band+'_'+String(sira).padStart(4,'0')+'.jpg';
+}
+/** Ülke + yaş bandına göre portre dosyası seçer. Manifest yoksa null döner (SVG yedeği). */
+function portreSec(seed,salt,ulke,yas){
+  const band=portreBandFromYas(yas);
+  let kova=portreKovaSec(String(seed)+'|'+String(salt??''),ulke);
+  let n=portreKovaSayisi(kova,band);
+  if(!n){ /* o kova/band henüz üretilmediyse dolu bir kovaya düş — boş img gösterme */
+    const dolu=PORTRE_KOVALAR.filter(k=>portreKovaSayisi(k,band)>0);
+    if(!dolu.length) return null;
+    kova=dolu[Math.abs(hash32(String(seed)+'|kovaYedek'))%dolu.length];
+    n=portreKovaSayisi(kova,band);
+  }
+  const i=Math.abs(hash32(String(seed)+'|'+String(salt??'')+'|portre'))%n;
+  return portreDosyaAdi(kova,band,i);
+}
+/** Oyuncuya portre alanlarını BİR KEZ yazar (varsa dokunmaz). Eski kayıtta alan yoksa
+ *  ilk okumada burada hesaplanır — §8.5 geriye dönük güvenlik. */
+function portreAta(p){
+  if(!p||typeof p!=='object') return p;
+  if(!p.portreBand) p.portreBand=portreBandFromYas(p.yas);
+  if(!p.portreDosya){
+    const d=portreSec(p.seed,p.id,p.ulke,p.portreBand==='genc'?20:30);
+    if(d) p.portreDosya=d;
+  }
+  return p;
+}
+/** Aynı kova + aynı bant içindeki komşu dosya — yedek zincirinin 2. basamağı.
+ *  Farklı kovaya düşmek yasak: Türk oyuncuya Asyalı yüz gelirdi. */
+function portreKomsu(dosya){
+  const m=/([a-z]+)_([a-z]+)_(\d{4})\.jpg$/.exec(String(dosya||''));
+  if(!m) return null;
+  const n=portreKovaSayisi(m[1],m[2]);
+  if(n<2) return null;
+  return portreDosyaAdi(m[1],m[2],(parseInt(m[3],10)+1)%n);
+}
+
+/** Yedek zinciri: yerel dosya → AYNI kovadan komşu dosya → SVG (son çare).
+ *  FAZ 17: canlı görsel API basamağı ve çevrimiçi/çevrimdışı kontrolü kaldırıldı. */
 function playerAvatarSvgFallback(el){
   if(!el||!el.dataset) return;
-  const seed=el.dataset.avSeed||'';
-  const salt=el.dataset.avSalt||'';
   const step=Number(el.dataset.avStep||0);
   try{
-    if(!window.__charazaySvgPortraits){
-      if(step===0){
-        el.dataset.avStep='1';
-        const i=(portraitPoolIndex(seed,salt)+1)%PORTRAIT_POOL_SIZE;
-        el.src=PORTRAIT_POOL_BASE+String(i).padStart(4,'0')+'.jpg';
-        return;
-      }
-      if(step===1&&navigator.onLine!==false){
-        el.dataset.avStep='2';
-        el.src=playerPortraitPhotoUrl(seed,salt);
-        return;
-      }
+    if(!window.__charazaySvgPortraits&&step===0){
+      const komsu=portreKomsu(el.dataset.avFile||'');
+      if(komsu){ el.dataset.avStep='1'; el.src=komsu; return; }
     }
   }catch(e){}
   let opts={};
   try{ opts=JSON.parse(el.dataset.avOpts||'{}'); }catch(e){}
-  el.src=basketballPortraitDataUri(seed,salt,opts);
+  el.src=basketballPortraitDataUri(el.dataset.avSeed||'',el.dataset.avSalt||'',opts);
   el.onerror=null;
+}
+/** opts.p verilirse portre ülke+yaşa göre seçilir ve oyuncuya yazılır; verilmezse
+ *  opts.ulke / opts.yas okunur. Hiçbiri yoksa SVG yedeğine düşülür. */
+function avatarDosyasi(seed,salt,opts){
+  const o=opts||{};
+  const p=o.p&&typeof o.p==='object'?o.p:null;
+  if(p){ portreAta(p); if(p.portreDosya) return p.portreDosya; }
+  if(o.ulke!=null||o.yas!=null) return portreSec(seed,salt,o.ulke,o.yas);
+  return null;
 }
 function playerAvatar(seed,salt,opts){
   opts=typeof opts==='object'&&opts?opts:{};
   if(window.__charazaySvgPortraits) return basketballPortraitDataUri(seed,salt,opts);
-  return playerPortraitFile(seed,salt);
+  return avatarDosyasi(seed,salt,opts)||basketballPortraitDataUri(seed,salt,opts);
 }
 function playerAvatarImgAttrs(seed,salt,opts){
   const o=typeof opts==='object'&&opts?opts:{};
   const esc=v=>String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  /* data-av-opts'a oyuncu nesnesi KOYULMAZ (JSON şişer); yedek zinciri için yalnız
+     seçilen dosya adı taşınır. */
+  const oJson={}; Object.keys(o).forEach(k=>{ if(k!=='p') oJson[k]=o[k]; });
+  const dosya=avatarDosyasi(seed,salt,o)||'';
   /* F7-30: alt yoktu — ekran okuyucu dosya adını okuyordu. Portre dekoratif olduğu için
-     boş alt doğrusu (isim zaten yanındaki metinde geçiyor); çağıran alt verirse ezmez. */
-  return `alt="" data-av-seed="${esc(seed)}" data-av-salt="${esc(salt??'')}" data-av-opts="${esc(JSON.stringify(o))}" onerror="playerAvatarSvgFallback(this)"`;
+     boş alt doğrusu (isim zaten yanındaki metinde geçiyor); çağıran alt verirse ezmez.
+     FAZ 17 (§8.7): 3.000 portrelik havuzda kadro/market ekranı tembel yükleme olmadan ağırlaşır. */
+  return `alt="" loading="lazy" decoding="async" data-av-seed="${esc(seed)}" data-av-salt="${esc(salt??'')}" data-av-file="${esc(dosya)}" data-av-opts="${esc(JSON.stringify(oJson))}" onerror="playerAvatarSvgFallback(this)"`;
 }
-/** Koç portresi: oyuncu havuzunu paylaşır (ayrı havuz üretmeye gerek yok).
- *  Koç-özel seed ile foto stabil ve oyunculardan farklı bir index'e düşer. */
+/** Koç portresi: oyuncu havuzunu paylaşır, ama DAİMA kıdemli bandından — genç yüzlü koç olmaz.
+ *  Koç-özel seed ile foto stabil ve oyunculardan farklı bir dosyaya düşer.
+ *  FAZ 17 (§7.1): koç artık ülke taşır; eski kayıtta alan yoksa ligin ev ülkesi varsayılır. */
 function coachSeedOf(c){ return 'coach_'+String((c&&c.id)||'')+'_'+String((c&&c.ad)||''); }
-function coachAvatar(c){ return playerAvatar(coachSeedOf(c),(c&&c.ad)||'',{}); }
-function coachAvatarAttrs(c){ return playerAvatarImgAttrs(coachSeedOf(c),(c&&c.ad)||'',{}); }
+function coachUlkesi(c){ return (c&&c.ulke)||(typeof LIG_EV_ULKE!=='undefined'?LIG_EV_ULKE:'Türkiye'); }
+function coachAvatarOpts(c){ return {ulke:coachUlkesi(c),yas:30}; }
+function coachAvatar(c){ return playerAvatar(coachSeedOf(c),(c&&c.ad)||'',coachAvatarOpts(c)); }
+function coachAvatarAttrs(c){ return playerAvatarImgAttrs(coachSeedOf(c),(c&&c.ad)||'',coachAvatarOpts(c)); }
 
 /** Antrenmanda yaş / potansiyel boşluğuna göre çarpan (genç + yüksek pot = hızlı gelişim) */
 function trainingGrowthMult(p){

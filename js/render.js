@@ -201,7 +201,7 @@ function renderClubTransfers(){
     return `
     <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openPlayerModal('${p.id}');}">
       <div class="mavatar-wrap">
-      <img class="mavatar" src="${playerAvatar(p.seed,p.id,{market:true})}" ${playerAvatarImgAttrs(p.seed,p.id,{market:true})} alt="${p.isim}">
+      <img class="mavatar" src="${playerAvatar(p.seed,p.id,{market:true,p:p})}" ${playerAvatarImgAttrs(p.seed,p.id,{market:true,p:p})} alt="${p.isim}">
       <div class="pimg-cap" style="margin-top:2px;">OVR ${p.genel}</div>
       </div>
       <div style="min-width:36px;text-align:center;">
@@ -563,7 +563,7 @@ function injBannerHtml(p){
 function renderPlayerCard(p,showBuy=false,price=0,showPromote=false,showList=false){
   const oc=p.genel>=75?'var(--green)':p.genel>=60?'var(--gold)':'var(--red)';
   const st=starFromGenel(p.genel);
-  const avOpt=showBuy?{market:true}:{ovr:p.genel};
+  const avOpt=showBuy?{market:true,p:p}:{ovr:p.genel,p:p};
   return `<div class="pcard">
     ${injBannerHtml(p)}
     <div class="overall-badge" style="color:${oc};">${p.genel}</div>
@@ -666,7 +666,7 @@ function openPlayerModal(pid){
   const inMarket=G.marketPlayers.some(x=>x.id===pid);
   const inYouth=G.youth.some(x=>x.id===pid);
   const inClub=(G.clubTransferPlayers||[]).some(x=>x.id===pid);
-  const av=(inMarket||inClub)?{market:true}:{ovr:p.genel};
+  const av=(inMarket||inClub)?{market:true,p:p}:{ovr:p.genel,p:p};
   const salt=inMarket?(p.marketIdx!=null?p.marketIdx:p.id):p.id;
   const bigImg=playerAvatar(p.seed,salt,av);
   const oc=p.genel>=75?'var(--green)':p.genel>=60?'var(--gold)':'var(--red)';
@@ -732,7 +732,7 @@ function renderRosterListRow(p){
     <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openPlayerModal('${p.id}');}">
     ${injBannerHtml(p)}
       <div class="mavatar-wrap">
-      <img class="mavatar" src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} alt="${p.isim}">
+      <img class="mavatar" src="${playerAvatar(p.seed,p.id,{ovr:p.genel,p:p})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel,p:p})} alt="${p.isim}">
       <div class="pimg-cap" style="margin-top:2px;">OVR ${p.genel}</div>
       </div>
       <div style="min-width:36px;text-align:center;">
@@ -762,7 +762,7 @@ function renderYouthListRow(p){
     <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openPlayerModal('${p.id}');}">
     ${injBannerHtml(p)}
       <div class="mavatar-wrap">
-      <img class="mavatar" src="${playerAvatar(p.seed,p.id,{ovr:p.genel})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} alt="${p.isim}">
+      <img class="mavatar" src="${playerAvatar(p.seed,p.id,{ovr:p.genel,p:p})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel,p:p})} alt="${p.isim}">
       <div class="pimg-cap" style="margin-top:2px;">OVR ${p.genel}</div>
       </div>
       <div style="min-width:36px;text-align:center;">
@@ -874,7 +874,7 @@ function openLockerRoomModal(pid){
   if(!p) return;
   const k=kisilikInfo(p.kisilik);
   const rank=_rosterRank(p)+1;
-  const av=playerAvatar(p.seed,p.id,{ovr:p.genel});
+  const av=playerAvatar(p.seed,p.id,{ovr:p.genel,p:p});
   const sikayet=[
     `“${p.sit} maçtır kenardayım. Ben bu takımın en iyi ${rank}. oyuncusuyum — sahada olmam gerekiyor.”`,
     `“Antrenmanda her şeyi yapıyorum ama maç günü ismim yok. Bunu anlamıyorum.”`,
@@ -882,7 +882,7 @@ function openLockerRoomModal(pid){
   ][Math.abs(hash32(p.id))%3];
   showAppModal(`<div class="modal-title">💬 Soyunma Odası — ${escMatch(p.isim)}</div>
     <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;">
-      <img src="${av}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel})} style="width:74px;height:92px;border-radius:10px;object-fit:cover;border:2px solid var(--red);" alt="">
+      <img src="${av}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel,p:p})} style="width:74px;height:92px;border-radius:10px;object-fit:cover;border:2px solid var(--red);" alt="">
       <div style="flex:1;min-width:200px;">
         <div style="font-size:12px;color:var(--text2);">${p.poz} · OVR ${p.genel} · kadro sırası ${rank}. · ${k.ikon} ${k.ad}</div>
         <div style="font-size:11px;color:var(--red);margin-top:3px;">😖 Moral ${Math.round(Number(p.mood)||0)}/100 · ${p.sit} maçtır süre almadı</div>
@@ -1046,7 +1046,22 @@ function renderMarket(){
     maBt.textContent=sort==='maas'?(d.maas?'Maaş ↓':'Maaş ↑'):'Maaş';
     maBt.classList.toggle('active',sort==='maas');
   }
+  /* FAZ 17: uyruk filtresi butonlarının aktifliği durumdan türetilir — yeniden çizimde kaybolmaz. */
+  try{
+    const nat=G.marketUlkeFilter||'all';
+    document.querySelectorAll('#page-market .fbtn.mnat').forEach(b=>{
+      const oc=b.getAttribute('onclick')||'';
+      const mod=oc.indexOf("'yerli'")>=0?'yerli':(oc.indexOf("'global'")>=0?'global':'all');
+      b.classList.toggle('active',mod===nat);
+    });
+  }catch(e){}
+  /* FAZ 17 (§6.3): uyruk filtresi. Markette KOTA YOKTUR — havuz OVR'ye göre dolar ve üst
+     sıralar doğal olarak yabancı ağırlıklı olur; bu filtre yalnız GÖRÜNÜMÜ süzer.
+     Seçim G üzerinde durduğu için ekran yenilenince kaybolmaz ve sıralamayla birlikte çalışır. */
+  const ulkeF=G.marketUlkeFilter||'all';
   let f=pozF==='all'?G.marketPlayers.slice():G.marketPlayers.filter(p=>p.poz===pozF);
+  if(ulkeF==='yerli') f=f.filter(p=>p&&p.ulke===LIG_EV_ULKE);
+  else if(ulkeF==='global') f=f.filter(p=>p&&p.ulke!==LIG_EV_ULKE);
   f.sort((a,b)=>{
     let cmp;
     if(sort==='maas') cmp=(a.maas||0)-(b.maas||0);
@@ -1071,7 +1086,7 @@ function renderMarket(){
     return `
     <div class="mcard" onclick="openPlayerModal('${p.id}')" style="cursor:pointer;" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openPlayerModal('${p.id}');}">
       <div class="mavatar-wrap">
-      <img class="mavatar" src="${playerAvatar(p.seed,p.marketIdx,{market:true})}" ${playerAvatarImgAttrs(p.seed,p.marketIdx,{market:true})} alt="${p.isim}">
+      <img class="mavatar" src="${playerAvatar(p.seed,p.marketIdx,{market:true,p:p})}" ${playerAvatarImgAttrs(p.seed,p.marketIdx,{market:true,p:p})} alt="${p.isim}">
       <div class="pimg-cap" style="margin-top:2px;">OVR ${p.genel}</div>
       </div>
       <div style="min-width:36px;text-align:center;">
@@ -1138,9 +1153,18 @@ function setMarketSort(mode,btn){
   renderMarket();
 }
 
+/** FAZ 17 (§6.3): Tümü / Yerli / Global. Mevkilerle ve sıralamayla birlikte çalışır. */
+function filterMarketUlke(mode,btn){
+  G.marketUlkeFilter=(mode==='yerli'||mode==='global')?mode:'all';
+  G.marketShown=10;   /* mobil sayfalama filtre değişince başa dönsün */
+  document.querySelectorAll('#page-market .fbtn.mnat').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderMarket();
+}
+
 function filterMarket(f,btn){
   G.marketPozFilter=f;
-  document.querySelectorAll('#page-market .fbtn:not(.msort)').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#page-market .fbtn:not(.msort):not(.mnat):not(.ctf)').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
   renderMarket();
 }

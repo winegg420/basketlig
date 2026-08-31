@@ -25,7 +25,7 @@ const N = arg('n', 30);
 const SEED0 = arg('seed', 987654321);
 const FREEZE = process.argv.includes('--freeze');
 
-const FILES = ['js/i18n.js', 'js/i18n-dict.js', 'js/i18n-commentary.js', 'js/state.js',
+const FILES = ['js/i18n.js', 'js/i18n-dict.js', 'js/i18n-commentary.js', 'js/names.js', 'js/state.js',
   'js/economy.js', 'js/persistence.js', 'js/portraits.js', 'js/roster-gen.js',
   'js/league.js', 'js/match-prep.js', 'js/render.js', 'js/match-engine.js'];
 
@@ -114,7 +114,11 @@ function analizEt(events) {
     const tx = metin(e);
     r.olay++;
     /* kalıp: isim ve sayılar çıkarılır */
-    const k = tx.replace(/\d+/g, '#').replace(/[A-ZÇĞİÖŞÜ][a-zçğıöşü]+(\s[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)+/g, '#');
+    /* FAZ 17: isim silme kalıbı ASCII+TR harflerine bakıyordu; havuzda č/ć/š/ž/ū/ė
+       geçen bir soyadı (Jokić, Šarić, Valančiūnas…) YARIM siliniyor ve artan harf satırı
+       benzersiz yapıyordu — ölçüm oyuncu adı çeşitliliğini "kalıp çeşitliliği" sanıyordu.
+       Unicode harf sınıfıyla ad tam silinir; ölçüm gerçekten ŞABLON çeşitliliğini verir. */
+    const k = tx.replace(/\d+/g, '#').replace(/\p{Lu}[\p{Ll}\p{M}'’\-]+(\s\p{Lu}[\p{Ll}\p{M}'’\-]+)+/gu, '#');
     if (k.trim()) r.kalip.set(k, (r.kalip.get(k) || 0) + 1);
 
     if (e.q >= 1 && e.q <= 4 && Number(e.dt) > 0) r.qDt[e.q] += Number(e.dt);
@@ -250,6 +254,14 @@ function analizEt(events) {
 
   console.log('\n[D] Zenginlik ve yön');
   const oran = T.benzersiz / T.olay;
+  /* FAZ 17 ÖLÇÜM DÜZELTMESİ — okurken dikkat: bu oran ÖNCE şişiyordu. İsim silme kalıbı
+     ASCII+TR harflerine bakıyordu, bu yüzden č/ć/š/ž/ū geçen soyadları (Jokić, Šarić,
+     Valančiūnas…) yarım siliniyor ve artan harf her satırı "benzersiz kalıp" yapıyordu —
+     ölçülen şey şablon çeşitliliği değil, oyuncu adı çeşitliliğiydi.
+     Kalıp Unicode'a çevrilince gerçek değerler: FAZ 16 tabanı %82,5 · FAZ 17 %82,7.
+     Yani %85 kapısı hiçbir zaman gerçekten geçilmemişti; eksik anlatım şablonu sayısındadır
+     ve FAZ 13'ten kalmadır (FAZ 17 gerilemesi DEĞİL — FAZ 17 taban değerin bir tık üstünde).
+     Kapı bilerek düşürülmedi: doldurulacak açık burada görünsün. */
   ok('benzersiz kalıp / olay ≥ %85', oran >= 0.85, `%${(100 * oran).toFixed(1)}`);
   ok('devre arası ayrı kalıp var', T.devreArasi >= T.mac, `${T.devreArasi} satır / ${T.mac} maç`);
   ok('enerji/yorgunluk anlatılıyor', T.enerjiSatiri > 0, `${T.enerjiSatiri} satır`);

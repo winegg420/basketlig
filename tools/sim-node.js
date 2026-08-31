@@ -27,7 +27,7 @@ const N = arg('n', 50);
 const SEED0 = arg('seed', 987654321);
 
 /* main.js YOKTUR: arayüz bağlantıları sunucuya gitmeyecek. Sıra charazay2.0.html ile aynı. */
-const FILES = ['js/i18n.js', 'js/i18n-dict.js', 'js/i18n-commentary.js', 'js/state.js',
+const FILES = ['js/i18n.js', 'js/i18n-dict.js', 'js/i18n-commentary.js', 'js/names.js', 'js/state.js',
   'js/economy.js', 'js/persistence.js', 'js/portraits.js', 'js/roster-gen.js',
   'js/league.js', 'js/match-prep.js', 'js/render.js', 'js/match-engine.js'];
 

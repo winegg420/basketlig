@@ -729,6 +729,8 @@ function _applyGameStateInner(d){
      F7-17: bu çağrı SEED doldurma bloğundan SONRA olmalı; seed'siz oyuncularda eğilimler
      ilk refreshRole() çağrısında bir kez zıplıyordu. */
   try{ ensureRoles(G.players); ensureRoles(G.youth); ensureRoles(G.marketPlayers); ensureRoles(G.clubTransferPlayers); }catch(e){}
+  /* FAZ 17: koçta ülke alanı yoksa doldurulur (portre seçimi ülkeye bağlı). */
+  faz17KocUlkeDoldur();
   ensureMarketStock();
   if(G.team) ensureYouthStock();
   /* F7-7 (istismar): "boşsa üret" kuralı ücretsiz reroll kapısıydı — tüm koçları kov,
@@ -772,6 +774,15 @@ function cleanupDevTelemetryKeys(){
     if(window.CHARAZAY_DEBUG) return;
     ['CHARAZAY_MENTOR_SYNC','CHARAZAY_MENTOR_LAYOUT_LOG'].forEach(k=>{
       try{ if(localStorage.getItem(k)!=null) localStorage.removeItem(k); }catch(e){}
+    });
+  }catch(e){}
+}
+/** FAZ 17 (§7.1): eski kayıttaki koçta 'ulke' alanı yoktu — portre seçimi ülkeye bağlı
+ *  olduğu için okurken ligin ev ülkesi atanır. */
+function faz17KocUlkeDoldur(){
+  try{
+    [G.coaches,G.coachMarket,G.scouts,G.scoutMarket].forEach(list=>{
+      if(Array.isArray(list)) list.forEach(c=>{ if(c&&!c.ulke) c.ulke=LIG_EV_ULKE; });
     });
   }catch(e){}
 }

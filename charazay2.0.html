@@ -1261,6 +1261,10 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             <span style="font-size:11px;color:var(--text2);margin-right:6px;">Sırala (tekrar tıkla ⇄):</span>
             <button type="button" class="fbtn msort active" id="mSortOvr" onclick="setMarketSort(&#39;ovr&#39;,this)">OVR ↓</button>
             <button type="button" class="fbtn msort" id="mSortMaas" onclick="setMarketSort(&#39;maas&#39;,this)">Maaş ↓</button>
+            <span style="font-size:11px;color:var(--text2);margin-left:14px;margin-right:6px;">Uyruk:</span>
+            <button type="button" class="fbtn mnat active" onclick="filterMarketUlke(&#39;all&#39;,this)">Tümü</button>
+            <button type="button" class="fbtn mnat" onclick="filterMarketUlke(&#39;yerli&#39;,this)">Yerli</button>
+            <button type="button" class="fbtn mnat" onclick="filterMarketUlke(&#39;global&#39;,this)">Global</button>
             <button class="fbtn active" onclick="filterMarket(&#39;all&#39;,this)" style="margin-left:auto;">Tümü</button>
             <button class="fbtn" onclick="filterMarket(&#39;PG&#39;,this)">PG — Organizatör</button>
             <button class="fbtn" onclick="filterMarket(&#39;SG&#39;,this)">SG — Şutör</button>
@@ -1442,19 +1446,20 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 <div class="notif" id="notif"></div>
 
-<script src="js/i18n.js?v=52"></script>
-<script src="js/i18n-dict.js?v=52"></script>
-<script src="js/i18n-commentary.js?v=52"></script>
-<script src="js/state.js?v=52"></script>
-<script src="js/economy.js?v=52"></script>
-<script src="js/persistence.js?v=52"></script>
-<script src="js/portraits.js?v=52"></script>
-<script src="js/roster-gen.js?v=52"></script>
-<script src="js/league.js?v=52"></script>
-<script src="js/match-prep.js?v=52"></script>
-<script src="js/render.js?v=52"></script>
-<script src="js/match-engine.js?v=52"></script>
-<script src="js/main.js?v=52"></script>
+<script src="js/i18n.js?v=53"></script>
+<script src="js/i18n-dict.js?v=53"></script>
+<script src="js/i18n-commentary.js?v=53"></script>
+<script src="js/names.js?v=53"></script>
+<script src="js/state.js?v=53"></script>
+<script src="js/economy.js?v=53"></script>
+<script src="js/persistence.js?v=53"></script>
+<script src="js/portraits.js?v=53"></script>
+<script src="js/roster-gen.js?v=53"></script>
+<script src="js/league.js?v=53"></script>
+<script src="js/match-prep.js?v=53"></script>
+<script src="js/render.js?v=53"></script>
+<script src="js/match-engine.js?v=53"></script>
+<script src="js/main.js?v=53"></script>
 
 
 </body></html>
