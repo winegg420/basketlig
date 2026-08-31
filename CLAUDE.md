@@ -52,7 +52,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | Yol | Açıklama |
 |-----|----------|
 | `charazay2.0.html` | **Ana oyun** — HTML+CSS gövdesi. JS artık burada değil; sırayla `js/*.js` yüklenir (13 `<script src>`; ilk üçü dil katmanı). |
-| `js/*.js` | **Oyun mantığı** — 10 çekirdek modül + 3 dil modülü (aşağıdaki kod haritası). |
+| `js/*.js` | **Oyun mantığı** — 11 çekirdek modül + 3 dil modülü (aşağıdaki kod haritası). |
 | `index.html`, `Charazay-2.0-BASLAT.html` | `charazay2.0.html`'e yönlendiren giriş sayfaları. |
 | `charazay-mentor-panel.html` | Geliştirici öz-denetim aracı — **oyunun parçası değil**, dokunma. |
 | `assets/portraits/` | 201 oyuncu portresi (`p_0000.jpg`…`p_0200.jpg`) + `manifest.json`. |
@@ -87,6 +87,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/lig-check.js` | **FAZ 19 lig denetçisi** — standings ↔ fikstür tek kaynak, ayrışma senaryosunda onarım, tablo tutarlılığı (o = g + m), 10 sezonluk denge kapıları (ortalama fark, 20+/5- oranı, 16-0 takım), şehir tekrarı. Lig/tablo/denge değişince çalıştır. |
 | `tools/arena-check.js` | **FAZ 24 arena doluluğu denetçisi** — 125 arena×bilet fiyatı×form birleşiminde **seyirci ≤ taraftar tabanı**, doluluk sınırları, sezon başı bilet gelirinin değişmezliği, `TARAFTAR_KATSAYI`nın tek kaynak olması. Arena / bilet / taraftar formülü değişince çalıştır. |
 | `tools/analiz-check.js` | **FAZ 24 analiz sayı tutarlılığı** — Analiz kartındaki "Sayı ort. (attı)" ile "Attığı sayı" grafiğinin aynı diziden beslendiğini ve grafik eksen etiketlerinin ÇİZİM için açılan banttan değil gerçek min/max'tan basıldığını (FAZ 22 §4.1 gerilemesi) 3 maçlık veriyle sınar. |
+| `tools/turkek-check.js` | **FAZ 25 Türkçe çekim eki birim testi** — brifin 8 ad × 4 durum tablosu (32 kapı), kaynaştırma/zamir n'si ayrımı, ünsüz benzeşmesi, şablon çözücü (`%X{durum}`), Türkçe küçük harf. `js/turkce-ek.js` değişince çalıştır. |
 | `tools/portre-uret-yerel.py` | **FAZ 17C yerel portre üretimi** (SD-Turbo, CPU). Kova kotaları, bant dengesi, kaldığı yerden devam, dilim başına commit+push. Boru hattı `tools/portre_boru.py`. |
 | `tools/portre_boru.py` | Portre işleme boru hattı (kadraj, fon eşitleme, eleme kapıları). Üretim kaynağı değişse de bu modül aynı kalır. |
 | `tools/i18n-scan.js` | **EN modunda çeviri denetimi** — tüm sayfa/modal/canlı maçı gezip çevrilmemiş metin düğümlerini raporlar. Dil değişikliğinden sonra çalıştır. |
@@ -114,6 +115,7 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
 | `js/league.js` | Lig modalları, haber/sidebar, takım detay sayfası, `genRoundRobinMatches`, fikstür, `openMatchTactics`/`saveMatchTactics`, ilk-5 editörü. |
 | `js/match-prep.js` | `updateStandingsFromResult`, `computeRosterOfrDef`, `matchLineup`, `simulateCpuMatch`, yorgunluk/sakatlık, playoff, `startLeagueSeason`. |
 | `js/render.js` | Sayfa render'ları: `renderRoster/renderLig/renderMarket/renderArena/renderAltyapi/renderAntrenman/renderBilanço/renderAnalytics`, oyuncu kartı/modal, scouting/izci ağı (`renderScouts`), kulüp transfer pazarlığı (`openClubOfferModal`), SVG grafik (`svgLineChart`). |
+| `js/turkce-ek.js` | **Türkçe çekim eki** — `turkEk(ad,durum)` (ünlü uyumu + ünsüz benzeşmesi + kaynaştırma/zamir n'si), `turkEkUygula` (`%X{durum}` çözücü), `trKucuk`/`trBuyukIlk` (İ→i, I→ı). Saf fonksiyonlar; `match-engine.js`'ten ÖNCE yüklenir. |
 | `js/match-engine.js` | Maç motoru: `simulateMatch`/`buildMatchCtx` (sunucu sözleşmesi, `G`'siz) → `generateMatchEvents` → `runPossession` (tempo/odak/savunma stili/top yükleme/eşleştirme taktikleri), şut haritası/kutu skor render, `applyMatchResult`. **Canlı sunum v3** (27. oturum): rol tabanlı dizilim (`_assignRoles`, `SET_*`), üç fazlı pozisyon (sokma → `TRANS_*` geçiş → set), top durum makinesi (`_ballHold/_ballPass/_ballShoot/_ballLoose`), serbest top takibi (`_chase`), çizgi dışı sokma (`_inboundSetup`/`_clearOob`), anlatım senkronu (`movePlayersForEvent(ev,paint)`). |
 | `js/main.js` | `startMatch`/`stopMatch`/canlı oynatım, `toggleManualCoach`, antrenman + izci (`hireScout`) aksiyonları, transfer/gelen teklif (`showIncomingOfferModal`)/koç/arena aksiyonları, `showPage` (SPA, `analiz` dahil), `createTeam`, bildirim kuyruğu, `window.onload` bootstrap. |
 | — | **7. oturum sistemleri:** playoff serisi + sezon ödülleri + **başkan hedefi** (`match-prep.js`), transfer pazarlığı + **kişilikler** (`playerAcceptsOffer`), **izci ağı** + **draft** (`startDraft`, `match-prep.js`), **Analiz** sayfası. Detay `PROGRESS.md` 7. oturum. |
@@ -293,6 +295,54 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   SAYILMAZ — `/\bKaradağ\b/` ve `/İsveç\b/` hiç eşleşmiyordu. Türkçe harfle başlayan ya da
   biten kalıplarda sınırı açık yaz: `(^|[^A-Za-zÇĞİÖŞÜçğıöşü])…(?![A-Za-zÇĞİÖŞÜçğıöşü])`.
 - **Dizilim koordinatları** `SET_*` sabitlerindedir (`match-engine.js`); değiştirince `faz11-check` B1 (geometri) ve `spacing-check` ile ölç. Koreografi adımı eklerken (kesme, perde, şutör hamlesi) dizilimin ÇEVRESİNİ boşaltmamaya dikkat et — köşedeki oyuncuyu topa çağırmak aralığı çökertir.
+- **Özel ada ek `turkEk()` ile eklenir (FAZ 25 §7.1):** şablona sabit ek YAZMA. Canlıda
+  263 olayda 20 dilbilgisi hatası vardı — "Ömer Polat'ye", "Bursa Yıldırım'de",
+  "Kayseri Boğaları'ye", "Koray Gündoğdu'nin". Şablonda `%R{e}` / `%T{de}` / `%R{in}`
+  yaz; `adKoy()` önce çekim ekli yer tutucuları, sonra düz `%X`'i çözer (anahtarlar
+  UZUNDAN KISAYA sıralanır — `%SC` `%S`'den önce). Türkçede iki ayrı olgu vardır ve
+  karıştırılırsa ek yanlış çıkar: **kaynaştırma** (iyeliksiz ünlü — Gündoğdu'**ya**, ama
+  tamlayanda Gündoğdu'**nun**) ile **zamir n'si** (3. tekil iyelik — Boğaları'**na**,
+  Boğaları'**nda**, Boğaları'**ndan**). `js/turkce-ek.js` `state.js`'ten sonra,
+  `match-engine.js`'ten ÖNCE yüklenir; `sim-node`, `anlatim-check`, `lig-check`,
+  `milliyet-check`, `portre-check` modül listelerinde de olmalı. Değişince
+  `node tools/turkek-check.js` (8 ad × 4 durum tablosu).
+- **Anlatımda fail kaybolmamalı (FAZ 25 §7.2):** `AKIS_ON` ön parçalarının bir kısmı
+  adsızdır ('Perde geldi.', 'İkili oyun.') ve kısa çekirdekler de adsızdır ('Kaçırdı.');
+  ikisi birleşince "İkili oyun. Kaçırdı." çıkıyor ve kimin attığı kayboluyordu. `zincirLine`
+  ön parçada `%S` yoksa çekirdeğe faili ekler. Havuzu daraltma — çeşitlilik değerli.
+- **Saat referansı ve son bölüm tonu (FAZ 25 §7.3):** `saatGate` / `tonGate`, sayaçları
+  `_saatG` ile MAÇ düzeyinde tutar (`narr` ile aynı kapsam — F13-3/F14-1 tuzağı). Hedef
+  saat referansı %6-14, 4Ç son 3 dk ton satırı ≥3/maç. Kapı yalnız şut olaylarına
+  bağlanırsa aday havuzu küçük kalır ve oran %2-5'te takılır; ribaund ve faul olaylarına da
+  bağlıdır. Çeyreğin son 10 saniyesinde cooldown atlanır.
+- **Üslup ölçüleri (FAZ 25 §7.4):** zincir oranı %50-60 · ortalama olay kelime sayısı <9 ·
+  yabancı terim 0 · parantezli taktik etiketi 0 · künye biçimli faul ≤%50 ·
+  "hepsi içeride" ≤4/maç. Terim tercihleri SABİT: spacing→açılma, box-out→ribaunt bloğu,
+  drive→içeri dalma, pick&roll→ikili oyun, AND-1→devam sayısı. Taktik adları CİNS İSİMDİR,
+  kesme işareti ALMAZ ("erken tempoya") — `TAKTIK_ADI` tablosunda yönelme hâli hazır durur.
+  Zincir ve yüksek frekanslı olaylarda TEK ad kullanılır (`_tokShort`) — gerçek anlatımın
+  ritmi budur ("Cedi güçlü gitti."); resmî/tören satırlarında tam ad korunur.
+- **Top taşıma rolleri (FAZ 25 §1):** topu 1/2/3 taşır; PF/C ribaundu alıp ÇIKIŞ PASI verir.
+  Tek kaynak `_tasiyabilir()` + `_cikisHedefi()` (önce gerçek guard 0/1, sonra SF 2 —
+  sıralamasız hâli M9'u %100'den %75'e düşürür). Pota 4 m'den yakınsa uzun kendi bitirir.
+  Yeni bir top el değiştirme yolu eklersen bu ikiliden geçir.
+- **Set hücumunda donma yok (FAZ 25 §2):** `S.canliSet` açıkken hedefi 340 ms'den uzun
+  sabit kalan oyuncuya dizilim noktasının çevresinde yeni nokta verilir. Üç kural:
+  (a) salınım **radyal** olmalı (potaya doğru/uzağa) — serbest yön savunmacıyı adam-pota
+  doğrultusundan çıkarır ve ball-you-man düşer; (b) `_hedefAta` KULLANILMAZ, 26 px'ten
+  yakın hedefi değiştirmez (F15-1) ve salınımı yutar — hedef doğrudan yazılır;
+  (c) eşik SAHNE saatinde değil **gerçek saatte** ölçülür (sahne duvar saatinin ~0,45 katı
+  akıyor). `_lock` "yeniden yönlendirme yasağı"dır, kıpırdama yasağı değil.
+- **Kenardan sokma yerleşimi (FAZ 25 §3):** `_sokmaYerlesimi` sokucunun 15 m içinde en az
+  3 takım arkadaşı bırakır; `_sokmaHedefi` ilk pası 15 m ile sınırlar — istisna, hedefe en
+  yakın savunmacı 8 m'den uzaksa (gerçek hızlı hücum).
+- **Serbest atışta sektirme 1-3 (FAZ 25 §4):** `_ftSektir` sahne PRNG'siyle sayıyı çeker ve
+  `b.dribBitis` dolunca `noDrib` açılır. Dizilim (F14-7) ayrı bir konudur, ona dokunma.
+- **Jeton yönelimi (FAZ 25 §6.1):** `p.yon` + `_yonGuncelle`. Sıra: `_sirtDonuk` (post) →
+  topu tutuyorsa pota → hareket yönü → top. Post oyununda `_sirtDonuk` şut anında kalkar.
+- **Perde üç aşamadır (FAZ 25 §6.2):** kurulum → sıyırma → devrilme (roll/pop), artı savunma
+  tepkisi (switch / arkadan dolaşma). Sıyırma OMUZ mesafesinde kalmalı: 30 px yanal
+  kaydırma topçuyu 2,1 m götürüp savunmacısını koparıyor ve markaj ölçümünü bozuyordu.
 - **İsim tek kaynaktadır (FAZ 24 dersi):** oyuncu, koç, izci, lig haberi ve ekonomi olayı —
   hepsi `randomNameFor(ülke)` üzerinden `NAME_POOLS`'tan okur. Genel bir yedek ad listesi
   (eski `ILK`/`SY`) **açma**: temizlik hep havuzlarda yapılır, ikinci bir liste o temizlikten

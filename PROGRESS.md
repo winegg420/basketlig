@@ -4085,3 +4085,189 @@ bu kapıya ekonomik katkı yapmıyor.
 
 - FAZ 18 / FAZ 21 anlatım dili işi (ertelendi) — `anlatim-check` %85 kapısı buna bağlı.
 - FAZ 23 portre tarzı kararı — kullanıcı "dursun, sonra karar veririm" dedi; 465 portre yerinde.
+
+---
+
+## FAZ 25 — Canlı maç: gerçekçilik + anlatım (2026-09-01)
+
+Sekiz bölümün tamamı uygulandı. Sunum katmanında kalındı: **`band.js` hash'i
+`99bb9ceb67917bd0` — DEĞİŞMEDİ**, `sim-node --n=100 --seed=42` → `87.2 - 80.0`,
+olay/maç 249, hata 0, determinizm korundu.
+
+### Bölüm 1 — Top sürme rolleri
+
+`_tasiyabilir()` (rol 0/1/2) + `_cikisHedefi()`. Uzun (PF/C) topu aldığında en yakın
+guard'a çıkış pası atar; pota 4 m'den yakınsa kendi bitirir. Kural ribaund sonrası zaten
+vardı (M9); **top kaybı, çalma ve kenardan sokma** yollarına da getirildi. Ayrıca
+`_simTick` içinde tek bir genel kapı var: uzun taşıyıcı orta saha şeridine girerse
+(±150 px) topu guard'a çıkarır.
+
+`_cikisHedefi` önce GERÇEK guard (rol 0/1), sonra SF seçer — sıralamasız ilk sürüm M9'u
+%100'den %75'e düşürmüştü. **Ölçüm: orta sahayı geçen taşımaların %83,9 → %100'ü rol 0/1/2.**
+
+### Bölüm 2 — Geçiş oyununda donma
+
+`_simTick`'e "canlı set" adımı eklendi: set fazında bir oyuncunun hedefi 340 ms'den uzun
+sabit kalırsa dizilim noktasının çevresinde yeni bir nokta verilir.
+
+Üç ders çıktı:
+1. **Salınım yönü radyal olmalı** (potaya doğru / potadan uzağa). Serbest yönlü salınım
+   savunmacıyı adam-pota doğrultusundan çıkarıyor, `spacing-check` ball-you-man ölçümü
+   %82,9 → %79,7'ye düşüyordu.
+2. **`_hedefAta` kullanılamaz**: nokta 26 px'ten yakınsa hedefi DEĞİŞTİRMİYOR (F15-1) ve
+   ≤9 px'lik salınım yutuluyordu. Hedef doğrudan yazılır; kastedilen yer değiştirme değil
+   yerinde kıpırdanmadır.
+3. **Eşik sahne saatinde değil GERÇEK saatte** ölçülür. Ölçüm: donma anında `S.time` farkı
+   0,67 sn iken kullanıcının gördüğü süre 1,50 sn idi — sahne saati duvar saatinin ~0,45
+   katı akıyor. "Donmuş görünmek" bir seyirci algısıdır (F15 dersinin bu maddeye düşen
+   karşılığı).
+
+Ayrıca `_lock` "yeniden yönlendirme yasağı"dır, "kıpırdama yasağı" değil: kilitli oyuncuya
+5 px'lik ağırlık aktarması verilir. Kenar/köşe slotlarında `_inX` kırpması iki yönü aynı
+değere getirdiği için dik yöne geçilir.
+
+### Bölüm 3 — Kenardan sokma
+
+`_sokmaYerlesimi()`: sokucunun 15 m (443 px) içinde en az 3 takım arkadaşı; yalnız dışarıda
+kalanlar çekilir, dizilime dokunulmaz. `_sokmaHedefi()`: ilk pas 15 m'yi aşamaz — istisna,
+hedefe en yakın savunmacı 8 m'den uzaksa (gerçek hızlı hücum).
+**Ölçüm: 20 sokma · ortalama 6,7 m · 3+ yakın %100 · 25 m üstü ilk pas 0/20.**
+
+### Bölüm 4 — Serbest atışta sektirme
+
+`_ftSektir()`: 1-3 sektirme (sahne PRNG'si), sonra `noDrib` ile top elde kalır ve atış gelir.
+Atışlar arasında da aynı rutin. **Ölçüm: 12 rutin · sektirme 1-3.** Dizilime (F14-7)
+dokunulmadı, o kapı geçiyor.
+
+### Bölüm 5 — Taktikler sahada
+
+Eksik olan tek şema **yayılma (spotup)** idi: yay İÇİNDE kalanlar çizginin hemen dışına
+(THREE_R+14) çıkarılır, en içerideki uzun çembere gider. İlk denemede herkes
+`max(THREE_R+26, d)` yarıçapına itiliyordu; 225 px'lik nokta sahanın ORTA ÜÇTE BİRİNE
+düşüyor ve dizilim ölçümünü bozuyordu (%16,4 → %20,7).
+**Ölçüm: cut boya %38 / yay %45 · spotup boya %27 / yay %59 → 10,6 ve 14,8 puan fark.**
+
+### Bölüm 6 — Post-up ve perde
+
+- **Jeton yönelimi** eklendi (`yon` alanı + `_yonGuncelle` + çember kenarında küçük
+  gösterge). Sıra: sırtı dönük (post) → topu tutuyorsa pota → hareket yönü → top.
+- **Post oyunu**: `_sirtDonuk` bayrağı, şut anında kalkar. **Ölçüm: 655 kare, %99 sırtı
+  potaya dönük.**
+- **Perde üç aşama**: kurulum (perdeci durur, kilitlenir) → sıyırma (topçu omzu yalar) →
+  devrilme (roll %62 / pop). Savunma tepkisi: switch (%30) ya da arkadan dolaşma.
+  **Ölçüm: evreler [1,2,3] · 6 roll / 3 pop.**
+  Sıyırma ilk sürümde 30 px yanal + 26 px dikeydi; topçu ~2,1 m yer değiştirip savunmacısını
+  koparıyordu (markaj 1,98 → 2,08 m). Omuz mesafesine (16/20 px) çekildi.
+
+### Bölüm 7 — Anlatım
+
+**7.1 Türkçe ek uyumu (en öncelikli).** Yeni dosya `js/turkce-ek.js`:
+`turkEk(ad, durum)` — ünlü uyumu + ünsüz benzeşmesi + kaynaştırma; `turkEkUygula`,
+`trKucuk`, `trBuyukIlk`. 48 sabit ekli şablon (`%T'de` gibi) `%X{durum}` yer tutucusuna
+çevrildi — 24 `match-engine.js` + 24 `i18n-commentary.js` **anahtarı** (anahtar değişmezse
+çeviri sessizce eşleşmez). Merkezî `adKoy()` önce `%X{durum}`, sonra düz `%X` çözer ve
+anahtarları uzundan kısaya sıralar (`%SC` > `%S` tuzağı).
+
+İki ayrı olgu ayrıldı — ilk sürüm ikisini tek kural sayınca "Boğaları'da" ve "Gündoğdu'na"
+çıkmıştı:
+- **Kaynaştırma** (iyeliksiz ünlü): Gündoğdu'**ya**, ama tamlayanda Gündoğdu'**nun**
+- **Zamir n'si** (3. tekil iyelik): Boğaları'**na**, Boğaları'**nda**, Boğaları'**ndan**
+
+`tools/turkek-check.js` — brifin 8 ad × 4 durum tablosu **32/32**, artı kural ayrıntıları,
+sınır durumları, şablon çözücü ve Türkçe küçük harf (İ→i, I→ı).
+
+**7.2 Failsiz cümle.** `zincirLine` içinde: ön parça `%S` içermiyorsa çekirdeğe fail eklenir
+("İkili oyun. Tutturdu." → "İkili oyun. Batuhan Keskin tutturdu."). Havuz daraltılmadı.
+
+**7.3 Saat referansı ve son bölüm tonu.** `saatGate` + `tonGate`, maç düzeyi sayaç
+(`_saatG`) — `narr` ile aynı kapsamda (F13-3 / F14-1 tuzağı). Çeyreğin son 10 saniyesinde
+kapı cooldown'ı atlar. **Ölçüm: saat referansı %2,4 → %9,5 · son bölüm tonu 3,8/maç.**
+Ağırlıklar ölçülerek ayarlandı; ilk deneme (0,85/0,35/0,30, cd 3-6) %2,4 veriyordu çünkü
+aday havuzunun küçüklüğü hesaba katılmamıştı — kapı ribaund ve faul olaylarına da bağlandı.
+
+**7.4 Üslup.**
+
+| Ölçüm | Önce | Sonra | Hedef |
+|---|---|---|---|
+| Zincir oranı | %35,4 | **%59,7** | %50-60 |
+| Ortalama kelime/olay | 10,47 | **8,83** | <9 |
+| Yabancı terim | 5 tür / 566 geçiş | **0** | 0 |
+| Parantezli taktik etiketi | var | **0** | 0 |
+| Künye biçimli faul | %100 | **%46,7** | ≤%50 |
+| "hepsi içeride" | 8,8/maç | **1,3/maç** | ≤4 |
+
+- Yabancı terimler tek tercihe sabitlendi: spacing→açılma, box-out→ribaunt bloğu,
+  drive→içeri dalma, pick&roll→ikili oyun, AND-1→devam sayısı.
+- Taktik adı parantezli etiket yerine cümleye girdi ("Erken tempoya geçtiler, doğru karar.").
+  Taktik adları **cins isimdir**, kesme işareti almaz — `turkEk` kullanılmaz, yönelme hâli
+  tabloda hazır durur. Giriş kalıbı cümleyi sürdürüyorsa spiker satırı küçük harfle devam
+  eder, kendi başına cümleyse büyük kalır.
+- `ftLine` 10+ varyanta çıktı; faul satırı künye YA DA cümle biçiminde ("Demirel'in ikinci
+  faulü"). "yine faulde" yalnız 2. faulden itibaren.
+- Kelime bütçesi: hamle önekleri kısaltıldı ve parantezli İngilizce glosler ("(crossover)",
+  "(spin move)") kaldırıldı; takım faulü sayacı yalnız bonusa yaklaşırken (4+) basılır;
+  **zincir ve yüksek frekanslı olaylarda TEK ad kullanılır** ("Cedi güçlü gitti." ritmi) —
+  resmî/tören satırlarında tam ad korunur.
+- `IMZA_ISTAT` düzeltildi: "— 14 sayısı oldu." → "Böylece 14 sayıya ulaştı."
+
+**7.5 Anlatım sahayla konuşuyor.** `AKIS_ON.eslesme`'den post-up iddiaları çıkarıldı
+('sırtını döndü', 'adamını sırtladı' — zincir bölge filtresinden geçmiyor, spotup/pnr/cut
+pozisyonlarında da çıkıyordu). `%S tepeye çıktı.` yay tepesi iddiasıydı, değiştirildi. Blok
+cümlelerine bölge süzgeci eklendi (3'lük blokta "boyalı alanın kapısını kapadı" çıkıyordu).
+
+### Bölüm 8 — Denetim
+
+**`tools/_lib/anlatim-kapilari.js`** (10 yeni kapı, `anlatim-check` **23/23**):
+ek uyumu 0 · failsiz cümle 0 · saat %9,5 · ton 3,8/maç · zincir %59,7 · kelime 8,83 ·
+yabancı terim 0 · "hepsi içeride" 1,3/maç · künye faul %46,7 · anlatım-saha çelişmesi 0.
+
+**Üç mevcut kapı biçim okuyordu, niyetleri korunarak düzeltildi:**
+- "top çalma iki taraflı" TAM AD arıyordu; kısa adla **0/795** veriyordu.
+- Faul kapısı yalnız künye okuyordu; cümle biçimi ve serbest atış satırları kapsam dışıydı.
+- Sıra sözcüğü regex'inde **`\b` Türkçe harfte çalışmıyor** — `/\büçüncü\b/` hiç
+  eşleşmiyor, 25 satır okunamıyor ve sayaç 27 sahte "atlama" üretiyordu (CLAUDE.md'deki
+  FAZ 17 i18n dersinin aynısı). Ayrıca cümle kalıbı ilk büyük harfli sözcüğü ("Hakem") ad
+  sanıyordu; anahtar soyada normalize edildi.
+
+**`tools/_lib/saha-kapilari.js`** (6 yeni kapı, `sunum-check`): F25-1 … F25-6b.
+
+### Sonuçlar
+
+Geçen: `sim-node` (87.2-80.0 · 249 olay · determinizm) · `band.js` **hash değişmedi** ·
+`turkek-check` 32/32 · `anlatim-check` 23/23 · `sunum-check` 11/12 · `visual-check`
+(masaüstü+mobil, 0 konsol hatası) · `i18n-scan` (canlı anlatım Türkçe %0,0) · `surum-check`
+(56 → **57**) · `lig-check` · `isim-check` · `schema-check` · `analiz-check` · `arena-check` ·
+`faz6/7/8/10/11-check` · `mobile-check` 18/18 · `m20-check` · `geometri-check`.
+
+**Kapanmayan tek FAZ 25 kapısı — F25-2 (donma):** hedef 0, ölçülen **7** (7 dakikalık
+pencerede, en uzun 1,52 sn). Yol: 79 → 34 (duran sahne sayılmayınca) → 17 → 7 (eşik
+600→340 ms). 280 ms'de **1**'e iniyor ama `spacing-check` churn'ü artıyor; 340 ms
+`spacing-check`'i tabandan İYİ hâle getirdiği için orada bırakıldı. Kalan vakaların kaynağı
+tam olarak izlenemedi — salınım her 340 ms'de bir yazılmasına rağmen bazı oyuncularda
+ölçülen boşluk eşiğin ~4 katına çıkıyor. **Kapı bilerek gevşetilmedi; kırmızı bırakıldı.**
+
+**FAZ 25 dışı, tabanla aynı düşen kapılar:**
+
+| Kapı | Taban | Şimdi | Hedef |
+|---|---|---|---|
+| `spacing` markaj mesafesi | 1,98 m | 2,00 m | <1,8 |
+| `spacing` ball-you-man | %82,9 | %78,1 | ≥%85 |
+| `spacing` orta üçte bir (süzülmemiş) | %21,7 | %22,4 | <%20 |
+| `spacing` potaya uzaklık (süzülmemiş) | 7,11 m | **geçiyor** | ≤7 |
+| `hareket` ortalama hız | 1,24 m/sn | 1,26 m/sn | 1,3-2,1 |
+| `hareket` YÜRÜ payı | %47,5 | %49,4 | %20-45 |
+
+`spacing-check` düşen kapı sayısı 4 → **3**. ball-you-man'daki düşüş canlı salınımın ve
+perdenin doğrudan bedeli: hücum artık set içinde de hareket ediyor, savunmacı adam-pota
+doğrultusuna yetişmek için bir kare geriden geliyor. Salınım radyal yapılarak %79,7'den
+%82,7'ye toparlandı ama tam kapanmadı.
+
+`milliyet-check` I bölümü **kararsız**: 4 koşudan 1'inde 258 oyuncunun 1'i havuz dışı ad
+alıyor (`ensureUniquePlayerNames` yeniden çekilişi). FAZ 25 öncesinde de vardı.
+
+### Kararlar ve dersler (CLAUDE.md'ye işlendi)
+
+- Sabit ekli şablon yazma: `%X{durum}` + `turkEk`.
+- Yeni anlatım havuzu → `localizeCatalogs` + EN sözlüğü; şablonlu cümleler `I18N_PHRASES`.
+- Sunum kapısı yazarken ölçütü **kullanıcının gördüğü saate** bağla, sahne saatine değil.
+- Türkçe harf sınırında `\b` kullanma.
