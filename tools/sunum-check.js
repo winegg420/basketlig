@@ -388,7 +388,7 @@ async function main() {
     `${SK.tasima.n} taşıma · %${(SK.tasima.oran*100).toFixed(1)} rol 0/1/2 (hedef ≥ %85)`);
 
   kayit('F25-2', 'Set hücumunda donma yok (hedef ≥1,5 sn sabit kalmıyor)', SK.donma.n === 0,
-    SK.donma.n ? `${SK.donma.n} donma · en uzun ${SK.donma.enUzun.toFixed(2)} sn` + (process.argv.includes('--dbg')?' · rol '+JSON.stringify(HAM.donma.slice(0,6))+' /*__F25_2_DBG*/':'') : 'donma olayı 0');
+    SK.donma.n ? `${SK.donma.n} donma · en uzun ${SK.donma.enUzun.toFixed(2)} sn` : 'donma olayı 0');
 
   if (!SK.sokma.n) kayit('F25-3', 'Kenardan sokmada takım yakın duruyor', false,
     'ÖRNEK YOK — bu pencerede kenardan sokma yakalanmadı');

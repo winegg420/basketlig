@@ -48,7 +48,7 @@ const ORNEKLEYICI = `(function(){
             const hedef = (p.tx|0) + ',' + (p.ty|0);
             if (!onc || onc.hedef !== hedef) { P._hedefT.set(k, { hedef, t }); return; }
             const sure = (t - onc.t) / 1000;
-            if (sure > 1.5) { P.donma.push({ t, sure, role: p.role, kilit: (p._lock > S.time), oob: !!p._oob, dt: (S.time - (p._sonHedefT||0)), stime: S.time }); P._hedefT.set(k, { hedef, t }); }
+            if (sure > 1.5) { P.donma.push({ t, sure, role: p.role }); P._hedefT.set(k, { hedef, t }); }
           });
         } else { P._hedefT.clear(); }
         /* ── §3: kenardan sokma ── */

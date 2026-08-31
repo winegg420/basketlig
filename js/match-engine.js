@@ -515,7 +515,7 @@ function _simTick(dt){
          idi — sahne saati duvar saatinin ~0,45 katı akıyor. "Donmuş görünmek" bir SEYİRCİ
          algısıdır, bu yüzden ölçüt de seyircinin saati olmalı (F15 "sahne saati ≠ maç
          saati" dersinin bu maddeye düşen karşılığı). */
-      if(_rtNow()-(p._sonHedefRt||0)<1150) continue;
+      if(_rtNow()-(p._sonHedefRt||0)<600) continue;
       const merkez=p._setTx!=null?[p._setTx,p._setTy]:[p.tx,p.ty];
       const topta=(b&&b.carrier===p);
       /* Topu tutan tepede daha geniş salınır (canlı dribbling); topsuzlar ufak düzeltme.
@@ -543,7 +543,14 @@ function _simTick(dt){
       /* Kilitli oyuncunun merkezi dizilim noktası değil, BULUNDUĞU yerdir — koreografinin
          götürdüğü noktadan geri çekilmesin. */
       const mx=kilitli?p.x:merkez[0], my=kilitli?p.y:merkez[1];
-      p.tx=_inX(mx+dx/d*r); p.ty=_inY(my+dy/d*r);
+      let ntx=_inX(mx+dx/d*r), nty=_inY(my+dy/d*r);
+      /* Köşe/kenar noktalarında `_inX`/`_inY` kırpması iki yönü de AYNI değere getiriyor
+         (SET_SPREAD köşe slotları x=56, kırpma sınırı x=CRT_X0+14) ve hedef hiç
+         değişmiyordu. Kırpıldıysa dik yönde salın — oyuncu yine yerinde kıpırdanır. */
+      if((ntx|0)===(p.tx|0)&&(nty|0)===(p.ty|0)){
+        ntx=_inX(mx-dy/d*r); nty=_inY(my+dx/d*r);
+      }
+      p.tx=ntx; p.ty=nty;
       if(!kilitli) _setUrg(p,topta?_URG.JOG:_URG.YURU);
       p._sonHedefT=S.time; p._sonHedefRt=_rtNow();
     }
@@ -1068,7 +1075,7 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
     offR.forEach((p,i)=>{
       if(!p||p._oob) return;
       const c=_pt(TRANS_OFF[i],offLeft,false);
-      p._setTx=p._setTy=null; p._sonHedefT=S.time; p._sonHedefRt=_rtNow(); p._sonHedefRt=_rtNow();
+      p._setTx=p._setTy=null; p._sonHedefT=S.time;
       _hedefAta(p,_jit(c[0],10),_jit(c[1],8),_URG.SPRINT);
       /* kanatlar (rol 1-2) önce kendi hizasında KENARA açılır, sonra kulvarda öne koşar */
       p._wp=(i===1||i===2)?[_inX(p.x+(offLeft?-58:58)),_inY(c[1])]:null;
@@ -1150,7 +1157,11 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
     if(!p||p._oob) return;                    /* topu sokan çizgi dışında kalır */
     p._wp=null;                               /* set kurulunca geçiş ara noktası biter */
     const c=B[i];
-    p._setTx=c[0]; p._setTy=c[1]; p._sonHedefT=S.time; p._sonHedefRt=_rtNow(); p._sonHedefRt=_rtNow();
+    /* ⚠ `_sonHedefRt` BURADA basılmaz. `keepNear` dalı noktasına zaten yakın oyuncunun
+       hedefini DEĞİŞTİRMEDEN bırakıyor (p.tx=p.x); damga atılınca canlı salınım 900 ms
+       daha erteleniyor ve oyuncu ekranda 1,5 sn+ donuk kalıyordu. Salınım saatini yalnız
+       gerçekten yeni hedef verilen an sıfırlar. */
+    p._setTx=c[0]; p._setTy=c[1]; p._sonHedefT=S.time;
     if(p===shooter){ _hedefAta(p,c[0],c[1],_URG.KOS); return; }
     /* Noktasına ZATEN yakınsa yeni hedef atanmaz (yerinde durur, mikro-salınım yapar).
        F11-2: eşik 40 px idi — iki oyuncu birbirine doğru 40'ar px sapabildiği için ölçülen
