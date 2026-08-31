@@ -515,7 +515,7 @@ function _simTick(dt){
          idi — sahne saati duvar saatinin ~0,45 katı akıyor. "Donmuş görünmek" bir SEYİRCİ
          algısıdır, bu yüzden ölçüt de seyircinin saati olmalı (F15 "sahne saati ≠ maç
          saati" dersinin bu maddeye düşen karşılığı). */
-      if(_rtNow()-(p._sonHedefRt||0)<600) continue;
+      if(_rtNow()-(p._sonHedefRt||0)<340) continue;
       const merkez=p._setTx!=null?[p._setTx,p._setTy]:[p.tx,p.ty];
       const topta=(b&&b.carrier===p);
       /* Topu tutan tepede daha geniş salınır (canlı dribbling); topsuzlar ufak düzeltme.

@@ -21,7 +21,7 @@ const ORNEKLEYICI = `(function(){
     perde: [],        /* {t, evre, roll} */
     sema: {},         /* şema → {kare, boyaGiris, yayDisiKare, xTop} */
     _sonTasiyici: null, _sonYari: null, _sokmaGorulen: null, _sonFtDrib: null,
-    _perdeSon: null, _hedefT: new Map()
+    _perdeSon: null, _hedefT: new Map(), _sonSimT: -1, _sonDurakT: 0
   };
   const MID = 470;
   const step = () => {
@@ -39,8 +39,20 @@ const ORNEKLEYICI = `(function(){
           }
           P._sonTasiyici = c; P._sonYari = yari;
         }
-        /* ── §2: set fazında donma ── */
-        if (S.canliSet && S.offP) {
+        /* ── §2: set fazında donma ──
+           ⚠ SAHNE DURUYORSA donma sayılmaz. Sahne döngüsü (_simStart) maç durunca
+           (mState.running===false, olaylar arası ölü top) rAF'ı bırakıyor; bu denetçinin
+           kendi rAF'ı çalışmaya devam ettiği için duran sahneyi "donmuş oyuncu" sanıyordu.
+           Duran sahne bir sunum kusuru değil, oyunun duraklamasıdır. Ölçüt: S.time
+           ilerlemiyorsa o kare hiç sayılmaz ve zaman tabanı kaydırılır. */
+        const simAkiyor = (S.time !== P._sonSimT);
+        if (!simAkiyor && P._hedefT.size) {
+          const kayma = t - (P._sonDurakT || t);
+          P._hedefT.forEach(v => { v.t += kayma; });
+        }
+        P._sonDurakT = t;
+        P._sonSimT = S.time;
+        if (S.canliSet && S.offP && simAkiyor) {
           S.offP.forEach(p => {
             if (!p || p._oob) return;
             const k = p.slot + '|' + p.team;
@@ -50,7 +62,7 @@ const ORNEKLEYICI = `(function(){
             const sure = (t - onc.t) / 1000;
             if (sure > 1.5) { P.donma.push({ t, sure, role: p.role }); P._hedefT.set(k, { hedef, t }); }
           });
-        } else { P._hedefT.clear(); }
+        } else if (!S.canliSet) { P._hedefT.clear(); }
         /* ── §3: kenardan sokma ── */
         if (S.inb && S.inb.tok && P._sokmaGorulen !== S.inb.tok) {
           P._sokmaGorulen = S.inb.tok;
