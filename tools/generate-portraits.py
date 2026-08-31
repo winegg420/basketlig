@@ -240,8 +240,11 @@ def main() -> None:
     denenen = 0
     while sum(yazilan.values()) < adet and denenen < adet * 4:
         denenen += 1
-        # Bant dağılımı: her 20 üretimin 9'u genç, 11'i kıdemli (%45/%55).
-        bant = "genc" if (i % 20) < round(GENC_PAY * 20) else "kidemli"
+        # Bant seçimi DİSKTEKİ duruma bakar, sayaç turuna değil. Sabit tur küçük
+        # partilerde bozuluyordu: bir kovaya 8 tane istendiğinde 8'i de "genc" oluyordu.
+        var_genc, var_kid = sonraki_sira(kova, "genc"), sonraki_sira(kova, "kidemli")
+        toplam_v = var_genc + var_kid
+        bant = "genc" if toplam_v == 0 or var_genc / toplam_v < GENC_PAY else "kidemli"
         i += 1
         ham = uret_bir(kova, bant, sonraki_sira(kova, bant) + denenen)
         if not ham:

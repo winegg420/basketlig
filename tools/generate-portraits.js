@@ -215,7 +215,14 @@ async function main() {
 
   while (yazilan.genc + yazilan.kidemli < adet && denenen < adet * 4) {
     denenen++;
-    const bant = (i % 20) < Math.round(GENC_PAY * 20) ? 'genc' : 'kidemli';
+    /* Bant seçimi DİSKTEKİ duruma bakar, sayaç turuna değil. Sabit tur (i%20<9) küçük
+       partilerde bozuluyordu: bir kovaya 8 tane istendiğinde 8'i de 'genc' oluyor, kıdemli
+       hiç üretilmiyordu (§9 koşusunda kuz/beyaz/afr/lat kovaları böyle çıktı). Şimdi hangi
+       bant %45/%55 hedefinin ALTINDAYSA o seçilir — parti parti üretimde de oran tutar. */
+    const varGenc = sonrakiSira(kova, 'genc'), varKid = sonrakiSira(kova, 'kidemli');
+    const toplam = varGenc + varKid;
+    const bant = (toplam === 0) ? 'genc'
+      : (varGenc / toplam < GENC_PAY ? 'genc' : 'kidemli');
     i++;
     const ham = await uretBir(kova, bant, sonrakiSira(kova, bant) * 31 + denenen);
     if (!ham) { elenen.indirilemedi++; continue; }

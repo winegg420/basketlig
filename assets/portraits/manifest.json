@@ -2,31 +2,31 @@
   "version": 2,
   "buckets": {
     "akd": {
-      "genc": 5,
-      "kidemli": 0
+      "genc": 26,
+      "kidemli": 32
     },
     "siyah": {
-      "genc": 0,
-      "kidemli": 0
+      "genc": 9,
+      "kidemli": 5
     },
     "kuz": {
-      "genc": 0,
+      "genc": 8,
       "kidemli": 0
     },
     "beyaz": {
-      "genc": 0,
+      "genc": 7,
       "kidemli": 0
     },
     "afr": {
-      "genc": 0,
+      "genc": 6,
       "kidemli": 0
     },
     "lat": {
-      "genc": 0,
+      "genc": 4,
       "kidemli": 0
     },
     "asya": {
-      "genc": 0,
+      "genc": 3,
       "kidemli": 0
     }
   },
