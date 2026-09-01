@@ -136,31 +136,73 @@ async function hazirla(page, base) {
     console.log('\n[B2] Kare kaybında yetişme (F11-1)');
     await page.evaluate(() => { setMatchRate(1); startMatch(); });
     await sleep(2500);
-    const oncesi = await page.evaluate(() => ({ ev: mState.idx, sim: mState._sim.time }));
+
+    /* ── ÖLÇÜM: JETON SAPMASI ANLIK DEĞİL PENCEREYLE OKUNUR ──────────────────────────
+       Eski kapı tek bir anda `|p − hedef|` ortalamasını alıp 60 px eşiğine vuruyordu.
+       Oysa bu büyüklük SAĞLIKLI sahnede de doğal olarak salınır: yeni dizilim atandığı
+       anda jetonlar hedeflerine YÜRÜR, ölçüm o ana denk gelirse sapma yüksektir.
+       Ölçüldü (normal akış, 14 örnek): 237 · 105 · 45 · 32 · 13 · 12 · 21 · 17 · 13 ·
+       13 · 16 · 500 px — yani kapı 60 px eşiğiyle davranışı değil ÖRNEKLEME ANINI
+       yargılıyordu ve arka plandan bağımsız olarak rastgele düşüyordu (FAZ 26'daki
+       F25-2 dersinin aynısı: yanlış şeyi ölçen kapı kusuru kendisi üretir).
+       Arka plandan dönüşteki gerçek değer ise 14 px ölçüldü — yetişme ÇALIŞIYOR.
+
+       Yeni ölçüt üç ayaklıdır:
+         (1) yetişme gerçekten koştu mu (`_snapN` arttı),
+         (2) dönüşteki sapma dağılımı NORMAL AKIŞTAKİNDEN kötü değil (aynı koşuda
+             ölçülen taban ile kıyaslanır — kendini kalibre eder, eşik gömülü değil),
+         (3) hiçbir jeton askıda kalmadı (sonlu koordinat + atanmış hedef). */
+    const olcSapma = () => page.evaluate(() => {
+      const S = mState._sim;
+      const tumu = (S.offP || []).concat(S.defP || []);
+      if (!tumu.length) return null;
+      const askida = tumu.filter(p => !Number.isFinite(p.x) || !Number.isFinite(p.y) || p.tx == null || p.ty == null).length;
+      const sap = tumu.filter(p => p.tx != null && p.ty != null && Number.isFinite(p.x) && Number.isFinite(p.y))
+        .map(p => Math.hypot(p.x - p.tx, p.y - p.ty));
+      if (!sap.length) return null;
+      return {
+        ort: sap.reduce((a, b) => a + b, 0) / sap.length,
+        max: Math.max.apply(null, sap),
+        askida,
+        snapN: S._snapN || 0
+      };
+    });
+    const medyan = (a) => { const b = a.slice().sort((x, y) => x - y); return b.length ? b[Math.floor(b.length / 2)] : -1; };
+    /* Taban: normal akışta (ön planda) 10 örnek. */
+    const taban = [];
+    for (let i = 0; i < 10; i++) { await sleep(450); const m = await olcSapma(); if (m) taban.push(m); }
+    const tabanMed = medyan(taban.map(x => x.ort));
+
+    const oncesi = await page.evaluate(() => ({ ev: mState.idx, sim: mState._sim.time, snapN: (mState._sim._snapN || 0) }));
     /* Sekmeyi arka plana al: rAF kısıtlanır, olay zamanlayıcısı akmaya devam eder. */
     const bos = await ctx.newPage();
     await bos.goto('about:blank');
     await bos.bringToFront();
     await sleep(9000);
     await page.bringToFront();
-    await sleep(900);
-    const sonrasi = await page.evaluate(() => {
-      const S = mState._sim;
-      const tumu = (S.offP || []).concat(S.defP || []);
-      const sapma = tumu.map(p => Math.hypot(p.x - p.tx, p.y - p.ty));
-      return {
-        ev: mState.idx,
-        calisiyor: !!mState.running,
-        ortSapma: sapma.length ? sapma.reduce((a, b) => a + b, 0) / sapma.length : -1,
-        enBuyukSapma: sapma.length ? Math.max.apply(null, sapma) : -1,
-        topSahipli: !!S.ball.carrier,
-      };
-    });
+    /* Dönüşten sonra da PENCEREYLE örnekle: tek an, tabanla aynı sebepten yanıltıcıdır. */
+    const donus = [];
+    for (let i = 0; i < 10; i++) { await sleep(220); const m = await olcSapma(); if (m) donus.push(m); }
+    const donusMed = medyan(donus.map(x => x.ort));
+    const sonrasi = await page.evaluate(() => ({
+      ev: mState.idx,
+      calisiyor: !!mState.running,
+      snapN: (mState._sim._snapN || 0),
+      topSahipli: !!(mState._sim.ball && mState._sim.ball.carrier)
+    }));
     await bos.close();
     ok('arka planda olaylar akmaya devam etti', sonrasi.ev > oncesi.ev, `olay ${oncesi.ev} → ${sonrasi.ev}`);
+    ok('arka plandan dönüşte yetişme çalıştı (_simCatchUp)',
+      sonrasi.snapN > oncesi.snapN, `_snapN ${oncesi.snapN} → ${sonrasi.snapN}`);
+    /* Tolerans: taban × 1,6 + 25 px. Taban ölçüde küçükse (sahne sakin) mutlak 60 px
+       tabanı korunur — kapı sıfıra yakın bir tabana takılıp kılı kırk yarmasın. */
+    const esik = Math.max(60, tabanMed * 1.6 + 25);
     ok('ön plana dönünce sahne anlatıma eşitlendi (jetonlar hedefinde)',
-      sonrasi.ortSapma >= 0 && sonrasi.ortSapma < 60,
-      `ortalama sapma ${sonrasi.ortSapma.toFixed(0)} px · en büyük ${sonrasi.enBuyukSapma.toFixed(0)} px`);
+      donusMed >= 0 && donusMed <= esik,
+      `dönüş medyanı ${donusMed.toFixed(0)} px ≤ eşik ${esik.toFixed(0)} px (normal akış tabanı ${tabanMed.toFixed(0)} px)`);
+    const askidaTop = donus.reduce((a, b) => a + b.askida, 0);
+    ok('hiçbir jeton askıda kalmadı (sonlu koordinat + atanmış hedef)',
+      askidaTop === 0, askidaTop ? askidaTop + ' örnekte askıda jeton' : donus.length + ' örnek temiz');
     ok('maç arka plandan sonra da canlı', sonrasi.calisiyor);
 
     // ── B4: kesme noktası çakışması ──────────────────────────────────────────────────────

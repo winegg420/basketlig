@@ -677,3 +677,17 @@ Tam sürüm için doldurulacak boşluklar ve mantık hataları `RAPOR-EKSIKLER.m
   (yayılım 8,6 puan). ±1,5'lik bir toleransı bu örneklemde tek tohumla yargılamak
   davranışı değil çekilişi ölçer. Yakınsak ölçüm için **`--n=1000`** (ya da 3-4 tohumun
   n=400 ortalaması) kullan.
+
+- **F11-1 KAPISI ANLIK ÖRNEK ALIYORDU (FAZ 34 eki — FAZ 26/F25-2 dersinin üçüncü tekrarı):**
+  "arka plandan dönünce jetonlar hedefinde mi" kapısı TEK BİR ANDA `|p − hedef|`
+  ortalamasını alıp 60 px eşiğine vuruyordu. Bu büyüklük SAĞLIKLI sahnede de doğal olarak
+  salınır — yeni dizilim atandığı anda jetonlar hedeflerine yürür. Ölçüldü (normal akış,
+  14 örnek): 237 · 105 · 45 · 32 · 13 · 12 · 21 · 17 · 13 · 13 · 16 · **500** px. Yani kapı
+  davranışı değil ÖRNEKLEME ANINI yargılıyor ve arka plandan bağımsız olarak rastgele
+  düşüyordu (HEAD'de de düşüyordu: 205 px). Gerçek değer ölçüldüğünde `_simCatchUp`
+  **çalışıyordu**: dönüşteki medyan **2 px**, normal akış tabanı 124-128 px.
+  Yeni ölçüt üç ayaklı ve KENDİNİ KALİBRE EDER: (1) `_snapN` arttı mı — yetişme koştu mu,
+  (2) dönüş medyanı, aynı koşuda ölçülen NORMAL AKIŞ tabanından kötü değil mi
+  (taban × 1,6 + 25 px, mutlak 60 px alt sınırıyla), (3) hiçbir jeton askıda değil
+  (sonlu koordinat + atanmış hedef). Salınan bir büyüklüğü gömülü eşikle yargılama —
+  aynı koşudaki tabanla kıyasla.

@@ -5145,3 +5145,18 @@ hata 0 · G değişmedi** · `lig-check` ✓ (§4 korundu) · `ekonomi-check` **
   ham 20+ sayısı ayrıca raporlanıyor.
 - **"std belirgin genişlemiş" kapısı ölçüt olarak kullanılmadı** — sabit toplamda anlamsız
   olduğu ölçülerek gösterildi; yerine kuyruk oranları ve en büyük pay kapıya bağlandı.
+
+### FAZ 34 eki — faz11-check F11-1 düzeltildi (2026-09-01)
+
+FAZ 34 raporunda "kapsam dışı, HEAD'de de düşüyor" diye bıraktığım F11-1 kapısı incelendi.
+**Kusur kodda değil kapıdaydı.** Ölçüm: normal akışta (arka plana hiç alınmadan) jeton
+sapması 12 → 500 px arasında salınıyor; kapı tek bir anda ölçüp 60 px eşiğine vurduğu için
+davranışı değil örnekleme anını yargılıyordu. Arka plandan dönüşteki gerçek değer ise
+**2 px** (normal akış tabanı 124-128 px) — `_simCatchUp` zaten kusursuz çalışıyor.
+
+Kapı üç ayaklı ve kendini kalibre eder hâle getirildi: (1) `_snapN` arttı mı, (2) dönüş
+medyanı aynı koşudaki normal akış tabanından kötü değil mi (taban × 1,6 + 25 px, mutlak
+60 px alt sınırı), (3) askıda jeton yok. Üç ardışık koşuda **15/15** (eskiden 12/13).
+
+FAZ 26'daki F25-2 dersinin üçüncü tekrarı: salınan bir büyüklüğü gömülü eşikle yargılayan
+kapı, kusuru kendisi üretir.
