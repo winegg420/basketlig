@@ -1,6 +1,32 @@
 # KALDIĞIM YER
-Son güncelleme: 2026-08-30 · **38. oturum — FAZ 14 (saha geometrisi + serbest atış) ve
-`DENETIM-FAZ13.md` bölüm 2'nin beş maddesi (B-1…B-5) bitti.**
+Son güncelleme: 2026-09-01 · **FAZ 25 (canlı maç gerçekçiliği + anlatım) bitti; tüm ağır
+denetimler yeniden koşuldu, çalışma ağacı temiz.**
+
+## FAZ 25 sonrası durum (2026-09-01)
+
+**Geçen:** `visual-check` (masaüstü + mobil, 0 konsol hatası) · `band.js` hash
+**99bb9ceb67917bd0** (referansla birebir) · `sim-node` (determinizm) · `anlatim-check` 23/23 ·
+`turkek-check` 32/32 · `schema-check` 17/17 · `isim-check` · `surum-check` (sürüm **57**,
+içerik hash kaydı `--yaz` ile tazelendi).
+
+**Bilerek kırmızı bırakılan kapılar (kapsam kararı, gerileme değil):**
+
+| Kapı | Ölçülen | Hedef | Not |
+|---|---|---|---|
+| `sunum` F25-2 donma | 9 donma · en uzun 1,50 sn | 0 | Salınım eşiği 340 ms; 280 ms'de 1'e iniyor ama `spacing` churn'ü artıyor |
+| `sunum` F25-5 şema yörüngesi | ÖRNEK YOK (yalnız 1 şema yeterli kare topladı) | 2+ şema | Ölçüm aracının örneklemi yetersiz — motor kusuru değil |
+| `spacing` markaj mesafesi | 2,06 m | < 1,8 m | Taban 1,98 m; canlı salınımın doğrudan bedeli |
+| `spacing` ball-you-man | %77,1 | ≥ %85 | Taban %82,9 |
+| `spacing` orta üçte bir (süzülmemiş) | %23,4 | < %20 | Geçiş kareleri dahil; oturmuş sette %13,9 (geçiyor) |
+| `hareket` YÜRÜ payı | %48,6 | %20-45 | Taban %47,5 |
+| `milliyet` I bölümü | 4 koşudan 1'i kararsız | — | FAZ 25 öncesinde de vardı (`ensureUniquePlayerNames` yeniden çekilişi) |
+
+**Sıradaki büyük iş — çok oyunculu sunucu (Supabase).** `db/schema.sql` ve
+`PLAN-COK-OYUNCULU.md` hazır, **kod yazılmadı**; kod tabanında hiçbir bağlantı yok
+(`schema-check` [5] bunu sınıyor). Bugünkü tek kişilik akış bilinçli bir test kolaylığıdır
+(`?test=1` / `matchTimeGateOk`).
+
+---
 
 ## 39. oturum — FAZ 15 (saha hareketi kalibrasyonu)
 
