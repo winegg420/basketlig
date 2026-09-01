@@ -4608,3 +4608,131 @@ koşullarda tekrar %100 geçti (M9 %100 · 11/11). Motor tarafındaki tek deği�
 açılışının `t()` çağrısıdır — sahneye dokunmaz. Küçük örneklem kararsızlığıdır.
 
 Sürüm **60 → 61**.
+
+
+## FAZ 30 — Küresel lig yapısı: ülke bazlı lig kaldırıldı (2026-09-01)
+
+FAZ 17-24'te kurulan "ligin ev ülkesi" tasarımı geri alındı. Oyun artık küresel.
+
+### §2 Ülke bazlı lig kalktı
+
+Silinen: `LIG_EV_ULKE` · `BOT_YABANCI_MAX` · `BOT_YABANCI_ORAN` · `botYabanciOran()` ·
+`MARKET_YERLI_BASLANGIC/DUSUS/TABAN` · `marketYerliOran()` · Yerli/Global filtresi ·
+`faz29BotUyrukOnar` gövdesi (kural değişince onarımın konusu kalmadı).
+
+Oyuncu milliyeti artık **tamamen rastgele**, 43 ülke eşit şanslı. Ölçüm: 300 oyuncu,
+**43 farklı ülke**, en yüksek pay **%4,7**.
+
+**Regresyon riski yoktu ve ölçüldü:** `genPlayer` ülke sabitlense bile `ch(ULKELER)`
+çekilişini ZATEN yapıyordu (FAZ 17 dersi), bu yüzden ülke parametresini kaldırmak
+rastgelelik akışını kaydırmaz. `sim-node --n=100 --seed=42` → **88.0 - 81.3** (kapı
+87.2-80.0 ±1.5 içinde), determinizm korundu.
+
+**Market ülke seçici** (§2.3): "Yerli/Global" ikilisi anlamsızlaştı. Yerine açılır ülke
+listesi geldi — listede yalnız O AN markette oyuncusu bulunan ülkeler var; seçili ülke
+markette kalmazsa "Tümü"ye döner (boş liste gösterilmez).
+
+### §3 Küresel takım adı havuzu
+
+**162 şehir × 41 sonek = 6.642 kombinasyon.** Şehirler altı kıtadan; sonekler Türkçe +
+İngilizce + nötr karışık ve karışım serbest ("Trabzon Raptors", "Copenhagen Kartalları").
+Türk şehri payı **%6,2**.
+
+⚠ Çok kelimeli şehir adları ("San Juan", "Rio de Janeiro") tek sözcüğe indirildi. İki
+sebep: `genUniqueClubName` şehri **adın ilk sözcüğü** sayar — "San Juan" ile "San Diego"
+aynı şehir sanılır ve "divizyonda en fazla 2 takım" kuralı yanlış işlerdi; ayrıca uzun
+adlar anlatım kelime bütçesini şişiriyordu.
+
+### §4 Divizyon merdiveni
+
+**3 divizyon:** Divizyon 1 (tek grup) · Divizyon 2 (5 grup) · Divizyon 3 (5 grup).
+Her grup 20 takım. `DIV_SAYISI` artırmak yapıyı büyütmeye yeter.
+Yeni kariyer **en alt divizyonda** başlar (`divizyonDoldurmaSirasi` en alttan doldurur;
+eskiden sıra 'tbl' ile başlıyor ve herkes Divizyon 1'e giriyordu).
+
+**Güç merdiveni:** `divizyonOvrKaymasi()` — Div1 **+8** · Div2 **+4** · Div3 **0**.
+Ölçülen ortalama OVR: **Div1 78,9 · Div2 74,5 · Div3 71,3**.
+
+⚠ Çapa **en alt divizyondadır**. İlk kurgu Div1 +6 / Div2 +1 / Div3 −4 idi; kariyer en
+altta başladığı için oyunun MUTLAK zorluğu düşüyordu (skor bandı 89,7-81,8 → 90,7-76,8).
+Çapa en alta alınınca başlangıç deneyimi FAZ 30 öncesiyle aynı kalır, yükselmek gerçekten
+zorlaşır. Kayma saf aritmetiktir (`botOvrKaydir`), yeni çekiliş yapmaz.
+
+Divizyon etiketleri nötr: "Divizyon 1" / "Divizyon 2 · Grup 1" (EN: "Division 1").
+Anahtar biçimi DEĞİŞMEDİ ('tbl', 'd.g') — eski kayıtlar okunmaya devam eder.
+
+### §5 Kullanıcı profil ülkesi
+
+Kariyer kurulumunda 43 ülkelik seçici. `G.menajerUlke` yalnız profil kartında görünür.
+Kapı: aynı tohum + farklı ülke → **birebir aynı kadro**.
+
+### §7 Aralıklı isim hatası — KÖK NEDEN: KUSUR KODDA DEĞİL, DENETİMDEYDİ
+
+`milliyet-check` dört koşunun birinde "258 oyuncunun 257'si" diyordu. Ölçüt adı **ilk
+boşluktan** ikiye bölüyordu (ad = ilk parça, soyad = kalanı). Havuzlarda **75 çok kelimeli
+giriş** var; çok kelimeli SOYAD ("De Luca") bu ayrıştırmayla toparlanıyor ama çok kelimeli
+**ÖN AD** bozuyor:
+
+    "Juan Pablo Reyes" → ad "Juan"        (havuzda "Juan Pablo" var, "Juan" yok)  ✗
+                       → soyad "Pablo Reyes" (havuzda "Reyes" var)                ✗
+
+İkisi de tutmayınca oyuncu "yanlış havuzdan" sayılıyordu. Etkilenen 5 ön ad: **Juan Pablo**
+(Meksika) · **El Hadji, Alioune Badara, Cheikh Tidiane** (Senegal) · **John Paul**
+(Filipinler). Ülke başına 6 çekilişte rastlama olasılığı ≈ **%18** — dört koşudan biri
+bu yüzden düşüyordu. **Oyunun ürettiği ad her zaman doğru havuzdandı.**
+
+Doğru ölçüt: adın havuzdaki bir (ilk, soyad) çiftine **bölünebiliyor** olması.
+Sonuç: **10 koşuda 10 geçiş.**
+
+### §8 Denetim araçları
+
+`milliyet-check` baştan yazıldı (A milliyet dağılımı · B ad↔ülke · C ad havuzu ·
+D divizyon içi ad kuralları · E merdiven · F profil ülkesi · G kaldırılan kuralların izi).
+`lig-check`'e divizyon merdiveni kapıları eklendi. `isim-check` ve `portre-check`
+referans ülkeye geçti (kova ve havuz kuralları KALDI).
+
+⚠ G kapısında yorum ayıklama satır bazlı yapılamıyor: bu depoda blok yorumların devam
+satırları `*` ile başlamıyor, düz metin girintili yazılıyor. Blok yorumlar satır sayısı
+korunarak silinip sonra aranıyor.
+
+### Kendi inisiyatifimle düzeltilenler
+
+- **i18n sınıflandırıcısında yeni kör nokta:** sözcük sınırı ASCII+Türkçe harfle
+  yazıldığı için YABANCI harfler (ä, é, å) sınır sanılıyordu — "B**äck**ström" parçalanıp
+  "ckström" küçük harfli ve 'ö' içerdiği için Türkçe cins isim sayılıyordu. Lig %100
+  Türkken hiç görünmüyordu. Ölçüt Unicode harf sınıfıyla belirteç bazına taşındı.
+- **Kelime bütçesi:** küresel adlar (Bäckström, Mitrović) Türk adlarından uzun; ortalama
+  8,94 → 9,04'e çıktı (kapı <9). Ölçüm en uzun türü gösterdi: `free` 19,2 kelime/olay,
+  toplam kelimenin %12,5'i. Serbest atış giriş satırları kısaltıldı ve faul CÜMLE
+  biçiminde tek ad kullanıldı (künye biçimi tam adı korur) → **8,95**.
+- `randomNameFor` yedek dalı: "ev ülkesi" kalkınca gerçek havuzlardan birine düşer;
+  `isim-check` kapısının niyeti korunarak "GERÇEK bir havuza düşüyor" diye yeniden yazıldı.
+
+### Sonuçlar
+
+`sim-node --n=100 --seed=42` → **88.0 - 81.3 · olay/maç 248 · hata 0 · G değişmedi: EVET**
+`milliyet-check` (10/10 koşu) · `lig-check` · `isim-check` · `portre-check` ·
+`schema-check` · `turkek-check` · `bicim-check` · `sut-check` · `analiz-check` ·
+`arena-check` · `anlatim-check` **29/29** · `visual-check` 0 konsol hatası ·
+`mobile-check` 18/18 · `i18n-scan` **A/B/C/D = 0**, canlı anlatım Türkçe %0,0.
+
+**`band.js` hash BİLEREK değişti** (`99bb9ceb67917bd0` → `1b631c2622c9d460`): milliyet
+rastgeleliği kadro istatistiklerini, divizyon merdiveni de rakip kalitesini doğrudan
+değiştiriyor. Bandın kendisi sağlam (kullanıcı 91,1 · rakip 77,5). ⚠ Not: bu harness'te
+fark 7,9'dan 13,6'ya çıktı; ÜRETİCİ düzeyinde denge korunuyor (kullanıcı ilk-8 **72,6**
+vs bot **71,6**) ve `lig-check`'in bot-bot denge kapıları geçiyor — fark, kullanıcının
+artık farklı bir slotta oturmasından gelen harness artefaktı. İzlenecek.
+
+Sürüm **61 → 62**.
+
+### Ek — sunum-check kararsızlığı (aynı oturumda çözüldü)
+
+Araç tek maç izliyordu ve kapıların yarısı ondalık örneklemle karar veriyordu; M9'un
+paydası maç başına 5-11 arasında oynuyor, 5 vakada bir kaçırma oranı %80'e indiriyor ve
+kapı DAVRANIŞ değişmeden düşüyordu. Pencere artık **örneklem güdümlüdür**: her kapı kendi
+alt sınırına ulaşana kadar (üst sınıra kadar) yeni maçlarla uzar; maç bitince bir sonraki
+maç başlatılır. Alt sınırlar istatistikle seçildi — M9 için n=60 (gözlenen oran %86,
+eşik %80; n=15'te SD ~%9 ile kapı ~%24 olasılıkla düşüyordu, n=60'ta SD ~%4,5).
+Motorun kendi damgası zaten **193/193 doğru**; kalan fark gözlem vekilinin gürültüsü.
+⚠ Çok maçlı örneklem için `P.sonEvIx` geriye sarmada sıfırlanır — yoksa ikinci maçın
+hiçbir olayı sayılmaz ve örneklem sessizce tek maçta donardı.

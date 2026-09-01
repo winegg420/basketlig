@@ -1,66 +1,111 @@
 // ===== VERİ =====
 const ULKELER=[{ad:'ABD',b:'🇺🇸'},{ad:'Türkiye',b:'🇹🇷'},{ad:'Fransa',b:'🇫🇷'},{ad:'İspanya',b:'🇪🇸'},{ad:'Yunanistan',b:'🇬🇷'},{ad:'Brezilya',b:'🇧🇷'},{ad:'Arjantin',b:'🇦🇷'},{ad:'Almanya',b:'🇩🇪'},{ad:'Sırbistan',b:'🇷🇸'},{ad:'Avustralya',b:'🇦🇺'},{ad:'Kanada',b:'🇨🇦'},{ad:'İtalya',b:'🇮🇹'},{ad:'Hırvatistan',b:'🇭🇷'},{ad:'Slovenya',b:'🇸🇮'},{ad:'Nijerya',b:'🇳🇬'},{ad:'Filipinler',b:'🇵🇭'},{ad:'Japonya',b:'🇯🇵'},{ad:'Çin',b:'🇨🇳'},{ad:'Güney Kore',b:'🇰🇷'},{ad:'Senegal',b:'🇸🇳'},{ad:'Litvanya',b:'🇱🇹'},{ad:'Belçika',b:'🇧🇪'},{ad:'Polonya',b:'🇵🇱'},{ad:'Meksika',b:'🇲🇽'},{ad:'Portekiz',b:'🇵🇹'},{ad:'İngiltere',b:'🇬🇧'},{ad:'Rusya',b:'🇷🇺'},{ad:'Ukrayna',b:'🇺🇦'},{ad:'İsrail',b:'🇮🇱'},{ad:'Letonya',b:'🇱🇻'},{ad:'Bosna-Hersek',b:'🇧🇦'},{ad:'Karadağ',b:'🇲🇪'},{ad:'Gürcistan',b:'🇬🇪'},{ad:'Çekya',b:'🇨🇿'},{ad:'Finlandiya',b:'🇫🇮'},{ad:'Estonya',b:'🇪🇪'},{ad:'Macaristan',b:'🇭🇺'},{ad:'Bulgaristan',b:'🇧🇬'},{ad:'Romanya',b:'🇷🇴'},{ad:'Kuzey Makedonya',b:'🇲🇰'},{ad:'Arnavutluk',b:'🇦🇱'},{ad:'Slovakya',b:'🇸🇰'},{ad:'İsveç',b:'🇸🇪'}];
-/* FAZ 17: ligin ev ülkesi. Kadro kurulumu, draft ve altyapı bu ülkeyi kullanır —
-   'Türkiye' dizgisi koda gömülmez, çok ligli yapıya geçince tek noktadan değişir. */
-const LIG_EV_ULKE='Türkiye';
-/** Ada göre ülke kaydı (bulunamazsa null). FAZ 17: genPlayer ülke parametresi bunu kullanır. */
+/* ── FAZ 30: LİG KÜRESEL ─────────────────────────────────────────────────────────────
+   FAZ 17'de kurulan "ligin ev ülkesi" kavramı (LIG_EV_ULKE) KALDIRILDI. Oyun artık
+   küresel: bir divizyon tek bir ülkenin ligi değildir, oyuncular 43 ülkeden GELİŞİGÜZEL
+   dağılır. Kullanıcının kayıt olduğu ülke yalnız profil kartında görünür ve hiçbir
+   mekaniği etkilemez (G.menajerUlke).
+   Kalkan kurallar: yerli kadro kurulumu · bot yabancı kotası (BOT_YABANCI_MAX/ORAN) ·
+   market yerli oranı (MARKET_YERLI_*). Kalan: NAME_POOLS, randomNameFor, ULKE_KOVA
+   (portre) — ad ve yüz hâlâ oyuncunun ÜLKESİNE göre üretilir. */
+/** Ada göre ülke kaydı (bulunamazsa null). */
 function ULKE_BUL(ad){ const a=String(ad||''); return ULKELER.find(u=>u.ad===a)||null; }
+/** Tohumdan deterministik ülke ADI — haber/onarım gibi yerlerde `ch()` yerine kullanılır. */
+function rastgeleUlkeAdi(tohum){
+  if(tohum==null) return ch(ULKELER).ad;
+  const u=prPick('ulke|'+tohum,ULKELER);
+  return (u&&u.ad)||ULKELER[0].ad;
+}
 /* FAZ 17: bot takımların yabancı sınırı — botlar marketteki iyi yabancıları tüketmesin,
    oyuna yeni başlayan kullanıcıya kadro malzemesi kalsın. */
-/* ── FAZ 17B: TRANSFER MARKETİ UYRUK DENGESİ ─────────────────────────────────────────
-   FAZ 17'de market "küresel rastgele" bırakılmıştı ve Türkiye 43 ülke içinde 1/43 ≈ %2,3
-   şansa düşüyordu: ölçümde 200 market oyuncusunun YALNIZ 1'i yerli çıktı (%0,5). Sonuç
-   tutarsızdı — lig %100 Türk kuruluyor ama market neredeyse tamamen yabancıydı, yeni
-   "Yerli" filtresi boş geliyordu ve kullanıcı ilk gün ligin karakterine hiç benzemeyen
-   bir liste görüyordu. Artık yerli payı sezon 1'de yüksek başlar, sezonlar geçtikçe
-   yabancılar birikirken azalır. */
-const MARKET_YERLI_BASLANGIC=0.55;  /* sezon 1 */
-const MARKET_YERLI_DUSUS=0.06;      /* her sezon düşüş */
-const MARKET_YERLI_TABAN=0.25;      /* alt sınır (sezon 6+) */
-function marketYerliOran(sezon){
-  return Math.max(MARKET_YERLI_TABAN,
-    MARKET_YERLI_BASLANGIC-MARKET_YERLI_DUSUS*Math.max(0,(sezon|0)-1));
-}
-/* Yabancı ithal edilmeye DEĞECEK oyuncu olmalı: market OVR'ye göre sıralandığında üst
-   sıralar yabancı, alt sıralar yerli ağırlıklı olsun. Prim ölçülü tutuldu — yabancılar
-   erişilemez pahalılıkta olmamalı, yeni kullanıcı birkaç sezon sonra alabilmeli. */
-const MARKET_YABANCI_TABAN_PRIM=6;  /* yabancının OVR alt sınırına eklenir */
-const MARKET_YABANCI_TAVAN_PRIM=4;  /* yabancının OVR üst sınırına eklenir */
-const BOT_YABANCI_MAX=2;      /* bir bot takımda en fazla kaç yabancı */
-const BOT_YABANCI_ORAN=0.10;  /* bot transferlerinin yabancı olma olasılığı */
-/* ── FAZ 28 §5: SEZON 1'DE YABANCI YOK ──
-   Kural (FAZ 17): lig KURULURKEN içindeki her oyuncu ligin ev ülkesindendir; yabancılar
-   yalnız sezon başladıktan sonra TRANSFERLE gelir. `genRoster` bunu uyguluyordu ama
-   `botClubEnsureDepth` uygulamıyordu: bot kadrosu ilk kurulduğu anda içine
-   BOT_YABANCI_ORAN payında yabancı koyuyor, sezon/gün kavramını hiç görmüyordu. Sonuç:
-   sezon 1'in ilk maçında sahada yabancı oyuncu çıkıyordu (canlıda görüldü). Oran artık
-   sezona bağlıdır — sezon 1'de 0, sonrasında BOT_YABANCI_ORAN. */
-function botYabanciOran(sezon){
-  const s=(sezon|0)||((typeof G!=='undefined'&&G&&G.season&&G.season.year)|0)||1;
-  return s<=1?0:BOT_YABANCI_ORAN;
-}
+/* FAZ 30: MARKET_YERLI_* ve BOT_YABANCI_* KALDIRILDI — "yerli" diye bir kategori yok.
+   Market ve bot kadroları da 43 ülkeden gelişigüzel çekilir. Marketteki OVR primi de
+   uyruğa değil, yalnız bant hesabına bağlıdır (aşağıda kullanılmıyor artık). */
 const TR_ULKE={ad:'Türkiye',b:'🇹🇷'};
-/** Yan panelde gösterilecek alt lig sayısı (TBL ayrı). İleride kayıt / içerik arttıkça artırılabilir. */
+/* ── FAZ 30 §4: DİVİZYON MERDİVENİ ───────────────────────────────────────────────────
+   Divizyon 1 EN ÜST, aşağı doğru istenildiği kadar uzar. Her divizyon 20 takım.
+   Divizyon 1 tek gruptur; alt divizyonlar paralel gruplara ayrılabilir (kullanıcı
+   sayısı arttıkça grup eklenir). Yeni kariyer EN ALT divizyonda başlar — ekonomi
+   tasarımı "küçük kulübü devral ve büyüt" üzerine kurulu.
+   Anahtar biçimi korunur: 'tbl' = Divizyon 1, 'd.g' = Divizyon d+1 · Grup g.
+   DIV_SAYISI'nı artırmak yapıyı büyütmeye yeter; depo şablonu 6 divizyona kadar hazır. */
+const DIV_SAYISI=3;              /* Divizyon 1, 2, 3 */
+const DIV_GRUP_SAYISI=5;         /* alt divizyonlarda paralel grup üst sınırı */
+/** Divizyon numarasından (1 tabanlı) o divizyonun slot anahtarları. */
+function divizyonAnahtarlari(div){
+  if(div<=1) return ['tbl'];
+  const out=[];
+  for(let g=1;g<=DIV_GRUP_SAYISI;g++) out.push((div-1)+'.'+g);
+  return out;
+}
+/** Doldurma sırası: EN ALT divizyondan yukarı. assignUserToTblSlot bunu kullanır. */
+function divizyonDoldurmaSirasi(){
+  const out=[];
+  for(let d=DIV_SAYISI;d>=1;d--) divizyonAnahtarlari(d).forEach(k=>out.push(k));
+  return out;
+}
+/* ── Divizyon gücü ──
+   Üst divizyonda oyuncu kalitesi yüksek olmalı: kullanıcı yükseldikçe zorluk artsın.
+   Kayma OVR puanı cinsindendir ve bot kadrolarına uygulanır (kullanıcı kadrosuna DEĞİL —
+   kullanıcı kendi kadrosunu kendi kurar). Divizyon 1 en güçlü. */
+function divizyonOvrKaymasi(key){
+  const d=(typeof divizyonNo==='function')?divizyonNo(key):1;
+  /* ⚠ MERDİVEN EN ALT DİVİZYONDA NÖTRDÜR (0), yukarı doğru güçlenir.
+     İlk kurguda Div1 +6 · Div2 +1 · Div3 −4 idi; yeni kariyer en altta başladığı için
+     oyunun MUTLAK zorluğu düşüyordu (ölçüm: skor bandı 89,7-81,8 iken 90,7-76,8 oldu).
+     Çapa en alta konunca başlangıç deneyimi FAZ 30 öncesiyle aynı kalır, yükselmek
+     gerçekten zorlaşır. Divizyon eklenirse en alt yine 0 olur (aşağıdaki hesap
+     DIV_SAYISI'na göre kayar).
+     Div1 +8 · Div2 +4 · Div3 0 (üç divizyonlu kurulumda). */
+  const basamak=4;
+  const enAlt=DIV_SAYISI;
+  return Math.max(0,(enAlt-d))*basamak;
+}
+/** Yan panelde gösterilecek alt lig sayısı (Divizyon 1 ayrı). */
 const SIDEBAR_DIV_MAX_VISIBLE=1;
 const POZLAR=['PG','SG','SF','PF','C'];
 const POZ_TR={PG:'Organizatör',SG:'Şutör',SF:'K. Forvet',PF:'G. Forvet',C:'Pivot'};
-/* F8-4: 10 şehirlik havuz 20 takımlık ligde şehir başına 3-4 takım üretiyordu (aynı ligde
-   dört Kayseri takımı) ve İstanbul, Ankara, Antalya hiç yoktu — Türkiye ligi hissi vermiyor,
-   üretilmiş görünüyordu. Havuz 24 şehre çıkarıldı; lig kurulumu ayrıca şehir başına en fazla
-   2 takım uyguluyor (genUniqueClubName). */
-/* FAZ 19 §3: canlı ligde 20 takım ~8 şehirden üretilmişti — Kayseri ×4, Konya ×4,
-   Diyarbakır ×3. Aynı ligde dört Kayseri takımı ucuz duruyor. Havuz 24 → 32 şehre
-   çıkarıldı (Türkiye'de basketbol geçmişi olan iller); "aynı ligde en fazla 2 takım"
-   kuralı genUniqueClubName'de zaten uygulanıyor, artık havuz ona yetiyor. */
-const SEHIR=['İstanbul','Ankara','İzmir','Bursa','Antalya','Adana','Konya','Gaziantep',
-  'Kayseri','Eskişehir','Samsun','Trabzon','Diyarbakır','Mersin','Denizli','Sakarya',
-  'Manisa','Balıkesir','Malatya','Erzurum','Şanlıurfa','Aydın','Tekirdağ','Kocaeli',
-  'Afyonkarahisar','Muğla','Zonguldak','Elazığ','Sivas','Ordu','Çorum','Kütahya'];
-/** Bot kulüp adı ekleri — genRandomClubName bunu kullanır (eksikti; yeni oyunda takım kurma çöküyordu). */
-/* FAZ 19 §3: sonek havuzu da genişletildi — 32 şehir × 18 sonek, tekrar hissi azalır. */
-const LIG_T=['Basket','Spor','Yıldızları','Kartalları','Aslanları','Şimşekleri','Boğaları',
-  'Panterleri','Şahinleri','Kurtları','BK','Gençlik','Koleji','Belediyespor','Üniversite',
-  'Doğanları','Atmacaları','Ejderleri'];
+/* ── FAZ 30 §3: KÜRESEL TAKIM ADI HAVUZU ─────────────────────────────────────────────
+   Havuz 32 Türk ilinden ibaretti ve her divizyon "Türkiye ligi" gibi duruyordu. Oyun
+   küreselleştiği için şehirler de dünyanın her yerinden gelir; sonekler İngilizce,
+   Türkçe ve nötr karışıktır ve karışım SERBESTTİR — "Kaunas Kartalları" da olur,
+   "İzmir Eagles" da. Bu bilinçli: lig tek bir ülkenin ligi değil.
+   Havuz boyu kuralı: ≥120 şehir × ≥25 sonek (`milliyet-check` sayar). "Aynı divizyonda
+   aynı şehirden en fazla 2 takım" kuralı genUniqueClubName'de uygulanır — havuz ona
+   rahatça yetiyor (120×25 = 3.000 kombinasyon, divizyon başına 20 takım). */
+const SEHIR=[
+  /* Avrupa */
+  'İstanbul','Ankara','İzmir','Bursa','Antalya','Adana','Konya','Trabzon','Eskişehir','Samsun',
+  'Athens','Thessaloniki','Piraeus','Belgrade','Subotica','Zagreb','Split','Ljubljana','Sarajevo','Podgorica',
+  'Skopje','Tirana','Sofia','Plovdiv','Bucharest','Cluj','Budapest','Debrecen','Prague','Brno',
+  'Bratislava','Warsaw','Kraków','Gdańsk','Vilnius','Kaunas','Klaipėda','Riga','Tallinn','Helsinki',
+  'Tampere','Stockholm','Gothenburg','Oslo','Copenhagen','Berlin','Munich','Hamburg','Cologne','Frankfurt',
+  'Bamberg','Vienna','Zurich','Geneva','Milano','Bologna','Roma','Siena','Venezia','Trento',
+  'Madrid','Barcelona','Valencia','Sevilla','Bilbao','Málaga','Vitoria','Lisboa','Porto','Paris',
+  'Lyon','Marseille','Villeurbanne','Strasbourg','Nantes','London','Manchester','Leicester','Newcastle','Glasgow',
+  'Dublin','Antwerp','Brussels','Ostend','Amsterdam','Rotterdam','Groningen','Moscow','Kazan','Perm',
+  'Kyiv','Odesa','Dnipro','Tbilisi','Yerevan','Minsk',
+  /* Amerika */
+  'Boston','Chicago','Denver','Portland','Austin','Memphis','Seattle','Phoenix','Detroit','Houston',
+  'Toronto','Montréal','Vancouver','Puebla','Guadalajara','Monterrey','Santos','Niterói','Brasília','Curitiba',
+  'Mendoza','Córdoba','Rosario','Tucumán','Santiago','Montevideo','Bogotá','Caracas','Lima','Ponce',
+  /* Asya · Afrika · Okyanusya */
+  'Tokyo','Osaka','Nagoya','Seoul','Busan','Beijing','Shanghai','Guangzhou','Taipei','Manila',
+  'Cebu','Jakarta','Bangkok','Mumbai','Delhi','Tehran','Haifa','Jerusalem','Beirut','Cairo',
+  'Alexandria','Casablanca','Tunis','Dakar','Lagos','Abuja','Accra','Nairobi','Luanda','Johannesburg',
+  'Durban','Sydney','Melbourne','Perth','Auckland','Wellington'
+];
+/** Kulüp adı sonekleri — İngilizce + Türkçe + nötr karışık (FAZ 30 §3). */
+const LIG_T=[
+  /* Türkçe */
+  'Basket','Spor','Yıldızları','Kartalları','Aslanları','Şimşekleri','Boğaları','Panterleri',
+  'Şahinleri','Kurtları','Gençlik','Koleji','Belediyespor','Üniversite','Doğanları','Atmacaları','Ejderleri',
+  /* İngilizce */
+  'Eagles','Wolves','Lions','Hawks','Panthers','Bulls','Kings','Giants','Raptors','Thunder',
+  'Storm','Titans','Warriors','Pilots','Miners','United',
+  /* Nötr / kısaltma */
+  'BC','BK','Athletic','Sporting','Olympia','Union','Academy','Metropolitans'
+];
 /* FAZ 24 §2: ILK / SY genel isim havuzları SİLİNDİ.
    FAZ 17 §3.4'te marka temizliği yapıldı ama yalnız NAME_POOLS üzerinde; bu ikili gözden
    kaçtı ve canlı kaldı. 32 ilk ismin neredeyse tamamı aktif NBA yıldızının adıydı (Luka,
@@ -92,7 +137,10 @@ function randomNameFor(ulkeAd,tohum){
   let pool=NAME_POOLS[ad];
   if(!pool){
     try{ console.warn('randomNameFor: isim havuzu olmayan ülke →',ad||'(boş)'); }catch(e){}
-    pool=NAME_POOLS[typeof LIG_EV_ULKE!=='undefined'?LIG_EV_ULKE:'Türkiye']||NAME_POOLS['Türkiye'];
+    /* FAZ 30: ev ülkesi yok — havuzu olmayan ülke için RASTGELE bir havuza düşülür.
+       Yine de uyarı basılır: sessiz yedek bir daha gizlenmesin. */
+    const _hk=Object.keys(NAME_POOLS);
+    pool=NAME_POOLS[_hk[Math.floor(Math.random()*_hk.length)]]||NAME_POOLS['Türkiye'];
   }
   if(tohum!=null) return `${prPick(tohum+'|ilk',pool.ilk)} ${prPick(tohum+'|sy',pool.sy)}`;
   return `${ch(pool.ilk)} ${ch(pool.sy)}`;
@@ -100,7 +148,7 @@ function randomNameFor(ulkeAd,tohum){
 
 const TBL_STORAGE_KEY='charazay_tbl_v5';   /* FAZ 17: milliyet kuralı — eski kayıt sessizce yok sayılır */
 const LEAGUE_SIZE=20;
-const TBL_COMP_NAME='Türkiye Basketbol Ligi';
+const TBL_COMP_NAME='Küresel Basketbol Ligi';   /* FAZ 30: ülke bazlı ad kalktı */
 const CLUB_CACHE_KEY='charazay_club_public_v1';
 const NEWS_SESSION_KEY='charazay_news_sess_v1';
 const GAME_SAVE_KEY='charazay_game_save_v3'; /* FAZ 17: milliyet + portre şeması — göç yok, eski anahtar yok sayılır */
@@ -258,14 +306,30 @@ function parseTblKey(key){
   const p=s.split('.');
   return {kind:'div',div:parseInt(p[0],10)||1,grp:parseInt(p[1],10)||1};
 }
+/* ── FAZ 30 §4: DİVİZYON ADLARI NÖTR ─────────────────────────────────────────────────
+   "TBL — Türkiye Basketbol Ligi" küresel yapıda yanlış. En üst grup Divizyon 1'dir;
+   alt divizyonlar paralel gruplara ayrılabilir ("Divizyon 2 · Grup 1").
+   Anahtar biçimi DEĞİŞMEDİ (`tbl` = Divizyon 1, `d.g` = Divizyon d+1 Grup g) — eski
+   kayıtlar ve TBL deposu olduğu gibi okunmaya devam eder, yalnız ETİKET değişir. */
+function divizyonNo(key){
+  if(!key||key==='tbl'||String(key).startsWith('t.')) return 1;
+  const p=String(key).split('.');
+  return (parseInt(p[0],10)||1)+1;      /* '1.1' → Divizyon 2 */
+}
+function divizyonGrup(key){
+  if(!key||key==='tbl'||String(key).startsWith('t.')) return 1;
+  const p=String(key).split('.');
+  return parseInt(p[1],10)||1;
+}
 function formatTblSlotLabel(key){
-  if(!key) return 'TBL';
-  if(key==='tbl'||String(key).startsWith('t.')) return 'TBL';
-  return String(key);
+  if(!key) return t('Divizyon 1');
+  const d=divizyonNo(key), g=divizyonGrup(key);
+  if(d===1) return t('Divizyon 1');
+  return t('Divizyon {d} · Grup {g}',{d:d,g:g});
 }
 function sidebarSlotLabel(key){
-  if(key==='tbl'||String(key).startsWith('t.')) return 'TBL';
-  return String(key);
+  const d=divizyonNo(key), g=divizyonGrup(key);
+  return d===1?('D'+d):('D'+d+'.'+g);
 }
 function starFromGenel(g){
   const x=Number(g)||0;

@@ -1,1519 +1,388 @@
-canli-mac :: (Witty). The game begins with the tip-off. Ankara Eagles as the away side; Şener Gürsoy at the circle, Ferhat Turgut sets up the first possession. The stands are packed.
-canli-mac :: Adem Genç
-canli-mac :: Adem Genç (PF) — Overall: 72
-canli-mac :: Adem Genç (PF) → C
-canli-mac :: Adem Genç (PF) → SF
-canli-mac :: Adem Genç (PF·OVR 72)
-canli-mac :: Aydın Şimşekleri
-canli-mac :: Bahadır Kutlu
-canli-mac :: Bahadır Kutlu (SF) — Overall: 69
-canli-mac :: Bahadır Kutlu (SF) → PF
-canli-mac :: Bahadır Kutlu (SF) → SG
-canli-mac :: Bahadır Kutlu (SF·OVR 69)
-canli-mac :: Balıkesir Ejderleri
+canli-mac :: Amsterdam Şimşekleri
 canli-mac :: Başlangıç Arena — 5,000 seats
-canli-mac :: Bekir Balcı
-canli-mac :: Cenk Çetin
-canli-mac :: Doruk Yiğit
-canli-mac :: Eskişehir Belediyespor
-canli-mac :: Furkan Pınar
-canli-mac :: Furkan Sağlam (SG)
-canli-mac :: Gürsoy
-canli-mac :: Karataş
-canli-mac :: Kerem Gürsoy
-canli-mac :: Kerem Gürsoy (SG) — Overall: 73
-canli-mac :: Kerem Gürsoy (SG) → PG
-canli-mac :: Kerem Gürsoy (SG) → SF
-canli-mac :: Kerem Gürsoy (SG·OVR 73)
-canli-mac :: Latif Gökçe
-canli-mac :: Manisa Yıldızları
-canli-mac :: Manisa Şimşekleri
-canli-mac :: Mert Çevik
-canli-mac :: Mert Çevik (C) — Overall: 69
-canli-mac :: Mert Çevik (C) → PF
-canli-mac :: Mert Çevik (C·OVR 69)
-canli-mac :: Rıza Demirci
-canli-mac :: Rıza Demirci (C) — Overall: 70
-canli-mac :: Rıza Demirci (C) → PF
-canli-mac :: Rıza Demirci (C·OVR 70)
-canli-mac :: Sakarya Üniversite
-canli-mac :: Samsun Üniversite
-canli-mac :: Samsun Üniversite — İstanbul Gençlik
-canli-mac :: Sivas Atmacaları
-canli-mac :: Sivas Atmacaları — Kocaeli Basket
-canli-mac :: Sivas Boğaları
-canli-mac :: Tayfun Doğan
-canli-mac :: Tayfun Doğan (SG) — Overall: 74
-canli-mac :: Tayfun Doğan (SG) → PG
-canli-mac :: Tayfun Doğan (SG) → SF
-canli-mac :: Tayfun Doğan (SG·OVR 74)
-canli-mac :: Utku Yalçın
-canli-mac :: Yavuz Üstün
-canli-mac :: Yavuz Üstün (SF) — Overall: 72
-canli-mac :: Yavuz Üstün (SF) → PF
-canli-mac :: Yavuz Üstün (SF) → SG
-canli-mac :: Yavuz Üstün (SF·OVR 72)
-canli-mac :: Zonguldak Yıldızları
-canli-mac :: Çorum Yıldızları
-canli-mac :: Çorum Yıldızları — Aydın Şimşekleri
-canli-mac :: Ömer Pekmez
-canli-mac :: Üstün
-canli-mac :: İbrahim Avcı
-canli-mac :: İstanbul Gençlik
-canli-mac :: Şanlıurfa Koleji
-canli-mac :: Şanlıurfa Koleji — Ordu Koleji
-canli-mac :: Şener Gürsoy
-canli-mac :: Şener Gürsoy (C) — Overall: 75
-canli-mac :: Şener Gürsoy (C) → PF
-canli-mac :: Şener Gürsoy (C·OVR 75)
-canli-mac :: 🇹🇷 Bahadır Efe
-canli-mac :: 🇹🇷 Bahadır Erdem
-canli-mac :: 🇹🇷 Barış Avcı
-canli-mac :: 🇹🇷 Coşkun Kırca
-canli-mac :: 🇹🇷 Ediz Eroğlu
-canli-mac :: 🇹🇷 Enes İnce
-canli-mac :: 🇹🇷 Görkem Yapıcı
-canli-mac :: 🇹🇷 Halil Örs
-canli-mac :: 🇹🇷 Hikmet Özkan
-canli-mac :: 🇹🇷 Kerem Gündoğdu
-canli-mac :: 🇹🇷 Kutay Yılmaz
-canli-mac :: 🇹🇷 Kutay Öcal
-canli-mac :: 🇹🇷 Mahmut Savaş
-canli-mac :: 🇹🇷 Mahmut Taş
-canli-mac :: 🇹🇷 Mesut Çiftçi
-canli-mac :: 🇹🇷 Nazım Kuru
-canli-mac :: 🇹🇷 Okan Doğan
-canli-mac :: 🇹🇷 Oktay Ünal
-canli-mac :: 🇹🇷 Sabri Balcı
-canli-mac :: 🇹🇷 Sercan Taşkın
-canli-mac :: 🇹🇷 Turgut Çakmak
+canli-mac :: Bilbao Şahinleri
+canli-mac :: Bucharest Panterleri — Oslo Aslanları
+canli-mac :: Egzon Çeliku
+canli-mac :: Egzon Çeliku (C) — Overall: 69
+canli-mac :: Egzon Çeliku (C) → PF
+canli-mac :: Egzon Çeliku (C·OVR 69)
+canli-mac :: Hélder Gonçalves
+canli-mac :: Kesküla
+canli-mac :: Lagos Sporting — Nairobi Atmacaları
+canli-mac :: Nairobi Atmacaları
+canli-mac :: Oslo Aslanları
+canli-mac :: Risto Kesküla
+canli-mac :: Risto Kesküla (PF) — Overall: 72
+canli-mac :: Risto Kesküla (PF) → C
+canli-mac :: Risto Kesküla (PF) → SF
+canli-mac :: Risto Kesküla (PF·OVR 72)
+canli-mac :: Santos BC — İzmir Thunder
+canli-mac :: İzmir Thunder
+canli-mac :: 🇹🇷 Kürşat Güngör
+canli-mac :: 🇹🇷 Melih Savaş
 canli-mac :: 🇹🇷 Türkçe
-canli-mac :: 🇹🇷 Yalçın Üstün
-canli-mac :: 🇹🇷 Zeynel Şimşek
-canli-mac :: 🇹🇷 Çağrı Sevinç
-canli-mac :: 🇹🇷 Çağrı Öner
-canli-mac :: 🇹🇷 Ömer Tekin
-canli-mac :: 🇹🇷 Öner Yaman
-canli-mac :: 🇹🇷 Ünal Happy
-canli-mac :: 🇹🇷 İlker Aslan
-canli-mac :: 🇹🇷 Şafak Kurt
-canli-mac :: 🇹🇷 Şener Güneş
-canli-mac :: 🇹🇷 Şenol Gündoğdu
-canli-mac :: 🏛️ Aydın Şimşekleri from
-canli-mac :: 🏛️ Manisa Yıldızları from
-canli-mac :: 🏛️ Sakarya Üniversite from
-canli-mac :: 🏛️ Samsun Üniversite from
-canli-mac :: 🏛️ Zonguldak Yıldızları from
-canli-mac :: 🏛️ Çorum Yıldızları from
-canli-mac :: 🏛️ İstanbul Gençlik from
-canli-mac :: 🏛️ Şanlıurfa Koleji from
-canli-mac :: 🔔 The first possession of quarter 1 is being set up — Ankara Eagles 0 - 0 Sivas Atmacaları.
-canli-mac :: 🤝 Furkan Bozkurt – Şener Gürsoy
-canli-mac :: 🤝 Hasan Korkmaz – Yavuz Üstün
-canli-mac :: 🤝 Hikmet Sancak – Mert Çevik
+canli-mac :: 🏛️ Amsterdam Şimşekleri from
+canli-mac :: 🏛️ İzmir Thunder from
+canli-mac :: 🔔 The first possession of quarter 1 is being set up — Ankara Eagles 0 - 0 Amsterdam Şimşekleri.
 login :: 🇹🇷 Türkçe
-modal:ayarlar :: Adem Genç
-modal:ayarlar :: Adem Genç (PF) — Overall: 72
-modal:ayarlar :: Adem Genç (PF) → C
-modal:ayarlar :: Adem Genç (PF) → SF
-modal:ayarlar :: Adem Genç (PF·OVR 72)
-modal:ayarlar :: Aydın Şimşekleri
-modal:ayarlar :: Bahadır Kutlu
-modal:ayarlar :: Bahadır Kutlu (SF) — Overall: 69
-modal:ayarlar :: Bahadır Kutlu (SF) → PF
-modal:ayarlar :: Bahadır Kutlu (SF) → SG
-modal:ayarlar :: Bahadır Kutlu (SF·OVR 69)
-modal:ayarlar :: Balıkesir Ejderleri
+modal:ayarlar :: Amsterdam Şimşekleri
 modal:ayarlar :: Başlangıç Arena — 5,000 seats
-modal:ayarlar :: Bekir Balcı
-modal:ayarlar :: Cenk Çetin
-modal:ayarlar :: Doruk Yiğit
-modal:ayarlar :: Eskişehir Belediyespor
-modal:ayarlar :: Furkan Pınar
-modal:ayarlar :: Kerem Gürsoy
-modal:ayarlar :: Kerem Gürsoy (SG) — Overall: 73
-modal:ayarlar :: Kerem Gürsoy (SG) → PG
-modal:ayarlar :: Kerem Gürsoy (SG) → SF
-modal:ayarlar :: Kerem Gürsoy (SG·OVR 73)
-modal:ayarlar :: Latif Gökçe
-modal:ayarlar :: Manisa Yıldızları
-modal:ayarlar :: Manisa Şimşekleri
-modal:ayarlar :: Mert Çevik
-modal:ayarlar :: Mert Çevik (C) — Overall: 69
-modal:ayarlar :: Mert Çevik (C) → PF
-modal:ayarlar :: Mert Çevik (C·OVR 69)
-modal:ayarlar :: Rıza Demirci
-modal:ayarlar :: Rıza Demirci (C) — Overall: 70
-modal:ayarlar :: Rıza Demirci (C) → PF
-modal:ayarlar :: Rıza Demirci (C·OVR 70)
-modal:ayarlar :: Sakarya Üniversite
-modal:ayarlar :: Samsun Üniversite
-modal:ayarlar :: Samsun Üniversite — İstanbul Gençlik
-modal:ayarlar :: Sivas Atmacaları
-modal:ayarlar :: Sivas Atmacaları — Kocaeli Basket
-modal:ayarlar :: Sivas Boğaları
-modal:ayarlar :: Tayfun Doğan
-modal:ayarlar :: Tayfun Doğan (SG) — Overall: 74
-modal:ayarlar :: Tayfun Doğan (SG) → PG
-modal:ayarlar :: Tayfun Doğan (SG) → SF
-modal:ayarlar :: Tayfun Doğan (SG·OVR 74)
-modal:ayarlar :: Utku Yalçın
-modal:ayarlar :: Yavuz Üstün
-modal:ayarlar :: Yavuz Üstün (SF) — Overall: 72
-modal:ayarlar :: Yavuz Üstün (SF) → PF
-modal:ayarlar :: Yavuz Üstün (SF) → SG
-modal:ayarlar :: Yavuz Üstün (SF·OVR 72)
-modal:ayarlar :: Zonguldak Yıldızları
-modal:ayarlar :: Çorum Yıldızları
-modal:ayarlar :: Çorum Yıldızları — Aydın Şimşekleri
-modal:ayarlar :: Ömer Pekmez
-modal:ayarlar :: İbrahim Avcı
-modal:ayarlar :: İstanbul Gençlik
-modal:ayarlar :: Şanlıurfa Koleji
-modal:ayarlar :: Şanlıurfa Koleji — Ordu Koleji
-modal:ayarlar :: Şener Gürsoy
-modal:ayarlar :: Şener Gürsoy (C) — Overall: 75
-modal:ayarlar :: Şener Gürsoy (C) → PF
-modal:ayarlar :: Şener Gürsoy (C·OVR 75)
-modal:ayarlar :: 🇹🇷 Bahadır Efe
-modal:ayarlar :: 🇹🇷 Bahadır Erdem
-modal:ayarlar :: 🇹🇷 Barış Avcı
-modal:ayarlar :: 🇹🇷 Coşkun Kırca
-modal:ayarlar :: 🇹🇷 Ediz Eroğlu
-modal:ayarlar :: 🇹🇷 Enes İnce
-modal:ayarlar :: 🇹🇷 Halil Örs
-modal:ayarlar :: 🇹🇷 Hikmet Özkan
-modal:ayarlar :: 🇹🇷 Kutay Yılmaz
-modal:ayarlar :: 🇹🇷 Kutay Öcal
-modal:ayarlar :: 🇹🇷 Mahmut Savaş
-modal:ayarlar :: 🇹🇷 Mahmut Taş
-modal:ayarlar :: 🇹🇷 Nazım Kuru
-modal:ayarlar :: 🇹🇷 Oktay Ünal
-modal:ayarlar :: 🇹🇷 Sabri Balcı
-modal:ayarlar :: 🇹🇷 Sercan Taşkın
-modal:ayarlar :: 🇹🇷 Turgut Çakmak
+modal:ayarlar :: Bilbao Şahinleri
+modal:ayarlar :: Bucharest Panterleri — Oslo Aslanları
+modal:ayarlar :: Egzon Çeliku
+modal:ayarlar :: Egzon Çeliku (C) — Overall: 69
+modal:ayarlar :: Egzon Çeliku (C) → PF
+modal:ayarlar :: Egzon Çeliku (C·OVR 69)
+modal:ayarlar :: Hélder Gonçalves
+modal:ayarlar :: Lagos Sporting — Nairobi Atmacaları
+modal:ayarlar :: Nairobi Atmacaları
+modal:ayarlar :: Oslo Aslanları
+modal:ayarlar :: Risto Kesküla
+modal:ayarlar :: Risto Kesküla (PF) — Overall: 72
+modal:ayarlar :: Risto Kesküla (PF) → C
+modal:ayarlar :: Risto Kesküla (PF) → SF
+modal:ayarlar :: Risto Kesküla (PF·OVR 72)
+modal:ayarlar :: Santos BC — İzmir Thunder
+modal:ayarlar :: İzmir Thunder
+modal:ayarlar :: 🇹🇷 Kürşat Güngör
+modal:ayarlar :: 🇹🇷 Melih Savaş
 modal:ayarlar :: 🇹🇷 Türkçe
-modal:ayarlar :: 🇹🇷 Zeynel Şimşek
-modal:ayarlar :: 🇹🇷 Çağrı Sevinç
-modal:ayarlar :: 🇹🇷 Çağrı Öner
-modal:ayarlar :: 🇹🇷 Ömer Tekin
-modal:ayarlar :: 🇹🇷 Öner Yaman
-modal:ayarlar :: 🇹🇷 Ünal Happy
-modal:ayarlar :: 🇹🇷 İlker Aslan
-modal:ayarlar :: 🇹🇷 Şafak Kurt
-modal:ayarlar :: 🇹🇷 Şener Güneş
-modal:ayarlar :: 🇹🇷 Şenol Gündoğdu
-modal:ayarlar :: 🏛️ Aydın Şimşekleri from
-modal:ayarlar :: 🏛️ Manisa Yıldızları from
-modal:ayarlar :: 🏛️ Sakarya Üniversite from
-modal:ayarlar :: 🏛️ Samsun Üniversite from
-modal:ayarlar :: 🏛️ Zonguldak Yıldızları from
-modal:ayarlar :: 🏛️ Çorum Yıldızları from
-modal:ayarlar :: 🏛️ İstanbul Gençlik from
-modal:ayarlar :: 🏛️ Şanlıurfa Koleji from
-modal:ayarlar :: 🤝 Furkan Bozkurt – Şener Gürsoy
-modal:ayarlar :: 🤝 Hasan Korkmaz – Yavuz Üstün
-modal:ayarlar :: 🤝 Hikmet Sancak – Mert Çevik
-modal:basarim :: Adem Genç
-modal:basarim :: Adem Genç (PF) — Overall: 72
-modal:basarim :: Adem Genç (PF) → C
-modal:basarim :: Adem Genç (PF) → SF
-modal:basarim :: Adem Genç (PF·OVR 72)
-modal:basarim :: Aydın Şimşekleri
-modal:basarim :: Bahadır Kutlu
-modal:basarim :: Bahadır Kutlu (SF) — Overall: 69
-modal:basarim :: Bahadır Kutlu (SF) → PF
-modal:basarim :: Bahadır Kutlu (SF) → SG
-modal:basarim :: Bahadır Kutlu (SF·OVR 69)
-modal:basarim :: Balıkesir Ejderleri
+modal:ayarlar :: 🏛️ Amsterdam Şimşekleri from
+modal:ayarlar :: 🏛️ İzmir Thunder from
+modal:basarim :: Amsterdam Şimşekleri
 modal:basarim :: Başlangıç Arena — 5,000 seats
-modal:basarim :: Bekir Balcı
-modal:basarim :: Cenk Çetin
-modal:basarim :: Doruk Yiğit
-modal:basarim :: Eskişehir Belediyespor
-modal:basarim :: Furkan Pınar
-modal:basarim :: Kerem Gürsoy
-modal:basarim :: Kerem Gürsoy (SG) — Overall: 73
-modal:basarim :: Kerem Gürsoy (SG) → PG
-modal:basarim :: Kerem Gürsoy (SG) → SF
-modal:basarim :: Kerem Gürsoy (SG·OVR 73)
-modal:basarim :: Latif Gökçe
-modal:basarim :: Manisa Yıldızları
-modal:basarim :: Manisa Şimşekleri
-modal:basarim :: Mert Çevik
-modal:basarim :: Mert Çevik (C) — Overall: 69
-modal:basarim :: Mert Çevik (C) → PF
-modal:basarim :: Mert Çevik (C·OVR 69)
-modal:basarim :: Rıza Demirci
-modal:basarim :: Rıza Demirci (C) — Overall: 70
-modal:basarim :: Rıza Demirci (C) → PF
-modal:basarim :: Rıza Demirci (C·OVR 70)
-modal:basarim :: Sakarya Üniversite
-modal:basarim :: Samsun Üniversite
-modal:basarim :: Samsun Üniversite — İstanbul Gençlik
-modal:basarim :: Sivas Atmacaları
-modal:basarim :: Sivas Atmacaları — Kocaeli Basket
-modal:basarim :: Sivas Boğaları
-modal:basarim :: Tayfun Doğan
-modal:basarim :: Tayfun Doğan (SG) — Overall: 74
-modal:basarim :: Tayfun Doğan (SG) → PG
-modal:basarim :: Tayfun Doğan (SG) → SF
-modal:basarim :: Tayfun Doğan (SG·OVR 74)
-modal:basarim :: Utku Yalçın
-modal:basarim :: Yavuz Üstün
-modal:basarim :: Yavuz Üstün (SF) — Overall: 72
-modal:basarim :: Yavuz Üstün (SF) → PF
-modal:basarim :: Yavuz Üstün (SF) → SG
-modal:basarim :: Yavuz Üstün (SF·OVR 72)
-modal:basarim :: Zonguldak Yıldızları
-modal:basarim :: Çorum Yıldızları
-modal:basarim :: Çorum Yıldızları — Aydın Şimşekleri
-modal:basarim :: Ömer Pekmez
-modal:basarim :: İbrahim Avcı
-modal:basarim :: İstanbul Gençlik
-modal:basarim :: Şanlıurfa Koleji
-modal:basarim :: Şanlıurfa Koleji — Ordu Koleji
-modal:basarim :: Şener Gürsoy
-modal:basarim :: Şener Gürsoy (C) — Overall: 75
-modal:basarim :: Şener Gürsoy (C) → PF
-modal:basarim :: Şener Gürsoy (C·OVR 75)
-modal:basarim :: 🇹🇷 Bahadır Efe
-modal:basarim :: 🇹🇷 Bahadır Erdem
-modal:basarim :: 🇹🇷 Barış Avcı
-modal:basarim :: 🇹🇷 Coşkun Kırca
-modal:basarim :: 🇹🇷 Ediz Eroğlu
-modal:basarim :: 🇹🇷 Enes İnce
-modal:basarim :: 🇹🇷 Halil Örs
-modal:basarim :: 🇹🇷 Hikmet Özkan
-modal:basarim :: 🇹🇷 Kutay Yılmaz
-modal:basarim :: 🇹🇷 Kutay Öcal
-modal:basarim :: 🇹🇷 Mahmut Savaş
-modal:basarim :: 🇹🇷 Mahmut Taş
-modal:basarim :: 🇹🇷 Nazım Kuru
-modal:basarim :: 🇹🇷 Oktay Ünal
-modal:basarim :: 🇹🇷 Sabri Balcı
-modal:basarim :: 🇹🇷 Sercan Taşkın
-modal:basarim :: 🇹🇷 Turgut Çakmak
+modal:basarim :: Bilbao Şahinleri
+modal:basarim :: Bucharest Panterleri — Oslo Aslanları
+modal:basarim :: Egzon Çeliku
+modal:basarim :: Egzon Çeliku (C) — Overall: 69
+modal:basarim :: Egzon Çeliku (C) → PF
+modal:basarim :: Egzon Çeliku (C·OVR 69)
+modal:basarim :: Hélder Gonçalves
+modal:basarim :: Lagos Sporting — Nairobi Atmacaları
+modal:basarim :: Nairobi Atmacaları
+modal:basarim :: Oslo Aslanları
+modal:basarim :: Risto Kesküla
+modal:basarim :: Risto Kesküla (PF) — Overall: 72
+modal:basarim :: Risto Kesküla (PF) → C
+modal:basarim :: Risto Kesküla (PF) → SF
+modal:basarim :: Risto Kesküla (PF·OVR 72)
+modal:basarim :: Santos BC — İzmir Thunder
+modal:basarim :: İzmir Thunder
+modal:basarim :: 🇹🇷 Kürşat Güngör
+modal:basarim :: 🇹🇷 Melih Savaş
 modal:basarim :: 🇹🇷 Türkçe
-modal:basarim :: 🇹🇷 Zeynel Şimşek
-modal:basarim :: 🇹🇷 Çağrı Sevinç
-modal:basarim :: 🇹🇷 Çağrı Öner
-modal:basarim :: 🇹🇷 Ömer Tekin
-modal:basarim :: 🇹🇷 Öner Yaman
-modal:basarim :: 🇹🇷 Ünal Happy
-modal:basarim :: 🇹🇷 İlker Aslan
-modal:basarim :: 🇹🇷 Şafak Kurt
-modal:basarim :: 🇹🇷 Şener Güneş
-modal:basarim :: 🇹🇷 Şenol Gündoğdu
-modal:basarim :: 🏛️ Aydın Şimşekleri from
-modal:basarim :: 🏛️ Manisa Yıldızları from
-modal:basarim :: 🏛️ Sakarya Üniversite from
-modal:basarim :: 🏛️ Samsun Üniversite from
-modal:basarim :: 🏛️ Zonguldak Yıldızları from
-modal:basarim :: 🏛️ Çorum Yıldızları from
-modal:basarim :: 🏛️ İstanbul Gençlik from
-modal:basarim :: 🏛️ Şanlıurfa Koleji from
-modal:basarim :: 🤝 Furkan Bozkurt – Şener Gürsoy
-modal:basarim :: 🤝 Hasan Korkmaz – Yavuz Üstün
-modal:basarim :: 🤝 Hikmet Sancak – Mert Çevik
-modal:draft :: Adem Genç
-modal:draft :: Adem Genç (PF) — Overall: 72
-modal:draft :: Adem Genç (PF) → C
-modal:draft :: Adem Genç (PF) → SF
-modal:draft :: Adem Genç (PF·OVR 72)
-modal:draft :: Aydın Şimşekleri
-modal:draft :: Bahadır Kutlu
-modal:draft :: Bahadır Kutlu (SF) — Overall: 69
-modal:draft :: Bahadır Kutlu (SF) → PF
-modal:draft :: Bahadır Kutlu (SF) → SG
-modal:draft :: Bahadır Kutlu (SF·OVR 69)
-modal:draft :: Balıkesir Ejderleri
+modal:basarim :: 🏛️ Amsterdam Şimşekleri from
+modal:basarim :: 🏛️ İzmir Thunder from
+modal:draft :: Amsterdam Şimşekleri
 modal:draft :: Başlangıç Arena — 5,000 seats
-modal:draft :: Bekir Balcı
-modal:draft :: Cenk Çetin
-modal:draft :: Doruk Yiğit
-modal:draft :: Eskişehir Belediyespor
-modal:draft :: Furkan Pınar
-modal:draft :: Furkan Sağlam (SG)
-modal:draft :: Kerem Gürsoy
-modal:draft :: Kerem Gürsoy (SG) — Overall: 73
-modal:draft :: Kerem Gürsoy (SG) → PG
-modal:draft :: Kerem Gürsoy (SG) → SF
-modal:draft :: Kerem Gürsoy (SG·OVR 73)
-modal:draft :: Latif Gökçe
-modal:draft :: Manisa Yıldızları
-modal:draft :: Manisa Şimşekleri
-modal:draft :: Mert Çevik
-modal:draft :: Mert Çevik (C) — Overall: 69
-modal:draft :: Mert Çevik (C) → PF
-modal:draft :: Mert Çevik (C·OVR 69)
-modal:draft :: Rıza Demirci
-modal:draft :: Rıza Demirci (C) — Overall: 70
-modal:draft :: Rıza Demirci (C) → PF
-modal:draft :: Rıza Demirci (C·OVR 70)
-modal:draft :: Sakarya Üniversite
-modal:draft :: Samsun Üniversite
-modal:draft :: Samsun Üniversite — İstanbul Gençlik
-modal:draft :: Sivas Atmacaları
-modal:draft :: Sivas Atmacaları — Kocaeli Basket
-modal:draft :: Sivas Boğaları
-modal:draft :: Tayfun Doğan
-modal:draft :: Tayfun Doğan (SG) — Overall: 74
-modal:draft :: Tayfun Doğan (SG) → PG
-modal:draft :: Tayfun Doğan (SG) → SF
-modal:draft :: Tayfun Doğan (SG·OVR 74)
-modal:draft :: Utku Yalçın
-modal:draft :: Yavuz Üstün
-modal:draft :: Yavuz Üstün (SF) — Overall: 72
-modal:draft :: Yavuz Üstün (SF) → PF
-modal:draft :: Yavuz Üstün (SF) → SG
-modal:draft :: Yavuz Üstün (SF·OVR 72)
-modal:draft :: Zonguldak Yıldızları
-modal:draft :: Çorum Yıldızları
-modal:draft :: Çorum Yıldızları — Aydın Şimşekleri
-modal:draft :: Ömer Pekmez
-modal:draft :: İbrahim Avcı
-modal:draft :: İstanbul Gençlik
-modal:draft :: Şanlıurfa Koleji
-modal:draft :: Şanlıurfa Koleji — Ordu Koleji
-modal:draft :: Şener Gürsoy
-modal:draft :: Şener Gürsoy (C) — Overall: 75
-modal:draft :: Şener Gürsoy (C) → PF
-modal:draft :: Şener Gürsoy (C·OVR 75)
-modal:draft :: 🇹🇷 Bahadır Efe
-modal:draft :: 🇹🇷 Bahadır Erdem
-modal:draft :: 🇹🇷 Barış Avcı
-modal:draft :: 🇹🇷 Coşkun Kırca
-modal:draft :: 🇹🇷 Ediz Eroğlu
-modal:draft :: 🇹🇷 Enes İnce
-modal:draft :: 🇹🇷 Görkem Yapıcı
-modal:draft :: 🇹🇷 Halil Örs
-modal:draft :: 🇹🇷 Hikmet Özkan
-modal:draft :: 🇹🇷 Kerem Gündoğdu
-modal:draft :: 🇹🇷 Kutay Yılmaz
-modal:draft :: 🇹🇷 Kutay Öcal
-modal:draft :: 🇹🇷 Mahmut Savaş
-modal:draft :: 🇹🇷 Mahmut Taş
-modal:draft :: 🇹🇷 Mesut Çiftçi
-modal:draft :: 🇹🇷 Nazım Kuru
-modal:draft :: 🇹🇷 Okan Doğan
-modal:draft :: 🇹🇷 Oktay Ünal
-modal:draft :: 🇹🇷 Sabri Balcı
-modal:draft :: 🇹🇷 Sercan Taşkın
-modal:draft :: 🇹🇷 Turgut Çakmak
+modal:draft :: Bilbao Şahinleri
+modal:draft :: Bucharest Panterleri — Oslo Aslanları
+modal:draft :: Egzon Çeliku
+modal:draft :: Egzon Çeliku (C) — Overall: 69
+modal:draft :: Egzon Çeliku (C) → PF
+modal:draft :: Egzon Çeliku (C·OVR 69)
+modal:draft :: Hélder Gonçalves
+modal:draft :: Lagos Sporting — Nairobi Atmacaları
+modal:draft :: Nairobi Atmacaları
+modal:draft :: Oslo Aslanları
+modal:draft :: Risto Kesküla
+modal:draft :: Risto Kesküla (PF) — Overall: 72
+modal:draft :: Risto Kesküla (PF) → C
+modal:draft :: Risto Kesküla (PF) → SF
+modal:draft :: Risto Kesküla (PF·OVR 72)
+modal:draft :: Santos BC — İzmir Thunder
+modal:draft :: İzmir Thunder
+modal:draft :: 🇹🇷 Kürşat Güngör
+modal:draft :: 🇹🇷 Melih Savaş
 modal:draft :: 🇹🇷 Türkçe
-modal:draft :: 🇹🇷 Yalçın Üstün
-modal:draft :: 🇹🇷 Zeynel Şimşek
-modal:draft :: 🇹🇷 Çağrı Sevinç
-modal:draft :: 🇹🇷 Çağrı Öner
-modal:draft :: 🇹🇷 Ömer Tekin
-modal:draft :: 🇹🇷 Öner Yaman
-modal:draft :: 🇹🇷 Ünal Happy
-modal:draft :: 🇹🇷 İlker Aslan
-modal:draft :: 🇹🇷 Şafak Kurt
-modal:draft :: 🇹🇷 Şener Güneş
-modal:draft :: 🇹🇷 Şenol Gündoğdu
-modal:draft :: 🏛️ Aydın Şimşekleri from
-modal:draft :: 🏛️ Manisa Yıldızları from
-modal:draft :: 🏛️ Sakarya Üniversite from
-modal:draft :: 🏛️ Samsun Üniversite from
-modal:draft :: 🏛️ Zonguldak Yıldızları from
-modal:draft :: 🏛️ Çorum Yıldızları from
-modal:draft :: 🏛️ İstanbul Gençlik from
-modal:draft :: 🏛️ Şanlıurfa Koleji from
-modal:draft :: 🤝 Furkan Bozkurt – Şener Gürsoy
-modal:draft :: 🤝 Hasan Korkmaz – Yavuz Üstün
-modal:draft :: 🤝 Hikmet Sancak – Mert Çevik
-modal:ilk5 :: Adem Genç
-modal:ilk5 :: Adem Genç (PF) — Overall: 72
-modal:ilk5 :: Adem Genç (PF) → C
-modal:ilk5 :: Adem Genç (PF) → SF
-modal:ilk5 :: Adem Genç (PF·OVR 72)
-modal:ilk5 :: Aydın Şimşekleri
-modal:ilk5 :: Bahadır Kutlu
-modal:ilk5 :: Bahadır Kutlu (SF) — Overall: 69
-modal:ilk5 :: Bahadır Kutlu (SF) → PF
-modal:ilk5 :: Bahadır Kutlu (SF) → SG
-modal:ilk5 :: Bahadır Kutlu (SF·OVR 69)
-modal:ilk5 :: Balıkesir Ejderleri
+modal:draft :: 🏛️ Amsterdam Şimşekleri from
+modal:draft :: 🏛️ İzmir Thunder from
+modal:ilk5 :: Amsterdam Şimşekleri
 modal:ilk5 :: Başlangıç Arena — 5,000 seats
-modal:ilk5 :: Bekir Balcı
-modal:ilk5 :: Cenk Çetin
-modal:ilk5 :: Doruk Yiğit
-modal:ilk5 :: Eskişehir Belediyespor
-modal:ilk5 :: Furkan Pınar
-modal:ilk5 :: Kerem Gürsoy
-modal:ilk5 :: Kerem Gürsoy (SG) — Overall: 73
-modal:ilk5 :: Kerem Gürsoy (SG) → PG
-modal:ilk5 :: Kerem Gürsoy (SG) → SF
-modal:ilk5 :: Kerem Gürsoy (SG·OVR 73)
-modal:ilk5 :: Latif Gökçe
-modal:ilk5 :: Manisa Yıldızları
-modal:ilk5 :: Manisa Şimşekleri
-modal:ilk5 :: Mert Çevik
-modal:ilk5 :: Mert Çevik (C) — Overall: 69
-modal:ilk5 :: Mert Çevik (C) → PF
-modal:ilk5 :: Mert Çevik (C·OVR 69)
-modal:ilk5 :: Rıza Demirci
-modal:ilk5 :: Rıza Demirci (C) — Overall: 70
-modal:ilk5 :: Rıza Demirci (C) → PF
-modal:ilk5 :: Rıza Demirci (C·OVR 70)
-modal:ilk5 :: Sakarya Üniversite
-modal:ilk5 :: Samsun Üniversite
-modal:ilk5 :: Samsun Üniversite — İstanbul Gençlik
-modal:ilk5 :: Sivas Atmacaları
-modal:ilk5 :: Sivas Atmacaları — Kocaeli Basket
-modal:ilk5 :: Sivas Boğaları
-modal:ilk5 :: Tayfun Doğan
-modal:ilk5 :: Tayfun Doğan (SG) — Overall: 74
-modal:ilk5 :: Tayfun Doğan (SG) → PG
-modal:ilk5 :: Tayfun Doğan (SG) → SF
-modal:ilk5 :: Tayfun Doğan (SG·OVR 74)
-modal:ilk5 :: Utku Yalçın
-modal:ilk5 :: Yavuz Üstün
-modal:ilk5 :: Yavuz Üstün (SF) — Overall: 72
-modal:ilk5 :: Yavuz Üstün (SF) → PF
-modal:ilk5 :: Yavuz Üstün (SF) → SG
-modal:ilk5 :: Yavuz Üstün (SF·OVR 72)
-modal:ilk5 :: Zonguldak Yıldızları
-modal:ilk5 :: Çorum Yıldızları
-modal:ilk5 :: Çorum Yıldızları — Aydın Şimşekleri
-modal:ilk5 :: Ömer Pekmez
-modal:ilk5 :: İbrahim Avcı
-modal:ilk5 :: İstanbul Gençlik
-modal:ilk5 :: Şanlıurfa Koleji
-modal:ilk5 :: Şanlıurfa Koleji — Ordu Koleji
-modal:ilk5 :: Şener Gürsoy
-modal:ilk5 :: Şener Gürsoy (C) — Overall: 75
-modal:ilk5 :: Şener Gürsoy (C) → PF
-modal:ilk5 :: Şener Gürsoy (C·OVR 75)
-modal:ilk5 :: 🇹🇷 Bahadır Efe
-modal:ilk5 :: 🇹🇷 Bahadır Erdem
-modal:ilk5 :: 🇹🇷 Barış Avcı
-modal:ilk5 :: 🇹🇷 Coşkun Kırca
-modal:ilk5 :: 🇹🇷 Ediz Eroğlu
-modal:ilk5 :: 🇹🇷 Enes İnce
-modal:ilk5 :: 🇹🇷 Halil Örs
-modal:ilk5 :: 🇹🇷 Hikmet Özkan
-modal:ilk5 :: 🇹🇷 Kutay Yılmaz
-modal:ilk5 :: 🇹🇷 Kutay Öcal
-modal:ilk5 :: 🇹🇷 Mahmut Savaş
-modal:ilk5 :: 🇹🇷 Mahmut Taş
-modal:ilk5 :: 🇹🇷 Nazım Kuru
-modal:ilk5 :: 🇹🇷 Oktay Ünal
-modal:ilk5 :: 🇹🇷 Sabri Balcı
-modal:ilk5 :: 🇹🇷 Sercan Taşkın
-modal:ilk5 :: 🇹🇷 Turgut Çakmak
+modal:ilk5 :: Bilbao Şahinleri
+modal:ilk5 :: Bucharest Panterleri — Oslo Aslanları
+modal:ilk5 :: Egzon Çeliku
+modal:ilk5 :: Egzon Çeliku (C) — Overall: 69
+modal:ilk5 :: Egzon Çeliku (C) → PF
+modal:ilk5 :: Egzon Çeliku (C·OVR 69)
+modal:ilk5 :: Hélder Gonçalves
+modal:ilk5 :: Lagos Sporting — Nairobi Atmacaları
+modal:ilk5 :: Nairobi Atmacaları
+modal:ilk5 :: Oslo Aslanları
+modal:ilk5 :: Risto Kesküla
+modal:ilk5 :: Risto Kesküla (PF) — Overall: 72
+modal:ilk5 :: Risto Kesküla (PF) → C
+modal:ilk5 :: Risto Kesküla (PF) → SF
+modal:ilk5 :: Risto Kesküla (PF·OVR 72)
+modal:ilk5 :: Santos BC — İzmir Thunder
+modal:ilk5 :: İzmir Thunder
+modal:ilk5 :: 🇹🇷 Kürşat Güngör
+modal:ilk5 :: 🇹🇷 Melih Savaş
 modal:ilk5 :: 🇹🇷 Türkçe
-modal:ilk5 :: 🇹🇷 Zeynel Şimşek
-modal:ilk5 :: 🇹🇷 Çağrı Sevinç
-modal:ilk5 :: 🇹🇷 Çağrı Öner
-modal:ilk5 :: 🇹🇷 Ömer Tekin
-modal:ilk5 :: 🇹🇷 Öner Yaman
-modal:ilk5 :: 🇹🇷 Ünal Happy
-modal:ilk5 :: 🇹🇷 İlker Aslan
-modal:ilk5 :: 🇹🇷 Şafak Kurt
-modal:ilk5 :: 🇹🇷 Şener Güneş
-modal:ilk5 :: 🇹🇷 Şenol Gündoğdu
-modal:ilk5 :: 🏛️ Aydın Şimşekleri from
-modal:ilk5 :: 🏛️ Manisa Yıldızları from
-modal:ilk5 :: 🏛️ Sakarya Üniversite from
-modal:ilk5 :: 🏛️ Samsun Üniversite from
-modal:ilk5 :: 🏛️ Zonguldak Yıldızları from
-modal:ilk5 :: 🏛️ Çorum Yıldızları from
-modal:ilk5 :: 🏛️ İstanbul Gençlik from
-modal:ilk5 :: 🏛️ Şanlıurfa Koleji from
-modal:ilk5 :: 🤝 Furkan Bozkurt – Şener Gürsoy
-modal:ilk5 :: 🤝 Hasan Korkmaz – Yavuz Üstün
-modal:ilk5 :: 🤝 Hikmet Sancak – Mert Çevik
-modal:oyuncu :: Adem Genç
-modal:oyuncu :: Adem Genç (PF) — Overall: 72
-modal:oyuncu :: Adem Genç (PF) → C
-modal:oyuncu :: Adem Genç (PF) → SF
-modal:oyuncu :: Adem Genç (PF·OVR 72)
-modal:oyuncu :: Aydın Şimşekleri
-modal:oyuncu :: Bahadır Kutlu
-modal:oyuncu :: Bahadır Kutlu (SF) — Overall: 69
-modal:oyuncu :: Bahadır Kutlu (SF) → PF
-modal:oyuncu :: Bahadır Kutlu (SF) → SG
-modal:oyuncu :: Bahadır Kutlu (SF·OVR 69)
-modal:oyuncu :: Balıkesir Ejderleri
+modal:ilk5 :: 🏛️ Amsterdam Şimşekleri from
+modal:ilk5 :: 🏛️ İzmir Thunder from
+modal:oyuncu :: Amsterdam Şimşekleri
 modal:oyuncu :: Başlangıç Arena — 5,000 seats
-modal:oyuncu :: Bekir Balcı
-modal:oyuncu :: Cenk Çetin
-modal:oyuncu :: Doruk Yiğit
-modal:oyuncu :: Eskişehir Belediyespor
-modal:oyuncu :: Furkan Pınar
-modal:oyuncu :: Kerem Gürsoy
-modal:oyuncu :: Kerem Gürsoy (SG) — Overall: 73
-modal:oyuncu :: Kerem Gürsoy (SG) → PG
-modal:oyuncu :: Kerem Gürsoy (SG) → SF
-modal:oyuncu :: Kerem Gürsoy (SG·OVR 73)
-modal:oyuncu :: Latif Gökçe
-modal:oyuncu :: Manisa Yıldızları
-modal:oyuncu :: Manisa Şimşekleri
-modal:oyuncu :: Mert Çevik
-modal:oyuncu :: Mert Çevik (C) — Overall: 69
-modal:oyuncu :: Mert Çevik (C) → PF
-modal:oyuncu :: Mert Çevik (C·OVR 69)
-modal:oyuncu :: Rıza Demirci
-modal:oyuncu :: Rıza Demirci (C) — Overall: 70
-modal:oyuncu :: Rıza Demirci (C) → PF
-modal:oyuncu :: Rıza Demirci (C·OVR 70)
-modal:oyuncu :: Sakarya Üniversite
-modal:oyuncu :: Samsun Üniversite
-modal:oyuncu :: Samsun Üniversite — İstanbul Gençlik
-modal:oyuncu :: Sivas Atmacaları
-modal:oyuncu :: Sivas Atmacaları — Kocaeli Basket
-modal:oyuncu :: Sivas Boğaları
-modal:oyuncu :: Tayfun Doğan
-modal:oyuncu :: Tayfun Doğan (SG) — Overall: 74
-modal:oyuncu :: Tayfun Doğan (SG) → PG
-modal:oyuncu :: Tayfun Doğan (SG) → SF
-modal:oyuncu :: Tayfun Doğan (SG·OVR 74)
-modal:oyuncu :: Utku Yalçın
-modal:oyuncu :: Yavuz Üstün
-modal:oyuncu :: Yavuz Üstün (SF) — Overall: 72
-modal:oyuncu :: Yavuz Üstün (SF) → PF
-modal:oyuncu :: Yavuz Üstün (SF) → SG
-modal:oyuncu :: Yavuz Üstün (SF·OVR 72)
-modal:oyuncu :: Zonguldak Yıldızları
-modal:oyuncu :: Çorum Yıldızları
-modal:oyuncu :: Çorum Yıldızları — Aydın Şimşekleri
-modal:oyuncu :: Ömer Pekmez
-modal:oyuncu :: İbrahim Avcı
-modal:oyuncu :: İstanbul Gençlik
-modal:oyuncu :: Şanlıurfa Koleji
-modal:oyuncu :: Şanlıurfa Koleji — Ordu Koleji
-modal:oyuncu :: Şener Gürsoy
-modal:oyuncu :: Şener Gürsoy (C) — Overall: 75
-modal:oyuncu :: Şener Gürsoy (C) → PF
-modal:oyuncu :: Şener Gürsoy (C·OVR 75)
-modal:oyuncu :: 🇹🇷 Bahadır Efe
-modal:oyuncu :: 🇹🇷 Bahadır Erdem
-modal:oyuncu :: 🇹🇷 Barış Avcı
-modal:oyuncu :: 🇹🇷 Coşkun Kırca
-modal:oyuncu :: 🇹🇷 Ediz Eroğlu
-modal:oyuncu :: 🇹🇷 Enes İnce
-modal:oyuncu :: 🇹🇷 Halil Örs
-modal:oyuncu :: 🇹🇷 Hikmet Özkan
-modal:oyuncu :: 🇹🇷 Kutay Yılmaz
-modal:oyuncu :: 🇹🇷 Kutay Öcal
-modal:oyuncu :: 🇹🇷 Mahmut Savaş
-modal:oyuncu :: 🇹🇷 Mahmut Taş
-modal:oyuncu :: 🇹🇷 Nazım Kuru
-modal:oyuncu :: 🇹🇷 Oktay Ünal
-modal:oyuncu :: 🇹🇷 Sabri Balcı
-modal:oyuncu :: 🇹🇷 Sercan Taşkın
-modal:oyuncu :: 🇹🇷 Turgut Çakmak
+modal:oyuncu :: Bilbao Şahinleri
+modal:oyuncu :: Bucharest Panterleri — Oslo Aslanları
+modal:oyuncu :: Egzon Çeliku
+modal:oyuncu :: Egzon Çeliku (C) — Overall: 69
+modal:oyuncu :: Egzon Çeliku (C) → PF
+modal:oyuncu :: Egzon Çeliku (C·OVR 69)
+modal:oyuncu :: Hélder Gonçalves
+modal:oyuncu :: Lagos Sporting — Nairobi Atmacaları
+modal:oyuncu :: Nairobi Atmacaları
+modal:oyuncu :: Oslo Aslanları
+modal:oyuncu :: Risto Kesküla
+modal:oyuncu :: Risto Kesküla (PF) — Overall: 72
+modal:oyuncu :: Risto Kesküla (PF) → C
+modal:oyuncu :: Risto Kesküla (PF) → SF
+modal:oyuncu :: Risto Kesküla (PF·OVR 72)
+modal:oyuncu :: Santos BC — İzmir Thunder
+modal:oyuncu :: İzmir Thunder
+modal:oyuncu :: 🇹🇷 Kürşat Güngör
+modal:oyuncu :: 🇹🇷 Melih Savaş
 modal:oyuncu :: 🇹🇷 Türkçe
-modal:oyuncu :: 🇹🇷 Zeynel Şimşek
-modal:oyuncu :: 🇹🇷 Çağrı Sevinç
-modal:oyuncu :: 🇹🇷 Çağrı Öner
-modal:oyuncu :: 🇹🇷 Ömer Tekin
-modal:oyuncu :: 🇹🇷 Öner Yaman
-modal:oyuncu :: 🇹🇷 Ünal Happy
-modal:oyuncu :: 🇹🇷 İlker Aslan
-modal:oyuncu :: 🇹🇷 Şafak Kurt
-modal:oyuncu :: 🇹🇷 Şener Güneş
-modal:oyuncu :: 🇹🇷 Şenol Gündoğdu
-modal:oyuncu :: 🏛️ Aydın Şimşekleri from
-modal:oyuncu :: 🏛️ Manisa Yıldızları from
-modal:oyuncu :: 🏛️ Sakarya Üniversite from
-modal:oyuncu :: 🏛️ Samsun Üniversite from
-modal:oyuncu :: 🏛️ Zonguldak Yıldızları from
-modal:oyuncu :: 🏛️ Çorum Yıldızları from
-modal:oyuncu :: 🏛️ İstanbul Gençlik from
-modal:oyuncu :: 🏛️ Şanlıurfa Koleji from
-modal:oyuncu :: 🤝 Furkan Bozkurt – Şener Gürsoy
-modal:oyuncu :: 🤝 Hasan Korkmaz – Yavuz Üstün
-modal:oyuncu :: 🤝 Hikmet Sancak – Mert Çevik
-modal:soyunma :: Adem Genç
-modal:soyunma :: Adem Genç (PF) — Overall: 72
-modal:soyunma :: Adem Genç (PF) → C
-modal:soyunma :: Adem Genç (PF) → SF
-modal:soyunma :: Adem Genç (PF·OVR 72)
-modal:soyunma :: Aydın Şimşekleri
-modal:soyunma :: Bahadır Kutlu
-modal:soyunma :: Bahadır Kutlu (SF) — Overall: 69
-modal:soyunma :: Bahadır Kutlu (SF) → PF
-modal:soyunma :: Bahadır Kutlu (SF) → SG
-modal:soyunma :: Bahadır Kutlu (SF·OVR 69)
-modal:soyunma :: Balıkesir Ejderleri
+modal:oyuncu :: 🏛️ Amsterdam Şimşekleri from
+modal:oyuncu :: 🏛️ İzmir Thunder from
+modal:soyunma :: Amsterdam Şimşekleri
 modal:soyunma :: Başlangıç Arena — 5,000 seats
-modal:soyunma :: Bekir Balcı
-modal:soyunma :: Cenk Çetin
-modal:soyunma :: Doruk Yiğit
-modal:soyunma :: Eskişehir Belediyespor
-modal:soyunma :: Furkan Pınar
-modal:soyunma :: Kerem Gürsoy
-modal:soyunma :: Kerem Gürsoy (SG) — Overall: 73
-modal:soyunma :: Kerem Gürsoy (SG) → PG
-modal:soyunma :: Kerem Gürsoy (SG) → SF
-modal:soyunma :: Kerem Gürsoy (SG·OVR 73)
-modal:soyunma :: Latif Gökçe
-modal:soyunma :: Manisa Yıldızları
-modal:soyunma :: Manisa Şimşekleri
-modal:soyunma :: Mert Çevik
-modal:soyunma :: Mert Çevik (C) — Overall: 69
-modal:soyunma :: Mert Çevik (C) → PF
-modal:soyunma :: Mert Çevik (C·OVR 69)
-modal:soyunma :: Rıza Demirci
-modal:soyunma :: Rıza Demirci (C) — Overall: 70
-modal:soyunma :: Rıza Demirci (C) → PF
-modal:soyunma :: Rıza Demirci (C·OVR 70)
-modal:soyunma :: Sakarya Üniversite
-modal:soyunma :: Samsun Üniversite
-modal:soyunma :: Samsun Üniversite — İstanbul Gençlik
-modal:soyunma :: Sivas Atmacaları
-modal:soyunma :: Sivas Atmacaları — Kocaeli Basket
-modal:soyunma :: Sivas Boğaları
-modal:soyunma :: Tayfun Doğan
-modal:soyunma :: Tayfun Doğan (SG) — Overall: 74
-modal:soyunma :: Tayfun Doğan (SG) → PG
-modal:soyunma :: Tayfun Doğan (SG) → SF
-modal:soyunma :: Tayfun Doğan (SG·OVR 74)
-modal:soyunma :: Utku Yalçın
-modal:soyunma :: Yavuz Üstün
-modal:soyunma :: Yavuz Üstün (SF) — Overall: 72
-modal:soyunma :: Yavuz Üstün (SF) → PF
-modal:soyunma :: Yavuz Üstün (SF) → SG
-modal:soyunma :: Yavuz Üstün (SF·OVR 72)
-modal:soyunma :: Zonguldak Yıldızları
-modal:soyunma :: Çorum Yıldızları
-modal:soyunma :: Çorum Yıldızları — Aydın Şimşekleri
-modal:soyunma :: Ömer Pekmez
-modal:soyunma :: İbrahim Avcı
-modal:soyunma :: İstanbul Gençlik
-modal:soyunma :: Şanlıurfa Koleji
-modal:soyunma :: Şanlıurfa Koleji — Ordu Koleji
-modal:soyunma :: Şener Gürsoy
-modal:soyunma :: Şener Gürsoy (C) — Overall: 75
-modal:soyunma :: Şener Gürsoy (C) → PF
-modal:soyunma :: Şener Gürsoy (C·OVR 75)
-modal:soyunma :: 🇹🇷 Bahadır Efe
-modal:soyunma :: 🇹🇷 Bahadır Erdem
-modal:soyunma :: 🇹🇷 Barış Avcı
-modal:soyunma :: 🇹🇷 Coşkun Kırca
-modal:soyunma :: 🇹🇷 Ediz Eroğlu
-modal:soyunma :: 🇹🇷 Enes İnce
-modal:soyunma :: 🇹🇷 Halil Örs
-modal:soyunma :: 🇹🇷 Hikmet Özkan
-modal:soyunma :: 🇹🇷 Kutay Yılmaz
-modal:soyunma :: 🇹🇷 Kutay Öcal
-modal:soyunma :: 🇹🇷 Mahmut Savaş
-modal:soyunma :: 🇹🇷 Mahmut Taş
-modal:soyunma :: 🇹🇷 Nazım Kuru
-modal:soyunma :: 🇹🇷 Oktay Ünal
-modal:soyunma :: 🇹🇷 Sabri Balcı
-modal:soyunma :: 🇹🇷 Sercan Taşkın
-modal:soyunma :: 🇹🇷 Turgut Çakmak
+modal:soyunma :: Bilbao Şahinleri
+modal:soyunma :: Bucharest Panterleri — Oslo Aslanları
+modal:soyunma :: Egzon Çeliku
+modal:soyunma :: Egzon Çeliku (C) — Overall: 69
+modal:soyunma :: Egzon Çeliku (C) → PF
+modal:soyunma :: Egzon Çeliku (C·OVR 69)
+modal:soyunma :: Hélder Gonçalves
+modal:soyunma :: Lagos Sporting — Nairobi Atmacaları
+modal:soyunma :: Nairobi Atmacaları
+modal:soyunma :: Oslo Aslanları
+modal:soyunma :: Risto Kesküla
+modal:soyunma :: Risto Kesküla (PF) — Overall: 72
+modal:soyunma :: Risto Kesküla (PF) → C
+modal:soyunma :: Risto Kesküla (PF) → SF
+modal:soyunma :: Risto Kesküla (PF·OVR 72)
+modal:soyunma :: Santos BC — İzmir Thunder
+modal:soyunma :: İzmir Thunder
+modal:soyunma :: 🇹🇷 Kürşat Güngör
+modal:soyunma :: 🇹🇷 Melih Savaş
 modal:soyunma :: 🇹🇷 Türkçe
-modal:soyunma :: 🇹🇷 Zeynel Şimşek
-modal:soyunma :: 🇹🇷 Çağrı Sevinç
-modal:soyunma :: 🇹🇷 Çağrı Öner
-modal:soyunma :: 🇹🇷 Ömer Tekin
-modal:soyunma :: 🇹🇷 Öner Yaman
-modal:soyunma :: 🇹🇷 Ünal Happy
-modal:soyunma :: 🇹🇷 İlker Aslan
-modal:soyunma :: 🇹🇷 Şafak Kurt
-modal:soyunma :: 🇹🇷 Şener Güneş
-modal:soyunma :: 🇹🇷 Şenol Gündoğdu
-modal:soyunma :: 🏛️ Aydın Şimşekleri from
-modal:soyunma :: 🏛️ Manisa Yıldızları from
-modal:soyunma :: 🏛️ Sakarya Üniversite from
-modal:soyunma :: 🏛️ Samsun Üniversite from
-modal:soyunma :: 🏛️ Zonguldak Yıldızları from
-modal:soyunma :: 🏛️ Çorum Yıldızları from
-modal:soyunma :: 🏛️ İstanbul Gençlik from
-modal:soyunma :: 🏛️ Şanlıurfa Koleji from
-modal:soyunma :: 🤝 Furkan Bozkurt – Şener Gürsoy
-modal:soyunma :: 🤝 Hasan Korkmaz – Yavuz Üstün
-modal:soyunma :: 🤝 Hikmet Sancak – Mert Çevik
-modal:taktik :: Adem Genç
-modal:taktik :: Adem Genç (PF) — Overall: 72
-modal:taktik :: Adem Genç (PF) → C
-modal:taktik :: Adem Genç (PF) → SF
-modal:taktik :: Adem Genç (PF·OVR 72)
-modal:taktik :: Aydın Şimşekleri
-modal:taktik :: Bahadır Kutlu
-modal:taktik :: Bahadır Kutlu (SF) — Overall: 69
-modal:taktik :: Bahadır Kutlu (SF) → PF
-modal:taktik :: Bahadır Kutlu (SF) → SG
-modal:taktik :: Bahadır Kutlu (SF·OVR 69)
-modal:taktik :: Balıkesir Ejderleri
+modal:soyunma :: 🏛️ Amsterdam Şimşekleri from
+modal:soyunma :: 🏛️ İzmir Thunder from
+modal:taktik :: Amsterdam Şimşekleri
 modal:taktik :: Başlangıç Arena — 5,000 seats
-modal:taktik :: Bekir Balcı
-modal:taktik :: Cenk Çetin
-modal:taktik :: Doruk Yiğit
-modal:taktik :: Eskişehir Belediyespor
-modal:taktik :: Furkan Pınar
-modal:taktik :: Kerem Gürsoy
-modal:taktik :: Kerem Gürsoy (SG) — Overall: 73
-modal:taktik :: Kerem Gürsoy (SG) → PG
-modal:taktik :: Kerem Gürsoy (SG) → SF
-modal:taktik :: Kerem Gürsoy (SG·OVR 73)
-modal:taktik :: Latif Gökçe
-modal:taktik :: Manisa Yıldızları
-modal:taktik :: Manisa Şimşekleri
-modal:taktik :: Mert Çevik
-modal:taktik :: Mert Çevik (C) — Overall: 69
-modal:taktik :: Mert Çevik (C) → PF
-modal:taktik :: Mert Çevik (C·OVR 69)
-modal:taktik :: Rıza Demirci
-modal:taktik :: Rıza Demirci (C) — Overall: 70
-modal:taktik :: Rıza Demirci (C) → PF
-modal:taktik :: Rıza Demirci (C·OVR 70)
-modal:taktik :: Sakarya Üniversite
-modal:taktik :: Samsun Üniversite
-modal:taktik :: Samsun Üniversite — İstanbul Gençlik
-modal:taktik :: Sivas Atmacaları
-modal:taktik :: Sivas Atmacaları — Kocaeli Basket
-modal:taktik :: Sivas Boğaları
-modal:taktik :: Tayfun Doğan
-modal:taktik :: Tayfun Doğan (SG) — Overall: 74
-modal:taktik :: Tayfun Doğan (SG) → PG
-modal:taktik :: Tayfun Doğan (SG) → SF
-modal:taktik :: Tayfun Doğan (SG·OVR 74)
-modal:taktik :: Utku Yalçın
-modal:taktik :: Yavuz Üstün
-modal:taktik :: Yavuz Üstün (SF) — Overall: 72
-modal:taktik :: Yavuz Üstün (SF) → PF
-modal:taktik :: Yavuz Üstün (SF) → SG
-modal:taktik :: Yavuz Üstün (SF·OVR 72)
-modal:taktik :: Zonguldak Yıldızları
-modal:taktik :: Çorum Yıldızları
-modal:taktik :: Çorum Yıldızları — Aydın Şimşekleri
-modal:taktik :: Ömer Pekmez
-modal:taktik :: İbrahim Avcı
-modal:taktik :: İstanbul Gençlik
-modal:taktik :: Şanlıurfa Koleji
-modal:taktik :: Şanlıurfa Koleji — Ordu Koleji
-modal:taktik :: Şener Gürsoy
-modal:taktik :: Şener Gürsoy (C) — Overall: 75
-modal:taktik :: Şener Gürsoy (C) → PF
-modal:taktik :: Şener Gürsoy (C·OVR 75)
-modal:taktik :: 🇹🇷 Bahadır Efe
-modal:taktik :: 🇹🇷 Bahadır Erdem
-modal:taktik :: 🇹🇷 Barış Avcı
-modal:taktik :: 🇹🇷 Coşkun Kırca
-modal:taktik :: 🇹🇷 Ediz Eroğlu
-modal:taktik :: 🇹🇷 Enes İnce
-modal:taktik :: 🇹🇷 Halil Örs
-modal:taktik :: 🇹🇷 Hikmet Özkan
-modal:taktik :: 🇹🇷 Kutay Yılmaz
-modal:taktik :: 🇹🇷 Kutay Öcal
-modal:taktik :: 🇹🇷 Mahmut Savaş
-modal:taktik :: 🇹🇷 Mahmut Taş
-modal:taktik :: 🇹🇷 Nazım Kuru
-modal:taktik :: 🇹🇷 Oktay Ünal
-modal:taktik :: 🇹🇷 Sabri Balcı
-modal:taktik :: 🇹🇷 Sercan Taşkın
-modal:taktik :: 🇹🇷 Turgut Çakmak
+modal:taktik :: Bilbao Şahinleri
+modal:taktik :: Bucharest Panterleri — Oslo Aslanları
+modal:taktik :: Egzon Çeliku
+modal:taktik :: Egzon Çeliku (C) — Overall: 69
+modal:taktik :: Egzon Çeliku (C) → PF
+modal:taktik :: Egzon Çeliku (C·OVR 69)
+modal:taktik :: Hélder Gonçalves
+modal:taktik :: Lagos Sporting — Nairobi Atmacaları
+modal:taktik :: Nairobi Atmacaları
+modal:taktik :: Oslo Aslanları
+modal:taktik :: Risto Kesküla
+modal:taktik :: Risto Kesküla (PF) — Overall: 72
+modal:taktik :: Risto Kesküla (PF) → C
+modal:taktik :: Risto Kesküla (PF) → SF
+modal:taktik :: Risto Kesküla (PF·OVR 72)
+modal:taktik :: Santos BC — İzmir Thunder
+modal:taktik :: İzmir Thunder
+modal:taktik :: 🇹🇷 Kürşat Güngör
+modal:taktik :: 🇹🇷 Melih Savaş
 modal:taktik :: 🇹🇷 Türkçe
-modal:taktik :: 🇹🇷 Zeynel Şimşek
-modal:taktik :: 🇹🇷 Çağrı Sevinç
-modal:taktik :: 🇹🇷 Çağrı Öner
-modal:taktik :: 🇹🇷 Ömer Tekin
-modal:taktik :: 🇹🇷 Öner Yaman
-modal:taktik :: 🇹🇷 Ünal Happy
-modal:taktik :: 🇹🇷 İlker Aslan
-modal:taktik :: 🇹🇷 Şafak Kurt
-modal:taktik :: 🇹🇷 Şener Güneş
-modal:taktik :: 🇹🇷 Şenol Gündoğdu
-modal:taktik :: 🎯 Tactics — vs Sivas Atmacaları
-modal:taktik :: 🏛️ Aydın Şimşekleri from
-modal:taktik :: 🏛️ Manisa Yıldızları from
-modal:taktik :: 🏛️ Sakarya Üniversite from
-modal:taktik :: 🏛️ Samsun Üniversite from
-modal:taktik :: 🏛️ Zonguldak Yıldızları from
-modal:taktik :: 🏛️ Çorum Yıldızları from
-modal:taktik :: 🏛️ İstanbul Gençlik from
-modal:taktik :: 🏛️ Şanlıurfa Koleji from
-modal:taktik :: 🤝 Furkan Bozkurt – Şener Gürsoy
-modal:taktik :: 🤝 Hasan Korkmaz – Yavuz Üstün
-modal:taktik :: 🤝 Hikmet Sancak – Mert Çevik
-sayfa:altyapi :: Adem Genç
-sayfa:altyapi :: Aydın Şimşekleri
-sayfa:altyapi :: Bahadır Kutlu
-sayfa:altyapi :: Balıkesir Ejderleri
+modal:taktik :: 🎯 Tactics — vs Amsterdam Şimşekleri
+modal:taktik :: 🏛️ Amsterdam Şimşekleri from
+modal:taktik :: 🏛️ İzmir Thunder from
+sayfa:altyapi :: Amsterdam Şimşekleri
 sayfa:altyapi :: Başlangıç Arena — 5,000 seats
-sayfa:altyapi :: Eskişehir Belediyespor
-sayfa:altyapi :: Kerem Gürsoy
-sayfa:altyapi :: Manisa Yıldızları
-sayfa:altyapi :: Manisa Şimşekleri
-sayfa:altyapi :: Mert Çevik
-sayfa:altyapi :: Rıza Demirci
-sayfa:altyapi :: Sakarya Üniversite
-sayfa:altyapi :: Samsun Üniversite
-sayfa:altyapi :: Samsun Üniversite — İstanbul Gençlik
-sayfa:altyapi :: Sivas Atmacaları
-sayfa:altyapi :: Sivas Atmacaları — Kocaeli Basket
-sayfa:altyapi :: Sivas Boğaları
-sayfa:altyapi :: Tayfun Doğan
-sayfa:altyapi :: Yavuz Üstün
-sayfa:altyapi :: Zonguldak Yıldızları
-sayfa:altyapi :: Çorum Yıldızları
-sayfa:altyapi :: Çorum Yıldızları — Aydın Şimşekleri
-sayfa:altyapi :: İstanbul Gençlik
-sayfa:altyapi :: Şanlıurfa Koleji
-sayfa:altyapi :: Şanlıurfa Koleji — Ordu Koleji
-sayfa:altyapi :: Şener Gürsoy
-sayfa:altyapi :: 🇹🇷 Bahadır Efe
-sayfa:altyapi :: 🇹🇷 Bahadır Erdem
-sayfa:altyapi :: 🇹🇷 Barış Avcı
-sayfa:altyapi :: 🇹🇷 Coşkun Kırca
-sayfa:altyapi :: 🇹🇷 Ediz Eroğlu
-sayfa:altyapi :: 🇹🇷 Enes İnce
-sayfa:altyapi :: 🇹🇷 Halil Örs
-sayfa:altyapi :: 🇹🇷 Hikmet Özkan
-sayfa:altyapi :: 🇹🇷 Kutay Yılmaz
-sayfa:altyapi :: 🇹🇷 Kutay Öcal
-sayfa:altyapi :: 🇹🇷 Mahmut Savaş
-sayfa:altyapi :: 🇹🇷 Mahmut Taş
-sayfa:altyapi :: 🇹🇷 Nazım Kuru
-sayfa:altyapi :: 🇹🇷 Oktay Ünal
-sayfa:altyapi :: 🇹🇷 Sabri Balcı
-sayfa:altyapi :: 🇹🇷 Sercan Taşkın
-sayfa:altyapi :: 🇹🇷 Turgut Çakmak
+sayfa:altyapi :: Bilbao Şahinleri
+sayfa:altyapi :: Bucharest Panterleri — Oslo Aslanları
+sayfa:altyapi :: Egzon Çeliku
+sayfa:altyapi :: Lagos Sporting — Nairobi Atmacaları
+sayfa:altyapi :: Nairobi Atmacaları
+sayfa:altyapi :: Oslo Aslanları
+sayfa:altyapi :: Risto Kesküla
+sayfa:altyapi :: Santos BC — İzmir Thunder
+sayfa:altyapi :: İzmir Thunder
+sayfa:altyapi :: 🇹🇷 Kürşat Güngör
+sayfa:altyapi :: 🇹🇷 Melih Savaş
 sayfa:altyapi :: 🇹🇷 Türkçe
-sayfa:altyapi :: 🇹🇷 Zeynel Şimşek
-sayfa:altyapi :: 🇹🇷 Çağrı Sevinç
-sayfa:altyapi :: 🇹🇷 Çağrı Öner
-sayfa:altyapi :: 🇹🇷 Ömer Tekin
-sayfa:altyapi :: 🇹🇷 Öner Yaman
-sayfa:altyapi :: 🇹🇷 Ünal Happy
-sayfa:altyapi :: 🇹🇷 İlker Aslan
-sayfa:altyapi :: 🇹🇷 Şafak Kurt
-sayfa:altyapi :: 🇹🇷 Şener Güneş
-sayfa:altyapi :: 🇹🇷 Şenol Gündoğdu
-sayfa:altyapi :: 🏛️ Aydın Şimşekleri from
-sayfa:altyapi :: 🏛️ Manisa Yıldızları from
-sayfa:altyapi :: 🏛️ Sakarya Üniversite from
-sayfa:altyapi :: 🏛️ Samsun Üniversite from
-sayfa:altyapi :: 🏛️ Zonguldak Yıldızları from
-sayfa:altyapi :: 🏛️ Çorum Yıldızları from
-sayfa:altyapi :: 🏛️ İstanbul Gençlik from
-sayfa:altyapi :: 🏛️ Şanlıurfa Koleji from
-sayfa:altyapi :: 🤝 Furkan Bozkurt – Şener Gürsoy
-sayfa:altyapi :: 🤝 Hasan Korkmaz – Yavuz Üstün
-sayfa:altyapi :: 🤝 Hikmet Sancak – Mert Çevik
-sayfa:analiz :: Adem Genç
-sayfa:analiz :: Adem Genç (PF) — Overall: 72
-sayfa:analiz :: Adem Genç (PF) → C
-sayfa:analiz :: Adem Genç (PF) → SF
-sayfa:analiz :: Adem Genç (PF·OVR 72)
-sayfa:analiz :: Aydın Şimşekleri
-sayfa:analiz :: Bahadır Kutlu
-sayfa:analiz :: Bahadır Kutlu (SF) — Overall: 69
-sayfa:analiz :: Bahadır Kutlu (SF) → PF
-sayfa:analiz :: Bahadır Kutlu (SF) → SG
-sayfa:analiz :: Bahadır Kutlu (SF·OVR 69)
-sayfa:analiz :: Balıkesir Ejderleri
+sayfa:altyapi :: 🏛️ Amsterdam Şimşekleri from
+sayfa:altyapi :: 🏛️ İzmir Thunder from
+sayfa:analiz :: Amsterdam Şimşekleri
 sayfa:analiz :: Başlangıç Arena — 5,000 seats
-sayfa:analiz :: Bekir Balcı
-sayfa:analiz :: Cenk Çetin
-sayfa:analiz :: Doruk Yiğit
-sayfa:analiz :: Eskişehir Belediyespor
-sayfa:analiz :: Furkan Pınar
-sayfa:analiz :: Kerem Gürsoy
-sayfa:analiz :: Kerem Gürsoy (SG) — Overall: 73
-sayfa:analiz :: Kerem Gürsoy (SG) → PG
-sayfa:analiz :: Kerem Gürsoy (SG) → SF
-sayfa:analiz :: Kerem Gürsoy (SG·OVR 73)
-sayfa:analiz :: Latif Gökçe
-sayfa:analiz :: Manisa Yıldızları
-sayfa:analiz :: Manisa Şimşekleri
-sayfa:analiz :: Mert Çevik
-sayfa:analiz :: Mert Çevik (C) — Overall: 69
-sayfa:analiz :: Mert Çevik (C) → PF
-sayfa:analiz :: Mert Çevik (C·OVR 69)
-sayfa:analiz :: Rıza Demirci
-sayfa:analiz :: Rıza Demirci (C) — Overall: 70
-sayfa:analiz :: Rıza Demirci (C) → PF
-sayfa:analiz :: Rıza Demirci (C·OVR 70)
-sayfa:analiz :: Sakarya Üniversite
-sayfa:analiz :: Samsun Üniversite
-sayfa:analiz :: Samsun Üniversite — İstanbul Gençlik
-sayfa:analiz :: Sivas Atmacaları
-sayfa:analiz :: Sivas Atmacaları — Kocaeli Basket
-sayfa:analiz :: Sivas Boğaları
-sayfa:analiz :: Tayfun Doğan
-sayfa:analiz :: Tayfun Doğan (SG) — Overall: 74
-sayfa:analiz :: Tayfun Doğan (SG) → PG
-sayfa:analiz :: Tayfun Doğan (SG) → SF
-sayfa:analiz :: Tayfun Doğan (SG·OVR 74)
-sayfa:analiz :: Utku Yalçın
-sayfa:analiz :: Yavuz Üstün
-sayfa:analiz :: Yavuz Üstün (SF) — Overall: 72
-sayfa:analiz :: Yavuz Üstün (SF) → PF
-sayfa:analiz :: Yavuz Üstün (SF) → SG
-sayfa:analiz :: Yavuz Üstün (SF·OVR 72)
-sayfa:analiz :: Zonguldak Yıldızları
-sayfa:analiz :: Çorum Yıldızları
-sayfa:analiz :: Çorum Yıldızları — Aydın Şimşekleri
-sayfa:analiz :: Ömer Pekmez
-sayfa:analiz :: İbrahim Avcı
-sayfa:analiz :: İstanbul Gençlik
-sayfa:analiz :: Şanlıurfa Koleji
-sayfa:analiz :: Şanlıurfa Koleji — Ordu Koleji
-sayfa:analiz :: Şener Gürsoy
-sayfa:analiz :: Şener Gürsoy (C) — Overall: 75
-sayfa:analiz :: Şener Gürsoy (C) → PF
-sayfa:analiz :: Şener Gürsoy (C·OVR 75)
-sayfa:analiz :: 🇹🇷 Bahadır Efe
-sayfa:analiz :: 🇹🇷 Bahadır Erdem
-sayfa:analiz :: 🇹🇷 Barış Avcı
-sayfa:analiz :: 🇹🇷 Coşkun Kırca
-sayfa:analiz :: 🇹🇷 Ediz Eroğlu
-sayfa:analiz :: 🇹🇷 Enes İnce
-sayfa:analiz :: 🇹🇷 Halil Örs
-sayfa:analiz :: 🇹🇷 Hikmet Özkan
-sayfa:analiz :: 🇹🇷 Kutay Yılmaz
-sayfa:analiz :: 🇹🇷 Kutay Öcal
-sayfa:analiz :: 🇹🇷 Mahmut Savaş
-sayfa:analiz :: 🇹🇷 Mahmut Taş
-sayfa:analiz :: 🇹🇷 Nazım Kuru
-sayfa:analiz :: 🇹🇷 Oktay Ünal
-sayfa:analiz :: 🇹🇷 Sabri Balcı
-sayfa:analiz :: 🇹🇷 Sercan Taşkın
-sayfa:analiz :: 🇹🇷 Turgut Çakmak
+sayfa:analiz :: Bilbao Şahinleri
+sayfa:analiz :: Bucharest Panterleri — Oslo Aslanları
+sayfa:analiz :: Egzon Çeliku
+sayfa:analiz :: Egzon Çeliku (C) — Overall: 69
+sayfa:analiz :: Egzon Çeliku (C) → PF
+sayfa:analiz :: Egzon Çeliku (C·OVR 69)
+sayfa:analiz :: Hélder Gonçalves
+sayfa:analiz :: Lagos Sporting — Nairobi Atmacaları
+sayfa:analiz :: Nairobi Atmacaları
+sayfa:analiz :: Oslo Aslanları
+sayfa:analiz :: Risto Kesküla
+sayfa:analiz :: Risto Kesküla (PF) — Overall: 72
+sayfa:analiz :: Risto Kesküla (PF) → C
+sayfa:analiz :: Risto Kesküla (PF) → SF
+sayfa:analiz :: Risto Kesküla (PF·OVR 72)
+sayfa:analiz :: Santos BC — İzmir Thunder
+sayfa:analiz :: İzmir Thunder
+sayfa:analiz :: 🇹🇷 Kürşat Güngör
+sayfa:analiz :: 🇹🇷 Melih Savaş
 sayfa:analiz :: 🇹🇷 Türkçe
-sayfa:analiz :: 🇹🇷 Zeynel Şimşek
-sayfa:analiz :: 🇹🇷 Çağrı Sevinç
-sayfa:analiz :: 🇹🇷 Çağrı Öner
-sayfa:analiz :: 🇹🇷 Ömer Tekin
-sayfa:analiz :: 🇹🇷 Öner Yaman
-sayfa:analiz :: 🇹🇷 Ünal Happy
-sayfa:analiz :: 🇹🇷 İlker Aslan
-sayfa:analiz :: 🇹🇷 Şafak Kurt
-sayfa:analiz :: 🇹🇷 Şener Güneş
-sayfa:analiz :: 🇹🇷 Şenol Gündoğdu
-sayfa:analiz :: 🏛️ Aydın Şimşekleri from
-sayfa:analiz :: 🏛️ Manisa Yıldızları from
-sayfa:analiz :: 🏛️ Sakarya Üniversite from
-sayfa:analiz :: 🏛️ Samsun Üniversite from
-sayfa:analiz :: 🏛️ Zonguldak Yıldızları from
-sayfa:analiz :: 🏛️ Çorum Yıldızları from
-sayfa:analiz :: 🏛️ İstanbul Gençlik from
-sayfa:analiz :: 🏛️ Şanlıurfa Koleji from
-sayfa:analiz :: 🤝 Furkan Bozkurt – Şener Gürsoy
-sayfa:analiz :: 🤝 Hasan Korkmaz – Yavuz Üstün
-sayfa:analiz :: 🤝 Hikmet Sancak – Mert Çevik
-sayfa:antrenman :: Adem Genç
-sayfa:antrenman :: Adem Genç (PF) — Overall: 72
-sayfa:antrenman :: Adem Genç (PF) → C
-sayfa:antrenman :: Adem Genç (PF) → SF
-sayfa:antrenman :: Aydın Şimşekleri
-sayfa:antrenman :: Bahadır Kutlu
-sayfa:antrenman :: Bahadır Kutlu (SF) — Overall: 69
-sayfa:antrenman :: Bahadır Kutlu (SF) → PF
-sayfa:antrenman :: Bahadır Kutlu (SF) → SG
-sayfa:antrenman :: Balıkesir Ejderleri
+sayfa:analiz :: 🏛️ Amsterdam Şimşekleri from
+sayfa:analiz :: 🏛️ İzmir Thunder from
+sayfa:antrenman :: Amsterdam Şimşekleri
 sayfa:antrenman :: Başlangıç Arena — 5,000 seats
-sayfa:antrenman :: Bekir Balcı
-sayfa:antrenman :: Cenk Çetin
-sayfa:antrenman :: Doruk Yiğit
-sayfa:antrenman :: Eskişehir Belediyespor
-sayfa:antrenman :: Furkan Pınar
-sayfa:antrenman :: Kerem Gürsoy
-sayfa:antrenman :: Kerem Gürsoy (SG) — Overall: 73
-sayfa:antrenman :: Kerem Gürsoy (SG) → PG
-sayfa:antrenman :: Kerem Gürsoy (SG) → SF
-sayfa:antrenman :: Latif Gökçe
-sayfa:antrenman :: Manisa Yıldızları
-sayfa:antrenman :: Manisa Şimşekleri
-sayfa:antrenman :: Mert Çevik
-sayfa:antrenman :: Mert Çevik (C) — Overall: 69
-sayfa:antrenman :: Mert Çevik (C) → PF
-sayfa:antrenman :: Rıza Demirci
-sayfa:antrenman :: Rıza Demirci (C) — Overall: 70
-sayfa:antrenman :: Rıza Demirci (C) → PF
-sayfa:antrenman :: Sakarya Üniversite
-sayfa:antrenman :: Samsun Üniversite
-sayfa:antrenman :: Samsun Üniversite — İstanbul Gençlik
-sayfa:antrenman :: Sivas Atmacaları
-sayfa:antrenman :: Sivas Atmacaları — Kocaeli Basket
-sayfa:antrenman :: Sivas Boğaları
-sayfa:antrenman :: Tayfun Doğan
-sayfa:antrenman :: Tayfun Doğan (SG) — Overall: 74
-sayfa:antrenman :: Tayfun Doğan (SG) → PG
-sayfa:antrenman :: Tayfun Doğan (SG) → SF
-sayfa:antrenman :: Utku Yalçın
-sayfa:antrenman :: Yavuz Üstün
-sayfa:antrenman :: Yavuz Üstün (SF) — Overall: 72
-sayfa:antrenman :: Yavuz Üstün (SF) → PF
-sayfa:antrenman :: Yavuz Üstün (SF) → SG
-sayfa:antrenman :: Zonguldak Yıldızları
-sayfa:antrenman :: Çorum Yıldızları
-sayfa:antrenman :: Çorum Yıldızları — Aydın Şimşekleri
-sayfa:antrenman :: Ömer Pekmez
-sayfa:antrenman :: İbrahim Avcı
-sayfa:antrenman :: İstanbul Gençlik
-sayfa:antrenman :: Şanlıurfa Koleji
-sayfa:antrenman :: Şanlıurfa Koleji — Ordu Koleji
-sayfa:antrenman :: Şener Gürsoy
-sayfa:antrenman :: Şener Gürsoy (C) — Overall: 75
-sayfa:antrenman :: Şener Gürsoy (C) → PF
-sayfa:antrenman :: 🇹🇷 Bahadır Efe
-sayfa:antrenman :: 🇹🇷 Bahadır Erdem
-sayfa:antrenman :: 🇹🇷 Barış Avcı
-sayfa:antrenman :: 🇹🇷 Coşkun Kırca
-sayfa:antrenman :: 🇹🇷 Ediz Eroğlu
-sayfa:antrenman :: 🇹🇷 Enes İnce
-sayfa:antrenman :: 🇹🇷 Halil Örs
-sayfa:antrenman :: 🇹🇷 Hikmet Özkan
-sayfa:antrenman :: 🇹🇷 Kutay Yılmaz
-sayfa:antrenman :: 🇹🇷 Kutay Öcal
-sayfa:antrenman :: 🇹🇷 Mahmut Savaş
-sayfa:antrenman :: 🇹🇷 Mahmut Taş
-sayfa:antrenman :: 🇹🇷 Nazım Kuru
-sayfa:antrenman :: 🇹🇷 Oktay Ünal
-sayfa:antrenman :: 🇹🇷 Sabri Balcı
-sayfa:antrenman :: 🇹🇷 Sercan Taşkın
-sayfa:antrenman :: 🇹🇷 Turgut Çakmak
+sayfa:antrenman :: Bilbao Şahinleri
+sayfa:antrenman :: Bucharest Panterleri — Oslo Aslanları
+sayfa:antrenman :: Egzon Çeliku
+sayfa:antrenman :: Egzon Çeliku (C) — Overall: 69
+sayfa:antrenman :: Egzon Çeliku (C) → PF
+sayfa:antrenman :: Hélder Gonçalves
+sayfa:antrenman :: Lagos Sporting — Nairobi Atmacaları
+sayfa:antrenman :: Nairobi Atmacaları
+sayfa:antrenman :: Oslo Aslanları
+sayfa:antrenman :: Risto Kesküla
+sayfa:antrenman :: Risto Kesküla (PF) — Overall: 72
+sayfa:antrenman :: Risto Kesküla (PF) → C
+sayfa:antrenman :: Risto Kesküla (PF) → SF
+sayfa:antrenman :: Santos BC — İzmir Thunder
+sayfa:antrenman :: İzmir Thunder
+sayfa:antrenman :: 🇹🇷 Kürşat Güngör
+sayfa:antrenman :: 🇹🇷 Melih Savaş
 sayfa:antrenman :: 🇹🇷 Türkçe
-sayfa:antrenman :: 🇹🇷 Zeynel Şimşek
-sayfa:antrenman :: 🇹🇷 Çağrı Sevinç
-sayfa:antrenman :: 🇹🇷 Çağrı Öner
-sayfa:antrenman :: 🇹🇷 Ömer Tekin
-sayfa:antrenman :: 🇹🇷 Öner Yaman
-sayfa:antrenman :: 🇹🇷 Ünal Happy
-sayfa:antrenman :: 🇹🇷 İlker Aslan
-sayfa:antrenman :: 🇹🇷 Şafak Kurt
-sayfa:antrenman :: 🇹🇷 Şener Güneş
-sayfa:antrenman :: 🇹🇷 Şenol Gündoğdu
-sayfa:antrenman :: 🏛️ Aydın Şimşekleri from
-sayfa:antrenman :: 🏛️ Manisa Yıldızları from
-sayfa:antrenman :: 🏛️ Sakarya Üniversite from
-sayfa:antrenman :: 🏛️ Samsun Üniversite from
-sayfa:antrenman :: 🏛️ Zonguldak Yıldızları from
-sayfa:antrenman :: 🏛️ Çorum Yıldızları from
-sayfa:antrenman :: 🏛️ İstanbul Gençlik from
-sayfa:antrenman :: 🏛️ Şanlıurfa Koleji from
-sayfa:antrenman :: 🤝 Furkan Bozkurt – Şener Gürsoy
-sayfa:antrenman :: 🤝 Hasan Korkmaz – Yavuz Üstün
-sayfa:antrenman :: 🤝 Hikmet Sancak – Mert Çevik
-sayfa:arena :: Adem Genç
-sayfa:arena :: Adem Genç (PF) — Overall: 72
-sayfa:arena :: Adem Genç (PF) → C
-sayfa:arena :: Adem Genç (PF) → SF
-sayfa:arena :: Aydın Şimşekleri
-sayfa:arena :: Bahadır Kutlu
-sayfa:arena :: Bahadır Kutlu (SF) — Overall: 69
-sayfa:arena :: Bahadır Kutlu (SF) → PF
-sayfa:arena :: Bahadır Kutlu (SF) → SG
-sayfa:arena :: Balıkesir Ejderleri
+sayfa:antrenman :: 🏛️ Amsterdam Şimşekleri from
+sayfa:antrenman :: 🏛️ İzmir Thunder from
+sayfa:arena :: Amsterdam Şimşekleri
 sayfa:arena :: Başlangıç Arena — 5,000 seats
-sayfa:arena :: Bekir Balcı
-sayfa:arena :: Cenk Çetin
-sayfa:arena :: Doruk Yiğit
-sayfa:arena :: Eskişehir Belediyespor
-sayfa:arena :: Furkan Pınar
-sayfa:arena :: Kerem Gürsoy
-sayfa:arena :: Kerem Gürsoy (SG) — Overall: 73
-sayfa:arena :: Kerem Gürsoy (SG) → PG
-sayfa:arena :: Kerem Gürsoy (SG) → SF
-sayfa:arena :: Latif Gökçe
-sayfa:arena :: Manisa Yıldızları
-sayfa:arena :: Manisa Şimşekleri
-sayfa:arena :: Mert Çevik
-sayfa:arena :: Mert Çevik (C) — Overall: 69
-sayfa:arena :: Mert Çevik (C) → PF
-sayfa:arena :: Rıza Demirci
-sayfa:arena :: Rıza Demirci (C) — Overall: 70
-sayfa:arena :: Rıza Demirci (C) → PF
-sayfa:arena :: Sakarya Üniversite
-sayfa:arena :: Samsun Üniversite
-sayfa:arena :: Samsun Üniversite — İstanbul Gençlik
-sayfa:arena :: Sivas Atmacaları
-sayfa:arena :: Sivas Atmacaları — Kocaeli Basket
-sayfa:arena :: Sivas Boğaları
-sayfa:arena :: Tayfun Doğan
-sayfa:arena :: Tayfun Doğan (SG) — Overall: 74
-sayfa:arena :: Tayfun Doğan (SG) → PG
-sayfa:arena :: Tayfun Doğan (SG) → SF
-sayfa:arena :: Utku Yalçın
-sayfa:arena :: Yavuz Üstün
-sayfa:arena :: Yavuz Üstün (SF) — Overall: 72
-sayfa:arena :: Yavuz Üstün (SF) → PF
-sayfa:arena :: Yavuz Üstün (SF) → SG
-sayfa:arena :: Zonguldak Yıldızları
-sayfa:arena :: Çorum Yıldızları
-sayfa:arena :: Çorum Yıldızları — Aydın Şimşekleri
-sayfa:arena :: Ömer Pekmez
-sayfa:arena :: İbrahim Avcı
-sayfa:arena :: İstanbul Gençlik
-sayfa:arena :: Şanlıurfa Koleji
-sayfa:arena :: Şanlıurfa Koleji — Ordu Koleji
-sayfa:arena :: Şener Gürsoy
-sayfa:arena :: Şener Gürsoy (C) — Overall: 75
-sayfa:arena :: Şener Gürsoy (C) → PF
-sayfa:arena :: 🇹🇷 Bahadır Efe
-sayfa:arena :: 🇹🇷 Bahadır Erdem
-sayfa:arena :: 🇹🇷 Barış Avcı
-sayfa:arena :: 🇹🇷 Coşkun Kırca
-sayfa:arena :: 🇹🇷 Ediz Eroğlu
-sayfa:arena :: 🇹🇷 Enes İnce
-sayfa:arena :: 🇹🇷 Halil Örs
-sayfa:arena :: 🇹🇷 Hikmet Özkan
-sayfa:arena :: 🇹🇷 Kutay Yılmaz
-sayfa:arena :: 🇹🇷 Kutay Öcal
-sayfa:arena :: 🇹🇷 Mahmut Savaş
-sayfa:arena :: 🇹🇷 Mahmut Taş
-sayfa:arena :: 🇹🇷 Nazım Kuru
-sayfa:arena :: 🇹🇷 Oktay Ünal
-sayfa:arena :: 🇹🇷 Sabri Balcı
-sayfa:arena :: 🇹🇷 Sercan Taşkın
-sayfa:arena :: 🇹🇷 Turgut Çakmak
+sayfa:arena :: Bilbao Şahinleri
+sayfa:arena :: Bucharest Panterleri — Oslo Aslanları
+sayfa:arena :: Egzon Çeliku
+sayfa:arena :: Egzon Çeliku (C) — Overall: 69
+sayfa:arena :: Egzon Çeliku (C) → PF
+sayfa:arena :: Hélder Gonçalves
+sayfa:arena :: Lagos Sporting — Nairobi Atmacaları
+sayfa:arena :: Nairobi Atmacaları
+sayfa:arena :: Oslo Aslanları
+sayfa:arena :: Risto Kesküla
+sayfa:arena :: Risto Kesküla (PF) — Overall: 72
+sayfa:arena :: Risto Kesküla (PF) → C
+sayfa:arena :: Risto Kesküla (PF) → SF
+sayfa:arena :: Santos BC — İzmir Thunder
+sayfa:arena :: İzmir Thunder
+sayfa:arena :: 🇹🇷 Kürşat Güngör
+sayfa:arena :: 🇹🇷 Melih Savaş
 sayfa:arena :: 🇹🇷 Türkçe
-sayfa:arena :: 🇹🇷 Zeynel Şimşek
-sayfa:arena :: 🇹🇷 Çağrı Sevinç
-sayfa:arena :: 🇹🇷 Çağrı Öner
-sayfa:arena :: 🇹🇷 Ömer Tekin
-sayfa:arena :: 🇹🇷 Öner Yaman
-sayfa:arena :: 🇹🇷 Ünal Happy
-sayfa:arena :: 🇹🇷 İlker Aslan
-sayfa:arena :: 🇹🇷 Şafak Kurt
-sayfa:arena :: 🇹🇷 Şener Güneş
-sayfa:arena :: 🇹🇷 Şenol Gündoğdu
-sayfa:arena :: 🏛️ Aydın Şimşekleri from
-sayfa:arena :: 🏛️ Manisa Yıldızları from
-sayfa:arena :: 🏛️ Sakarya Üniversite from
-sayfa:arena :: 🏛️ Samsun Üniversite from
-sayfa:arena :: 🏛️ Zonguldak Yıldızları from
-sayfa:arena :: 🏛️ Çorum Yıldızları from
-sayfa:arena :: 🏛️ İstanbul Gençlik from
-sayfa:arena :: 🏛️ Şanlıurfa Koleji from
-sayfa:arena :: 🤝 Furkan Bozkurt – Şener Gürsoy
-sayfa:arena :: 🤝 Hasan Korkmaz – Yavuz Üstün
-sayfa:arena :: 🤝 Hikmet Sancak – Mert Çevik
-sayfa:bilanco :: Adem Genç
-sayfa:bilanco :: Adem Genç (PF) — Overall: 72
-sayfa:bilanco :: Adem Genç (PF) → C
-sayfa:bilanco :: Adem Genç (PF) → SF
-sayfa:bilanco :: Aydın Şimşekleri
-sayfa:bilanco :: Bahadır Kutlu
-sayfa:bilanco :: Bahadır Kutlu (SF) — Overall: 69
-sayfa:bilanco :: Bahadır Kutlu (SF) → PF
-sayfa:bilanco :: Bahadır Kutlu (SF) → SG
-sayfa:bilanco :: Balıkesir Ejderleri
+sayfa:arena :: 🏛️ Amsterdam Şimşekleri from
+sayfa:arena :: 🏛️ İzmir Thunder from
+sayfa:bilanco :: Amsterdam Şimşekleri
 sayfa:bilanco :: Başlangıç Arena — 5,000 seats
-sayfa:bilanco :: Bekir Balcı
-sayfa:bilanco :: Cenk Çetin
-sayfa:bilanco :: Doruk Yiğit
-sayfa:bilanco :: Eskişehir Belediyespor
-sayfa:bilanco :: Furkan Pınar
-sayfa:bilanco :: Kerem Gürsoy
-sayfa:bilanco :: Kerem Gürsoy (SG) — Overall: 73
-sayfa:bilanco :: Kerem Gürsoy (SG) → PG
-sayfa:bilanco :: Kerem Gürsoy (SG) → SF
-sayfa:bilanco :: Latif Gökçe
-sayfa:bilanco :: Manisa Yıldızları
-sayfa:bilanco :: Manisa Şimşekleri
-sayfa:bilanco :: Mert Çevik
-sayfa:bilanco :: Mert Çevik (C) — Overall: 69
-sayfa:bilanco :: Mert Çevik (C) → PF
-sayfa:bilanco :: Rıza Demirci
-sayfa:bilanco :: Rıza Demirci (C) — Overall: 70
-sayfa:bilanco :: Rıza Demirci (C) → PF
-sayfa:bilanco :: Sakarya Üniversite
-sayfa:bilanco :: Samsun Üniversite
-sayfa:bilanco :: Samsun Üniversite — İstanbul Gençlik
-sayfa:bilanco :: Sivas Atmacaları
-sayfa:bilanco :: Sivas Atmacaları — Kocaeli Basket
-sayfa:bilanco :: Sivas Boğaları
-sayfa:bilanco :: Tayfun Doğan
-sayfa:bilanco :: Tayfun Doğan (SG) — Overall: 74
-sayfa:bilanco :: Tayfun Doğan (SG) → PG
-sayfa:bilanco :: Tayfun Doğan (SG) → SF
-sayfa:bilanco :: Utku Yalçın
-sayfa:bilanco :: Yavuz Üstün
-sayfa:bilanco :: Yavuz Üstün (SF) — Overall: 72
-sayfa:bilanco :: Yavuz Üstün (SF) → PF
-sayfa:bilanco :: Yavuz Üstün (SF) → SG
-sayfa:bilanco :: Zonguldak Yıldızları
-sayfa:bilanco :: Çorum Yıldızları
-sayfa:bilanco :: Çorum Yıldızları — Aydın Şimşekleri
-sayfa:bilanco :: Ömer Pekmez
-sayfa:bilanco :: İbrahim Avcı
-sayfa:bilanco :: İstanbul Gençlik
-sayfa:bilanco :: Şanlıurfa Koleji
-sayfa:bilanco :: Şanlıurfa Koleji — Ordu Koleji
-sayfa:bilanco :: Şener Gürsoy
-sayfa:bilanco :: Şener Gürsoy (C) — Overall: 75
-sayfa:bilanco :: Şener Gürsoy (C) → PF
-sayfa:bilanco :: 🇹🇷 Bahadır Efe
-sayfa:bilanco :: 🇹🇷 Bahadır Erdem
-sayfa:bilanco :: 🇹🇷 Barış Avcı
-sayfa:bilanco :: 🇹🇷 Coşkun Kırca
-sayfa:bilanco :: 🇹🇷 Ediz Eroğlu
-sayfa:bilanco :: 🇹🇷 Enes İnce
-sayfa:bilanco :: 🇹🇷 Halil Örs
-sayfa:bilanco :: 🇹🇷 Hikmet Özkan
-sayfa:bilanco :: 🇹🇷 Kutay Yılmaz
-sayfa:bilanco :: 🇹🇷 Kutay Öcal
-sayfa:bilanco :: 🇹🇷 Mahmut Savaş
-sayfa:bilanco :: 🇹🇷 Mahmut Taş
-sayfa:bilanco :: 🇹🇷 Nazım Kuru
-sayfa:bilanco :: 🇹🇷 Oktay Ünal
-sayfa:bilanco :: 🇹🇷 Sabri Balcı
-sayfa:bilanco :: 🇹🇷 Sercan Taşkın
-sayfa:bilanco :: 🇹🇷 Turgut Çakmak
+sayfa:bilanco :: Bilbao Şahinleri
+sayfa:bilanco :: Bucharest Panterleri — Oslo Aslanları
+sayfa:bilanco :: Egzon Çeliku
+sayfa:bilanco :: Egzon Çeliku (C) — Overall: 69
+sayfa:bilanco :: Egzon Çeliku (C) → PF
+sayfa:bilanco :: Hélder Gonçalves
+sayfa:bilanco :: Lagos Sporting — Nairobi Atmacaları
+sayfa:bilanco :: Nairobi Atmacaları
+sayfa:bilanco :: Oslo Aslanları
+sayfa:bilanco :: Risto Kesküla
+sayfa:bilanco :: Risto Kesküla (PF) — Overall: 72
+sayfa:bilanco :: Risto Kesküla (PF) → C
+sayfa:bilanco :: Risto Kesküla (PF) → SF
+sayfa:bilanco :: Santos BC — İzmir Thunder
+sayfa:bilanco :: İzmir Thunder
+sayfa:bilanco :: 🇹🇷 Kürşat Güngör
+sayfa:bilanco :: 🇹🇷 Melih Savaş
 sayfa:bilanco :: 🇹🇷 Türkçe
-sayfa:bilanco :: 🇹🇷 Zeynel Şimşek
-sayfa:bilanco :: 🇹🇷 Çağrı Sevinç
-sayfa:bilanco :: 🇹🇷 Çağrı Öner
-sayfa:bilanco :: 🇹🇷 Ömer Tekin
-sayfa:bilanco :: 🇹🇷 Öner Yaman
-sayfa:bilanco :: 🇹🇷 Ünal Happy
-sayfa:bilanco :: 🇹🇷 İlker Aslan
-sayfa:bilanco :: 🇹🇷 Şafak Kurt
-sayfa:bilanco :: 🇹🇷 Şener Güneş
-sayfa:bilanco :: 🇹🇷 Şenol Gündoğdu
-sayfa:bilanco :: 🏛️ Aydın Şimşekleri from
-sayfa:bilanco :: 🏛️ Manisa Yıldızları from
-sayfa:bilanco :: 🏛️ Sakarya Üniversite from
-sayfa:bilanco :: 🏛️ Samsun Üniversite from
-sayfa:bilanco :: 🏛️ Zonguldak Yıldızları from
-sayfa:bilanco :: 🏛️ Çorum Yıldızları from
-sayfa:bilanco :: 🏛️ İstanbul Gençlik from
-sayfa:bilanco :: 🏛️ Şanlıurfa Koleji from
-sayfa:bilanco :: 🤝 Furkan Bozkurt – Şener Gürsoy
-sayfa:bilanco :: 🤝 Hasan Korkmaz – Yavuz Üstün
-sayfa:bilanco :: 🤝 Hikmet Sancak – Mert Çevik
-sayfa:dashboard :: Adem Genç
-sayfa:dashboard :: Aydın Şimşekleri
-sayfa:dashboard :: Bahadır Kutlu
-sayfa:dashboard :: Balıkesir Ejderleri
-sayfa:dashboard :: Eskişehir Belediyespor
-sayfa:dashboard :: Kerem Gürsoy
-sayfa:dashboard :: Manisa Yıldızları
-sayfa:dashboard :: Manisa Şimşekleri
-sayfa:dashboard :: Mert Çevik
-sayfa:dashboard :: Rıza Demirci
-sayfa:dashboard :: Sakarya Üniversite
-sayfa:dashboard :: Samsun Üniversite
-sayfa:dashboard :: Samsun Üniversite — İstanbul Gençlik
-sayfa:dashboard :: Sivas Atmacaları
-sayfa:dashboard :: Sivas Atmacaları — Kocaeli Basket
-sayfa:dashboard :: Sivas Boğaları
-sayfa:dashboard :: Tayfun Doğan
-sayfa:dashboard :: Yavuz Üstün
-sayfa:dashboard :: Zonguldak Yıldızları
-sayfa:dashboard :: Çorum Yıldızları
-sayfa:dashboard :: Çorum Yıldızları — Aydın Şimşekleri
-sayfa:dashboard :: İstanbul Gençlik
-sayfa:dashboard :: Şanlıurfa Koleji
-sayfa:dashboard :: Şanlıurfa Koleji — Ordu Koleji
-sayfa:dashboard :: Şener Gürsoy
+sayfa:bilanco :: 🏛️ Amsterdam Şimşekleri from
+sayfa:bilanco :: 🏛️ İzmir Thunder from
+sayfa:dashboard :: Amsterdam Şimşekleri
+sayfa:dashboard :: Bilbao Şahinleri
+sayfa:dashboard :: Bucharest Panterleri — Oslo Aslanları
+sayfa:dashboard :: Egzon Çeliku
+sayfa:dashboard :: Lagos Sporting — Nairobi Atmacaları
+sayfa:dashboard :: Nairobi Atmacaları
+sayfa:dashboard :: Oslo Aslanları
+sayfa:dashboard :: Risto Kesküla
+sayfa:dashboard :: Santos BC — İzmir Thunder
+sayfa:dashboard :: İzmir Thunder
 sayfa:dashboard :: 🇹🇷 Türkçe
-sayfa:dashboard :: 🤝 Furkan Bozkurt – Şener Gürsoy
-sayfa:dashboard :: 🤝 Hasan Korkmaz – Yavuz Üstün
-sayfa:dashboard :: 🤝 Hikmet Sancak – Mert Çevik
-sayfa:kadro :: Adem Genç
-sayfa:kadro :: Aydın Şimşekleri
-sayfa:kadro :: Bahadır Kutlu
-sayfa:kadro :: Balıkesir Ejderleri
+sayfa:kadro :: Amsterdam Şimşekleri
 sayfa:kadro :: Başlangıç Arena — 5,000 seats
-sayfa:kadro :: Eskişehir Belediyespor
-sayfa:kadro :: Kerem Gürsoy
-sayfa:kadro :: Manisa Yıldızları
-sayfa:kadro :: Manisa Şimşekleri
-sayfa:kadro :: Mert Çevik
-sayfa:kadro :: Rıza Demirci
-sayfa:kadro :: Sakarya Üniversite
-sayfa:kadro :: Samsun Üniversite
-sayfa:kadro :: Samsun Üniversite — İstanbul Gençlik
-sayfa:kadro :: Sivas Atmacaları
-sayfa:kadro :: Sivas Atmacaları — Kocaeli Basket
-sayfa:kadro :: Sivas Boğaları
-sayfa:kadro :: Tayfun Doğan
-sayfa:kadro :: Yavuz Üstün
-sayfa:kadro :: Zonguldak Yıldızları
-sayfa:kadro :: Çorum Yıldızları
-sayfa:kadro :: Çorum Yıldızları — Aydın Şimşekleri
-sayfa:kadro :: İstanbul Gençlik
-sayfa:kadro :: Şanlıurfa Koleji
-sayfa:kadro :: Şanlıurfa Koleji — Ordu Koleji
-sayfa:kadro :: Şener Gürsoy
+sayfa:kadro :: Bilbao Şahinleri
+sayfa:kadro :: Bucharest Panterleri — Oslo Aslanları
+sayfa:kadro :: Egzon Çeliku
+sayfa:kadro :: Lagos Sporting — Nairobi Atmacaları
+sayfa:kadro :: Nairobi Atmacaları
+sayfa:kadro :: Oslo Aslanları
+sayfa:kadro :: Risto Kesküla
+sayfa:kadro :: Santos BC — İzmir Thunder
+sayfa:kadro :: İzmir Thunder
 sayfa:kadro :: 🇹🇷 Türkçe
-sayfa:kadro :: 🤝 Furkan Bozkurt – Şener Gürsoy
-sayfa:kadro :: 🤝 Hasan Korkmaz – Yavuz Üstün
-sayfa:kadro :: 🤝 Hikmet Sancak – Mert Çevik
-sayfa:lig :: Adem Genç
-sayfa:lig :: Aydın Şimşekleri
-sayfa:lig :: Bahadır Kutlu
-sayfa:lig :: Balıkesir Ejderleri
+sayfa:lig :: Amsterdam Şimşekleri
 sayfa:lig :: Başlangıç Arena — 5,000 seats
-sayfa:lig :: Eskişehir Belediyespor
-sayfa:lig :: Kerem Gürsoy
-sayfa:lig :: Manisa Yıldızları
-sayfa:lig :: Manisa Şimşekleri
-sayfa:lig :: Mert Çevik
-sayfa:lig :: Rıza Demirci
-sayfa:lig :: Sakarya Üniversite
-sayfa:lig :: Samsun Üniversite
-sayfa:lig :: Samsun Üniversite — İstanbul Gençlik
-sayfa:lig :: Sivas Atmacaları
-sayfa:lig :: Sivas Atmacaları — Kocaeli Basket
-sayfa:lig :: Sivas Boğaları
-sayfa:lig :: Tayfun Doğan
-sayfa:lig :: Yavuz Üstün
-sayfa:lig :: Zonguldak Yıldızları
-sayfa:lig :: Çorum Yıldızları
-sayfa:lig :: Çorum Yıldızları — Aydın Şimşekleri
-sayfa:lig :: İstanbul Gençlik
-sayfa:lig :: Şanlıurfa Koleji
-sayfa:lig :: Şanlıurfa Koleji — Ordu Koleji
-sayfa:lig :: Şener Gürsoy
+sayfa:lig :: Bilbao Şahinleri
+sayfa:lig :: Bucharest Panterleri — Oslo Aslanları
+sayfa:lig :: Egzon Çeliku
+sayfa:lig :: Lagos Sporting — Nairobi Atmacaları
+sayfa:lig :: Nairobi Atmacaları
+sayfa:lig :: Oslo Aslanları
+sayfa:lig :: Risto Kesküla
+sayfa:lig :: Santos BC — İzmir Thunder
+sayfa:lig :: İzmir Thunder
 sayfa:lig :: 🇹🇷 Türkçe
-sayfa:lig :: 🤝 Furkan Bozkurt – Şener Gürsoy
-sayfa:lig :: 🤝 Hasan Korkmaz – Yavuz Üstün
-sayfa:lig :: 🤝 Hikmet Sancak – Mert Çevik
-sayfa:mac :: Adem Genç
-sayfa:mac :: Aydın Şimşekleri
-sayfa:mac :: Bahadır Kutlu
-sayfa:mac :: Balıkesir Ejderleri
+sayfa:mac :: Amsterdam Şimşekleri
 sayfa:mac :: Başlangıç Arena — 5,000 seats
-sayfa:mac :: Eskişehir Belediyespor
-sayfa:mac :: Kerem Gürsoy
-sayfa:mac :: Manisa Yıldızları
-sayfa:mac :: Manisa Şimşekleri
-sayfa:mac :: Mert Çevik
-sayfa:mac :: Rıza Demirci
-sayfa:mac :: Sakarya Üniversite
-sayfa:mac :: Samsun Üniversite
-sayfa:mac :: Samsun Üniversite — İstanbul Gençlik
-sayfa:mac :: Sivas Atmacaları
-sayfa:mac :: Sivas Atmacaları — Kocaeli Basket
-sayfa:mac :: Sivas Boğaları
-sayfa:mac :: Tayfun Doğan
-sayfa:mac :: Yavuz Üstün
-sayfa:mac :: Zonguldak Yıldızları
-sayfa:mac :: Çorum Yıldızları
-sayfa:mac :: Çorum Yıldızları — Aydın Şimşekleri
-sayfa:mac :: İstanbul Gençlik
-sayfa:mac :: Şanlıurfa Koleji
-sayfa:mac :: Şanlıurfa Koleji — Ordu Koleji
-sayfa:mac :: Şener Gürsoy
+sayfa:mac :: Bilbao Şahinleri
+sayfa:mac :: Bucharest Panterleri — Oslo Aslanları
+sayfa:mac :: Egzon Çeliku
+sayfa:mac :: Lagos Sporting — Nairobi Atmacaları
+sayfa:mac :: Nairobi Atmacaları
+sayfa:mac :: Oslo Aslanları
+sayfa:mac :: Risto Kesküla
+sayfa:mac :: Santos BC — İzmir Thunder
+sayfa:mac :: İzmir Thunder
 sayfa:mac :: 🇹🇷 Türkçe
-sayfa:mac :: 🤝 Furkan Bozkurt – Şener Gürsoy
-sayfa:mac :: 🤝 Hasan Korkmaz – Yavuz Üstün
-sayfa:mac :: 🤝 Hikmet Sancak – Mert Çevik
-sayfa:market :: Adem Genç
-sayfa:market :: Aydın Şimşekleri
-sayfa:market :: Bahadır Kutlu
-sayfa:market :: Balıkesir Ejderleri
+sayfa:market :: Amsterdam Şimşekleri
 sayfa:market :: Başlangıç Arena — 5,000 seats
-sayfa:market :: Eskişehir Belediyespor
-sayfa:market :: Kerem Gürsoy
-sayfa:market :: Manisa Yıldızları
-sayfa:market :: Manisa Şimşekleri
-sayfa:market :: Mert Çevik
-sayfa:market :: Rıza Demirci
-sayfa:market :: Sakarya Üniversite
-sayfa:market :: Samsun Üniversite
-sayfa:market :: Samsun Üniversite — İstanbul Gençlik
-sayfa:market :: Sivas Atmacaları
-sayfa:market :: Sivas Atmacaları — Kocaeli Basket
-sayfa:market :: Sivas Boğaları
-sayfa:market :: Tayfun Doğan
-sayfa:market :: Yavuz Üstün
-sayfa:market :: Zonguldak Yıldızları
-sayfa:market :: Çorum Yıldızları
-sayfa:market :: Çorum Yıldızları — Aydın Şimşekleri
-sayfa:market :: İstanbul Gençlik
-sayfa:market :: Şanlıurfa Koleji
-sayfa:market :: Şanlıurfa Koleji — Ordu Koleji
-sayfa:market :: Şener Gürsoy
-sayfa:market :: 🇹🇷 Bahadır Erdem
-sayfa:market :: 🇹🇷 Barış Avcı
-sayfa:market :: 🇹🇷 Coşkun Kırca
-sayfa:market :: 🇹🇷 Ediz Eroğlu
-sayfa:market :: 🇹🇷 Enes İnce
-sayfa:market :: 🇹🇷 Kutay Yılmaz
-sayfa:market :: 🇹🇷 Kutay Öcal
-sayfa:market :: 🇹🇷 Mahmut Savaş
-sayfa:market :: 🇹🇷 Mahmut Taş
-sayfa:market :: 🇹🇷 Nazım Kuru
-sayfa:market :: 🇹🇷 Sabri Balcı
-sayfa:market :: 🇹🇷 Sercan Taşkın
+sayfa:market :: Bilbao Şahinleri
+sayfa:market :: Bucharest Panterleri — Oslo Aslanları
+sayfa:market :: Egzon Çeliku
+sayfa:market :: Lagos Sporting — Nairobi Atmacaları
+sayfa:market :: Nairobi Atmacaları
+sayfa:market :: Oslo Aslanları
+sayfa:market :: Risto Kesküla
+sayfa:market :: Santos BC — İzmir Thunder
+sayfa:market :: İzmir Thunder
+sayfa:market :: 🇹🇷 Melih Savaş
 sayfa:market :: 🇹🇷 Türkçe
-sayfa:market :: 🇹🇷 Zeynel Şimşek
-sayfa:market :: 🇹🇷 Çağrı Sevinç
-sayfa:market :: 🇹🇷 Çağrı Öner
-sayfa:market :: 🇹🇷 Öner Yaman
-sayfa:market :: 🇹🇷 İlker Aslan
-sayfa:market :: 🇹🇷 Şenol Gündoğdu
-sayfa:market :: 🏛️ Aydın Şimşekleri from
-sayfa:market :: 🏛️ Manisa Yıldızları from
-sayfa:market :: 🏛️ Sakarya Üniversite from
-sayfa:market :: 🏛️ Samsun Üniversite from
-sayfa:market :: 🏛️ Zonguldak Yıldızları from
-sayfa:market :: 🏛️ Çorum Yıldızları from
-sayfa:market :: 🏛️ İstanbul Gençlik from
-sayfa:market :: 🏛️ Şanlıurfa Koleji from
-sayfa:market :: 🤝 Furkan Bozkurt – Şener Gürsoy
-sayfa:market :: 🤝 Hasan Korkmaz – Yavuz Üstün
-sayfa:market :: 🤝 Hikmet Sancak – Mert Çevik
-sayfa:takim :: Adem Genç
-sayfa:takim :: Aydın Şimşekleri
-sayfa:takim :: Bahadır Kutlu
-sayfa:takim :: Balıkesir Ejderleri
+sayfa:market :: 🏛️ Amsterdam Şimşekleri from
+sayfa:market :: 🏛️ İzmir Thunder from
+sayfa:takim :: Amsterdam Şimşekleri
 sayfa:takim :: Başlangıç Arena — 5,000 seats
-sayfa:takim :: Eskişehir Belediyespor
-sayfa:takim :: Kerem Gürsoy
-sayfa:takim :: Manisa Yıldızları
-sayfa:takim :: Manisa Şimşekleri
-sayfa:takim :: Mert Çevik
-sayfa:takim :: Rıza Demirci
-sayfa:takim :: Sakarya Üniversite
-sayfa:takim :: Samsun Üniversite
-sayfa:takim :: Samsun Üniversite — İstanbul Gençlik
-sayfa:takim :: Sivas Atmacaları
-sayfa:takim :: Sivas Atmacaları — Kocaeli Basket
-sayfa:takim :: Sivas Boğaları
-sayfa:takim :: Tayfun Doğan
-sayfa:takim :: Yavuz Üstün
-sayfa:takim :: Zonguldak Yıldızları
-sayfa:takim :: Çorum Yıldızları
-sayfa:takim :: Çorum Yıldızları — Aydın Şimşekleri
-sayfa:takim :: İstanbul Gençlik
-sayfa:takim :: Şanlıurfa Koleji
-sayfa:takim :: Şanlıurfa Koleji — Ordu Koleji
-sayfa:takim :: Şener Gürsoy
+sayfa:takim :: Bilbao Şahinleri
+sayfa:takim :: Bucharest Panterleri — Oslo Aslanları
+sayfa:takim :: Egzon Çeliku
+sayfa:takim :: Lagos Sporting — Nairobi Atmacaları
+sayfa:takim :: Nairobi Atmacaları
+sayfa:takim :: Oslo Aslanları
+sayfa:takim :: Risto Kesküla
+sayfa:takim :: Santos BC — İzmir Thunder
+sayfa:takim :: İzmir Thunder
 sayfa:takim :: 🇹🇷 Türkçe
-sayfa:takim :: 🤝 Furkan Bozkurt – Şener Gürsoy
-sayfa:takim :: 🤝 Hasan Korkmaz – Yavuz Üstün
-sayfa:takim :: 🤝 Hikmet Sancak – Mert Çevik
 setup :: 🇹🇷 Türkçe
-tutorial :: Adem Genç
-tutorial :: Aydın Şimşekleri
-tutorial :: Bahadır Kutlu
-tutorial :: Balıkesir Ejderleri
-tutorial :: Eskişehir Belediyespor
-tutorial :: Kerem Gürsoy
-tutorial :: Manisa Yıldızları
-tutorial :: Manisa Şimşekleri
-tutorial :: Mert Çevik
-tutorial :: Rıza Demirci
-tutorial :: Sakarya Üniversite
-tutorial :: Samsun Üniversite
-tutorial :: Samsun Üniversite — İstanbul Gençlik
-tutorial :: Sivas Atmacaları
-tutorial :: Sivas Atmacaları — Kocaeli Basket
-tutorial :: Sivas Boğaları
-tutorial :: Tayfun Doğan
-tutorial :: Yavuz Üstün
-tutorial :: Zonguldak Yıldızları
-tutorial :: Çorum Yıldızları
-tutorial :: Çorum Yıldızları — Aydın Şimşekleri
-tutorial :: İstanbul Gençlik
-tutorial :: Şanlıurfa Koleji
-tutorial :: Şanlıurfa Koleji — Ordu Koleji
-tutorial :: Şener Gürsoy
+tutorial :: Amsterdam Şimşekleri
+tutorial :: Bilbao Şahinleri
+tutorial :: Bucharest Panterleri — Oslo Aslanları
+tutorial :: Egzon Çeliku
+tutorial :: Lagos Sporting — Nairobi Atmacaları
+tutorial :: Nairobi Atmacaları
+tutorial :: Oslo Aslanları
+tutorial :: Risto Kesküla
+tutorial :: Santos BC — İzmir Thunder
+tutorial :: İzmir Thunder
 tutorial :: 🇹🇷 Türkçe
-tutorial :: 🤝 Furkan Bozkurt – Şener Gürsoy
-tutorial :: 🤝 Hasan Korkmaz – Yavuz Üstün
-tutorial :: 🤝 Hikmet Sancak – Mert Çevik

@@ -813,7 +813,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
   <div class="box">
     <div id="langPicker" class="lang-row"></div>
     <h1>🏀 CHARAZAY<br>2.0</h1>
-    <p>Basketbol menajerlik — TBL</p>
+    <p>Basketbol menajerlik — küresel lig</p>
     <button class="btn-p" onclick="goSetup()" style="padding:15px;font-size:15px;">🏀 YENİ KARİYERE BAŞLA</button>
     <p style="font-size:11px;color:var(--text2);margin-top:12px;margin-bottom:0;letter-spacing:0;text-transform:none;">Hesap gerekmez — ilerlemen bu cihazda otomatik kaydedilir.</p>
     <div id="resumeBlock" style="display:none;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
@@ -830,6 +830,12 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     <p style="color:var(--text2);font-size:13px;margin-bottom:26px;">Takım adını ve rengini seç. 15 oyuncun otomatik oluşturulacak.</p>
     <div class="fg"><label>Takım Adı</label><input id="teamName" placeholder="örn: Ankara Kartallar"></div>
     <div class="fg"><label>Menajer Adın (isteğe bağlı)</label><input id="managerNameInput" placeholder="örn: Ahmet"></div>
+    <!-- FAZ 30 §5: kayıt ülkesi YALNIZ profil kartında görünür; takım seçimini, lig
+         atamasını, oyuncu milliyetini ve ekonomiyi ETKİLEMEZ. -->
+    <div class="fg"><label>Ülken</label><select id="menajerUlkeSec" style="width:100%;background:var(--bg3);color:var(--text);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 12px;font-size:14px;"></select></div>
+    <!-- FAZ 30 §5: kayıt ülkesi YALNIZ profil kartında görünür; takım seçimini, lig
+         atamasını, oyuncu milliyetini ve ekonomiyi ETKİLEMEZ. -->
+    <div class="fg"><label>Ülken</label><select id="menajerUlkeSec" style="width:100%;background:var(--bg3);color:var(--text);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 12px;font-size:14px;"></select></div>
     <!-- FAZ 20 §8 (kullanıcı kararı A): zorluk seçicisi KALDIRILDI. Zorluk klasik bir
          kaydırıcıdan değil, yorgunluk temelli dinamik sakatlık riskinden gelir; rotasyon
          yönetimi gerçek karar olsun diye. -->
@@ -857,14 +863,14 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     <aside class="sidebar" id="sidebar">
       <div class="sb-logo">
         <h1>🏀 CHARAZAY<br>2.0</h1>
-        <p>TBL · Menajerlik</p>
+        <p>Küresel Lig · Menajerlik</p>
       </div>
       <div class="sb-team">
         <div class="team-dot" id="sbDot">🏀</div>
         <div>
           <div style="font-weight:700;font-size:13px;" id="sbTeam">Takımın</div>
           <div style="font-size:11px;color:var(--gold);">💰 <span id="sbCoins">—</span> KR</div>
-          <div style="font-size:10px;color:var(--text2);margin-top:4px;" id="sbTblSlot">TBL —</div>
+          <div style="font-size:10px;color:var(--text2);margin-top:4px;" id="sbTblSlot">Divizyon —</div>
         </div>
       </div>
       <nav class="sb-nav" id="sbNav">
@@ -937,7 +943,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <div class="card">
             <div class="card-title">📰 Haberler</div>
             <div style="display:flex;flex-direction:column;gap:7px;" id="newsLog">
-              <div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--accent);">🏀 <strong>Sezon 1!</strong> TBL — Türkiye Basketbol Ligi kademelerinde 20 takımlı gruplar.</div>
+              <div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--accent);">🏀 <strong>Sezon 1!</strong> Küresel lig — divizyon kademelerinde 20 takımlı gruplar.</div>
               <div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--blue);">💰 <strong>Transfer pazarı:</strong> 100 farklı oyuncu listeleniyor.</div>
               <div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">🌱 <strong>Altyapı raporu:</strong> 3 genç yetenek ön plana çıktı!</div>
               <div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--gold);">🏟️ <strong>İpucu:</strong> Arena kapasiteni artır, bilet gelirlerin yükselsin.</div>
@@ -1264,10 +1270,8 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             <span style="font-size:11px;color:var(--text2);margin-right:6px;">Sırala (tekrar tıkla ⇄):</span>
             <button type="button" class="fbtn msort active" id="mSortOvr" onclick="setMarketSort(&#39;ovr&#39;,this)">OVR ↓</button>
             <button type="button" class="fbtn msort" id="mSortMaas" onclick="setMarketSort(&#39;maas&#39;,this)">Maaş ↓</button>
-            <span style="font-size:11px;color:var(--text2);margin-left:14px;margin-right:6px;">Uyruk:</span>
-            <button type="button" class="fbtn mnat active" onclick="filterMarketUlke(&#39;all&#39;,this)">Tümü</button>
-            <button type="button" class="fbtn mnat" onclick="filterMarketUlke(&#39;yerli&#39;,this)">Yerli</button>
-            <button type="button" class="fbtn mnat" onclick="filterMarketUlke(&#39;global&#39;,this)">Global</button>
+            <span style="font-size:11px;color:var(--text2);margin-left:14px;margin-right:6px;">Ülke:</span>
+            <select id="marketUlkeSec" onchange="filterMarketUlke(this.value)" style="background:var(--bg3);color:var(--text);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:4px 8px;font-size:11px;max-width:180px;"><option value="all">Tümü</option></select>
             <button class="fbtn active" onclick="filterMarket(&#39;all&#39;,this)" style="margin-left:auto;">Tümü</button>
             <button class="fbtn" onclick="filterMarket(&#39;PG&#39;,this)">PG — Organizatör</button>
             <button class="fbtn" onclick="filterMarket(&#39;SG&#39;,this)">SG — Şutör</button>
@@ -1464,21 +1468,21 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 <div class="notif" id="notif"></div>
 
-<script src="js/i18n.js?v=61"></script>
-<script src="js/i18n-dict.js?v=61"></script>
-<script src="js/i18n-commentary.js?v=61"></script>
-<script src="js/names.js?v=61"></script>
-<script src="js/state.js?v=61"></script>
-<script src="js/economy.js?v=61"></script>
-<script src="js/persistence.js?v=61"></script>
-<script src="js/portraits.js?v=61"></script>
-<script src="js/roster-gen.js?v=61"></script>
-<script src="js/league.js?v=61"></script>
-<script src="js/match-prep.js?v=61"></script>
-<script src="js/render.js?v=61"></script>
-<script src="js/turkce-ek.js?v=61"></script>
-<script src="js/match-engine.js?v=61"></script>
-<script src="js/main.js?v=61"></script>
+<script src="js/i18n.js?v=62"></script>
+<script src="js/i18n-dict.js?v=62"></script>
+<script src="js/i18n-commentary.js?v=62"></script>
+<script src="js/names.js?v=62"></script>
+<script src="js/state.js?v=62"></script>
+<script src="js/economy.js?v=62"></script>
+<script src="js/persistence.js?v=62"></script>
+<script src="js/portraits.js?v=62"></script>
+<script src="js/roster-gen.js?v=62"></script>
+<script src="js/league.js?v=62"></script>
+<script src="js/match-prep.js?v=62"></script>
+<script src="js/render.js?v=62"></script>
+<script src="js/turkce-ek.js?v=62"></script>
+<script src="js/match-engine.js?v=62"></script>
+<script src="js/main.js?v=62"></script>
 
 
 </body></html>

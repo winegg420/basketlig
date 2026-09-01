@@ -343,7 +343,7 @@ function playerAvatarImgAttrs(seed,salt,opts){
  *  Koç-özel seed ile foto stabil ve oyunculardan farklı bir dosyaya düşer.
  *  FAZ 17 (§7.1): koç artık ülke taşır; eski kayıtta alan yoksa ligin ev ülkesi varsayılır. */
 function coachSeedOf(c){ return 'coach_'+String((c&&c.id)||'')+'_'+String((c&&c.ad)||''); }
-function coachUlkesi(c){ return (c&&c.ulke)||(typeof LIG_EV_ULKE!=='undefined'?LIG_EV_ULKE:'Türkiye'); }
+function coachUlkesi(c){ return (c&&c.ulke)||rastgeleUlkeAdi('koc|'+((c&&c.id)||(c&&c.ad)||'')); }
 function coachAvatarOpts(c){ return {ulke:coachUlkesi(c),yas:30}; }
 function coachAvatar(c){ return playerAvatar(coachSeedOf(c),(c&&c.ad)||'',coachAvatarOpts(c)); }
 function coachAvatarAttrs(c){ return playerAvatarImgAttrs(coachSeedOf(c),(c&&c.ad)||'',coachAvatarOpts(c)); }

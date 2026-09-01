@@ -1,12 +1,17 @@
 #!/usr/bin/env node
-/* FAZ 17 — MİLLİYET DENETÇİSİ  (node tools/milliyet-check.js)
+/* FAZ 30 — KÜRESEL LİG DENETÇİSİ  (node tools/milliyet-check.js)
  *
- * Çekirdek kural: LİG KURULURKEN İÇİNDEKİ HER OYUNCU LİGİN EV ÜLKESİNDENDİR.
- * Yabancılar yalnızca sezon başladıktan sonra transfer yoluyla gelir.
+ * FAZ 17-24'te bu araç "ülke bazlı lig" kuralını doğruluyordu: lig kurulurken içindeki
+ * her oyuncu ligin ev ülkesindendi, yabancılar yalnız transferle gelirdi. FAZ 30 o
+ * tasarımı geri aldı — oyun KÜRESEL. Kapılar da yeniden yazıldı:
  *
- * Eski hata: genPlayer(poz, tr=false) — ikinci parametre hiçbir yerden true geçilmiyordu,
- * ülke ch(ULKELER) ile rastgele seçiliyordu. Türkiye'nin şansı 1/26 ≈ %3,8; 15 kişilik
- * kadroda ortalama 0,6 Türk çıkıyordu ve TR_ULKE ölü koddu.
+ *   A) Oyuncu milliyeti gelişigüzel dağılıyor (tek ülke baskın değil, çeşitlilik yüksek)
+ *   B) Oyuncunun ADI kendi ÜLKESİNİN havuzundan (bu kural KALDI — ad/bayrak/portre uyumu)
+ *   C) Takım adı havuzu küresel ve yeterince geniş
+ *   D) Bir divizyonda aynı şehirden en fazla 2 takım, adlar benzersiz
+ *   E) Divizyon merdiveni: üst divizyon daha güçlü, kariyer en alttan başlıyor
+ *   F) Kullanıcının profil ülkesi hiçbir mekaniği etkilemiyor
+ *   G) Kaldırılan kuralların kaynakta izi kalmamış
  */
 const fs = require('fs');
 const path = require('path');
@@ -40,311 +45,184 @@ const run = (src) => vm.runInContext(src, ctx);
 
 let hata = 0;
 const yaz = (ok, s) => { console.log((ok ? '  ✓ ' : '  ✗ ') + s); if (!ok) hata++; };
-const EV = run('LIG_EV_ULKE');
 
-console.log('FAZ 17 — MİLLİYET DENETİMİ');
-console.log('='.repeat(64));
-console.log(`ligin ev ülkesi: ${EV} · ULKELER.length = ${run('ULKELER.length')}`);
+console.log('FAZ 30 — KÜRESEL LİG DENETİMİ');
+console.log('='.repeat(70));
+console.log(`ülke: ${run('ULKELER.length')} · divizyon: ${run('DIV_SAYISI')} · lig boyu: ${run('LEAGUE_SIZE')}`);
 
-/* A) Yeni lig: 20 takım × 15 oyuncu → %100 ev ülkesi */
-console.log('\nA) Yeni lig kurulumu — 20 takımın tüm oyuncuları');
+/* ── A) Oyuncu milliyeti gelişigüzel ────────────────────────────────────────────────
+   Eski kural "%100 ev ülkesi" idi. Yeni kuralda hiçbir ülke baskın olmamalı ve
+   çeşitlilik yüksek olmalı — aksi hâlde "küresel" iddiası kâğıt üstünde kalır. */
+console.log('\nA) Oyuncu milliyeti dağılımı — 20 takım × 15 oyuncu');
 const A = run(`(function(){
-  let toplam = 0, yerli = 0; const yabancilar = [];
+  const say = {}; let n = 0;
   for (let t = 0; t < 20; t++) {
-    genRoster().forEach(p => { toplam++; if (p.ulke === LIG_EV_ULKE) yerli++; else yabancilar.push(p.ulke); });
+    genRoster().forEach(p => { n++; say[p.ulke] = (say[p.ulke] || 0) + 1; });
   }
-  return { toplam, yerli, yabancilar: Array.from(new Set(yabancilar)) };
+  const enCok = Object.keys(say).reduce((a, k) => (say[k] > (say[a] || 0) ? k : a), Object.keys(say)[0]);
+  return { n, cesit: Object.keys(say).length, enCok, enCokN: say[enCok] };
 })()`);
-console.log(`    ${A.toplam} oyuncu · ${A.yerli} yerli · %${(A.yerli / A.toplam * 100).toFixed(1)}`);
-yaz(A.yerli === A.toplam, `lig kadroları %100 ${EV}${A.yabancilar.length ? ' — sızan: ' + A.yabancilar.join(', ') : ''}`);
+const enCokPay = A.enCokN / A.n * 100;
+console.log(`    ${A.n} oyuncu · ${A.cesit} farklı ülke · en çok "${A.enCok}" (%${enCokPay.toFixed(1)})`);
+yaz(enCokPay <= 15, `hiçbir ülke %15'i aşmıyor — en yüksek %${enCokPay.toFixed(1)}`);
+yaz(A.cesit >= 20, `en az 20 farklı ülke temsil ediliyor — ${A.cesit}`);
 
-/* B) Draft adayları → %100 ev ülkesi */
-console.log('\nB) Draft adayları (50 aday)');
+/* ── B) Ad ↔ ülke uyumu ─────────────────────────────────────────────────────────────
+   ⚠ ARALIKLI HATANIN KÖK NEDENİ (FAZ 30 §7) — KUSUR KODDA DEĞİL, BU DENETİMDEYDİ.
+   Eski ölçüt adı "ilk boşluktan" ikiye bölüyordu: ad = ilk parça, soyad = kalanı.
+   İsim havuzlarında 75 ÇOK KELİMELİ giriş var; çok kelimeli SOYAD ("De Luca") bu
+   ayrıştırmayla doğru toparlanıyor ama çok kelimeli ÖN AD bozuyor:
+     "Juan Pablo Reyes" → ad "Juan"  (havuzda "Juan Pablo" var, "Juan" yok)   ✗
+                        → soyad "Pablo Reyes" (havuzda "Reyes" var)           ✗
+   İkisi de tutmayınca oyuncu "yanlış havuzdan" sayılıyordu. Etkilenen 5 ön ad:
+   Juan Pablo (Meksika) · El Hadji, Alioune Badara, Cheikh Tidiane (Senegal) ·
+   John Paul (Filipinler). Ülke başına 6 çekilişte rastlama olasılığı ≈ %18 — dört
+   koşudan biri bu yüzden düşüyordu. Oyunun ürettiği ad HER ZAMAN doğru havuzdandı.
+   Doğru ölçüt: adın havuzdaki bir (ilk, soyad) çiftine BÖLÜNEBİLİYOR olması. */
+console.log('\nB) Ad ↔ ülke uyumu (43 ülke × 6 oyuncu)');
 const B = run(`(function(){
-  let t = 0, y = 0; const d = [];
-  for (let i = 0; i < 50; i++) { const p = genDraftProspect(i); t++; if (p.ulke === LIG_EV_ULKE) y++; else d.push(p.ulke); }
-  return { t, y, d: Array.from(new Set(d)) };
-})()`);
-yaz(B.y === B.t, `${B.t} draft adayının ${B.y} tanesi ${EV}${B.d.length ? ' — sızan: ' + B.d.join(', ') : ''}`);
-
-/* C) Altyapı → %100 ev ülkesi */
-console.log('\nC) Altyapı oyuncuları (60 genç)');
-const C = run(`(function(){
-  let t = 0, y = 0; const d = [];
-  for (let i = 0; i < 60; i++) { const p = genSingleYouth(0); t++; if (p.ulke === LIG_EV_ULKE) y++; else d.push(p.ulke); }
-  return { t, y, d: Array.from(new Set(d)) };
-})()`);
-yaz(C.y === C.t, `${C.t} altyapı oyuncusunun ${C.y} tanesi ${EV}${C.d.length ? ' — sızan: ' + C.d.join(', ') : ''}`);
-
-/* D) Bot kadro derinliği — 200 takım */
-console.log('\nD) botClubEnsureDepth · 200 takım');
-const D = run(`(function(){
-  let toplam = 0, yabanci = 0, maxTakim = 0; const dagilim = {};
-  for (let t = 0; t < 200; t++) {
-    const roster = [];
-    botClubEnsureDepth(roster, 'TBL||Bot Kulüp ' + t);
-    let tk = 0;
-    roster.forEach(p => { toplam++; if (p.ulke !== LIG_EV_ULKE) { yabanci++; tk++; dagilim[p.ulke] = (dagilim[p.ulke]||0)+1; } });
-    if (tk > maxTakim) maxTakim = tk;
-  }
-  return { toplam, yabanci, maxTakim, cesit: Object.keys(dagilim).length };
-})()`);
-const oranD = D.yabanci / D.toplam * 100;
-console.log(`    ${D.toplam} bot oyuncu · ${D.yabanci} yabancı · %${oranD.toFixed(1)} · ${D.cesit} farklı ülke`);
-yaz(oranD <= 12, `bot yabancı oranı %${oranD.toFixed(1)} (kapı ≤%12)`);
-yaz(D.maxTakim <= run('BOT_YABANCI_MAX'), `takım başına en fazla ${D.maxTakim} yabancı (kapı ≤${run('BOT_YABANCI_MAX')})`);
-
-/* ── FAZ 28 §5: SEZON 1'DE LİGDE YABANCI OYUNCU YOK ──
-   Canlıda sezon 1'in 4. turunda sahada yabancı oyuncu görüldü (Detlef Maier · Almanya).
-   Kök neden: `genRoster` kuralı uyguluyordu ama `botClubEnsureDepth` uygulamıyordu —
-   bot kadrosu İLK KURULDUĞU anda içine BOT_YABANCI_ORAN payında yabancı koyuyor, sezon
-   kavramını hiç görmüyordu. Yabancı artık yalnız sezon 2'den itibaren gelir.
-   Bu bölüm iki tarafı da sınar: sezon 1'de KESİN 0, sonraki sezonlarda kural yerinde. */
-console.log("\nJ) Sezon 1'de yabancı yok · sonraki sezonlarda kural yerinde");
-const J1 = run(`(function(){
-  G.season = { year: 1 };
-  let toplam = 0, yabanci = 0; const d = [];
-  for (let t = 0; t < 20; t++) {
-    const roster = [];
-    botClubEnsureDepth(roster, 'TBL||S1 Bot ' + t);
-    roster.forEach(p => { toplam++; if (p.ulke !== LIG_EV_ULKE) { yabanci++; d.push(p.ulke); } });
-  }
-  return { toplam, yabanci, d: Array.from(new Set(d)) };
-})()`);
-console.log(`    sezon 1 · 20 takım · ${J1.toplam} oyuncu · ${J1.yabanci} yabancı`);
-yaz(J1.yabanci === 0, `sezon 1 gün 1'de ligde yabancı oyuncu 0${J1.d.length ? ' — sızan: ' + J1.d.join(', ') : ''}`);
-
-const J2 = run(`(function(){
-  G.season = { year: 3 };
-  let toplam = 0, yabanci = 0, maxTakim = 0;
-  for (let t = 0; t < 200; t++) {
-    const roster = [];
-    botClubEnsureDepth(roster, 'TBL||S3 Bot ' + t);
-    let tk = 0;
-    roster.forEach(p => { toplam++; if (p.ulke !== LIG_EV_ULKE) { yabanci++; tk++; } });
-    if (tk > maxTakim) maxTakim = tk;
-  }
-  G.season = null;
-  return { toplam, yabanci, maxTakim };
-})()`);
-const oranJ = J2.yabanci / J2.toplam * 100;
-console.log(`    sezon 3 · 200 takım · ${J2.toplam} oyuncu · ${J2.yabanci} yabancı · %${oranJ.toFixed(1)}`);
-yaz(J2.yabanci > 0, `sezon 3'te yabancı transferi çalışıyor (%${oranJ.toFixed(1)})`);
-yaz(oranJ <= 12, `sezon 3 bot yabancı oranı %${oranJ.toFixed(1)} (kapı ≤%12)`);
-yaz(J2.maxTakim <= run('BOT_YABANCI_MAX'), `sezon 3'te takım başına en fazla ${J2.maxTakim} yabancı (kapı ≤${run('BOT_YABANCI_MAX')})`);
-
-/* ── FAZ 29 §7: ESKİ ÖNBELLEKTEKİ YABANCILAR ──
-   FAZ 28 kuralı KAYNAKTA düzeltti ama bot kadroları localStorage önbelleğinde saklanır
-   ve bir kez kurulduktan sonra yeniden ÜRETİLMEZ. Kural değişmeden önce kurulmuş
-   kayıtlarda yabancılar duruyordu — canlıda üç ayrı bot takımda görülen vakaların
-   (Detlef Maier, Krsman Cerović, Wei Zhen) kaynağı budur.
-   `faz29BotUyrukOnar` sezon 1'de bunları ev ülkesine çevirir; YALNIZ ad ve ülke değişir. */
-console.log(String.fromCharCode(10)+"K) Eski önbellekteki yabancıların onarımı");
-const K1 = run(`(function(){
-  G.season = { year: 3 };                      /* eski kuralı taklit et */
-  const kadrolar = [];
-  for (let t = 0; t < 30; t++) {
-    const r = [];
-    botClubEnsureDepth(r, 'TBL||Eski ' + t);
-    kadrolar.push(r);
-  }
-  const oncekiYabanci = kadrolar.reduce((a, r) => a + r.filter(p => p.ulke !== LIG_EV_ULKE).length, 0);
-  /* Alanların korunduğunu kanıtlamak için bir örnek yabancıyı işaretle. */
-  let ornek = null;
-  for (const r of kadrolar) { const p = r.find(x => x.ulke !== LIG_EV_ULKE); if (p) { ornek = {id:p.id, seed:p.seed, poz:p.poz, genel:p.genel, isim:p.isim}; break; } }
-  G.season = { year: 1 };                      /* sezon 1'e dön → onarım devreye girsin */
-  kadrolar.forEach((r, t) => faz29BotUyrukOnar(r, 'TBL||Eski ' + t));
-  const sonrakiYabanci = kadrolar.reduce((a, r) => a + r.filter(p => p.ulke !== LIG_EV_ULKE).length, 0);
-  let korundu = true, yeniAd = null;
-  if (ornek) {
-    for (const r of kadrolar) { const p = r.find(x => x.id === ornek.id); if (p) {
-      korundu = (p.seed === ornek.seed && p.poz === ornek.poz && p.genel === ornek.genel);
-      yeniAd = p.isim; break; } }
-  }
-  /* Determinizm: aynı onarım iki kez çalışsa da ad DEĞİŞMEMELİ. */
-  const r2 = [];
-  G.season = { year: 3 }; botClubEnsureDepth(r2, 'TBL||Eski 0'); G.season = { year: 1 };
-  faz29BotUyrukOnar(r2, 'TBL||Eski 0');
-  const yab2 = []; r2.forEach((p,i) => { if (prChance('TBL||Eski 0|yabanci|'+i, BOT_YABANCI_ORAN)) yab2.push(i); });
-  const adlar1 = yab2.map(i => r2[i] && r2[i].isim).join('|');
-  const r3 = [];
-  G.season = { year: 3 }; botClubEnsureDepth(r3, 'TBL||Eski 0'); G.season = { year: 1 };
-  faz29BotUyrukOnar(r3, 'TBL||Eski 0');
-  const adlar2 = yab2.map(i => r3[i] && r3[i].isim).join('|');
-  G.season = null;
-  return { oncekiYabanci, sonrakiYabanci, korundu, eskiAd: ornek && ornek.isim, yeniAd, deterministik: adlar1 === adlar2 };
-})()`);
-console.log(`    onarım öncesi ${K1.oncekiYabanci} yabancı → sonrası ${K1.sonrakiYabanci}` +
-  (K1.eskiAd ? ` · örnek "${K1.eskiAd}" → "${K1.yeniAd}"` : ''));
-yaz(K1.oncekiYabanci > 0, `eski kuralla kurulmuş kadroda yabancı vardı (${K1.oncekiYabanci}) — onarımın konusu bu`);
-yaz(K1.sonrakiYabanci === 0, 'onarım sonrası sezon 1 kadrolarında yabancı 0');
-yaz(K1.korundu, 'onarım id / seed / mevki / genel alanlarına dokunmuyor');
-yaz(K1.deterministik, 'onarım deterministik — ad her açılışta değişmiyor');
-
-/* E) Bot kararı deterministik mi (Math.random kullanılmamalı) */
-console.log('\nE) Bot milliyet kararı deterministik mi');
-/* Sınanan şey KAPI'nın kendisidir. Kapı açıldığında oyuncunun ülkesi ch(ULKELER) ile
-   çekilir ve bu BİLEREK maçın rastgele akışından gelir (F13-3/B-5 dersinin milliyet
-   karşılığı: çekilişi atlamak tüm akışı kaydırır ve band.js hash'ini değiştirirdi).
-   Yani "hangi yabancı" rastgeledir, "yabancı olsun mu" deterministiktir. */
-const E = run(`(function(){
-  const desen = [];
-  for (let k = 0; k < 30; k++) {
-    let d = '';
-    for (let i = 0; i < BOT_ROSTER_DIST.length; i++) d += prChance('TBL||Sabit|yabanci|' + i, BOT_YABANCI_ORAN) ? '1' : '0';
-    desen.push(d);
-  }
-  return { hepsiAyni: desen.every(x => x === desen[0]) };
-})()`);
-yaz(E.hepsiAyni, 'aynı kulüp anahtarı → aynı yabancı KAPISI deseni (prChance deterministik)');
-const botKaynak = run('String(botClubEnsureDepth)');
-yaz(!/Math\.random|[^a-zA-Z]rand\(/.test(botKaynak), 'botClubEnsureDepth içinde Math.random() / rand() yok');
-
-/* E2) prUnit dağılımı düz mü — kümelenirse kapı doğru oranda açılsa bile tavana çarpar */
-const E2 = run(`(function(){
-  const d = new Array(10).fill(0); let n = 0, N = 0;
-  for (let t = 0; t < 400; t++) for (let i = 0; i < 10; i++) {
-    const v = prUnit('TBL||Bot ' + t + '|yabanci|' + i); N++; d[Math.min(9, Math.floor(v * 10))]++;
-    if (v < BOT_YABANCI_ORAN) n++;
-  }
-  return { oran: n / N, sapma: Math.max.apply(null, d.map(x => Math.abs(x / N - 0.1))) };
-})()`);
-console.log(`    prUnit: p<0,10 oranı %${(E2.oran * 100).toFixed(2)} · en büyük desil sapması %${(E2.sapma * 100).toFixed(2)}`);
-yaz(E2.sapma <= 0.02, `prUnit desil sapması %${(E2.sapma * 100).toFixed(2)} (kapı ≤%2 — kümelenme yok)`);
-
-/* F) Transfer marketi — FAZ 17B: sezona bağlı yerli payı + yabancı kalite primi */
-console.log('\nF) Transfer marketi uyruk dengesi (FAZ 17B)');
-const F = run(`(function(){
-  G.players = genRoster();
-  function olc(sezon){
-    G.season = { year: sezon };
-    const m = []; for (let i = 0; i < 400; i++) m.push(genSingleMarketPlayer(i));
-    const yerli = m.filter(p => p.ulke === LIG_EV_ULKE).length;
-    const s = m.slice().sort((a, b) => (b.genel||0) - (a.genel||0));
-    const dilim = Math.max(1, Math.round(s.length * 0.2));
-    const ustYab = s.slice(0, dilim).filter(p => p.ulke !== LIG_EV_ULKE).length / dilim;
-    const altYab = s.slice(-dilim).filter(p => p.ulke !== LIG_EV_ULKE).length / dilim;
-    const ovrYerli = m.filter(p => p.ulke === LIG_EV_ULKE);
-    const ovrYab = m.filter(p => p.ulke !== LIG_EV_ULKE);
-    const ort = a => a.length ? a.reduce((x, p) => x + (p.genel||0), 0) / a.length : 0;
-    const d = {}; m.forEach(p => { d[p.ulke] = (d[p.ulke]||0)+1; });
-    return { n: m.length, yerliPay: yerli / m.length, ustYab, altYab,
-             ortYerli: ort(ovrYerli), ortYab: ort(ovrYab),
-             enYuksek: s[0] ? s[0].genel : 0, cesit: Object.keys(d).length };
-  }
-  const r = { s1: olc(1), s3: olc(3), s6: olc(6) };
-  G.season = null;
-  return r;
-})()`);
-[['s1', 1], ['s3', 3], ['s6', 6]].forEach(([k, y]) => {
-  const r = F[k];
-  console.log(`    sezon ${y}: yerli %${(r.yerliPay*100).toFixed(1)} · yerli OVR ort ${r.ortYerli.toFixed(1)} · yabancı OVR ort ${r.ortYab.toFixed(1)} · ${r.cesit} ülke`);
-});
-yaz(F.s1.yerliPay >= 0.45 && F.s1.yerliPay <= 0.65,
-  `sezon 1 yerli payı %${(F.s1.yerliPay*100).toFixed(1)} (kapı %45-65)`);
-yaz(F.s6.yerliPay >= 0.20 && F.s6.yerliPay <= 0.32,
-  `sezon 6 yerli payı %${(F.s6.yerliPay*100).toFixed(1)} (kapı %20-32)`);
-yaz(F.s3.yerliPay < F.s1.yerliPay && F.s6.yerliPay < F.s3.yerliPay,
-  `yerli payı sezonla azalıyor: %${(F.s1.yerliPay*100).toFixed(1)} → %${(F.s3.yerliPay*100).toFixed(1)} → %${(F.s6.yerliPay*100).toFixed(1)}`);
-/* Üst dilim yabancı ağırlıklı olmalı — "ithal edilmeye değecek oyuncu" kuralı. */
-console.log(`    sezon 1 · OVR sıralamasında ilk %20'de yabancı %${(F.s1.ustYab*100).toFixed(0)} · son %20'de %${(F.s1.altYab*100).toFixed(0)}`);
-yaz(F.s1.ustYab > F.s1.altYab,
-  `ilk %20 yabancı payı (%${(F.s1.ustYab*100).toFixed(0)}) > son %20 (%${(F.s1.altYab*100).toFixed(0)})`);
-yaz(F.s1.ortYab > F.s1.ortYerli,
-  `yabancı OVR ortalaması yerliden yüksek (${F.s1.ortYab.toFixed(1)} > ${F.s1.ortYerli.toFixed(1)})`);
-/* Aşırıya kaçmasın: yabancı üstünlüğü ölçülü kalmalı, erişilemez olmamalı. */
-yaz(F.s1.ortYab - F.s1.ortYerli <= 12,
-  `yabancı–yerli OVR farkı ${(F.s1.ortYab - F.s1.ortYerli).toFixed(1)} (kapı ≤12 — erişilemez olmasın)`);
-yaz(F.s1.cesit >= 20, `markette ${F.s1.cesit} farklı ülke`);
-
-/* ── F2) Koç ve izci milliyeti (FAZ 22 §1) ─────────────────────────────────────────── */
-console.log('\nF2) Koç / izci milliyeti ve isim kaynağı');
-const F2 = run(`(function(){
-  const takimKoc = genCoaches();
-  const pazarKoc = genCoachMarket();
-  const kocla = [].concat(takimKoc, pazarKoc);
-  const izciler = genScoutMarket();
-  const hepsi = kocla.concat(izciler);
-  const yerli = hepsi.filter(c => c.ulke === LIG_EV_ULKE).length;
-  const ulkesiz = hepsi.filter(c => !c.ulke).length;
-  /* Ad, kendi ülkesinin havuzundan mı geliyor? */
-  let havuzdan = 0;
-  hepsi.forEach(c => {
-    const p = NAME_POOLS[c.ulke]; if (!p) return;
-    const par = String(c.ad || '').split(' ');
-    const ilk = par[0], sy = par.slice(1).join(' ');
-    if (p.ilk.indexOf(ilk) >= 0 || p.sy.indexOf(sy) >= 0) havuzdan++;
-  });
-  /* 200 koç üret: yabancı payı bot kuralıyla aynı bantta kalmalı */
-  let n = 0, yab = 0;
-  for (let i = 0; i < 100; i++) {
-    genCoaches().forEach(c => { n++; if (c.ulke !== LIG_EV_ULKE) yab++; });
-  }
-  return { toplam: hepsi.length, yerli, ulkesiz, havuzdan,
-           takimYerli: takimKoc.filter(c=>c.ulke===LIG_EV_ULKE).length, takimN: takimKoc.length,
-           kocAdlari: kocla.map(c => c.ad + ' · ' + c.ulke),
-           yabanciOran: yab / Math.max(1, n) };
-})()`);
-console.log('    örnek: ' + F2.kocAdlari.slice(0, 4).join(' · '));
-yaz(F2.ulkesiz === 0, `${F2.toplam} personelin hepsinde ulke alanı var (eksik ${F2.ulkesiz})`);
-/* §1.6: kariyer başındaki TAKIM koçları %100 yerli; pazarda ~%10 yabancı serbest. */
-yaz(F2.takimYerli === F2.takimN,
-  `kariyer başındaki takım koçlarının %100'ü ${EV} (${F2.takimYerli}/${F2.takimN})`);
-yaz(F2.yerli / F2.toplam >= 0.85,
-  `personelin %${(F2.yerli/F2.toplam*100).toFixed(0)}'i ${EV} (pazarda az sayıda yabancı serbest)`);
-yaz(F2.havuzdan === F2.toplam,
-  `${F2.toplam} personelin ${F2.havuzdan} tanesinin adı kendi ülkesinin havuzundan`);
-yaz(F2.yabanciOran <= 0.12,
-  `uzun vadede yabancı personel payı %${(F2.yabanciOran*100).toFixed(1)} (kapı ≤%12, bot kuralıyla aynı)`);
-
-/* Marka riski: tek bir yaşayan sporcuyla özdeşleşmiş ad personelde de olmamalı.
-   Canlıda koç pazarında "LaMelo Okonkwo" çıkmıştı — oyuncu havuzları FAZ 17 §3.4'te
-   temizlenmişti ama koç/izci genel ILK/SY havuzundan besleniyordu. */
-/* Ölçüt AYIRT EDİCİ adlardır (FAZ 17 §3.4): tek bir yaşayan sporcuyla neredeyse
-   özdeşleşmiş, günlük hayatta nadir görülen adlar. Yaygın ilk adlar (Jayson, Joel, Luka,
-   Nikola, Jonas, Victor) BİLEREK dışarıda — bunlar milyonlarca kişinin adı ve kimseyi
-   işaret etmez; listeye alınırsa denetim gerçek riski değil gürültüyü ölçer. */
-const RISKLI = ['LaMelo','Giannis','Shai','Trae','Domantas','Hakeem','Kwame','Cedi',
-  'Alperen','Antetokounmpo','Doncic','Dončić','Jokic','Jokić','Okonkwo','Sabonis',
-  'Valanciunas','Valančiūnas','Gilgeous','Yabusele','Varejao','Varejão','Campazzo'];
-const F3 = run(`(function(){
-  const adlar = [];
-  for (let i = 0; i < 60; i++) {
-    [].concat(genCoaches(), genCoachMarket(), genScoutMarket()).forEach(c => adlar.push(String(c.ad||'')));
-  }
-  return adlar;
-})()`);
-const bulunan = Array.from(new Set(F3.filter(ad =>
-  RISKLI.some(r => ad.split(/\s+/).indexOf(r) >= 0))));
-yaz(bulunan.length === 0,
-  bulunan.length ? 'riskli ad: ' + bulunan.slice(0, 5).join(', ')
-                 : `${F3.length} personel adında gerçek sporcuyla özdeşleşmiş ad yok`);
-
-/* G) Kullanıcıya yabancı sınırı YOK */
-console.log('\nG) Kullanıcı kadrosunda yabancı sınırı');
-const G_ = run(`typeof rosterHasRoom === 'function' ? String(rosterHasRoom) : ''`);
-yaz(!/ulke|yabanc/i.test(G_), 'rosterHasRoom uyruk kontrolü yapmıyor (kullanıcı serbest)');
-
-/* H) 43 ülkenin hepsi NAME_POOLS'ta */
-console.log('\nH) ULKELER ↔ NAME_POOLS');
-const H = run(`ULKELER.filter(u => !NAME_POOLS[u.ad]).map(u => u.ad)`);
-yaz(H.length === 0, H.length ? 'havuzu olmayan ülke: ' + H.join(', ') : '43 ülkenin hepsinin isim havuzu var');
-
-/* I) İsim ↔ bayrak uyumu (üretilen oyuncuda) */
-console.log('\nI) İsim–ülke uyumu');
-const I = run(`(function(){
-  let uyum = 0, n = 0;
+  let uyum = 0, n = 0; const kotu = [];
+  const bolunuyorMu = (isim, pool) => {
+    const t = String(isim).split(' ');
+    for (let k = 1; k < t.length; k++) {
+      if (pool.ilk.indexOf(t.slice(0, k).join(' ')) >= 0 && pool.sy.indexOf(t.slice(k).join(' ')) >= 0) return true;
+    }
+    return false;
+  };
   ULKELER.forEach(u => {
     for (let i = 0; i < 6; i++) {
       const p = genPlayer('PG', u.ad); n++;
-      const sy = p.isim.split(' ').slice(1).join(' ');
-      if (NAME_POOLS[u.ad].sy.indexOf(sy) >= 0 || NAME_POOLS[u.ad].ilk.indexOf(p.isim.split(' ')[0]) >= 0) uyum++;
+      if (bolunuyorMu(p.isim, NAME_POOLS[u.ad])) uyum++;
+      else if (kotu.length < 5) kotu.push(u.ad + ' → ' + p.isim);
     }
   });
-  return { uyum, n };
+  return { uyum, n, kotu };
 })()`);
-yaz(I.uyum === I.n, `${I.n} oyuncunun ${I.uyum} tanesinin adı kendi ülkesinin havuzundan`);
+yaz(B.uyum === B.n, `${B.n} oyuncunun ${B.uyum} tanesinin adı kendi ülkesinin havuzundan` +
+  (B.kotu.length ? ' — ör. ' + B.kotu.join(', ') : ''));
 
-console.log('\n' + '='.repeat(64));
-console.log(hata ? `✗ ${hata} kontrol başarısız` : '✓ tüm milliyet kontrolleri geçti');
+const B2 = run(`(function(){
+  let cokAd = 0, cokSoyad = 0;
+  Object.keys(NAME_POOLS).forEach(u => {
+    (NAME_POOLS[u].ilk || []).forEach(x => { if (String(x).indexOf(' ') >= 0) cokAd++; });
+    (NAME_POOLS[u].sy || []).forEach(x => { if (String(x).indexOf(' ') >= 0) cokSoyad++; });
+  });
+  return { cokAd, cokSoyad };
+})()`);
+console.log(`    bilgi: havuzda ${B2.cokAd} çok kelimeli ön ad, ${B2.cokSoyad} çok kelimeli soyad — ölçüt bu yüzden bölünebilirliğe bakar`);
+
+/* ── C) Takım adı havuzu ────────────────────────────────────────────────────────── */
+console.log('\nC) Küresel takım adı havuzu');
+const C = run('({sehir:SEHIR.length,sonek:LIG_T.length})');
+console.log(`    ${C.sehir} şehir × ${C.sonek} sonek = ${C.sehir * C.sonek} kombinasyon`);
+yaz(C.sehir >= 120, `şehir havuzu ≥120 — ${C.sehir}`);
+yaz(C.sonek >= 25, `sonek havuzu ≥25 — ${C.sonek}`);
+const C2 = run(`(function(){
+  const tr = ['İstanbul','Ankara','İzmir','Bursa','Antalya','Adana','Konya','Trabzon','Eskişehir','Samsun'];
+  const trSay = SEHIR.filter(x => tr.indexOf(x) >= 0).length;
+  const enSonek = LIG_T.filter(x => /^(Eagles|Wolves|Lions|Hawks|Panthers|Bulls|Kings|Giants|Raptors|Thunder|Storm|Titans|Warriors|Pilots|Miners|United)$/.test(x)).length;
+  return { trSay, enSonek, trOran: trSay / SEHIR.length };
+})()`);
+yaz(C2.trOran <= 0.15 && C2.enSonek >= 8,
+  `havuz karışık — Türk şehri payı %${(C2.trOran * 100).toFixed(1)}, İngilizce sonek ${C2.enSonek}`);
+
+/* ── D) Divizyon içi ad kuralları ──────────────────────────────────────────────── */
+console.log('\nD) Divizyon içi ad kuralları');
+const D = run(`(function(){
+  const kotu = [], tekrar = [];
+  for (let d = 0; d < 8; d++) {
+    const taken = new Set(); const isimler = [];
+    for (let i = 0; i < LEAGUE_SIZE; i++) isimler.push(genUniqueClubName(taken));
+    const sehirSay = {};
+    isimler.forEach(ad => { const sh = String(ad).split(' ')[0]; sehirSay[sh] = (sehirSay[sh] || 0) + 1; });
+    Object.keys(sehirSay).forEach(sh => { if (sehirSay[sh] > 2 && kotu.length < 5) kotu.push('div' + d + ' ' + sh + '×' + sehirSay[sh]); });
+    if (new Set(isimler).size !== isimler.length && tekrar.length < 5) tekrar.push('div' + d);
+  }
+  return { kotu, tekrar };
+})()`);
+yaz(D.kotu.length === 0, 'aynı divizyonda aynı şehirden ≤2 takım (8 divizyon denendi)' + (D.kotu.length ? ' — ' + D.kotu.join(', ') : ''));
+yaz(D.tekrar.length === 0, 'üretilen takım adları benzersiz' + (D.tekrar.length ? ' — ' + D.tekrar.join(', ') : ''));
+console.log('    örnek: ' + run(`(function(){ const t=new Set(); const o=[]; for(let i=0;i<8;i++) o.push(genUniqueClubName(t)); return o.join(' · '); })()`));
+
+/* ── E) Divizyon merdiveni ────────────────────────────────────────────────────────
+   Üst divizyon daha güçlü olmalı ki kullanıcı yükseldikçe zorluk artsın. */
+console.log('\nE) Divizyon merdiveni');
+const DIVN = run('DIV_SAYISI');
+const E = run(`(function(){
+  const ort = {};
+  for (let d = 1; d <= DIV_SAYISI; d++) {
+    const key = divizyonAnahtarlari(d)[0];
+    let top = 0, n = 0;
+    for (let t = 0; t < 12; t++) {
+      const r = [];
+      botClubEnsureDepth(r, key + '||Olcum ' + d + '-' + t);
+      r.forEach(p => { top += p.genel; n++; });
+    }
+    ort[d] = n ? top / n : 0;
+  }
+  return ort;
+})()`);
+let merdivenOk = true;
+for (let d = 1; d < DIVN; d++) if (!(E[d] > E[d + 1] + 1)) merdivenOk = false;
+console.log('    ortalama OVR: ' + Object.keys(E).map(d => 'Div' + d + ' ' + E[d].toFixed(1)).join(' · '));
+yaz(merdivenOk, 'her divizyon bir alttakinden güçlü (≥1 OVR fark)');
+
+const E2 = run(`(function(){
+  const sira = divizyonDoldurmaSirasi();
+  return { ilk: sira[0], son: sira[sira.length - 1], enAltDiv: divizyonNo(sira[0]) };
+})()`);
+yaz(E2.enAltDiv === DIVN,
+  `yeni kariyer en alt divizyonda başlıyor — ilk slot "${E2.ilk}" (Divizyon ${E2.enAltDiv}), son "${E2.son}"`);
+
+/* ── F) Profil ülkesi mekaniği etkilemiyor ────────────────────────────────────────
+   Ülke yalnız profil kartında görünür. Aynı tohumla farklı ülke seçilirse üretilen
+   kadro BİREBİR aynı olmalı — aksi hâlde ülke gizli bir mekanik parametreye dönüşür. */
+console.log('\nF) Profil ülkesi mekaniği etkilemiyor');
+const F = run(`(function(){
+  const tohumlu = (seed, ulke) => {
+    let a = seed >>> 0;
+    const eski = Math.random;
+    Math.random = function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    try { G.menajerUlke = ulke; return genRoster().map(p => p.isim + '|' + p.ulke + '|' + p.genel).join(','); }
+    finally { Math.random = eski; }
+  };
+  const a1 = tohumlu(4242, 'Türkiye');
+  const a2 = tohumlu(4242, 'Japonya');
+  G.menajerUlke = null;
+  return { ayni: a1 === a2 };
+})()`);
+yaz(F.ayni, 'aynı tohum + farklı profil ülkesi → birebir aynı kadro');
+
+/* ── G) Kaldırılan kuralların izi kalmamış ─────────────────────────────────────── */
+console.log('\nG) Kaldırılan kurallar kaynakta yok');
+const kaynak = ['js/state.js', 'js/roster-gen.js', 'js/league.js', 'js/economy.js',
+  'js/render.js', 'js/main.js', 'js/persistence.js', 'js/portraits.js', 'js/match-prep.js']
+  .map(f => ({ f, src: fs.readFileSync(path.join(ROOT, f), 'utf8') }));
+const kalan = [];
+[['LIG_EV_ULKE', /LIG_EV_ULKE/], ['BOT_YABANCI_', /BOT_YABANCI_[A-Z]/],
+ ['MARKET_YERLI_', /MARKET_YERLI_[A-Z]/], ['marketYerliOran', /marketYerliOran\s*\(/]]
+  .forEach(([ad, re]) => {
+    kaynak.forEach(({ f, src }) => {
+      /* ⚠ Yorum ayıklama SATIR BAZLI YAPILAMAZ: bu depoda blok yorumların devam
+         satırları `*` ile başlamıyor, düz metin olarak girintili yazılıyor. Satır
+         bazlı süzgeç bu yüzden FAZ 30'un kendi açıklama metnini "kalan kod" sanıyordu.
+         Blok yorumlar satır sayısı korunarak silinir, sonra satır satır aranır. */
+      const temiz = src
+        .replace(/\/\*[\s\S]*?\*\//g, m => m.replace(/[^\n]/g, ' '))
+        .replace(/\/\/[^\n]*/g, '');
+      temiz.split('\n').forEach((satir, i) => {
+        if (re.test(satir)) kalan.push(ad + ' @ ' + f + ':' + (i + 1));
+      });
+    });
+  });
+yaz(kalan.length === 0, 'LIG_EV_ULKE · BOT_YABANCI_* · MARKET_YERLI_* · marketYerliOran yok' +
+  (kalan.length ? ' — ' + kalan.slice(0, 5).join(', ') : ''));
+
+console.log('\n' + '='.repeat(70));
+console.log(hata ? `✗ ${hata} kontrol başarısız` : '✓ tüm küresel lig kontrolleri geçti');
 process.exit(hata ? 1 : 0);

@@ -397,6 +397,18 @@ const I18N_PHRASES=[
 
 /* Ek birebir karşılıklar (F2) — üretilen arayüzde sık görünen tam metinler */
 Object.assign(I18N_TR_EN,{
+'Küresel lig — divizyon kademelerinde 20 takımlı gruplar.':'Global league — 20-team groups across division tiers.',
+'Basketbol menajerlik — küresel lig':'Basketball management — global league',
+'Küresel Lig · Menajerlik':'Global League · Management',
+'Divizyon —':'Division —',
+'🏀 <strong>Sezon 1!</strong> Küresel lig — divizyon kademelerinde 20 takımlı gruplar.':'🏀 <strong>Season 1!</strong> Global league — 20-team groups across division tiers.',
+/* ── FAZ 30: küresel lig + divizyon ── */
+'Divizyon 1':'Division 1',
+'Divizyon {d} · Grup {g}':'Division {d} · Group {g}',
+'Ülken':'Your country',
+'Ülke:':'Country:',
+'🌍 Ülke':'🌍 Country',
+'Küresel Basketbol Ligi':'Global Basketball League',
 'sıra':'place',
 'kişi':'seats',
 '🏀 Arena':'🏀 Arena',

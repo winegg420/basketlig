@@ -158,12 +158,14 @@ yaz(C.bantDogru === C.n, `${C.n} oyuncunun ${C.bantDogru} tanesinde yaş bandı 
 const CT = run(`(function(){
   let disi = 0;
   for (let i = 0; i < 500; i++) {
-    const p = genPlayer('C', LIG_EV_ULKE); p.id = 'tr' + i; portreAta(p);
+    const p = genPlayer('C', 'Türkiye'); p.id = 'tr' + i; portreAta(p);
     if (String(p.portreDosya || '').indexOf('assets/portraits/akd_') !== 0) disi++;
   }
   return disi;
 })()`);
-yaz(CT === 0, `500 ${run('LIG_EV_ULKE')} oyuncusunun tamamı akd kovasında (dışı: ${CT})`);
+/* FAZ 30: ULKE_KOVA eşlemesi KALDI (ad/yüz hâlâ ülkeye göre); yalnız 'ligin ev ülkesi'
+   kavramı kalktığı için referans ülke sabit yazılır. */
+yaz(CT === 0, `500 Türkiye oyuncusunun tamamı akd kovasında (dışı: ${CT})`);
 
 /* ── D) Portre bir kez seçilir, oyuncu yaşlanınca DEĞİŞMEZ ──────────────────────────── */
 console.log('\nD) 3 sezon yaşlandırma — portre sabit kalmalı');

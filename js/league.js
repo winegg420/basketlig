@@ -48,15 +48,13 @@ function botClubEnsureDepth(roster,ck){
   const seed=hash32(ck);
   let eklendi=false;
   for(let i=roster.length;i<BOT_ROSTER_DIST.length;i++){
-    /* FAZ 17: bot kadrolar ev ülkesi ağırlıklı. Yabancı payı BOT_YABANCI_ORAN, takım başına
-       en fazla BOT_YABANCI_MAX. Böylece botlar marketteki iyi yabancıları tüketmez ve oyuna
-       yeni başlayan kullanıcıya kadro malzemesi kalır.
-       Karar prChance ile deterministiktir; doğrudan rastgelelik çağrısı kadro akışını kaydırırdı. */
-    const yabanciSayisi=roster.filter(x=>x&&x.ulke&&x.ulke!==LIG_EV_ULKE).length;
-    /* FAZ 28 §5: oran sezona bağlıdır — sezon 1'de 0 (lig %100 ev ülkesi kurulur),
-       sonraki sezonlarda BOT_YABANCI_ORAN. Tohum ve çekiliş DEĞİŞMEZ; yalnız eşik. */
-    const yabanciOlsun=yabanciSayisi<BOT_YABANCI_MAX&&prChance(ck+'|yabanci|'+i,botYabanciOran());
-    const p=genPlayer(BOT_ROSTER_DIST[i],yabanciOlsun?null:LIG_EV_ULKE);
+    /* FAZ 30: bot kadrolarında "yerli/yabancı" kotası YOK — lig küresel, oyuncu ülkesi
+       43'ü arasından gelişigüzel gelir. genPlayer ülke verilmeyince zaten ch(ULKELER)
+       çekilişini kullanır. */
+    const p=genPlayer(BOT_ROSTER_DIST[i]);
+    /* §4 DİVİZYON GÜCÜ: üst divizyon daha güçlü. Kayma üretimden SONRA uygulanır ki
+       rastgelelik akışı kaymasın (yeni çekiliş yok, yalnız aritmetik kaydırma). */
+    botOvrKaydir(p,divizyonOvrKaymasi(String(ck).split('||')[0]));
     p.id='b'+seed+'_'+i;
     p.seed='b'+ck+i;
     p.maas=salaryKRFromGenel(p.genel);
@@ -83,21 +81,12 @@ function botClubEnsureDepth(roster,ck){
    Onarım YALNIZ ADI ve ÜLKEYİ değiştirir: id, seed, mevki, nitelikler, enerji, sezon
    istatistiği ve portre alanları KORUNUR (FAZ 24 personel onarımıyla aynı disiplin).
    Ad deterministiktir — `rand()` kullanılsaydı kadro her açılışta değişirdi. */
+/* FAZ 30: BU ONARIM ARTIK GEREKSİZ. FAZ 29'da eklenmişti çünkü lig %100 ev ülkesiydi ve
+   eski önbellekteki yabancılar kural dışıydı. Lig küreselleşince yabancı oyuncu KURALIN
+   KENDİSİ oldu; onarım hiçbir şey yapmadan döner (çağıranı kırmamak için duruyor). */
 function faz29BotUyrukOnar(roster,ck){
   try{
-    if(!Array.isArray(roster)) return false;
-    const sezon=(G&&G.season&&G.season.year)|0;
-    if(sezon>1) return false;              /* yabancı sezon 2+'de meşrudur */
-    let degisti=false;
-    roster.forEach((p,i)=>{
-      if(!p||!p.ulke||p.ulke===LIG_EV_ULKE) return;
-      p.ulke=LIG_EV_ULKE;
-      p.isim=randomNameFor(LIG_EV_ULKE,'onar|'+ck+'|'+i);
-      /* Portre ülkeye bağlıdır; saklanan dosya artık uymuyorsa yeniden seçilsin. */
-      p.portreDosya=null; p.portreBand=null;
-      degisti=true;
-    });
-    return degisti;
+    return false;
   }catch(e){ return false; }
 }
 function getBotClubProfile(teamName,ligKey){
@@ -117,8 +106,7 @@ function getBotClubProfile(teamName,ligKey){
     ensureRoles(hit.roster);
     /* M20: eski kayıtlardaki 7 kişilik kadrolar 10'a tamamlanır (sakatlık + 5 faul + rotasyon
        derinliği için); mevcut oyuncuların id/seed değerleri korunur. */
-    const _uyrukOnarildi=faz29BotUyrukOnar(hit.roster,ck);   /* FAZ 29 §7 */
-    if(botClubEnsureDepth(hit.roster,ck)||_uyrukOnarildi){
+    if(botClubEnsureDepth(hit.roster,ck)){
       cache[ck]=Object.assign({},cache[ck],{roster:hit.roster});
       _clubCacheMem=cache;
       try{ localStorage.setItem(CLUB_CACHE_KEY,JSON.stringify(cache)); }catch(e){}
@@ -199,7 +187,7 @@ function maybeSimOtherTransfers(){
   const t1=escMatch(ch(peers));
   const t2=escMatch(ch(peers.filter(n=>n!==t1))||t1);
   /* FAZ 24 §2: lig haberindeki oyuncu adı da ligin ev ülkesinden gelir. */
-  const oyuncu=escMatch(randomNameFor(LIG_EV_ULKE));
+  const oyuncu=escMatch(randomNameFor(rastgeleUlkeAdi(null)));   /* FAZ 30: haber oyuncusu da küresel */
   const lig=escMatch(formatTblSlotLabel(G.team.tblKey));   /* iç anahtar değil, okunabilir lig adı */
   const kalip=[
     ()=>{ const bedel=fmtn(rand(4000,80000));
@@ -384,7 +372,12 @@ function renderTeamDetailPage(){
     ['🌱 Altyapı',`<button type="button" class="linklike" onclick="gotoAltyapiPage()">Altyapı →</button>`],
     ['⚔️ Rakip (ör.)',rival],
     [t('🏀 Arena'),`${G.arena.isim||'Arena'} — ${fmtn(G.arena.kap)} ${t('kişi')}`],
-    ['🌍 Ülke','🇹🇷 Türkiye'],
+    /* FAZ 30 §5: sabit '🇹🇷 Türkiye' yazıyordu. Artık kullanıcının KAYIT ülkesi. */
+    ['🌍 Ülke',(function(){
+      const ad=G.menajerUlke||'';
+      const u=ad?ULKE_BUL(ad):null;
+      return ad?escMatch(((u&&u.b)?u.b+' ':'')+ad):'—';
+    })()],
     [t('👥 Taraftar grubu'),`${fs.group} · ~${fmtn(fan)} ${t('taraftar')}`],
     ['📊 Taraftar havası',fanLbl+' <div class="chem-bar" style="margin-top:6px;"><div class="chem-fill" style="width:'+Math.min(100,G.chemistry)+'%;"></div></div>'],
     ['📈 Oyuncu ort. güç',`${avg} <span style="color:var(--text2);font-size:11px;">(İlk 8 ort: ${top8avg})</span>`],

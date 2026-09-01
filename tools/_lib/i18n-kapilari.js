@@ -59,9 +59,23 @@ const EN_SOZ = new RegExp('(^|[^A-Za-zÇĞİÖŞÜçğıöşü])(' + [
    isimdir ("gidişle", "ödülü", "doğru", "fiyatı"); BÜYÜK harfle başlayan sözcük özel
    isimdir ("Kürşat", "Gençlik", "Atmacaları") ve zaten çevrilmez. Ölçüt yalnız
    "Türkçe harf var" olsaydı her Türk oyuncu/takım adı kusur sayılırdı. */
-const TR_KUCUK = /(^|[^A-Za-zÇĞİÖŞÜçğıöşü])[a-zçğıöşü]*[çğıöşü][a-zçğıöşü]*/;
+/* ⚠ SÖZCÜK SINIRI UNICODE OLMALI (FAZ 30'da ortaya çıktı). Sınır ASCII+Türkçe harfle
+   yazılınca YABANCI harfler (ä, é, å, ø…) sözcük sınırı sanılıyor: küresel ligde
+   "Bäckström" adı "B" + "äck" + "ström" gibi parçalanıyor, "ckström" küçük harfli ve
+   'ö' içerdiği için Türkçe cins isim sayılıyordu. Lig %100 Türkken bu hiç görünmüyordu.
+   FAZ 17'nin `\b` dersinin aynısı — bu kez ters yönden. Ölçüt regexle değil, Unicode
+   harf sınıfıyla PARÇALAYIP her belirteci ayrı ayrı yargılayarak kurulur. */
+function trKucukVar(t) {
+  const belirtecler = String(t || '').split(/[^\p{L}]+/u);
+  for (const b of belirtecler) {
+    if (!b) continue;
+    if (b !== b.toLocaleLowerCase('tr')) continue;   /* büyük harf içeriyorsa özel isim */
+    if (/[çğıöşü]/.test(b)) return true;
+  }
+  return false;
+}
 /** Satırda Türkçe CİNS İSİM var mı (özel isim sayılmaz)? */
-function trIsaret(t) { return TR_SOZ.test(t) || TR_KUCUK.test(t); }
+function trIsaret(t) { return TR_SOZ.test(t) || trKucukVar(t); }
 
 function kismiCeviri(s) {
   const t = String(s || '');

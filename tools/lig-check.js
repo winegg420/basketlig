@@ -209,6 +209,58 @@ console.log('    ' + Object.entries(D.say).sort((a,b)=>b[1]-a[1]).slice(0,8).map
 yaz(D.havuz >= 30, `şehir havuzu ${D.havuz} (hedef ≥30)`);
 yaz(D.enCok <= 2, `bir ligde aynı şehirden en fazla ${D.enCok} takım (hedef ≤2)`);
 
+/* ── FAZ 30 §4: DİVİZYON MERDİVENİ ──────────────────────────────────────────────────
+   Divizyon 1 en üst, aşağı doğru uzar. Her divizyon 20 takım; Divizyon 1 tek grup,
+   alt divizyonlar paralel gruplara ayrılabilir. Yeni kariyer EN ALT divizyonda başlar. */
+console.log(String.fromCharCode(10)+'E) Divizyon merdiveni (FAZ 30 §4)');
+const E = run(`(function(){
+  const st = getTblState();
+  const out = { div: [], eksik: [], boy: [] };
+  for (let d = 1; d <= DIV_SAYISI; d++) {
+    const anahtarlar = divizyonAnahtarlari(d);
+    out.div.push({ d, grup: anahtarlar.length, ilk: anahtarlar[0] });
+    anahtarlar.forEach(k => {
+      const sub = st.subs[k];
+      if (!sub || !Array.isArray(sub.teams)) { out.eksik.push(k); return; }
+      if (sub.teams.length !== LEAGUE_SIZE) out.boy.push(k + '=' + sub.teams.length);
+    });
+  }
+  return out;
+})()`);
+console.log('    ' + E.div.map(x => 'Div' + x.d + ' (' + x.grup + ' grup, ilk "' + x.ilk + '")').join(' · '));
+yaz(E.eksik.length === 0, 'her divizyon grubunun slotu depoda var' + (E.eksik.length ? ' — eksik: ' + E.eksik.join(', ') : ''));
+yaz(E.boy.length === 0, `her grup ${run('LEAGUE_SIZE')} takım` + (E.boy.length ? ' — ' + E.boy.join(', ') : ''));
+yaz(E.div[0].grup === 1, 'Divizyon 1 tek gruptur — ' + E.div[0].grup);
+yaz(E.div.length >= 2 && E.div[E.div.length - 1].grup > 1, 'alt divizyonlar paralel gruplara açık — en alt ' + E.div[E.div.length - 1].grup + ' grup');
+
+/* Etiketler nötr olmalı: "TBL" / "Türkiye Basketbol Ligi" küresel yapıda yanlış. */
+const E2 = run(`(function(){
+  const et = [];
+  for (let d = 1; d <= DIV_SAYISI; d++) divizyonAnahtarlari(d).forEach(k => et.push(formatTblSlotLabel(k)));
+  return { et, tbl: et.filter(x => /TBL|Türkiye/i.test(x)).length, ornek: et.slice(0, 4) };
+})()`);
+console.log('    etiket örneği: ' + E2.ornek.join(' · '));
+yaz(E2.tbl === 0, 'divizyon etiketlerinde "TBL"/"Türkiye" geçmiyor');
+
+/* Merdiven gücü: üst divizyon bot kadroları daha güçlü. */
+const E3 = run(`(function(){
+  const ort = {};
+  for (let d = 1; d <= DIV_SAYISI; d++) {
+    const key = divizyonAnahtarlari(d)[0];
+    let top = 0, n = 0;
+    for (let t = 0; t < 10; t++) {
+      const r = []; botClubEnsureDepth(r, key + '||Lig Olcum ' + d + '-' + t);
+      r.forEach(p => { top += p.genel; n++; });
+    }
+    ort[d] = n ? top / n : 0;
+  }
+  return ort;
+})()`);
+let merdiven = true;
+for (let d = 1; d < run('DIV_SAYISI'); d++) if (!(E3[d] > E3[d + 1] + 1)) merdiven = false;
+console.log('    ortalama OVR: ' + Object.keys(E3).map(d => 'Div' + d + ' ' + E3[d].toFixed(1)).join(' · '));
+yaz(merdiven, 'üst divizyon alttakinden güçlü');
+
 console.log('\n' + '='.repeat(66));
 console.log(hata ? `✗ ${hata} kontrol başarısız` : '✓ tüm lig kontrolleri geçti');
 process.exit(hata ? 1 : 0);

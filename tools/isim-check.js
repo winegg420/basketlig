@@ -112,16 +112,25 @@ kaynaklar.forEach(f2 => {
 yaz(sabitVar.length === 0, sabitVar.length ? 'ILK/SY sabiti hâlâ var: ' + sabitVar.join(', ') : 'kaynakta ILK / SY sabiti yok');
 yaz(kullanimVar.length === 0, kullanimVar.length ? 'ch(ILK)/ch(SY) kullanımı var: ' + kullanimVar.join(', ') : 'ch(ILK) / ch(SY) çağrısı yok');
 
-/* Bilinmeyen ülke SABİT LİSTEYE düşmemeli — ev ülkesi havuzuna düşmeli */
+/* FAZ 30: Bilinmeyen ülke SABİT LİSTEYE düşmemeli. Eskiden yedek "ligin ev ülkesi"
+   havuzuydu; o kavram kalktığı için yedek artık GERÇEK havuzlardan biridir (rastgele).
+   Kapının niyeti değişmedi: üretilen ad NAME_POOLS'un HERHANGİ bir ülkesinden olmalı,
+   koda gömülü bir listeden değil. */
 const yedek = vm.runInContext(
   '(function(){var o=[];for(var i=0;i<40;i++)o.push(randomNameFor("Atlantis"));return o;})()', ctx);
-const evPool = P['Türkiye'];
-const yedekUyum = yedek.filter(ad => {
-  const par = ad.split(' ');
-  return evPool.ilk.indexOf(par[0]) >= 0 || evPool.sy.indexOf(par.slice(1).join(' ')) >= 0;
-}).length;
+/* FAZ 30: 'ligin ev ülkesi' kavramı kalktı — ad↔havuz uyumu için sabit REFERANS ülke. */
+const REF_ULKE = 'Türkiye';
+const evPool = P[REF_ULKE];
+const bolunuyorMuHer = (ad) => Object.keys(P).some(u => {
+  const t = ad.split(' ');
+  for (let k = 1; k < t.length; k++) {
+    if (P[u].ilk.indexOf(t.slice(0, k).join(' ')) >= 0 && P[u].sy.indexOf(t.slice(k).join(' ')) >= 0) return true;
+  }
+  return false;
+});
+const yedekUyum = yedek.filter(bolunuyorMuHer).length;
 yaz(yedekUyum === yedek.length,
-  `bilinmeyen ülke ev ülkesi havuzuna düşüyor (${yedekUyum}/${yedek.length}) — sabit listeye DEĞİL`);
+  `bilinmeyen ülke GERÇEK bir havuza düşüyor (${yedekUyum}/${yedek.length}) — sabit listeye DEĞİL`);
 
 /* ── G) Gerçek sporcuyla özdeşleşmiş ad taraması ───────────────────────────────────── */
 console.log('\nG) Kara liste — oyuncu, koç, izci, haber, ekonomi');
@@ -140,22 +149,29 @@ yaz(havuzKara.length === 0,
 const uretilen = vm.runInContext(
   '(function(){var o=[],u=Object.keys(NAME_POOLS);' +
   'for(var i=0;i<400;i++)o.push(randomNameFor(u[i%u.length]));' +
-  'for(var j=0;j<200;j++)o.push(randomNameFor(LIG_EV_ULKE));return o;})()', ctx);
+  'for(var j=0;j<200;j++)o.push(randomNameFor("Türkiye"));return o;})()', ctx);
 const kacak = Array.from(new Set(uretilen.filter(ad =>
   ad.split(/\s+/).some(p => KARA.indexOf(p) >= 0))));
 yaz(kacak.length === 0,
   kacak.length ? 'üretilen isimde kara liste: ' + kacak.slice(0, 5).join(', ')
                : `${uretilen.length} üretilen isimde kara listeden ad yok`);
 
-/* Lig haberi dalı: üretilen adların %100'ü ev ülkesi havuzundan olmalı */
+/* FAZ 30: "ligin ev ülkesi" kavramı kalktı (oyun küresel). Bu bölüm ad↔havuz uyumunu
+   ölçüyordu, ülkenin hangisi olduğu önemli değil — sabit bir REFERANS ülke kullanılır.
+   ⚠ Ad ayrıştırması BÖLÜNEBİLİRLİK ile yapılır: havuzlarda çok kelimeli ön ad var
+   ("Juan Pablo"), "ilk boşluktan böl" ölçütü onları yanlış havuzdan sayıyordu
+   (FAZ 30 §7 kök nedeni). */
 const haberAd = vm.runInContext(
-  '(function(){var o=[];for(var i=0;i<200;i++)o.push(randomNameFor(LIG_EV_ULKE));return o;})()', ctx);
+  '(function(){var o=[];for(var i=0;i<200;i++)o.push(randomNameFor("Türkiye"));return o;})()', ctx);
 const evUyum = haberAd.filter(ad => {
-  const par = ad.split(' ');
-  return evPool.ilk.indexOf(par[0]) >= 0 && evPool.sy.indexOf(par.slice(1).join(' ')) >= 0;
+  const t = ad.split(' ');
+  for (let k = 1; k < t.length; k++) {
+    if (evPool.ilk.indexOf(t.slice(0, k).join(' ')) >= 0 && evPool.sy.indexOf(t.slice(k).join(' ')) >= 0) return true;
+  }
+  return false;
 }).length;
 yaz(evUyum === haberAd.length,
-  `200 lig haberi adının ${evUyum} tanesi ev ülkesi havuzundan`);
+  `200 üretilen adın ${evUyum} tanesi referans ülke havuzundan`);
 
 /* ── H) Kadın adı taraması (§3) ────────────────────────────────────────────────────── */
 console.log('\nH) Havuzlarda kadın adı');

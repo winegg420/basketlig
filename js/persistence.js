@@ -357,7 +357,7 @@ function serializeGameState(){
     scouts:G.scouts||[],scoutMarket:G.scoutMarket||[],
     ligTeams:pl,
     arena:G.arena,youthFacility:G.youthFacility||{s:1},selectedColor:G.selectedColor,activeTrainings:G.activeTrainings||[],posTraining:G.posTraining||null,
-    gameDay:G.gameDay,managerName:G.managerName,managerRep:G.managerRep||0,managerHistory:G.managerHistory||[],joinedAt:G.joinedAt,lastActive:new Date().toISOString(),
+    gameDay:G.gameDay,managerName:G.managerName,menajerUlke:G.menajerUlke||null,managerRep:G.managerRep||0,managerHistory:G.managerHistory||[],joinedAt:G.joinedAt,lastActive:new Date().toISOString(),
     marketPozFilter:G.marketPozFilter,marketSort:G.marketSort,marketSortDesc:G.marketSortDesc||{ovr:true,maas:true},
     kadroFilter:G.kadroFilter,kadroView:G.kadroView,youthView:G.youthView||'list',
     difficulty:G.difficulty||'normal',   /* B5 */
@@ -673,6 +673,8 @@ function _applyGameStateInner(d){
   G.posTraining=(d.posTraining&&typeof d.posTraining==="object")?d.posTraining:null; /* Paket 3 */
   G.gameDay=d.gameDay??1;
   G.managerName=d.managerName||'Menajer';
+  /* FAZ 30 §5: profil ülkesi. Eski kayıtta yoksa boş bırakılır — mekaniğe girmez. */
+  G.menajerUlke=d.menajerUlke||null;
   G.managerRep=Number(d.managerRep)||0;
   G.managerHistory=Array.isArray(d.managerHistory)?d.managerHistory:[];
   G.joinedAt=d.joinedAt||null;
@@ -778,7 +780,8 @@ function cleanupDevTelemetryKeys(){
 function faz17KocUlkeDoldur(){
   try{
     [G.coaches,G.coachMarket,G.scouts,G.scoutMarket].forEach(list=>{
-      if(Array.isArray(list)) list.forEach(c=>{ if(c&&!c.ulke) c.ulke=LIG_EV_ULKE; });
+      /* FAZ 30: ülkesiz eski personel kaydına deterministik bir ülke verilir. */
+      if(Array.isArray(list)) list.forEach((c,ci)=>{ if(c&&!c.ulke) c.ulke=rastgeleUlkeAdi('eskiPersonel|'+(c.id||ci)); });
     });
   }catch(e){}
 }

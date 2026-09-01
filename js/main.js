@@ -1460,7 +1460,17 @@ function setDifficulty(k){
   if(desc) desc.textContent=d.desc;
   showNotif(`${d.ikon} Zorluk: ${d.ad}`);
 }
-function goSetup(){document.getElementById('loginPage').style.display='none';document.getElementById('setupPage').style.display='flex';renderSetupDifficulty();}
+function goSetup(){document.getElementById('loginPage').style.display='none';document.getElementById('setupPage').style.display='flex';renderSetupDifficulty();doldurUlkeSecici();}
+/* FAZ 30 §5: kurulum ekranındaki ülke listesi ULKELER'den doldurulur (43 ülke, bayraklı).
+   Ülke YALNIZ profil kartında görünür; hiçbir mekaniğe girmez. */
+function doldurUlkeSecici(){
+  try{
+    const sel=document.getElementById('menajerUlkeSec');
+    if(!sel||sel.options.length) return;
+    sel.innerHTML=ULKELER.slice().sort((a,b)=>a.ad.localeCompare(b.ad,'tr')).map(u=>
+      '<option value="'+u.ad+'">'+u.b+' '+u.ad+'</option>').join('');
+  }catch(e){ dbg('ülke seçici',e); }
+}
 function selColor(el){document.querySelectorAll('.color-opt').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');G.selectedColor=el.dataset.color;}
 
 function createTeam(){
@@ -1490,10 +1500,45 @@ function createTeam(){
   G.difficulty='normal';
   G.coins=START_KR;
   G.managerName=managerName;
+  /* FAZ 30 §5: kayıt ülkesi. Oyunun HİÇBİR mekaniğine girmez — yalnız profil kartında
+     bayrak + ad olarak görünür. Seçilmezse listenin ilk ülkesi kullanılır. */
+  try{
+    const _us=document.getElementById("menajerUlkeSec");
+    const _sec=_us&&_us.value;
+    G.menajerUlke=(_sec&&ULKE_BUL(_sec))?_sec:((ULKELER[0]&&ULKELER[0].ad)||null);
+  }catch(e){ G.menajerUlke=(ULKELER[0]&&ULKELER[0].ad)||null; }
+  /* FAZ 30 §5: kayıt ülkesi. Oyunun HİÇBİR mekaniğine girmez — yalnız profil kartında
+     bayrak + ad olarak görünür. Seçilmezse listenin ilk ülkesi kullanılır. */
+  try{
+    const _us=document.getElementById('menajerUlkeSec');
+    const _sec=_us&&_us.value;
+    G.menajerUlke=(_sec&&ULKE_BUL(_sec))?_sec:(ULKELER[0]&&ULKELER[0].ad)||null;
+  }catch(e){ G.menajerUlke=(ULKELER[0]&&ULKELER[0].ad)||null; }
+  /* FAZ 30 §5: kayıt ülkesi. Oyunun HİÇBİR mekaniğine girmez — yalnız profil kartında
+     bayrak + ad olarak görünür. Seçilmezse listenin ilk ülkesi kullanılır. */
+  try{
+    const _us=document.getElementById('menajerUlkeSec');
+    const _sec=_us&&_us.value;
+    G.menajerUlke=(_sec&&ULKE_BUL(_sec))?_sec:(ULKELER[0]&&ULKELER[0].ad)||null;
+  }catch(e){ G.menajerUlke=(ULKELER[0]&&ULKELER[0].ad)||null; }
   G.joinedAt=new Date().toISOString();
   G.lastActive=G.joinedAt;
   G.team={isim:name,renk,tblKey:assignUserToTblSlot(name),logoUrl:''};
   G.players=genRoster();G.youth=genYouth();G.marketPlayers=genMarket();
+  /* FAZ 30 §4: KULLANICI KADROSU DA DİVİZYONUNA EŞİTLENİR. Yeni kariyer en alt
+     divizyonda başlıyor ve bot kadroları orada −4 OVR; kullanıcı kadrosu ölçeklenmezse
+     Divizyon 1 kalitesinde bir takımla en zayıf rakiplere çıkıyor (ölçüldü: ortalama
+     skor farkı 90,7-76,8). Aynı kayma kullanıcıya da uygulanır — merdiven her basamakta
+     dengeli kalır, yükselmek gerçekten zorlaşır. Altyapı ve market de aynı ölçekte.
+     ⚠ Kayma saf aritmetiktir (botOvrKaydir), yeni çekiliş yapmaz. */
+  try{
+    const _kay=divizyonOvrKaymasi(G.team.tblKey);
+    if(_kay){
+      G.players.forEach(p=>botOvrKaydir(p,_kay));
+      (G.youth||[]).forEach(p=>botOvrKaydir(p,_kay));
+      (G.marketPlayers||[]).forEach(p=>botOvrKaydir(p,_kay));
+    }
+  }catch(e){ dbg("divizyon kayması",e); }
   G.ligTeams=genLigTeams();G.coaches=genCoaches();G.coachMarket=genCoachMarket();
   G.scoutMarket=genScoutMarket();
   G.arena={s:1,kap:ARENA_LVL[0].kap,bk:ARENA_LVL[0].bk,isim:'Başlangıç Arena'};   /* F7-6: ham KR */

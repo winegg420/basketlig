@@ -936,5 +936,10 @@ I18N_PHRASES.unshift(
   /* FAZ 28 §2.1.3: yüklem eklenen üretilmiş cümleler. */
   [/ üst üste (\d+)\. isabetini buldu!/g, ' hits his $1th in a row!'],
   [/Ev sahasında kaybettik\./g, 'A home defeat.'],
+  /* FAZ 30: serbest atış giriş satırları kısaltıldı (kelime bütçesi) — kalıplar da yenilendi. */
+  [/ şutta faul aldı, (d+) atış./g, ' is fouled on the shot — $1 free throws.'],
+  [/ şuttayken faul aldı, çizgide./g, ' is fouled on the shot and goes to the line.'],
+  [/ üçlükte faul aldı — 3 atış:/g, ' is fouled on a three — three free throws:'],
+  [/ cezada, /g, ' are in the bonus, '],
   [/Deplasmanda kaybettik\./g, 'A defeat on the road.']
 );

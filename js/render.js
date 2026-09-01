@@ -542,7 +542,7 @@ function renderTeamFixturePanel(){
 
 /** FAZ 22 §1: koç kartında ülke etiketi — oyuncu kartlarında bayrak vardı, koçlarda yoktu. */
 function kocBayrak(c){
-  const ad=(c&&c.ulke)||(typeof LIG_EV_ULKE!=='undefined'?LIG_EV_ULKE:'');
+  const ad=(c&&c.ulke)||'';
   const u=(typeof ULKE_BUL==='function')?ULKE_BUL(ad):null;
   return escMatch(((u&&u.b)?u.b+' ':'')+ad);
 }
@@ -552,9 +552,8 @@ function genCoaches(){
      üçünden ikisi yabancı, üstelik her kariyerde aynı. Artık ülkeye bağlı üretiliyor. */
   return KOC_T.slice(0,3).map((k,i)=>{
     const sev=rand(1,5);
-    /* FAZ 22 §1.6: KARİYER BAŞINDAKİ takım koçları %100 yerli — oyuncu kadrosuyla aynı
-       kural. Yabancı personel yalnız PAZARDAN gelir (aşağıda, %10 oranıyla). */
-    const ulke=LIG_EV_ULKE;
+    /* FAZ 30: "yerli koç" kuralı kalktı — koçun ülkesi de 43'ü arasından deterministik. */
+    const ulke=personelUlkesi('koc|baslangic|'+i);
     return {...k,id:'c'+i,ulke,ad:personelAdi(ulke),seviye:sev,maas:Math.round(45+sev*18+sev*sev*2),skor:sev*10+rand(0,15),gecmis:[]};
   });
 }
@@ -1114,22 +1113,28 @@ function renderMarket(){
     maBt.textContent=sort==='maas'?(d.maas?'Maaş ↓':'Maaş ↑'):'Maaş';
     maBt.classList.toggle('active',sort==='maas');
   }
-  /* FAZ 17: uyruk filtresi butonlarının aktifliği durumdan türetilir — yeniden çizimde kaybolmaz. */
-  try{
-    const nat=G.marketUlkeFilter||'all';
-    document.querySelectorAll('#page-market .fbtn.mnat').forEach(b=>{
-      const oc=b.getAttribute('onclick')||'';
-      const mod=oc.indexOf("'yerli'")>=0?'yerli':(oc.indexOf("'global'")>=0?'global':'all');
-      b.classList.toggle('active',mod===nat);
-    });
-  }catch(e){}
-  /* FAZ 17 (§6.3): uyruk filtresi. Markette KOTA YOKTUR — havuz OVR'ye göre dolar ve üst
-     sıralar doğal olarak yabancı ağırlıklı olur; bu filtre yalnız GÖRÜNÜMÜ süzer.
-     Seçim G üzerinde durduğu için ekran yenilenince kaybolmaz ve sıralamayla birlikte çalışır. */
+  /* ── FAZ 30 §2.3: ÜLKE SEÇİCİ ────────────────────────────────────────────────────
+     "Yerli / Global" ikilisi ülke bazlı lig kalkınca anlamsızlaştı (neye göre yerli?).
+     Yerine ÜLKE SEÇİCİ geldi: listede yalnız O AN markette oyuncusu bulunan ülkeler
+     görünür — boş seçenek üretilmez. Seçim G üzerinde durur, sıralama ve mevki
+     filtresiyle birlikte çalışır, ekran yenilenince kaybolmaz. */
   const ulkeF=G.marketUlkeFilter||'all';
+  try{
+    const sel=document.getElementById('marketUlkeSec');
+    if(sel){
+      const varOlan=Array.from(new Set((G.marketPlayers||[]).map(p=>p&&p.ulke).filter(Boolean))).sort();
+      const bayrak=ad=>{ const u=(typeof ULKE_BUL==='function')?ULKE_BUL(ad):null; return (u&&u.b)?u.b+' ':''; };
+      const yeni='<option value="all">'+t('Tümü')+'</option>'+
+        varOlan.map(ad=>'<option value="'+escMatch(ad)+'">'+bayrak(ad)+escMatch(ad)+'</option>').join('');
+      if(sel.innerHTML!==yeni) sel.innerHTML=yeni;
+      /* Seçili ülke markette kalmadıysa "Tümü"ye dön — boş liste gösterme. */
+      if(ulkeF!=='all'&&varOlan.indexOf(ulkeF)<0) G.marketUlkeFilter='all';
+      sel.value=G.marketUlkeFilter||'all';
+    }
+  }catch(e){ dbg('market ülke seçici',e); }
+  const ulkeF2=G.marketUlkeFilter||'all';
   let f=pozF==='all'?G.marketPlayers.slice():G.marketPlayers.filter(p=>p.poz===pozF);
-  if(ulkeF==='yerli') f=f.filter(p=>p&&p.ulke===LIG_EV_ULKE);
-  else if(ulkeF==='global') f=f.filter(p=>p&&p.ulke!==LIG_EV_ULKE);
+  if(ulkeF2!=='all') f=f.filter(p=>p&&p.ulke===ulkeF2);
   f.sort((a,b)=>{
     let cmp;
     if(sort==='maas') cmp=(a.maas||0)-(b.maas||0);
@@ -1152,7 +1157,7 @@ function renderMarket(){
      "Yerli" seçilince görülen durum) — kullanıcı oyunun bozulduğunu sanıyor. Artık her
      filtre için açıklama ve tek tıkla temizleme var. */
   if(!gorunen.length){
-    const filtreVar=(pozF!=='all')||(ulkeF!=='all');
+    const filtreVar=(pozF!=='all')||(ulkeF2!=='all');
     document.getElementById('marketList').innerHTML=
       `<div class="bos-filtre">${filtreVar
         ? 'Bu filtreye uyan oyuncu yok.<br><button type="button" class="btn-sm" style="margin-top:8px;" onclick="marketFiltreleriTemizle()">Filtreleri temizle</button>'
@@ -1252,12 +1257,10 @@ function setMarketSort(mode,btn){
   renderMarket();
 }
 
-/** FAZ 17 (§6.3): Tümü / Yerli / Global. Mevkilerle ve sıralamayla birlikte çalışır. */
-function filterMarketUlke(mode,btn){
-  G.marketUlkeFilter=(mode==='yerli'||mode==='global')?mode:'all';
+/** FAZ 30 §2.3: market ülke seçici. 'all' ya da bir ülke ADI. */
+function filterMarketUlke(mode){
+  G.marketUlkeFilter=(mode&&mode!=='all')?String(mode):'all';
   G.marketShown=10;   /* mobil sayfalama filtre değişince başa dönsün */
-  document.querySelectorAll('#page-market .fbtn.mnat').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
   renderMarket();
 }
 

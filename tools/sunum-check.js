@@ -24,6 +24,40 @@ const SAHA = require('./_lib/saha-kapilari.js');   /* FAZ 25 §8 saha kapıları
 const ROOT = path.resolve(__dirname, '..');
 const arg = (k, d) => { const a = process.argv.find(x => x.startsWith('--' + k + '=')); return a ? a.slice(k.length + 3) : d; };
 const WATCH_MS = parseInt(arg('ms', '240000'), 10);
+/* FAZ 30: pencere ÖRNEKLEME GÖRE uzar. --ms taban, --max üst sınır, --dilim yoklama aralığı. */
+const MAX_MS = parseInt(arg('max', '900000'), 10);
+const DILIM_MS = parseInt(arg('dilim', '20000'), 10);
+const MAX_MAC = parseInt(arg('macmax', '12'), 10);
+
+/* ── ÖRNEKLEM ALT SINIRLARI ────────────────────────────────────────────────────────────
+   Bu araç tek maç izliyordu ve kapıların yarısı ONDALIK örnekle karar veriyordu: M9'un
+   paydası (uzunun ribaund alıp hücum kurduğu vaka) maç başına 5-11 arasında oynuyor,
+   5 vakada bir tek kaçırma oranı %80'e indiriyor ve kapı düşüyordu. Aynı sebeple M12
+   (and-1 olasılığı %8,5), F14-7 ve F26-1/2 koşudan koşuya farklı sonuç veriyordu —
+   ölçülen davranış değil, ÖRNEKLEM değişiyordu.
+   Çözüm eşiği gevşetmek DEĞİL, örneklemi büyütmektir: pencere, her kapı kendi alt
+   sınırına ulaşana kadar (üst sınıra kadar) yeni maçlarla uzatılır. */
+const ALT_SINIR = {
+  /* ⚠ TABAN İSTATİSTİKSEL OLARAK SEÇİLDİ. Gözlenen oran %86, eşik %80. n=15'te
+     örneklem standart sapması ~%9 olduğu için kapı DAVRANIŞ değişmeden, sırf çekiliş
+     yüzünden ~%24 olasılıkla düşüyordu (ölçüldü: 4 koşunun 1'i). n=60'ta SD ~%4,5 —
+     eşik 1,3 SD uzakta kalır. Motorun kendi damgası zaten 193/193 doğru; kalan fark
+     gözlem vekilinin (taşıyıcı zinciri) gürültüsüdür. */
+  m9:        { n: 60, ad: 'M9 uzun ribaundu (payda)' },
+  and1:      { n: 3,  ad: 'M12 and-1' },
+  hucumReb:  { n: 5,  ad: 'M14 hücum ribaundu' },
+  ft:        { n: 12, ad: 'F14-7 serbest atış anı' },
+  tasima:    { n: 20, ad: 'F25-1 orta saha taşıması' },
+  sokma:     { n: 15, ad: 'F25-3 kenardan sokma' },
+  ftDrib:    { n: 6,  ad: 'F25-4 atış rutini' },
+  sema:      { n: 3,  ad: 'F25-5 yeterli kare toplayan şema' },
+  sirtDonuk: { n: 200,ad: 'F25-6a post karesi' },
+  perde:     { n: 3,  ad: 'F25-6b perde damgası' },
+  yaySmac:   { n: 3,  ad: 'F26-1 smaç yörüngesi' },
+  yayUzak:   { n: 5,  ad: 'F26-1 uzak şut yörüngesi' },
+  yayFloat:  { n: 3,  ad: 'F26-2 floater yörüngesi' },
+  yayTurnike:{ n: 5,  ad: 'F26-2 turnike yörüngesi' },
+};
 const RATE = parseFloat(arg('rate', '2'));
 
 const MIME = {
@@ -55,7 +89,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 async function main() {
   const server = await startServer();
   const base = `http://127.0.0.1:${server.address().port}`;
-  console.log('Statik sunucu:', base, '· izleme', WATCH_MS + 'ms · hız', RATE + '×');
+  console.log('Statik sunucu:', base, '· taban pencere', WATCH_MS + 'ms · üst sınır', MAX_MS + 'ms · hız', RATE + '×');
 
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
@@ -141,6 +175,11 @@ async function main() {
       // 3) yeni işlenen olayları damgala
       try {
         const ix = mState.idx - 1;
+        /* ⚠ ÇOK MAÇLI ÖRNEKLEM: pencere yeni bir maçla uzatılınca `mState.idx` sıfırdan
+           başlar ve `ix > P.sonEvIx` bir daha DOĞRU OLMAZ — ikinci maçın hiçbir olayı
+           sayılmaz, örneklem sessizce tek maçta donar. Geriye sarma görülünce sayaç
+           sıfırlanır. */
+        if (ix < P.sonEvIx) P.sonEvIx = -1;
         if (ix > P.sonEvIx) {
           for (let k = P.sonEvIx + 1; k <= ix; k++) {
             const ev = mState.events[k];
@@ -215,12 +254,101 @@ async function main() {
   /* FAZ 25 §8: saha davranışı örnekleyicisi — ayrı bir rAF döngüsü, __SUNUM'a dokunmaz. */
   await page.evaluate(SAHA.ORNEKLEYICI);
 
-  await sleep(WATCH_MS);
+  /* ── FAZ 30: ÖRNEKLEM GÜDÜMLÜ PENCERE ──────────────────────────────────────────────
+     Tek maç izlemek yetmiyordu (yukarıdaki ALT_SINIR yorumuna bakın). Pencere dilim
+     dilim akar; her dilimde örneklem sayılır. Maç bittiyse bir sonraki maç başlatılır —
+     örnekleyiciler sayfa ömrü boyunca BİRİKİR, sıfırlanmaz.
+     ⚠ Bu bir "geçene kadar dene" döngüsü DEĞİLDİR: ölçüt kapının SONUCU değil, kapının
+     karar verebilmesi için gereken ÖRNEK SAYISIDIR. Sayı dolunca döngü biter, sonuç ne
+     çıkarsa çıksın. */
+  let gecen = 0, macSayisi = 1;
+  let sonEksik = [];
+  let sonDurum = {};
+  let saatOrnekCanli = null;
+  while (true) {
+    const _dilim = Math.min(DILIM_MS, Math.max(1000, MAX_MS - gecen));
+    await sleep(_dilim);
+    gecen += _dilim;                     /* kırpılan dilim de gerçek süreyle sayılır */
+
+    /* Maç canlıyken tabela/akış damgasını yakala (F19-4) — maçlar arası boşlukta
+       tabela sıfırlanmış olur, ölçüm oradan alınamaz. */
+    const _saat = await page.evaluate(() => {
+      try {
+        if (!(typeof mState !== 'undefined' && mState && mState.running)) return null;
+        const ayr = (txt) => { const m = /(\d+):(\d{2})/.exec(String(txt || '')); return m ? (+m[1]) * 60 + (+m[2]) : null; };
+        const tab = document.getElementById('liveTime');
+        const ilk = document.querySelector('#commentary .ci .ci-time');
+        if (!tab || !ilk) return null;
+        const t = ayr(tab.textContent), a = ayr(ilk.textContent);
+        return (t != null && a != null) ? { tabela: t, akis: a, akisTxt: ilk.textContent.trim() } : null;
+      } catch (e) { return null; }
+    });
+    if (_saat) saatOrnekCanli = _saat;
+
+    const durum = await page.evaluate(() => {
+      const P = window.__SUNUM || {}, S = window.__SAHA || {};
+      /* M9 paydası: kapının kendi ölçütüyle aynı — uzun ribaundu alıp hücum kurulan vaka. */
+      let m9 = 0;
+      try {
+        (P.rebAnlari || []).forEach(rb => {
+          if (rb.putbackSonra) return;
+          const sut = (P.sutAnlari || []).find(x => x.t > rb.t && x.t - rb.t < 9000);
+          if (!sut || sut.pb) return;
+          const pencere = (P.tasiyiciDizi || []).filter(x => x.t >= rb.t - 400 && x.t <= sut.t + 3000);
+          const ix = pencere.findIndex(x => (x.role === 3 || x.role === 4) && x.t <= rb.t + 2000);
+          if (ix >= 0) m9++;
+        });
+      } catch (e) {}
+      const semaSay = Object.keys(S.sema || {}).filter(k => (S.sema[k].kare || 0) >= 20).length;
+      const yay = {};
+      (S.yay || []).forEach(x => { yay[x.tip] = (yay[x.tip] || 0) + 1; });
+      return {
+        calisiyor: !!(typeof mState !== 'undefined' && mState && mState.running),
+        m9,
+        and1: (P.and1Olaylari || []).length,
+        hucumReb: (P.rebAnlari || []).filter(r => r.rebOff).length,
+        ft: (P.ftAtis || []).length,
+        tasima: (S.tasima || []).length,
+        sokma: (S.sokma || []).length,
+        ftDrib: (S.ftDrib || []).length,
+        sema: semaSay,
+        sirtDonuk: (S.sirtDonuk || []).length,
+        perde: (S.perde || []).length,
+        yaySmac: yay.smac || 0,
+        yayUzak: (yay.uc || 0) + (yay.jumper || 0),
+        yayFloat: yay.floater || 0,
+        yayTurnike: yay.turnike || 0,
+      };
+    });
+
+    sonDurum = durum;
+    sonEksik = Object.keys(ALT_SINIR).filter(k => (durum[k] || 0) < ALT_SINIR[k].n);
+    const tabanDoldu = gecen >= WATCH_MS;
+    if (tabanDoldu && !sonEksik.length) break;
+    if (gecen >= MAX_MS) break;
+
+    /* Maç bittiyse pencereyi bir sonraki maçla sürdür. */
+    if (!durum.calisiyor) {
+      if (macSayisi >= MAX_MAC) break;
+      const basladi = await page.evaluate(() => {
+        try { startMatch(); return !!(mState && mState.running); } catch (e) { return false; }
+      });
+      if (!basladi) break;
+      macSayisi++;
+      await sleep(600);
+    }
+  }
+  console.log('  pencere: ' + Math.round(gecen / 1000) + ' sn · ' + macSayisi + ' maç' +
+    (sonEksik.length ? ' · ÖRNEKLEM YETERSİZ: ' + sonEksik.map(k => ALT_SINIR[k].ad).join(', ')
+                     : ' · örneklem yeterli'));
+  /* Hangi ölçütün pencereyi uzattığı görünmezse eşikler körlemesine ayarlanır. */
+  console.log('  örneklem: ' + Object.keys(ALT_SINIR)
+    .map(k => k + ' ' + (sonDurum[k] || 0) + '/' + ALT_SINIR[k].n).join(' · '));
 
   /* FAZ 19 §4.3: akış damgası ile tabela saati aynı olmalı. Canlıda tabela 5:17 (kalan)
      gösterirken akış 1P 4:43 (geçen) yazıyordu — toplamları 10:00 olduğu için tutarlıydı
      ama kullanıcı iki farklı saat görüyordu. Damga artık kalan süreyi gösteriyor. */
-  const saatOrnek = await page.evaluate(() => {
+  const saatOrnek = saatOrnekCanli ? [saatOrnekCanli] : await page.evaluate(() => {
     const ayr = (txt) => {
       const m = /(\d+):(\d{2})/.exec(String(txt || ''));
       return m ? (+m[1]) * 60 + (+m[2]) : null;
@@ -239,6 +367,7 @@ async function main() {
     const P = window.__SUNUM;
     // M9: ribaund anından sonraki 3,5 sn içinde uzun(3/4) → guard(0/1) taşıyıcı geçişi
     let outletVar = 0, uzunAldi = 0, atlanan = 0;
+    const m9Kacan = {};   /* teşhis: outlet kaçınca topu KİM aldı (rol) */
     P.rebAnlari.forEach(rb => {
       if (rb.putbackSonra) { atlanan++; return; }   // ikinci şans — outlet tasarımca yok
       /* Ribaunddan SONRAKİ ilk şutlu pozisyon bulunur. Araya şutsuz bir olay (top kaybı,
@@ -263,6 +392,7 @@ async function main() {
       uzunAldi++;
       const sonraki = pencere[uzunIx + 1];
       if (sonraki && (sonraki.role === 0 || sonraki.role === 1)) outletVar++;
+      else { const r = sonraki ? sonraki.role : "yok"; m9Kacan[r] = (m9Kacan[r] || 0) + 1; }
     });
     // M12: and-1 olaylarının kaçında serbest atış sahnesi kuruldu
     let and1Sahneli = 0;
@@ -285,6 +415,7 @@ async function main() {
       kararHedefDagilim: (() => { const d = {}; P.outletKarar.filter(x => x.outlet).forEach(x => { d[x.pgRol] = (d[x.pgRol] || 0) + 1; }); return d; })(),
       kararOrnek: P.outletKarar.slice(0, 12),
       rebSayisi: P.rebAnlari.length, uzunAldi, outletVar, atlanan,
+      m9Kacan,
       and1Sayisi: P.and1Olaylari.length, and1Sahneli,
       hucumRebSayisi: hucumReb.length, hucumReb14,
       scOrnek: P.scOrnek.length, bosGosterge,
@@ -329,7 +460,7 @@ async function main() {
   } else {
     const oran = R.outletVar / R.uzunAldi;
     kayit('M9', 'Ribaund sonrası çıkış (outlet) pası', oran >= 0.8,
-      `uzun ribaundu ${R.uzunAldi} kez aldı ve hücum kuruldu → ${R.outletVar} kez topu guard'a çıkardı (%${Math.round(oran * 100)}, hedef ≥ %80) · kapsam dışı vaka: ${R.atlanan}`);
+      `uzun ribaundu ${R.uzunAldi} kez aldı ve hücum kuruldu → ${R.outletVar} kez topu guard'a çıkardı (%${Math.round(oran * 100)}, hedef ≥ %80) · kapsam dışı vaka: ${R.atlanan} · kaçanlarda sonraki taşıyıcının rolü: ${JSON.stringify(R.m9Kacan)}`);
   }
 
   // M12 — and-1'de ek atış sahnesi

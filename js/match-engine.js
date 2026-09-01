@@ -3414,8 +3414,12 @@ function generateMatchEvents(rakip, opts){
       /* "yine faulde" ancak İKİNCİ faulden itibaren doğru; ilk faulde "Ramazan Üstün
          yine faulde — bu ilki" çıkıyordu. */
       const havuz=(n>=2)?FOUL_CUMLE:FOUL_CUMLE.filter(x=>x.indexOf('yine faulde')<0);
+      /* FAZ 30 (kelime bütçesi): CÜMLE biçiminde tek ad kullanılır — FAZ 25 §7.4'ün
+         'zincir ve yüksek frekanslı olaylarda tek ad' kuralı. KÜNYE biçimi (yukarıdaki
+         dal) resmî satırdır ve TAM adı korur. */
+      const _kisaFail=(typeof _tokShort==='function')?_tokShort(fp.isim):fp.isim;
       return adKoy(pickLine(havuz,pr,narr.recent,'foulc'),
-                   {A:fp.isim,S:FOUL_SIRA[ix],I:FOUL_SIRA_I[ix]});
+                   {A:_kisaFail,S:FOUL_SIRA[ix],I:FOUL_SIRA_I[ix]});
     }catch(e){ return 'Faul —'; }
   }
   const inBonus=(defenderIsUser,q)=>(defenderIsUser?(qFoulU[q]||0):(qFoulO[q]||0))>=5;
@@ -3838,7 +3842,7 @@ function generateMatchEvents(rakip, opts){
         if(ftRebound(userPos,B,D,nMade,2,q,t)) posNext=userPos;
         addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
         const lineX=offLeftAtQ(userPos,q,userIsHome)?210:730;
-        events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,...ftSplit(`${foulPrefix(_fp)} · `+pickLine([`${shooter.isim} şutta faul aldı — 2 atış kullanacak.`,`${shooter.isim} şuttayken faul çaldı, çizgiye gidiyor.`,`şut faulü — ${shooter.isim} 2 atış kullanacak.`,`${shooter.isim} bindirmede faul kazandı, 2 atış.`],pr,narr.recent,'ftsf'),`${ftLine(nMade,2,shooter.isim)} ${sc()}`),q,t,home:homeScore,away:awayScore,
+        events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,...ftSplit(`${foulPrefix(_fp)} · `+pickLine([`${shooter.isim} şutta faul aldı, 2 atış.`,`${shooter.isim} şuttayken faul aldı, çizgide.`,`şut faulü — ${shooter.isim}, 2 atış.`,`${shooter.isim} bindirmede faul kazandı, 2 atış.`],pr,narr.recent,'ftsf'),`${ftLine(nMade,2,shooter.isim)} ${sc()}`),q,t,home:homeScore,away:awayScore,
           shots:[{x:lineX+rand(-10,10),y:242,made:nMade>=1,isHome:userPos,kind:'ft',q},{x:lineX+rand(-10,10),y:262,made:nMade===2,isHome:userPos,kind:'ft',q}],
           box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         _flushReb();
@@ -3852,7 +3856,7 @@ function generateMatchEvents(rakip, opts){
         if(ftRebound(userPos,B,D,nMade,3,q,t)) posNext=userPos;
         addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
         const lineX=(userPos===userIsHome)?204:736;
-        events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,...ftSplit(`${foulPrefix(_fp)} · ${shooter.isim} üç sayı denerken faul aldı — 3 atış:`,`${ftLine(nMade,3,shooter.isim)} ${sc()}`),q,t,home:homeScore,away:awayScore,
+        events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,...ftSplit(`${foulPrefix(_fp)} · ${shooter.isim} üçlükte faul aldı — 3 atış:`,`${ftLine(nMade,3,shooter.isim)} ${sc()}`),q,t,home:homeScore,away:awayScore,
           shots:[{x:lineX+rand(-8,8),y:236,made:nMade>=1,isHome:userPos,kind:'ft',q},{x:lineX+rand(-8,8),y:250,made:nMade>=2,isHome:userPos,kind:'ft',q},{x:lineX+rand(-8,8),y:264,made:nMade>=3,isHome:userPos,kind:'ft',q}],
           box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         _flushReb();
@@ -4079,7 +4083,7 @@ function generateMatchEvents(rakip, opts){
           if(ftRebound(userPos,B,D,nMade,2,q,t)) posNext=userPos;
           addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
           const lineX=offLeftAtQ(userPos,q,userIsHome)?210:730;
-          events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,...ftSplit(`🎯 Bonus! ${foulPrefix(_fp)} — ${foulingTeamName(defenderIsUser)} ceza durumunda, ${shooter.isim} çizgide.${yorumEk('foul')}`,`${ftLine(nMade,2,shooter.isim)} ${sc()}`),q,t,home:homeScore,away:awayScore,
+          events.push({type:'free',sid:shooter.id!=null?shooter.id:undefined,...ftSplit(`🎯 Bonus! ${foulPrefix(_fp)} — ${foulingTeamName(defenderIsUser)} cezada, ${shooter.isim} çizgide.${yorumEk('foul')}`,`${ftLine(nMade,2,shooter.isim)} ${sc()}`),q,t,home:homeScore,away:awayScore,
             shots:[{x:lineX+rand(-10,10),y:242,made:nMade>=1,isHome:userPos,kind:'ft',q},{x:lineX+rand(-10,10),y:262,made:nMade===2,isHome:userPos,kind:'ft',q}],
             box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         _flushReb();

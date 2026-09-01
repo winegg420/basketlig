@@ -356,6 +356,36 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   tarayıcıdan Node'a sabit bir alan listesi taşır (`const HAM = await page.evaluate(...)`).
   Listeye yazılmayan toplayıcı sessizce boş gelir ve kapı "ÖRNEK YOK" der — `yay` ve
   `titreme` tam olarak böyle kayboldu.
+- **LİG KÜRESELDİR — "ev ülkesi" YOK (FAZ 30):** `LIG_EV_ULKE`, `BOT_YABANCI_*`,
+  `MARKET_YERLI_*` ve `marketYerliOran()` KALDIRILDI. Oyuncu/koç/izci milliyeti 43 ülke
+  arasından gelişigüzeldir. KALAN: `NAME_POOLS`, `randomNameFor`, `ULKE_KOVA` (portre) —
+  ad ve yüz hâlâ oyuncunun ÜLKESİNE göre üretilir. Koda `'Türkiye'` gömme; deterministik
+  ülke gerekiyorsa `rastgeleUlkeAdi(tohum)`. `milliyet-check` G bölümü izlerini arar.
+- **Ülke parametresini kaldırmak akışı KAYDIRMAZ (FAZ 30):** `genPlayer` ülke sabitlense
+  bile `ch(ULKELER)` çekilişini ZATEN yapar (FAZ 17 dersi). Bu yüzden `genPlayer(poz,ULKE)`
+  → `genPlayer(poz)` dönüşümü rastgelelik akışını bozmaz — tersi (çekilişi atlamak) bozar.
+- **DİVİZYON MERDİVENİ (FAZ 30 §4):** Divizyon 1 en üst, aşağı doğru uzar (`DIV_SAYISI`).
+  Anahtar biçimi korunur: `'tbl'` = Divizyon 1, `'d.g'` = Divizyon d+1 · Grup g.
+  Yeni kariyer EN ALT divizyonda başlar (`divizyonDoldurmaSirasi`). Güç kayması
+  `divizyonOvrKaymasi()` ile gelir ve **çapa EN ALTTADIR (0)** — üst divizyonlar
+  güçlenir. Çapa üste konursa (Div1=0, alt divizyonlar eksi) yeni kariyerin MUTLAK
+  zorluğu düşer ve skor bandı kayar (ölçüldü: 89,7-81,8 → 90,7-76,8). Kayma
+  `botOvrKaydir` ile SAF ARİTMETİKTİR, yeni çekiliş yapmaz.
+- **Takım adında şehir = adın İLK SÖZCÜĞÜ (FAZ 30 §3):** `genUniqueClubName` "aynı
+  divizyonda en fazla 2 takım" kuralını böyle uygular. Havuza ÇOK KELİMELİ şehir ekleme —
+  "San Juan" ile "San Diego" aynı şehir sanılır ve kural sessizce yanlış işler.
+- **Kullanıcının profil ülkesi HİÇBİR mekaniğe girmez (FAZ 30 §5):** `G.menajerUlke`
+  yalnız profil kartında bayrak + ad olarak görünür. `milliyet-check` F bölümü "aynı
+  tohum + farklı ülke → birebir aynı kadro" diye sınar.
+- **Ad ↔ havuz uyumu BÖLÜNEBİLİRLİKLE ölçülür (FAZ 30 §7 dersi):** isim havuzlarında
+  çok kelimeli girişler var ("De Luca", "Juan Pablo"). "İlk boşluktan böl" ölçütü çok
+  kelimeli ÖN ADI yanlış havuzdan sayar ve denetim ARALIKLI düşer (ölçüldü: %18 olasılık,
+  4 koşudan 1'i). Doğru ölçüt: adın havuzdaki bir (ilk, soyad) çiftine bölünebilmesi.
+- **Ölçüm aracı örneklem güdümlü olmalı (FAZ 30 eki):** `sunum-check` tek maç izliyordu ve
+  oran tabanlı kapılar ondalık örneklemle karar veriyordu; M9 davranış değişmeden ~%24
+  olasılıkla düşüyordu. Pencere artık her kapı kendi ALT SINIRINA ulaşana kadar yeni
+  maçlarla uzar. Alt sınır istatistikle seçilir (gözlenen oran, eşik ve kabul edilebilir
+  düşme olasılığından). ⚠ Çok maçlı örneklemde `P.sonEvIx` geriye sarmada sıfırlanmalı.
 - **BİÇİM DİLE BAĞLIDIR (FAZ 29 §3):** binlik ayracı, yüzde işaretinin YERİ ve sıra eki
   dile göre değişir. Tek kaynak `fmtSayi` / `fmtYuzde` / `fmtSira` (`js/i18n.js`);
   `fmtn` bunlara bağlıdır. Koda `toLocaleString('tr-TR')` ya da elle `'%'+n` YAZMA —

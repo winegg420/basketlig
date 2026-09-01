@@ -146,9 +146,8 @@ function botClubTransfer(teamName,ligKey){
     /* FAZ 17 (§4.3): bot transferi de ev ülkesi ağırlıklıdır — kadro derinliği ile aynı kural.
        Değiştirilecek oyuncu (eski) sayımdan düşülür, yoksa yabancıyı yabancıyla değiştiren
        bot tavana takılıp bir daha asla yabancı alamazdı. */
-    const yabanciSayisi=roster.filter((p,i)=>i!==wi&&p&&p.ulke&&p.ulke!==LIG_EV_ULKE).length;
-    const yabanciOlsun=yabanciSayisi<BOT_YABANCI_MAX&&prChance(ck+'|tr|'+wi+'|'+((eski&&eski.id)||''),BOT_YABANCI_ORAN);
-    const np=genPlayerBounded(eski.poz||ch(POZLAR),Math.max(50,target-2),target+2,yabanciOlsun?null:LIG_EV_ULKE);
+    /* FAZ 30: bot transferinde uyruk kotası yok — ülke gelişigüzel. */
+    const np=genPlayerBounded(eski.poz||ch(POZLAR),Math.max(50,target-2),target+2);
     np.id='b'+hash32(ck+wi+Date.now())+'_'+wi;
     np.seed='bt'+ck+wi+(Date.now()%100000);
     np.maas=salaryKRFromGenel(np.genel);
@@ -218,7 +217,7 @@ function aiWeeklyLeagueActivity(){
         const fee=rand(4000,80000);
         const tr=botClubTransfer(t,G.team.tblKey);
         /* FAZ 24 §2: gerçek transfer yoksa üretilen ad da ev ülkesinden. */
-        const isim=tr?tr.inP.isim:randomNameFor(LIG_EV_ULKE);
+        const isim=tr?tr.inP.isim:randomNameFor(rastgeleUlkeAdi(null));
         /* FAZ C: haber artık kulübün MEVKİ İHTİYACINI da anlatıyor. */
         const POZ_AD={PG:'oyun kurucu',SG:'şutör guard',SF:'kısa forvet',PF:'uzun forvet',C:'pivot'};
         const detay=tr?` (OVR ${tr.inP.genel}${tr.poz?`, ${POZ_AD[tr.poz]||tr.poz} ihtiyacı`:''}, ${tr.outP.isim} yerine)`:'';
