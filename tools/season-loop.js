@@ -109,7 +109,12 @@ async function main() {
       mevcut: (G.players || []).length,
       altyapi: (G.youth || []).length,
       kasa: Math.round(Number(G.coins) || 0),
-      yasHaritasi: (G.players || []).reduce((m, p) => { m[p.id] = Number(p.yas) || 0; return m; }, {})
+      yasHaritasi: (G.players || []).reduce((m, p) => { m[p.id] = Number(p.yas) || 0; return m; }, {}),
+      /* FAZ 25 USD: K2 hangi kalemden şişiyor? Defter kalem türüne göre toplanır. */
+      defter: (G.ledger || []).reduce((m, e) => {
+        const k = String(e.l).split(':')[0].split(' — ')[0];
+        m[k] = (m[k] || 0) + (e.a || 0); return m;
+      }, {})
     });
 
     const kayitlar = [];
@@ -207,7 +212,7 @@ async function main() {
         sampiyon: (G.playoff && G.playoff.champion) || null,
         playoffYil: (G.playoff && G.playoff.year != null) ? G.playoff.year : null,
         playoffMac: poMac, draftSecim,
-        yasHaritasi: sezonSonu.yasHaritasi
+        yasHaritasi: sezonSonu.yasHaritasi, defter: sezonSonu.defter
       });
 
       // ── 6) Yeni sezona geç

@@ -8,7 +8,7 @@
  *  K1  Playoff ortasında sayfa yenile → bracket ve seri skoru korunuyor
  *  K2  Kota dolduktan sonra yeniden yükle → en güncel kayıt geliyor (IndexedDB kazanır)
  *  K3  "Kaydı sil" → yeniden açılışta "Devam et" bloğu YOK (IDB kopyası da silinir)
- *  K4  Yeni oyun → arena bakımı 150 KR (938 değil)
+ *  K4  Yeni oyun → arena bakımı ARENA_LVL[0].bk (ecoRound'lanmış değer değil)
  *  K5  Koçları kov + yenile → koçlar geri GELMİYOR (reroll istismarı kapalı)
  *  K6  İnternetsiz aç → yazı tipleri yerel yükleniyor, tabela taşmıyor
  *  K7  390×844'te İlk 5 ekranında yedeklerin hepsine erişilebiliyor (kart kaydırılabilir)
@@ -90,9 +90,12 @@ async function main() {
     const page = await ctx.newPage();
     page.on('pageerror', e => konsolHatalari.push('[K4] ' + e.message));
     await yeniKariyer(page, base, 'Arena Testi');
-    const arena = await page.evaluate(() => ({ s: G.arena.s, bk: G.arena.bk, kap: G.arena.kap, lvl0: ARENA_LVL[0].bk }));
-    kayit('K4', 'Yeni oyun → arena bakımı 150 KR',
-      arena.bk === 150 && arena.bk === arena.lvl0 && arena.s === 1,
+    const arena = await page.evaluate(() => ({ s: G.arena.s, bk: G.arena.bk, kap: G.arena.kap, lvl0: ARENA_LVL[0].bk, lvl0Kap: ARENA_LVL[0].kap }));
+    /* FAZ 25 USD: eşik 150'ye ÇAKILIYDI; arena tablosu değişince (bakım $3.000) kapı
+       kendi eski sayısını savunur oldu. Niyet zaten "bakım ham tablodan gelsin, ecoRound
+       ile şişmesin" — ölçüt ARENA_LVL[0].bk'nin KENDİSİ. */
+    kayit('K4', 'Yeni oyun → arena bakımı ARENA_LVL[0].bk',
+      arena.bk === arena.lvl0 && arena.s === 1 && arena.kap === arena.lvl0Kap,
       `G.arena = {s:${arena.s}, kap:${arena.kap}, bk:${arena.bk}} · ARENA_LVL[0].bk=${arena.lvl0}`);
 
     // K5 aynı bağlamda: koçları kov + yeniden yükle

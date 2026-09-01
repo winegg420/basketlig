@@ -4417,14 +4417,14 @@ function applyMatchResult(ev,ctx){
     if(ctx.userIsHome){
       const bilet=homeTicketIncome();
       txn('Bilet geliri',bilet);
-      pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">🎟️ Ev maçı bilet geliri: <strong>+${fmtn(bilet)} KR</strong> (${fmtn(G.arena.kap)} kapasite)</div>`);
+      pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">🎟️ Ev maçı bilet geliri: <strong>+${fmtPara(bilet)}</strong> (${fmtn(G.arena.kap)} kapasite)</div>`);
     } else {
       /* Paket A: seyahat da sezonla pahalanır (gider enflasyonu).
          Madde 2: ecoRound kaldırıldı — maç günü nakit akışı (bilet/ödül/seyahat) artık tek
-         ölçekte (KR-yerel); önceden seyahat 6.2K-14.6K ile kapı hasılatını (~4K) eziyordu. */
+         ölçekte (ham ölçekte); önceden seyahat 6.2K-14.6K ile kapı hasılatını (~4K) eziyordu. */
       const seyahat=Math.round(rand(300,700)*ecoInflationMul());
       txn('Deplasman seyahat masrafı',-seyahat);
-      pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">✈️ Deplasman seyahat masrafı: <strong>-${fmtn(seyahat)} KR</strong></div>`);
+      pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">✈️ Deplasman seyahat masrafı: <strong>-${fmtPara(seyahat)}</strong></div>`);
     }
     if(G.wins>=1) unlockAchievement('ilkGalibiyet');
     if(G.wins>=5) unlockAchievement('seri5');
@@ -4497,24 +4497,31 @@ function applyMatchResult(ev,ctx){
     /* Paket A: ödül bandı kırpıldı (1500-3500→1000-2400) — galibiyet geliri tek başına
        tüm kulüp giderlerini ezmesin, uzun vadede kasa otomatik şişmesin (20 sezon ölçümüyle ayarlandı).
        Madde 2 (29. oturum): band ecoRound() ile ×ECO_MUL (≈20.8) ölçekleniyordu → gerçekte
-       20.833-50.000 KR/galibiyet. Bilet geliri (~4-5K/maç) ve haftalık maaş (~5K) KR-yerel
+       20.833-50.000 birim/galibiyet. Bilet geliri (~4-5K/maç) ve haftalık maaş (~5K) ham ölçekte
        ölçekte olduğu için tek galibiyet bir haftalık tüm ekonomiyi eziyordu. Artık ödül de
-       KR-yerel: bir iç saha kapı hasılatının yaklaşık yarısı kadar. */
-    /* F9-2: 1400-2600 → 900-1700. Sezonda ~15 galibiyet × 2000 ≈ 30.000 KR ile ödül, bilet
+       ham ölçekte: bir iç saha kapı hasılatının yaklaşık yarısı kadar. */
+    /* F9-2: 1400-2600 → 900-1700. Sezonda ~15 galibiyet × 2000 ≈ 30.000 birim ile ödül, bilet
        gelirine yakın ikinci bir gelir kalemi oluyordu; kasa pasif oyuncuda bile şişiyordu. */
-    const priz=rand(850,1550);
+    /* FAZ 25 USD §2.2: galibiyet primi ~$5.000 (eski ölçekte 850-1.550 idi).
+       rand() ÇAĞRI SAYISI değişmedi — yalnız aralık değişti, rastgele akış kaymaz. */
+    const priz=rand(4200,5800);
     txn('Maç ödülü (galibiyet)',priz);
     sfx('win');
     G.winStreak=(Number(G.winStreak)||0)+1;
     if(G.winStreak>=10) unlockAchievement('seri10');
-    showNotif(`🏆 Galip geldin! +2 tablo puanı · +${fmtn(priz)} KR ödül${G.winStreak>=3?` · ${G.winStreak} maçlık seri!`:''}`);
+    showNotif(`🏆 Galip geldin! +2 tablo puanı · +${fmtPara(priz)} ödül${G.winStreak>=3?` · ${G.winStreak} maçlık seri!`:''}`);
   }
   else if(ev.winner==='away'){
     G.winStreak=0;
-    const cons=rand(300,650); /* Madde 2 + F9-2: KR-yerel ölçek, mağlubiyet geliri de kısıldı */
+    /* FAZ 25 USD: MAĞLUBİYET GELİRİ KISILDI ($2.000 → ~$800).
+       season-loop ölçümü: haftada ~2,2 mağlubiyet × $2.000, kaybeden kulübe bile
+       $4.400/hafta pasif gelir veriyordu; "kötü yönetim iflasa gitsin" hedefini
+       (brif §2.4) doğrudan baltalıyor ve ortalama kulübün kasasını kendiliğinden
+       şişiriyordu (K2 3,07×). Maç günü geliri artık simgesel bir kalem. */
+    const cons=rand(600,1000);
     txn('Maç günü geliri',cons);
     sfx('lose');
-    showNotif(`😔 Mağlup — +${fmtn(cons)} KR maç günü geliri.`);
+    showNotif(`😔 Mağlup — +${fmtPara(cons)} maç günü geliri.`);
   }
   else showNotif('Maç berabere.');
   updateCoins();

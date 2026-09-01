@@ -84,6 +84,8 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/generate-portraits.js` | Portre üretimi + işleme (kova bazlı). Bu makinede Python kurulu olmadığı için `.py` sürümünün çalışan Node karşılığı; aynı dosya adlarını, eşikleri ve manifest'i üretir. **Tek akış zorunlu** — servis IP başına tek istek kabul ediyor. |
 | `tools/portre-uret-hepsi.js` | **Havuzu kotaya tamamlayan koşucu** — en geride kalan kovadan doldurur, her dilimde commit + push eder, kaldığı yerden devam eder. `--hedef=3000 --dilim=100`. |
 | `tools/surum-check.js` | **FAZ 20 sürüm damgası denetçisi** — HTML `?v=` ↔ `sw.js` SCRIPT_V uyumu, HTML script listesi ↔ sw.js önbellek listesi, ve **yayın dosyaları değiştiği hâlde sürüm artmadıysa DÜŞER** (içerik hash'i `tools/.surum-hash.json`). Sürümü artırdıktan sonra `--yaz` ile kaydı tazele. |
+| `tools/ekonomi-check.js` | **FAZ 25 USD ekonomi denetçisi** (tarayıcısız) — kaynakta `KR` yok · maaş dağılımı §2.1 bantlarında · başlangıç kasası $120.000 ve haftalık denge ±$2.000 · 10 sezonluk iflas oranları ve büyüme eğrisi · seyirci ≤ taraftar · sponsor bilançoda ayrı satır · negatif/sıfır değer yok. Ortamı `tools/_lib/eko-ortam.js` kurar. Ekonomi değişince çalıştır. |
+| `tools/_lib/eko-ortam.js` | Ekonomi ölçüm ortamı — 14 modülü düz Node'da (vm) yükler, `main.js` yerine UI kancalarını boş bırakır ve ekonomi tutamaklarını dışa verir. `sim-node`'un yükleyicisinin ekonomi tarafına açılmış hâli; kopyalamak yerine BUNU kullan. |
 | `tools/bicim-check.js` | **FAZ 29 biçim birim testi** — `fmtSayi`/`fmtYuzde`/`fmtSira` TR ve EN çıktıları, İngilizce sıra ekinin 11/12/13 istisnası, ve kaynakta elle kalmış `toLocaleString('tr-TR')` / `'%'+n` taraması. Biçim değişince çalıştır. |
 | `tools/sut-check.js` | **FAZ 26 şut tipi denetçisi** (tarayıcısız) — her saha şutunun tipi var mı, tip bölgeyle tutarlı mı, smaç/floater payı gerçekçi mi, smaç/turnike/floater dili doğru tipte mi, tip deterministik mi. Şut tipi ya da anlatım havuzları değişince çalıştır. |
 | `tools/lig-check.js` | **FAZ 19 lig denetçisi** — standings ↔ fikstür tek kaynak, ayrışma senaryosunda onarım, tablo tutarlılığı (o = g + m), 10 sezonluk denge kapıları (ortalama fark, 20+/5- oranı, 16-0 takım), şehir tekrarı. Lig/tablo/denge değişince çalıştır. |
@@ -130,7 +132,12 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
 - **Dil (30. oturum):** yeni kullanıcı metni eklerken Türkçesini yaz, sonra karşılığını `js/i18n-dict.js`e ekle (birebir dize anahtar). İçinde oyuncu/takım adı ya da sayı geçen üretilmiş metinler için `I18N_PHRASES` kalıbı yaz. Yeni bir veri kataloğu eklersen `localizeCatalogs()` içine kaydet. Değişiklikten sonra `node tools/i18n-scan.js` çalıştır — kalan Türkçe yalnızca özel isim olmalı.
 - **Ekonomi değerleri** `ecoRound()` üzerinden ölçeklenir; ham KR sabiti yazma.
 - **Kullanıcı girdileri** (takım/arena/menajer adı) `sanitizeTeamName` ile temizlenir (XSS).
-- **Para birimi KR** (kullanıcı kararı — USDT'ye dönme).
+- **Para birimi USD ($)** — FAZ 25 USD. Eski "KR (Kredi)" kaldırıldı; "USDT'ye dönme"
+  kararı KRİPTO parayla ilgiliydi ve dolarla çelişmiyor. Simge/biçim TEK KAYNAK:
+  `fmtPara` / `fmtMaas` (`js/i18n.js`) — koda `$`+sayı YAZMA, `ekonomi-check` A bölümü
+  kaynağı tarar ve düşer. Ekonomi çapaları brifin tablosudur: kasa $120.000 · maaş
+  bantları `MAAS_ANKOR` · arena 2.000→20.000 · bilet $8-$25 (normal $13) · sponsor
+  $8.000-$150.000. Değişince `node tools/ekonomi-check.js` + `season-loop --runs=3`.
 - **Oyuncular hep erkek** (portre havuzu buna göre).
 - **Uzun vadeli denge (FAZ 9):** kadro gelişimi `match-prep.js` sezon geçişi bloğunda (potansiyel boşluğuna bağlı), ekonomi dengesi `salaryKRFromGenel` çarpanı + `weeklyWageBill` + maç ödülleri. Değiştirince `season-loop --runs=3` ile ölç — tek koşu yargı için yetersizdir.
 - **Kadro üst sınırı** `ROSTER_MAX` (`state.js`); yeni bir katılım yolu eklersen `rosterHasRoom()` ile koru.
@@ -524,3 +531,51 @@ Tam sürüm için doldurulacak boşluklar ve mantık hataları `RAPOR-EKSIKLER.m
   yalnız tek başına bir düğüm olan metinler içindir. İkisini birden yazmak zararsızdır.
   Fonksiyon-yerel havuzlar (`FT_*`, `FOUL_*`) `localizeCatalogs()`'a da görünmez —
   onlar için tek yol kalıptır.
+
+- **EKONOMİ ÇAPALARI KODDA DEĞİL TABLODA (FAZ 25 USD):** maaş eğrisi kapalı formül değil,
+  `MAAS_ANKOR` çapa noktaları + doğrusal ara değerdir — brifin tablosunda 88 → 89 arasında
+  $9.000 → $15.000 SIÇRAMASI var ve kapalı formül bunu ifade edemez. Bonservis de bağımsız
+  formül DEĞİL, `salaryUSDFromGenel × TRANSFER_HAFTA`: bant değişince ikisi birlikte hareket
+  eder (eskiden ayrışıyorlardı). Arena tablosu `ecoRound`'dan TÜRETİLMEZ, doğrudan dolardır.
+- **İMZALI MAAŞA ENFLASYON İKİ KEZ UYGULANIYORDU (FAZ 25 USD, ölçülerek bulundu):**
+  `salaryUSDFromGenel` zaten `*ecoInflationMul()` ile çarpıyor — maaş, sözleşmenin
+  imzalandığı sezonun enflasyonunu İÇİNDE taşır. `weeklyWageBill` bir kez daha çarpınca
+  aynı kadro 10. sezonda 1,36 yerine 1,85 katına çıkıyordu ve bu, fonksiyonun kendi
+  yorumundaki "imzalı maaşlar sözleşme bitene dek DEĞİŞMEZ" kuralıyla doğrudan çelişiyordu
+  (ölçüldü: y10 ham maaş 42.840, faturaya 58.262 yazılıyordu). Enflasyon artık yalnız
+  İŞLETME kalemlerine (arena bakımı, akademi, kulüp işletmesi) uygulanır.
+- **KADROYU ERİTMEK TASARRUF OLMAMALI (FAZ 25 USD, K2'nin kök nedeni):** pasif kulübün
+  kadrosu sözleşme bitişi/emeklilikle 15 → 8'e iniyor, maaş yükü yarılanıyor ama
+  bilet/sponsor/prim geliri aynı kalıyordu; hiçbir şey yapmayan kulübün kasası 3 sezonda
+  3,2 katına çıkıyordu. `eksikKadroBedeli()` lig asgari kadrosunu (`KADRO_ASGARI=12`)
+  doldurmayan kulübe boş yerlerin bedelini yazar; `isletmeGideri` de kadro sayısını
+  asgariden AŞAĞI okumaz. (K2 kapısı FAZ 25 ÖNCESİNDE de 2,03× ile düşüyordu — ölçek
+  büyüyünce açık görünür oldu.)
+- **ŞAMPİYONLUK ÖDÜLÜ `ecoRound`'dan GEÇMEZ (FAZ 25 USD):** playoff ödülü
+  `ecoRound(rand(6000,12000))` idi ve ×50 ölçekle **$300.000-$600.000** ödüyordu — tek
+  şampiyonluk başlangıç kasasının 2,5-5 katı. Ödüller artık açık dolar ve bir sezonluk
+  kârın mertebesinde (playoff $90-150K · kupa $55K · galibiyet $5K · maç günü ~$800).
+  Mağlubiyet geliri de kısıldı: haftada ~2,2 mağlubiyet × $2.000, kaybeden kulübe pasif
+  gelir veriyordu.
+- **SPONSORDA DİVİZYON ÇARPANDIR, TOPLANAN PUAN DEĞİL (FAZ 25 USD):** toplanan puan olarak
+  eklendiğinde en alt divizyon kulübü taraftar + sıra + form ile ULUSAL kademeye çıkabiliyordu.
+  Doğrusu: aynı başarı üst divizyonda daha değerlidir — `sponsorPuani` en son
+  `0.45 + 0.55×(divizyon konumu)` ile çarpılır. Alt divizyon tavanı bölgesel kademedir.
+- **EKONOMİ KAPILARI ESKİ SAYIYA ÇAKILIR (FAZ 25 USD, FAZ 28 dersinin tekrarı):**
+  `arena-check` C bölümü "5.000 kap → 4.350 KR", `faz7-check` K4 "bakım 150" diye ÇAKILI
+  sayılar tutuyordu; ekonomi ölçeği değişince kapılar ölçmek istedikleri şeyi değil eski
+  bir sayıyı savundular. İkisi de artık `ARENA_LVL` tablosundan okuyor. Yeni bir ekonomi
+  kapısı yazarken eşiği TABLODAN türet, elle yazma.
+- **`'3.1'` GEÇERLİ BİR DİVİZYON ANAHTARI DEĞİLDİR (FAZ 25 USD):** `'tbl'` = Divizyon 1,
+  `'d.g'` = Divizyon d+1 — `DIV_SAYISI=3` için en alt divizyon **`'2.1'`**'dir ve
+  `divizyonNo('3.1')` 4 döner. `ekonomi-check` var olmayan bir divizyonda ölçüyor, sponsorun
+  divizyon çarpanı hep tabanda kalıyor ve büyüme eğrisi hiç kurulamıyordu. Anahtar
+  `DIV_SAYISI`'den türetilmeli.
+- **BÜYÜMENİN MOTORU DİVİZYON TIRMANIŞIDIR (FAZ 25 USD):** sponsor kademesi ve taraftar
+  kitlesi divizyonla büyür. Ekonomiyi ölçen bir model kulübü tek divizyonda tutarsa
+  "5. sezonda ~$60.000" hedefi imkânsız görünür; `ekonomi-check` iyi giden kulübü iki
+  sezonda bir yükseltir. Aynı sebeple bot havuzu tek divizyona değil merdivenin tamamına
+  yayılır (divizyon ile galibiyet oranı BAĞIMSIZDIR).
+- **Taraftar kitlesi KARİYER galibiyetiyle büyür (FAZ 25 USD):** sürücü `G.wins` idi, o da
+  sezon başında sıfırlanıyordu (`match-prep.js`) — kitle her sezon başa dönüyor, "kulüp
+  büyüdükçe gelir artar" eğrisi hiç kurulamıyordu. Kalıcı sürücü `G.careerWins`.

@@ -152,21 +152,22 @@ function randomNameFor(ulkeAd,tohum){
   return `${ch(pool.ilk)} ${ch(pool.sy)}`;
 }
 
-const TBL_STORAGE_KEY='charazay_tbl_v5';   /* FAZ 17: milliyet kuralı — eski kayıt sessizce yok sayılır */
+const TBL_STORAGE_KEY='charazay_tbl_v6';   /* FAZ 25 USD: lig depoları eski ekonomi ölçeğinde maaş/arena taşıyordu */
 const LEAGUE_SIZE=20;
 /* FAZ 30: TBL_COMP_NAME kaldırıldı — hiçbir yerden okunmuyordu, lig adı artık
    formatTblSlotLabel'dan gelir. */
-const CLUB_CACHE_KEY='charazay_club_public_v1';
+const CLUB_CACHE_KEY='charazay_club_public_v2';   /* FAZ 25 USD: önbellekteki bot kadroları eski ölçekte maaş taşıyor */
 const NEWS_SESSION_KEY='charazay_news_sess_v1';
-const GAME_SAVE_KEY='charazay_game_save_v3'; /* FAZ 17: milliyet + portre şeması — göç yok, eski anahtar yok sayılır */
+const GAME_SAVE_KEY='charazay_game_save_v4'; /* FAZ 25 USD: para birimi + ekonomi ölçeği — göç yok, eski anahtar silinir */
 /* FAZ 19 §6: DESTEKLENMEYEN SÜRÜM ANAHTARLARI.
    Canlıda hem charazay_game_save_v2 hem v3, hem charazay_tbl_v4 hem _v5 yan yana duruyordu.
    "Sessizce yok say" yetmiyor: eski kayıt yer kaplıyor, tarayıcı kotasını yiyor ve bir
    sonraki şema değişiminde hangisinin geçerli olduğu karışıyor. Artık açılışta siliniyor
    ve kullanıcıya tek satırlık bilgi veriliyor (sessizce silmek de doğru değil). */
 const ESKI_KAYIT_ANAHTARLARI=[
-  'charazay_game_save','charazay_game_save_v1','charazay_game_save_v2',
-  'charazay_tbl','charazay_tbl_v1','charazay_tbl_v2','charazay_tbl_v3','charazay_tbl_v4'
+  'charazay_game_save','charazay_game_save_v1','charazay_game_save_v2','charazay_game_save_v3',
+  'charazay_tbl','charazay_tbl_v1','charazay_tbl_v2','charazay_tbl_v3','charazay_tbl_v4','charazay_tbl_v5',
+  'charazay_club_public_v1'
 ];
 /** Şu an KULLANILAN charazay_* anahtarları — bunlar korunur, geri kalanı silinir. */
 function guncelKayitAnahtarlari(){
@@ -205,7 +206,7 @@ const IDB_NAME='charazay_idb_v1';
 const IDB_STORE_G='game';
 const MATCH_CLOCK_SEC=600;   /* Regülasyon çeyrek süresi — FIBA 10 dk (gerçekçi skorlar için) */
 const OT_CLOCK_SEC=300;      /* Uzatma süresi — FIBA 5 dk */
-/** Eski ekonomi 2.400 KR — yeni başlangıç 50.000 KR ile orantılı fiyatlar */
+/** Eski ekonomi referansı 2.400 birim — başlangıç kasasıyla orantılı fiyatlar */
 /* ── B5: ZORLUK SEVİYESİ (FAZ 6) ────────────────────────────────────────────────────────
    Tam sürüm/Steam beklentisi. Kariyer başında seçilir, Ayarlar'dan değiştirilebilir.
    Tek bir yerden okunur (difficultyCfg) — çarpanlar koda dağılmasın.
@@ -246,9 +247,13 @@ function rosterHasRoom(uyar){
     showNotif(`👥 Kadro dolu (${ROSTER_MAX} oyuncu) — önce birini gönder ya da sat.`,{critical:true});
   return false;
 }
-const START_KR=50000;
-const ECO_REF_KR=2400;
-const ECO_MUL=START_KR/ECO_REF_KR;
+/* ── FAZ 25 USD: EKONOMİ ÖLÇEĞİ ──
+   Para birimi Kredi → USD. Başlangıç kasası 50.000 kredi → $120.000 (brif §2.2).
+   ECO_REF sabit kaldığı için eski `ecoRound(x)` çağrılarının HEPSİ aynı oranda
+   (×20,83 → ×50) büyür; kalemler arası göreli denge korunur, yalnız ölçek değişir. */
+const START_USD=120000;
+const ECO_REF_USD=2400;
+const ECO_MUL=START_USD/ECO_REF_USD;
 function ecoRound(x){ return Math.max(1, Math.round(Number(x)*ECO_MUL)); }
 /** FAZ 22 §5.5: arena yükseltme fiyatları 17.083 / 34.375 / 66.667 / 129.167 gibi
  *  hesaplanmış ondalıklar hâlinde görünüyordu — fiyat listesi gibi durmuyordu.
@@ -346,23 +351,68 @@ function starFromGenel(g){
   if(x>=58) return 2;
   return 1;
 }
-/** Haftalık maaş (KR) — 15 kişilik ortalama kadro ≈ 5-6K/hafta; 50K başlangıç bütçesiyle dengeli. */
-function salaryKRFromGenel(genel){
+/* ── FAZ 25 USD §2.1: HAFTALIK MAAŞ BANTLARI (BAĞLAYICI TABLO) ──
+   Eski eğri kapalı formüldü ve bantları ancak yaklaşık tutturuyordu; brifin tablosu
+   ise kademeli (88 → 89 arasında 9.000 → 15.000 SIÇRAMASI var). Kapalı formülle bu
+   sıçrama düzgün ifade edilemez, o yüzden eğri ÇAPA NOKTALARI + doğrusal ara değer
+   olarak yazıldı: tablo koda birebir girer, tools/ekonomi-check.js de aynı tabloyu okur.
+
+     45-55 yedek           $300 –   $600
+     56-65 rol oyuncusu    $700 – $1.200
+     66-74 ilk beş       $1.500 – $2.500
+     75-82 yıldız        $3.000 – $4.500
+     83-88 üst düzey     $5.000 – $9.000
+     89+   süperstar    $15.000 – $25.000
+
+   NOT (brif §6.4): tabloda "yıldız (yerli) 75-82" ile "yabancı transfer 78-88" bantları
+   78-82 aralığında ÇAKIŞIYOR. FAZ 30'da milliyet bütün mekaniklerden çıkarıldığı için
+   maaş yalnız OVR'nin fonksiyonudur; çakışan aralık yerli bandına (3.000-4.500) bırakıldı,
+   yabancı bandı çakışmayan üst yarısına (83-88) oturtuldu. */
+const MAAS_ANKOR=[[40,200],[45,300],[55,600],[56,700],[65,1200],[66,1500],[74,2500],
+                  [75,3000],[82,4500],[83,5000],[88,9000],[89,15000],[99,25000]];
+/** Haftalık maaş (USD) — çapa noktaları arasında doğrusal, sezon enflasyonuyla çarpılır. */
+function salaryUSDFromGenel(genel){
   const g=Number(genel)||0;
-  const hi=Math.max(0,g-78);
+  const A=MAAS_ANKOR;
+  let v;
+  if(g<=A[0][0]) v=A[0][1];
+  else if(g>=A[A.length-1][0]) v=A[A.length-1][1];
+  else {
+    let i=0;
+    while(i<A.length-2 && g>A[i+1][0]) i++;
+    const [x0,y0]=A[i], [x1,y1]=A[i+1];
+    v=y0+(y1-y0)*((g-x0)/Math.max(1,(x1-x0)));
+  }
   /* Paket A: piyasa maaşı sezon enflasyonuyla büyür (yalnız yeni sözleşmeler). */
-  /* F9-2: çarpan 1,7 → 2,9. Maaş yükü artık gelirle aynı büyüklük mertebesinde; kadro
-     genişletmek ve yıldız tutmak gerçek bir bütçe kararı (eskiden kasa kendiliğinden şişiyordu). */
-  return Math.max(60, Math.round((24 + g*1.95 + (g*g)/115 + hi*14 + hi*hi*0.08)*2.9*ecoInflationMul()));
+  return Math.max(150, Math.round(v*ecoInflationMul()/10)*10);
 }
-/** Bonservis (KR) — 65 OVR ≈ 18K, 76 ≈ 25K, 90 ≈ 89K, 97 ≈ 134K: erken hedefler ulaşılır, yıldızlar birikimle. */
-function transferFeeKR(p){
+/* ── FAZ 25 USD: BONSERVİS ──
+   Eskiden bonservis kendi kapalı formülündeydi ve maaş eğrisinden bağımsız yaşıyordu;
+   maaş bantları değişince ikisi ayrışırdı. Artık bonservis HAFTALIK MAAŞIN katıdır
+   (≈38 hafta ≈ 9 sezonluk ücret) — bant değişince ikisi birlikte hareket eder.
+   65 OVR ≈ $45K · 75 ≈ $114K · 85 ≈ $266K · 95 ≈ $760K. */
+const TRANSFER_HAFTA=38;
+function transferFeeUSD(p){
   const g=Number(p.genel)||65;
   const pot=Number(p.potansiyel||g);
   const listed=p.listedFromUser?1:0;
-  const hi=Math.max(0,g-76);
-  return Math.max(1500, Math.round(300 + g*g*4.2 + pot*8 + listed*g*30 + hi*2600 + hi*hi*90));
+  const hafta=salaryUSDFromGenel(g);
+  const potPrim=1+Math.max(0,Math.min(20,pot-g))*0.02; /* gelişime açık oyuncu pahalıdır */
+  const v=hafta*TRANSFER_HAFTA*potPrim*(1+listed*0.15);
+  return Math.max(5000, Math.round(v/100)*100);
 }
+
+/* ── FAZ 25 USD §2.5: SPONSOR KADEMELERİ ──
+   "Sponsor: Charazay 2.0" yer tutucusu gerçek bir haftalık gelir kalemine dönüştü.
+   Kademe lig sırası + taraftar sayısı + geçen sezon başarısından çıkar.
+   Sponsor adları KURGUSALDIR — gerçek marka adı kullanılmaz (Steam marka riski). */
+const SPONSOR_KADEME=[
+  {ad:'Yerel Esnaf Desteği',    min:0,     hf:8000},
+  {ad:'Bölgesel İş Ortaklığı',  min:22,    hf:18000},
+  {ad:'Ulusal Marka Anlaşması', min:45,    hf:40000},
+  {ad:'Kıtasal Sponsorluk',     min:72,    hf:85000},
+  {ad:'Küresel Ana Sponsor',    min:100,   hf:150000}
+];
 
 function hash32(str){
   let h=5381;

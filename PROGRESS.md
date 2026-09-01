@@ -4829,3 +4829,96 @@ Sürüm **63 → 64**.
 
 ### Yapılmayan
 §6'daki para birimi geçişi (KR → USD) brifin konusu değildi, ellenmedi.
+
+## FAZ 25 USD — Para birimi USD + ekonomi yeniden ölçekleme (2026-09-01)
+
+Para birimi **KR (Kredi) → USD ($)** ve **tüm ekonomi gerçek rakamlara** ölçeklendi.
+Depodaki "USDT'ye dönme" notu KRİPTO parayla ilgiliydi; dolarla çelişmediği için
+CLAUDE.md'deki karar güncellendi.
+
+### Yapılanlar
+
+| Dosya | Değişiklik |
+|---|---|
+| `js/i18n.js` | `PARA_SIMGE` · `fmtPara` · `fmtMaas` — para biçimi TEK KAYNAK, dile bağlı (TR `$1.250/hf` · EN `$1,250/wk`) |
+| `js/state.js` | `START_USD=120000` · `MAAS_ANKOR` çapa tablosu + `salaryUSDFromGenel` · `transferFeeUSD` (maaştan türer) · `SPONSOR_KADEME` |
+| `js/economy.js` | `BILET_FIYAT=[8,10,13,18,25]` ve gelir = kapasite × doluluk × fiyat · sponsor geliri (`sponsorPuani`/`sponsorKademe`/`sponsorHaftalik`) · `isletmeGideri` · `eksikKadroBedeli` · `haftalikGelirBeklentisi` · doluluk forma daha duyarlı |
+| `js/roster-gen.js` | `ARENA_LVL` §2.3 tablosu (2.000→20.000 · $0/250K/700K/2M/5M) · taraftar tabanı 1.900 ve **kariyer** galibiyetiyle büyür |
+| `js/match-engine.js` | galibiyet primi ~$5.000 · maç günü geliri ~$800 (rand çağrı sayısı değişmedi) |
+| `js/match-prep.js` | playoff ödülü $90-150K · kupa $55K (eskiden `ecoRound` ile $300-600K) |
+| `js/render.js` | bilanço düzenli kalemler kartı (maaş · tesis · işletme · sponsor · bilet) · sponsor bilançoda ayrı satır |
+| `js/league.js` | takım kartında gerçek sponsor satırı (kademe + haftalık tutar) |
+| `js/persistence.js` | kayıt şeması **v9**, `SAVE_VERSIONS=[9]` — göç yok, eski kayıt reddedilir |
+| `js/main.js` | "Ekonomi sistemi yenilendi; önceki kayıt uyumsuz olduğu için temizlendi." |
+| `js/i18n-dict.js` · `i18n-commentary.js` | KR kalıpları kaldırıldı, yeni metinlerin EN karşılıkları |
+| **yeni** `tools/ekonomi-check.js` | §4'ün 7 kapısı, 36 kontrol |
+| **yeni** `tools/_lib/eko-ortam.js` | ekonomi ölçüm ortamı (vm) |
+| **yeni** `tools/_lib/yama.js` | CRLF güvenli yama yardımcısı |
+
+161 `KR` geçişi tarandı; kaynakta para birimi olarak **hiç kalmadı** (`KRİZ`/`KRİTİK` gibi
+sözcükler kapı dışıdır — sınır Türkçe harfi de kapsar).
+
+### 10 sezonluk simülasyon sonucu
+
+| Ölçüm | Hedef | Sonuç |
+|---|---|---|
+| Başlangıç haftalık denge | -$2.000 … +$2.000 | **+$1.623** (40 kadro ortalaması) |
+| Maç başı bilet geliri | ~$20.000 | **$17.420** (2.000 kap · %67 · $13) |
+| Haftalık sponsor (başlangıç) | ~$8.000 | **$8.455** — Yerel Esnaf Desteği |
+| Pasif kulüp iflası | 2-4 sezon | **2 sezon** |
+| İyi yöneten 5. sezon haftalık | ~$60.000 | **$79.732** |
+| İyi yöneten 10. sezon haftalık | ~$200.000 | **$126.971** |
+| Bot iflası (10 sezon) | %10-25 | **%21** (120 kulüp) |
+| `season-loop --runs=3` K2 | ≤2× | **1,49×** (HEAD'de **2,03× ile DÜŞÜYORDU**) |
+
+Büyüme eğrisi (iyi yöneten, haftalık net): 9,4K → 8,6K → 17,3K → 16,8K → **79,7K** →
+78,9K → 78,1K → 128,3K → 127,6K → **127,0K**. Sıçramalar divizyon terfisi ve arena
+yükseltmesiyle gelir.
+
+### §2.1 tablosuna uymayan bant
+
+Tabloda **"yıldız (yerli) 75-82" ile "yabancı transfer 78-88" 78-82 aralığında ÇAKIŞIYOR.**
+FAZ 30'da milliyet bütün mekaniklerden çıkarıldığı için maaş yalnız OVR'nin fonksiyonudur
+ve iki farklı değer veremez. Çakışan aralık **yerli bandına (3.000-4.500)** bırakıldı,
+yabancı bandı çakışmayan üst yarısına **(83-88 → 5.000-9.000)** oturtuldu. Diğer altı bandın
+hepsi birebir tutuyor (`ekonomi-check` B bölümü her OVR değerini tek tek sınıyor).
+
+**Ayrıca:** brifin §2.2'deki "15 oyuncu ≈ $13.000/hf" tahmini tutmuyor — **~$32.000**.
+Sebep, §2.1'in bağlayıcı olması: başlangıç kadrosunun OVR'si 68-79 (ortalama 72) ve bu
+"ilk beş" bandına ($1.500-2.500) düşüyor. Kadro OVR'sini düşürmek regresyon kapısını
+(maç skorları) bozardı, o yüzden §2.1 korundu ve denge diğer kalemlerden kuruldu.
+Ölçüldü: **ekonomi haftası başına 4,43 maç, 2,21'i ev maçı** — brifin rakamları haftada
+~1 maç varsayıyor; "$20.000/maç bilet" bu kadansla haftada ~$44.000 demek. Farkı kapatan
+kalem yeni **kulüp işletme gideri**dir (§3.4'ün "aradaki katsayıları ayarla" izni).
+
+### İnisiyatifle düzeltilen kusurlar
+
+1. **Çifte enflasyon** — imzalı maaş hem `salaryUSDFromGenel` hem `weeklyWageBill` içinde
+   enflasyonla çarpılıyordu; fonksiyonun kendi yorumuyla çelişiyordu.
+2. **Kadroyu eritmek tasarruftu** — 15 → 8 oyuncuda maaş yarılanıyor, gelir aynı kalıyordu.
+3. **Şampiyonluk ödülü ×50 ölçekliydi** — tek playoff şampiyonluğu $300-600K.
+4. **Taraftar kitlesi her sezon sıfırlanıyordu** (`G.wins` sezonluk) — büyüme eğrisi
+   kurulamıyordu; kalıcı sürücü `G.careerWins` yapıldı.
+5. **Başarım eşikleri** — "100.000 bakiyeye ulaş" başlangıç kasası $120.000 olduğu için
+   kariyerin ilk saniyesinde açılıyordu ($500.000 / $5.000.000 yapıldı).
+6. **Bilanço haftalık net beklentisi** sponsoru saymıyor ve haftada tek ev maçı varsayıyordu.
+7. **`ekonomi-check` kendi ölçüm hataları** — kadroyu yanlış sırada üretiyor (%36 yüksek
+   gider), var olmayan `'3.1'` divizyonunda ölçüyor, tek kadro/40 kulüplük örneklemle
+   bıçak sırtı karar veriyordu. Örneklemler 40 kadro / 120 kulübe çıkarıldı.
+8. **Eski ekonomiye çakılı kapılar** — `arena-check` C/D ve `faz7-check` K4 sabit sayı
+   tutuyordu; `ARENA_LVL` tablosundan okur hâle getirildi.
+
+### Testler
+`sim-node --n=100 --seed=42` → **88.0 - 81.3 · hata 0 · G değişmedi: EVET** (maç motoru
+değişmedi) · `ekonomi-check` **36/36** · `season-loop --runs=3` **6/6** ·
+`arena-check` ✓ · `faz7-check` **8/8** · `lig-check` · `milliyet-check` · `isim-check` ·
+`schema-check` · `bicim-check` · `turkek-check` · `sut-check` · `analiz-check` ·
+`anlatim-check` ✓ · `i18n-scan` **A/B/C/D = 0 · çakışan 0 · konsol hatası 0** ·
+`visual-check` masaüstü+mobil **0 konsol hatası** · `surum-check` ✓. Sürüm **64 → 65**.
+
+### Yapamadığım / farklı yaptığım
+- §2.2'nin "$13.000 haftalık maaş" ve "$2.500 tesis gideri" rakamları tutturulamadı
+  (yukarıda gerekçesi). Tutturulan: kasa, bilet/maç, sponsor, arena tablosu, bilet bandı,
+  galibiyet primi ve §3.4'ün ÖLÇÜLEBİLİR hedeflerinin tamamı.
+- §5'in son maddesi (tarayıcıda elle 3 maç oynayıp ekranları gezmek) `visual-check`
+  tarafından otomatik yapılıyor (15 adımlık akış, 0 konsol hatası) — elle tekrarlanmadı.

@@ -313,8 +313,9 @@ const I18N_PHRASES=[
   [/(\d+)\s*takım/g,'$1 teams'],
   [/(\d+)\.\s*çeyrek/g,'Q$1'],
   [/(\d+)\.\s*seçim/g,'pick $1'],
-  [/KR\/hafta/g,'KR/week'],
-  [/KR\/hf/g,'KR/wk'],
+  /* FAZ 25 USD: para birimi Kredi → $. Maaş eki artık fmtMaas'tan gelir (TR '/hf' · EN '/wk');
+     sabit '$1.250/hf' metni de kalıpla çevrilir (fmtMaas dil parametresi almadan çağrıldığında). */
+  [/\/hf\b/g,'/wk'],
   [/\bTur\b/g,'Round'],
   [/\bGün\b/g,'Day'],
   /* — sık geçen etiketler — */
@@ -570,8 +571,8 @@ Object.assign(I18N_TR_EN,{
 'Çift Hane':'Double Digits',
 'İlk İmza':'First Signing',
 'Bir oyuncunu sat':'Sell one of your players',
-'1.000.000 KR bakiyeye ulaş':'Reach a balance of 1,000,000 KR',
-'100.000 KR bakiyeye ulaş':'Reach a balance of 100,000 KR',
+'$5.000.000 bakiyeye ulaş':'Reach a balance of $5,000,000',
+'$500.000 bakiyeye ulaş':'Reach a balance of $500,000',
 'Arenayı son seviyeye getir':'Upgrade the arena to its top level',
 'Teknik ekibi 5 koçla doldur':'Fill your staff with 5 coaches',
 'Tam Kadro Ekip':'Full Staff',
@@ -691,7 +692,8 @@ I18N_PHRASES.push(
 Object.assign(I18N_TR_EN,{
 'Her set motorda gerçekten oynanır: şut seçimi, asist, top kaybı ve kimin yükleneceği değişir.':'Every set is really played by the engine: shot selection, assists, turnovers and who carries the load all change.',
 'düşükse set tutmaz.':'is low, the set will not work.',
-'Oyuncuya komşu bir pozisyon öğret (PG↔SG↔SF↔PF↔C) — 15 oyun günü · 10.417 KR. İkincil pozisyonda hafif performans kaybıyla oynar.':'Teach a player an adjacent position (PG↔SG↔SF↔PF↔C) — 15 game days · 10,417 KR. He plays his secondary position with a slight performance loss.',
+/* FAZ 25 USD: eski anahtar tutarı GÖMÜYORDU ("… · 10.417 kredi.") ve ölçek değişince
+   ölü kaldı. Tutar artık kalıpla geçilir — sözlük girişi tutar İÇERMEZ. */
 '— senin grubun (':'— your group (',
 '— yalnızca':'— only',
 '— yalnızca senin':'— yours only',
@@ -784,7 +786,7 @@ I18N_PHRASES.unshift(
   [/\bhedefi:/g,'goal:'],
   [/\bgrubun\b/g,'group'],
   [/yalnızca senin/g,'only your'],
-  [/ekonomi KR/g,'economy in KR'],
+  [/ekonomi USD \(\$\)/g,'economy in USD ($)'],
   [/anlaşma duyurdu\./g,'announced a deal.'],
   [/kadrosunu güçlendirdi:/g,'strengthened the squad:'],
   [/yerine\)/g,'in his place)'],
@@ -961,4 +963,54 @@ Object.assign(I18N_TR_EN,{
 });
 I18N_PHRASES.unshift(
   [/^Daha fazla \((\d+) oyuncu\)$/,'Show more ($1 players)']
+);
+
+/* ── FAZ 25 USD: yeni metinler ── */
+Object.assign(I18N_TR_EN,{
+  'Yerel Salon':'Local Gym',
+  'Şehir Arena':'City Arena',
+  'Yerel Esnaf Desteği':'Local Business Backing',
+  'Bölgesel İş Ortaklığı':'Regional Partnership',
+  'Ulusal Marka Anlaşması':'National Brand Deal',
+  'Kıtasal Sponsorluk':'Continental Sponsorship',
+  'Küresel Ana Sponsor':'Global Title Sponsor',
+  '📣 Sponsor':'📣 Sponsor',
+  'Sponsor geliri':'Sponsor income',
+  'Kulüp işletme gideri':'Club operating costs',
+  'işletme':'operations',
+  '$500.000 bakiyeye ulaş':'Reach a balance of $500,000',
+  '$5.000.000 bakiyeye ulaş':'Reach a balance of $5,000,000',
+  '❌ Yeterli bakiye yok!':'❌ Not enough funds!',
+  '❌ Bu teklifi karşılayacak bakiye yok!':'❌ Not enough funds to cover this bid!',
+  '❌ Kira bedeli için yeterli bakiye yok!':'❌ Not enough funds for the loan fee!',
+  '❌ Keşif raporu için yeterli bakiye yok!':'❌ Not enough funds for the scouting report!',
+  '❌ İmza bedeli için yeterli bakiye yok!':'❌ Not enough funds for the signing fee!',
+  'Teklifin ($)':'Your bid ($)',
+  'USD':'USD',
+  'Ekonomi sistemi yenilendi; önceki kayıt uyumsuz olduğu için temizlendi.':'The economy has been rebuilt; your previous save was incompatible and has been cleared.'
+});
+I18N_PHRASES.unshift(
+  /* Tutar taşıyan cümleler — sözlük girişi TAM DÜĞÜM eşler, bunlar cümle PARÇASIDIR (FAZ 31 dersi). */
+  [/Sponsor geliri — /g,'Sponsor income — '],
+  [/Oyuncuya komşu bir pozisyon öğret \(PG↔SG↔SF↔PF↔C\) — 15 oyun günü · /g,
+   'Teach a player an adjacent position (PG↔SG↔SF↔PF↔C) — 15 game days · '],
+  [/\. İkincil pozisyonda hafif performans kaybıyla oynar\./g,
+   '. He plays his secondary position with a slight performance loss.'],
+  [/Kulüp işletme gideri \(seyahat · sağlık · ekipman\)/g,'Club operating costs (travel · medical · equipment)'],
+  [/ · işletme /g,' · operations '],
+  [/ · sponsor /g,' · sponsor ']
+);
+
+/* ── FAZ 25 USD: bilanço düzenli kalemler ── */
+Object.assign(I18N_TR_EN,{
+  '🧾 Haftalık maaş (oyuncu + koç + izci)':'🧾 Weekly wages (players + coaches + scouts)',
+  '🏟️ Arena bakımı + akademi':'🏟️ Arena upkeep + academy',
+  '🚌 Kulüp işletme gideri (seyahat · sağlık · ekipman)':'🚌 Club operating costs (travel · medical · equipment)'
+});
+I18N_PHRASES.unshift(
+  /* Tutar taşıdığı için TAM DÜĞÜM eşleşemez — kalıp şart (FAZ 31 dersi). */
+  [/🎟️ Bilet geliri \(ev maçı /g,'🎟️ Ticket income (home game '],
+  [/ × ~2,2\/hf\)/g,' × ~2.2/wk)'],
+  [/ × ~2,2\/wk\)/g,' × ~2.2/wk)'],
+  [/📣 Sponsor geliri — /g,'📣 Sponsor income — ']
 );

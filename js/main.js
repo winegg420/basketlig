@@ -834,7 +834,7 @@ function startPosTraining(pid,poz){
   if(p.ikincilPoz===poz){ showNotif('Bu oyuncu o pozisyonu zaten biliyor.'); return; }
   if(!(POS_NEIGHBORS[p.poz]||[]).includes(poz)){ showNotif('Sadece komşu pozisyon öğrenilebilir.'); return; }
   const bedel=ecoRound(500);
-  if(G.coins<bedel){ showNotif('❌ Yeterli KR yok! ('+fmtn(bedel)+' KR gerekli)'); return; }
+  if(G.coins<bedel){ showNotif('❌ Yeterli bakiye yok! ('+fmtPara(bedel)+' gerekli)'); return; }
   txn('Pozisyon eğitimi: '+p.isim+' → '+poz,-bedel);
   G.posTraining={playerId:pid,poz,kalanGun:15,toplamGun:15};
   showNotif(`🧭 ${p.isim} ikincil pozisyon çalışıyor: ${poz} — 15 oyun günü sürecek.`);
@@ -879,7 +879,7 @@ function advanceTrainingDays(days){
 function startTeamTrain(i){
   const a=ANTRENMAN_T[i];
   if(G.activeTrainings.some(t=>!t.bireysel)){showNotif('Takım antrenmanı zaten devam ediyor.');return;}
-  if(a.maliyet&&G.coins<a.maliyet){showNotif('❌ Yeterli KR yok!');return;}
+  if(a.maliyet&&G.coins<a.maliyet){showNotif('❌ Yeterli bakiye yok!');return;}
   if(a.maliyet)txn('Antrenman gideri: '+a.isim,-a.maliyet);
   const gun=rand(3,7);
   G.activeTrainings.push({oyuncu:'Tüm Takım',stat:a.etki,kalanGun:gun,toplamGun:gun,etki:a.etki,bireysel:false});
@@ -909,7 +909,7 @@ function buyFromMarket(id){
   if(!rosterHasRoom()) return;   /* F9-3 */
   const st=starFromGenel(p.genel);
   if(G.players.length>=18){ showNotif('Kadro dolu (en fazla 18). Önce bir oyuncu gönder.'); return; }
-  if(G.coins<p.fiyat){showNotif('❌ Yeterli KR yok!');return;}
+  if(G.coins<p.fiyat){showNotif('❌ Yeterli bakiye yok!');return;}
   txn('Transfer: '+p.isim,-p.fiyat);
   unlockAchievement('transfer');
   const np={...p};
@@ -926,7 +926,7 @@ function buyFromMarket(id){
   G.chemistry=Math.max(20,G.chemistry-dropM);
   showNotif(`✅ ${p.isim} kadrona katıldı! Takım kimyası biraz düştü.`);
   if(G.team&&G.team.tblKey){
-    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">💰 <strong>${escMatch(G.team.isim)}</strong> — ${formatTblSlotLabel(G.team.tblKey)} — <strong>${fmtn(p.fiyat)} KR</strong> ile <strong>${p.isim}</strong> (${st}★) transferini duyurdu.</div>`);
+    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">💰 <strong>${escMatch(G.team.isim)}</strong> — ${formatTblSlotLabel(G.team.tblKey)} — <strong>${fmtPara(p.fiyat)}</strong> ile <strong>${p.isim}</strong> (${st}★) transferini duyurdu.</div>`);
     if(document.getElementById('page-dashboard')&&document.getElementById('page-dashboard').classList.contains('active')) renderDashboardNews();
   }
   updateCoins();updateChemistry();renderMarket();if(document.getElementById('page-kadro')&&document.getElementById('page-kadro').classList.contains('active')) renderRoster();
@@ -945,12 +945,12 @@ function showIncomingOfferModal(){
   showAppModal(`<div class="modal-title">📨 Transfer Teklifi</div>
     <p style="font-size:13px;line-height:1.6;">
       <strong>${escMatch(o.club)}</strong>, <strong>${escMatch(p.isim)}</strong> (${p.poz}·OVR ${p.genel}) için
-      <strong style="color:var(--gold);">${fmtn(o.offer)} KR</strong> teklif etti.
+      <strong style="color:var(--gold);">${fmtPara(o.offer)}</strong> teklif etti.
     </p>
     <div style="background:var(--bg3);border-radius:9px;padding:10px;margin:10px 0;font-size:12px;">
-      Oyuncu: ${ki.ikon} <strong>${ki.ad}</strong> — ${wantTxt}. <span style="color:var(--text2);">(İstenen bonservis ~${fmtn(o.asking)} KR)</span>
+      Oyuncu: ${ki.ikon} <strong>${ki.ad}</strong> — ${wantTxt}. <span style="color:var(--text2);">(İstenen bonservis ~${fmtPara(o.asking)})</span>
     </div>
-    <p style="font-size:11px;color:var(--text2);margin-bottom:12px;">Karar senin: onaylarsan oyuncu ${fmtn(o.offer)} KR karşılığında satılır, reddedersen kadroda kalır.</p>
+    <p style="font-size:11px;color:var(--text2);margin-bottom:12px;">Karar senin: onaylarsan oyuncu ${fmtPara(o.offer)} karşılığında satılır, reddedersen kadroda kalır.</p>
     <div style="display:flex;gap:8px;">
       <button type="button" class="btn-p" style="flex:1;padding:10px;" onclick="acceptIncomingOffer()">✅ Onayla (sat)</button>
       <button type="button" class="btn-sm" style="flex:1;" onclick="rejectIncomingOffer()">❌ Reddet</button>
@@ -967,8 +967,8 @@ function acceptIncomingOffer(){
   txn('Oyuncu satışı: '+p.isim,o.offer);
   unlockAchievement('satis');
   updateCoins(); updateChemistry();
-  pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--blue);">🤝 <strong>${escMatch(G.team.isim)}</strong>, <strong>${escMatch(p.isim)}</strong>'i <strong>${escMatch(o.club)}</strong> kulübüne <strong>${fmtn(o.offer)} KR</strong> karşılığında sattı.</div>`);
-  showNotif(`✅ ${p.isim} ${o.club} kulübüne satıldı — +${fmtn(o.offer)} KR.`);
+  pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--blue);">🤝 <strong>${escMatch(G.team.isim)}</strong>, <strong>${escMatch(p.isim)}</strong>'i <strong>${escMatch(o.club)}</strong> kulübüne <strong>${fmtPara(o.offer)}</strong> karşılığında sattı.</div>`);
+  showNotif(`✅ ${p.isim} ${o.club} kulübüne satıldı — +${fmtPara(o.offer)}.`);
   if(document.getElementById('page-kadro')&&document.getElementById('page-kadro').classList.contains('active')) renderRoster();
   scheduleGameSave();
   closeAppModal();
@@ -990,14 +990,14 @@ function rejectIncomingOffer(){
 function extendContract(id){
   const p=G.players.find(x=>x.id===id);
   if(!p){ showNotif('Oyuncu bulunamadı.'); return; }
-  const cost=salaryKRFromGenel(p.genel)*2;
-  if(G.coins<cost){ showNotif('❌ İmza bedeli için yeterli KR yok!'); return; }
+  const cost=salaryUSDFromGenel(p.genel)*2;
+  if(G.coins<cost){ showNotif('❌ İmza bedeli için yeterli bakiye yok!'); return; }
   txn('Sözleşme uzatma: '+p.isim,-cost);
-  p.maas=salaryKRFromGenel(p.genel);
+  p.maas=salaryUSDFromGenel(p.genel);
   p.kontratSezon=Math.min(4,(Number(p.kontratSezon)||0)+rand(2,3));
   p.mood=Math.min(100,(Number(p.mood)||70)+rand(3,8)); /* güven → moral artışı */
   updateCoins();
-  showNotif(`✍️ ${p.isim} ile sözleşme uzatıldı — ${p.kontratSezon} sezon, ${fmtn(cost)} KR imza bedeli.`);
+  showNotif(`✍️ ${p.isim} ile sözleşme uzatıldı — ${p.kontratSezon} sezon, ${fmtPara(cost)} imza bedeli.`);
   scheduleGameSave();
   const mr=document.getElementById('appModalRoot');
   if(mr&&mr.style.display!=='none') openPlayerModal(id);
@@ -1014,7 +1014,7 @@ function listPlayerToMarket(id){
   const mp={...p};
   mp.listedFromUser=true;
   mp.freeAgent=true;
-  mp.fiyat=transferFeeKR(mp);
+  mp.fiyat=transferFeeUSD(mp);
   mp.marketIdx=G.marketPlayers.length;
   mp.seed='lst'+p.id+'_'+Date.now();
   G.marketPlayers.push(mp);
@@ -1026,7 +1026,7 @@ function listPlayerToMarket(id){
   const satisGelir=Math.round(mp.fiyat*0.85);
   txn('Satış: '+p.isim,satisGelir);
   unlockAchievement('satis');
-  showNotif(`${p.isim} satıldı — +${fmtn(satisGelir)} KR kasaya girdi (bonservisin %85'i).`);
+  showNotif(`${p.isim} satıldı — +${fmtPara(satisGelir)} kasaya girdi (bonservisin %85'i).`);
   updateChemistry();
   scheduleGameSave();
   if(document.getElementById('page-kadro')&&document.getElementById('page-kadro').classList.contains('active')) renderRoster();
@@ -1036,14 +1036,14 @@ function listPlayerToMarket(id){
 function promoteYouth(id){
   const p=G.youth.find(x=>x.id===id);if(!p)return;
   if(!rosterHasRoom()) return;   /* F9-3 */
-  p.maas=salaryKRFromGenel(p.genel);
+  p.maas=salaryUSDFromGenel(p.genel);
   p.scouted=true; delete p.hiddenPot;
   if(p.enerji==null||p.enerji==='') p.enerji=100;
   G.players.push(p);G.youth=G.youth.filter(x=>x.id!==id);
   if(p.kontratSezon==null) p.kontratSezon=rand(2,3);
   if(!p.sezon) p.sezon={mac:0,pts:0,ast:0,reb:0};
   unlockAchievement('altyapi');
-  showNotif(`🌱 ${p.isim} ana kadroya alındı! (Tam sözleşme: ${fmtn(p.maas)} KR/hf)`);
+  showNotif(`🌱 ${p.isim} ana kadroya alındı! (Tam sözleşme: ${fmtMaas(p.maas)})`);
   renderAltyapi();
   if(document.getElementById('page-kadro')&&document.getElementById('page-kadro').classList.contains('active')) renderRoster();
   scheduleGameSave();
@@ -1053,7 +1053,7 @@ function hireCoach(id){
   const c=G.coachMarket.find(x=>x.id===id);if(!c)return;
   if((G.coaches||[]).length>=MAX_COACHES){ showNotif(`En fazla ${MAX_COACHES} koç çalıştırabilirsin — önce birini kov.`); return; }
   if((G.coaches||[]).some(x=>x.uzm===c.uzm)){ showNotif(`Zaten bir "${c.uzm}" koçun var — aynı uzmanlıktan ikincisi alınamaz (önce mevcut koçu kov).`); return; }
-  if(G.coins<c.satisFiyat){showNotif('❌ Yeterli KR yok!');return;}
+  if(G.coins<c.satisFiyat){showNotif('❌ Yeterli bakiye yok!');return;}
   txn('Koç transferi: '+c.ad,-c.satisFiyat);G.coaches.push(c);
   if(G.coaches.length>=MAX_COACHES) unlockAchievement('tamEkip'); /* Paket B */
   G.coachMarket=G.coachMarket.filter(x=>x.id!==id);
@@ -1072,7 +1072,7 @@ function hireScout(id){
   const s=(G.scoutMarket||[]).find(x=>x.id===id); if(!s) return;
   G.scouts=Array.isArray(G.scouts)?G.scouts:[];
   if(G.scouts.length>=4){ showNotif('En fazla 4 izci çalıştırabilirsin — önce birini çıkar.'); return; }
-  if(G.coins<s.satisFiyat){ showNotif('❌ Yeterli KR yok!'); return; }
+  if(G.coins<s.satisFiyat){ showNotif('❌ Yeterli bakiye yok!'); return; }
   txn('İzci transferi: '+s.ad,-s.satisFiyat);
   const hired={...s}; delete hired.satisFiyat;
   G.scouts.push(hired);
@@ -1095,7 +1095,7 @@ function assignScout(id,pool){
 function upgradeArena(s){
   const g=ARENA_LVL[s-1];
   if(G.arena.s>=s){showNotif('Bu seviye zaten alınmış.');return;}
-  if(G.coins<g.m){showNotif('❌ Yeterli KR yok!');return;}
+  if(G.coins<g.m){showNotif('❌ Yeterli bakiye yok!');return;}
   txn('Arena yatırımı: '+g.isim,-g.m);G.arena={...G.arena,s:g.s,kap:g.kap,bk:g.bk};
   if(g.s===5) unlockAchievement('megaArena');
   updateCoins();showNotif(`🏟️ ${g.isim}\'e yükseltildi!`);renderArena();
@@ -1498,7 +1498,7 @@ function createTeam(){
      DIFFICULTY tablosu 'normal' satırıyla (tüm çarpanlar 1/0) YERİNDE bırakıldı ki
      difficultyCfg() çağıran mevcut kod bozulmasın ve eski kayıtlar okunabilsin. */
   G.difficulty='normal';
-  G.coins=START_KR;
+  G.coins=START_USD;
   G.managerName=managerName;
   /* FAZ 30 §5: kayıt ülkesi. Oyunun HİÇBİR mekaniğine girmez — yalnız profil kartında
      bayrak + ad olarak görünür. Seçilmezse listenin ilk ülkesi kullanılır. */
@@ -1527,7 +1527,7 @@ function createTeam(){
   }catch(e){ dbg("divizyon kayması",e); }
   G.ligTeams=genLigTeams();G.coaches=genCoaches();G.coachMarket=genCoachMarket();
   G.scoutMarket=genScoutMarket();
-  G.arena={s:1,kap:ARENA_LVL[0].kap,bk:ARENA_LVL[0].bk,isim:'Başlangıç Arena'};   /* F7-6: ham KR */
+  G.arena={s:1,kap:ARENA_LVL[0].kap,bk:ARENA_LVL[0].bk,isim:ARENA_LVL[0].isim};   /* F7-6: ham USD (ecoRound DEĞİL) — ARENA_LVL ile aynı ölçek */
   G.tactics={tempo:'normal',odak:'dengeli',defensiveStyle:'adam',focusPlayerId:null,markStar:false};
   if(typeof suppressAutoSave==='function') suppressAutoSave(false);   /* F7-3: yeni kariyer bilinçli işlem */
   bootstrapAppUi();
@@ -1606,7 +1606,7 @@ window.onload=()=>{
   /* FAZ 19 §6: önceki sürüme ait kayıtlar temizlenir ve kullanıcı bilgilendirilir. */
   try{
     const silinen=eskiKayitlariTemizle();
-    if(silinen>0) setTimeout(()=>{ try{ showNotif('Önceki sürüme ait kayıt uyumsuz olduğu için temizlendi.'); }catch(e){} },1200);
+    if(silinen>0) setTimeout(()=>{ try{ showNotif('Ekonomi sistemi yenilendi; önceki kayıt uyumsuz olduğu için temizlendi.',{critical:true}); }catch(e){} },1200);
   }catch(e){}
   /* FAZ 17: portre manifesti (kova/bant dosya sayıları) — sabit havuz boyu yerine dosyadan.
      Gelmezse oyun durmaz, portreler SVG yedeğine düşer. */

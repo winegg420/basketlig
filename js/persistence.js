@@ -347,7 +347,7 @@ function serializeGameState(){
      sessizce kaybolacak TEK yer burasıydı. Artık olduğu gibi saklanır. */
   const pl=(G.ligTeams||[]).slice();
   return{
-    v:8,   /* B5: zorluk seviyesi eklendi (v7: boy/isim kozmetik düzeltmesi) */
+    v:9,   /* FAZ 25 USD: para birimi + ekonomi ölçeği (v8: zorluk seviyesi) */
     savedAt:new Date().toISOString(),
     coins:G.coins,wins:G.wins,losses:G.losses,points:G.points,chemistry:G.chemistry,winStreak:G.winStreak||0,careerMatches:G.careerMatches||0,careerWins:G.careerWins||0,careerLosses:G.careerLosses||0,clubRecords:G.clubRecords||{},
     team:G.team,
@@ -440,18 +440,18 @@ function loadGameFromStorage(){
 
 function migrateEconomyV3ToV4(d){
   if(!d) return;
-  d.coins=ecoRound(d.coins??ECO_REF_KR);
+  d.coins=ecoRound(d.coins??ECO_REF_USD);
   (d.players||[]).forEach(p=>{
-    if(p.genel!=null) p.maas=salaryKRFromGenel(p.genel);
-    if(p.fiyat!=null) p.fiyat=transferFeeKR(p);
+    if(p.genel!=null) p.maas=salaryUSDFromGenel(p.genel);
+    if(p.fiyat!=null) p.fiyat=transferFeeUSD(p);
   });
   (d.youth||[]).forEach(p=>{
-    if(p.genel!=null) p.maas=Math.max(ecoRound(8),Math.round(salaryKRFromGenel(p.genel)*0.2));
+    if(p.genel!=null) p.maas=Math.max(ecoRound(8),Math.round(salaryUSDFromGenel(p.genel)*0.2));
   });
   (d.marketPlayers||[]).forEach(p=>{
     if(p.genel==null) return;
-    p.maas=salaryKRFromGenel(p.genel);
-    p.fiyat=transferFeeKR(p);
+    p.maas=salaryUSDFromGenel(p.genel);
+    p.fiyat=transferFeeUSD(p);
   });
   (d.coaches||[]).forEach(c=>{ c.maas=ecoRound(c.maas||85); });
   (d.coachMarket||[]).forEach(c=>{
@@ -464,21 +464,21 @@ function migrateEconomyV3ToV4(d){
   }
 }
 
-/** v4 → v5: eski şişkin ekonomi (×20,8) yeni ham KR ölçeğine iner; sözleşme/istatistik alanları eklenir. */
+/** v4 → v5: eski şişkin ekonomi (×20,8) yeni ham ölçeğe iner; sözleşme/istatistik alanları eklenir. */
 function migrateEconomyV4ToV5(d){
   if(!d) return;
   (d.players||[]).forEach(p=>{
-    if(p.genel!=null) p.maas=salaryKRFromGenel(p.genel);
+    if(p.genel!=null) p.maas=salaryUSDFromGenel(p.genel);
     if(p.kontratSezon==null) p.kontratSezon=rand(1,3);
     if(!p.sezon) p.sezon={mac:0,pts:0,ast:0,reb:0};
   });
   (d.youth||[]).forEach(p=>{
-    if(p.genel!=null) p.maas=Math.max(60,Math.round(salaryKRFromGenel(p.genel)*0.25));
+    if(p.genel!=null) p.maas=Math.max(60,Math.round(salaryUSDFromGenel(p.genel)*0.25));
   });
   (d.marketPlayers||[]).forEach(p=>{
     if(p.genel==null) return;
-    p.maas=salaryKRFromGenel(p.genel);
-    p.fiyat=transferFeeKR(p);
+    p.maas=salaryUSDFromGenel(p.genel);
+    p.fiyat=transferFeeUSD(p);
   });
   (d.coaches||[]).forEach(c=>{
     const sev=Number(c.seviye)||3;
@@ -500,7 +500,14 @@ function migrateEconomyV4ToV5(d){
   if(d.lastEcoDay==null) d.lastEcoDay=d.gameDay||1;
 }
 
-const SAVE_VERSIONS=[2,3,4,5,6,7,8];
+/* ── FAZ 25 USD §3.3: KAYIT ŞEMASI v9 ──
+   Para birimi ve TÜM ekonomi ölçeği değişti (kasa, maaş, bonservis, arena, bilet).
+   Eski kayıttaki rakamlar yeni ölçekte anlamsız: 50.000 birim kasa, 600 birim maaş,
+   5.000 kişilik "başlangıç" arenası. Göç kodu YAZILMADI (brif: kullanıcı henüz yok) —
+   eski sürüm kaydı kabul EDİLMEZ, temizlenir ve kullanıcı bilgilendirilir.
+   Eski migrasyon fonksiyonları yerinde bırakıldı (silme değil düzenleme kuralı); v<9
+   burada elendiği için artık çağrılmıyorlar. */
+const SAVE_VERSIONS=[9];
 /* F7-17: v5 → v6 normalizasyonu. v5'ten sonra eklenen alanlar (rol/eğilim, playbook,
    izci ağı, draft, başkan hedefi, soyunma odası krizi) boşluklarını '||' varsayılanlarıyla
    kapatıyordu; artık sürüm damgası hangi kaydın neyi içerdiğini ayırt ediyor ve eksik
@@ -579,7 +586,7 @@ function migrateV5ToV6(d){
   if(!d.analytics||typeof d.analytics!=='object') d.analytics={teamMatches:[],playerDev:{}};
   if(d._crisisPid===undefined) d._crisisPid=null;
   if(d._crisisDay===undefined) d._crisisDay=null;
-  /* Arena bakımı ham KR ölçeğinde olmalı (F7-6): ecoRound'lanmış eski değerler seviyeye göre düzeltilir. */
+  /* Arena bakımı ham ölçekte olmalı (F7-6): ecoRound'lanmış eski değerler seviyeye göre düzeltilir. */
   try{
     if(d.arena&&typeof d.arena==='object'){
       const lv=ARENA_LVL[Math.max(0,Math.min(ARENA_LVL.length-1,(Number(d.arena.s)||1)-1))];
@@ -647,7 +654,7 @@ function _applyGameStateInner(d){
   if((d.v|0)<6) migrateV5ToV6(d);
   if((d.v|0)<7) migrateV6ToV7(d);
   if((d.v|0)<8) migrateV7ToV8(d);
-  G.coins=d.coins??START_KR;
+  G.coins=d.coins??START_USD;
   G.wins=d.wins??0;
   G.careerMatches=Number(d.careerMatches)||0; /* Paket B: kariyer maç sayacı */
   G.careerWins=Number(d.careerWins)||0; G.careerLosses=Number(d.careerLosses)||0;

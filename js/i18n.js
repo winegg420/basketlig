@@ -117,6 +117,23 @@ function fmtSira(n,dil){
   return v+ek;
 }
 
+/* ── FAZ 25 USD: PARA BİRİMİ TEK KAYNAK ──
+   Para birimi Kredi → USD ($). Kodda simge elle yazılmaz; her yer buradan geçer.
+   Biçim dile bağlıdır (FAZ 29 §3): TR "$1.250" · EN "$1,250" — simge ikisinde de ÖNDE.
+   Negatif değerde işaret simgenin ÖNÜNE gelir ("-$1.250"), araya girmez. */
+const PARA_SIMGE='$';
+/** 1250 → TR "$1.250" · EN "$1,250" */
+function fmtPara(n,dil){
+  const v=Math.round(Number(n)||0);
+  const isaret=v<0?'-':'';
+  return isaret+PARA_SIMGE+fmtSayi(Math.abs(v),dil);
+}
+/** 1250 → TR "$1.250/hf" · EN "$1,250/wk" */
+function fmtMaas(n,dil){
+  const d=dil||_lang;
+  return fmtPara(n,d)+(d==='tr'?'/hf':'/wk');
+}
+
 const I18N_SKIP_TAGS={SCRIPT:1,STYLE:1,SVG:1,CANVAS:1,TEXTAREA:1};
 function _i18nWalk(root){
   if(!root) return;

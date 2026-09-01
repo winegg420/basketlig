@@ -201,7 +201,7 @@ function genClubListing(peers){
   p.seed='ct'+p.id+'_'+hash32(p.isim+p.poz+club);
   p.fromClub=club;
   p.mode=loan?'loan':'sale';
-  const base=transferFeeKR(p);
+  const base=transferFeeUSD(p);
   /* Sahipli oyuncu: satış priml, kiralık tek seferlik ucuz bedel + haftalık maaş sende. */
   p.fiyat=loan?Math.round(base*0.22):Math.round(base*1.3);
   p.kiralik=loan;
@@ -273,12 +273,12 @@ function renderClubTransfers(){
           <span style="font-size:11px;">⚔️${p.hucum}</span><span style="font-size:11px;">🛡️${p.savunma}</span>
           <span style="font-size:11px;">🏀${p.ribaund}</span><span style="font-size:11px;">🎯${p.pas}</span>
         </div>
-        <div style="font-size:10px;color:var(--text2);margin-top:3px;">Maaş: ${fmtn(p.maas)} KR/hf${loan?' · sezon sonunda döner':''}</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:3px;">Maaş: ${fmtMaas(p.maas)}${loan?' · sezon sonunda döner':''}</div>
       </div>
       <div class="mprice">
         <div style="font-size:9px;color:var(--text2);">${priceLbl}</div>
         <div class="pval">${fmtn(p.fiyat)}</div>
-        <div style="font-size:10px;color:var(--text2);">KR</div>
+        <div style="font-size:10px;color:var(--text2);">USD</div>
         ${act}
       </div>
     </div>`;
@@ -296,10 +296,10 @@ function openClubOfferModal(id){
   showAppModal(`<div class="modal-title">🤝 Teklif — ${escMatch(p.isim)}</div>
     <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">${escMatch(p.fromClub||'Kulüp')} · ${p.poz} · OVR ${p.genel} · ${starFromGenel(p.genel)}★</p>
     <div style="background:var(--bg3);border-radius:9px;padding:10px;margin-bottom:12px;font-size:12px;">
-      <div>İstenen bonservis (asking): <strong style="color:var(--gold);">${fmtn(asking)} KR</strong></div>
+      <div>İstenen bonservis (asking): <strong style="color:var(--gold);">${fmtPara(asking)}</strong></div>
       <div style="margin-top:4px;">Oyuncu kişiliği: <strong>${ki.ikon} ${ki.ad}</strong> — <span style="color:var(--text2);">${ki.desc}</span></div>
     </div>
-    <label style="font-size:11px;color:var(--text2);">Teklifin (KR)</label>
+    <label style="font-size:11px;color:var(--text2);">Teklifin ($)</label>
     <input id="clubOfferInput" type="number" min="${lo}" max="${hi}" value="${def}" step="500" style="width:100%;padding:10px;border-radius:9px;background:var(--bg3);color:var(--text);border:1px solid var(--border);font-size:14px;margin:5px 0 4px;">
     <p style="font-size:10px;color:var(--text2);margin-bottom:12px;">Düşük teklif reddedilebilir; kararı oyuncu verir. Yüksek teklif kabul şansını artırır.</p>
     <div style="display:flex;gap:8px;">
@@ -313,7 +313,7 @@ function submitClubOffer(id){
   const inp=document.getElementById('clubOfferInput');
   let offer=Math.round(Number(inp&&inp.value)||p.fiyat);
   offer=Math.max(1,offer);
-  if(G.coins<offer){ showNotif('❌ Bu teklifi karşılayacak KR yok!'); return; }
+  if(G.coins<offer){ showNotif('❌ Bu teklifi karşılayacak bakiye yok!'); return; }
   const dec=playerAcceptsOffer(p,offer,p.fiyat,{betterTeam:false});
   if(dec.accept){
     closeAppModal();
@@ -332,7 +332,7 @@ function buyClubPlayer(id,price){
   if(!p||p.mode!=='sale') return;
   if(G.players.length>=18){ showNotif('Kadro dolu (en fazla 18). Önce bir oyuncu gönder.'); return; }
   const bedel=Math.round(Number(price)>0?Number(price):p.fiyat);
-  if(G.coins<bedel){ showNotif('❌ Yeterli KR yok!'); return; }
+  if(G.coins<bedel){ showNotif('❌ Yeterli bakiye yok!'); return; }
   const st=starFromGenel(p.genel);
   txn('Transfer (kulüpten): '+p.isim,-bedel);
   unlockAchievement('transfer');
@@ -344,9 +344,9 @@ function buyClubPlayer(id,price){
   G.players.push(np);
   G.clubTransferPlayers=G.clubTransferPlayers.filter(x=>x.id!==id);
   G.chemistry=Math.max(20,G.chemistry-(teamLeadership()>=78?rand(3,8):rand(5,12)));
-  showNotif(`✅ ${p.isim} ${p.fromClub} kulübünden ${fmtn(bedel)} KR ile kadrona katıldı!`);
+  showNotif(`✅ ${p.isim} ${p.fromClub} kulübünden ${fmtPara(bedel)} ile kadrona katıldı!`);
   if(G.team&&G.team.tblKey){
-    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">💰 <strong>${G.team.isim}</strong>, <strong>${escMatch(p.fromClub||'')}</strong> kulübünden <strong>${fmtn(bedel)} KR</strong> bonservisle <strong>${p.isim}</strong> (${st}★) transferini bitirdi.</div>`);
+    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--green);">💰 <strong>${G.team.isim}</strong>, <strong>${escMatch(p.fromClub||'')}</strong> kulübünden <strong>${fmtPara(bedel)}</strong> bonservisle <strong>${p.isim}</strong> (${st}★) transferini bitirdi.</div>`);
   }
   updateCoins();updateChemistry();renderMarket();
   if(document.getElementById('page-kadro')&&document.getElementById('page-kadro').classList.contains('active')) renderRoster();
@@ -357,7 +357,7 @@ function loanClubPlayer(id){
   const p=(G.clubTransferPlayers||[]).find(x=>x.id===id);
   if(!p||p.mode!=='loan') return;
   if(G.players.length>=18){ showNotif('Kadro dolu (en fazla 18). Önce bir oyuncu gönder.'); return; }
-  if(G.coins<p.fiyat){ showNotif('❌ Kira bedeli için yeterli KR yok!'); return; }
+  if(G.coins<p.fiyat){ showNotif('❌ Kira bedeli için yeterli bakiye yok!'); return; }
   txn('Kiralama bedeli: '+p.isim,-p.fiyat);
   const np={...p};
   ['mode','fiyat','kiralik','sure','teklifler','freeAgent'].forEach(k=>delete np[k]);
@@ -584,7 +584,7 @@ function awardCoaches(basari,puan){
 function moodColor(m){return m>=70?'var(--green)':m>=40?'var(--gold)':'var(--red)';}
 function moodText(m){return m>=75?'😄 Mutlu':m>=50?'😐 Normal':m>=30?'😕 Mutsuz':'😠 Kızgın';}
 
-/* ── Scouting (Madde 7) — bazı oyuncuların gerçek potansiyeli gizli; KR ile keşif raporu açar. */
+/* ── Scouting (Madde 7) — bazı oyuncuların gerçek potansiyeli gizli; ücret karşılığı keşif raporu açar. */
 function playerScouted(p){ return !p||p.scouted===true||!p.hiddenPot; }
 function potRange(p){
   const pot=Number(p.potansiyel)||Number(p.genel)||60;
@@ -607,7 +607,7 @@ function scoutPlayer(id){
   if(!p){ showNotif('Oyuncu bulunamadı.'); return; }
   if(playerScouted(p)){ showNotif('Bu oyuncu zaten keşfedildi.'); return; }
   const cost=scoutCost(p);
-  if(G.coins<cost){ showNotif('❌ Keşif raporu için yeterli KR yok!'); return; }
+  if(G.coins<cost){ showNotif('❌ Keşif raporu için yeterli bakiye yok!'); return; }
   txn('Keşif raporu: '+p.isim,-cost);
   p.scouted=true;
   updateCoins();
@@ -655,9 +655,9 @@ function renderPlayerCard(p,showBuy=false,price=0,showPromote=false,showList=fal
     <div class="sgrid">
       ${STAT_KEYS.map(k=>`<div class="sitem"><span class="sname">${STAT_LABELS[k]}</span><span class="sval ${sv(p[k])}">${p[k]}</span></div>`).join('')}
     </div>
-    <div style="margin-top:8px;font-size:11px;color:var(--text2);">Maaş: <span style="color:var(--gold);">${fmtn(p.maas)} KR/hafta</span>${p.kontratSezon!=null?` · 📄 ${p.kontratSezon} sezon`:''}${showList?` · ${enerjiRozetHtml(p)}`:''}</div>
+    <div style="margin-top:8px;font-size:11px;color:var(--text2);">Maaş: <span style="color:var(--gold);">${fmtMaas(p.maas)}</span>${p.kontratSezon!=null?` · 📄 ${p.kontratSezon} sezon`:''}${showList?` · ${enerjiRozetHtml(p)}`:''}</div>
     ${p.sezon&&p.sezon.mac?`<div style="margin-top:4px;font-size:10px;color:var(--blue);">📊 Sezon: ${p.sezon.mac} maç · ${(p.sezon.pts/p.sezon.mac).toFixed(1)} sayı · ${(p.sezon.ast/p.sezon.mac).toFixed(1)} asist ort.</div>`:''}
-    ${showBuy?`<button class="btn-bid" onclick="buyFromMarket('${p.id}')">TEKLİF VER — ${fmtn(price)} KR</button>`:''}
+    ${showBuy?`<button class="btn-bid" onclick="buyFromMarket('${p.id}')">TEKLİF VER — ${fmtPara(price)}</button>`:''}
     ${showPromote?`<button class="btn-p" onclick="promoteYouth('${p.id}')" style="padding:7px;font-size:11px;margin-top:8px;">KADROYA AL</button>`:''}
     ${showList?`<button type="button" class="btn-bid" onclick="listPlayerToMarket('${p.id}')" style="margin-top:8px;">TRANSFER MARKETE KOY</button>`:''}
   </div>`;
@@ -740,23 +740,23 @@ function openPlayerModal(pid){
   const st=starFromGenel(p.genel);
   const actions=[];
   if(inMarket){
-    const pr=p.fiyat!=null?Number(p.fiyat):transferFeeKR(p);
-    actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();buyFromMarket('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;">TEKLİF VER — ${fmtn(pr)} KR</button>`);
+    const pr=p.fiyat!=null?Number(p.fiyat):transferFeeUSD(p);
+    actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();buyFromMarket('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;">TEKLİF VER — ${fmtPara(pr)}</button>`);
   }
   if(inClub){
     if(p.mode==='loan'){
-      actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();loanClubPlayer('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;background:var(--blue);">🔁 KİRALA — ${fmtn(p.fiyat)} KR · ${escMatch(p.fromClub||'')}</button>`);
+      actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();loanClubPlayer('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;background:var(--blue);">🔁 KİRALA — ${fmtPara(p.fiyat)} · ${escMatch(p.fromClub||'')}</button>`);
     } else {
-      actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();closeAppModal();openClubOfferModal('${p.id}');" style="margin-top:4px;width:100%;">🤝 TEKLİF VER — istenen ${fmtn(p.fiyat)} KR · ${escMatch(p.fromClub||'')}</button>`);
+      actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();closeAppModal();openClubOfferModal('${p.id}');" style="margin-top:4px;width:100%;">🤝 TEKLİF VER — istenen ${fmtPara(p.fiyat)} · ${escMatch(p.fromClub||'')}</button>`);
     }
   }
   if(inYouth){
     actions.push(`<button type="button" class="btn-p" onclick="event.stopPropagation();promoteYouth('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;padding:9px;">KADROYA AL</button>`);
   }
   if(!inMarket&&!inYouth&&!inClub){
-    const extCost=salaryKRFromGenel(p.genel)*2;
+    const extCost=salaryUSDFromGenel(p.genel)*2;
     const expiring=(p.kontratSezon!=null&&p.kontratSezon<=1);
-    actions.push(`<button type="button" class="btn-p" onclick="event.stopPropagation();extendContract('${p.id}');" style="margin-top:4px;width:100%;padding:9px;${expiring?'background:var(--gold);color:#111;':''}">✍️ SÖZLEŞME UZAT — ${fmtn(extCost)} KR${expiring?' (bitmek üzere!)':''}</button>`);
+    actions.push(`<button type="button" class="btn-p" onclick="event.stopPropagation();extendContract('${p.id}');" style="margin-top:4px;width:100%;padding:9px;${expiring?'background:var(--gold);color:#111;':''}">✍️ SÖZLEŞME UZAT — ${fmtPara(extCost)}${expiring?' (bitmek üzere!)':''}</button>`);
     actions.push(`<button type="button" class="btn-bid" onclick="event.stopPropagation();listPlayerToMarket('${p.id}');closeAppModal();" style="margin-top:4px;width:100%;">TRANSFER MARKETE KOY</button>`);
   }
   let potBlock='';
@@ -765,7 +765,7 @@ function openPlayerModal(pid){
       potBlock=`<div style="font-size:11px;color:var(--blue);margin-bottom:8px;">⭐ Potansiyel: ${p.potansiyel} (yaklaşık +${Math.max(0,(p.potansiyel||p.genel)-p.genel)} gelişim payı)</div>`;
     } else {
       const r=potRange(p);
-      potBlock=`<div style="font-size:11px;color:var(--text2);margin-bottom:8px;">🔍 Potansiyel: <strong>${r.lo}–${r.hi}</strong> (belirsiz) <button type="button" class="btn-sm" style="padding:3px 8px;font-size:10px;margin-left:6px;" onclick="event.stopPropagation();scoutPlayer('${p.id}')">Keşfet — ${fmtn(scoutCost(p))} KR</button></div>`;
+      potBlock=`<div style="font-size:11px;color:var(--text2);margin-bottom:8px;">🔍 Potansiyel: <strong>${r.lo}–${r.hi}</strong> (belirsiz) <button type="button" class="btn-sm" style="padding:3px 8px;font-size:10px;margin-left:6px;" onclick="event.stopPropagation();scoutPlayer('${p.id}')">Keşfet — ${fmtPara(scoutCost(p))}</button></div>`;
     }
   }
   const html=`<div class="card-title" style="margin-top:0;">${p.bayrak} ${p.isim}</div>
@@ -782,7 +782,7 @@ function openPlayerModal(pid){
       <div style="text-align:center;margin-top:8px;font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:32px;color:${oc};">${p.genel} <span style="font-size:13px;color:var(--text2);font-weight:600;font-family:system-ui;">OVR · ${st}★</span></div>
     </div>
     <div style="flex:1;min-width:240px;">
-      <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">Maaş: <span style="color:var(--gold);font-weight:600;">${fmtn(p.maas)} KR/hafta</span>${p.kontratSezon!=null?` · 📄 Sözleşme: ${p.kontratSezon} sezon`:''}</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">Maaş: <span style="color:var(--gold);font-weight:600;">${fmtMaas(p.maas)}</span>${p.kontratSezon!=null?` · 📄 Sözleşme: ${p.kontratSezon} sezon`:''}</div>
       ${p.sezon&&p.sezon.mac?`<div style="font-size:11px;color:var(--blue);margin-bottom:10px;">📊 Bu sezon: ${p.sezon.mac} maç · ${(p.sezon.pts/p.sezon.mac).toFixed(1)} sayı · ${(p.sezon.ast/p.sezon.mac).toFixed(1)} asist · ${(p.sezon.reb/p.sezon.mac).toFixed(1)} ribaund ort.</div>`:'<div style="font-size:11px;color:var(--text2);margin-bottom:10px;">📊 Bu sezon henüz maça çıkmadı.</div>'}
       <div class="sgrid" style="margin-bottom:0;">
         ${STAT_KEYS.map(k=>`<div class="sitem"><span class="sname">${STAT_LABELS[k]}</span><span class="sval ${sv(p[k])}">${p[k]}</span></div>`).join('')}
@@ -815,7 +815,7 @@ function renderRosterListRow(p){
           <span style="font-size:11px;">⚔️${p.hucum}</span><span style="font-size:11px;">🛡️${p.savunma}</span>
           <span style="font-size:11px;">🏀${p.ribaund}</span><span style="font-size:11px;">✋${p.topCalma}</span>
         </div>
-        <div style="font-size:10px;color:var(--text2);margin-top:3px;">Maaş: ${fmtn(p.maas)} KR/hf · ${enerjiRozetHtml(p)}</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:3px;">Maaş: ${fmtMaas(p.maas)} · ${enerjiRozetHtml(p)}</div>
       </div>
       <div class="mprice">
         <button type="button" class="btn-bid" onclick="event.stopPropagation();listPlayerToMarket('${p.id}')">MARKETE KOY</button>
@@ -1059,14 +1059,14 @@ function renderYouthFacility(){
       <div style="font-weight:700;font-size:13px;">🏫 ${cur.isim} <span style="font-size:11px;color:var(--text2);">(Seviye ${lvl}/4)</span></div>
       <div style="font-size:11px;color:var(--text2);margin-top:3px;">Havuz hedefi: <strong>${cur.hedef} genç</strong>${cur.potBonus?` · potansiyel primi +${cur.potBonus}`:''}</div>
     </div>
-    ${nx?`<button type="button" class="btn-p" style="padding:8px 14px;font-size:12px;" onclick="upgradeYouthFacility()" ${G.coins<nx.m?'disabled':''}>⬆ ${nx.isim} — ${fmtn(nx.m)} KR</button>`:'<span style="font-size:11px;color:var(--gold);">Maksimum seviye</span>'}
+    ${nx?`<button type="button" class="btn-p" style="padding:8px 14px;font-size:12px;" onclick="upgradeYouthFacility()" ${G.coins<nx.m?'disabled':''}>⬆ ${nx.isim} — ${fmtPara(nx.m)}</button>`:'<span style="font-size:11px;color:var(--gold);">Maksimum seviye</span>'}
   </div>`;
 }
 function upgradeYouthFacility(){
   const lvl=youthFacilityLevel();
   const nx=YOUTH_FAC_LVL[lvl];
   if(!nx){ showNotif('Altyapı tesisi maksimum seviyede.'); return; }
-  if(G.coins<nx.m){ showNotif('❌ Yeterli KR yok!'); return; }
+  if(G.coins<nx.m){ showNotif('❌ Yeterli bakiye yok!'); return; }
   txn('Altyapı tesisi yatırımı: '+nx.isim,-nx.m);
   G.youthFacility={s:nx.s};
   ensureYouthStock();
@@ -1190,11 +1190,11 @@ function renderMarket(){
           <span style="font-size:11px;">🏀${p.ribaund}</span><span style="font-size:11px;">✋${p.topCalma}</span>
           <span style="font-size:11px;">🎯${p.pas}</span><span style="font-size:11px;">⚡${p.hiz}</span>
         </div>
-        <div style="font-size:10px;color:var(--text2);margin-top:3px;">Maaş: ${fmtn(p.maas)} KR/hf • ${p.teklifler} teklif • ⏰ ${p.sure}s</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:3px;">Maaş: ${fmtMaas(p.maas)} • ${p.teklifler} teklif • ⏰ ${p.sure}s</div>
       </div>
       <div class="mprice">
         <div class="pval">${fmtn(p.fiyat)}</div>
-        <div style="font-size:10px;color:var(--text2);">KR</div>
+        <div style="font-size:10px;color:var(--text2);">USD</div>
         <button class="btn-bid" onclick="event.stopPropagation();buyFromMarket('${p.id}')">TEKLİF VER</button>
       </div>
     </div>`;
@@ -1401,7 +1401,7 @@ function renderAntrenman(){
       <div class="train-header">
         <div>
           <div style="font-weight:700;font-size:13px;">${a.ikon} ${a.isim}</div>
-          <div style="font-size:11px;color:var(--text2);margin-top:2px;">⏱ ${a.gun} gün sürer${a.maliyet?' • '+fmtn(a.maliyet)+' KR':' • Ücretsiz'}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px;">⏱ ${a.gun} gün sürer${a.maliyet?' • '+fmtPara(a.maliyet):' • Ücretsiz'}</div>
         </div>
         <button class="btn-train" onclick="startTeamTrain(${i})">BAŞLAT</button>
       </div>
@@ -1432,7 +1432,7 @@ function renderAntrenman(){
       const opts=adaylar.map(p=>(POS_NEIGHBORS[p.poz]||[]).map(n=>`<option value="${p.id}|${n}">${escMatch(p.isim)} (${p.poz}) → ${n}</option>`).join('')).join('');
       posDiv.innerHTML=`<div class="train-card" style="margin-top:8px;">
         <div style="font-weight:700;font-size:13px;">🧭 İkincil Pozisyon Eğitimi</div>
-        <div style="font-size:11px;color:var(--text2);margin:4px 0 8px;">Oyuncuya komşu bir pozisyon öğret (PG↔SG↔SF↔PF↔C) — 15 oyun günü · ${fmtn(ecoRound(500))} KR. İkincil pozisyonda hafif performans kaybıyla oynar.</div>
+        <div style="font-size:11px;color:var(--text2);margin:4px 0 8px;">Oyuncuya komşu bir pozisyon öğret (PG↔SG↔SF↔PF↔C) — 15 oyun günü · ${fmtPara(ecoRound(500))}. İkincil pozisyonda hafif performans kaybıyla oynar.</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <select id="posTrainSel" style="flex:1;min-width:180px;font-size:12px;padding:7px;border-radius:8px;background:var(--bg4);color:var(--text);border:1px solid var(--border);">
             <option value="">-- Oyuncu ve hedef pozisyon seç --</option>${opts}
@@ -1479,7 +1479,7 @@ function renderAntrenman(){
       <div class="coach-stat"><span style="color:var(--text2);">Uzmanlık</span><span style="font-size:11px;">${c.bonus}</span></div>
       <div class="coach-stat"><span style="color:var(--text2);">Seviye</span><span style="color:var(--gold);">${c.seviye}</span></div>
       <div class="coach-stat"><span style="color:var(--text2);">CV / Skor</span><span style="color:var(--blue);">${Math.round(Number(c.skor)||0)}${(c.gecmis&&c.gecmis.length)?` · ${c.gecmis.length} başarı`:''}</span></div>
-      <div class="coach-stat"><span style="color:var(--text2);">Maaş</span><span style="color:var(--red);">${fmtn(c.maas)} KR/hf</span></div>
+      <div class="coach-stat"><span style="color:var(--text2);">Maaş</span><span style="color:var(--red);">${fmtMaas(c.maas)}</span></div>
       <button class="btn-sm btn-danger" onclick="fireCoach('${c.id}')" style="width:100%;margin-top:8px;">KADRODAN ÇIKAR</button>
     </div>`).join('')
     :'<div style="color:var(--text2);font-size:12px;grid-column:1/-1;padding:16px;text-align:center;">Henüz koçun yok. Aşağıdan işe al.</div>');
@@ -1493,8 +1493,8 @@ function renderAntrenman(){
       <div class="coach-stat"><span style="color:var(--text2);">Bonus</span><span style="font-size:11px;">${c.bonus}</span></div>
       <div class="coach-stat"><span style="color:var(--text2);">Seviye</span><span style="color:var(--gold);">${c.seviye}</span></div>
       <div class="coach-stat"><span style="color:var(--text2);">CV / Skor</span><span style="color:var(--blue);">${Math.round(Number(c.skor)||0)}${(c.gecmis&&c.gecmis.length)?` · ${c.gecmis.length} başarı`:''}</span></div>
-      <div class="coach-stat"><span style="color:var(--text2);">Haftalık Maaş</span><span style="color:var(--red);">${fmtn(c.maas)} KR</span></div>
-      <div class="coach-stat"><span style="color:var(--text2);">Transfer Bedeli</span><span style="color:var(--accent);">${fmtn(c.satisFiyat)} KR</span></div>
+      <div class="coach-stat"><span style="color:var(--text2);">Haftalık Maaş</span><span style="color:var(--red);">${fmtPara(c.maas)}</span></div>
+      <div class="coach-stat"><span style="color:var(--text2);">Transfer Bedeli</span><span style="color:var(--accent);">${fmtPara(c.satisFiyat)}</span></div>
       <button class="btn-p" onclick="hireCoach('${c.id}')" style="padding:7px;font-size:11px;margin-top:8px;">İŞE AL</button>
     </div>`).join('');
   renderScouts();
@@ -1664,7 +1664,7 @@ function renderScouts(){
           <div class="coach-header"><div class="coach-avatar"><img src="${coachAvatar(s)}" ${coachAvatarAttrs(s)} alt=""></div>
             <div><div class="coach-name">${escMatch(s.ad)}</div><div class="coach-spec">🔭 ${escMatch(s.bolge)}</div></div></div>
           <div class="coach-stat"><span style="color:var(--text2);">Kalite</span><span style="color:var(--gold);">${'★'.repeat(Math.max(1,Number(s.kalite)||1))}</span></div>
-          <div class="coach-stat"><span style="color:var(--text2);">Maaş</span><span style="color:var(--red);">${fmtn(s.maas)} KR/hf</span></div>
+          <div class="coach-stat"><span style="color:var(--text2);">Maaş</span><span style="color:var(--red);">${fmtMaas(s.maas)}</span></div>
           <div class="coach-stat"><span style="color:var(--text2);">Havuz</span>
             <select onchange="assignScout('${s.id}',this.value)" style="background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:11px;padding:3px;">
               <option value="market" ${s.atama!=='youth'?'selected':''}>Transfer Market</option>
@@ -1680,8 +1680,8 @@ function renderScouts(){
       <div class="coach-header"><div class="coach-avatar"><img src="${coachAvatar(s)}" ${coachAvatarAttrs(s)} alt=""></div>
         <div><div class="coach-name">${escMatch(s.ad)}</div><div class="coach-spec">🔭 ${escMatch(s.bolge)}</div></div></div>
       <div class="coach-stat"><span style="color:var(--text2);">Kalite</span><span style="color:var(--gold);">${'★'.repeat(Math.max(1,Number(s.kalite)||1))}</span></div>
-      <div class="coach-stat"><span style="color:var(--text2);">Haftalık Maaş</span><span style="color:var(--red);">${fmtn(s.maas)} KR</span></div>
-      <div class="coach-stat"><span style="color:var(--text2);">Transfer Bedeli</span><span style="color:var(--accent);">${fmtn(s.satisFiyat)} KR</span></div>
+      <div class="coach-stat"><span style="color:var(--text2);">Haftalık Maaş</span><span style="color:var(--red);">${fmtPara(s.maas)}</span></div>
+      <div class="coach-stat"><span style="color:var(--text2);">Transfer Bedeli</span><span style="color:var(--accent);">${fmtPara(s.satisFiyat)}</span></div>
       <button class="btn-p" onclick="hireScout('${s.id}')" style="padding:7px;font-size:11px;margin-top:8px;">İŞE AL</button>
     </div>`).join('');
   }
@@ -1706,13 +1706,13 @@ function renderArena(){
   const dol=document.getElementById('arenaDoluluk');
   if(dol){
     dol.textContent=fmtYuzde(Math.round(occ*100));   /* FAZ 29 §3 */
-    const seyirci=Math.round(occ*((G.arena&&G.arena.kap)||5000));
+    const seyirci=Math.round(occ*((G.arena&&G.arena.kap)||ARENA_LVL[0].kap));
     dol.title=seyirci+' kişi';
   }
   const dnot=document.getElementById('arenaDolulukNot');
   if(dnot){
     const fsx=getFanBaseStats();
-    const tavan=(fsx.count*TARAFTAR_KATSAYI)/Math.max(1,(G.arena&&G.arena.kap)||5000);
+    const tavan=(fsx.count*TARAFTAR_KATSAYI)/Math.max(1,(G.arena&&G.arena.kap)||ARENA_LVL[0].kap);
     dnot.textContent=(tavan<=occ+0.001)
       ? 'Taraftar sayısı doluluğu sınırlıyor — taraftar büyümeden arena büyütmek geliri artırmaz.'
       : '';
@@ -1723,13 +1723,13 @@ function renderArena(){
   if(plbl) plbl.textContent=priceNames[lvl];
   const pctrl=document.getElementById('ticketPriceCtrl');
   if(pctrl) pctrl.innerHTML=priceNames.map((nm,i)=>`<button type="button" class="btn-sm" style="padding:5px 8px;font-size:10px;${i===lvl?'background:var(--accent);color:#111;font-weight:700;':''}" onclick="setTicketPrice(${i})">${nm}</button>`).join('');
-  document.getElementById('ticketInc').textContent=fmtn(homeTicketIncome())+' KR';
-  document.getElementById('arenaMaint').textContent='-'+fmtn(a.bk)+' KR';
+  document.getElementById('ticketInc').textContent=fmtPara(homeTicketIncome());
+  document.getElementById('arenaMaint').textContent='-'+fmtPara(a.bk);
   document.getElementById('upgradeList').innerHTML=ARENA_LVL.slice(1).map(g=>`
     <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg3);border-radius:8px;margin-bottom:7px;">
       <div><div style="font-weight:700;font-size:13px;">${g.isim}</div><div style="font-size:11px;color:var(--text2);">${fmtn(g.kap)} kişilik</div></div>
       <div style="text-align:right;">
-        <div style="font-size:12px;color:var(--gold);">${fmtn(g.m)} KR</div>
+        <div style="font-size:12px;color:var(--gold);">${fmtPara(g.m)}</div>
         <button class="upbtn" onclick="upgradeArena(${g.s})" ${G.coins<g.m||G.arena.s>=g.s?'disabled':''} style="margin-top:5px;padding:6px 12px;font-size:11px;">
           ${G.arena.s>=g.s?'✅':'SATIN AL'}
         </button>
@@ -1768,6 +1768,11 @@ function renderBilanço(){
     else if(k.startsWith('Sözleşme yenileme:')) k='Sözleşme yenilemeleri';
     else if(k.startsWith('Antrenman gideri')) k='Antrenman giderleri';
     else if(k.startsWith('Arena yatırımı')) k='Arena yatırımı';
+    /* FAZ 25 USD §2.5: sponsor kalemi kademe adını taşıdığı için ("Sponsor geliri —
+       Ulusal Marka Anlaşması") kademe değişince bilançoda AYRI satır olarak birikiyordu.
+       Tek satırda toplanır — brif "bilançoda ayrı satır olarak görünecek" diyor, kademe
+       başına ayrı satır değil. */
+    else if(k.startsWith('Sponsor geliri')) k='📣 Sponsor geliri';
     grup[k]=(grup[k]||0)+(e.a||0);
   });
   const gelirler=[],giderler=[];
@@ -1784,21 +1789,25 @@ function renderBilanço(){
   const bos='<div class="brow"><span class="blbl" style="color:var(--text2);">Henüz hareket yok — maç oynadıkça dolar</span><span class="bval"></span></div>';
   /* FAZ 22 §2: tahmini/düzenli kalemler artık GERÇEKLEŞEN listelerinde DEĞİL — ikisi
      karışınca "Toplam" satırı ekrandaki rakamları saymıyormuş gibi görünüyordu. */
-  document.getElementById('gelirler').innerHTML=(gelirler.length?gelirler.map(i=>`<div class="brow"><span class="blbl">${i.l}</span><span class="bval gelir">+${fmtn(i.v)} KR</span></div>`).join(''):bos);
-  document.getElementById('giderler').innerHTML=(giderler.length?giderler.map(i=>`<div class="brow"><span class="blbl">${i.l}</span><span class="bval gider">-${fmtn(i.v)} KR</span></div>`).join(''):bos);
+  document.getElementById('gelirler').innerHTML=(gelirler.length?gelirler.map(i=>`<div class="brow"><span class="blbl">${i.l}</span><span class="bval gelir">+${fmtPara(i.v)}</span></div>`).join(''):bos);
+  document.getElementById('giderler').innerHTML=(giderler.length?giderler.map(i=>`<div class="brow"><span class="blbl">${i.l}</span><span class="bval gider">-${fmtPara(i.v)}</span></div>`).join(''):bos);
   /* Düzenli / tahmini kart — haftalık tekrarlayan kalemler ve net beklenti.
      Kullanıcının en çok ihtiyacı olan sayı bu: kasa kaç hafta yeter? */
-  const bilet=homeTicketIncome();
-  const haftalikNet=bilet-w.top;
+  const hb=haftalikGelirBeklentisi();
+  const bilet=hb.bilet;
+  const haftalikNet=hb.net;
   const dz=document.getElementById('duzenliKalemler');
   if(dz){
     dz.innerHTML=
-      `<div class="brow"><span class="blbl">🧾 Haftalık sabit gider (maaş + bakım)</span><span class="bval gider">-${fmtn(w.top)} KR/hf</span></div>`+
-      `<div class="brow"><span class="blbl">🎟️ Sıradaki ev maçı bilet geliri (tahmin)</span><span class="bval gelir">~${fmtn(bilet)} KR</span></div>`;
+      `<div class="brow"><span class="blbl">🧾 Haftalık maaş (oyuncu + koç + izci)</span><span class="bval gider">-${fmtMaas(w.oy+w.ko+w.iz)}</span></div>`+
+      `<div class="brow"><span class="blbl">🏟️ Arena bakımı + akademi</span><span class="bval gider">-${fmtMaas(w.ar+w.ay)}</span></div>`+
+      `<div class="brow"><span class="blbl">🚌 Kulüp işletme gideri (seyahat · sağlık · ekipman)</span><span class="bval gider">-${fmtMaas(w.is||0)}</span></div>`+
+      `<div class="brow"><span class="blbl">📣 Sponsor geliri — ${escMatch(sponsorKademe().ad)}</span><span class="bval gelir">+${fmtMaas(hb.sponsor)}</span></div>`+
+      `<div class="brow"><span class="blbl">🎟️ Bilet geliri (ev maçı ${fmtPara(bilet)} × ~2,2/hf)</span><span class="bval gelir">~+${fmtMaas(hb.biletHafta)}</span></div>`;
   }
   const hn=document.getElementById('haftalikNet');
   if(hn){
-    hn.textContent=(haftalikNet>=0?'+':'')+fmtn(haftalikNet)+' KR/hf';
+    hn.textContent=(haftalikNet>=0?'+':'')+fmtMaas(haftalikNet);
     hn.style.color=haftalikNet>=0?'var(--green)':'var(--red)';
     hn.style.fontFamily="'Bebas Neue','Arial Narrow',Impact,sans-serif";
     hn.style.fontSize='26px';
@@ -1814,14 +1823,14 @@ function renderBilanço(){
       kd.style.color='var(--green)';
     }
   }
-  document.getElementById('topGelir').textContent='+'+fmtn(tG)+' KR';
-  document.getElementById('topGider').textContent='-'+fmtn(tGid)+' KR';
+  document.getElementById('topGelir').textContent='+'+fmtPara(tG);
+  document.getElementById('topGider').textContent='-'+fmtPara(tGid);
   const nd=document.getElementById('netDurum');
-  nd.textContent=(net>=0?'+':'')+fmtn(net)+' KR';
+  nd.textContent=(net>=0?'+':'')+fmtPara(net);
   nd.style.color=net>=0?'var(--green)':'var(--red)';
   const son=document.getElementById('sonHareketler');
   if(son){
-    son.innerHTML=(G.ledger||[]).slice(0,14).map(e=>`<div class="brow"><span class="blbl">Gün ${e.d} · ${e.l}</span><span class="bval ${e.a>=0?'gelir':'gider'}">${e.a>=0?'+':''}${fmtn(e.a)} KR</span></div>`).join('')||'<p style="font-size:12px;color:var(--text2);">Henüz işlem yok.</p>';
+    son.innerHTML=(G.ledger||[]).slice(0,14).map(e=>`<div class="brow"><span class="blbl">Gün ${e.d} · ${e.l}</span><span class="bval ${e.a>=0?'gelir':'gider'}">${e.a>=0?'+':''}${fmtPara(e.a)}</span></div>`).join('')||'<p style="font-size:12px;color:var(--text2);">Henüz işlem yok.</p>';
   }
 }
 

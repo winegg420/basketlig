@@ -57,7 +57,7 @@ function botClubEnsureDepth(roster,ck){
     botOvrKaydir(p,divizyonOvrKaymasi(String(ck).split('||')[0]));
     p.id='b'+seed+'_'+i;
     p.seed='b'+ck+i;
-    p.maas=salaryKRFromGenel(p.genel);
+    p.maas=salaryUSDFromGenel(p.genel);
     /* M20: bot oyuncular da enerji ve sezon istatistiği taşır — kullanıcı tarafıyla aynı alanlar. */
     if(p.enerji==null) p.enerji=100;
     if(!p.sezon) p.sezon={mac:0,pts:0,ast:0,reb:0};
@@ -162,7 +162,7 @@ function openPlayerInspectModal(pid){
   const p=G.players.find(x=>x.id===pid);
   if(!p) return;
   const stats=STAT_KEYS.map(k=>`<div class="sitem"><span class="sname">${STAT_LABELS[k]}</span><span class="sval ${sv(p[k])}">${p[k]}</span></div>`).join('');
-  showAppModal(`<div class="modal-title">${p.isim}</div><div style="display:flex;gap:14px;flex-wrap:wrap;"><div class="pimg-wrap"><img src="${playerAvatar(p.seed,p.id,{ovr:p.genel,p:p})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel,p:p})} style="width:90px;height:112px;border-radius:10px;border:2px solid var(--accent);object-fit:cover;"><div class="pimg-cap">OVR ${p.genel}</div></div><div style="flex:1;min-width:200px;font-size:13px;line-height:1.55;"><p style="margin:0 0 6px;">${p.bayrak} ${p.ulke} · ${p.yas} yaş · ${p.boy}cm / ${p.kilo}kg</p><p style="margin:0 0 6px;"><span class="pbadge pos-${p.poz.toLowerCase()}">${p.poz}</span> · <strong style="color:var(--accent);font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:20px;">OVR ${p.genel}</strong> · ${starFromGenel(p.genel)}★</p><p style="margin:0 0 6px;">Potansiyel: ${p.potansiyel||'—'}</p><p style="margin:0 0 6px;">Enerji (maç yorgunluğu): <strong>${Math.round(Number(p.enerji)||100)}</strong>/100</p><p style="margin:0 0 6px;">Maaş: <strong style="color:var(--gold);">${fmtn(p.maas)}</strong> KR/hf${p.kontratSezon!=null?` · 📄 ${p.kontratSezon} sezon`:''}</p>${p.sezon&&p.sezon.mac?`<p style="margin:0 0 6px;color:var(--blue);">📊 Sezon: ${p.sezon.mac} maç · ${(p.sezon.pts/p.sezon.mac).toFixed(1)} sayı · ${(p.sezon.ast/p.sezon.mac).toFixed(1)} asist ort.</p>`:''}<p style="margin:0;">Psikoloji: <span style="color:${moodColor(p.mood)};">${moodText(p.mood)}</span></p></div></div><div class="sgrid" style="margin-top:14px;">${stats}</div>`);
+  showAppModal(`<div class="modal-title">${p.isim}</div><div style="display:flex;gap:14px;flex-wrap:wrap;"><div class="pimg-wrap"><img src="${playerAvatar(p.seed,p.id,{ovr:p.genel,p:p})}" ${playerAvatarImgAttrs(p.seed,p.id,{ovr:p.genel,p:p})} style="width:90px;height:112px;border-radius:10px;border:2px solid var(--accent);object-fit:cover;"><div class="pimg-cap">OVR ${p.genel}</div></div><div style="flex:1;min-width:200px;font-size:13px;line-height:1.55;"><p style="margin:0 0 6px;">${p.bayrak} ${p.ulke} · ${p.yas} yaş · ${p.boy}cm / ${p.kilo}kg</p><p style="margin:0 0 6px;"><span class="pbadge pos-${p.poz.toLowerCase()}">${p.poz}</span> · <strong style="color:var(--accent);font-family:'Bebas Neue','Arial Narrow','Helvetica Neue Condensed',Impact,sans-serif;font-size:20px;">OVR ${p.genel}</strong> · ${starFromGenel(p.genel)}★</p><p style="margin:0 0 6px;">Potansiyel: ${p.potansiyel||'—'}</p><p style="margin:0 0 6px;">Enerji (maç yorgunluğu): <strong>${Math.round(Number(p.enerji)||100)}</strong>/100</p><p style="margin:0 0 6px;">Maaş: <strong style="color:var(--gold);">${fmtPara(p.maas)}</strong>/hf${p.kontratSezon!=null?` · 📄 ${p.kontratSezon} sezon`:''}</p>${p.sezon&&p.sezon.mac?`<p style="margin:0 0 6px;color:var(--blue);">📊 Sezon: ${p.sezon.mac} maç · ${(p.sezon.pts/p.sezon.mac).toFixed(1)} sayı · ${(p.sezon.ast/p.sezon.mac).toFixed(1)} asist ort.</p>`:''}<p style="margin:0;">Psikoloji: <span style="color:${moodColor(p.mood)};">${moodText(p.mood)}</span></p></div></div><div class="sgrid" style="margin-top:14px;">${stats}</div>`);
 }
 
 function pushLeagueNewsLine(html){
@@ -190,10 +190,10 @@ function maybeSimOtherTransfers(){
   const oyuncu=escMatch(randomNameFor(rastgeleUlkeAdi(null)));   /* FAZ 30: haber oyuncusu da küresel */
   const lig=escMatch(formatTblSlotLabel(G.team.tblKey));   /* iç anahtar değil, okunabilir lig adı */
   const kalip=[
-    ()=>{ const bedel=fmtn(rand(4000,80000));
+    ()=>{ const bedel=fmtPara(rand(180000,3200000)); /* FAZ 25 USD: haber bonservisi yeni ölçekte */
       return _newsBox('blue','💰', (typeof isEN==='function'&&isEN())
-        ? `<strong>${t1}</strong> (${lig}) have announced a deal for <strong>${oyuncu}</strong> — <strong>${bedel} KR</strong>.`
-        : `<strong>${t1}</strong> — ${lig} — <strong>${bedel} KR</strong> ile <strong>${oyuncu}</strong> için anlaşma duyurdu.`); },
+        ? `<strong>${t1}</strong> (${lig}) have announced a deal for <strong>${oyuncu}</strong> — <strong>${bedel}</strong>.`
+        : `<strong>${t1}</strong> — ${lig} — <strong>${bedel}</strong> ile <strong>${oyuncu}</strong> için anlaşma duyurdu.`); },
     ()=>_newsBox('red','🩹',`<strong>${t1}</strong> kötü haber aldı: ${oyuncu} ${rand(2,7)} hafta sahalardan uzak kalacak.`),
     ()=>_newsBox('green','🔥',`<strong>${t1}</strong> son ${rand(3,6)} maçını kazandı — ${lig} formda takım.`),
     ()=>_newsBox('gold','🗣️',`<strong>${t1}</strong> başkanı: "Bu sezon hedefimiz ilk ${ch([4,6,8])}. Kadromuza güveniyoruz."`),
@@ -212,7 +212,7 @@ function renderDashboardNews(){
   maybeSimOtherTransfers();
   let arr=[];
   try{ arr=JSON.parse(sessionStorage.getItem(NEWS_SESSION_KEY)||'[]'); }catch(e){ arr=[]; }
-  const intro=`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--accent);">📡 <strong>Lig haberleri</strong> — yalnızca senin <strong>${formatTblSlotLabel(G.team.tblKey)}</strong> grubun · ekonomi <strong>KR</strong> · maçlar 4×5 dk (20 dk) + 5 dk uzatmalar.</div>`;
+  const intro=`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--accent);">📡 <strong>Lig haberleri</strong> — yalnızca senin <strong>${formatTblSlotLabel(G.team.tblKey)}</strong> grubun · ekonomi <strong>USD ($)</strong> · maçlar 4×5 dk (20 dk) + 5 dk uzatmalar.</div>`;
   box.innerHTML=intro+(arr.length?arr.map(x=>x.html).join(''):'<div style="padding:9px 12px;color:var(--text2);font-size:12px;">Henüz transfer duyurusu yok; Transfer Market veya zaman ilerleyince dolar.</div>');
 }
 
@@ -379,6 +379,9 @@ function renderTeamDetailPage(){
       return ad?escMatch(((u&&u.b)?u.b+' ':'')+ad):'—';
     })()],
     [t('👥 Taraftar grubu'),`${fs.group} · ~${fmtn(fan)} ${t('taraftar')}`],
+    /* FAZ 25 USD §2.5: "Sponsor: Charazay 2.0" yer tutucusu kalktı — gerçek gelir kalemi.
+       Ad kurgusaldır (gerçek marka adı kullanılmaz), tutar sponsorHaftalik() tek kaynağından. */
+    [t('📣 Sponsor'),`${escMatch(sponsorKademe().ad)} · <strong style="color:var(--green);">+${fmtMaas(sponsorHaftalik())}</strong>`],
     ['📊 Taraftar havası',fanLbl+' <div class="chem-bar" style="margin-top:6px;"><div class="chem-fill" style="width:'+Math.min(100,G.chemistry)+'%;"></div></div>'],
     ['📈 Oyuncu ort. güç',`${avg} <span style="color:var(--text2);font-size:11px;">(İlk 8 ort: ${top8avg})</span>`],
     ['⚡ Takım OVR',String(teamOvr)],

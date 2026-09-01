@@ -1,9 +1,19 @@
 const STAT_KEYS=['hucum','savunma','ribaund','topCalma','pas','hiz','kondisyon','dayaniklilik','sutIsabeti','serbest','topSurme','blok','zeka','liderlik'];
 const STAT_LABELS={hucum:'Hücum',savunma:'Savunma',ribaund:'Ribaund',topCalma:'Top Çalma',pas:'Pas',hiz:'Hız',kondisyon:'Kondisyon',dayaniklilik:'Dayanıklılık',sutIsabeti:'Şut İsabeti',serbest:'Serbest Atış',topSurme:'Top Sürme',blok:'Blok',zeka:'Zekâ',liderlik:'Liderlik'};
-/** bk = haftalık bakım (KR, ham); m = yükseltme bedeli. Bilet geliri artışı yükseltmeyi ~yarım sezonda amorti eder. */
+/** bk = haftalık bakım (USD, ham); m = yükseltme bedeli. Bilet geliri artışı yükseltmeyi ~yarım sezonda amorti eder. */
 /* FAZ 22 §5.5: yükseltme bedelleri yuvarlak gösterilir (ecoRoundPretty). */
-const ARENA_LVL=[{s:1,isim:'Küçük Arena',kap:5000,m:0,bk:150},{s:2,isim:'Orta Arena',kap:10000,m:ecoRoundPretty(820),bk:300},{s:3,isim:'Büyük Arena',kap:15000,m:ecoRoundPretty(1650),bk:500},{s:4,isim:'Dev Arena',kap:20000,m:ecoRoundPretty(3200),bk:800},{s:5,isim:'Mega Arena',kap:30000,m:ecoRoundPretty(6200),bk:1200}];
-/** stat: haftalık koç bonusunun işlediği özellik (null = altyapı çarpanı). Maaşlar ham KR/hafta. */
+/* ── FAZ 25 USD §2.3: ARENA TABLOSU ──
+   Gerçek referans: Türk basketbolunda maç başına ortalama seyirci ~1.474. Başlangıç
+   arenası 5.000 → 2.000 kişiye indi; kulüp gerçekten küçük bir salonda başlıyor.
+   Yükseltme bedelleri ve kapasiteler brifin çapa tablosudur (ecoRound ile TÜRETİLMEZ —
+   doğrudan dolar). Bakım (bk) kapasiteyle orantılı: ~$1,50/koltuk/hafta. */
+const ARENA_LVL=[
+  {s:1,isim:'Yerel Salon', kap:2000, m:0,       bk:3000},
+  {s:2,isim:'Şehir Arena', kap:4000, m:250000,  bk:6000},
+  {s:3,isim:'Büyük Arena', kap:7000, m:700000,  bk:10500},
+  {s:4,isim:'Dev Arena',   kap:12000,m:2000000, bk:18000},
+  {s:5,isim:'Mega Arena',  kap:20000,m:5000000, bk:30000}];
+/** stat: haftalık koç bonusunun işlediği özellik (null = altyapı çarpanı). Maaşlar ham USD/hafta. */
 const KOC_T=[{isim:'Hücum Koçu',ulke:null,ikon:'⚔️',uzm:'Hücum',stat:'hucum',bonus:'Haftada zayıf oyunculara +1 Hücum',maas:120},{isim:'Savunma Koçu',ulke:null,ikon:'🛡️',uzm:'Savunma',stat:'savunma',bonus:'Haftada zayıf oyunculara +1 Savunma',maas:120},{isim:'Kondisyon Koçu',ulke:null,ikon:'🏃',uzm:'Kondisyon',stat:'kondisyon',bonus:'Haftada zayıf oyunculara +1 Kondisyon',maas:90},{isim:'Şut Koçu',ulke:null,ikon:'🎯',uzm:'Şut İsabeti',stat:'sutIsabeti',bonus:'Haftada zayıf oyunculara +1 Şut',maas:135},{isim:'Altyapı Koçu',ulke:null,ikon:'🌱',uzm:'Altyapı',stat:null,bonus:'Altyapı +%5 gelişim',maas:150}];
 const ANTRENMAN_T=[{isim:'Hücum Antrenmanı',ikon:'⚔️',etki:'hucum',gun:5,maliyet:0},{isim:'Savunma Antrenmanı',ikon:'🛡️',etki:'savunma',gun:5,maliyet:0},{isim:'Kondisyon Koşusu',ikon:'🏃',etki:'kondisyon',gun:4,maliyet:0},{isim:'Çift Antrenman',ikon:'💪',etki:'all',gun:6,maliyet:ecoRound(42)}];
 const MAX_COACHES=5; /* Madde 29: teknik ekip üst sınırı (5 uzmanlık, her birinden en fazla 1) */
@@ -41,11 +51,11 @@ const INJURIES=[
    derin kopyasını uygular, böylece ileride eklenen her alan otomatik kapsanır.
    (Elle yazılan alan listesi kırılgandı; eksik kalan alan eski kariyerden devrediyordu.) */
 const DEFAULT_G={
-  coins:START_KR,wins:0,losses:0,points:0,chemistry:75,winStreak:0,
+  coins:START_USD,wins:0,losses:0,points:0,chemistry:75,winStreak:0,
   team:null,players:[],youth:[],marketPlayers:[],
   clubTransferPlayers:[],marketTab:'free',clubTransferFilter:'all',
   coaches:[],coachMarket:[],ligTeams:[],
-  arena:{s:1,kap:ARENA_LVL[0].kap,bk:ARENA_LVL[0].bk,isim:'Başlangıç Arena'},   /* F7-6: ham KR (ecoRound DEĞİL) — ARENA_LVL ile aynı ölçek */
+  arena:{s:1,kap:ARENA_LVL[0].kap,bk:ARENA_LVL[0].bk,isim:ARENA_LVL[0].isim},   /* F7-6: ham USD (ecoRound DEĞİL) — ARENA_LVL ile aynı ölçek */
   youthFacility:{s:1},
   selectedColor:'#f97316',
   activeTrainings:[],
@@ -288,7 +298,7 @@ function genDraftProspect(i){
   STAT_KEYS.forEach(k=>{ p[k]=Math.max(30,(Number(p[k])||50)-drop); });
   p.genel=Math.round(STAT_KEYS.reduce((s,k)=>s+p[k],0)/STAT_KEYS.length);
   p.potansiyel=Math.min(99,p.genel+rand(12,26));
-  p.maas=salaryKRFromGenel(p.genel);
+  p.maas=salaryUSDFromGenel(p.genel);
   p.hiddenPot=true; delete p.scouted; /* draft ipuçları scouting'e bağlı */
   p.enerji=100;
   return p;
@@ -322,7 +332,7 @@ function genPlayer(poz=null,ulkeArg=null){
     stats[k]=Math.min(99,v);
   });
   const genel=Math.round(STAT_KEYS.reduce((s,k)=>s+stats[k],0)/STAT_KEYS.length);
-  const maas=salaryKRFromGenel(genel);
+  const maas=salaryUSDFromGenel(genel);
   const mood=rand(60,90);
   const id=Math.random().toString(36).substr(2,11);
   const seed='pl'+id+hash32(isim+yas);
@@ -378,7 +388,7 @@ function botOvrKaydir(p,kayma){
       p[key]=Math.max(38,Math.min(99,Math.round(p[key]+k)));
     });
     p.genel=Math.round(STAT_KEYS.reduce((t,key)=>t+(p[key]||0),0)/STAT_KEYS.length);
-    if(typeof salaryKRFromGenel==='function') p.maas=salaryKRFromGenel(p.genel);
+    if(typeof salaryUSDFromGenel==='function') p.maas=salaryUSDFromGenel(p.genel);
     return p;
   }catch(e){ return p; }
 }
@@ -399,7 +409,7 @@ function genPlayerBounded(poz,minG,maxG,ulkeArg=null){
     fix=0;
     while(p.genel>maxG&&fix++<60){ const k=ch(STAT_KEYS); p[k]=Math.max(25,p[k]-1); p.genel=Math.round(STAT_KEYS.reduce((s,x)=>s+p[x],0)/STAT_KEYS.length); }
   }
-  p.maas=salaryKRFromGenel(p.genel);
+  p.maas=salaryUSDFromGenel(p.genel);
   return p;
 }
 
@@ -418,7 +428,7 @@ function genRoster(){
     const step=avg<target?rand(1,4):-rand(1,4);
     players[idx][k]=Math.min(99,Math.max(38,players[idx][k]+step));
     players[idx].genel=Math.round(STAT_KEYS.reduce((s,stt)=>s+players[idx][stt],0)/STAT_KEYS.length);
-    players[idx].maas=salaryKRFromGenel(players[idx].genel);
+    players[idx].maas=salaryUSDFromGenel(players[idx].genel);
     players[idx].potansiyel=Math.max(players[idx].genel,players[idx].potansiyel||0);
   }
   return ensureUniquePlayerNames(players);
@@ -447,7 +457,7 @@ function genSingleYouth(potBoost){
   pot=Math.max(pot,p.genel+11,Math.min(99,p.genel+rand(12,28)));
   pot=Math.min(99,pot);
   p.potansiyel=pot;
-  p.maas=Math.max(60,Math.round(salaryKRFromGenel(p.genel)*0.25));
+  p.maas=Math.max(60,Math.round(salaryUSDFromGenel(p.genel)*0.25));
   p.mood=rand(55,92);
   p.seed='yt'+p.id+hash32(p.isim+p.yas+p.potansiyel);
   p.academyProspect=!!prospect;
@@ -500,7 +510,7 @@ function genSingleMarketPlayer(idx){
      küresel olduğu için market de öyle: uyruk genPlayerBounded'ın kendi ch(ULKELER)
      çekilişinden gelir, kalite primi de kalkar (prim "yabancı" kategorisine bağlıydı). */
   const p=genPlayerBounded(ch(POZLAR),minG,maxG);
-  p.fiyat=transferFeeKR(p);
+  p.fiyat=transferFeeUSD(p);
   p.sure=rand(1,72);
   p.teklifler=rand(0,22);
   p.marketIdx=idx;
@@ -823,7 +833,21 @@ function getFanBaseStats(){
      "taraftar" sayısının artık gerçekten gelebilecek kitleyi göstermesi. Arena büyüdükçe
      (10.000+) taban yeniden bağlayıcı olur: büyük arena açmadan önce taraftar büyütmek
      gerekir. */
-  const count=4480+G.wins*288+(rank>=0?rank*19:0);
+  /* FAZ 25 USD: taban 4.480 → 1.900. Arena 2.000 kişilik olduğu için taraftar tavanı
+     başlangıçta anlamlı bir sınır (gerçek referans: maç başına ~1.474 seyirci).
+     İKİNCİ DÜZELTME (inisiyatif): büyüme yalnız G.wins'e bağlıydı, o da sezon başında
+     sıfırlanıyordu (match-prep.js: G.wins=0) — taraftar kitlesi her sezon başa dönüyor,
+     "kulüp büyüdükçe gelir artar" (§2.4) eğrisi hiç kurulamıyordu. Artık kalıcı sürücü
+     KARİYER galibiyetidir; sezon içi galibiyet üstüne küçük bir dalga ekler.
+     Divizyon da sayılır: üst divizyonda aynı kulübün kitlesi daha büyüktür. */
+  const kariyer=Number(G.careerWins)||0;
+  let divKat=1;
+  try{
+    const dv=(typeof divizyonNo==='function')?divizyonNo(key):null;
+    const dmax=(typeof DIV_SAYISI!=='undefined'?DIV_SAYISI:3);
+    if(dv!=null) divKat=1+0.45*Math.max(0,(dmax-dv)/Math.max(1,dmax-1));
+  }catch(e){}
+  const count=Math.round((1900+kariyer*118+G.wins*60+(rank>=0?rank*14:0))*divKat);
   let group='Yerel oluşum';
   if(count>=75000) group='Mega kitlesi';
   else if(count>=45000) group='Ulusal çekim gücü';

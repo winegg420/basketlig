@@ -762,7 +762,7 @@ function ageBotClubRoster(teamName,ligKey){
           p[k]=Math.max(30,Math.min(Math.min(99,Number(p.potansiyel)||99),v+Math.round(delta*(Math.random()<0.5?1:0.5))));
         });
         p.genel=Math.round(STAT_KEYS.reduce((a,k)=>a+(Number(p[k])||60),0)/STAT_KEYS.length);
-        p.maas=salaryKRFromGenel(p.genel);
+        p.maas=salaryUSDFromGenel(p.genel);
       }
       p.sezon={mac:0,pts:0,ast:0,reb:0};
       p.enerji=100;
@@ -1085,7 +1085,11 @@ function finishPlayoffs(){
   if(userChamp){
     unlockAchievement('sampiyon');
     unlockAchievement('playoffSampiyon');
-    const priz=ecoRound(rand(6000,12000));
+    /* FAZ 25 USD: ecoRound ile ×50 ölçekleniyordu → $300.000-$600.000. season-loop
+       ölçümü: pasif kulübün kasasının 3 sezonda 3 katına çıkmasının BAŞ nedeni buydu —
+       tek şampiyonluk, başlangıç kasasının 2,5-5 katını ödüyordu. Ödül artık açık dolar
+       ve bir sezonluk kârın mertebesinde. rand() çağrı sayısı değişmedi. */
+    const priz=rand(90000,150000);
     txn('Playoff şampiyonluk ödülü',priz);
     updateCoins();
     /* Madde 8/9: itibar + koç skoru artışı. */
@@ -1093,7 +1097,7 @@ function finishPlayoffs(){
     G.managerHistory=Array.isArray(G.managerHistory)?G.managerHistory:[];
     G.managerHistory.push({year:G.playoff.year,basari:'Playoff Şampiyonluğu'});
     awardCoaches('Playoff Şampiyonluğu',10);
-    showNotif(`🏆 ${G.team.isim} PLAYOFF ŞAMPİYONU! +${fmtn(priz)} KR · itibar arttı`,{critical:true});
+    showNotif(`🏆 ${G.team.isim} PLAYOFF ŞAMPİYONU! +${fmtPara(priz)} · itibar arttı`,{critical:true});
   } else {
     showNotif(`🏆 Playoff şampiyonu: ${champ||'—'}`);
   }
@@ -1406,12 +1410,12 @@ function startLeagueSeason(){
           ayrilanlar.push(p);
           return;
         }
-        const yeniMaas=salaryKRFromGenel(p.genel);
+        const yeniMaas=salaryUSDFromGenel(p.genel);
         const imza=yeniMaas*2;
         p.maas=yeniMaas;
         p.kontratSezon=rand(1,3);
         txn('Sözleşme yenileme: '+p.isim,-imza);
-        pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--gold);">✍️ <strong>${p.isim}</strong> sözleşme yeniledi — yeni maaş ${fmtn(yeniMaas)} KR/hf, imza bedeli ${fmtn(imza)} KR (${p.kontratSezon} sezon).</div>`);
+        pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--gold);">✍️ <strong>${p.isim}</strong> sözleşme yeniledi — yeni maaş ${fmtMaas(yeniMaas)}, imza bedeli ${fmtPara(imza)} (${p.kontratSezon} sezon).</div>`);
       }
       /* Paket 2 (14. oturum): sezon sıfırlanmadan kariyer toplamına ekle + kulüp rekorları. */
       p.kariyerPts=(Number(p.kariyerPts)||0)+((p.sezon&&Number(p.sezon.pts))||0);
@@ -1447,7 +1451,7 @@ function startLeagueSeason(){
             });
             p.genel=Math.round(STAT_KEYS.reduce((a,k)=>a+(Number(p[k])||0),0)/STAT_KEYS.length);
             if(p.genel>pot) p.genel=pot;
-            p.maas=salaryKRFromGenel(p.genel);
+            p.maas=salaryUSDFromGenel(p.genel);
             if(typeof refreshRole==='function'){ try{ refreshRole(p); }catch(e){} }
           }
         }
@@ -1471,7 +1475,7 @@ function startLeagueSeason(){
         });
         showNotif(`⚠️ ${ayrilanlar.length} oyuncu sözleşmesi bitti ve takımdan ayrıldı!`,{critical:true});
       } else {
-        ayrilanlar.forEach(p=>{ p.maas=salaryKRFromGenel(p.genel); p.kontratSezon=rand(1,2); });
+        ayrilanlar.forEach(p=>{ p.maas=salaryUSDFromGenel(p.genel); p.kontratSezon=rand(1,2); });
       }
     }
     /* Madde 22: emeklilik — ileri yaşta kulüpten ayrılır, slot boşalır (kadro min 8 korunur). */
@@ -1496,7 +1500,7 @@ function startLeagueSeason(){
     grads.forEach(p=>{
       G.youth=G.youth.filter(x=>x.id!==p.id);
       if(rosterHasRoom(false)){
-        p.maas=salaryKRFromGenel(p.genel);
+        p.maas=salaryUSDFromGenel(p.genel);
         if(p.enerji==null||p.enerji==='') p.enerji=100;
         p.kontratSezon=rand(2,3);
         p.sezon={mac:0,pts:0,ast:0,reb:0};
@@ -1716,14 +1720,14 @@ function _cupCrown(){
   const userWon=c.champion===G.team.isim;
   pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--gold);">🏅 <strong>Ulusal Kupa ${c.year} şampiyonu: ${escMatch(c.champion)}</strong>${userWon?' — KUPA SENİN! 🎉':''}</div>`);
   if(userWon){
-    const odul=ecoRound(3200);   /* lig şampiyonluğundan düşük, ekonomi bandını bozmaz */
+    const odul=55000;   /* FAZ 25 USD: lig şampiyonluğundan düşük, ekonomi bandını bozmaz */
     txn('Kupa şampiyonluk ödülü',odul);
     unlockAchievement('kupaSampiyon');
     G.managerRep=(Number(G.managerRep)||0)+3;
     G.managerHistory=Array.isArray(G.managerHistory)?G.managerHistory:[];
     G.managerHistory.push({year:c.year,basari:'Ulusal Kupa şampiyonluğu'});
     awardCoaches('Kupa şampiyonluğu',3);
-    showNotif(`🏅 ULUSAL KUPA ŞAMPİYONU! +${fmtn(odul)} KR ödül.`,{critical:true});
+    showNotif(`🏅 ULUSAL KUPA ŞAMPİYONU! +${fmtPara(odul)} ödül.`,{critical:true});
   }
 }
 /** Sezon kapanırken kupa hâlâ bitmemişse kalanını komple simüle et. */

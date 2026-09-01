@@ -5,12 +5,22 @@ function txn(label,amount){
   if(!Array.isArray(G.ledger)) G.ledger=[];
   G.ledger.unshift({d:G.gameDay||1,l:String(label),a});
   if(G.ledger.length>220) G.ledger.length=220;
-  if(G.coins>=100000) unlockAchievement('zengin');
-  if(G.coins>=1000000) unlockAchievement('milyoner');
+  /* FAZ 25 USD: eşikler yeni ölçeğe taşındı. Başlangıç kasası $120.000 olduğu için
+     eski 100.000 eşiği KARİYERİN İLK SANİYESİNDE açılıyordu. */
+  if(G.coins>=500000) unlockAchievement('zengin');
+  if(G.coins>=5000000) unlockAchievement('milyoner');
   try{ updateCoins(); }catch(e){}
 }
 
-/** Ev maçı bilet geliri: kapasite × doluluk (form ile %45-95) × 1,2 KR bilet. Arena yatırımının getirisi budur. */
+/* ── FAZ 25 USD §2.3: BİLET FİYATI GERÇEK DOLARDIR ──
+   Eski model "1,2 birim/bilet" sabiti + soyut fiyat çarpanıydı; oyuncu biletini kaça
+   sattığını göremiyordu. Artık bant doğrudan dolardır ve gelir kapasite × doluluk ×
+   fiyat olarak okunur. Normal (varsayılan) seviye $13 — 2.000 kişilik arenada ~%77
+   dolulukla maç başına ≈ $20.000 (brif §2.2). */
+const BILET_FIYAT=[8,10,13,18,25];
+/** Seçili bilet fiyatı (USD). */
+function biletFiyati(){ return BILET_FIYAT[ticketPriceLevel()]; }
+/** Ev maçı bilet geliri: kapasite × doluluk × bilet fiyatı. Arena yatırımının getirisi budur. */
 /** Madde 23: doluluk güncel forma bağlı — son N maçın galibiyet oranı (yoksa sezon oranı). */
 function recentUserForm(n){
   n=n||5;
@@ -31,14 +41,16 @@ function homeTicketIncome(){
   const budgetMul=(Number(G.budgetPenalty)||0)>0?0.90:1; /* Faz 4.3: başkan bütçe kısıtı sezonu */
   /* B5: zorluk gelir çarpanı (normal = 1). */
   const zorGelir=(typeof difficultyCfg==='function')?(difficultyCfg().gelir||1):1;
-  return Math.round((G.arena&&G.arena.kap||5000)*occ*1.2*ticketPriceFactor()*budgetMul*zorGelir);
+  return Math.round((G.arena&&G.arena.kap||ARENA_LVL[0].kap)*occ*biletFiyati()*budgetMul*zorGelir);
 }
 /** Madde 24: bilet fiyatı çarpanı — kullanıcı fiyatı belirler; yüksek fiyat gelir/bilet ↑ ama doluluk ↓. */
 function ticketPriceLevel(){ const v=Number(G.ticketPrice); return Number.isFinite(v)?Math.max(0,Math.min(4,v)):2; }
+/* FAZ 25 USD: fiyat çarpanı ARTIK GELİRE UYGULANMAZ — gelir doğrudan bilet fiyatını
+   (BILET_FIYAT) çarpar, yoksa fiyat iki kez sayılırdı. Fonksiyon, fiyatın normale göre
+   göreli seviyesini isteyen ekranlar için duruyor. */
 function ticketPriceFactor(){
-  /* 0:Çok ucuz .. 4:Çok pahalı. Fiyat çarpanı gelire, ayrı doluluk cezası occ'a uygulanır. */
   const lvl=ticketPriceLevel();
-  return [0.7,0.85,1.0,1.2,1.45][lvl];
+  return BILET_FIYAT[lvl]/BILET_FIYAT[2];
 }
 /** FAZ 24 §5: bir maça gelebilecek en fazla seyirci = taraftar tabanı. Katsayı 1,6 iken
  *  2.800 taraftarlı kulüp 4.480 kişi ağırlayabiliyordu — taraftardan çok seyirci.
@@ -53,7 +65,12 @@ function arenaDolulukOrani(){
   const seasonPlayed=(G.wins+G.losses)||0;
   const seasonWr=seasonPlayed?G.wins/Math.max(1,seasonPlayed):0.5;
   const wr=form!=null?form*0.7+seasonWr*0.3:seasonWr;
-  const formTabanli=(0.55+wr*0.35)*ticketDemandFactor();
+  /* FAZ 25 USD: doluluk artık forma daha DUYARLI (taban 0,55→0,42 · yelpaze 0,35→0,50).
+     Eski bant, son sıradaki kulübe bile %60 doluluk veriyordu; küçük bir salonda dahi
+     kimsenin gelmediği bir sezon mümkün olmuyor, kötü yönetim cezasız kalıyordu
+     (ölçüldü: pasif kulüp 7 sezon yaşıyor, bot iflası %8 — hedef 2-4 sezon / %10-25).
+     Yeni bant: sonuncu ~%49 · orta ~%67 · şampiyon ~%92. */
+  const formTabanli=(0.42+wr*0.50)*ticketDemandFactor();
   const kap=(G.arena&&G.arena.kap)||5000;
   let taraftarTavani=1;
   try{ taraftarTavani=(getFanBaseStats().count*TARAFTAR_KATSAYI)/Math.max(1,kap); }catch(e){}
@@ -68,19 +85,120 @@ function ticketDemandFactor(){
   return [1.15,1.07,1.0,0.88,0.72][lvl]; /* pahalı → doluluk düşer */
 }
 
+/* ── FAZ 25 USD §2.5: SPONSOR GELİRİ ──
+   "Sponsor: Charazay 2.0" yer tutucusuydu; artık gerçek bir haftalık gelir kalemi.
+   Kademe puanı üç kaynaktan gelir — lig sırası (üst sıra = daha çok ilgi), taraftar
+   sayısı ve geçen sezonun galibiyet oranı. Divizyon da sayılır: üst divizyonda aynı
+   sıra daha değerlidir. Tek kaynak burasıdır; ekran da gelir de buradan okur. */
+function sponsorPuani(){
+  let p=0;
+  try{
+    /* taraftar: 2.000 taraftar ≈ 10 puan, 20.000 ≈ 45 puan (logaritmik doyum) */
+    const fan=(typeof getFanBaseStats==='function')?(getFanBaseStats().count||0):0;
+    p+=Math.min(48,Math.max(0,Math.log10(Math.max(1,fan/2000))*40));
+    /* lig sırası: 1. sıra +26, son sıra +0 */
+    const sira=(typeof userLigSirasi==='function')?userLigSirasi():null;
+    const n=(typeof LEAGUE_SIZE!=='undefined'?LEAGUE_SIZE:20);
+    if(sira!=null) p+=26*Math.max(0,(n-sira)/Math.max(1,n-1));
+    /* geçen sezon başarısı */
+    const oy=(Number(G.wins)||0)+(Number(G.losses)||0);
+    if(oy>=4) p+=14*((Number(G.wins)||0)/oy);
+    /* DİVİZYON ÇARPANDIR, TOPLANAN PUAN DEĞİL.
+       Toplanan puan olarak eklendiğinde alt divizyon kulübü taraftar + sıra + form ile
+       88 puana çıkıp ULUSAL kademeye ulaşabiliyordu; season-loop ölçümünde pasif kulübün
+       sponsor geliri 3 sezonda $9.000/hf → $14.700/hf oldu ve kasa şişmesinin (K2) en
+       büyük kalemi buydu. Doğrusu: aynı başarı üst divizyonda daha değerlidir. En alt
+       divizyon 0,45 · en üst 1,00 ile çarpılır — alt divizyon tavanı bölgesel kademedir. */
+    const dv=(typeof divizyonNo==='function'&&G.team)?divizyonNo(G.team.tblKey||'tbl'):null;
+    const dmax=(typeof DIV_SAYISI!=='undefined'?DIV_SAYISI:3);
+    if(dv!=null) p*=0.45+0.55*Math.max(0,Math.min(1,(dmax-dv)/Math.max(1,dmax-1)));
+  }catch(e){}
+  return Math.max(0,Math.round(p));
+}
+/** Sponsor kademesi (ad + haftalık tutar). */
+function sponsorKademe(){
+  const p=sponsorPuani();
+  let k=SPONSOR_KADEME[0];
+  for(const c of SPONSOR_KADEME){ if(p>=c.min) k=c; }
+  return k;
+}
+/** Haftalık sponsor geliri (USD) — kademe tutarı, kademe içinde puana göre %0-25 prim. */
+function sponsorHaftalik(){
+  const k=sponsorKademe();
+  const ix=SPONSOR_KADEME.indexOf(k);
+  const ust=SPONSOR_KADEME[ix+1];
+  const oran=ust?Math.max(0,Math.min(1,(sponsorPuani()-k.min)/Math.max(1,ust.min-k.min))):1;
+  const zorGelir=(typeof difficultyCfg==='function')?(difficultyCfg().gelir||1):1;
+  return Math.round(k.hf*(1+0.25*oran)*zorGelir);
+}
+
 function weeklyWageBill(){
   /* F9-2: enflasyon eskiden YALNIZ arena bakımına uygulanıyordu; maaşlar sezonlar boyunca
      sabit kalınca gelir gideri kolayca aşıyor, kasa hiçbir transfer yapılmadan sezon başına
-     ~45.000 KR büyüyordu (3 sezonda 5,8×). Artık tüm işletme giderleri sezonla artar ve
+     ~45.000 birim büyüyordu (3 sezonda 5,8×). Artık tüm işletme giderleri sezonla artar ve
      akademinin süregelen bir işletme bedeli var. */
   const enf=ecoInflationMul();
-  const oy=Math.round((G.players||[]).reduce((s,p)=>s+(Number(p.maas)||0),0)*enf);
-  const ko=Math.round((G.coaches||[]).reduce((s,c)=>s+(Number(c.maas)||0),0)*enf);
-  const iz=Math.round((G.scouts||[]).reduce((s,c)=>s+(Number(c.maas)||0),0)*enf); /* Faz 5.1 */
+  /* FAZ 25 USD (inisiyatif düzeltmesi): İMZALI MAAŞA ENFLASYON İKİ KEZ UYGULANIYORDU.
+     salaryUSDFromGenel zaten *ecoInflationMul() ile çarpıyor — yani maaş, sözleşme
+     imzalandığı sezonun enflasyonunu İÇİNDE taşıyor. weeklyWageBill bir kez daha
+     çarpınca aynı kadro 10. sezonda 1,36 yerine 1,85 katına çıkıyordu ve bu, hemen
+     yukarıdaki "imzalı maaşlar sözleşme bitene dek DEĞİŞMEZ" kuralıyla doğrudan
+     çelişiyordu. Ölçüldü: y10 ham maaş 42.840, faturaya 58.262 yazılıyordu.
+     İmzalı ücretler (oyuncu/koç/izci) artık ham geçer; enflasyon yalnız İŞLETME
+     kalemlerine (arena bakımı, akademi, kulüp işletmesi) uygulanır. */
+  const oy=Math.round((G.players||[]).reduce((s,p)=>s+(Number(p.maas)||0),0));
+  const ko=Math.round((G.coaches||[]).reduce((s,c)=>s+(Number(c.maas)||0),0));
+  const iz=Math.round((G.scouts||[]).reduce((s,c)=>s+(Number(c.maas)||0),0)); /* Faz 5.1 */
   const ar=Math.round(((G.arena&&Number(G.arena.bk))||0)*enf);
   const ay=Math.round(ecoRound(14)*Math.max(1,((G.youthFacility&&Number(G.youthFacility.s))||1))*enf);
-  return {oy,ko,iz,ar,ay,top:oy+ko+iz+ar+ay};
+  /* FAZ 25 USD: KULÜP İŞLETME GİDERİ — yeni kalem.
+     Ölçüldü: lig 20 takım · 19 tur · sezon 30 gün ⇒ ekonomi haftası başına 4,43 maç,
+     bunun 2,21'i ev maçı. Brifin "$20.000/maç bilet geliri" çapası bu kadansla haftada
+     ~$44.000 kapı hasılatı demek; kadro maaşı ($31.000) + tesis ($2.500) buna karşı çok
+     hafif kalıyor ve kulüp hiçbir şey yapmadan zenginleşiyordu (brif §2.2'nin "haftalık
+     denge sıfıra yakın, hafif negatif" hedefinin tam tersi).
+     Eksik olan kalem gerçekte VAR: maç günü işletmesi — deplasman seyahati, sağlık
+     ekibi, ekipman, salon işletmesi, güvenlik. Maç başına alınır, arena büyüklüğü ve
+     kadro genişliğiyle artar; böylece hem kadans hem büyüme ile doğru ölçeklenir.
+     Bu, brifin §3.4 "aradaki katsayıları ayarla" iznini kullanan TEK kalemdir. */
+  const is=Math.round(isletmeGideri()*enf);
+  /* FAZ 25 USD: EKSİK KADRO BEDELİ.
+     season-loop ölçümü: pasif kulübün kadrosu sözleşme bitişi/emeklilikle 15 → 8e
+     iniyor, maaş yükü YARILANIYOR ama bilet/sponsor/prim geliri aynı kalıyor. Sonuç,
+     hiçbir şey yapmayan kulübün kasasının 3 sezonda 3,2 katına çıkmasıydı — brifin
+     "pasif kulüp 2-4 sezonda iflas etmeli" hedefinin tam tersi. (K2 kapısı bu yüzden
+     FAZ 25 ÖNCESİNDE de 2,03× ile sınırdaydı; ölçek büyüyünce açık görünür oldu.)
+     Lig asgari kadro şartı koyar: 12 kişiyi dolduramayan kulüp geçici oyuncu/kiralama
+     bedeli öder. Böylece kadroyu eritmek artık TASARRUF DEĞİL. */
+  const ek=Math.round(eksikKadroBedeli()*enf);
+  return {oy,ko,iz,ar,ay,is,ek,top:oy+ko+iz+ar+ay+is+ek};
 }
+/** Haftalık kulüp işletme gideri (USD) — maç günü işletmesi + salon + lojistik.
+ *  Taban maç kadansından gelir (haftada ~4,4 maç); arena kapasitesi ve kadro genişliği
+ *  ile büyür. Kulüp büyüdükçe gider de büyür — büyüme kendiliğinden bedava değildir. */
+const ISLETME_MAC_BASI=4820;      /* maç günü başına taban işletme */
+const ISLETME_HAFTA_MAC=4.43;     /* ölçülen: 19 tur / 30 gün ⇒ hafta başına maç */
+/** Lig asgari kadrosu — altına düşen kulüp boş kadro yerlerini geçici sözleşmeyle
+ *  doldurmak zorundadır ve bedelini öder. Tek kaynak burasıdır. */
+const KADRO_ASGARI=12;
+function eksikKadroBedeli(){
+  const n=((G.players||[]).length)||0;
+  const eksik=Math.max(0,KADRO_ASGARI-n);
+  if(!eksik) return 0;
+  /* Bedel kulübün kendi ücret seviyesindendir — zayıf kulüp ucuz, güçlü kulüp pahalı
+     doldurur. Kadro tamamen boşsa lig taban ücreti kullanılır. */
+  const ortalama=n?((G.players||[]).reduce((s,p)=>s+(Number(p.maas)||0),0)/n):salaryUSDFromGenel(55);
+  return Math.round(eksik*ortalama);
+}
+function isletmeGideri(){
+  const kap=(G.arena&&Number(G.arena.kap))||ARENA_LVL[0].kap;
+  /* İşletme gideri kadro ERİTİLEREK ucuzlatılamaz — asgari kadro üzerinden ölçülür. */
+  const kadro=Math.max(KADRO_ASGARI,((G.players||[]).length||KADRO_ASGARI));
+  const arenaKat=1+Math.max(0,(kap-ARENA_LVL[0].kap))/ARENA_LVL[0].kap*0.28;
+  const kadroKat=1+(kadro-12)*0.02;
+  return Math.max(0,Math.round(ISLETME_MAC_BASI*ISLETME_HAFTA_MAC*arenaKat*kadroKat));
+}
+
 /* Faz 5.1: Her ekonomi haftası izciler atandıkları havuzda potansiyel keşfeder (kalite = keşif adedi). */
 function processScoutingWeek(){
   try{
@@ -150,7 +268,7 @@ function botClubTransfer(teamName,ligKey){
     const np=genPlayerBounded(eski.poz||ch(POZLAR),Math.max(50,target-2),target+2);
     np.id='b'+hash32(ck+wi+Date.now())+'_'+wi;
     np.seed='bt'+ck+wi+(Date.now()%100000);
-    np.maas=salaryKRFromGenel(np.genel);
+    np.maas=salaryUSDFromGenel(np.genel);
     roster[wi]=np;
     ensureUniquePlayerNames(roster);
     cache[ck]=row;
@@ -191,7 +309,7 @@ function maybeIncomingOffers(){
     if(!pick||G.pendingOffers.some(o=>o.playerId===pick.id)) return;
     const peers=(typeof userLeaguePeers==='function')?userLeaguePeers():[];
     const club=peers.length?ch(peers):'Bir kulüp';
-    const asking=transferFeeKR(pick);
+    const asking=transferFeeUSD(pick);
     const offer=Math.round(asking*(0.7+Math.random()*0.65)); /* %70..135 */
     const dec=playerAcceptsOffer(pick,offer,asking,{betterTeam:Math.random()<0.5});
     if(!dec.wantsToGo&&Math.random()<0.6) return;  /* oyuncu ilgilenmiyorsa çoğu teklif düşer */
@@ -221,13 +339,28 @@ function aiWeeklyLeagueActivity(){
         /* FAZ C: haber artık kulübün MEVKİ İHTİYACINI da anlatıyor. */
         const POZ_AD={PG:'oyun kurucu',SG:'şutör guard',SF:'kısa forvet',PF:'uzun forvet',C:'pivot'};
         const detay=tr?` (OVR ${tr.inP.genel}${tr.poz?`, ${POZ_AD[tr.poz]||tr.poz} ihtiyacı`:''}, ${tr.outP.isim} yerine)`:'';
-        pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--blue);">💰 <strong>${escMatch(t)}</strong> kadrosunu güçlendirdi: <strong>${escMatch(isim)}</strong>${detay} — ${fmtn(fee)} KR</div>`);
+        pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--blue);">💰 <strong>${escMatch(t)}</strong> kadrosunu güçlendirdi: <strong>${escMatch(isim)}</strong>${detay} — ${fmtPara(fee)}</div>`);
       }
     }
   }catch(e){ dbg('aiWeekly',e); }
 }
 
 /** Oyun günü 7'nin katlarını geçtikçe: maaş+bakım kesilir, koç bonusları ve bot hareketleri işler. */
+/* ── FAZ 25 USD: HAFTALIK GELİR BEKLENTİSİ ──
+   Bilanço kartı eskiden "bilet geliri − haftalık gider" diyordu ve İKİ hatası vardı:
+   (a) sponsoru hiç saymıyordu (FAZ 25 öncesi sponsor yoktu), (b) haftada TEK ev maçı
+   varsayıyordu — oysa ölçüldü, ekonomi haftası başına 2,21 ev maçı düşüyor. Sonuç,
+   kullanıcının kâr ederken zarardaymış gibi okuması olurdu (FAZ 22 §2'nin tersi).
+   Tek kaynak burasıdır; ekran da denetim aracı da buradan okur. */
+const EV_MAC_HAFTA=2.21;   /* ölçülen: 19 tur / 30 gün / 20 takım ⇒ hafta başına ev maçı */
+function haftalikGelirBeklentisi(){
+  const bilet=homeTicketIncome();
+  const sponsor=sponsorHaftalik();
+  const gider=weeklyWageBill();
+  const gelir=Math.round(bilet*EV_MAC_HAFTA)+sponsor;
+  return {bilet,biletHafta:Math.round(bilet*EV_MAC_HAFTA),sponsor,gelir,gider:gider.top,net:gelir-gider.top,w:gider};
+}
+
 function processEconomyWeeks(){
   if(!G.team) return;
   if(G.lastEcoDay==null) G.lastEcoDay=1;
@@ -237,10 +370,13 @@ function processEconomyWeeks(){
     G.lastEcoDay+=7;
     const w=weeklyWageBill();
     txn('Haftalık maaş + bakım',-w.top);
+    /* FAZ 25 USD §2.5: sponsor artık gerçek gelir — gider ile aynı haftada işlenir. */
+    const sp=sponsorHaftalik();
+    if(sp>0) txn('Sponsor geliri — '+sponsorKademe().ad,sp);
     applyWeeklyCoachBonuses();
     processScoutingWeek(); /* Faz 5.1: izci ağı otomatik keşif */
     aiWeeklyLeagueActivity();
-    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">🧾 Haftalık gider: <strong>-${fmtn(w.top)} KR</strong> (oyuncu ${fmtn(w.oy)} · koç ${fmtn(w.ko)}${w.iz?' · izci '+fmtn(w.iz):''} · arena ${fmtn(w.ar)}${w.ay?' · akademi '+fmtn(w.ay):''})</div>`);
+    pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">🧾 Haftalık gider: <strong>-${fmtPara(w.top)}</strong> (oyuncu ${fmtPara(w.oy)} · koç ${fmtPara(w.ko)}${w.iz?' · izci '+fmtPara(w.iz):''} · arena ${fmtPara(w.ar)}${w.ay?' · akademi '+fmtPara(w.ay):''}${w.is?' · işletme '+fmtPara(w.is):''}) · sponsor <strong>+${fmtPara(sp)}</strong></div>`);
     processBankruptcy();
   }
 }
@@ -250,7 +386,7 @@ function forcedPlayerSale(){
   if(!G.players||G.players.length<=8) return null;
   const p=G.players.slice().sort((a,b)=>(Number(b.maas)||0)-(Number(a.maas)||0))[0];
   if(!p) return null;
-  const gelir=Math.max(1,Math.round(transferFeeKR(p)*0.8));
+  const gelir=Math.max(1,Math.round(transferFeeUSD(p)*0.8));
   G.players=G.players.filter(x=>x.id!==p.id);
   txn('Zorunlu satış (mali kriz): '+p.isim,gelir);
   return {p,gelir};
@@ -263,14 +399,14 @@ function processBankruptcy(){
     if(G.season) G.season.hadCrisis=true; /* Paket B: "Küllerinden" — bu sezon kriz görüldü */
     if(G.bankruptWeeks===1){
       showNotif('⚠️ Kulüp mali sıkıntıda — maaşlar tam ödenemiyor. Federasyon/başkan devreye giriyor. Toparlanmazsan zorunlu oyuncu satışı başlar.',{critical:true});
-      pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">🏦 <strong>Mali uyarı:</strong> Kasa negatif (${fmtn(G.coins)} KR). Bir hafta içinde toparlanmazsa başkan zorunlu satışa başlayacak.</div>`);
+      pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">🏦 <strong>Mali uyarı:</strong> Kasa negatif (${fmtPara(G.coins)}). Bir hafta içinde toparlanmazsa başkan zorunlu satışa başlayacak.</div>`);
     } else {
       let sold=0;
       while(G.coins<0 && sold<2 && G.players.length>8){
         const r=forcedPlayerSale();
         if(!r) break;
         sold++;
-        pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">🏦 <strong>Zorunlu satış:</strong> Başkan mali krizde <strong>${r.p.isim}</strong> oyuncusunu ${fmtn(r.gelir)} KR karşılığında sattı.</div>`);
+        pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">🏦 <strong>Zorunlu satış:</strong> Başkan mali krizde <strong>${r.p.isim}</strong> oyuncusunu ${fmtPara(r.gelir)} karşılığında sattı.</div>`);
       }
       if(sold){
         showNotif(`🏦 Mali kriz: başkan ${sold} oyuncuyu zorunlu sattı — maaş yükü azaldı, kasa toparlanıyor.`,{critical:true});
@@ -293,7 +429,7 @@ const ACHV=[
   {id:'sampiyon',ad:'Şampiyon',desc:'Sezonu 1. sırada bitir',ikon:'🏆'},
   {id:'transfer',ad:'İlk İmza',desc:'Marketten oyuncu transfer et',ikon:'✍️'},
   {id:'satis',ad:'Pazarlıkçı',desc:'Bir oyuncunu sat',ikon:'💼'},
-  {id:'zengin',ad:'Kasa Doldu',desc:'100.000 KR bakiyeye ulaş',ikon:'💰'},
+  {id:'zengin',ad:'Kasa Doldu',desc:'$500.000 bakiyeye ulaş',ikon:'💰'},
   {id:'megaArena',ad:'Mega Arena',desc:'Arenayı son seviyeye getir',ikon:'🏟️'},
   {id:'altyapi',ad:'Gençlerin Gücü',desc:'Altyapıdan oyuncu yükselt',ikon:'🌱'},
   {id:'sezonTamam',ad:'Maraton',desc:'Bir sezonu tamamla',ikon:'🎽'},
@@ -309,7 +445,7 @@ const ACHV=[
   {id:'dogruSecim',ad:'Doğru Seçim',desc:'Draftta seçtiğin bir oyuncu maçın yıldızı (MVP) olsun',ikon:'🎯'},
   {id:'tersineDonus',ad:'Tersine Dönüş',desc:'Playoff serisinde 0-2 geriden gelip seriyi kazan',ikon:'🔄'},
   {id:'yenilmezSezon',ad:'Yenilmez Sezon',desc:'Düzenli sezonu hiç kaybetmeden bitir',ikon:'💎'},
-  {id:'milyoner',ad:'Milyoner',desc:'1.000.000 KR bakiyeye ulaş',ikon:'🤑'},
+  {id:'milyoner',ad:'Milyoner',desc:'$5.000.000 bakiyeye ulaş',ikon:'🤑'},
   {id:'yuzMac',ad:'Yüz Maç Kulübü',desc:'Kariyerinde 100 maça çık',ikon:'💯'},
   {id:'tamEkip',ad:'Tam Kadro Ekip',desc:'Teknik ekibi 5 koçla doldur',ikon:'📋'},
   /* 14. oturum (Paket 1): ulusal kupa */
