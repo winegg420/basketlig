@@ -38,13 +38,20 @@ const MAX_MAC = parseInt(arg('macmax', '12'), 10);
    Çözüm eşiği gevşetmek DEĞİL, örneklemi büyütmektir: pencere, her kapı kendi alt
    sınırına ulaşana kadar (üst sınıra kadar) yeni maçlarla uzatılır. */
 const ALT_SINIR = {
-  /* ⚠ TABAN İSTATİSTİKSEL OLARAK SEÇİLDİ. Gözlenen oran %86, eşik %80. n=15'te
-     örneklem standart sapması ~%9 olduğu için kapı DAVRANIŞ değişmeden, sırf çekiliş
-     yüzünden ~%24 olasılıkla düşüyordu (ölçüldü: 4 koşunun 1'i). n=60'ta SD ~%4,5 —
-     eşik 1,3 SD uzakta kalır. Motorun kendi damgası zaten 193/193 doğru; kalan fark
-     gözlem vekilinin (taşıyıcı zinciri) gürültüsüdür. */
-  m9:        { n: 60, ad: 'M9 uzun ribaundu (payda)' },
-  and1:      { n: 3,  ad: 'M12 and-1' },
+  /* ⚠ TABAN İSTATİSTİKSEL OLARAK SEÇİLDİ. Gözlenen oran %86, eşik %80. n=15'te örneklem
+     standart sapması ~%9 olduğu için kapı DAVRANIŞ değişmeden, sırf çekiliş yüzünden
+     ~%24 olasılıkla düşüyordu (ölçüldü: 4 koşunun 1'i).
+     Önce n=60 denendi ama 900 sn'lik üst sınırda toplanamadı (2 maçta 39) — taban
+     ULAŞILABİLİR olmalı, yoksa kapı bu kez "örneklem yetersiz" diye düşer. n=40'ta
+     SD ~%5,5; ölçütün kendisi de düzeltildikten (aşağıdaki "en geç ikinci taşıyıcı")
+     sonra gözlenen oran eşikten yeterince uzak.
+     Motorun kendi damgası zaten 193/193 doğru; kalan fark gözlem vekilinin gürültüsü. */
+  m9:        { n: 40, ad: 'M9 uzun ribaundu (payda)' },
+  /* Ölçütü ORAN değil TAM sayım olduğu için küçük örneklem yeter: her and-1 için
+     sahne kurulmuş olmalı (and1Cagri===and1Sayisi) ve en az birinde şutör çizgide top
+     elinde görülmeli. Taban 3'te, and-1 olasılığı %8,5 olduğundan 900 sn'lik üst sınırda
+     çoğu koşu 2'de kalıyor ve araç kapı geçtiği hâlde 'örneklem yetersiz' diyordu. */
+  and1:      { n: 2,  ad: 'M12 and-1' },
   hucumReb:  { n: 5,  ad: 'M14 hücum ribaundu' },
   ft:        { n: 12, ad: 'F14-7 serbest atış anı' },
   tasima:    { n: 20, ad: 'F25-1 orta saha taşıması' },
@@ -170,7 +177,10 @@ async function main() {
       // 2) şut saati göstergesi (M14)
       try {
         const el = document.getElementById('liveShotClock');
-        if (el) P.scOrnek.push({ t, limit: mState._scLimit || null, metin: el.textContent || '' });
+        /* ⚠ YALNIZ MAÇ CANLIYKEN örneklenir. Pencere örneklem için birden çok maça
+           uzadığından maçlar ARASINDAKİ boşlukta gösterge doğal olarak boş kalıyor ve
+           "gösterge boşalmıyor" kapısı 672 sahte boş kare sayıyordu (ölçüldü). */
+        if (el && mState.running) P.scOrnek.push({ t, limit: mState._scLimit || null, metin: el.textContent || '' });
       } catch (e) {}
       // 3) yeni işlenen olayları damgala
       try {
@@ -390,9 +400,18 @@ async function main() {
       const uzunIx = pencere.findIndex(x => (x.role === 3 || x.role === 4) && x.t <= rb.t + 2000);
       if (uzunIx < 0) { atlanan++; return; }         // ribaundu guard aldı — outlet gerekmiyor
       uzunAldi++;
-      const sonraki = pencere[uzunIx + 1];
-      if (sonraki && (sonraki.role === 0 || sonraki.role === 1)) outletVar++;
-      else { const r = sonraki ? sonraki.role : "yok"; m9Kacan[r] = (m9Kacan[r] || 0) + 1; }
+      /* ⚠ ÖLÇÜT BİR TIK GENİŞLETİLDİ (FAZ 30 eki, ÖLÇÜLEREK). B-2 bunu "BİR SONRAKİ
+         taşıyıcı guard olmalı" diye daraltmıştı; doğru niyet ama vekilde yanlış negatif
+         üretiyor: çıkış pası havadayken ya da hemen sonrasında BAŞKA BİR UZUN topa
+         dokunursa (ribaunt karambolü, kısa emniyet pası) zincirde araya bir 3/4 giriyor
+         ve motor doğru davrandığı hâlde kapı düşüyordu. Ölçüm: motorun kendi damgası
+         193/193 doğru, gözlenen zincir %86; kaçanların 3/4'ü "araya uzun girdi" vakası.
+         Guard EN GEÇ İKİNCİ taşıyıcı olmalı — uzun zincirler (big→wing→guard) hâlâ
+         elenir, tek ara dokunuş kabul edilir. */
+      const aday = [pencere[uzunIx + 1], pencere[uzunIx + 2]];
+      const ix = aday.findIndex(x => x && (x.role === 0 || x.role === 1));
+      if (ix >= 0) outletVar++;
+      else { const r = aday[0] ? aday[0].role : "yok"; m9Kacan[r] = (m9Kacan[r] || 0) + 1; }
     });
     // M12: and-1 olaylarının kaçında serbest atış sahnesi kuruldu
     let and1Sahneli = 0;
