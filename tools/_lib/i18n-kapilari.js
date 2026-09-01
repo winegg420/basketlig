@@ -156,4 +156,31 @@ function siniflandir(satirlar) {
   return r;
 }
 
-module.exports = { siniflandir, kismiCeviri, bicimHatasi, siraBozuk, cevrilmemis };
+/* ── FAZ 31 §2: SÖZLÜKTE ÇAKIŞAN ANAHTAR ────────────────────────────────────────────
+   Nesne değişmezinde aynı anahtar iki kez tanımlanırsa SON tanım kazanır ve ilki
+   sessizce ölü koda döner — çağrı noktalarından biri yanlış çeviri alır ve hiçbir yerde
+   hata görünmez. Ölçüldüğünde 17 çakışma vardı; ikisi FAZ 29'da yazılmış doğru
+   karşılıkları eziyordu (istenen "Match bonus (win)" yerine "Match prize (win)" geçiyordu).
+   Bu kapı KAYNAĞI okur; çalışma zamanına gerek yok. */
+function cakisanAnahtarlar(dosyalar) {
+  const gorulen = new Map();
+  const cakisan = [];
+  (dosyalar || []).forEach(function (d) {
+    String(d.src).split('\n').forEach(function (satir, i) {
+      if (/^\s*(\/\*|\*|\/\/)/.test(satir)) return;
+      /* 'anahtar':'karşılık'  ya da  "anahtar":"karşılık"  (satırda birden çok olabilir) */
+      const re = /(['"])((?:[^'"\\]|\\.)*?)\1\s*:\s*(['"])((?:[^'"\\]|\\.)*?)\3/g;
+      let m;
+      while ((m = re.exec(satir))) {
+        const k = m[2], v = m[4];
+        if (!k) continue;
+        const onceki = gorulen.get(k);
+        if (onceki && onceki.v !== v) cakisan.push({ k: k, ilk: onceki, son: { ad: d.ad, i: i + 1, v: v } });
+        gorulen.set(k, { ad: d.ad, i: i + 1, v: v });
+      }
+    });
+  });
+  return { anahtar: gorulen.size, cakisan: cakisan };
+}
+
+module.exports = { siniflandir, kismiCeviri, bicimHatasi, siraBozuk, cevrilmemis, cakisanAnahtarlar };

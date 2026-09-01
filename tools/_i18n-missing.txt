@@ -1,210 +1,162 @@
 canli-mac :: Başlangıç Arena — 5,000 seats
-canli-mac :: Debrecen Şimşekleri
-canli-mac :: Niterói Atmacaları
-canli-mac :: Prague Kartalları
-canli-mac :: Prague Kartalları — Guangzhou Basket
-canli-mac :: Sydney Boğaları
-canli-mac :: 🇩🇪 Leon Förster
-canli-mac :: 🇹🇷 Cem Uludağ
+canli-mac :: Eskişehir Hawks
+canli-mac :: Piraeus Kurtları
+canli-mac :: Portland Boğaları
+canli-mac :: Vitoria Aslanları
 canli-mac :: 🇹🇷 Türkçe
-canli-mac :: 🏛️ Niterói Atmacaları from
-canli-mac :: 🏛️ Prague Kartalları from
-canli-mac :: 🏛️ Sydney Boğaları from
+canli-mac :: 🏛️ Eskişehir Hawks from
+canli-mac :: 🏛️ Piraeus Kurtları from
+canli-mac :: 🏛️ Portland Boğaları from
 login :: 🇹🇷 Türkçe
 modal:ayarlar :: Başlangıç Arena — 5,000 seats
-modal:ayarlar :: Debrecen Şimşekleri
-modal:ayarlar :: Niterói Atmacaları
-modal:ayarlar :: Prague Kartalları
-modal:ayarlar :: Prague Kartalları — Guangzhou Basket
-modal:ayarlar :: Sydney Boğaları
-modal:ayarlar :: 🇩🇪 Leon Förster
-modal:ayarlar :: 🇹🇷 Cem Uludağ
+modal:ayarlar :: Eskişehir Hawks
+modal:ayarlar :: Piraeus Kurtları
+modal:ayarlar :: Portland Boğaları
+modal:ayarlar :: Vitoria Aslanları
 modal:ayarlar :: 🇹🇷 Türkçe
-modal:ayarlar :: 🏛️ Niterói Atmacaları from
-modal:ayarlar :: 🏛️ Prague Kartalları from
-modal:ayarlar :: 🏛️ Sydney Boğaları from
+modal:ayarlar :: 🏛️ Eskişehir Hawks from
+modal:ayarlar :: 🏛️ Piraeus Kurtları from
+modal:ayarlar :: 🏛️ Portland Boğaları from
 modal:basarim :: Başlangıç Arena — 5,000 seats
-modal:basarim :: Debrecen Şimşekleri
-modal:basarim :: Niterói Atmacaları
-modal:basarim :: Prague Kartalları
-modal:basarim :: Prague Kartalları — Guangzhou Basket
-modal:basarim :: Sydney Boğaları
-modal:basarim :: 🇩🇪 Leon Förster
-modal:basarim :: 🇹🇷 Cem Uludağ
+modal:basarim :: Eskişehir Hawks
+modal:basarim :: Piraeus Kurtları
+modal:basarim :: Portland Boğaları
+modal:basarim :: Vitoria Aslanları
 modal:basarim :: 🇹🇷 Türkçe
-modal:basarim :: 🏛️ Niterói Atmacaları from
-modal:basarim :: 🏛️ Prague Kartalları from
-modal:basarim :: 🏛️ Sydney Boğaları from
+modal:basarim :: 🏛️ Eskişehir Hawks from
+modal:basarim :: 🏛️ Piraeus Kurtları from
+modal:basarim :: 🏛️ Portland Boğaları from
 modal:draft :: Başlangıç Arena — 5,000 seats
-modal:draft :: Debrecen Şimşekleri
-modal:draft :: Niterói Atmacaları
-modal:draft :: Prague Kartalları
-modal:draft :: Prague Kartalları — Guangzhou Basket
-modal:draft :: Sydney Boğaları
-modal:draft :: 🇩🇪 Leon Förster
-modal:draft :: 🇹🇷 Cem Uludağ
+modal:draft :: Eskişehir Hawks
+modal:draft :: Piraeus Kurtları
+modal:draft :: Portland Boğaları
+modal:draft :: Vitoria Aslanları
 modal:draft :: 🇹🇷 Türkçe
-modal:draft :: 🏛️ Niterói Atmacaları from
-modal:draft :: 🏛️ Prague Kartalları from
-modal:draft :: 🏛️ Sydney Boğaları from
+modal:draft :: 🏛️ Eskişehir Hawks from
+modal:draft :: 🏛️ Piraeus Kurtları from
+modal:draft :: 🏛️ Portland Boğaları from
 modal:ilk5 :: Başlangıç Arena — 5,000 seats
-modal:ilk5 :: Debrecen Şimşekleri
-modal:ilk5 :: Niterói Atmacaları
-modal:ilk5 :: Prague Kartalları
-modal:ilk5 :: Prague Kartalları — Guangzhou Basket
-modal:ilk5 :: Sydney Boğaları
-modal:ilk5 :: 🇩🇪 Leon Förster
-modal:ilk5 :: 🇹🇷 Cem Uludağ
+modal:ilk5 :: Eskişehir Hawks
+modal:ilk5 :: Piraeus Kurtları
+modal:ilk5 :: Portland Boğaları
+modal:ilk5 :: Vitoria Aslanları
 modal:ilk5 :: 🇹🇷 Türkçe
-modal:ilk5 :: 🏛️ Niterói Atmacaları from
-modal:ilk5 :: 🏛️ Prague Kartalları from
-modal:ilk5 :: 🏛️ Sydney Boğaları from
+modal:ilk5 :: 🏛️ Eskişehir Hawks from
+modal:ilk5 :: 🏛️ Piraeus Kurtları from
+modal:ilk5 :: 🏛️ Portland Boğaları from
 modal:oyuncu :: Başlangıç Arena — 5,000 seats
-modal:oyuncu :: Debrecen Şimşekleri
-modal:oyuncu :: Niterói Atmacaları
-modal:oyuncu :: Prague Kartalları
-modal:oyuncu :: Prague Kartalları — Guangzhou Basket
-modal:oyuncu :: Sydney Boğaları
-modal:oyuncu :: 🇩🇪 Leon Förster
-modal:oyuncu :: 🇹🇷 Cem Uludağ
+modal:oyuncu :: Eskişehir Hawks
+modal:oyuncu :: Piraeus Kurtları
+modal:oyuncu :: Portland Boğaları
+modal:oyuncu :: Vitoria Aslanları
 modal:oyuncu :: 🇹🇷 Türkçe
-modal:oyuncu :: 🏛️ Niterói Atmacaları from
-modal:oyuncu :: 🏛️ Prague Kartalları from
-modal:oyuncu :: 🏛️ Sydney Boğaları from
+modal:oyuncu :: 🏛️ Eskişehir Hawks from
+modal:oyuncu :: 🏛️ Piraeus Kurtları from
+modal:oyuncu :: 🏛️ Portland Boğaları from
 modal:soyunma :: Başlangıç Arena — 5,000 seats
-modal:soyunma :: Debrecen Şimşekleri
-modal:soyunma :: Niterói Atmacaları
-modal:soyunma :: Prague Kartalları
-modal:soyunma :: Prague Kartalları — Guangzhou Basket
-modal:soyunma :: Sydney Boğaları
-modal:soyunma :: 🇩🇪 Leon Förster
-modal:soyunma :: 🇹🇷 Cem Uludağ
+modal:soyunma :: Eskişehir Hawks
+modal:soyunma :: Piraeus Kurtları
+modal:soyunma :: Portland Boğaları
+modal:soyunma :: Vitoria Aslanları
 modal:soyunma :: 🇹🇷 Türkçe
-modal:soyunma :: 🏛️ Niterói Atmacaları from
-modal:soyunma :: 🏛️ Prague Kartalları from
-modal:soyunma :: 🏛️ Sydney Boğaları from
+modal:soyunma :: 🏛️ Eskişehir Hawks from
+modal:soyunma :: 🏛️ Piraeus Kurtları from
+modal:soyunma :: 🏛️ Portland Boğaları from
 modal:taktik :: Başlangıç Arena — 5,000 seats
-modal:taktik :: Debrecen Şimşekleri
-modal:taktik :: Niterói Atmacaları
-modal:taktik :: Prague Kartalları
-modal:taktik :: Prague Kartalları — Guangzhou Basket
-modal:taktik :: Sydney Boğaları
-modal:taktik :: 🇩🇪 Leon Förster
-modal:taktik :: 🇹🇷 Cem Uludağ
+modal:taktik :: Eskişehir Hawks
+modal:taktik :: Piraeus Kurtları
+modal:taktik :: Portland Boğaları
+modal:taktik :: Vitoria Aslanları
 modal:taktik :: 🇹🇷 Türkçe
-modal:taktik :: 🏛️ Niterói Atmacaları from
-modal:taktik :: 🏛️ Prague Kartalları from
-modal:taktik :: 🏛️ Sydney Boğaları from
+modal:taktik :: 🏛️ Eskişehir Hawks from
+modal:taktik :: 🏛️ Piraeus Kurtları from
+modal:taktik :: 🏛️ Portland Boğaları from
 sayfa:altyapi :: Başlangıç Arena — 5,000 seats
-sayfa:altyapi :: Debrecen Şimşekleri
-sayfa:altyapi :: Niterói Atmacaları
-sayfa:altyapi :: Prague Kartalları
-sayfa:altyapi :: Prague Kartalları — Guangzhou Basket
-sayfa:altyapi :: Sydney Boğaları
-sayfa:altyapi :: 🇩🇪 Leon Förster
-sayfa:altyapi :: 🇹🇷 Cem Uludağ
+sayfa:altyapi :: Eskişehir Hawks
+sayfa:altyapi :: Piraeus Kurtları
+sayfa:altyapi :: Portland Boğaları
+sayfa:altyapi :: Vitoria Aslanları
 sayfa:altyapi :: 🇹🇷 Türkçe
-sayfa:altyapi :: 🏛️ Niterói Atmacaları from
-sayfa:altyapi :: 🏛️ Prague Kartalları from
-sayfa:altyapi :: 🏛️ Sydney Boğaları from
+sayfa:altyapi :: 🏛️ Eskişehir Hawks from
+sayfa:altyapi :: 🏛️ Piraeus Kurtları from
+sayfa:altyapi :: 🏛️ Portland Boğaları from
 sayfa:analiz :: Başlangıç Arena — 5,000 seats
-sayfa:analiz :: Debrecen Şimşekleri
-sayfa:analiz :: Niterói Atmacaları
-sayfa:analiz :: Prague Kartalları
-sayfa:analiz :: Prague Kartalları — Guangzhou Basket
-sayfa:analiz :: Sydney Boğaları
-sayfa:analiz :: 🇩🇪 Leon Förster
-sayfa:analiz :: 🇹🇷 Cem Uludağ
+sayfa:analiz :: Eskişehir Hawks
+sayfa:analiz :: Piraeus Kurtları
+sayfa:analiz :: Portland Boğaları
+sayfa:analiz :: Vitoria Aslanları
 sayfa:analiz :: 🇹🇷 Türkçe
-sayfa:analiz :: 🏛️ Niterói Atmacaları from
-sayfa:analiz :: 🏛️ Prague Kartalları from
-sayfa:analiz :: 🏛️ Sydney Boğaları from
+sayfa:analiz :: 🏛️ Eskişehir Hawks from
+sayfa:analiz :: 🏛️ Piraeus Kurtları from
+sayfa:analiz :: 🏛️ Portland Boğaları from
 sayfa:antrenman :: Başlangıç Arena — 5,000 seats
-sayfa:antrenman :: Debrecen Şimşekleri
-sayfa:antrenman :: Niterói Atmacaları
-sayfa:antrenman :: Prague Kartalları
-sayfa:antrenman :: Prague Kartalları — Guangzhou Basket
-sayfa:antrenman :: Sydney Boğaları
-sayfa:antrenman :: 🇩🇪 Leon Förster
-sayfa:antrenman :: 🇹🇷 Cem Uludağ
+sayfa:antrenman :: Eskişehir Hawks
+sayfa:antrenman :: Piraeus Kurtları
+sayfa:antrenman :: Portland Boğaları
+sayfa:antrenman :: Vitoria Aslanları
 sayfa:antrenman :: 🇹🇷 Türkçe
-sayfa:antrenman :: 🏛️ Niterói Atmacaları from
-sayfa:antrenman :: 🏛️ Prague Kartalları from
-sayfa:antrenman :: 🏛️ Sydney Boğaları from
+sayfa:antrenman :: 🏛️ Eskişehir Hawks from
+sayfa:antrenman :: 🏛️ Piraeus Kurtları from
+sayfa:antrenman :: 🏛️ Portland Boğaları from
 sayfa:arena :: Başlangıç Arena — 5,000 seats
-sayfa:arena :: Debrecen Şimşekleri
-sayfa:arena :: Niterói Atmacaları
-sayfa:arena :: Prague Kartalları
-sayfa:arena :: Prague Kartalları — Guangzhou Basket
-sayfa:arena :: Sydney Boğaları
-sayfa:arena :: 🇩🇪 Leon Förster
-sayfa:arena :: 🇹🇷 Cem Uludağ
+sayfa:arena :: Eskişehir Hawks
+sayfa:arena :: Piraeus Kurtları
+sayfa:arena :: Portland Boğaları
+sayfa:arena :: Vitoria Aslanları
 sayfa:arena :: 🇹🇷 Türkçe
-sayfa:arena :: 🏛️ Niterói Atmacaları from
-sayfa:arena :: 🏛️ Prague Kartalları from
-sayfa:arena :: 🏛️ Sydney Boğaları from
+sayfa:arena :: 🏛️ Eskişehir Hawks from
+sayfa:arena :: 🏛️ Piraeus Kurtları from
+sayfa:arena :: 🏛️ Portland Boğaları from
 sayfa:bilanco :: Başlangıç Arena — 5,000 seats
-sayfa:bilanco :: Debrecen Şimşekleri
-sayfa:bilanco :: Niterói Atmacaları
-sayfa:bilanco :: Prague Kartalları
-sayfa:bilanco :: Prague Kartalları — Guangzhou Basket
-sayfa:bilanco :: Sydney Boğaları
-sayfa:bilanco :: 🇩🇪 Leon Förster
-sayfa:bilanco :: 🇹🇷 Cem Uludağ
+sayfa:bilanco :: Eskişehir Hawks
+sayfa:bilanco :: Piraeus Kurtları
+sayfa:bilanco :: Portland Boğaları
+sayfa:bilanco :: Vitoria Aslanları
 sayfa:bilanco :: 🇹🇷 Türkçe
-sayfa:bilanco :: 🏛️ Niterói Atmacaları from
-sayfa:bilanco :: 🏛️ Prague Kartalları from
-sayfa:bilanco :: 🏛️ Sydney Boğaları from
-sayfa:dashboard :: Debrecen Şimşekleri
-sayfa:dashboard :: Niterói Atmacaları
-sayfa:dashboard :: Prague Kartalları
-sayfa:dashboard :: Prague Kartalları — Guangzhou Basket
-sayfa:dashboard :: Sydney Boğaları
+sayfa:bilanco :: 🏛️ Eskişehir Hawks from
+sayfa:bilanco :: 🏛️ Piraeus Kurtları from
+sayfa:bilanco :: 🏛️ Portland Boğaları from
+sayfa:dashboard :: Eskişehir Hawks
+sayfa:dashboard :: Piraeus Kurtları
+sayfa:dashboard :: Portland Boğaları
+sayfa:dashboard :: Vitoria Aslanları
 sayfa:dashboard :: 🇹🇷 Türkçe
 sayfa:kadro :: Başlangıç Arena — 5,000 seats
-sayfa:kadro :: Debrecen Şimşekleri
-sayfa:kadro :: Niterói Atmacaları
-sayfa:kadro :: Prague Kartalları
-sayfa:kadro :: Prague Kartalları — Guangzhou Basket
-sayfa:kadro :: Sydney Boğaları
+sayfa:kadro :: Eskişehir Hawks
+sayfa:kadro :: Piraeus Kurtları
+sayfa:kadro :: Portland Boğaları
+sayfa:kadro :: Vitoria Aslanları
 sayfa:kadro :: 🇹🇷 Türkçe
 sayfa:lig :: Başlangıç Arena — 5,000 seats
-sayfa:lig :: Debrecen Şimşekleri
-sayfa:lig :: Niterói Atmacaları
-sayfa:lig :: Prague Kartalları
-sayfa:lig :: Prague Kartalları — Guangzhou Basket
-sayfa:lig :: Sydney Boğaları
+sayfa:lig :: Eskişehir Hawks
+sayfa:lig :: Piraeus Kurtları
+sayfa:lig :: Portland Boğaları
+sayfa:lig :: Vitoria Aslanları
 sayfa:lig :: 🇹🇷 Türkçe
 sayfa:mac :: Başlangıç Arena — 5,000 seats
-sayfa:mac :: Debrecen Şimşekleri
-sayfa:mac :: Niterói Atmacaları
-sayfa:mac :: Prague Kartalları
-sayfa:mac :: Prague Kartalları — Guangzhou Basket
-sayfa:mac :: Sydney Boğaları
+sayfa:mac :: Eskişehir Hawks
+sayfa:mac :: Piraeus Kurtları
+sayfa:mac :: Portland Boğaları
+sayfa:mac :: Vitoria Aslanları
 sayfa:mac :: 🇹🇷 Türkçe
 sayfa:market :: Başlangıç Arena — 5,000 seats
-sayfa:market :: Debrecen Şimşekleri
-sayfa:market :: Niterói Atmacaları
-sayfa:market :: Prague Kartalları
-sayfa:market :: Prague Kartalları — Guangzhou Basket
-sayfa:market :: Sydney Boğaları
-sayfa:market :: 🇩🇪 Leon Förster
-sayfa:market :: 🇹🇷 Cem Uludağ
+sayfa:market :: Eskişehir Hawks
+sayfa:market :: Piraeus Kurtları
+sayfa:market :: Portland Boğaları
+sayfa:market :: Vitoria Aslanları
 sayfa:market :: 🇹🇷 Türkçe
-sayfa:market :: 🏛️ Niterói Atmacaları from
-sayfa:market :: 🏛️ Prague Kartalları from
-sayfa:market :: 🏛️ Sydney Boğaları from
+sayfa:market :: 🏛️ Eskişehir Hawks from
+sayfa:market :: 🏛️ Piraeus Kurtları from
+sayfa:market :: 🏛️ Portland Boğaları from
 sayfa:takim :: Başlangıç Arena — 5,000 seats
-sayfa:takim :: Debrecen Şimşekleri
-sayfa:takim :: Niterói Atmacaları
-sayfa:takim :: Prague Kartalları
-sayfa:takim :: Prague Kartalları — Guangzhou Basket
-sayfa:takim :: Sydney Boğaları
+sayfa:takim :: Eskişehir Hawks
+sayfa:takim :: Piraeus Kurtları
+sayfa:takim :: Portland Boğaları
+sayfa:takim :: Vitoria Aslanları
 sayfa:takim :: 🇹🇷 Türkçe
 setup :: 🇹🇷 Türkçe
-tutorial :: Debrecen Şimşekleri
-tutorial :: Niterói Atmacaları
-tutorial :: Prague Kartalları
-tutorial :: Prague Kartalları — Guangzhou Basket
-tutorial :: Sydney Boğaları
+tutorial :: Eskişehir Hawks
+tutorial :: Piraeus Kurtları
+tutorial :: Portland Boğaları
+tutorial :: Vitoria Aslanları
 tutorial :: 🇹🇷 Türkçe

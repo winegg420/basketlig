@@ -71,7 +71,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/faz11-check.js` | **FAZ 11 kabul kriterleri** — dizilim geometrisi, kare kaybında yetişme, kesme noktası çakışması, `startMatch` sessiz kilitlenmesi. |
 | `tools/anlatim-check.js` | **FAZ 13 anlatım denetçisi** — maçı TARAYICISIZ üretip olay listesini denetler (ribaund/şut eşitliği, seri iddiası, faul adı ve sayacı, çalma iki taraflılığı, kalıp çeşitliliği, devre arası, saha değişimi, köşe bölgesi). `--freeze` ile sekme donması + maç içi panel kalıcılığı tarayıcıda sınanır. **Anlatım değişince çalıştır.** |
 | `tools/mobile-check.js` | **FAZ 12 mobil denetçisi** (390×844) — dokunma sayısı (gerçekten tıklayarak), maç sayfası düzeni, bilgi yoğunluğu, 44 px dokunma hedefi, market yoğunluğu. Mobil düzen değişince çalıştır. |
-| `tools/sim-node.js` | **Tarayıcısız maç simülasyonu** — 12 modülü düz Node'da (vm) yükler, `simulateMatch()` sözleşmesini ve determinizmi sınar. Motor sözleşmesi değişince çalıştır. |
+| `tools/sim-node.js` | **Tarayıcısız maç simülasyonu** — 14 modülü düz Node'da (vm) yükler, `simulateMatch()` sözleşmesini ve determinizmi sınar. Motor sözleşmesi değişince çalıştır. **Regresyon tabanı (FAZ 30 sonrası): `--n=100 --seed=42` → 88.0 - 81.3 · olay/maç 248 · tohum 42 → 93-82.** |
 | `tools/schema-check.js` | **`db/schema.sql` denetçisi** — sözdizimi (varsa gerçek PostgreSQL ayrıştırıcısı), lig kuralları, RLS, "kod tabanında bağlantı yok". |
 | `db/schema.sql` | **Çok oyunculu veri modeli** (Postgres/Supabase). Yalnız dosya — hiçbir bağlantı kurulmuyor. |
 | `tools/gen-brand-images.js` | og:image (1200×630) + PWA ikonlarını üretir (Playwright). Marka görselini değiştirince tekrar çalıştır. |
@@ -356,6 +356,12 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   tarayıcıdan Node'a sabit bir alan listesi taşır (`const HAM = await page.evaluate(...)`).
   Listeye yazılmayan toplayıcı sessizce boş gelir ve kapı "ÖRNEK YOK" der — `yay` ve
   `titreme` tam olarak böyle kayboldu.
+- **REGRESYON TABANI BELGEDE TUTULUR (FAZ 31 §4):** `sim-node --n=100 --seed=42` için
+  güncel taban **88.0 - 81.3 · olay/maç 248 · tohum 42 → 93-82**. FAZ 30'da oyuncu
+  milliyeti rastgeleleşince isim çekilişleri değişti, `ensureUniquePlayerNames` yeniden
+  çekilişleri kaydı ve tohum→sonuç eşlemesi kaydı; determinizm KORUNUYOR (aynı tohum aynı
+  maç). Eski taban (87.2 - 80.0 · 249) briflerde tekrar edilirse ±1.5 toleransı gerçek bir
+  kaymayı gizler — taban her bilinçli kaymada BURADA güncellenir.
 - **LİG KÜRESELDİR — "ev ülkesi" YOK (FAZ 30):** `LIG_EV_ULKE`, `BOT_YABANCI_*`,
   `MARKET_YERLI_*` ve `marketYerliOran()` KALDIRILDI. Oyuncu/koç/izci milliyeti 43 ülke
   arasından gelişigüzeldir. KALAN: `NAME_POOLS`, `randomNameFor`, `ULKE_KOVA` (portre) —
@@ -506,3 +512,15 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
 ## Bilinen eksikler
 
 Tam sürüm için doldurulacak boşluklar ve mantık hataları `RAPOR-EKSIKLER.md`'de öncelik sırasıyla listelidir (rakip kadro kalıcılığı, MVP/rakip faul, winStreak reset, transfer pazarlığı, playoff derinliği vb.).
+
+- **Sözlük girişi TAM DÜĞÜM, kalıp PARÇA çevirir (FAZ 31 dersi — 16 satır sessizce Türkçe kaldı):**
+  FAZ 25'te serbest atış sonuç kuyruklarının ('ikisini de attı.', 'hepsi içeride.',
+  'yarısı geldi.' …) EN karşılıkları `Object.assign(I18N_TR_EN,…)` ile eklenmişti. Ama
+  `I18N_TR_EN` yalnız **düğümün tamamı** anahtara eşitse çalışır; bu satırlar ise her zaman
+  cümlenin **sonunda parça** olarak geçer ("Kauliņš çizgide 2/2 — hepsi içeride."). Anahtar
+  hiç eşleşmedi: ölçüldü, 16 kuyruğun **tamamı** EN modunda Türkçe kalıyordu (anlatımın
+  ~%6'sı). Canlı tarayıcı taraması bunu ancak ara sıra örnekliyordu. Kural: bir metin
+  cümlenin İÇİNDE geçiyorsa karşılığı **`I18N_PHRASES` kalıbı** olmalı; sözlük girişi
+  yalnız tek başına bir düğüm olan metinler içindir. İkisini birden yazmak zararsızdır.
+  Fonksiyon-yerel havuzlar (`FT_*`, `FOUL_*`) `localizeCatalogs()`'a da görünmez —
+  onlar için tek yol kalıptır.

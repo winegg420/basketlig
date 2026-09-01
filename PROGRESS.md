@@ -4771,3 +4771,61 @@ Kullanıcı isteğiyle proje baştan sona tarandı. Bulunan sekiz kusur düzelti
 milliyet · lig · isim · portre · schema · turkek · bicim · sut · analiz · arena ·
 `anlatim-check` **29/29** · `visual-check` 0 konsol hatası · `i18n-scan` A/B/C/D = 0.
 Sürüm **62 → 63**.
+## FAZ 31 — Kelime-kelime çeviri kuralları, korumasız `G.team`, regresyon tabanı (2026-09-01)
+
+### §2 — İ18N kelime sınırı ve sözlük tutarlılığı (en öncelikli madde)
+
+**a) Kalıplar kelime ortasında eşleşiyordu.** `I18N_PHRASES` girişlerinin bir kısmı çıplak
+sözcüklerdi (`/savunma/g` gibi) ve sınırsız oldukları için "savunmasız kaldı" → "defenseasız
+kaldı" üretiyorlardı. ASCII `\b` Türkçe için kullanılamaz (FAZ 17 dersi: ğ/ç sözcük karakteri
+sayılmaz), üstelik FAZ 30 sonrası isimler yabancı harf de içeriyor (ä, é, å). Çözüm
+`_i18nSinirla()` (`js/i18n.js`): yalnız **saf harf+boşluktan oluşan ≥3 karakterlik** kalıpları
+bir kez sarmalar — `(^|[^A-Za-zÇĞİÖŞÜçğıöşü])(kaynak)(?![A-Za-zÇĞİÖŞÜçğıöşü])` — ve karşılığın
+başına yakalanan sınırı geri koyar. Ölçüldü: "savunmasız kaldı" bozulmuyor, "savunma" hâlâ
+çevriliyor.
+
+**b) Çakışan sözlük anahtarları çevirimi sessizce eziyordu.** `js/i18n-dict.js` ve
+`js/i18n-commentary.js` aynı anahtarı farklı karşılıkla tanımlıyordu; sonra yüklenen kazanıyor
+ve FAZ 29'da yazdığım karşılıkların bir kısmı **ölü** kalıyordu ("Match bonus (win)" →
+"Match prize (win)"). 17 çakışma ayıklandı. `kişi` çakışması (people / seats) tek kullanım
+arena kapasitesi olduğu için `'seats'` bırakılıp ölü `'people'` girişi silindi. Yeni kapı:
+`cakisanAnahtarlar()` (`tools/_lib/i18n-kapilari.js`), `i18n-scan` içinde raporlanıyor —
+**1432 anahtar · çakışan 0**.
+
+**c) (inisiyatif) Serbest atış kuyruklarının hiçbiri çevrilmiyordu.** FAZ 25'te 17 kuyruk
+sözlüğe yazılmıştı ama `I18N_TR_EN` TAM DÜĞÜM eşleşmesidir; bu satırlar hep cümle parçasıdır.
+Ölçüldü: `i18nPhrases("… çizgide 2/2 — ikisini de attı.")` → kuyruk Türkçe kalıyor. 16 satırın
+tamamı (+ sözlükte hiç olmayan `'hepsi içeride.'`) **kalıp** olarak eklendi; toplam 18 kuyruk
+artık çeviriliyor. Ders CLAUDE.md'ye yazıldı.
+
+### §3 — Korumasız `G.team` erişimi
+
+`genLigTeams` içinde `arr.filter(n=>n!==G.team.isim)` kariyer kurulmadan lig üretilirse
+çöküyordu. `const _kendi=(G.team&&G.team.isim)||null;` ile korundu — `G.team=null` ile
+doğrulandı: "OK · 20 takim".
+
+### §4 — Regresyon tabanı belgeye alındı
+
+`sim-node --n=100 --seed=42` → **88.0 - 81.3 · olay/maç 248 · tohum 42 → 93-82**. Bu oturumda
+HEAD ile çalışan ağaç ayrı ayrı koşuldu, ikisi de birebir aynı çıktı verdi. CLAUDE.md'de hem
+araç tablosuna hem ders maddesine yazıldı. (Varsayılan `--n=50` koşusu 90.3 - 83.7 verir —
+taban **bayraklarıyla birlikte** okunmalı.)
+
+### §5 — Ölçüm kapılarının kararsızlığı: örneklem büyütüldü, eşik gevşetilmedi
+
+| Araç | Sorun | Çözüm |
+|---|---|---|
+| `sunum-check` | M9/M14 örneklemi bazen 40'ın altında kalıp kararsız düşüyordu | pencere örnekleme oranından türetiliyor (`ALT_SINIR`, dilim 20 sn, tavan 900 sn/12 maç); M14 yalnız `mState.running` iken örnekleniyor (maçlar arası boş kareler yanlış düşürüyordu) |
+| `lig-check` C | 20 sezonluk denge örneklemi eşik civarında salınıyordu | 60 sezon — ölçülen 0.08% / 0.50% / 0.50%, kararlı |
+| `i18n-scan` | canlı anlatım örneklemi bazen 10 olayda kalıyordu | `ANLATIM_TABAN=40` alt sınırı; özel isim ayıklayıcı Unicode (`\p{Lu}`) yapıldı — yabancı adlar artık "çevrilmemiş Türkçe" sayılmıyor |
+
+`sunum-check` sonucu: **16/16 · çıkış kodu 0 · pencere 620 sn · 1 maç · örneklem yeterli.**
+
+### Testler
+`sunum-check` **16/16** · `sim-node --n=100 --seed=42` → **88.0 - 81.3, hata 0** ·
+`anlatim-check` **29/29** · `i18n-scan` **A/B/C/D = 0 · çakışan 0 · konsol hatası 0** ·
+`visual-check` masaüstü+mobil **0 konsol hatası** · `lig-check` · `surum-check` ✓.
+Sürüm **63 → 64**.
+
+### Yapılmayan
+§6'daki para birimi geçişi (KR → USD) brifin konusu değildi, ellenmedi.

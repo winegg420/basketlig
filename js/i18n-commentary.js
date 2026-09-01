@@ -349,7 +349,6 @@ Object.assign(I18N_TR_EN,{
 
 /* ── Reha (resmî) ── */
 '%S pota altında tamamladı. %SC':'%S finishes underneath the rim. %SC',
-'%S turnikeyi tamamladı. %SC':'%S completes the layup. %SC',
 '%S boyalı alandan iki sayı. %SC':'Two points from the paint by %S. %SC',
 '%S pota dibinden bitirdi. %SC':'%S finishes from close range. %SC',
 '%S orta mesafeden isabet kaydetti. %SC':'%S converts from mid-range. %SC',
@@ -522,14 +521,12 @@ Object.assign(I18N_TR_EN,{
 'Faul var; %S serbest atış çizgisinde.':'A foul; %S is on the free-throw line.',
 'Savunma faulü — %S çizgiye gidiyor.':'A defensive foul — %S heads to the line.',
 '%S faul kazandı, çizgide.':'%S draws the foul and is at the line.',
-'pick-and-roll':'pick and roll','el presi':'hand-check press','2-3 bölge':'2-3 zone',
-'erken tempo':'early tempo','yayılma hücumu':'spread offense','çift perde':'double screen',
+'pick-and-roll':'pick and roll',
+
 'Maç berabere.':'The match is a draw.',
-'Maç ödülü (galibiyet)':'Match prize (win)',
 'Maç günü geliri':'Match day income',
 'Kupa maçı bilet geliri':'Cup match gate income',
 'Bilet geliri':'Ticket income',
-'Deplasman seyahat masrafı':'Away travel cost'
 });
 
 I18N_PHRASES.unshift(
@@ -630,7 +627,6 @@ I18N_PHRASES.unshift(
 Object.assign(I18N_TR_EN,{
 '%S geldi.':'%S brings it up.',
 '%S topu aldı.':'%S takes the ball.',
-'%S topu yukarı taşıdı.':'%S moves to the top.',
 'Top %S{de}.':'Ball in %S’s hands.',
 '%S ilerletiyor.':'%S pushes it forward.',
 '%S rakip yarı sahada.':'%S is in the front court.',
@@ -642,8 +638,6 @@ Object.assign(I18N_TR_EN,{
 '%S perde istedi.':'%S calls for a screen.',
 '%S eşleşmeyi buldu.':'%S found the matchup.',
 '%S pozisyon aldı.':'%S gets into position.',
-'%S adamını okudu.':'%S turns his back.',
-'%S üstünlüğü buldu.':'%S backs his man down.',
 '%S pozisyonu istedi.':'%S asks for the ball inside.',
 '%S yüklendi.':'%S drives.',
 '%S daldı içeriye.':'%S cuts inside.',
@@ -882,6 +876,7 @@ Object.assign(I18N_TR_EN,{"yayılma hücumuna":"to the spread offense"});
 Object.assign(I18N_TR_EN,{"çift perde":"the double screen"});
 Object.assign(I18N_TR_EN,{"çift perdeye":"to the double screen"});
 /* ── FAZ 25: serbest atış sonucu (FT_*) ── */
+Object.assign(I18N_TR_EN,{"hepsi içeride.":"all of them good."});
 Object.assign(I18N_TR_EN,{"ikisini de attı.":"he made them both."});
 Object.assign(I18N_TR_EN,{"çizgiden şaşmadı.":"no misses from the line."});
 Object.assign(I18N_TR_EN,{"iki atış iki sayı.":"two shots, two points."});
@@ -942,4 +937,29 @@ I18N_PHRASES.unshift(
   [/ üçlükte faul aldı — 3 atış:/g, ' is fouled on a three — three free throws:'],
   [/ cezada, /g, ' are in the bonus, '],
   [/Deplasmanda kaybettik\./g, 'A defeat on the road.']
+);
+
+/* ── FAZ 31: FT kuyrukları KALIP olarak da eklenir ──
+   Yukarıdaki sözlük girişleri TAM DÜĞÜM eşleşmesidir ve bu satırlar her zaman cümlenin
+   SONUNDA parça olarak geçtiği için hiç eşleşmiyordu (ölçüldü: 16 satırın tamamı EN
+   modunda Türkçe kalıyordu). Parça çevirisi kalıplardan geçer. */
+I18N_PHRASES.push(
+  [/ikisini de attı\./g, "he made them both."],
+  [/çizgiden şaşmadı\./g, "no misses from the line."],
+  [/iki atış iki sayı\./g, "two shots, two points."],
+  [/hata yok\./g, "no mistakes."],
+  [/tereddütsüz, ikisi de girdi\./g, "no hesitation, both good."],
+  [/soğukkanlı bitirdi\./g, "ice cold from the stripe."],
+  [/üçünü de attı\./g, "he made all three."],
+  [/üç atış üç sayı\./g, "three shots, three points."],
+  [/birini kaçırdı\./g, "he missed one."],
+  [/sadece birini bıraktı\./g, "only one of them dropped."],
+  [/yarısı geldi\./g, "half of them good."],
+  [/birini içeride tuttu\./g, "he kept one in."],
+  [/tam olmadı\./g, "not quite."],
+  [/ikisi de gitti; seyirci sustu\./g, "both gone; the crowd goes quiet."],
+  [/ikisi de dışarıda\./g, "both of them off the mark."],
+  [/ikisini de kaçırdı\./g, "he missed them both."],
+  [/hiçbiri girmedi\./g, "none of them dropped."],
+  [/hepsi içeride\./g, "all of them good."]
 );

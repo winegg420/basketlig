@@ -672,7 +672,12 @@ function genLigTeams(){
   const st=getTblState();
   const key=(G.team&&G.team.tblKey)||'tbl';
   const arr=(st.subs[key]&&st.subs[key].teams)||[];
-  let names=arr.filter(n=>n&&n!==G.team.isim);
+  /* ⚠ Bir satır yukarıda G.team KORUMALI okunuyordu, burada korumasızdı: takım yokken
+     çağrılınca "Cannot read properties of null (reading isim)" ile çöküyordu. Normal
+     akışta takım hep var, bu yüzden görünmüyordu — bozuk kayıt ya da takım kurulmadan
+     lig ekranına giden bir yol tetikler. Aynı fonksiyonda iki farklı varsayım olamaz. */
+  const _kendi=(G.team&&G.team.isim)||null;
+  let names=arr.filter(n=>n&&n!==_kendi);
   const COLS=['#3b82f6','#22c55e','#ef4444','#8b5cf6','#fbbf24','#ec4899','#14b8a6'];
   return names.map((isim,i)=>({
     id:i,isim,

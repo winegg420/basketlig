@@ -143,10 +143,10 @@ yaz(B.oDegerleri.length === 1, `her takımın oynadığı maç sayısı eşit ($
 yaz(B.tutmayan.length === 0, `o = g + m her takımda tutuyor (${B.tutmayan.length} sapma)`);
 
 /* ── C) Lig dengesi — 10 sezon ─────────────────────────────────────────────────────── */
-console.log('\nC) Lig dengesi — 20 sezon (§2.3 hedefleri)');
+console.log('\nC) Lig dengesi — 60 sezon (§2.3 hedefleri)');
 const C = run(`(function(){
   const farklar=[]; let ucSifir=0, sezon=0, takimSayisi=0;
-  for(let s=0;s<20;s++){
+  for(let s=0;s<60;s++){
     let guard=0;
     while(G.season.matches.some(m=>!m.played) && guard++<400){
       const m=G.season.matches.find(x=>!x.played); if(!m) break; simulateCpuMatch(m);
@@ -173,6 +173,11 @@ console.log(`    ortalama fark ${C.ort.toFixed(1)} · 20+ fark %${(C.buyuk*100).
 yaz(C.ort >= 10 && C.ort <= 13, `ortalama sayı farkı ${C.ort.toFixed(1)} (hedef 10-13)`);
 yaz(C.buyuk < 0.25, `20+ farkla biten maç %${(C.buyuk*100).toFixed(1)} (hedef <%25)`);
 yaz(C.kucuk > 0.25, `5 ve altı farkla biten maç %${(C.kucuk*100).toFixed(1)} (hedef >%25)`);
+/* ⚠ ÖRNEKLEM BOYU ÖLÇÜTE GÖRE SEÇİLDİ. 20 sezonda (400 takım-sezon) tek bir 16-0
+   takımı %0,25 eder ve eşik <%1 — yani kapı 4 olayda düşer. Ölçülen dağılım
+   %0,25 · %0,50 · %0,25 · %1,00 idi: DAVRANIŞ değişmeden koşudan koşuya düşüyordu.
+   60 sezon (1.200 takım-sezon) ile tek olay %0,083 eder, eşik ortalamadan ~8 olay
+   uzakta kalır. Eşik DEĞİŞMEDİ. */
 yaz(C.ucSifirOran < 0.01, `16-0 / 0-16 takım oranı %${(C.ucSifirOran*100).toFixed(2)} (hedef <%1)`);
 
 /* ── D2) Kariyer değişiminde haber akışı (FAZ 20 §6) ───────────────────────────────── */

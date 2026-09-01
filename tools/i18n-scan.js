@@ -157,7 +157,23 @@ const MAC_MS=Number((process.argv.find(a=>a.startsWith('--mac='))||'--mac=60000'
       }catch(e){}
     },300);
   });
-  await sleep(MAC_MS);
+  /* ── FAZ 31: ANLATIM ÖRNEKLEM TABANI ──────────────────────────────────────────────
+     Kapı "Türkçe kalan / toplam satır" oranıdır ve 60 sn'de yalnız 12-14 benzersiz satır
+     toplanıyordu: TEK bir yanlış pozitif %7,7 ediyor, eşik ise <%5 — yani kapı ÇEVİRİ
+     değişmeden koşudan koşuya düşüyordu (ölçüldü: aynı kodda %0,0 ve %7,1).
+     Çözüm eşiği gevşetmek DEĞİL, örneklemi büyütmek (sunum-check ve lig-check'te aynı
+     ders). Taban dolana kadar dilim dilim beklenir; üst sınır aşılırsa eldekiyle
+     yargılanır ve kapsam çıktıya yazılır. */
+  const ANLATIM_TABAN=40, ANLATIM_MAX_MS=Math.max(MAC_MS,240000);
+  {
+    let bekleyen=0;
+    await sleep(MAC_MS); bekleyen+=MAC_MS;
+    while(bekleyen<ANLATIM_MAX_MS){
+      const n=await page.evaluate(()=>{ try{ return (window.__anlatim||new Set()).size; }catch(e){ return 0; } });
+      if(n>=ANLATIM_TABAN) break;
+      await sleep(20000); bekleyen+=20000;
+    }
+  }
   const anlatim=await page.evaluate(()=>{
     if(window.__anlatimTimer) clearInterval(window.__anlatimTimer);
     return Array.from(window.__anlatim||[]);
@@ -175,7 +191,13 @@ const MAC_MS=Number((process.argv.find(a=>a.startsWith('--mac='))||'--mac=60000'
   ].join('|')+')([^A-Za-z]|$)','i');
   const trKalan=anlatim.filter(s=>{
     const govde=s.replace(/^(Q\d|OT\d|\d+P|U\d)\s*[\d:]*\s*/,'')            /* saat damgası */
-                 .replace(/[A-ZÇĞİÖŞÜ][\wçğıöşüÇĞİÖŞÜ'’-]*(\s[A-ZÇĞİÖŞÜ][\wçğıöşüÇĞİÖŞÜ'’-]*)*/g,' ')
+                 /* ⚠ ÖZEL İSİM SOYUCU UNICODE OLMALI (FAZ 31). Harf sınıfı ASCII+Türkçe
+                    yazılınca küresel ligin YABANCI adları yarım soyuluyordu: "Bäckström"
+                    → "B" atılıp "äckström" kalıyor, içinde 'ö' olduğu için satır "Türkçe
+                    kalmış" sayılıyordu. 40 satırlık örneklemde 2 sahte pozitif %4,9 eder
+                    ve kapı (<%5) kılpayı geçer/düşerdi. FAZ 30'da sınıflandırıcıda
+                    düzeltilen kusurun ikinci kopyası. */
+                 .replace(/\p{Lu}[\p{L}'’-]*(\s\p{Lu}[\p{L}'’-]*)*/gu,' ')
                  .replace(/\s+/g,' ').trim();                               /* özel isimler */
     return TRH.test(govde)||TRW.test(govde);
   });
@@ -213,11 +235,24 @@ const MAC_MS=Number((process.argv.find(a=>a.startsWith('--mac='))||'--mac=60000'
   console.log('  '+(tabloOk?'✓':'✗')+' tabela "'+(enTablo&&enTablo.tabela)+'" · maç içi tablo "'+
     (enTablo&&enTablo.stat)+'" · özet kutu "'+(enTablo&&enTablo.kutu)+'" · fikstür "'+(enTablo&&enTablo.fikstur)+'"');
 
+  /* ── FAZ 31 §2: SÖZLÜKTE ÇAKIŞAN ANAHTAR ──
+     Aynı Türkçe anahtarın iki farklı İngilizce karşılığı olamaz: nesne değişmezinde son
+     tanım kazanır, ilki sessizce ölü kod olur ve çağrı noktalarından biri yanlış çeviri
+     alır. Bu kapı KAYNAĞI okur, tarayıcıya gerek duymaz. */
+  const _cak=KAPI.cakisanAnahtarlar([
+    {ad:"js/i18n-dict.js",src:fs.readFileSync(path.join(ROOT,"js/i18n-dict.js"),"utf8")},
+    {ad:"js/i18n-commentary.js",src:fs.readFileSync(path.join(ROOT,"js/i18n-commentary.js"),"utf8")}
+  ]);
+  console.log(String.fromCharCode(10)+"── FAZ 31: sözlük tutarlılığı ──");
+  console.log("  "+(_cak.cakisan.length?"✗":"✓")+" "+_cak.anahtar+" anahtar · çakışan "+_cak.cakisan.length);
+  _cak.cakisan.slice(0,8).forEach(c=>console.log("     ✗ \""+c.k+"\"  "+c.ilk.ad+":"+c.ilk.i+" → \""+c.ilk.v+"\"   VS   "+c.son.ad+":"+c.son.i+" → \""+c.son.v+"\""));
+
   const dusen=[];
   if(S.A.length) dusen.push('A kısmi çeviri '+S.A.length);
   if(S.B.length) dusen.push('B biçim '+S.B.length);
   if(S.C.length) dusen.push('C kelime sırası '+S.C.length);
   if(S.D.length) dusen.push('D çevrilmemiş '+S.D.length);
+  if(_cak.cakisan.length) dusen.push('çakışan sözlük anahtarı '+_cak.cakisan.length);
   if(!tabloOk) dusen.push('EN kutu skor sütunu');
   if(errs.length) dusen.push('konsol hatası '+errs.length);
   /* Sayfa listesi BİLGİDİR (kalanlar özel isim), canlı anlatım oranı ise KAPIDIR:

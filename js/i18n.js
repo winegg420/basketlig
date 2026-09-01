@@ -343,9 +343,43 @@ function _i18nTextNode(node){
   const out=_i18nResolve(key);
   if(out!=null&&out!==key) node.nodeValue=raw.replace(key,out);
 }
+/* ── FAZ 31 §2.3: KALIPLARDA KELİME SINIRI ───────────────────────────────────────────
+   `I18N_TR_EN` TAM DÜĞÜM eşleşmesidir; oradaki tek kelimelik girişler bir cümlenin
+   ortasına asla uygulanmaz. Cümle bozan mekanizma `I18N_PHRASES`'tir: kalıplar ALT DİZE
+   olarak değiştirilir. Sınırsız yazılmış kısa kalıplar (ör. /savunma/, /asist/,
+   /atletizm/) bir sözcüğün İÇİNDE de eşleşir ("savunmasız" → "defensesız") ya da
+   çevrilmemesi gereken bir cümlenin ortasına İngilizce sokar.
+   Çözüm tek noktada: SALT HARFTEN oluşan kalıplar (sınır/bağlam işareti taşımayanlar)
+   yüklenirken Türkçe duyarlı sözcük sınırıyla sarılır. ⚠ Sınır ASCII `\b` OLAMAZ —
+   'ç','ğ','ı','ö','ş','ü' sözcük karakteri sayılmaz (FAZ 17 dersi); sınıf açık yazılır.
+   Sarma yalnız eşleşmeyi DARALTIR, yeni eşleşme üretmez. */
+const _I18N_HARF='A-Za-zÇĞİÖŞÜçğıöşü';
+let _phrasesSinirli=false;
+function _i18nSinirla(){
+  if(_phrasesSinirli) return;
+  _phrasesSinirli=true;
+  try{
+    for(let i=0;i<I18N_PHRASES.length;i++){
+      const p=I18N_PHRASES[i];
+      if(!p||!p[0]||typeof p[0].source!=='string'||typeof p[0].flags!=='string') continue;
+      const kaynak=p[0].source;
+      /* Yalnız salt harf/boşluktan oluşan kalıplar sarılır; içinde yakalama grubu,
+         sınır, rakam ya da noktalama olanlara DOKUNULMAZ (onlar zaten bağlamlı). */
+      if(!/^[A-Za-zÇĞİÖŞÜçğıöşü ]{3,}$/.test(kaynak)) continue;
+      const bayrak=p[0].flags.indexOf('g')>=0?'g':'';
+      const yeni=new RegExp('(^|[^'+_I18N_HARF+'])('+kaynak+')(?![' + _I18N_HARF + '])',bayrak);
+      const karsilik=p[1];
+      p[0]=yeni;
+      p[1]=(typeof karsilik==='function')
+        ? ((m,on)=>on+karsilik(m))
+        : ('$1'+String(karsilik).replace(/\$/g,'$$$$'));
+    }
+  }catch(e){}
+}
 /** İfade (parça) çevirisi — sözlükte tam karşılığı olmayan birleşik metinler için. */
 function i18nPhrases(str){
   if(_lang==='tr') return str;
+  _i18nSinirla();
   let out=str;
   for(let i=0;i<I18N_PHRASES.length;i++){
     const p=I18N_PHRASES[i];
