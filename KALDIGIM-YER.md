@@ -1,6 +1,75 @@
 # KALDIĞIM YER
-Son güncelleme: 2026-09-01 · **FAZ 25 (canlı maç gerçekçiliği + anlatım) bitti; tüm ağır
-denetimler yeniden koşuldu, çalışma ağacı temiz.**
+Son güncelleme: 2026-09-02 · **FAZ 34 (özel yetenekler + gecelik form) bitti; TÜM denetim
+araçları baştan koşuldu. Çalışma ağacı temiz, her madde ayrı commit + push edildi.**
+
+## Tam denetim taraması — 2026-09-02
+
+**GEÇEN (31 araç):** `sim-node` (n=1000/seed 42 → 88,5-80,2 · olay 248 · determinizm ·
+G değişmedi) · `yetenek-check` 30/30 · `ekonomi-check` 36/36 · `lig-check` ·
+`anlatim-check` 31/31 · `schema-check` 21/21 · `faz6/7/8/10/11-check` (faz11 **15/15**) ·
+`milliyet-check` · `isim-check` · `portre-check` · `turkek-check` · `bicim-check` ·
+`sut-check` · `analiz-check` · `arena-check` · `geometri-check` · `m20-check` ·
+`realism-check` · `mobile-check` · `live-metrics` · `band` (hash **3225bf641b79dea7**) ·
+`box-band` · `measure` (taban tazelendi: **5e860aa6804fa4a0**) · `surum-check` (sürüm 67) ·
+`i18n-scan` (A/B/C/D = 0) · `visual-check` (masaüstü+mobil, 0 konsol hatası) ·
+`sunum-check`.
+
+**Bu taramada DÜZELTİLENLER (hepsi commit + push edildi):**
+1. `faz11-check` **F11-1** — kapı tek anlık örnek alıp 60 px eşiğine vuruyordu; normal
+   akışta bu büyüklük 12-500 px arasında salınır, yani kapı kusuru kendisi üretiyordu.
+   Ölçüldü: `_simCatchUp` zaten çalışıyor (dönüş medyanı **2 px**, normal akış tabanı
+   124-128 px). Kapı üç ayaklı ve kendini kalibre eder hâle getirildi → 15/15.
+2. `faz8-check` **A4** — FAZ 25/33'te KALDIRILAN v7 göçünü sınıyordu (`SAVE_VERSIONS=[10]`),
+   zorunlu olarak düşüyordu; üstelik `serializeGameState` `players`'ı referansla döndürdüğü
+   için test canlı kadroyu bozuyordu. Yürürlükteki kayıt politikasına taşındı (derin kopya).
+3. **Savunma toparlanması sprint** — FAZ 34 `hiz` bandını 55-92'den 20-99'a açınca yavaş
+   savunmacı geride kalıyordu. Ölçüldü (300 sn pencere): markaj **1,94 → 1,85 m**.
+4. **Potansiyel sapmayla birlikte kayar** — zayıf sapma `genel`'i düşürüp potansiyeli
+   yerinde bırakınca gelişim boşluğu büyüyor, kadro kendiliğinden güçleniyordu.
+   season-loop K2: 2,24× → **2,12×**.
+5. `spacing-check` varsayılan penceresi 90 → 240 sn (90 sn'de aynı kod 1,77-2,00 m veriyor,
+   düşen kapı sayısı 2 ile 4 arasında oynuyordu).
+6. `band` ve `measure` referans hash'leri FAZ 34 sonrası değerlerle tazelendi (bilinçli
+   kayma: özel yetenek sistemi statları, dolayısıyla maç sonuçlarını değiştirdi).
+
+## AÇIK KALAN — hepsi ÖLÇÜLDÜ, hiçbiri FAZ 34 gerilemesi DEĞİL
+
+Üçü de FAZ 34 ÖNCESİNDE de düşüyordu; kanıt için ayrı worktree'de (commit `796d6f4`)
+aynı pencerelerle ölçüldü.
+
+| Araç | Düşen kapı | Şimdi | FAZ 33 (aynı ölçüm) |
+|---|---|---|---|
+| `spacing-check` | topu tutana en yakın savunmacı | 1,82-1,83 m (hedef <1,8) | **1,94 m** |
+| `spacing-check` | ball-you-man | %81,7-83,8 (hedef ≥85) | **%83,0** |
+| `spacing-check` | orta üçte birdeki hücumcu | %22,7 (hedef <20) | **%21,7** |
+| `hareket-check` | kademe: YÜRÜ payı | %47-48 (hedef 20-45) | **%45,0** (sınırda) |
+| `season-loop` | K2 pasif kulüp kasası | 2,12× (hedef ≤2×) | **2,23×** |
+
+**Neden kapatılmadı:**
+- `spacing-check` markaj açığının kaynağı TAKİP GECİKMESİDİR: hedef mesafe 27 px (0,91 m)
+  ama ölçülen 1,85 m. İki müdahale denendi ve ölçülerek GERİ ALINDI (kodda yorumla
+  belgeli): (a) on-ball sprint eşiğini 1,5×'ten 0,8×'e daraltmak → savunmacı varış
+  freniyle hedefi aşıp salınıyor, markaj 1,92 → 2,00 m; (b) hedef aralığı 27 → 21 px →
+  savunmacı adam-pota doğrultusuna oturamıyor, ball-you-man %85,8 → %78,7. Doğru çözüm
+  takip gecikmesini azaltmaktır (ölü bölge / hedef tazeleme sıklığı), bu FAZ 11/16'da
+  ayarlanmış sahne geometrisini yeniden düzenlemeyi gerektirir — ayrı bir iş.
+- `season-loop` K2, FAZ 25 USD'de "1,49×" olarak kaydedilmişti ama o yalnız **3 koşuluk**
+  bir medyandı; 9 koşuda yayılım **1,05×-4,99×**. Gerçek taban 2,23×. Ekonomi kaldıracı
+  denendi (`ISLETME_MAC_BASI` 4.820 → 5.330): K2 düşüyor ama `ekonomi-check` bot iflas
+  oranı %21 → %33'e çıkıyor (hedef %10-25). İki kapı ters yönde çekiyor; doğru çözüm
+  9 koşuluk medyanlarla yeniden dengeleme — ayrı bir iş.
+
+## SONRAKİ OTURUMDA İLK YAPILACAK
+1. `git pull` — her şey `master`'a push edildi, çalışma ağacı temizdi.
+2. Yukarıdaki üç açık kalemden biriyle başlanacaksa: önce ölçüm penceresini/koşu sayısını
+   büyüt, SONRA müdahale et. Bu oturumda üç kez aynı tuzağa düşüldü (F11-1, sunum-check,
+   K2): salınan bir büyüklüğü küçük örneklemle yargılayan kapı, kusuru kendisi üretiyor.
+3. Bekleyen büyük iş hâlâ **çok oyunculu sunucu kodu** (`db/schema.sql` ve
+   `PLAN-COK-OYUNCULU.md` hazır, Supabase kodu hiç yazılmadı).
+
+---
+
+# ÖNCEKİ KAYITLAR
 
 ## FAZ 25 sonrası durum (2026-09-01)
 
