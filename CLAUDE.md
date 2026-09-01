@@ -355,6 +355,34 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   tarayıcıdan Node'a sabit bir alan listesi taşır (`const HAM = await page.evaluate(...)`).
   Listeye yazılmayan toplayıcı sessizce boş gelir ve kapı "ÖRNEK YOK" der — `yay` ve
   `titreme` tam olarak böyle kayboldu.
+- **"Servis" basketbol terimi DEĞİLDİR (FAZ 28 §2):** voleybol/tenis sözcüğüdür; pas ve
+  kenardan sokma için "topu oyuna soktu / kenara aktardı / yan çizgiye çıkardı" kullanılır.
+  Yeni anlatım yazarken deyim uydurma — "demire geldi", "turnike dönmedi", "smacı tutmadı"
+  Türkçede yoktur. `anlatim-check` kara listesi bunları sınar.
+- **Her şut sınıfının kendi dili ve kendi yörüngesi vardır (FAZ 28 §2):** `smac` ·
+  `turnike` · `floater` · `kanca` (postta uzun) · `tipin` (hücum ribaundu) · `jumper` ·
+  `uc`. Sınıf başına havuzda **≥8 ifade** olmalı (`SUT_LINES` + `KISA_CEKIRDEK_SUT`);
+  sözcük kümeleri (`_DUNK/_LAYUP/_FLOAT/_HOOK/_TIPIN_WORDS`) **ayrık** ve **iki dilli**
+  yazılır — bir satır iki kümeye birden girerse süzgeç onu her tipte eler.
+  `node tools/sut-check.js` + `sunum-check` F26-1/F26-2.
+- **Her anlatım parçasında yüklem bulunmalı (FAZ 28 §2.1.3):** kısa parça ritimdir ama
+  yüklemsiz parça kopuk durur ("Yavuz geldi. **Üç sayı.**"). Künye/etiket satırları
+  ("Faul — X (kişisel 2)") bu kuralın dışındadır — onları fiile çevirmek anlatımı bozar.
+  Kapı: fiilsiz cümle oranı <%5.
+- **OLAY DAMGASI POZİSYON İÇİNDE YAYILIR (FAZ 28 §4):** maç saati POZİSYON BAŞINA bir kez
+  azalır, dolayısıyla bir pozisyonun bütün olayları doğal olarak AYNI `t`yi taşır (canlıda
+  üç olay "1P 6:19" görünüyordu). `_damgaDagit` olay üretimi bittikten sonra damgaları
+  pozisyonun kendi penceresine dağıtır — `_dt` ve rastgele akış DEĞİŞMEZ. Yeni bir olay
+  üretim yolu eklersen o da bu pencereye girsin. Korna anı (0:00) muaftır.
+- **Sezon 1'de ligde yabancı oyuncu YOKTUR (FAZ 28 §5):** kural `genRoster`da vardı ama
+  `botClubEnsureDepth`ta YOKTU — bot kadrosu ilk kurulduğu anda yabancı alıyordu ve
+  sezon 1'in 4. turunda sahada yabancı çıkıyordu. Oran tek kaynaktan gelir:
+  `botYabanciOran()` (`js/state.js`), sezon 1'de 0. Yeni bir kadro kurma yolu eklersen
+  oradan geçir; `milliyet-check` J bölümü sınar.
+- **Kapı havuzun BİREBİR metnini arıyorsa havuzu değiştirince kapıyı da güncelle
+  (FAZ 28):** `TON` regex'i `SON_BOLUM` satırlarını metinle arıyordu; satırlara yüklem
+  eklenince kapı 3,8'den 2,1'e düştü — ton azalmamıştı, havuz değişmişti. FAZ 25'teki
+  "kapı biçim okuyordu" dersinin aynısı.
 - **SAHNE KATMANI KOREOGRAFİYİ EZMEZ (FAZ 26 dersi — canlıda oyunu bozdu):** set
   salınımı (§2), hedefine DOĞRU YÜRÜYEN jetonun `p.tx/p.ty` değerini de yeniden yazıyordu.
   Sonuç: `_chase` topa koşmayı bırakıyor (ribaund sahada olmayan oyuncuya gidiyor),

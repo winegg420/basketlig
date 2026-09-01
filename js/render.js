@@ -85,6 +85,20 @@ function renderDashboardSummary(){
    kartında yazar; burada iki farklı düzen olması kafa karıştırır).
    ⚠ Maç CANLIYKEN dokunulmaz — `startMatch` adları zaten yazdı, üzerine yazmak
    F13-18'deki "üç kaynak üç farklı gerçek" hatasını geri getirir. */
+/* FAZ 28 §3: rakip adı TEK KAYNAK. Tabela düzeldi ama "Maç içi — takım istatistikleri"
+   ve "Özet kutu" tablolarının sütun başlığı maç öncesi hâlâ 'Deplasman' yazıyordu:
+   üç ayrı yer aynı soruyu üç ayrı biçimde cevaplıyordu. Artık hepsi buradan okur. */
+function siradakiRakipAdi(){
+  try{
+    const _ms=(typeof mState!=='undefined')?mState:null;
+    /* Oynanan/oynanmakta olan maç varsa onun rakibi geçerlidir (ekrandaki veri o maça ait). */
+    if(_ms&&_ms.rakipName&&_ms.events&&_ms.events.length) return _ms.rakipName;
+    if(!G||!G.team) return null;
+    const m=(typeof findNextUserSeasonMatch==='function')?findNextUserSeasonMatch():null;
+    if(m) return (m.home===G.team.isim)?m.away:m.home;
+    return (_ms&&_ms.rakipName)||null;
+  }catch(e){ dbg('siradakiRakipAdi',e); return null; }
+}
 function syncLiveScoreboardPreview(){
   try{
     const _ms=(typeof mState!=='undefined')?mState:null;
@@ -98,14 +112,16 @@ function syncLiveScoreboardPreview(){
     const la=document.getElementById('liveAway');
     if(!lh||!la||!G||!G.team) return;
     lh.textContent=G.team.isim;
-    let rakip=null;
-    try{
-      const m=(typeof findNextUserSeasonMatch==='function')?findNextUserSeasonMatch():null;
-      if(m) rakip=(m.home===G.team.isim)?m.away:m.home;
-    }catch(e){ dbg('tabela onizleme',e); }
-    /* Maç durdurulmuş ama sonuçlanmamışsa (kilitli sonuç) o maçın rakibi geçerlidir. */
-    if(!rakip&&typeof mState!=='undefined'&&mState&&mState.rakipName) rakip=mState.rakipName;
+    const rakip=siradakiRakipAdi();
     la.textContent=rakip||'—';
+    /* FAZ 28 §3: iki istatistik tablosunun sütun başlığı da maç öncesi doğru yazsın. */
+    try{
+      [['bsHomeName','bsAwayName'],['bsHomeNamemac','bsAwayNamemac']].forEach(([hid,aid])=>{
+        const hn=document.getElementById(hid), an=document.getElementById(aid);
+        if(hn) hn.textContent=G.team.isim;
+        if(an) an.textContent=rakip||'Dep';
+      });
+    }catch(e){ dbg('tablo basligi onizleme',e); }
     const st=document.getElementById('liveStatus');
     if(st&&!(typeof mState!=='undefined'&&mState&&mState.running)){
       st.textContent=rakip?'BEKLEMEDE':'MAÇ YOK';

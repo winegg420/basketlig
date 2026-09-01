@@ -28,6 +28,17 @@ const MARKET_YABANCI_TABAN_PRIM=6;  /* yabancının OVR alt sınırına eklenir 
 const MARKET_YABANCI_TAVAN_PRIM=4;  /* yabancının OVR üst sınırına eklenir */
 const BOT_YABANCI_MAX=2;      /* bir bot takımda en fazla kaç yabancı */
 const BOT_YABANCI_ORAN=0.10;  /* bot transferlerinin yabancı olma olasılığı */
+/* ── FAZ 28 §5: SEZON 1'DE YABANCI YOK ──
+   Kural (FAZ 17): lig KURULURKEN içindeki her oyuncu ligin ev ülkesindendir; yabancılar
+   yalnız sezon başladıktan sonra TRANSFERLE gelir. `genRoster` bunu uyguluyordu ama
+   `botClubEnsureDepth` uygulamıyordu: bot kadrosu ilk kurulduğu anda içine
+   BOT_YABANCI_ORAN payında yabancı koyuyor, sezon/gün kavramını hiç görmüyordu. Sonuç:
+   sezon 1'in ilk maçında sahada yabancı oyuncu çıkıyordu (canlıda görüldü). Oran artık
+   sezona bağlıdır — sezon 1'de 0, sonrasında BOT_YABANCI_ORAN. */
+function botYabanciOran(sezon){
+  const s=(sezon|0)||((typeof G!=='undefined'&&G&&G.season&&G.season.year)|0)||1;
+  return s<=1?0:BOT_YABANCI_ORAN;
+}
 const TR_ULKE={ad:'Türkiye',b:'🇹🇷'};
 /** Yan panelde gösterilecek alt lig sayısı (TBL ayrı). İleride kayıt / içerik arttıkça artırılabilir. */
 const SIDEBAR_DIV_MAX_VISIBLE=1;

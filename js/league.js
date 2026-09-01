@@ -53,7 +53,9 @@ function botClubEnsureDepth(roster,ck){
        yeni başlayan kullanıcıya kadro malzemesi kalır.
        Karar prChance ile deterministiktir; doğrudan rastgelelik çağrısı kadro akışını kaydırırdı. */
     const yabanciSayisi=roster.filter(x=>x&&x.ulke&&x.ulke!==LIG_EV_ULKE).length;
-    const yabanciOlsun=yabanciSayisi<BOT_YABANCI_MAX&&prChance(ck+'|yabanci|'+i,BOT_YABANCI_ORAN);
+    /* FAZ 28 §5: oran sezona bağlıdır — sezon 1'de 0 (lig %100 ev ülkesi kurulur),
+       sonraki sezonlarda BOT_YABANCI_ORAN. Tohum ve çekiliş DEĞİŞMEZ; yalnız eşik. */
+    const yabanciOlsun=yabanciSayisi<BOT_YABANCI_MAX&&prChance(ck+'|yabanci|'+i,botYabanciOran());
     const p=genPlayer(BOT_ROSTER_DIST[i],yabanciOlsun?null:LIG_EV_ULKE);
     p.id='b'+seed+'_'+i;
     p.seed='b'+ck+i;

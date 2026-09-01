@@ -74,7 +74,10 @@ function ortamKur() {
   genRoster: (typeof genRoster==='function') ? genRoster : null,
   DUNK: (typeof _DUNK_WORDS!=='undefined') ? _DUNK_WORDS : null,
   LAYUP: (typeof _LAYUP_WORDS!=='undefined') ? _LAYUP_WORDS : null,
-  FLOAT: (typeof _FLOAT_WORDS!=='undefined') ? _FLOAT_WORDS : null
+  FLOAT: (typeof _FLOAT_WORDS!=='undefined') ? _FLOAT_WORDS : null,
+  HOOK: (typeof _HOOK_WORDS!=='undefined') ? _HOOK_WORDS : null,
+  TIPIN: (typeof _TIPIN_WORDS!=='undefined') ? _TIPIN_WORDS : null,
+  SUT_LINES: (typeof SUT_LINES!=='undefined') ? SUT_LINES : null
 };`;
   try { vm.runInContext(kaynak + epilog, ctx, { filename: 'charazay-bundle.js' }); }
   catch (e) { console.error('✗ modüller yüklenemedi: ' + e.message); process.exit(1); }
@@ -128,7 +131,8 @@ function kayit(kod, ad, gecti, detay) {
 
   /* ── A2: tip ↔ bölge tutarlılığı ──
      smaç/turnike/floater YALNIZ çember-boya; jumper YALNIZ orta mesafe; uc YALNIZ 3'lük. */
-  const yakinTipler = ['smac', 'turnike', 'floater'];
+  /* FAZ 28 §2: kanca (postta uzun) ve tipin (hücum ribaundu) da yakın tiplerdir. */
+  const yakinTipler = ['smac', 'turnike', 'floater', 'kanca', 'tipin'];
   const ihlal = sutlar.filter(x => {
     const t = x.s.sut, z = x.s.zone, u = (x.s.kind === '3');
     if (u) return t !== 'uc';
@@ -157,6 +161,18 @@ function kayit(kod, ad, gecti, detay) {
   kayit('F26-A5', 'Floater payı makul', flt > 0 && flt <= 0.14,
     `%${(flt * 100).toFixed(1)} (hedef 0 < x ≤ %14)`);
 
+  /* ── A6: kanca postta ve uzunlarda ── */
+  const kanca = sutlar.filter(x => x.s.sut === 'kanca');
+  const kancaPost = kanca.filter(x => x.s.scheme === 'postup').length / (kanca.length || 1);
+  kayit('F26-A6', 'Kanca yalnız post oyunundan geliyor', kanca.length > 0 && kancaPost >= 0.99,
+    `${kanca.length} kanca · %${(kancaPost * 100).toFixed(1)} postup (hedef ≥ %99)`);
+
+  /* ── A7: tip-in ikinci şans şutudur ── */
+  const tipin = sutlar.filter(x => x.s.sut === 'tipin');
+  const tipinPb = tipin.filter(x => x.s.pb).length / (tipin.length || 1);
+  kayit('F26-A7', 'Tip-in yalnız hücum ribaundundan (ikinci şans) geliyor', tipin.length > 0 && tipinPb >= 0.99,
+    `${tipin.length} tip-in · %${(tipinPb * 100).toFixed(1)} ikinci şans (hedef ≥ %99)`);
+
   /* ── B1/B2/B3: anlatım dili tiple çelişmiyor ── */
   const DUNK = api.DUNK, LAYUP = api.LAYUP, FLOAT = api.FLOAT;
   if (!DUNK || !LAYUP || !FLOAT) {
@@ -170,6 +186,12 @@ function kayit(kod, ad, gecti, detay) {
     kayit('F26-B2', 'Turnike dili yalnız turnikede', yanlisLay.length === 0,
       `ihlal ${yanlisLay.length}` + (yanlisLay.length ? ` · ör. "${yanlisLay[0].text.slice(0, 70)}" (tip ${yanlisLay[0].s.sut})` : ''));
 
+    const yanlisHook = sutlar.filter(x => x.s.sut !== 'kanca' && api.HOOK.test(x.text));
+    kayit('F26-B5', 'Kanca dili yalnız kancada', yanlisHook.length === 0,
+      `ihlal ${yanlisHook.length}` + (yanlisHook.length ? ` · ör. "${yanlisHook[0].text.slice(0, 70)}" (tip ${yanlisHook[0].s.sut})` : ''));
+    const yanlisTip = sutlar.filter(x => x.s.sut !== 'tipin' && api.TIPIN.test(x.text));
+    kayit('F26-B6', 'Tip-in dili yalnız tip-inde', yanlisTip.length === 0,
+      `ihlal ${yanlisTip.length}` + (yanlisTip.length ? ` · ör. "${yanlisTip[0].text.slice(0, 70)}" (tip ${yanlisTip[0].s.sut})` : ''));
     const yanlisFlt = sutlar.filter(x => x.s.sut !== 'floater' && FLOAT.test(x.text));
     kayit('F26-B3', 'Floater dili yalnız floater\'da', yanlisFlt.length === 0,
       `ihlal ${yanlisFlt.length}` + (yanlisFlt.length ? ` · ör. "${yanlisFlt[0].text.slice(0, 70)}" (tip ${yanlisFlt[0].s.sut})` : ''));

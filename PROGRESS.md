@@ -4427,3 +4427,86 @@ diyordu. Liste artık uyarı yorumu taşıyor.
 anlatım Türkçe %0,0 · `surum-check` (58 → **59**).
 
 Değişmeyen (FAZ 25'ten devreden, bu işle ilgisiz): `spacing` 3 kapı · `hareket` 2 kapı.
+
+
+## FAZ 28 — Canlı maç denetimi sonrası düzeltmeler (2026-09-01)
+
+Kaynak: basketlig.vercel.app'te canlı maç izlendi (Bursa Fatihi – Trabzon Kartalları),
+20 anlatım satırı ekrandan okundu.
+
+### §2 Şut sözlüğünde deyim hataları (en öncelikli)
+
+FAZ 26'da şut tipleri eklenirken yazılan ifadeler Türkçe basketbol diline oturmuyordu.
+
+| Ekranda çıkan | Sorun | Şimdi |
+|---|---|---|
+| "Sancak servisini yaptı" | **servis voleybol/tenis terimi** | "topu kenara aktardı" · "yan çizgiye çıkardı" |
+| "Yavuz demire geldi" | deyim değil | "demire takıldı" |
+| "Turnike dönmedi" | deyim değil | "turnikesi çemberden döndü" · "turnikeyi kaçırdı" |
+| "Smacı tutmadı" | sönük | "smacını çember reddetti" · "smaçta çembere takıldı" |
+| "Yavuz geldi. **Üç sayı.**" | yüklemsiz | "Üç sayıyı buldu." |
+| "**Camdan sakin.**" | yüklemsiz | "Camdan yumuşak bıraktı." |
+| "**Sancak durdu.**" | fail yanlış | "%S{i} durdurdu" (turkEk belirtme hâli) |
+
+**"Servis" anlatımdan tamamen kaldırıldı** (3 `ASSIST_PHRASES` satırı + 3 sözlük girişi).
+
+**İki yeni şut sınıfı:** `kanca` (postta uzunun omuz üstü şutu — yalnız `postup` şeması +
+uzun oyuncu) ve `tipin` (hücum ribaundunun havada tek dokunuşla tamamlanması — yalnız
+`putback`). İkisi de sunum kararıdır, sonucu değiştirmez.
+
+Yeni **`SUT_LINES`** havuzu (spikerin satırlarına EKLENİR, yerini almaz) + tipe özgü zincir
+çekirdekleri. Sınıf başına ifade: **smaç 17 · turnike 15 · floater 14 · kanca 14 · tipin 14.**
+Sözcük kümeleri (`_DUNK/_LAYUP/_FLOAT/_HOOK/_TIPIN_WORDS`) **ayrık** ve **iki dilli**.
+
+Yörünge de tipten gelir: kanca yüksek kavis (ölçülen tepe **97,3 px**), tip-in çember
+dibinde tek dokunuş (yay ≤13 px, en kısa uçuş).
+
+### §3 İstatistik tablosu başlığı
+
+"Maç içi — Takım istatistikleri" ve "Özet kutu" tablolarının sütun başlığı maç başlayana
+kadar **"Dep"** yer tutucusundaydı; aynı ekranda rakibin adı iki farklı şey diyordu. Yeni
+`siradakiRakipAdi()` (`js/render.js`) tek kaynaktır; tabela, iki tablo ve
+`showPage('mac')` hepsi ondan okur. Kapı: **F28-1**.
+
+### §4 Aynı saniyede üst üste olaylar — KÖK NEDEN
+
+Maç saati **pozisyon başına bir kez** azalıyor (`t=t-rand(decLo,decHi)`) ve
+`runPossessionV` o pozisyonun BÜTÜN olaylarını aynı `t` ile damgalıyordu. Canlıda üç
+ayrı olay "1P 6:19" görünüyordu.
+
+Çözüm sonuç matematiğine dokunmaz: pozisyonun toplam saat maliyeti (`_dt`) ve rastgele
+akış aynen kalır, yalnız o pozisyonda üretilmiş olayların damgaları pozisyonun kendi
+penceresine `(tEnd … tPrev-1)` dağıtılır (`_damgaDagit`, çeyrek + uzatma döngüleri).
+Kapı: 40 maç, **0 çakışma**. Korna anı (0:00) kural gereği muaftır — saat durmuştur.
+
+### §5 Sezon 1'de yabancı oyuncu — **DELİK VARDI**
+
+Canlıda görülen Detlef Maier meşru transfer DEĞİLDİ. `genRoster` kuralı uyguluyordu ama
+**`botClubEnsureDepth` uygulamıyordu**: bot kadrosu ilk kurulduğu anda içine
+`BOT_YABANCI_ORAN` payında yabancı koyuyor, sezon kavramını hiç görmüyordu. Yeni
+`botYabanciOran()` (`js/state.js`) sezon 1'de **0** döndürür.
+
+Ölçüm (`milliyet-check` J bölümü): sezon 1 · 20 takım · 200 oyuncu → **0 yabancı**;
+sezon 3 · 200 takım → %9,3, takım başına en fazla 2.
+
+### Kendi inisiyatifimle düzeltilenler
+
+- **Kapı biçim okuyordu:** `TON` regex'i `SON_BOLUM` havuzunun birebir metnini arıyordu;
+  satırlara yüklem eklenince kapı 3,8 → 2,1'e düştü — ton azalmamıştı, havuz değişmişti.
+- **Cümle bölücü:** sıra sayısındaki nokta ("üst üste 3. isabetini buldu") cümle sonu
+  sanılıyor, yüklem bir sonraki parçaya kaçıyordu. Skor damgası silici de "8-0'lık seri"
+  içindeki sayıyı silip cümleyi bozuyordu.
+- `_FLOAT_WORDS` mevcut bir üçlük satırıyla ("üçlük havada asılı kaldı") çakışıyordu;
+  kümeler ayrık olmalı — kalıp fiiliyle daraltıldı.
+- Kelime bütçesi: yüklem eklemeleri ortalamayı 8,84 → 9,02'ye çıkarmıştı (kapı <9);
+  saat/ton/imza satırları ve yeni sınıf ifadeleri kısaltılarak **8,97**'ye çekildi.
+
+### Sonuçlar
+
+`sim-node --n=100 --seed=42` → **87.2 - 80.0 · olay/maç 249 · hata 0 · G değişmedi: EVET**
+`anlatim-check` **28/28** (yeni 4 kapı dâhil) · `sut-check` **14/14** · `sunum-check`
+**tümü** (F28-1 dâhil) · `band.js` hash **99bb9ceb67917bd0 değişmedi** · `visual-check`
+0 konsol hatası · `mobile-check` 18/18 · `milliyet-check` · `lig-check` · `isim-check` ·
+`schema-check` · `turkek-check` · `analiz-check` · `i18n-scan` (canlı anlatım %0,0).
+
+Sürüm **59 → 60**.

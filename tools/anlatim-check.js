@@ -22,7 +22,8 @@ const KAPI = require('./_lib/anlatim-kapilari.js');   /* FAZ 25 §8 okuyucuları
 
 const ROOT = path.resolve(__dirname, '..');
 const arg = (ad, v) => { const m = process.argv.find(a => a.startsWith('--' + ad + '=')); return m ? Number(m.split('=')[1]) : v; };
-const N = arg('n', 30);
+/* FAZ 28: deyim/damga kapıları 40 maç üzerinden ölçülür (brif). */
+const N = arg('n', 40);
 const SEED0 = arg('seed', 987654321);
 const FREEZE = process.argv.includes('--freeze');
 
@@ -72,7 +73,7 @@ function ortamKur() {
   vm.createContext(ctx);
   const kaynak = FILES.map(f => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
   vm.runInContext(kaynak + `
-;globalThis.__api={simulateMatch,genRoster};`, ctx, { filename: 'charazay-bundle.js' });
+;globalThis.__api={simulateMatch,genRoster};globalThis.SUT_LINES=(typeof SUT_LINES!=="undefined")?SUT_LINES:null;globalThis.KISA_CEKIRDEK_SUT=(typeof KISA_CEKIRDEK_SUT!=="undefined")?KISA_CEKIRDEK_SUT:null;`, ctx, { filename: 'charazay-bundle.js' });
   return ctx;
 }
 function kadroUret(ctx, seed) {
@@ -487,6 +488,33 @@ function analizEt(events) {
      `%${(K.foulKunyeOran * 100).toFixed(1)} (${K.foulKunye}/${K.foul})`);
   ok('anlatım-saha çelişmesi yok', K.celiski.length === 0,
      K.celiski.length ? K.celiski.slice(0, 3).join(' | ') : 'köşe/post/yakınlık iddiaları sahayla uyumlu');
+
+  /* ── FAZ 28 §2: DEYİM VE YÜKLEM ────────────────────────────────────────────────── */
+  console.log(String.fromCharCode(10)+"── FAZ 28: deyim ve yüklem ──");
+  ok('anlatımda "servis" kelimesi geçmiyor (basketbol terimi değil)', K.servis.length === 0,
+     K.servis.length ? K.servis.slice(0, 3).join(' | ') : `${K.olay} olay tarandı`);
+  ok('kara listedeki deyim hataları yok', K.kara.length === 0,
+     K.kara.length ? K.kara.slice(0, 3).join(' | ')
+                   : '"demire geldi" · "turnike dönmedi" · "smacı tutmadı" yok');
+  ok('fiilsiz anlatım cümlesi <%5', K.fiilsizOran < 0.05,
+     `%${(K.fiilsizOran * 100).toFixed(2)} (${K.fiilsizN}/${K.cumle} cümle)` +
+     (K.fiilsiz.length ? ' · ör. ' + K.fiilsiz.slice(0, 3).map(x => '"' + x + '"').join(' ') : ''));
+
+  /* Havuz zenginliği: sınıf başına ≥8 ifade. Motor sabitlerini VM bağlamından okur. */
+  const _KAPI = require('./_lib/anlatim-kapilari.js');
+  const _ifade = _KAPI.sutIfadeSayisi(ctx);
+  const _sinif = ['smac', 'turnike', 'floater', 'kanca', 'tipin'];
+  const _eksik = _sinif.filter(k => (_ifade[k] || 0) < 8);
+  ok('her şut sınıfı için havuzda ≥8 ifade var', _eksik.length === 0,
+     _sinif.map(k => `${k} ${_ifade[k] || 0}`).join(' · ') +
+     (_eksik.length ? ' — eksik: ' + _eksik.join(', ') : ''));
+
+  /* ── FAZ 28 §4: ARDIŞIK OLAY DAMGASI ───────────────────────────────────────────── */
+  console.log(String.fromCharCode(10)+"── FAZ 28: olay saati ──");
+  const _cak = _KAPI.damgaCakismasi(tumEvents);
+  ok('ardışık iki olayın damgası aynı değil', _cak.length === 0,
+     _cak.length ? `${_cak.length} çakışma · ör. ${JSON.stringify(_cak.slice(0, 3))}`
+                 : `${tumEvents.length} olay tarandı (duraklama olayları hariç)`);
 
   const dusen = sonuc.filter(s => !s.gecti);
   console.log('\n' + '='.repeat(66));

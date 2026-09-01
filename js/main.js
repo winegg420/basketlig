@@ -1366,7 +1366,9 @@ function showPage(page,btn){
          üç farklı gerçek). Artık panel maç varken mState.box'tan yeniden doldurulur. */
       if(G.team){
         const _mb=(typeof mState!=='undefined'&&mState&&mState.box)?mState.box:null;
-        const _rk=(typeof mState!=='undefined'&&mState&&mState.rakipName)?mState.rakipName:'Deplasman';
+        /* FAZ 28 §3: maç başlamadan 'Deplasman' yazıyordu — ad tek kaynaktan gelir. */
+        const _rk=(typeof siradakiRakipAdi==='function'?siradakiRakipAdi():null)
+          ||((typeof mState!=='undefined'&&mState&&mState.rakipName)?mState.rakipName:'Deplasman');
         if(_mb&&_mb.h&&_mb.a) renderBoxScore(_mb.h,_mb.a,G.team.isim,_rk);
         else renderBoxScore(emptyBox(),emptyBox(),G.team.isim,_rk);
       }

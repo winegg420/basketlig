@@ -94,6 +94,45 @@ console.log(`    ${D.toplam} bot oyuncu · ${D.yabanci} yabancı · %${oranD.toF
 yaz(oranD <= 12, `bot yabancı oranı %${oranD.toFixed(1)} (kapı ≤%12)`);
 yaz(D.maxTakim <= run('BOT_YABANCI_MAX'), `takım başına en fazla ${D.maxTakim} yabancı (kapı ≤${run('BOT_YABANCI_MAX')})`);
 
+/* ── FAZ 28 §5: SEZON 1'DE LİGDE YABANCI OYUNCU YOK ──
+   Canlıda sezon 1'in 4. turunda sahada yabancı oyuncu görüldü (Detlef Maier · Almanya).
+   Kök neden: `genRoster` kuralı uyguluyordu ama `botClubEnsureDepth` uygulamıyordu —
+   bot kadrosu İLK KURULDUĞU anda içine BOT_YABANCI_ORAN payında yabancı koyuyor, sezon
+   kavramını hiç görmüyordu. Yabancı artık yalnız sezon 2'den itibaren gelir.
+   Bu bölüm iki tarafı da sınar: sezon 1'de KESİN 0, sonraki sezonlarda kural yerinde. */
+console.log("\nJ) Sezon 1'de yabancı yok · sonraki sezonlarda kural yerinde");
+const J1 = run(`(function(){
+  G.season = { year: 1 };
+  let toplam = 0, yabanci = 0; const d = [];
+  for (let t = 0; t < 20; t++) {
+    const roster = [];
+    botClubEnsureDepth(roster, 'TBL||S1 Bot ' + t);
+    roster.forEach(p => { toplam++; if (p.ulke !== LIG_EV_ULKE) { yabanci++; d.push(p.ulke); } });
+  }
+  return { toplam, yabanci, d: Array.from(new Set(d)) };
+})()`);
+console.log(`    sezon 1 · 20 takım · ${J1.toplam} oyuncu · ${J1.yabanci} yabancı`);
+yaz(J1.yabanci === 0, `sezon 1 gün 1'de ligde yabancı oyuncu 0${J1.d.length ? ' — sızan: ' + J1.d.join(', ') : ''}`);
+
+const J2 = run(`(function(){
+  G.season = { year: 3 };
+  let toplam = 0, yabanci = 0, maxTakim = 0;
+  for (let t = 0; t < 200; t++) {
+    const roster = [];
+    botClubEnsureDepth(roster, 'TBL||S3 Bot ' + t);
+    let tk = 0;
+    roster.forEach(p => { toplam++; if (p.ulke !== LIG_EV_ULKE) { yabanci++; tk++; } });
+    if (tk > maxTakim) maxTakim = tk;
+  }
+  G.season = null;
+  return { toplam, yabanci, maxTakim };
+})()`);
+const oranJ = J2.yabanci / J2.toplam * 100;
+console.log(`    sezon 3 · 200 takım · ${J2.toplam} oyuncu · ${J2.yabanci} yabancı · %${oranJ.toFixed(1)}`);
+yaz(J2.yabanci > 0, `sezon 3'te yabancı transferi çalışıyor (%${oranJ.toFixed(1)})`);
+yaz(oranJ <= 12, `sezon 3 bot yabancı oranı %${oranJ.toFixed(1)} (kapı ≤%12)`);
+yaz(J2.maxTakim <= run('BOT_YABANCI_MAX'), `sezon 3'te takım başına en fazla ${J2.maxTakim} yabancı (kapı ≤${run('BOT_YABANCI_MAX')})`);
+
 /* E) Bot kararı deterministik mi (Math.random kullanılmamalı) */
 console.log('\nE) Bot milliyet kararı deterministik mi');
 /* Sınanan şey KAPI'nın kendisidir. Kapı açıldığında oyuncunun ülkesi ch(ULKELER) ile

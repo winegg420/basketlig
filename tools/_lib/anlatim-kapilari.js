@@ -94,7 +94,11 @@ const YABANCI = /\bspacing\b|\bbox-?out\b|\bdrive\b|\broll\b|\bAND-?1\b|\bpick\b
 
 /* ── Saat referansı ──────────────────────────────────────────────────────────────── */
 const SAAT = /süre|saat|saniye|çeyrek biterken|çeyrek kapan|son saniyeler|zaman daral/i;
-const TON = /kritik pozisyon|bu top çok önemli|savunma ayakta|salon nefesini|her şey buna|tansiyon tavanda|kimse oturmuyor|maç koptu|fark güvenli|skor tabelası konuştu|iş bitti sayılır|kalan süre yetmez/i;
+/* ⚠ Bu okuyucu SON_BOLUM havuzunun BİREBİR metnini arar. FAZ 28 §2.1.3'te satırlara
+   yüklem eklenince ("Tansiyon tavanda." → "Tansiyon yükseldi.") kapı sessizce 3,8'den
+   2,1'e düştü — havuz değişmişti, ton azalmamıştı. Havuz satırı değiştirilirse burası
+   da güncellenir (FAZ 25'teki "kapı biçim okuyordu" dersinin aynısı). */
+const TON = /kritik an geldi|bu top belirleyici|savunma dikildi|salon nefesini|her şey buna|tansiyon yükseldi|kimse oturmuyor|maç koptu|fark açıldı|skor tabelası konuştu|iş bitti sayılır|kalan süre yetmez|başa baş gidiyor/i;
 
 /* ── Künye biçimli faul ──────────────────────────────────────────────────────────── */
 const KUNYE = /Faul — .+\(kişisel \d\)/;
@@ -106,12 +110,79 @@ const KOSE = /köşe/i;
 const POST = /sırtını döndü|posta indi|postta sırtladı|düşük postta/i;
 const YAKIN_SOZ = /turnike|pota altı|boyalı alan|dibe indi|smaç/i;
 
+/* ══ FAZ 28 §2: DEYİM DENETİMİ ═══════════════════════════════════════════════════════
+   FAZ 26'da şut tipleri eklenirken yazılan ifadeler Türkçe basketbol diline oturmuyordu.
+   Canlıda görülenler: "Sancak servisini yaptı" (servis VOLEYBOL/TENİS terimidir,
+   basketbolda karşılığı yoktur), "Yavuz demire geldi", "Turnike dönmedi",
+   "Smacı tutmadı" — hiçbiri Türkçede kullanılan bir deyim değil. */
+const SERVIS_RE = /(^|[^A-Za-zÇĞİÖŞÜçğıöşü])servis(i|in|ini|inde)?([^A-Za-zÇĞİÖŞÜçğıöşü]|$)/i;
+const KARA_LISTE = [
+  /demire geldi/i,
+  /turnike dönmedi/i,
+  /smacı tutmadı/i,
+];
+
+/* ── Fiil (yüklem) taraması ──
+   Türkçede kısa parça anlatımın ritmidir ("Kaçırdı.") ama YÜKLEMSİZ parça kopuk durur
+   ("Yavuz geldi. Üç sayı." / "Uçar adamını okudu. Camdan sakin."). Ölçüm cümle
+   düzeyindedir: bir olay metni birden çok cümleye bölünür ve her cümlede en az bir
+   çekimli fiil aranır.
+   ⚠ Ünlem/nida parçaları (⚡ "Hızlı hücum!", "İkinci şans!") Türkçede geçerli
+   birer nida cümlesidir, yüklem aramaz — kapsam dışıdır. Skor damgası ("84-79") ve
+   simge önekleri de cümle değildir. */
+const FIIL_RE = new RegExp(
+  '(' +
+  '[a-zçğıöşü]+(dı|di|du|dü|tı|ti|tu|tü)(lar|ler)?' +   /* belirli geçmiş: geldi, attı, buldu */
+  '|[a-zçğıöşü]+(mış|miş|muş|müş)(lar|ler)?' +           /* öğrenilen geçmiş */
+  '|[a-zçğıöşü]+(ıyor|iyor|uyor|üyor)(lar|ler)?' +       /* şimdiki zaman */
+  '|[a-zçğıöşü]+(acak|ecek)(lar|ler)?' +                 /* gelecek */
+  '|[a-zçğıöşü]+(malı|meli)' +                           /* gereklilik */
+  '|(var|yok|değil|gerek)' +
+  /* Geniş zaman ("Bunu sever.", "Durdurabilene aşk olsun.") yalnız CÜMLE SONUNDA
+     aranır; 'haber' / 'şehir' gibi adlar cümle ortasında fiil sanılmasın. */
+  '|[a-zçğıöşü]{2,}(ar|er|ır|ir|ur|ür)(?=[.!?]?$)' +
+  '|olsun|olacak' +
+  ')(?![a-zçğıöşü])', 'u');
+function cumleler(tx) {
+  return String(tx || '')
+    .replace(/<[^>]*>/g, ' ')
+    /* Skor damgası cümle değildir. ⚠ Yalnız BAŞINA BUYRUK skor atılır: "8-0'lık seri"
+       içindeki sayıyı silmek cümleyi "lık seri." diye bozuyordu. */
+    .replace(/(^|\s)\d+\s*-\s*\d+(?=\s|$)/g, ' ')
+    .replace(/\([^)]*\)/g, ' ')                     /* parantez içi künye */
+    /* Sıra sayısı ("üst üste 3. isabetini buldu") cümle sonu DEĞİLDİR — rakamdan
+       sonraki nokta bölmez, yoksa yüklem bir sonraki parçada kalır. */
+    .split(/(?<=[.!?])(?<![0-9]\.)\s+|\n+/)
+    .map(x => x.trim())
+    .filter(Boolean);
+}
+/* Künye / etiket satırları yüklem aramaz. Türkçede "Faul — Ali Kaya (kişisel 2)",
+   "DEVRE ARASI — 45-38", "Maçın yıldızı: Ali Kaya — 18 sayı" birer ETİKET (ara söz)
+   yapısıdır; bunları fiilli cümleye çevirmek anlatımı bozar, düzeltmez. Kapının konusu
+   §2'nin kendisidir: ŞUT anlatımındaki kopuk parçalar ("Üç sayı.", "Camdan sakin."). */
+const ETIKET_RE = /[—:]|^[A-ZÇĞİÖŞÜ\s]{6,}$/u;
+function fiilsizCumleler(tx) {
+  const cikan = [];
+  cumleler(tx).forEach(c => {
+    if (ETIKET_RE.test(c)) return;
+    const govde = c.replace(/^[^\p{L}\d]+/u, '').trim();       /* simge öneki at */
+    if (!govde) return;
+    if (!/\p{L}/u.test(govde)) return;                          /* harf yoksa cümle değil */
+    if (/[!]\s*$/.test(govde) && govde.split(/\s+/).length <= 3) return;   /* nida */
+    if (FIIL_RE.test(govde.toLowerCase())) return;
+    cikan.push(govde);
+  });
+  return cikan;
+}
+
 function olcumler(events, macSayisi) {
   const r = {
     olay: 0, kelime: 0, sut: 0, zincir: 0,
     ekHata: [], failsiz: [], yabanci: {},
     saat: 0, ton: 0, foul: 0, foulKunye: 0, hepsiIceride: 0,
     celiski: [],
+    /* FAZ 28 §2 */
+    servis: [], kara: [], cumle: 0, fiilsiz: [], fiilsizN: 0,
   };
   events.forEach(e => {
     const tx = metin(e);
@@ -130,6 +201,15 @@ function olcumler(events, macSayisi) {
     if (TON.test(tx)) r.ton++;
     if (e.type === 'foul') { r.foul++; if (KUNYE.test(tx)) r.foulKunye++; }
     if (/hepsi içeride/i.test(tx)) r.hepsiIceride++;
+
+    /* FAZ 28 §2: yasak terim + kara liste + yüklem taraması */
+    if (SERVIS_RE.test(tx) && r.servis.length < 8) r.servis.push(tx.slice(0, 90));
+    KARA_LISTE.forEach(re => { if (re.test(tx) && r.kara.length < 8) r.kara.push(tx.slice(0, 90)); });
+    const _c = cumleler(tx);
+    r.cumle += _c.length;
+    const _f = fiilsizCumleler(tx);
+    r.fiilsizN += _f.length;
+    _f.forEach(x => { if (r.fiilsiz.length < 8) r.fiilsiz.push(x); });
 
     if (e.shot) {
       r.sut++;
@@ -150,6 +230,7 @@ function olcumler(events, macSayisi) {
   r.foulKunyeOran = r.foul ? r.foulKunye / r.foul : 0;
   r.tonMac = macSayisi ? r.ton / macSayisi : 0;
   r.hepsiIceridMac = macSayisi ? r.hepsiIceride / macSayisi : 0;
+  r.fiilsizOran = r.cumle ? r.fiilsizN / r.cumle : 0;
   return r;
 }
 
@@ -211,4 +292,49 @@ function foulOku(txt) {
   return { ad: _soyad(toks[toks.length - 1]), no };
 }
 
-module.exports = { olcumler, ekHatalari, ekDenetle, failVar, metin, adlariBul, foulOku };
+
+/* ── FAZ 28 §2: sınıf başına ifade sayımı ──
+   Sorun yalnız yanlış deyim değildi; sınıf başına 3-4 ifade vardı ve aynı cümle maç
+   içinde tekrar ediyordu. Kapı: her şut sınıfı için havuzda ≥8 farklı ifade. */
+function sutIfadeSayisi(ctx) {
+  const say = {};
+  const ekle = (sinif, dizi) => {
+    if (!Array.isArray(dizi)) return;
+    const k = say[sinif] || (say[sinif] = new Set());
+    dizi.forEach(x => { if (typeof x === 'string' && x.trim()) k.add(x.trim()); });
+  };
+  try {
+    const SL = ctx.SUT_LINES;
+    if (SL) Object.keys(SL).forEach(t => { Object.keys(SL[t]).forEach(kind => ekle(t, SL[t][kind])); });
+  } catch (e) {}
+  try {
+    const KC = ctx.KISA_CEKIRDEK_SUT;
+    if (KC) Object.keys(KC).forEach(t => { Object.keys(KC[t]).forEach(kind => ekle(t, KC[t][kind])); });
+  } catch (e) {}
+  const out = {};
+  Object.keys(say).forEach(k => { out[k] = say[k].size; });
+  return out;
+}
+
+/* ── FAZ 28 §4: ardışık olay damgası ──
+   Canlıda üç ayrı olay "1P 6:19" damgasıyla arka arkaya geliyordu. Duraklama olayları
+   (çeyrek başı/sonu, maç sonu, MVP) bu kuralın dışındadır — onların damgası sabittir. */
+const DAMGA_MUAF = new Set(['quarter_start', 'quarter_end', 'end', 'mvp']);
+function damgaCakismasi(events) {
+  const cak = [];
+  for (let i = 1; i < events.length; i++) {
+    const a = events[i - 1], b = events[i];
+    if (!a || !b || a.t == null || b.t == null) continue;
+    if (a.q !== b.q) continue;                       /* çeyrek değişimi */
+    if (DAMGA_MUAF.has(a.type) || DAMGA_MUAF.has(b.type)) continue;
+    /* Kornaya (0:00) kadar oynanan pozisyonun kaçan şutu ve ribaundu GERÇEKTEN aynı
+       damgayı taşır — saat durmuştur, ilerleyecek saniye yoktur. Şikâyetin konusu
+       maç ORTASINDA (1P 6:19) üst üste gelen olaylardı; korna anı kuralın kendisidir. */
+    if (a.t === 0 && b.t === 0) continue;
+    if (a.t === b.t) cak.push({ q: a.q, t: a.t, a: a.type, b: b.type });
+  }
+  return cak;
+}
+
+module.exports = { olcumler, ekHatalari, ekDenetle, failVar, metin, adlariBul, foulOku,
+                   sutIfadeSayisi, damgaCakismasi, fiilsizCumleler, cumleler };

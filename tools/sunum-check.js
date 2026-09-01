@@ -82,7 +82,9 @@ async function main() {
     const g = id => { const e = document.getElementById(id); return e ? (e.textContent || '').trim() : null; };
     let fik = null;
     try { const m = findNextUserSeasonMatch(); if (m) fik = (m.home === G.team.isim) ? m.away : m.home; } catch (e) {}
-    return { home: g('liveHome'), away: g('liveAway'), durum: g('liveStatus'), fikstur: fik };
+    return { home: g('liveHome'), away: g('liveAway'), durum: g('liveStatus'), fikstur: fik,
+             statHome: g('bsHomeNamemac'), statAway: g('bsAwayNamemac'),
+             kutuHome: g('bsHomeName'), kutuAway: g('bsAwayName') };
   });
   await page.evaluate(() => { startMatch(); });
   await page.evaluate(() => {
@@ -465,6 +467,16 @@ async function main() {
   /* ── FAZ 26 §2: MAÇ ÖNCESİ TABELADA RAKİP ADI ──
      Maç sayfası açıldığında tabelanın sağ sütunu yer tutucu ('Deplasman') kalıyordu.
      Kapı, maç BAŞLAMADAN önce alınan anlık görüntüyü okur. */
+  /* ── FAZ 28 §3: MAÇ ÖNCESİ İSTATİSTİK TABLOSU BAŞLIĞI ──
+     FAZ 26'da tabela düzeldi ama "Maç içi — Takım istatistikleri" ve "Özet kutu"
+     tablolarının sütun başlığı maç başlayana kadar 'Dep' yer tutucusunda kalıyordu:
+     aynı ekranda rakibin adı iki farklı yerde iki farklı şey diyordu. */
+  kayit('F28-1', 'Maç öncesi her iki istatistik tablosunda rakip adı yazıyor',
+    !!(oncesi && oncesi.fikstur &&
+       oncesi.statAway === oncesi.fikstur && oncesi.kutuAway === oncesi.fikstur &&
+       oncesi.statHome === oncesi.home && oncesi.kutuHome === oncesi.home),
+    oncesi ? `maç içi tablo "${oncesi.statHome}" / "${oncesi.statAway}" · özet kutu "${oncesi.kutuHome}" / "${oncesi.kutuAway}" · fikstür "${oncesi.fikstur}"` : 'ÖRNEK YOK');
+
   kayit('F26-3', 'Maç öncesi tabelada rakibin adı yazıyor',
     !!(oncesi && oncesi.away && oncesi.away !== 'Deplasman' && oncesi.away !== '—' &&
        oncesi.home && oncesi.home !== 'Ev Takımı' && oncesi.away === oncesi.fikstur),
