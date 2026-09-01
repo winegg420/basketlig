@@ -387,8 +387,8 @@ async function main() {
   else kayit('F25-1', 'Orta sahayı geçen topu 1/2/3 taşıyor', SK.tasima.oran >= 0.85,
     `${SK.tasima.n} taşıma · %${(SK.tasima.oran*100).toFixed(1)} rol 0/1/2 (hedef ≥ %85)`);
 
-  kayit('F25-2', 'Set hücumunda donma yok (hedef ≥1,5 sn sabit kalmıyor)', SK.donma.n === 0,
-    SK.donma.n ? `${SK.donma.n} donma · en uzun ${SK.donma.enUzun.toFixed(2)} sn` : 'donma olayı 0');
+  kayit('F25-2', 'Set hücumunda donma yok (jeton 1,5 sn+ yerinde çakılı kalmıyor)', SK.donma.n === 0,
+    SK.donma.n ? `${SK.donma.n} donma · en uzun ${SK.donma.enUzun.toFixed(2)} sn · kilitli ${SK.donma.kilitli} · topta ${SK.donma.topta} · hedefi uzakta ${SK.donma.yolda} · rol ${JSON.stringify(SK.donma.rolDagilim)} · örnek ${JSON.stringify(SK.donma.ornek)} · [bilgi] dar alanda kıpırdama ${SK.titreme.n} (ort ${SK.titreme.ortHiz} px/sn)` : 'donma olayı 0');
 
   if (!SK.sokma.n) kayit('F25-3', 'Kenardan sokmada takım yakın duruyor', false,
     'ÖRNEK YOK — bu pencerede kenardan sokma yakalanmadı');

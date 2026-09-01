@@ -270,18 +270,15 @@ function initMatchPlayers(lu,rakip,oppPlayers){
       nm.setAttribute('fill','rgba(255,255,255,0.95)'); nm.setAttribute('stroke','rgba(0,0,0,0.55)');
       nm.setAttribute('stroke-width','0.9'); nm.setAttribute('paint-order','stroke');
       nm.setAttribute('pointer-events','none'); nm.textContent=label;
-      /* §6.1: YÖNELİM göstergesi. Jetonda yön bilgisi hiç yoktu; post-up'ta oyuncunun
-         "sırtını dönmesi" ekranda görünmüyordu. Küçük bir işaret, jetonun baktığı yönde
-         çember kenarına oturur — okunabilirliği bozmayacak kadar sade. */
-      const fc=document.createElementNS('http://www.w3.org/2000/svg','circle');
-      fc.setAttribute('class','tok-face'); fc.setAttribute('r','3.6');
-      fc.setAttribute('fill','rgba(255,255,255,0.92)');
-      fc.setAttribute('stroke','rgba(0,0,0,0.45)'); fc.setAttribute('stroke-width','1');
-      fc.setAttribute('cx','11'); fc.setAttribute('cy','0');
-      fc.setAttribute('pointer-events','none');
-      g.appendChild(c); g.appendChild(fc); g.appendChild(t); g.appendChild(nm);
+      /* §6.1: YÖNELİM göstergesi ÇİZİLMEZ (kullanıcı kararı, FAZ 25 sonrası canlı test).
+         Jetonun kenarındaki küçük beyaz nokta sahayı okumayı kolaylaştırmadı, aksine
+         "bu ne?" sorusu üretti. Yön HESABI (`p.yon` / `_sirtDonuk`) yerinde duruyor —
+         post oyununu ve F25-6a kapısını besliyor —, yalnız görsel katman kaldırıldı.
+         Parkede yalnız oyuncular, numaralar, adlar ve top vardır (37. oturumdaki
+         "canlı sahada O/X şut izi yok" kararının devamı). Geri EKLENMEMELİ. */
+      g.appendChild(c); g.appendChild(t); g.appendChild(nm);
       layer.appendChild(g);
-      g._face=fc;
+      g._face=null;
       return g;
     };
     const homeP=(lu&&lu.onCourt)?lu.onCourt.slice(0,5):[];
@@ -479,12 +476,15 @@ function _simTick(dt){
      Pota 4 m yakınsa (_cikisHedefi kuralı) pas aranmaz — uzun kendi bitirir. */
   if(S.offP&&S.ball&&S.ball.mode==='held'){
     const c=S.ball.carrier;
-    if(c&&!_tasiyabilir(c)&&S.time>=(S.cikisSonra||0)){
+    /* ⚠ Koreografi kesilmez: bu kapı sahne katmanının KENDİ pasıdır, anlatımda karşılığı
+       yoktur. Senaryolu şutörden topu alırsa anlatım ile sahne ayrışır ("mantıksız pas")
+       ve şut noktası boşta kalır. Aktif takip sırasında da devreye girmez. */
+    if(c&&!_tasiyabilir(c)&&S.time>=(S.cikisSonra||0)&&c!==S.shooter&&!S.chase){
       /* Orta saha şeridi: taşıyıcı kendi yarısından çıkmak üzere. */
       const ortaya=Math.abs(c.x-COURT_MID)<150;
       if(ortaya){
         const hedef=_cikisHedefi(c,S.offP,_rim(S.offSide));
-        if(hedef){ S.cikisSonra=S.time+1.2; _ballPass(hedef,0.30); }
+        if(hedef){ S.cikisSonra=S.time+1.2; _ballPass(hedef); }
       }
     }
   }
@@ -516,6 +516,18 @@ function _simTick(dt){
          algısıdır, bu yüzden ölçüt de seyircinin saati olmalı (F15 "sahne saati ≠ maç
          saati" dersinin bu maddeye düşen karşılığı). */
       if(_rtNow()-(p._sonHedefRt||0)<340) continue;
+      /* ⚠⚠ GERİLEME DÜZELTMESİ (FAZ 25 sonrası canlı test): salınım, hedefine DOĞRU
+         YÜRÜYEN jetonun hedefini de eziyordu. Sonuç sahada şuydu:
+           • serbest top takipçisi (`_chase`, her karede `t.tx=b.x` yazar ve `_lock` verir)
+             topa koşmayı bırakıyor, 3,2 sn sonra zaman aşımı topu ona UZAKTAN gönderiyordu
+             → "ribaund sahada olmayan oyuncuya gidiyor";
+           • koreografinin şut noktasına yolladığı şutör yolda kalıyor, `bridge()` topu boş
+             noktaya ghost pasla taşıyıp oradan attırıyordu → "boşluktan şut".
+         DONMA bir SEYİRCİ algısıdır ve yalnız YERİNE VARMIŞ jeton için anlamlıdır; yolda
+         olan jeton zaten hareket hâlindedir. Bu yüzden salınım artık yalnız hedefine
+         varmış (< _YERINDE_ESIK) jetona verilir ve aktif takipçiye hiç dokunulmaz. */
+      if(S.chase&&S.chase.tok===p) continue;
+      if(Math.hypot(p.x-p.tx,p.y-p.ty)>_YERINDE_ESIK){ p._sonHedefRt=_rtNow(); continue; }
       const merkez=p._setTx!=null?[p._setTx,p._setTy]:[p.tx,p.ty];
       const topta=(b&&b.carrier===p);
       /* Topu tutan tepede daha geniş salınır (canlı dribbling); topsuzlar ufak düzeltme.
@@ -527,35 +539,91 @@ function _simTick(dt){
       const dx=rim[0]-merkez[0], dy=rim[1]-merkez[1], d=Math.hypot(dx,dy)||1;
       /* Topçunun salınımı KÜÇÜK: top zaten sekiyor, jetonu fazla oynatmak savunmacısını
          kopartıyor ve markaj ölçümünü bozuyor. */
-      /* Genlik SIFIRA yakın düşerse hedef hiç değişmez ve donma sayacı sıfırlanmaz.
-         Rastgele işaret de yetmiyor: ardışık iki salınım aynı tarafa (ör. +4,2 ve +4,4)
-         düşünce tam sayıya yuvarlanan hedef AYNI kalıyordu. Yön her adımda ÇEVRİLİR —
-         hem en az 2×taban kadar gerçek yer değiştirme garanti olur hem de oyuncunun
-         ileri-geri ağırlık aktarması doğal görünür. */
-      const _tmax=kilitli?5:(topta?7:9), _tmin=kilitli?3:4;
-      p._nudgeYon=(p._nudgeYon===1)?-1:1;
-      const r=p._nudgeYon*(_tmin+(_tmax-_tmin)*_sr());
+      /* ⚠⚠ F25-2 KÖK NEDENİ (ölçülerek bulundu). Yön HER ADIMDA çevriliyordu: hedef
+         +7 px, ardından −7 px, ardından +7 px… Jeton varış freni yüzünden (hedefe 24 px
+         kalınca üst hız 10 px/sn) hedefe VARAMADAN yön değişiyor, salınım merkez etrafında
+         simetrik kalıyor ve 1,5 sn'deki NET yer değiştirme sıfıra yakın çıkıyordu — kapı
+         haklı olarak "yerinde çakılı" diyordu (26 donma; teşhis: kilitli 1, topta 0,
+         hedefi uzakta 2 → hepsi dizilim noktasında duran topsuz oyuncular).
+         Çözüm genliği büyütmek DEĞİL, salınımı TEK YÖNLÜ SÜRÜKLENMEYE çevirmektir:
+         oyuncu radyal eksende bir yöne doğru adım adım kayar, ±_NUDGE_BAND sınırına
+         gelince yön çevirir. Ortalama konum yine dizilim noktasıdır (FAZ 11 aralık
+         ölçümleri kaymaz) ama hareket birkaç adım boyunca AYNI yönde sürdüğü için
+         ekranda gerçek bir yer değiştirme olur — basketbolun kendi "topa flaş / geri
+         açılma" hareketi de zaten budur, ileri-geri titreme değil. */
+      /* Adım KÜÇÜK, bant GENİŞ olmalı: yön ne kadar seyrek çevrilirse sürüklenme o kadar
+         uzun süre tek yönlü kalır. ±15 px bantta yön ~1 sn'de bir dönüyordu ve dönüş
+         anlarında jeton yine merkeze yapışık görünüyordu (12 donma, hepsi hızı 12-21 px/sn
+         olan HAREKETLİ jetonlar). ±22 px (0,74 m) bantta yarım tur ~2,7 sn sürer; her
+         1,5 sn'lik pencerede sürüklenme tek yönlüdür. Ortalama konum yine dizilim
+         noktasıdır — FAZ 11 aralık ölçümleri bunu görmez. */
+      const _tmax=kilitli?5:(topta?6:7), _tmin=kilitli?3:4;
+      const _band=kilitli?9:(topta?15:22);          /* px — sürüklenmenin sınırı (≤0,74 m) */
+      const mx=kilitli?p.x:merkez[0], my=kilitli?p.y:merkez[1];
+      /* ⚠ BANT SAHA İÇİNE OTURTULUR. Radyal eksenin DIŞA bakan ucu köşe slotlarında
+         (SET_SPREAD x=56, y=38/462) saha sınırının dışına düşüyor ve `_inX`/`_inY`
+         onu kırpıyordu. Kırpılan uçta sürüklenme her adımda geri dönüyor, jeton
+         merkeze yapışık kalıyordu — ölçümde donmaların 13/30'u rol 2 (köşe), 10/30'u
+         rol 3'tü. Bant artık ölçülerek daraltılır: hangi uç kırpılıyorsa o uç 0'a
+         çekilir ve sürüklenme TEK YÖNLÜ olarak sahanın içine doğru yapılır. İki uç da
+         kapalıysa eksen dike çevrilir (dip çizgi boyunca kayma). */
+      /* ⚠⚠⚠ F25-2'nin ASIL kalıntısı: TAKIM ARKADAŞI ÇARPIŞMASI (`_PL_R_TAKIM`=62 px
+         ≈ 2,10 m). Salınım hedefi bir takım arkadaşının 2,10 m'sine girdiğinde ayırma
+         döngüsü jetonu geri itiyor, hedef çekimi tekrar içeri çekiyor ve jeton yerinden
+         GİTMEDEN 20 px/sn hızla titriyordu. Ölçüm bunu açıkça gösterdi: donan jetonlar
+         hedefindeydi (hedefUzak ≈ 1) ama hızları 18-21 px/sn idi ve donmalar İKİŞER
+         İKİŞER, aynı saniyede geliyordu (rol 2 + rol 3) — yani birbirine yaslanan iki
+         oyuncu. Bir uç, saha dışına düşüyorsa VEYA bir takım arkadaşını 2,10 m'nin içine
+         sokuyorsa artık kapalı sayılır; sürüklenme daima açık uca doğru yapılır. Bu aynı
+         zamanda aralığı (spacing) İYİLEŞTİRİR: boşta duran oyuncu kalabalıktan uzağa
+         kayar, üstüne değil. */
+      const _minTm=(x,y)=>{ let m=1e9;
+        for(const q of S.offP){ if(!q||q===p||q._oob) continue;
+          const dd=Math.hypot(q.x-x,q.y-y); if(dd<m) m=dd; }
+        return m; };
+      const _simdiki=_minTm(mx,my);
+      let _ax=dx/d, _ay=dy/d;
+      /* Uç puanı: kırpılıyorsa kapalı; değilse en yakın takım arkadaşına uzaklık. */
+      const _uc=(ux,uy,rr)=>{ const hx=mx+ux*rr, hy=my+uy*rr;
+        if(Math.abs(_inX(hx)-hx)>0.5||Math.abs(_inY(hy)-hy)>0.5) return -1;
+        return _minTm(hx,hy); };
+      /* Eşik: normalde 2,10 m; oyuncu ZATEN sıkışıksa "bulunduğundan kötü olmasın" yeter. */
+      const _esik=Math.min(_PL_R_TAKIM,_simdiki+1);
+      const _eksen=(ux,uy)=>{ const a=_uc(ux,uy,_band), b2=_uc(ux,uy,-_band);
+        return { hi:a>=_esik?_band:0, lo:b2>=_esik?-_band:0, iyi:Math.max(a,b2) }; };
+      let _e=_eksen(_ax,_ay);
+      if(_e.hi-_e.lo<12){                          /* radyal eksen tıkalı → dik eksen */
+        const _e2=_eksen(-_ay,_ax);
+        if(_e2.hi-_e2.lo>_e.hi-_e.lo){ const _t=_ax; _ax=-_ay; _ay=_t; _e=_e2; }
+      }
+      const _hi=_e.hi, _lo=_e.lo;
+      if(p._nudgeYon!==1&&p._nudgeYon!==-1) p._nudgeYon=(_sr()<0.5?-1:1);
+      if(p._nudgeOfs==null) p._nudgeOfs=0;
+      p._nudgeOfs=Math.max(_lo,Math.min(_hi,p._nudgeOfs));
+      /* Tek uç açıksa sürüklenme o uca doğrudur — kapalı uca vurup beklemez. */
+      if(_hi===0&&_lo<0) p._nudgeYon=-1;
+      else if(_lo===0&&_hi>0) p._nudgeYon=1;
+      const _adim=_tmin+(_tmax-_tmin)*_sr();
+      let _ofs=p._nudgeOfs+p._nudgeYon*_adim;
+      if(_ofs>_hi||_ofs<_lo){ p._nudgeYon=-p._nudgeYon; _ofs=p._nudgeOfs+p._nudgeYon*_adim; }
+      _ofs=Math.max(_lo,Math.min(_hi,_ofs));
+      p._nudgeOfs=_ofs;
+      const r=_ofs;
       /* ⚠ `_hedefAta` KULLANILMAZ: nokta 26 px'ten yakınsa hedefi DEĞİŞTİRMEZ (F15-1,
          "her pozisyonda yer değiştirme" kuralı) ve salınım ≤9 px olduğu için hedef hep
          aynı kalıyordu — sayaç sıfırlanıyor ama jeton donuk duruyordu (ölçüm: 51 donma,
          en uzun 1,52 sn). Burada kastedilen yer değiştirme değil, YERİNDE kıpırdanmadır;
          hedef doğrudan yazılır ve kademe yürüyüş/jog'da kalır. */
-      /* Kilitli oyuncunun merkezi dizilim noktası değil, BULUNDUĞU yerdir — koreografinin
-         götürdüğü noktadan geri çekilmesin. */
-      const mx=kilitli?p.x:merkez[0], my=kilitli?p.y:merkez[1];
-      let ntx=_inX(mx+dx/d*r), nty=_inY(my+dy/d*r);
-      /* Köşe/kenar noktalarında `_inX`/`_inY` kırpması iki yönü de AYNI değere getiriyor
-         (SET_SPREAD köşe slotları x=56, kırpma sınırı x=CRT_X0+14) ve hedef hiç
-         değişmiyordu. Kırpıldıysa dik yönde salın — oyuncu yine yerinde kıpırdanır. */
-      if((ntx|0)===(p.tx|0)&&(nty|0)===(p.ty|0)){
-        ntx=_inX(mx-dy/d*r); nty=_inY(my+dx/d*r);
-      }
-      p.tx=ntx; p.ty=nty;
+      /* Kilitli oyuncunun merkezi dizilim noktası değil, BULUNDUĞU yerdir (`mx`/`my`
+         yukarıda öyle kuruldu) — koreografinin götürdüğü noktadan geri çekilmesin. */
+      p.tx=_inX(mx+_ax*r); p.ty=_inY(my+_ay*r);
       /* Kademe JOG: YÜRÜ verilince canlı salınım YÜRÜ payını %47,5'ten %52,8'e
          çıkarıyor ve hareket-check kapısını düşürüyordu (hedef %20-45). Salınım küçük
          bir mesafedir, kademe yalnız ÜST HIZI belirler — jeton yine yerinde kıpırdanır. */
       if(!kilitli) _setUrg(p,_URG.JOG);
       p._sonHedefT=S.time; p._sonHedefRt=_rtNow();
+      p._swayT=S.time+0.60;        /* salınım penceresi: fren tavanı bu süre boyunca gevşer */
+      p._nudgeN=(p._nudgeN||0)+1;   /* teşhis sayacı — sunum-check okur, davranışa dokunmaz */
     }
   }
   /* 2) SAVUNMA CANLI TAKİBİ — top-sen-adam ilkesi:
@@ -637,7 +705,18 @@ function _simTick(dt){
       /* F15-1: hedef hız artık jetonun ACELE KADEMESİNDEN gelir. `d*3.4` 52 px'ten uzak
          her hedefte tam gaz demekti; katsayı düşürüldü ki yakın hedefe yürüyerek gidilsin. */
       const _tv=(p.maxV!=null?p.maxV:_PL_MAXV);
-      const want=d<24?Math.min(_tv,10):Math.min(_tv,d*2.1);
+      /* ⚠ F25-2'nin SON kök nedeni (ölçüldü): varış freni idi. Hedefe 24 px kalınca üst
+         hız 10 px/sn'ye (0,34 m/sn) düşer; canlı set salınımının hedefi HER ZAMAN bu
+         24 px'lik fren yarıçapının İÇİNDEDİR. Yani salınım doğru çalışsa bile (ölçüm:
+         donma penceresinde 4-5 kez yeni hedef yazıldı, jeton 6-11 px/sn ile hareket
+         hâlindeydi) jetonun 1,5 sn'de merkezden NET sapması 5 px'i aritmetik olarak
+         geçemiyordu. Frene takılan yerinde kıpırdanma "çakılı" görünür.
+         Çözüm: salınım hâlindeki jeton için fren tavanı 0,34 m/sn yerine 0,75 m/sn —
+         duran bir oyuncunun ayak değiştirme/adım atma hızı. KONUM değişmez, yalnız aynı
+         kısa yolu gerçekten kat eder. Bayrak yalnız salınım bloğunda basılır; koreografi,
+         savunma takibi ve serbest atış yerleşimi eski frenle çalışmaya devam eder. */
+      const _sway=((p._swayT||0)>S.time)?22:10;
+      const want=d<24?Math.min(_tv,_sway):Math.min(_tv,d*2.1);
       p.vx+=((dx/d)*want-p.vx)*_PL_ACC*dt;
       p.vy+=((dy/d)*want-p.vy)*_PL_ACC*dt;
     } else { p.vx*=0.85; p.vy*=0.85; }
@@ -1165,6 +1244,7 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
        daha erteleniyor ve oyuncu ekranda 1,5 sn+ donuk kalıyordu. Salınım saatini yalnız
        gerçekten yeni hedef verilen an sıfırlar. */
     p._setTx=c[0]; p._setTy=c[1]; p._sonHedefT=S.time;
+    p._nudgeOfs=0;                            /* yeni dizilim → sürüklenme merkezden başlar */
     if(p===shooter){ _hedefAta(p,c[0],c[1],_URG.KOS); return; }
     /* Noktasına ZATEN yakınsa yeni hedef atanmaz (yerinde durur, mikro-salınım yapar).
        F11-2: eşik 40 px idi — iki oyuncu birbirine doğru 40'ar px sapabildiği için ölçülen
@@ -1238,6 +1318,14 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
 /** Serbest atış dizilimi (gerçek kural): şutör çizginin gerisinde; kulvar sırası
     dipten yukarı SAVUNMA→HÜCUM→SAVUNMA. Blok noktalarını uzunlar (C/PF) alır. */
 function _setFtFormation(offLeft,offPlayers,defPlayers,shooter){
+  /* SERBEST ATIŞ = ÖLÜ TOP: canlı set salınımı (§2) burada ÇALIŞMAMALI. `canliSet`
+     yalnız `_setFormation` içinde kurulup temizleniyordu; serbest atış dizilişi ayrı bir
+     fonksiyon olduğu için bayrak önceki set pozisyonundan AÇIK kalıyordu. Sonuç: salınım
+     çizgiye yürüyen şutörün ve kulvarlara dizilen dokuz oyuncunun hedefini eziyor,
+     şutör çizgiye hiç varamıyordu (M12 "şutör çizgide + top elinde" 0/2'ye düştü,
+     F14-7 "yerinde" 9,5/10'dan 8,7/10'a indi). */
+  const S=(typeof mState!=='undefined'&&mState)?mState._sim:null;
+  if(S) S.canliSet=false;
   const line=_pt([FT_LINE_X,250],offLeft,false);
   _hedefAta(shooter,line[0],line[1],_URG.JOG);
   const bigFirst=(arr)=>_rolesOrder(arr).slice().reverse();   /* C, PF, SF, SG, PG */
@@ -1806,6 +1894,12 @@ function animateShotPossession(sh,onShoot,onResult){
     /* §5/§8: sunum denetimi bu pozisyonun şemasını okur (yörünge farkı ölçümü).
        Yalnız damgadır — davranışa hiç dokunmaz. */
     try{ mState._semaAd=scheme||'diger'; }catch(e){}
+    /* F25-5 KÖK NEDENİ: `S._sema` sahne damgası yalnız YAYILMA şemasında (spotup)
+       yazılıyor ve BİR DAHA TEMİZLENMİYORDU. Ölçüm damgayı `mState._semaAd`den önce
+       okuduğu için maçın ilk spot-up pozisyonundan sonra bütün set kareleri 'spotup'
+       kovasına düşüyor, geri kalan şemalar 20 karelik eşiği hiç aşamıyordu — kapı
+       "yalnız 1 şema yeterli kare topladı" diye düşüyordu. Damga POZİSYON BAŞINADIR. */
+    try{ const _S=(typeof mState!=='undefined'&&mState)?mState._sim:null; if(_S) _S._sema=null; }catch(e){}
     const mv=sh.move||null;
     const isPnr=(scheme==='pnr'||scheme==='handoff')&&!fastBreak&&!putback&&!iso;
 

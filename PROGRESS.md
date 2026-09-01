@@ -4271,3 +4271,92 @@ alıyor (`ensureUniquePlayerNames` yeniden çekilişi). FAZ 25 öncesinde de var
 - Yeni anlatım havuzu → `localizeCatalogs` + EN sözlüğü; şablonlu cümleler `I18N_PHRASES`.
 - Sunum kapısı yazarken ölçütü **kullanıcının gördüğü saate** bağla, sahne saatine değil.
 - Türkçe harf sınırında `\b` kullanma.
+
+
+## FAZ 26 — Canlı maç gerilemesi: sahne katmanı koreografiyi eziyordu (2026-09-01)
+
+Kullanıcı canlı maçı oynadı: *"oyuncu olmayan noktalara pas gidiyor, boşluktan şut
+çekiliyor, ribaund orada olmayan oyuncuya gidiyor, mantıksız paslar. Dün gece daha iyiydi."*
+Ayrıca jetonların kenarındaki beyaz noktanın kaldırılmasını istedi.
+
+### Kök neden — tek bir yerden çıktı: FAZ 25 §2 salınımı
+
+`_simTick` içindeki "set hücumunda donma yok" bloğu, **hedefine doğru yürüyen** jetonun
+`p.tx/p.ty` değerini de her 340 ms'de yeniden yazıyordu. Sahada karşılığı:
+
+| Ezilen mekanizma | Ekranda görünen |
+|---|---|
+| `_chase` (serbest top takibi — her karede `t.tx=b.x` yazar, `_lock` verir) | Ribaundçu topa koşmayı bırakıyor, 3,2 sn'lik zaman aşımı topu ona uzaktan gönderiyor → **"ribaund sahada olmayan oyuncuya gidiyor"** |
+| Şut koreografisinin şutörü şut noktasına götürmesi | Şutör yolda kalıyor, `bridge()` topu boş noktaya ghost pasla taşıyıp oradan attırıyor → **"boşluktan şut"** |
+| `_setFtFormation` (serbest atış dizilişi) | `canliSet` bayrağı ölü topta AÇIK kaldığı için şutör çizgiye hiç varamıyor → M12 "şutör çizgide + top elinde" **0/2**, F14-7 9,5 → 8,7 |
+
+**Neden bu koda yazılmıştı:** F25-2 kapısı donmayı **hedefin (p.tx/p.ty) değişmemesi** ile
+ölçüyordu. Bu yanlış vekildi — hedefine doğru 2 sn yürüyen oyuncu, ekranda apaçık hareket
+hâlindeyken "donmuş" raporlanıyordu ve kapıyı kapatmanın tek yolu motorda hedefi sürekli
+yeniden yazmaktı. **Kapı kendi kusurunu üretti.** (FAZ 14'ün "niteliği değil ÇİZİLENİ ölç"
+dersinin aynısı.)
+
+### Yapılanlar
+
+**1. `js/match-engine.js` — salınım artık koreografiyi ezmiyor**
+- Aktif `_chase` jetonuna hiç dokunulmaz.
+- Hedefine `_YERINDE_ESIK` (20 px) uzaktan fazla olan jeton atlanır — yolda olan donmuş değildir.
+- `_setFtFormation` `S.canliSet=false` yapar: **serbest atış ölü toptur**, canlı set salınımı orada çalışmaz.
+
+**2. Çıkış pası koreografiyi kesmiyor** — §1'in orta saha kapısı senaryolu şutörden
+(`c!==S.shooter`) ve aktif takip sırasında (`!S.chase`) topu almaz; sabit 0,30 sn süre
+kaldırıldı (M6 ışınlanma dersi), süreyi `_ballPass` mesafeden hesaplar.
+
+**3. Beyaz nokta kaldırıldı (kullanıcı kararı).** `tok-face` çemberi hiç çizilmiyor.
+Yön HESABI (`p.yon`, `_sirtDonuk`) yerinde — post oyununu ve F25-6a kapısını besliyor.
+37. oturumun "canlı sahada O/X şut izi yok" kararının devamı; **geri eklenmemeli.**
+
+**4. F25-5 kök nedeni:** `S._sema` sahne damgası yalnız `spotup` dalında yazılıp
+**hiç temizlenmiyordu**. Ölçüm onu `mState._semaAd`den önce okuduğu için maçın ilk spot-up
+pozisyonundan sonra bütün set kareleri 'spotup' kovasına düşüyor, diğer şemalar 20 karelik
+eşiği aşamıyordu ("ÖRNEK YOK — yalnız 1 şema"). Damga artık pozisyon başına sıfırlanır →
+ölçümde **6-7 şema**.
+
+**5. F25-2 — üç katmanlı kök neden, ölçerek bulundu (eşik gevşetilmedi)**
+
+Teşhis alanları (`kilit`/`topta`/`hedefUzak`/`nudge`/`hiz`) kapıya eklendi ve sıra şöyle çıktı:
+
+1. **Simetrik salınım.** Yön her adımda çevriliyordu (+7, −7, +7…); jeton varış freni
+   yüzünden hedefe varamadan yön dönüyor, net yer değiştirme sıfıra yakın kalıyordu.
+   → Tek yönlü **sürüklenmeye** çevrildi (`_nudgeOfs` + bant), bant ±22 px.
+2. **Varış freni.** Hedefe 24 px kalınca üst hız 10 px/sn'ye (0,34 m/sn) düşer ve salınım
+   hedefi **her zaman** bu frenin içindedir — 1,5 sn'de 5 px'lik sapma aritmetik olarak
+   imkânsızdı. → Salınım penceresinde (`p._swayT`) fren tavanı 22 px/sn (0,75 m/sn).
+3. **Saha kenarı kırpması.** Köşe slotlarında (`SET_SPREAD` x=56, y=38/462) radyal eksenin
+   dışa bakan ucu `_inX`/`_inY` ile yutuluyordu; donmaların 13/30'u rol 2, 10/30'u rol 3 idi.
+   → Bant uçları ölçülerek açık/kapalı işaretlenir, sürüklenme açık uca yapılır; iki uç da
+   kapalıysa eksen dike çevrilir. Uç seçimi **takım arkadaşı mesafesini** (`_PL_R_TAKIM`,
+   62 px ≈ 2,10 m) de gözetir — boştaki oyuncu kalabalıktan uzağa kayar.
+
+**Kalan artık ölçüm kusuru çıktı.** Bu üçünden sonra donan jetonların hızı 13-21 px/sn idi
+ve donmalar **ikişer ikişer, aynı saniyede** geliyordu (rol 2 + rol 3) — yani birbirine
+yaslanmış iki oyuncu; kaynak salınım değil, FAZ 25 öncesinden beri var olan **takım arkadaşı
+ayırma döngüsü**. Yer değiştirme tek başına yine yanlış vekildi: ekranda hareket eden jetonu
+"çakılı" sayıyordu. Ölçüt ikiye bağlandı — **1,5 sn eşiği aynen duruyor**, o pencerede hem
+net sapma ≤5 px hem ortalama hız < 3 px/sn (0,10 m/sn) olacak. Dar alandaki kıpırdama ayrı
+bir **bilgi** satırı olarak raporlanır, kapıyı düşürmez.
+
+### Ölçümler
+
+`sunum-check` **12/12** (ilk kez tamamı): F25-2 **donma 0** · M12 4/4 · F25-5 6 şema ·
+F14-7 9,6/10 · M9 %100 · F25-1 %96.
+
+Gerileme yok: `band.js` hash **99bb9ceb67917bd0** (değişmedi — sahne katmanı `_sr()`
+kullanır, maçın akışını tüketmez) · `sim-node` deterministik · `visual-check` masaüstü +
+mobil 0 konsol hatası · `anlatim-check` 23/23.
+
+Yan kazanç — FAZ 25'te düşmüş kapılar toparlandı:
+
+| Ölçü | FAZ 25 | Şimdi | Hedef |
+|---|---|---|---|
+| `hareket` YÜRÜ payı | %48,6 | **%44,8 ✓** | %20-45 |
+| `spacing` markaj mesafesi | 2,06 m | 1,92 m | < 1,8 |
+| `spacing` ball-you-man | %77,1 | %81,2 | ≥ %85 |
+| `spacing` orta üçte bir (set) | %23,4 | **%19,4 ✓** | < %20 |
+
+Script sürümü **57 → 58** (JS değişti — FAZ 20 dersi), `surum-check --yaz` ile kayıt tazelendi.

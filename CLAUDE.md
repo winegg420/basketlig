@@ -333,6 +333,40 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   yakın hedefi değiştirmez (F15-1) ve salınımı yutar — hedef doğrudan yazılır;
   (c) eşik SAHNE saatinde değil **gerçek saatte** ölçülür (sahne duvar saatinin ~0,45 katı
   akıyor). `_lock` "yeniden yönlendirme yasağı"dır, kıpırdama yasağı değil.
+- **SAHNE KATMANI KOREOGRAFİYİ EZMEZ (FAZ 26 dersi — canlıda oyunu bozdu):** set
+  salınımı (§2), hedefine DOĞRU YÜRÜYEN jetonun `p.tx/p.ty` değerini de yeniden yazıyordu.
+  Sonuç: `_chase` topa koşmayı bırakıyor (ribaund sahada olmayan oyuncuya gidiyor),
+  şutör şut noktasına varamıyor (`bridge()` topu boş noktaya taşıyıp oradan attırıyor),
+  serbest atışta şutör çizgiye ulaşamıyor (M12 0/2). Kural: **salınım yalnız hedefine
+  VARMIŞ jetona verilir** (< `_YERINDE_ESIK`), aktif `_chase` jetonuna hiç dokunulmaz,
+  ve `_setFtFormation` `canliSet`i kapatır (serbest atış ÖLÜ TOPTUR). Sahne katmanına
+  yeni bir "canlılık" davranışı eklerken önce koreografinin o jetona hedef verip vermediğine
+  bak.
+- **Sahne katmanının kendi pası koreografiyi kesmez (FAZ 26):** §1'in orta saha çıkış-pası
+  kapısı anlatımda karşılığı olmayan bir pastır; senaryolu şutörden (`S.shooter`) ya da
+  aktif takip sırasında topu alırsa anlatım ile sahne ayrışır ("mantıksız pas") ve şut
+  noktası boşta kalır. Süresi de sabit verilmez — `_ballPass` mesafeden hesaplar (M6).
+- **Canlı sahada jetonun üzerinde işaret YOKTUR (FAZ 26, kullanıcı kararı):** yönelim
+  göstergesi (`tok-face` beyaz noktası) kaldırıldı. Yön HESABI (`p.yon`/`_sirtDonuk`)
+  durur — post oyununu ve F25-6a'yı besler —, çizim katmanı geri EKLENMEMELİ. 37. oturumun
+  "O/X şut izi yok" kararının devamı.
+- **Sahne damgaları POZİSYON BAŞINADIR (FAZ 26, F25-5 kök nedeni):** `S._sema` yalnız
+  `spotup` dalında yazılıp hiç temizlenmiyordu; ölçüm onu `mState._semaAd`den önce
+  okuduğu için maçın ilk spot-up'ından sonra BÜTÜN set kareleri 'spotup' kovasına düşüyordu.
+  Yeni bir `S._xxx` sahne damgası eklersen pozisyon başında sıfırla.
+- **Kapı YANLIŞ ŞEYİ ölçerse kusuru KENDİSİ üretir (FAZ 26 dersi, FAZ 14'ün tekrarı):**
+  F25-2 donmayı "hedef değişmedi" ile ölçüyordu; hedefine doğru yürüyen oyuncu donmuş
+  sayılıyor ve kapıyı kapatmanın tek yolu motorda hedefi sürekli yeniden yazmak oluyordu —
+  oyunu bozan kod buydu. Ölçüt jetonun ÇİZİLEN KONUMUDUR; üstelik yalnız yer değiştirme de
+  yetmez (yerinde kıpırdayan jeton "çakılı" sayılıyordu). Donma = **hareketsizlik**:
+  net sapma ≤5 px **ve** ortalama hız < 3 px/sn, 1,5 sn boyunca.
+- **Salınımın önündeki üç fiziksel engel (FAZ 26, ölçülerek bulundu):** (a) yön her adımda
+  çevrilirse net yer değiştirme sıfırdır — tek yönlü **sürüklenme** gerekir (`_nudgeOfs`,
+  bant ±22 px); (b) **varış freni** hedefe 24 px kalınca hızı 10 px/sn'ye düşürür ve salınım
+  hedefi hep o frenin içindedir — salınım penceresinde (`p._swayT`) tavan 22 px/sn olur;
+  (c) köşe slotlarında `_inX`/`_inY` **kırpması** bandın dış yarısını yutar — bant uçları
+  ölçülerek açık/kapalı işaretlenir ve uç seçimi `_PL_R_TAKIM` (62 px) takım arkadaşı
+  mesafesini gözetir.
 - **Kenardan sokma yerleşimi (FAZ 25 §3):** `_sokmaYerlesimi` sokucunun 15 m içinde en az
   3 takım arkadaşı bırakır; `_sokmaHedefi` ilk pası 15 m ile sınırlar — istisna, hedefe en
   yakın savunmacı 8 m'den uzaksa (gerçek hızlı hücum).

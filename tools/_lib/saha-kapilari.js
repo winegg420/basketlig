@@ -14,7 +14,8 @@ const ORNEKLEYICI = `(function(){
   const S0 = () => (typeof mState!=='undefined' && mState && mState._sim) || null;
   const P = window.__SAHA = {
     tasima: [],       /* {t, role, x} — orta sahayı geçen taşıma anları */
-    donma: [],        /* {t, sure} — set fazında hedefi 1,5 sn+ sabit kalan oyuncu */
+    donma: [],        /* {t, sure} — set fazında 1,5 sn+ HAREKETSİZ kalan oyuncu */
+    titreme: [],      /* {t, role, hiz} — dar alanda kıpırdayan jeton (bilgi) */
     sokma: [],        /* {t, ortM, enUzakM, ilkPasM} */
     ftDrib: [],       /* {t, adet} */
     sirtDonuk: [],    /* {t, aci} — post-up'ta hücumcunun potaya göre açısı */
@@ -52,15 +53,45 @@ const ORNEKLEYICI = `(function(){
         }
         P._sonDurakT = t;
         P._sonSimT = S.time;
+        /* ⚠ ÖLÇÜT DÜZELTMESİ: bu kapı önce HEDEFİN (p.tx/p.ty) değişmemesini donma
+           sayıyordu. Yanlış vekildi ve kendi kusurunu üretti: hedefine doğru 2 sn yürüyen
+           oyuncu — ekranda apaçık hareket hâlindeyken — "donmuş" diye raporlanıyordu, ve
+           kapıyı kapatmanın tek yolu motorda HEDEFİ sürekli yeniden yazmak oluyordu. O
+           yeniden yazma canlıda serbest top takibini ve şut koreografisini eziyordu
+           (ribaund sahada olmayan oyuncuya gidiyor, boşluktan şut çekiliyor).
+           Donma bir GÖRÜNTÜ olgusudur: ölçüt jetonun ÇİZİLEN KONUMUDUR. FAZ 14'ün
+           "niteliği değil çizileni ölç" dersinin bu kapıya düşen karşılığı. */
         if (S.canliSet && S.offP && simAkiyor) {
           S.offP.forEach(p => {
             if (!p || p._oob) return;
             const k = p.slot + '|' + p.team;
             const onc = P._hedefT.get(k);
-            const hedef = (p.tx|0) + ',' + (p.ty|0);
-            if (!onc || onc.hedef !== hedef) { P._hedefT.set(k, { hedef, t }); return; }
+            if (!onc) { P._hedefT.set(k, { x: p.x, y: p.y, t, n: p._nudgeN||0, v: 0, kare: 0 }); return; }
+            /* 5 px ≈ 0,17 m — bu kadarı ağırlık aktarması; altı gerçekten kıpırdamamaktır. */
+            onc.v += Math.hypot(p.vx||0, p.vy||0); onc.kare++;
+            if (Math.hypot(p.x - onc.x, p.y - onc.y) > 5) { P._hedefT.set(k, { x: p.x, y: p.y, t, n: p._nudgeN||0, v: 0, kare: 0 }); return; }
             const sure = (t - onc.t) / 1000;
-            if (sure > 1.5) { P.donma.push({ t, sure, role: p.role }); P._hedefT.set(k, { hedef, t }); }
+            /* ⚠ İKİNCİ ÖLÇÜT DÜZELTMESİ (yine ölçerek): yalnız YER DEĞİŞTİRME bakmak da
+               yanlış vekildi. Jeton yerinde ayak değiştirirken (ölçülen hız 13-21 px/sn)
+               net sapması 5 px'i geçmiyor ve "çakılı" sayılıyordu; oysa ekranda hareket
+               ediyor. Üstelik bu titremenin kaynağı salınım değil, TAKIM ARKADAŞI ayırma
+               döngüsüdür (_PL_R_TAKIM ayırma yarıçapı) ve FAZ 25 öncesinden beri vardır.
+               DONMA = HAREKETSİZLİK. Ölçüt ikiye bağlandı: pencere boyunca hem net sapma
+               ≤5 px hem de ortalama hız < 3 px/sn (0,10 m/sn) olmalı. 1,5 sn eşiği aynen
+               duruyor; değişen, o 1,5 sn içinde neyin "durmak" sayıldığı. */
+            const _ortHiz = onc.kare ? onc.v / onc.kare : 0;
+            /* Bilgi: dar alanda kıpırdayan (titreyen) jeton — donma DEĞİL, ayrı raporlanır. */
+            if (sure > 1.5 && _ortHiz >= 3) { P.titreme.push({ t, role: p.role, hiz: +_ortHiz.toFixed(1) }); P._hedefT.set(k, { x: p.x, y: p.y, t, n: p._nudgeN||0, v: 0, kare: 0 }); return; }
+            if (sure > 1.5 && _ortHiz < 3) {
+              /* Teşhis alanları: donan jetonun kim olduğu ve NEDEN durduğu kök nedene götürür. */
+              P.donma.push({ t, sure, role: p.role,
+                kilit: (p._lock || 0) > S.time,
+                topta: !!(S.ball && S.ball.carrier === p),
+                hedefUzak: Math.round(Math.hypot(p.x - p.tx, p.y - p.ty)),
+                nudge: (p._nudgeN||0) - (onc.n||0),
+                hiz: onc.kare ? +(onc.v / onc.kare).toFixed(1) : null });
+              P._hedefT.set(k, { x: p.x, y: p.y, t, n: p._nudgeN||0, v: 0, kare: 0 });
+            }
           });
         } else if (!S.canliSet) { P._hedefT.clear(); }
         /* ── §3: kenardan sokma ── */
@@ -119,7 +150,13 @@ function kapilar(P) {
   const dogru = tas.filter(x => x.role === 0 || x.role === 1 || x.role === 2).length;
   r.tasima = { n: tas.length, oran: tas.length ? dogru / tas.length : null };
   /* §2 */
-  r.donma = { n: (P.donma || []).length, enUzun: (P.donma || []).reduce((a, c) => Math.max(a, c.sure), 0) };
+  r.donma = { n: (P.donma || []).length, enUzun: (P.donma || []).reduce((a, c) => Math.max(a, c.sure), 0),
+    kilitli: (P.donma || []).filter(x => x.kilit).length,
+    topta: (P.donma || []).filter(x => x.topta).length,
+    yolda: (P.donma || []).filter(x => x.hedefUzak > 20).length,
+    rolDagilim: (P.donma || []).reduce((d, x) => { d[x.role] = (d[x.role] || 0) + 1; return d; }, {}),
+    ornek: (P.donma || []).slice(0, 6) };
+  r.titreme = { n: (P.titreme || []).length, ortHiz: (P.titreme||[]).length ? +((P.titreme).reduce((a2,c)=>a2+c.hiz,0)/(P.titreme).length).toFixed(1) : null };
   /* §3 */
   const sk = (P.sokma || []).filter(x => x.ortM != null);
   r.sokma = {
