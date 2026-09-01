@@ -373,6 +373,7 @@ function ozelYetenekUygula(p){
   try{
     if(!p||!p.seed) return p;
     const t=String(p.seed);
+    const genelOnce=Number(p.genel)||0;
     p.ozel=null; p.ozelZayif=null;
     /* ── güçlü yön ── */
     const u=prUnit(t+'|guclu');
@@ -396,8 +397,18 @@ function ozelYetenekUygula(p){
     STAT_KEYS.forEach(k=>{ p[k]=Math.max(OZEL_TABAN,Math.min(OZEL_TAVAN,Number(p[k])||0)); });
     p.genel=Math.round(STAT_KEYS.reduce((s,k)=>s+(Number(p[k])||0),0)/STAT_KEYS.length);
     if(typeof salaryUSDFromGenel==='function') p.maas=salaryUSDFromGenel(p.genel);
-    /* Potansiyel genelin altına düşmemeli (sapma OVR'yi yukarı itmiş olabilir). */
-    if(p.potansiyel!=null) p.potansiyel=Math.max(p.genel,Math.min(99,Number(p.potansiyel)||p.genel));
+    /* ── POTANSİYEL SAPMAYLA BİRLİKTE KAYAR ─────────────────────────────────────
+       İlk kurguda potansiyel yalnız YUKARI kırpılıyordu ("genelin altına düşmesin").
+       Ama zayıf sapma genel'i düşürüp potansiyeli yerinde bırakınca GELİŞİM BOŞLUĞU
+       büyüyor: oyuncu kaybettiği puanı sezon geçişinde geri kazanıyor ve üstüne
+       çıkıyor. Ölçüldü — season-loop K1 (3 sezonda kadro OVR artışı) +0,4/+0,9'dan
+       +1,3'e, K2 (pasif kulübün kasası) 1,49×'ten 2,24×'e çıktı: kadro kendiliğinden
+       güçlenip kulübü zenginleştiriyordu. Potansiyel artık genel ile AYNI miktarda
+       kayar; sapma yeteneği yeniden dağıtır, gelişim hakkı YARATMAZ. */
+    if(p.potansiyel!=null){
+      const kayma=p.genel-genelOnce;
+      p.potansiyel=Math.max(p.genel,Math.min(99,(Number(p.potansiyel)||p.genel)+kayma));
+    }
   }catch(e){}
   return p;
 }
