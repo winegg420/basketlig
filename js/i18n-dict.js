@@ -412,6 +412,7 @@ Object.assign(I18N_TR_EN,{
 /* ── FAZ 30: küresel lig + divizyon ── */
 'Divizyon 1':'Division 1',
 'Divizyon {d} · Grup {g}':'Division {d} · Group {g}',
+'Divizyon {d}':'Division {d}',
 'Ülken':'Your country',
 'Ülke:':'Country:',
 '🌍 Ülke':'🌍 Country',
@@ -1014,3 +1015,9 @@ I18N_PHRASES.unshift(
   [/ × ~2,2\/wk\)/g,' × ~2.2/wk)'],
   [/📣 Sponsor geliri — /g,'📣 Sponsor income — ']
 );
+
+/* ── FAZ 33: yeni metinler ── */
+Object.assign(I18N_TR_EN,{
+  'Lig yapısı küresel sisteme geçtiği için önceki kayıt uyumsuz kaldı ve temizlendi.':
+    'The league has moved to a global structure, so your previous save was incompatible and has been cleared.'
+});

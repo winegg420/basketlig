@@ -214,6 +214,55 @@ console.log('    ' + Object.entries(D.say).sort((a,b)=>b[1]-a[1]).slice(0,8).map
 yaz(D.havuz >= 30, `şehir havuzu ${D.havuz} (hedef ≥30)`);
 yaz(D.enCok <= 2, `bir ligde aynı şehirden en fazla ${D.enCok} takım (hedef ≤2)`);
 
+/* ── FAZ 33 §3: DİVİZYONDA ÜLKE ÇEŞİTLİLİĞİ ─────────────────────────────────────────
+   FAZ 30 oyuncuları küreselleştirdi, takım adlarını değil — canlıda kurulan Divizyon 3'te
+   20 takımın 19'u Türk şehriydi. Şehir tekrarı kapısı (D) bunu göremez: 19 FARKLI Türk
+   şehri kuralı ihlal etmez. Ölçülmesi gereken ÜLKE dağılımıdır. Kapı yeni kurulan
+   TÜM divizyonları tarar, tek seferlik bir örneğe bakmaz. */
+console.log(String.fromCharCode(10)+'D3) Divizyonda ülke dağılımı (FAZ 33 §3)');
+const D3 = run(`(function(){
+  const st=getTblState();
+  const out=[];
+  Object.keys(st.subs||{}).forEach(k=>{
+    const sub=st.subs[k]; if(!sub||!sub.teams) return;
+    /* Kullanıcının KENDİ takımı havuzdan gelmez (adı elle yazılır) — kurala tabi değil. */
+    const kendi=(G.team&&G.team.isim)||null;
+    const adlar=sub.teams.filter(a=>a&&a!==kendi); if(adlar.length<5) return;
+    const say={}, eksik=[];
+    adlar.forEach(a=>{
+      const sh=String(a).split(' ')[0];
+      const u=sehirUlkesi(sh);
+      if(!u){ eksik.push(sh); return; }
+      say[u]=(say[u]||0)+1;
+    });
+    const paylar=Object.values(say);
+    out.push({
+      anahtar:k, takim:adlar.length, ulke:Object.keys(say).length,
+      enBuyukPay: paylar.length?Math.max.apply(null,paylar)/adlar.length:1,
+      enBuyukUlke: Object.keys(say).sort((a,b)=>say[b]-say[a])[0]||null,
+      eksik
+    });
+  });
+  return { bolumler:out, payMax:LIG_ULKE_PAY_MAX, ulkeMin:LIG_ULKE_MIN,
+           haritaBoy:Object.keys(SEHIR_ULKE).length, sehirBoy:SEHIR.length };
+})()`);
+yaz(D3.haritaBoy === D3.sehirBoy,
+  `SEHIR_ULKE haritası eksiksiz (${D3.haritaBoy}/${D3.sehirBoy} şehir)`);
+const _eksikSehir = D3.bolumler.reduce((a, b) => a.concat(b.eksik), []);
+yaz(_eksikSehir.length === 0,
+  _eksikSehir.length ? `ülkesi bilinmeyen şehir: ${[...new Set(_eksikSehir)].slice(0,5).join(' · ')}`
+                     : 'her takım adının şehri haritada var');
+D3.bolumler.forEach(b => console.log(
+  `    ${b.anahtar}: ${b.takim} takım · ${b.ulke} ülke · en büyük pay %${(b.enBuyukPay*100).toFixed(0)} (${b.enBuyukUlke})`));
+const _payIhlal = D3.bolumler.filter(b => b.enBuyukPay > D3.payMax + 0.001);
+yaz(_payIhlal.length === 0,
+  _payIhlal.length ? `${_payIhlal.length} divizyonda tek ülke payı %${(D3.payMax*100)}'u aşıyor · ör. ${_payIhlal[0].anahtar} %${(_payIhlal[0].enBuyukPay*100).toFixed(0)} ${_payIhlal[0].enBuyukUlke}`
+                   : `her divizyonda tek ülkenin payı ≤%${D3.payMax*100} (${D3.bolumler.length} divizyon)`);
+const _cesitIhlal = D3.bolumler.filter(b => b.ulke < D3.ulkeMin);
+yaz(_cesitIhlal.length === 0,
+  _cesitIhlal.length ? `${_cesitIhlal.length} divizyonda ülke sayısı ${D3.ulkeMin}'in altında · ör. ${_cesitIhlal[0].anahtar}: ${_cesitIhlal[0].ulke}`
+                     : `her divizyonda ≥${D3.ulkeMin} farklı ülke (en az ${Math.min.apply(null,D3.bolumler.map(b=>b.ulke))})`);
+
 /* ── FAZ 30 §4: DİVİZYON MERDİVENİ ──────────────────────────────────────────────────
    Divizyon 1 en üst, aşağı doğru uzar. Her divizyon 20 takım; Divizyon 1 tek grup,
    alt divizyonlar paralel gruplara ayrılabilir. Yeni kariyer EN ALT divizyonda başlar. */

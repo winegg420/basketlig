@@ -183,6 +183,22 @@ function _tokBaseV(pl){
   return (130+Math.max(0,Math.min(99,hiz))/99*80)*fat;
 }
 function _tokShort(name){ const a=String(name||'').trim().split(/\s+/); return a[a.length-1]||String(name||''); }
+/* ── FAZ 33 §7: ANLATIMDA ÇOK KISA SOYAD TAM ADLA GEÇER ────────────────────────────
+   İsim havuzlarında 100 kadar iki harfli soyad var (Senegal: Sy · Ba · Ka · Lo ·
+   Kanada: Ho · Li · Ng · Wu · Türkiye: Öz). Bunlar gerçek soyadlardır, hata değil —
+   ama anlatımda tek başına geçince cümle kopuk okunuyor: "Sa pota altında hükmetti",
+   "Sa pasıyla Graham Morin…". Sahadaki JETON ETİKETİ kısa kalmalı (yer yok), anlatım
+   ise tam adı kullanır. Ayrım bilinçli: _tokShort jeton içindir, _anlatimAdi anlatım.
+   Eşik 3 harf — "Öz" ve "Ng" tam adla, "Kaya" tek adla geçer. */
+const _ANLATIM_MIN_SOYAD=3;
+function _anlatimAdi(name){
+  const tam=String(name||'').trim();
+  if(!tam) return tam;
+  const a=tam.split(/\s+/);
+  if(a.length<2) return tam;                 /* tek kelimelik adda yapacak bir şey yok */
+  const son=a[a.length-1]||tam;
+  return (son.length<_ANLATIM_MIN_SOYAD)?tam:son;
+}
 function _tokSet(g,x,y,sc){
   if(!g) return;
   g.setAttribute('transform',(sc&&Math.abs(sc-1)>0.004)
@@ -2936,7 +2952,7 @@ function zincirLine(kind,v,pr,memo){
     /* §7.4a: zincir, gerçek anlatımın 2-5 kelimelik parça ritmidir; orada spiker tam ad
        değil TEK ad kullanır ("Cedi güçlü gitti." / "Marilonis yüklendi."). Uzun/resmî
        cümlelerde tam ad korunur — ayrım bilinçli. */
-    const kisaAd=(typeof _tokShort==='function'&&v.s)?_tokShort(v.s):v.s;
+    const kisaAd=(typeof _anlatimAdi==='function'&&v.s)?_anlatimAdi(v.s):v.s;
     const on=adKoy(onHam,{S:kisaAd});
     /* FAZ 26 §1: tipi olan yakın şutlarda önce tipe özgü çekirdek denenir. */
     const _sutCek=(v.sut&&KISA_CEKIRDEK_SUT[v.sut])?KISA_CEKIRDEK_SUT[v.sut][kind]:null;
@@ -3417,7 +3433,7 @@ function generateMatchEvents(rakip, opts){
       /* FAZ 30 (kelime bütçesi): CÜMLE biçiminde tek ad kullanılır — FAZ 25 §7.4'ün
          'zincir ve yüksek frekanslı olaylarda tek ad' kuralı. KÜNYE biçimi (yukarıdaki
          dal) resmî satırdır ve TAM adı korur. */
-      const _kisaFail=(typeof _tokShort==='function')?_tokShort(fp.isim):fp.isim;
+      const _kisaFail=(typeof _anlatimAdi==='function')?_anlatimAdi(fp.isim):fp.isim;
       return adKoy(pickLine(havuz,pr,narr.recent,'foulc'),
                    {A:_kisaFail,S:FOUL_SIRA[ix],I:FOUL_SIRA_I[ix]});
     }catch(e){ return 'Faul —'; }
@@ -3443,7 +3459,7 @@ function generateMatchEvents(rakip, opts){
     try{
       const rebIsUser=rebOff?userPos:!userPos;
       _pendingReb={type:'reb',dt:0,text:adKoy(pickLine(rebOff?REB_OFF_SHORT:REB_DEF_SHORT,pr,narr.recent,rebOff?'rebO':'rebD'),
-        {R:_tokShort(reb.isim),T:rebIsUser?MC.home.name:rname}),
+        {R:_anlatimAdi(reb.isim),T:rebIsUser?MC.home.name:rname}),
         q,t,rebId:reb.id,rebIsUser,rebOff:!!rebOff};
     }catch(e){}
     return rebOff;
@@ -3551,7 +3567,7 @@ function generateMatchEvents(rakip, opts){
     try{
       /* Ad ftPre'de zaten geçiyor ('… Batıkan Bayrak çizgide.'); ftRes'te tam adı
          tekrarlamak olayı 20 kelimeye çıkarıyordu. Kısa ad hem yeterli hem doğal. */
-      const kisa=(typeof _tokShort==='function')?_tokShort(who):who;
+      const kisa=(typeof _anlatimAdi==='function')?_anlatimAdi(who):who;
       const skor=`${kisa} çizgide ${nMade}/${nAtt} —`;
       if(nMade===nAtt) return `${skor} ${pickLine(nAtt>=3?FT_TAM3:FT_TAM,pr,narr.recent,'fttam')}`;
       if(nMade===0)    return `${skor} ${pickLine(FT_SIFIR,pr,narr.recent,'ftsifir')}`;
@@ -3960,7 +3976,7 @@ function generateMatchEvents(rakip, opts){
         const _seriBenim=(_runTeam===(userPos?'h':'a'));
         if(_seriBenim&&_runPts>=8) cand.push(`🔥 ${_runPts}-0'lık seri!`);
         else if(mg>=18) cand.push(`Fark açıldı — ${mg} sayı.`);
-        if(hh>=3) cand.push(`${_tokShort(shooter.isim)} üst üste ${hh}. isabetini buldu!`);
+        if(hh>=3) cand.push(`${_anlatimAdi(shooter.isim)} üst üste ${hh}. isabetini buldu!`);
         if(clutch&&mg<=4) cand.push('Başa baş gidiyor!');
         /* ⚠ `rand(3,6)` MAÇ rastgeleliğini tüketiyordu: anlatım bağlam öneki ne sıklıkta
            çıkarsa maçın rastgele akışı o kadar kayıyordu (F13-3 seri düzeltmesi hash'i bu
@@ -3985,7 +4001,7 @@ function generateMatchEvents(rakip, opts){
       let txt;
       if(made){
         if(is3){
-          const pasTxt=passer?assistPhrase(_tokShort(passer.isim),scheme,pr,narr.recent):'';
+          const pasTxt=passer?assistPhrase(_anlatimAdi(passer.isim),scheme,pr,narr.recent):'';
           const _v={s:shooter.isim,sc:scGate(q,t),zone};
           txt=(_zincirMod&&!pasTxt)
             ? (_zincirKul=true,zincirLine('score3',_v,pr,narr.recent))          /* zincir kendi ritmini kurar:
@@ -3994,14 +4010,14 @@ function generateMatchEvents(rakip, opts){
         }
         else if(and1){ txt=`${shooter.isim} faule rağmen ${(sut==='smac'?'smacı çaktı':sut==='floater'?'floater ile bitirdi':sut==='turnike'?'turnikeyi bitirdi':'şutu soktu')} — ${and1Made?'devam sayısı tamam!':'ek atış kaçtı.'} (${_and1Foul}) ${sc()}`; }
         else {
-          const pasTxt=passer?assistPhrase(_tokShort(passer.isim),scheme,pr,narr.recent):'';
+          const pasTxt=passer?assistPhrase(_anlatimAdi(passer.isim),scheme,pr,narr.recent):'';
           const _v={s:shooter.isim,sc:scGate(q,t),cls,zone,sut};
           txt=(_zincirMod&&!pasTxt)
             ? (_zincirKul=true,zincirLine('score2',_v,pr,narr.recent))
             : movePhrase+pasTxt+spikerLinePR(SP.id,'score2',_v,pr,narr.recent);
         }
       } else if(blocked){
-        txt=spikerLinePR(SP.id,'block',{s:_tokShort(shooter.isim),b:_tokShort(blk.isim),uzak:is3},pr,narr.recent);
+        txt=spikerLinePR(SP.id,'block',{s:_anlatimAdi(shooter.isim),b:_anlatimAdi(blk.isim),uzak:is3},pr,narr.recent);
       } else {
         const _k=is3?'miss3':'miss2';
         const _v={s:shooter.isim,cls,zone,sut};
@@ -4048,7 +4064,7 @@ function generateMatchEvents(rakip, opts){
         const havuz=_rebAnlat?(rebOff?REB_OFF_LINES:REB_DEF_LINES)
                              :(rebOff?REB_OFF_SHORT:REB_DEF_SHORT);
         const rl=adKoy(pickLine(havuz,pr,narr.recent,rebOff?'rebO':'rebD'),
-          {R:_tokShort(rebounder.isim),T:rebIsUser?MC.home.name:rname});
+          {R:_anlatimAdi(rebounder.isim),T:rebIsUser?MC.home.name:rname});
         /* §7.3: ribaund da saat referansı için doğal bir yer — kapı aday havuzu
            yalnız şutlara takılıyken %5'te kalıyordu (hedef %6-14). */
         const rl2=rl+saatGate(q,t)+tonGate(q,t);
@@ -4113,18 +4129,18 @@ function generateMatchEvents(rakip, opts){
             /* F13-6: top çalma iki farklı dille anlatılıyordu ve spiker kalıbında TOPU KAYBEDEN
                hiç geçmiyordu ("Victor Kim müthiş bir top çalma!" — kimden aldı?). Artık her
                çalma satırı iki taraflı: kaybeden + kapan. */
-            events.push({type:'steal',text:pickLine(STEAL_LOSS,pr,narr.recent,'stl2').replace('%L',_tokShort(loser.isim)).replace('%C',_tokShort(stealer.isim))+' '+spikerLinePR(SP.id,'steal',{c:_tokShort(stealer.isim)},pr,narr.recent),q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+            events.push({type:'steal',text:pickLine(STEAL_LOSS,pr,narr.recent,'stl2').replace('%L',_anlatimAdi(loser.isim)).replace('%C',_anlatimAdi(stealer.isim))+' '+spikerLinePR(SP.id,'steal',{c:_anlatimAdi(stealer.isim)},pr,narr.recent),q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
           } else if(tur<0.86){
             B.to++;
             fastNext='steal';
             const alan=userPos?(wPick(oppCourt,stlW)||oAny()):(wPick(userCourt,stlW)||uAny());
-            events.push({type:'steal',text:pickLine(['%S pasını kontrol edemedi — topu %R aldı.','%S kötü bir pas attı, %R topu aldı.','%S pasına %R araya girdi; hücum bitti.','%S pasında iletişim koptu — topu %R topladı.'],pr,narr.recent,'topas').replace('%S',_tokShort(loser.isim)).replace(/%R/g,_tokShort(alan.isim)),q,t,home:homeScore,away:awayScore,stealId:alan.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+            events.push({type:'steal',text:pickLine(['%S pasını kontrol edemedi — topu %R aldı.','%S kötü bir pas attı, %R topu aldı.','%S pasına %R araya girdi; hücum bitti.','%S pasında iletişim koptu — topu %R topladı.'],pr,narr.recent,'topas').replace('%S',_anlatimAdi(loser.isim)).replace(/%R/g,_anlatimAdi(alan.isim)),q,t,home:homeScore,away:awayScore,stealId:alan.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
           } else {
             B.to++;
             /* İhlallerin bir kısmı hücum faulüdür — faul hanesine de yazılmalı. */
             if(Math.random()<0.34) B.foul++;
             const alan2=userPos?(wPick(oppCourt,stlW)||oAny()):(wPick(userCourt,stlW)||uAny());
-            events.push({type:'steal',text:pickLine(['%S adım attı — düdük çaldı, topu %R kullanacak.','%S çift top yaptı; hücum bitti, topu %R kullanacak.','%S topu çizgi dışına kaçırdı — %R sokacak.','%S hücum faulü yaptı; top %R tarafına geçti.'],pr,narr.recent,'toviol').replace('%S',_tokShort(loser.isim)).replace(/%R/g,_tokShort(alan2.isim)),q,t,home:homeScore,away:awayScore,stealId:alan2.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+            events.push({type:'steal',text:pickLine(['%S adım attı — düdük çaldı, topu %R kullanacak.','%S çift top yaptı; hücum bitti, topu %R kullanacak.','%S topu çizgi dışına kaçırdı — %R sokacak.','%S hücum faulü yaptı; top %R tarafına geçti.'],pr,narr.recent,'toviol').replace('%S',_anlatimAdi(loser.isim)).replace(/%R/g,_anlatimAdi(alan2.isim)),q,t,home:homeScore,away:awayScore,stealId:alan2.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
           }
         } else {
           /* Top kaybı savuşturuldu — sabırlı/kontrollü pozisyon, top el değiştirmedi (sayı yok). */

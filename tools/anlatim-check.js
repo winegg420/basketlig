@@ -73,7 +73,7 @@ function ortamKur() {
   vm.createContext(ctx);
   const kaynak = FILES.map(f => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
   vm.runInContext(kaynak + `
-;globalThis.__api={simulateMatch,genRoster};globalThis.SUT_LINES=(typeof SUT_LINES!=="undefined")?SUT_LINES:null;globalThis.KISA_CEKIRDEK_SUT=(typeof KISA_CEKIRDEK_SUT!=="undefined")?KISA_CEKIRDEK_SUT:null;globalThis.__i18n={dict:(typeof I18N_TR_EN!=='undefined')?I18N_TR_EN:null,havuz:{SUT_LINES:(typeof SUT_LINES!=='undefined')?SUT_LINES:null,KISA_CEKIRDEK_SUT:(typeof KISA_CEKIRDEK_SUT!=='undefined')?KISA_CEKIRDEK_SUT:null,KISA_CEKIRDEK:(typeof KISA_CEKIRDEK!=='undefined')?KISA_CEKIRDEK:null,AKIS_ON:(typeof AKIS_ON!=='undefined')?AKIS_ON:null,SON_BOLUM:(typeof SON_BOLUM!=='undefined')?SON_BOLUM:null,SAAT_LINES:(typeof SAAT_LINES!=='undefined')?SAAT_LINES:null,SAAT_QSON:(typeof SAAT_QSON!=='undefined')?SAAT_QSON:null,SPIKER_LINES:(typeof SPIKER_LINES!=='undefined')?SPIKER_LINES:null,IMZA_ESPRI:(typeof IMZA_ESPRI!=='undefined')?IMZA_ESPRI:null,ASSIST_PHRASES:(typeof ASSIST_PHRASES!=='undefined')?ASSIST_PHRASES:null}};`, ctx, { filename: 'charazay-bundle.js' });
+;globalThis.__api={simulateMatch,genRoster,turkEk:(typeof turkEk!=="undefined")?turkEk:null,NAME_POOLS:(typeof NAME_POOLS!=="undefined")?NAME_POOLS:null,ULKELER:(typeof ULKELER!=="undefined")?ULKELER:null,randomNameFor:(typeof randomNameFor!=="undefined")?randomNameFor:null,prPick:(typeof prPick!=="undefined")?prPick:null};globalThis.SUT_LINES=(typeof SUT_LINES!=="undefined")?SUT_LINES:null;globalThis.KISA_CEKIRDEK_SUT=(typeof KISA_CEKIRDEK_SUT!=="undefined")?KISA_CEKIRDEK_SUT:null;globalThis.__i18n={dict:(typeof I18N_TR_EN!=='undefined')?I18N_TR_EN:null,havuz:{SUT_LINES:(typeof SUT_LINES!=='undefined')?SUT_LINES:null,KISA_CEKIRDEK_SUT:(typeof KISA_CEKIRDEK_SUT!=='undefined')?KISA_CEKIRDEK_SUT:null,KISA_CEKIRDEK:(typeof KISA_CEKIRDEK!=='undefined')?KISA_CEKIRDEK:null,AKIS_ON:(typeof AKIS_ON!=='undefined')?AKIS_ON:null,SON_BOLUM:(typeof SON_BOLUM!=='undefined')?SON_BOLUM:null,SAAT_LINES:(typeof SAAT_LINES!=='undefined')?SAAT_LINES:null,SAAT_QSON:(typeof SAAT_QSON!=='undefined')?SAAT_QSON:null,SPIKER_LINES:(typeof SPIKER_LINES!=='undefined')?SPIKER_LINES:null,IMZA_ESPRI:(typeof IMZA_ESPRI!=='undefined')?IMZA_ESPRI:null,ASSIST_PHRASES:(typeof ASSIST_PHRASES!=='undefined')?ASSIST_PHRASES:null}};`, ctx, { filename: 'charazay-bundle.js' });
   return ctx;
 }
 function kadroUret(ctx, seed) {
@@ -528,6 +528,85 @@ function analizEt(events) {
   ok('her anlatım havuzu satırının EN karşılığı var', _eksikEN.length === 0,
      _eksikEN.length ? _eksikEN.slice(0,5).map(x=>JSON.stringify(x)).join(' | ')
                      : 'SUT_LINES · KISA_CEKIRDEK(_SUT) · AKIS_ON · SON_BOLUM · SAAT · SPIKER · ASSIST tarandı');
+
+  /* ── FAZ 33 §2: YABANCI ADLARDA ÇEKİM EKİ ──────────────────────────────────────
+     turkEk() YAZILIŞA bakıyordu, OKUNUŞA değil. Lig küreselleşince yanlış ek üretmeye
+     başladı ve canlıda ölçüldü: "Đurašković'de" (doğrusu 'te — ć Türkçede ç, sert),
+     "Sy'a" (doğrusu 'ye — "Si" okunur, y burada ünlü). Tablo, canlı kadrodan gelen
+     20 adın DÖRT durumunu birden sınar; biri bile kayarsa kapı düşer. */
+  console.log(String.fromCharCode(10)+"── FAZ 33: yabancı adlarda çekim eki ──");
+  {
+    const tEk = ctx.__api.turkEk;
+    /* Beklenen çıktılar Türkçe okunuşa göre elle doğrulanmıştır (brif §2.4). */
+    const BEKLENEN = {
+      'Đurašković': ["Đurašković'e", "Đurašković'te", "Đurašković'ten", "Đurašković'in"],
+      'Núñez':      ["Núñez'e", "Núñez'de", "Núñez'den", "Núñez'in"],
+      'Mihaylov':   ["Mihaylov'a", "Mihaylov'da", "Mihaylov'dan", "Mihaylov'un"],
+      'Gyenge':     ["Gyenge'ye", "Gyenge'de", "Gyenge'den", "Gyenge'nin"],
+      'Méndez':     ["Méndez'e", "Méndez'de", "Méndez'den", "Méndez'in"],
+      'Scholz':     ["Scholz'a", "Scholz'da", "Scholz'dan", "Scholz'un"],
+      'Milewski':   ["Milewski'ye", "Milewski'de", "Milewski'den", "Milewski'nin"],
+      'Sy':         ["Sy'ye", "Sy'de", "Sy'den", "Sy'nin"],
+      'Ba':         ["Ba'ya", "Ba'da", "Ba'dan", "Ba'nın"],
+      'Ka':         ["Ka'ya", "Ka'da", "Ka'dan", "Ka'nın"],
+      'Lo':         ["Lo'ya", "Lo'da", "Lo'dan", "Lo'nun"],
+      'Ng':         ["Ng'e", "Ng'de", "Ng'den", "Ng'in"],
+      'Wu':         ["Wu'ya", "Wu'da", "Wu'dan", "Wu'nun"],
+      'Öz':         ["Öz'e", "Öz'de", "Öz'den", "Öz'ün"],
+      'Ávila':      ["Ávila'ya", "Ávila'da", "Ávila'dan", "Ávila'nın"],
+      'Morin':      ["Morin'e", "Morin'de", "Morin'den", "Morin'in"],
+      'Mokin':      ["Mokin'e", "Mokin'de", "Mokin'den", "Mokin'in"],
+      'Kowalski':   ["Kowalski'ye", "Kowalski'de", "Kowalski'den", "Kowalski'nin"],
+      'Ivanović':   ["Ivanović'e", "Ivanović'te", "Ivanović'ten", "Ivanović'in"],
+      'Nakamura':   ["Nakamura'ya", "Nakamura'da", "Nakamura'dan", "Nakamura'nın"]
+    };
+    const DURUM = ['e', 'de', 'den', 'in'];
+    const hata = [];
+    let toplam = 0;
+    Object.keys(BEKLENEN).forEach(ad => {
+      DURUM.forEach((d, i) => {
+        toplam++;
+        const c = tEk ? tEk(ad, d) : '';
+        if (c !== BEKLENEN[ad][i]) hata.push(`${ad}[${d}] → ${c} (beklenen ${BEKLENEN[ad][i]})`);
+      });
+    });
+    ok(`20 yabancı adın 4 durumu doğru (${toplam - hata.length}/${toplam})`, hata.length === 0,
+      hata.length ? hata.slice(0, 6).join(' | ') : `${toplam} kapı`);
+
+    /* 43 ülkeden 5'er ad: üretilen ekin ünlüsü, adın SON ünlüsüyle uyumlu olmalı.
+       Bu kapı beklenen çıktı listesi tutmaz — kuralı sınar, dolayısıyla havuz
+       büyüdükçe kendiliğinden kapsar. */
+    const NP = ctx.__api.NAME_POOLS || {};
+    const ulkeler = Object.keys(NP);
+    const KALIN = 'aıouâû', INCE = 'eiöüî';
+    const ihlal = [];
+    let denenen = 0;
+    ulkeler.forEach(u => {
+      const pool = NP[u]; if (!pool || !pool.ilk || !pool.sy) return;
+      for (let k = 0; k < 5; k++) {
+        /* prPick hash'ten türer — rastgelelik TÜKETMEZ (F13-3/B-5 kuralı). */
+        const ad = ctx.__api.prPick(u + '|f33|ilk|' + k, pool.ilk) + ' ' +
+                   ctx.__api.prPick(u + '|f33|sy|' + k, pool.sy);
+        DURUM.forEach(d => {
+          denenen++;
+          const c = tEk(ad, d);
+          const ek = c.slice(c.lastIndexOf("'") + 1);
+          /* Ekin İLK ünlüsü, adın okunuşundaki son ünlünün kalınlık/incelik sınıfında olmalı. */
+          let ekUnlu = null;
+          for (const ch of ek) { if (KALIN.indexOf(ch) >= 0 || INCE.indexOf(ch) >= 0) { ekUnlu = ch; break; } }
+          if (ekUnlu == null) { ihlal.push(ad + '[' + d + '] → ek ünlüsüz: ' + c); return; }
+          /* Referans: turkEk'in kendi okunuş kararı — 'a/e' düz ek üzerinden okunur. */
+          const ref = tEk(ad, 'e');
+          const refEk = ref.slice(ref.lastIndexOf("'") + 1);
+          const refKalin = refEk.indexOf('a') >= 0;
+          const ekKalin = KALIN.indexOf(ekUnlu) >= 0;
+          if (refKalin !== ekKalin) ihlal.push(ad + '[' + d + '] → ' + c + ' (yönelme: ' + ref + ')');
+        });
+      }
+    });
+    ok(`${ulkeler.length} ülke × 5 ad — ünlü uyumu ihlali yok (${denenen} ek)`, ihlal.length === 0,
+      ihlal.length ? ihlal.slice(0, 5).join(' | ') : `${denenen} ek üretildi`);
+  }
 
   /* ── FAZ 28 §4: ARDIŞIK OLAY DAMGASI ───────────────────────────────────────────── */
   console.log(String.fromCharCode(10)+"── FAZ 28: olay saati ──");

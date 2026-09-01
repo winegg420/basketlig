@@ -232,12 +232,16 @@ function renderLeagueSidebar(){
     html+=`<section class="lt-block"><button type="button" class="lt-h">${tblOpen?'▼':'▶'} ${escMatch(formatTblSlotLabel('tbl'))}</button>`;
     html+=`<div class="lt-body${tblOpen?' open':''}"><div class="league-slot${userKey==='tbl'?' user':''}" data-lig="tbl">${sidebarSlotLabel('tbl')} · ${cnt}/${LEAGUE_SIZE} takım${userKey==='tbl'?' · sen':''}</div></div></section>`;
   }
-  for(let d=1;d<=SIDEBAR_DIV_MAX_VISIBLE;d++){
+  /* FAZ 33 §4: alt divizyonlar artık GERÇEK numaralarıyla (2..DIV_SAYISI) listelenir.
+     Eskiden döngü 1'den başlıyor ve '1.s' anahtarları kuruyordu — hem ekranda "Div 1"
+     iki kez görünüyor (üstte 'tbl' de Divizyon 1) hem de anahtarlar bir kayıyordu.
+     Başlık artık formatTblSlotLabel'dan gelir; ham 'Div N' dizgisi çevrilmiyordu. */
+  for(let d=2;d<=DIV_SAYISI;d++){
     const open=!userInTbl&&userDiv===d;
-    html+=`<section class="lt-block"><button type="button" class="lt-h">${open?'▼':'▶'} Div ${d}</button>`;
+    html+=`<section class="lt-block"><button type="button" class="lt-h">${open?'▼':'▶'} ${escMatch(t('Divizyon {d}',{d:d}))}</button>`;
     html+=`<div class="lt-body${open?' open':''}">`;
-    for(let s=1;s<=5;s++){
-      const k=`${d}.${s}`;
+    for(let s=1;s<=DIV_GRUP_SAYISI;s++){
+      const k=divizyonAnahtari(d,s);
       const teams=(st.subs[k]&&st.subs[k].teams)||[];
       const cnt=teams.filter(Boolean).length;
       const userHere=(k===userKey);

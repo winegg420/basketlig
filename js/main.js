@@ -1606,7 +1606,7 @@ window.onload=()=>{
   /* FAZ 19 §6: önceki sürüme ait kayıtlar temizlenir ve kullanıcı bilgilendirilir. */
   try{
     const silinen=eskiKayitlariTemizle();
-    if(silinen>0) setTimeout(()=>{ try{ showNotif('Ekonomi sistemi yenilendi; önceki kayıt uyumsuz olduğu için temizlendi.',{critical:true}); }catch(e){} },1200);
+    if(silinen>0) setTimeout(()=>{ try{ showNotif('Lig yapısı küresel sisteme geçtiği için önceki kayıt uyumsuz kaldı ve temizlendi.',{critical:true}); }catch(e){} },1200);
   }catch(e){}
   /* FAZ 17: portre manifesti (kova/bant dosya sayıları) — sabit havuz boyu yerine dosyadan.
      Gelmezse oyun durmaz, portreler SVG yedeğine düşer. */

@@ -122,7 +122,10 @@ const EV_MAC_HAFTA = 2.21, MAC_HAFTA = 4.43;
    divizyon '2.1'dir. Denetim önce '3.1' kullanıyordu — VAR OLMAYAN bir divizyon
    (divizyonNo onu 4 sayıyor), dolayısıyla sponsorun divizyon çarpanı hep tabandaydı ve
    büyüme eğrisi hiç kurulamıyordu. Anahtar artık DIV_SAYISI'den türetilir. */
-function divKey(divNo) { return divNo <= 1 ? 'tbl' : (divNo - 1) + '.1'; }
+/* FAZ 33 §4: anahtardaki sayı artık GÖSTERİLEN divizyon numarasının aynısı —
+   'tbl' = Divizyon 1, 'd.g' = Divizyon d. Oyunun kendi yardımcısı kullanılır ki
+   numaralandırma bir daha İKİ YERDE ayrışmasın (bu denetim tam o tuzağa düşmüştü). */
+const divKey = (divNo) => (E.fn.divizyonAnahtari ? E.fn.divizyonAnahtari(divNo, 1) : (divNo <= 1 ? 'tbl' : divNo + '.1'));
 const EN_ALT_DIV = E.DIV_SAYISI || 3;
 const GALIBIYET_PRIMI = 5000;    /* match-engine rand(4200,5800) ortalaması */
 const MAGLUBIYET_GELIRI = 800;   /* match-engine rand(600,1000) ortalaması */

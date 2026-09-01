@@ -4922,3 +4922,116 @@ değişmedi) · `ekonomi-check` **36/36** · `season-loop --runs=3` **6/6** ·
   galibiyet primi ve §3.4'ün ÖLÇÜLEBİLİR hedeflerinin tamamı.
 - §5'in son maddesi (tarayıcıda elle 3 maç oynayıp ekranları gezmek) `visual-check`
   tarafından otomatik yapılıyor (15 adımlık akış, 0 konsol hatası) — elle tekrarlanmadı.
+
+## FAZ 33 — Küresel lig canlı gezi bulguları (2026-09-01)
+
+### §2 `turkEk()` okunuş normalizasyonu (en öncelikli)
+
+`turkEk()` YAZILIŞA bakıyordu. FAZ 30'a kadar tüm oyuncular Türk'tü ve Türkçede yazılış ≈
+okunuş olduğu için sorun görünmedi. `js/turkce-ek.js`'e `_trOkunus()` eklendi: ek KARARI
+normalize edilmiş okunuş üzerinden verilir, **ekranda ad özgün yazımıyla kalır**.
+
+**Okunuş tablosu** (`_OKU_IKILI` önce, sonra tek geçişli `_OKU_HARF` — zincir yok, `đ→c→ç`
+kaymasın diye):
+
+| Yazılış | Okunuş | Yazılış | Okunuş |
+|---|---|---|---|
+| `ć` `č` `c` `ĉ` | ç | `ñ` | ny |
+| `š` `ś` | ş | `ll` | y |
+| `ž` `ź` `ż` | j | `th` | t |
+| `đ` `ð` | c | `sch` | ş |
+| `w` | v | `ch` | ç |
+| `x` | ks | `ph` | f |
+| `q` | k | `j` (ORTADA) | h |
+| `y` (ünsüzden sonra) | i | `á à ä ã ā` | a |
+| `é è ê ë ē ę` | e | `í ì ï ī į` | i |
+| `ó ò ô õ ō` | o | `ú ù ū ų` | u |
+| `å` | o | `ø` | ö |
+| `ß` | s | `æ` / `œ` | e / ö |
+
+İki incelik brifte yoktu, ölçerek eklendi:
+1. **`j` → `h` yalnız kelime ORTASINDA.** Sondaki `j` Slav dillerinde yumuşaktır;
+   `anlatim-check` "Mihalj'ta" üretildiğini yakaladı, doğrusu "Mihalj'da".
+2. **Ünlüsüz kısaltma ≠ ünlüsüz ad.** `BK` harf adlarıyla okunur ("be-ke") → **BK'ye**;
+   `Ng` bir soyadıdır, okunmaz → harf adları hep ince olduğu için **Ng'e**. Ayrım
+   yazımdan: tamamı büyük harf = kısaltma. (`turkek-check`'in "BK'a" bekleyen eski kapısı
+   yanlıştı, güncellendi.)
+
+**20 yabancı adın ek tablosu (öncesi → sonrası):**
+
+| Ad | Önce (yanlış) | Sonra |
+|---|---|---|
+| Đurašković | 'de · 'den | **'te · 'ten** |
+| Ivanović | 'de · 'den | **'te · 'ten** |
+| Sy | 'a · 'da · 'dan · 'ın | **'ye · 'de · 'den · 'nin** |
+| Ng | 'a · 'da · 'dan · 'ın | **'e · 'de · 'den · 'in** |
+| Núñez · Méndez · Morin · Mokin | doğruydu | 'e · 'de · 'den · 'in |
+| Mihaylov · Scholz | doğruydu | 'a · 'da · 'dan · 'un |
+| Gyenge · Milewski · Kowalski | doğruydu | 'ye · 'de · 'den · 'nin |
+| Ba · Ka · Nakamura · Ávila | doğruydu | 'ya · 'da · 'dan · 'nın |
+| Lo · Wu | doğruydu | 'ya · 'da · 'dan · 'nun |
+| Öz | doğruydu | 'e · 'de · 'den · 'ün |
+
+`anlatim-check`'e iki kapı eklendi: **20 ad × 4 durum = 80/80** ve **43 ülke × 5 ad ×
+4 durum = 860 ek, ünlü uyumu ihlali 0**.
+
+### §3 Takım adları küreselleşti
+
+Sorunun kökü: `SEHIR` 162 şehirle zaten uluslararasıydı ama **ülke bilgisi kodda hiç
+yoktu**, dolayısıyla kural ne uygulanabiliyor ne ölçülebiliyordu. (Canlıda görülen Türk
+şehirlerinin çoğu — Balıkesir, Denizli, Diyarbakır, Şanlıurfa, Erzurum, Tekirdağ —
+**bugünkü havuzda yok**; o sayfa eski bir sürümü çalıştırıyordu.)
+
+- `SEHIR_ULKE` (162 şehir → 72 ülke) + `sehirUlkesi()` — tek kaynak.
+- `genUniqueClubName`: ülke sayacı eklendi, tavan `LIG_ULKE_PAY_MAX` (%30).
+- `ulkeCesitliligiOnar()`: `LIG_ULKE_MIN` (8) alt sınırı kadro kurulduktan sonra onarır
+  (tek tek çekilişte garanti edilemez).
+- `lig-check` D3: her divizyonda pay ≤%30 ve ülke ≥8. **Ölçülen: 26 divizyonda 12-18 ülke,
+  en büyük pay %25.**
+
+Örnek divizyon (tohum 33): Perm Pilots · Austin Basket · Villeurbanne BC · Oslo Giants ·
+Osaka Academy · Zurich BC · Klaipėda BC · Bangkok Raptors · Dnipro Şimşekleri ·
+Belgrade Koleji · Manila Kurtları · Rosario Kings · Kyiv Raptors · Taipei Storm ·
+Porto Storm — **19 ülke, en büyük pay %10.** Sonek karışımı korundu.
+
+### §4 Divizyon etiketi ile anahtar tek numaralandırmaya bağlandı
+
+`'d.g'` = Divizyon **d+1** idi; ekran "Divizyon 3" derken anahtar `'2.1'` yazıyordu.
+Artık `'tbl'` = Divizyon 1, `'d.g'` = Divizyon **d** (d ≥ 2). `'1.g'` üretilmez ve eski
+depolardan silinir. Anahtar kuran yerler için `divizyonAnahtari(div,grup)` eklendi.
+Terfi/düşme sınırları, depo şablonu ve **kenar çubuğu** (eskiden "Div 1/Div 2" yazıp
+`'1.s'` anahtarı kuruyordu, üstelik ham dizgi çevrilmiyordu) güncellendi.
+`schema-check` [7]: anahtar ↔ `divizyonNo` ↔ etiket ↔ `parseTblKey` dördü de eşleşiyor.
+
+### §5 Çift "ÜLKEN" kaldırıldı
+
+FAZ 30 yamasında blok iki kez yazılmıştı; iki `<select>` aynı id'yi taşıyordu.
+İkincisi silindi. `schema-check` [6] artık **HTML'deki tüm id'leri sayar** (202 id, yinelenen 0)
+— sınıf kapısı, tek seferlik düzeltme değil.
+
+### §6 Eski kayıtlar
+
+Kayıt şeması **v9 → v10**, `GAME_SAVE_KEY` v4 → v5, `TBL_STORAGE_KEY` v6 → v7,
+`charazay_club_public_v1` ve eski anahtarlar temizleme listesinde. Göç kodu yok.
+Kullanıcı mesajı: *"Lig yapısı küresel sisteme geçtiği için önceki kayıt uyumsuz kaldı ve
+temizlendi."* (TR + EN sözlükte.)
+
+### §7 Kısa soyadlarda tam ad
+
+`_anlatimAdi()` — soyad 3 harften kısaysa anlatımda tam ad ("Ousmane Sy pota altında
+hükmetti"). Jeton etiketi `_tokShort` ile kısa kalır (sahada yer yok). Anlatım
+bölgesindeki 12 çağrı taşındı, sahne/jeton katmanına dokunulmadı.
+
+### §8 sunum-check
+
+**Çalıştırıldı: tüm sunum maddeleri geçti, çıkış kodu 0.** M9 %96,9 · F25-2 donma 0 ·
+F25-3 91 sokma ort. 7,1 m · F25-6a %100 sırtı dönük · F26-1 smaç 34,4px < üçlük 107,3px ·
+F26-2 floater 92px > turnike 50,2px · konsol hatası 0.
+
+### Testler
+`sim-node --n=100 --seed=42` → **88.0 - 81.3 · hata 0 · G değişmedi: EVET** ·
+`turkek-check` ✓ · `anlatim-check` **31/31** · `lig-check` ✓ · `schema-check` **21/21** ·
+`milliyet-check` · `isim-check` · `portre-check` · `bicim-check` · `sut-check` ·
+`analiz-check` · `arena-check` · `ekonomi-check` **36/36** ✓ ·
+`i18n-scan` **A/B/C/D = 0 · çakışan 0 · canlı anlatım Türkçe %0,0** ·
+`visual-check` masaüstü+mobil **0 konsol hatası** · `sunum-check` ✓. Sürüm **65 → 66**.

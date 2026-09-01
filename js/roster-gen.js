@@ -544,27 +544,43 @@ function genRandomClubName(){
 /** Grup içinde benzersiz kulüp adı üretir (aynı ligde iki özdeş isim olmasın). */
 /* F8-4: aynı ligde şehir başına en fazla 2, sonek başına en fazla 3 takım. Eskiden yalnız
    tam ad çakışmasına bakılıyordu; 20 takımlık grupta dört Kayseri ve dört "Spor" çıkıyordu. */
+/* ── FAZ 33 §3: DİVİZYONDA ÜLKE ÇEŞİTLİLİĞİ ───────────────────────────────────
+   FAZ 30 oyuncuları küreselleştirdi, takım adlarını değil. Şehir havuzu 162 şehirle
+   zaten uluslararasıydı ama HİÇBİR KURAL yoktu: çekiliş düz rastgeleydi, bir
+   divizyonun tamamının aynı ülkeden çıkması mümkündü ve ölçülemiyordu.
+   Artık ÜLKE de sayılır (şehir ve sonek gibi): tek ülkenin payı LIG_ULKE_PAY_MAX'ı
+   aşamaz. En az LIG_ULKE_MIN farklı ülke şartı ise makeSubTemplate'te, kadro
+   kurulduktan SONRA onarılarak sağlanır (tek tek çekilişte garanti edilemez).
+   Şehir başına en fazla 2 kuralı (FAZ 30 §3) yerinde kalır — adın İLK SÖZCÜĞÜ
+   şehirdir, havuza çok kelimeli şehir eklenmez. */
 function genUniqueClubName(taken){
-  const sehirSay={}, sonekSay={};
+  const sehirSay={}, sonekSay={}, ulkeSay={};
   taken.forEach(ad=>{
     const parcalar=String(ad).split(' ');
     const sh=parcalar[0];
     const sn=parcalar.slice(1).join(' ');
     sehirSay[sh]=(sehirSay[sh]||0)+1;
     if(sn) sonekSay[sn]=(sonekSay[sn]||0)+1;
+    const u=(typeof sehirUlkesi==='function')?sehirUlkesi(sh):null;
+    if(u) ulkeSay[u]=(ulkeSay[u]||0)+1;
   });
-  const dene=(sehirLimit,sonekLimit)=>{
+  /* Ülke tavanı takım sayısına göre: 20 takımda %30 → 6. En az 2'ye izin verilir ki
+     küçük gruplarda kilitlenme olmasın. */
+  const ulkeTavan=Math.max(2,Math.floor(LEAGUE_SIZE*LIG_ULKE_PAY_MAX));
+  const dene=(sehirLimit,sonekLimit,ulkeLimit)=>{
     for(let tries=0;tries<400;tries++){
       const sh=ch(SEHIR), sn=ch(LIG_T), n=sh+' '+sn;
       if(taken.has(n)) continue;
       if((sehirSay[sh]||0)>=sehirLimit) continue;
       if((sonekSay[sn]||0)>=sonekLimit) continue;
+      const u=(typeof sehirUlkesi==='function')?sehirUlkesi(sh):null;
+      if(u&&ulkeLimit<99&&(ulkeSay[u]||0)>=ulkeLimit) continue;
       taken.add(n); return n;
     }
     return null;
   };
   /* Önce sıkı kural; havuz yetmezse kademeli gevşet (kilitlenme yok). */
-  return dene(2,3)||dene(3,4)||dene(99,99)||(function(){
+  return dene(2,3,ulkeTavan)||dene(2,3,ulkeTavan+2)||dene(3,4,99)||dene(99,99,99)||(function(){
     const base=genRandomClubName();
     let n=base, k=2;
     while(taken.has(n)){ n=base+' '+k; k++; }
@@ -576,7 +592,43 @@ function makeSubTemplate(){
   const taken=new Set();
   const teams=[];
   for(let i=0;i<LEAGUE_SIZE;i++) teams.push(genUniqueClubName(taken));
+  ulkeCesitliligiOnar(teams,taken);
   return {teams};
+}
+
+/* FAZ 33 §3.2: "en az LIG_ULKE_MIN farklı ülke" tek tek çekilişte GARANTİ EDİLEMEZ —
+   ülke tavanı payı sınırlar ama alt sınırı zorlamaz (162 şehrin 72 ülkeye dağılımı
+   dengesiz; birkaç büyük ülke arka arkaya gelebilir). Kadro kurulduktan sonra eksik
+   kalan çeşitlilik, EN ÇOK tekrar eden ülkenin takımlarından biri henüz kullanılmamış
+   bir ülkeyle değiştirilerek kapatılır. Ad çakışması ve şehir tekrarı korunur. */
+function ulkeCesitliligiOnar(teams,taken){
+  try{
+    if(typeof sehirUlkesi!=='function'||typeof LIG_ULKE_MIN==='undefined') return;
+    const ulkesi=(ad)=>sehirUlkesi(String(ad).split(' ')[0]);
+    let guvenlik=0;
+    while(guvenlik++<40){
+      const say={};
+      teams.forEach(t=>{ const u=ulkesi(t); if(u) say[u]=(say[u]||0)+1; });
+      const mevcut=Object.keys(say);
+      if(mevcut.length>=LIG_ULKE_MIN) return;
+      /* Kullanılmayan ülkelerden birinin şehri seçilir. */
+      const bosSehirler=SEHIR.filter(c=>{ const u=sehirUlkesi(c); return u&&!say[u]; });
+      if(!bosSehirler.length) return;
+      /* Değiştirilecek takım: en kalabalık ülkeden SONUNCU olan. */
+      const enCok=mevcut.sort((a,b)=>say[b]-say[a])[0];
+      let ix=-1;
+      for(let i=teams.length-1;i>=0;i--){ if(ulkesi(teams[i])===enCok){ ix=i; break; } }
+      if(ix<0) return;
+      const eskiSonek=String(teams[ix]).split(' ').slice(1).join(' ')||LIG_T[0];   /* rastgelelik TÜKETMEZ: ch() yerine sabit yedek */
+      let yeni=null;
+      for(let t=0;t<bosSehirler.length;t++){
+        const aday=bosSehirler[t]+' '+eskiSonek;
+        if(!taken.has(aday)){ yeni=aday; break; }
+      }
+      if(!yeni) return;
+      taken.delete(teams[ix]); taken.add(yeni); teams[ix]=yeni;
+    }
+  }catch(e){}
 }
 
 let _tblStateMem=null;
@@ -596,7 +648,9 @@ function ensureTblState(){
   if(!st||!st.subs){
     st={subs:{}};
     st.subs.tbl=makeSubTemplate();
-    for(let d=1;d<=5;d++){
+    /* FAZ 33 §4: anahtardaki sayı gösterilen divizyon numarasıdır; Divizyon 1 'tbl'
+       olduğu için '1.g' anahtarı ARTIK ÜRETİLMEZ. Şablon 6 divizyona kadar hazır. */
+    for(let d=2;d<=6;d++){
       for(let g=1;g<=5;g++){
         st.subs[`${d}.${g}`]=makeSubTemplate();
       }
@@ -623,7 +677,13 @@ function ensureTblState(){
     const tk='t.'+s;
     if(st.subs[tk]){ delete st.subs[tk]; changed=true; }
   }
-  for(let d=1;d<=5;d++){
+  /* FAZ 33 §4: eski numaralandırmadan kalan '1.g' anahtarları temizlenir — Divizyon 1
+     artık yalnız 'tbl'dir ve '1.g' iki kez Divizyon 1 anlamına gelirdi. */
+  for(let g=1;g<=5;g++){
+    const ek='1.'+g;
+    if(st.subs[ek]){ delete st.subs[ek]; changed=true; }
+  }
+  for(let d=2;d<=6;d++){
     for(let g=1;g<=5;g++){
       const k=`${d}.${g}`;
       if(!st.subs[k]){ st.subs[k]=makeSubTemplate(); changed=true; }
@@ -932,7 +992,8 @@ function applyPromotionRelegation(){
       renderLig();
       return;
     }
-    const slot=findFirstNullInDivision(1,st);
+    /* FAZ 33 §4: Divizyon 1'den düşen Divizyon 2'ye gider (eskiden anahtar '1.g' idi). */
+    const slot=findFirstNullInDivision(2,st);
     if(!slot){ showNotif(t('Alt divizyonda boş yer yok; yerinde kalırsın.')); return; }
     finish(slot,t('↓ Bir alt divizyona düştün:'));
     return;
@@ -946,7 +1007,8 @@ function applyPromotionRelegation(){
   }
 
   if(uix<5){
-    if(divNum<=1){
+    /* FAZ 33 §4: Divizyon 2'den yükselen Divizyon 1'e ('tbl') gider. */
+    if(divNum<=2){
       const slot=findFirstNullInTbl(st);
       if(!slot){ showNotif(t('Üst divizyonda boş yer yok; yerinde kalırsın.')); return; }
       unlockAchievement('ustLig');
@@ -963,9 +1025,9 @@ function applyPromotionRelegation(){
   /* ⚠ ALT SINIR MERDİVENDEN GELİR. Eskiden 5'e gömülüydü; DIV_SAYISI=3 iken kullanıcı
      tasarımda VAR OLMAYAN Divizyon 4-5-6'ya düşebiliyordu (depo şablonu o grupları
      oluşturuyor ama merdiven onları tanımıyor: etiketleri var, güç kaymaları yok).
-     'd.g' anahtarında divNum, Divizyon (divNum+1) demektir — en alt divizyon
-     divNum = DIV_SAYISI-1'dir. */
-  if(uix>=15 && divNum>=DIV_SAYISI-1){
+     FAZ 33 §4: anahtardaki divNum artık DİVİZYONUN KENDİSİDİR — en alt divizyon
+     divNum = DIV_SAYISI'dir. */
+  if(uix>=15 && divNum>=DIV_SAYISI){
     showNotif(t('En alt divizyondasın; daha aşağı grup yok.'));
     renderLig();
     return;

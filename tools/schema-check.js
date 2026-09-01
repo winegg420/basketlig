@@ -117,6 +117,81 @@ function temizle(sql) {
   if (/supabase/i.test(html)) kirli.push('charazay2.0.html');
   ok('js/ ve HTML içinde Supabase bağlantısı yok', kirli.length === 0, kirli.join(', '));
 
+  // ── 6) FAZ 33 §5: YİNELENEN DOM id ───────────────────────────────────────────────
+  /* HTML'de id BENZERSİZ olmalıdır. Kurulum ekranında "ÜLKEN" iki kez görünüyordu:
+     iki <select> aynı `menajerUlkeSec` id'sini taşıyordu (FAZ 30 yamasında blok iki kez
+     yazılmıştı) ve getElementById hep ilkini döndürdüğü için ikincisi ölü kontroldü.
+     Kapı tek seferlik düzeltme değil SINIF olarak yakalar: HTML'deki her id sayılır. */
+  console.log('\n[6] Yinelenen DOM id (FAZ 33 §5)');
+  {
+    const html6 = fs.readFileSync(path.join(ROOT, 'charazay2.0.html'), 'utf8');
+    const say = {};
+    for (const m of html6.matchAll(/\sid\s*=\s*["']([^"']+)["']/g)) {
+      const k = m[1];
+      say[k] = (say[k] || 0) + 1;
+    }
+    const yinelenen = Object.keys(say).filter(k => say[k] > 1);
+    ok('charazay2.0.html içinde yinelenen id yok', yinelenen.length === 0,
+      yinelenen.length ? yinelenen.map(k => k + ' ×' + say[k]).join(' · ')
+                       : Object.keys(say).length + ' id tarandı');
+  }
+
+  // ── 7) FAZ 33 §4: DİVİZYON NUMARASI ↔ ANAHTAR ────────────────────────────────────
+  /* Ekran "Divizyon 3 · Grup 1" derken iç anahtar '2.1' yazıyordu; iki ayrı
+     numaralandırma vardı ve kodu okuyan herkes için tuzaktı (FAZ 25'te ekonomi
+     denetçisi var olmayan '3.1' divizyonunda ölçüm yaptı). Artık anahtardaki sayı
+     gösterilen sayının AYNISIDIR ve dönüşüm tek yardımcıdan geçer. */
+  console.log('\n[7] Divizyon numarası ile anahtar eşleşiyor (FAZ 33 §4)');
+  {
+    const vm7 = require('vm');
+    const ctx7 = { console: { log() {}, warn() {}, error() {} }, Math, Date, JSON, Number, String,
+      Boolean, Array, Object, Error, RegExp, Map, Set, parseInt, parseFloat, isNaN, isFinite };
+    ctx7.window = ctx7; ctx7.globalThis = ctx7;
+    ctx7.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+    ctx7.navigator = { language: 'tr' }; ctx7.location = { search: '', hostname: '' };
+    ctx7.document = { createElement: () => ({ style: {} }), createTreeWalker: () => ({ nextNode: () => null }),
+      body: {}, documentElement: { setAttribute() {} }, getElementById: () => null };
+    ctx7.NodeFilter = { SHOW_TEXT: 4 };
+    ctx7.MutationObserver = function () { return { observe() {}, disconnect() {} }; };
+    vm7.createContext(ctx7);
+    const src7 = ['js/i18n.js', 'js/i18n-dict.js', 'js/i18n-commentary.js', 'js/names.js', 'js/state.js']
+      .map(f => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
+    vm7.runInContext(src7 + `
+;globalThis.__d={divizyonNo,divizyonGrup,formatTblSlotLabel,divizyonAnahtarlari,divizyonAnahtari,
+  divizyonDoldurmaSirasi,parseTblKey,DIV_SAYISI,DIV_GRUP_SAYISI};`, ctx7);
+    const D = ctx7.__d;
+    const hatalar = [];
+    /* Her divizyon × her grup: anahtardan okunan numara, etikette yazan numarayla aynı mı? */
+    for (let d = 1; d <= D.DIV_SAYISI; d++) {
+      for (const k of D.divizyonAnahtarlari(d)) {
+        const no = D.divizyonNo(k);
+        if (no !== d) hatalar.push(`${k} → divizyonNo ${no} (beklenen ${d})`);
+        const etiket = D.formatTblSlotLabel(k);
+        const m = String(etiket).match(/(\d+)/);
+        const gosterilen = m ? parseInt(m[1], 10) : 1;
+        if (gosterilen !== d) hatalar.push(`${k} → etiket "${etiket}" (beklenen Divizyon ${d})`);
+        /* Anahtarın kendi sayısı da aynı olmalı — §4'ün asıl talebi bu. */
+        if (k !== 'tbl') {
+          const anahtarSayisi = parseInt(String(k).split('.')[0], 10);
+          if (anahtarSayisi !== d) hatalar.push(`${k} anahtarındaki sayı ${anahtarSayisi} ≠ divizyon ${d}`);
+        }
+        if (D.parseTblKey(k).kind === 'div' && D.parseTblKey(k).div !== d)
+          hatalar.push(`parseTblKey(${k}).div = ${D.parseTblKey(k).div} ≠ ${d}`);
+      }
+    }
+    ok('gösterilen divizyon numarası = anahtardaki numara', hatalar.length === 0,
+      hatalar.length ? hatalar.slice(0, 5).join(' | ')
+                     : `${D.DIV_SAYISI} divizyon × ${D.DIV_GRUP_SAYISI} grup tarandı`);
+    /* Divizyon 1 yalnız 'tbl' olmalı — '1.g' iki kez Divizyon 1 demek olurdu. */
+    ok("Divizyon 1'in tek anahtarı 'tbl'", D.divizyonAnahtarlari(1).join() === 'tbl',
+      D.divizyonAnahtarlari(1).join(' '));
+    /* Doldurma sırası en alttan yukarı ve tekrarsız. */
+    const sira = D.divizyonDoldurmaSirasi();
+    ok('doldurma sırası en alt divizyondan başlıyor ve tekrarsız',
+      D.divizyonNo(sira[0]) === D.DIV_SAYISI && new Set(sira).size === sira.length,
+      sira.join(' '));
+  }
+
   const dusen = sonuc.filter(s => !s.gecti);
   console.log('\n' + '='.repeat(60));
   console.log(`SONUÇ: ${sonuc.length - dusen.length}/${sonuc.length} denetim geçti`);

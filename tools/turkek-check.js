@@ -68,7 +68,14 @@ console.log('\nC) Sınır durumları — anlatım katmanı çökmemeli');
 yaz(turkEk('', 'e') === '', 'boş ad boş dönüyor');
 yaz(turkEk(null, 'e') === '', 'null ad boş dönüyor');
 yaz(turkEk('Polat', 'bilinmeyen') === 'Polat', 'bilinmeyen durum düz adı döndürüyor');
-yaz(turkEk('BK', 'e') === "BK'a", `ünlüsüz kısaltmada kalın-düz varsayılan: ${turkEk('BK', 'e')}`);
+/* FAZ 33 §2: eski beklenti "BK'a" idi — ünlüsüz girdide kör bir kalın-düz varsayılan.
+   Doğrusu okunuştur: ünlüsüz KISALTMA harf harf okunur ("BK" = "be-ke"), ünlüyle biter
+   ve kaynaştırma alır. Ünlüsüz AD (Ng) harf harf okunmaz; harf adlarının hepsi ince
+   ünlü taşıdığı için ince ek alır. */
+yaz(turkEk('BK', 'e') === "BK'ye", `ünlüsüz kısaltma harf adıyla okunuyor: ${turkEk('BK', 'e')}`);
+yaz(turkEk('BK', 'de') === "BK'de" && turkEk('BK', 'in') === "BK'nin",
+  `kısaltmanın diğer durumları: ${turkEk('BK', 'de')} · ${turkEk('BK', 'in')}`);
+yaz(turkEk('Ng', 'e') === "Ng'e", `ünlüsüz AD ince ek alıyor: ${turkEk('Ng', 'e')}`);
 
 console.log('\nD) Şablon çözücü (%X{durum})');
 const cikti = turkEkUygula('%R{e} düştü; hücum sırası %T{de}.', { R: 'Ömer Polat', T: 'Kayseri Boğaları' });

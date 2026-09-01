@@ -1,340 +1,290 @@
-canli-mac :: Abuja Doğanları
-canli-mac :: Alexandria Şahinleri
-canli-mac :: Beijing Aslanları
-canli-mac :: Brussels Boğaları
-canli-mac :: Brussels Boğaları — Rotterdam United
-canli-mac :: Kyiv Koleji — Alexandria Şahinleri
-canli-mac :: Luanda Aslanları
-canli-mac :: Siena Basket — Abuja Doğanları
-canli-mac :: Tampere Warriors — Luanda Aslanları
-canli-mac :: Tucumán Kartalları
+canli-mac :: Adana Üniversite
+canli-mac :: Adana Üniversite — Tallinn Belediyespor
+canli-mac :: Bologna Kurtları
+canli-mac :: Caracas Kurtları
+canli-mac :: Gothenburg Boğaları
 canli-mac :: Yerel Esnaf Desteği ·
-canli-mac :: Zurich Atmacaları
-canli-mac :: 🇩🇪 Marco Müller
-canli-mac :: 🇫🇮 Vainö Hakkarainen
-canli-mac :: 🇹🇷 Sercan Yücel
+canli-mac :: İzmir Kartalları
+canli-mac :: İzmir Kartalları — Bologna Kurtları
+canli-mac :: 🇹🇷 Osman Çakmak
+canli-mac :: 🇹🇷 Sami Sevinç
 canli-mac :: 🇹🇷 Türkçe
-canli-mac :: 🏛️ Beijing Aslanları from
-canli-mac :: 🏛️ Tucumán Kartalları from
+canli-mac :: 🏛️ Adana Üniversite from
+canli-mac :: 🏛️ Bologna Kurtları from
+canli-mac :: 🏛️ Caracas Kurtları from
+canli-mac :: 🏛️ Gothenburg Boğaları from
+canli-mac :: 🏛️ İzmir Kartalları from
 canli-mac :: 📣 Sponsor income — Yerel Esnaf Desteği
+canli-mac :: 🔔 The first possession of quarter 1 is being set up — Ankara Eagles 0 - 0 Bologna Kurtları.
 login :: 🇹🇷 Türkçe
-modal:ayarlar :: Abuja Doğanları
-modal:ayarlar :: Alexandria Şahinleri
-modal:ayarlar :: Beijing Aslanları
-modal:ayarlar :: Brussels Boğaları
-modal:ayarlar :: Brussels Boğaları — Rotterdam United
-modal:ayarlar :: Kyiv Koleji — Alexandria Şahinleri
-modal:ayarlar :: Luanda Aslanları
-modal:ayarlar :: Siena Basket — Abuja Doğanları
-modal:ayarlar :: Tampere Warriors — Luanda Aslanları
-modal:ayarlar :: Tucumán Kartalları
+modal:ayarlar :: Adana Üniversite
+modal:ayarlar :: Adana Üniversite — Tallinn Belediyespor
+modal:ayarlar :: Bologna Kurtları
+modal:ayarlar :: Caracas Kurtları
+modal:ayarlar :: Gothenburg Boğaları
 modal:ayarlar :: Yerel Esnaf Desteği ·
-modal:ayarlar :: Zurich Atmacaları
-modal:ayarlar :: 🇩🇪 Marco Müller
-modal:ayarlar :: 🇫🇮 Vainö Hakkarainen
-modal:ayarlar :: 🇹🇷 Sercan Yücel
+modal:ayarlar :: İzmir Kartalları
+modal:ayarlar :: İzmir Kartalları — Bologna Kurtları
+modal:ayarlar :: 🇹🇷 Osman Çakmak
+modal:ayarlar :: 🇹🇷 Sami Sevinç
 modal:ayarlar :: 🇹🇷 Türkçe
-modal:ayarlar :: 🏛️ Beijing Aslanları from
-modal:ayarlar :: 🏛️ Tucumán Kartalları from
+modal:ayarlar :: 🏛️ Adana Üniversite from
+modal:ayarlar :: 🏛️ Bologna Kurtları from
+modal:ayarlar :: 🏛️ Caracas Kurtları from
+modal:ayarlar :: 🏛️ Gothenburg Boğaları from
+modal:ayarlar :: 🏛️ İzmir Kartalları from
 modal:ayarlar :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:basarim :: Abuja Doğanları
-modal:basarim :: Alexandria Şahinleri
-modal:basarim :: Beijing Aslanları
-modal:basarim :: Brussels Boğaları
-modal:basarim :: Brussels Boğaları — Rotterdam United
-modal:basarim :: Kyiv Koleji — Alexandria Şahinleri
-modal:basarim :: Luanda Aslanları
-modal:basarim :: Siena Basket — Abuja Doğanları
-modal:basarim :: Tampere Warriors — Luanda Aslanları
-modal:basarim :: Tucumán Kartalları
+modal:basarim :: Adana Üniversite
+modal:basarim :: Adana Üniversite — Tallinn Belediyespor
+modal:basarim :: Bologna Kurtları
+modal:basarim :: Caracas Kurtları
+modal:basarim :: Gothenburg Boğaları
 modal:basarim :: Yerel Esnaf Desteği ·
-modal:basarim :: Zurich Atmacaları
-modal:basarim :: 🇩🇪 Marco Müller
-modal:basarim :: 🇫🇮 Vainö Hakkarainen
-modal:basarim :: 🇹🇷 Sercan Yücel
+modal:basarim :: İzmir Kartalları
+modal:basarim :: İzmir Kartalları — Bologna Kurtları
+modal:basarim :: 🇹🇷 Osman Çakmak
+modal:basarim :: 🇹🇷 Sami Sevinç
 modal:basarim :: 🇹🇷 Türkçe
-modal:basarim :: 🏛️ Beijing Aslanları from
-modal:basarim :: 🏛️ Tucumán Kartalları from
+modal:basarim :: 🏛️ Adana Üniversite from
+modal:basarim :: 🏛️ Bologna Kurtları from
+modal:basarim :: 🏛️ Caracas Kurtları from
+modal:basarim :: 🏛️ Gothenburg Boğaları from
+modal:basarim :: 🏛️ İzmir Kartalları from
 modal:basarim :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:draft :: Abuja Doğanları
-modal:draft :: Alexandria Şahinleri
-modal:draft :: Beijing Aslanları
-modal:draft :: Brussels Boğaları
-modal:draft :: Brussels Boğaları — Rotterdam United
-modal:draft :: Kyiv Koleji — Alexandria Şahinleri
-modal:draft :: Luanda Aslanları
-modal:draft :: Siena Basket — Abuja Doğanları
-modal:draft :: Tampere Warriors — Luanda Aslanları
-modal:draft :: Tucumán Kartalları
+modal:draft :: Adana Üniversite
+modal:draft :: Adana Üniversite — Tallinn Belediyespor
+modal:draft :: Bologna Kurtları
+modal:draft :: Caracas Kurtları
+modal:draft :: Gothenburg Boğaları
 modal:draft :: Yerel Esnaf Desteği ·
-modal:draft :: Zurich Atmacaları
-modal:draft :: 🇩🇪 Marco Müller
-modal:draft :: 🇫🇮 Vainö Hakkarainen
-modal:draft :: 🇹🇷 Sercan Yücel
+modal:draft :: İzmir Kartalları
+modal:draft :: İzmir Kartalları — Bologna Kurtları
+modal:draft :: 🇹🇷 Osman Çakmak
+modal:draft :: 🇹🇷 Sami Sevinç
 modal:draft :: 🇹🇷 Türkçe
-modal:draft :: 🏛️ Beijing Aslanları from
-modal:draft :: 🏛️ Tucumán Kartalları from
+modal:draft :: 🏛️ Adana Üniversite from
+modal:draft :: 🏛️ Bologna Kurtları from
+modal:draft :: 🏛️ Caracas Kurtları from
+modal:draft :: 🏛️ Gothenburg Boğaları from
+modal:draft :: 🏛️ İzmir Kartalları from
 modal:draft :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:ilk5 :: Abuja Doğanları
-modal:ilk5 :: Alexandria Şahinleri
-modal:ilk5 :: Beijing Aslanları
-modal:ilk5 :: Brussels Boğaları
-modal:ilk5 :: Brussels Boğaları — Rotterdam United
-modal:ilk5 :: Kyiv Koleji — Alexandria Şahinleri
-modal:ilk5 :: Luanda Aslanları
-modal:ilk5 :: Siena Basket — Abuja Doğanları
-modal:ilk5 :: Tampere Warriors — Luanda Aslanları
-modal:ilk5 :: Tucumán Kartalları
+modal:ilk5 :: Adana Üniversite
+modal:ilk5 :: Adana Üniversite — Tallinn Belediyespor
+modal:ilk5 :: Bologna Kurtları
+modal:ilk5 :: Caracas Kurtları
+modal:ilk5 :: Gothenburg Boğaları
 modal:ilk5 :: Yerel Esnaf Desteği ·
-modal:ilk5 :: Zurich Atmacaları
-modal:ilk5 :: 🇩🇪 Marco Müller
-modal:ilk5 :: 🇫🇮 Vainö Hakkarainen
-modal:ilk5 :: 🇹🇷 Sercan Yücel
+modal:ilk5 :: İzmir Kartalları
+modal:ilk5 :: İzmir Kartalları — Bologna Kurtları
+modal:ilk5 :: 🇹🇷 Osman Çakmak
+modal:ilk5 :: 🇹🇷 Sami Sevinç
 modal:ilk5 :: 🇹🇷 Türkçe
-modal:ilk5 :: 🏛️ Beijing Aslanları from
-modal:ilk5 :: 🏛️ Tucumán Kartalları from
+modal:ilk5 :: 🏛️ Adana Üniversite from
+modal:ilk5 :: 🏛️ Bologna Kurtları from
+modal:ilk5 :: 🏛️ Caracas Kurtları from
+modal:ilk5 :: 🏛️ Gothenburg Boğaları from
+modal:ilk5 :: 🏛️ İzmir Kartalları from
 modal:ilk5 :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:oyuncu :: Abuja Doğanları
-modal:oyuncu :: Alexandria Şahinleri
-modal:oyuncu :: Beijing Aslanları
-modal:oyuncu :: Brussels Boğaları
-modal:oyuncu :: Brussels Boğaları — Rotterdam United
-modal:oyuncu :: Kyiv Koleji — Alexandria Şahinleri
-modal:oyuncu :: Luanda Aslanları
-modal:oyuncu :: Siena Basket — Abuja Doğanları
-modal:oyuncu :: Tampere Warriors — Luanda Aslanları
-modal:oyuncu :: Tucumán Kartalları
+modal:oyuncu :: Adana Üniversite
+modal:oyuncu :: Adana Üniversite — Tallinn Belediyespor
+modal:oyuncu :: Bologna Kurtları
+modal:oyuncu :: Caracas Kurtları
+modal:oyuncu :: Gothenburg Boğaları
 modal:oyuncu :: Yerel Esnaf Desteği ·
-modal:oyuncu :: Zurich Atmacaları
-modal:oyuncu :: 🇩🇪 Marco Müller
-modal:oyuncu :: 🇫🇮 Vainö Hakkarainen
-modal:oyuncu :: 🇹🇷 Sercan Yücel
+modal:oyuncu :: İzmir Kartalları
+modal:oyuncu :: İzmir Kartalları — Bologna Kurtları
+modal:oyuncu :: 🇹🇷 Osman Çakmak
+modal:oyuncu :: 🇹🇷 Sami Sevinç
 modal:oyuncu :: 🇹🇷 Türkçe
-modal:oyuncu :: 🏛️ Beijing Aslanları from
-modal:oyuncu :: 🏛️ Tucumán Kartalları from
+modal:oyuncu :: 🏛️ Adana Üniversite from
+modal:oyuncu :: 🏛️ Bologna Kurtları from
+modal:oyuncu :: 🏛️ Caracas Kurtları from
+modal:oyuncu :: 🏛️ Gothenburg Boğaları from
+modal:oyuncu :: 🏛️ İzmir Kartalları from
 modal:oyuncu :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:soyunma :: Abuja Doğanları
-modal:soyunma :: Alexandria Şahinleri
-modal:soyunma :: Beijing Aslanları
-modal:soyunma :: Brussels Boğaları
-modal:soyunma :: Brussels Boğaları — Rotterdam United
-modal:soyunma :: Kyiv Koleji — Alexandria Şahinleri
-modal:soyunma :: Luanda Aslanları
-modal:soyunma :: Siena Basket — Abuja Doğanları
-modal:soyunma :: Tampere Warriors — Luanda Aslanları
-modal:soyunma :: Tucumán Kartalları
+modal:soyunma :: Adana Üniversite
+modal:soyunma :: Adana Üniversite — Tallinn Belediyespor
+modal:soyunma :: Bologna Kurtları
+modal:soyunma :: Caracas Kurtları
+modal:soyunma :: Gothenburg Boğaları
 modal:soyunma :: Yerel Esnaf Desteği ·
-modal:soyunma :: Zurich Atmacaları
-modal:soyunma :: 🇩🇪 Marco Müller
-modal:soyunma :: 🇫🇮 Vainö Hakkarainen
-modal:soyunma :: 🇹🇷 Sercan Yücel
+modal:soyunma :: İzmir Kartalları
+modal:soyunma :: İzmir Kartalları — Bologna Kurtları
+modal:soyunma :: 🇹🇷 Osman Çakmak
+modal:soyunma :: 🇹🇷 Sami Sevinç
 modal:soyunma :: 🇹🇷 Türkçe
-modal:soyunma :: 🏛️ Beijing Aslanları from
-modal:soyunma :: 🏛️ Tucumán Kartalları from
+modal:soyunma :: 🏛️ Adana Üniversite from
+modal:soyunma :: 🏛️ Bologna Kurtları from
+modal:soyunma :: 🏛️ Caracas Kurtları from
+modal:soyunma :: 🏛️ Gothenburg Boğaları from
+modal:soyunma :: 🏛️ İzmir Kartalları from
 modal:soyunma :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:taktik :: Abuja Doğanları
-modal:taktik :: Alexandria Şahinleri
-modal:taktik :: Beijing Aslanları
-modal:taktik :: Brussels Boğaları
-modal:taktik :: Brussels Boğaları — Rotterdam United
-modal:taktik :: Kyiv Koleji — Alexandria Şahinleri
-modal:taktik :: Luanda Aslanları
-modal:taktik :: Siena Basket — Abuja Doğanları
-modal:taktik :: Tampere Warriors — Luanda Aslanları
-modal:taktik :: Tucumán Kartalları
+modal:taktik :: Adana Üniversite
+modal:taktik :: Adana Üniversite — Tallinn Belediyespor
+modal:taktik :: Bologna Kurtları
+modal:taktik :: Caracas Kurtları
+modal:taktik :: Gothenburg Boğaları
 modal:taktik :: Yerel Esnaf Desteği ·
-modal:taktik :: Zurich Atmacaları
-modal:taktik :: 🇩🇪 Marco Müller
-modal:taktik :: 🇫🇮 Vainö Hakkarainen
-modal:taktik :: 🇹🇷 Sercan Yücel
+modal:taktik :: İzmir Kartalları
+modal:taktik :: İzmir Kartalları — Bologna Kurtları
+modal:taktik :: 🇹🇷 Osman Çakmak
+modal:taktik :: 🇹🇷 Sami Sevinç
 modal:taktik :: 🇹🇷 Türkçe
-modal:taktik :: 🏛️ Beijing Aslanları from
-modal:taktik :: 🏛️ Tucumán Kartalları from
+modal:taktik :: 🎯 Tactics — vs Bologna Kurtları
+modal:taktik :: 🏛️ Adana Üniversite from
+modal:taktik :: 🏛️ Bologna Kurtları from
+modal:taktik :: 🏛️ Caracas Kurtları from
+modal:taktik :: 🏛️ Gothenburg Boğaları from
+modal:taktik :: 🏛️ İzmir Kartalları from
 modal:taktik :: 📣 Sponsor income — Yerel Esnaf Desteği
-sayfa:altyapi :: Abuja Doğanları
-sayfa:altyapi :: Alexandria Şahinleri
-sayfa:altyapi :: Beijing Aslanları
-sayfa:altyapi :: Brussels Boğaları
-sayfa:altyapi :: Brussels Boğaları — Rotterdam United
-sayfa:altyapi :: Kyiv Koleji — Alexandria Şahinleri
-sayfa:altyapi :: Luanda Aslanları
-sayfa:altyapi :: Siena Basket — Abuja Doğanları
-sayfa:altyapi :: Tampere Warriors — Luanda Aslanları
-sayfa:altyapi :: Tucumán Kartalları
+sayfa:altyapi :: Adana Üniversite
+sayfa:altyapi :: Adana Üniversite — Tallinn Belediyespor
+sayfa:altyapi :: Bologna Kurtları
+sayfa:altyapi :: Caracas Kurtları
+sayfa:altyapi :: Gothenburg Boğaları
 sayfa:altyapi :: Yerel Esnaf Desteği ·
-sayfa:altyapi :: Zurich Atmacaları
-sayfa:altyapi :: 🇩🇪 Marco Müller
-sayfa:altyapi :: 🇫🇮 Vainö Hakkarainen
-sayfa:altyapi :: 🇹🇷 Sercan Yücel
+sayfa:altyapi :: İzmir Kartalları
+sayfa:altyapi :: İzmir Kartalları — Bologna Kurtları
+sayfa:altyapi :: 🇹🇷 Osman Çakmak
+sayfa:altyapi :: 🇹🇷 Sami Sevinç
 sayfa:altyapi :: 🇹🇷 Türkçe
-sayfa:altyapi :: 🏛️ Beijing Aslanları from
-sayfa:altyapi :: 🏛️ Tucumán Kartalları from
-sayfa:analiz :: Abuja Doğanları
-sayfa:analiz :: Alexandria Şahinleri
-sayfa:analiz :: Beijing Aslanları
-sayfa:analiz :: Brussels Boğaları
-sayfa:analiz :: Brussels Boğaları — Rotterdam United
-sayfa:analiz :: Kyiv Koleji — Alexandria Şahinleri
-sayfa:analiz :: Luanda Aslanları
-sayfa:analiz :: Siena Basket — Abuja Doğanları
-sayfa:analiz :: Tampere Warriors — Luanda Aslanları
-sayfa:analiz :: Tucumán Kartalları
+sayfa:altyapi :: 🏛️ Adana Üniversite from
+sayfa:altyapi :: 🏛️ Bologna Kurtları from
+sayfa:altyapi :: 🏛️ Caracas Kurtları from
+sayfa:altyapi :: 🏛️ Gothenburg Boğaları from
+sayfa:altyapi :: 🏛️ İzmir Kartalları from
+sayfa:analiz :: Adana Üniversite
+sayfa:analiz :: Adana Üniversite — Tallinn Belediyespor
+sayfa:analiz :: Bologna Kurtları
+sayfa:analiz :: Caracas Kurtları
+sayfa:analiz :: Gothenburg Boğaları
 sayfa:analiz :: Yerel Esnaf Desteği ·
-sayfa:analiz :: Zurich Atmacaları
-sayfa:analiz :: 🇩🇪 Marco Müller
-sayfa:analiz :: 🇫🇮 Vainö Hakkarainen
-sayfa:analiz :: 🇹🇷 Sercan Yücel
+sayfa:analiz :: İzmir Kartalları
+sayfa:analiz :: İzmir Kartalları — Bologna Kurtları
+sayfa:analiz :: 🇹🇷 Osman Çakmak
+sayfa:analiz :: 🇹🇷 Sami Sevinç
 sayfa:analiz :: 🇹🇷 Türkçe
-sayfa:analiz :: 🏛️ Beijing Aslanları from
-sayfa:analiz :: 🏛️ Tucumán Kartalları from
+sayfa:analiz :: 🏛️ Adana Üniversite from
+sayfa:analiz :: 🏛️ Bologna Kurtları from
+sayfa:analiz :: 🏛️ Caracas Kurtları from
+sayfa:analiz :: 🏛️ Gothenburg Boğaları from
+sayfa:analiz :: 🏛️ İzmir Kartalları from
 sayfa:analiz :: 📣 Sponsor income — Yerel Esnaf Desteği
-sayfa:antrenman :: Abuja Doğanları
-sayfa:antrenman :: Alexandria Şahinleri
-sayfa:antrenman :: Beijing Aslanları
-sayfa:antrenman :: Brussels Boğaları
-sayfa:antrenman :: Brussels Boğaları — Rotterdam United
-sayfa:antrenman :: Kyiv Koleji — Alexandria Şahinleri
-sayfa:antrenman :: Luanda Aslanları
-sayfa:antrenman :: Siena Basket — Abuja Doğanları
-sayfa:antrenman :: Tampere Warriors — Luanda Aslanları
-sayfa:antrenman :: Tucumán Kartalları
+sayfa:antrenman :: Adana Üniversite
+sayfa:antrenman :: Adana Üniversite — Tallinn Belediyespor
+sayfa:antrenman :: Bologna Kurtları
+sayfa:antrenman :: Caracas Kurtları
+sayfa:antrenman :: Gothenburg Boğaları
 sayfa:antrenman :: Yerel Esnaf Desteği ·
-sayfa:antrenman :: Zurich Atmacaları
-sayfa:antrenman :: 🇩🇪 Marco Müller
-sayfa:antrenman :: 🇫🇮 Vainö Hakkarainen
-sayfa:antrenman :: 🇹🇷 Sercan Yücel
+sayfa:antrenman :: İzmir Kartalları
+sayfa:antrenman :: İzmir Kartalları — Bologna Kurtları
+sayfa:antrenman :: 🇹🇷 Osman Çakmak
+sayfa:antrenman :: 🇹🇷 Sami Sevinç
 sayfa:antrenman :: 🇹🇷 Türkçe
-sayfa:antrenman :: 🏛️ Beijing Aslanları from
-sayfa:antrenman :: 🏛️ Tucumán Kartalları from
-sayfa:arena :: Abuja Doğanları
-sayfa:arena :: Alexandria Şahinleri
-sayfa:arena :: Beijing Aslanları
-sayfa:arena :: Brussels Boğaları
-sayfa:arena :: Brussels Boğaları — Rotterdam United
-sayfa:arena :: Kyiv Koleji — Alexandria Şahinleri
-sayfa:arena :: Luanda Aslanları
-sayfa:arena :: Siena Basket — Abuja Doğanları
-sayfa:arena :: Tampere Warriors — Luanda Aslanları
-sayfa:arena :: Tucumán Kartalları
+sayfa:antrenman :: 🏛️ Adana Üniversite from
+sayfa:antrenman :: 🏛️ Bologna Kurtları from
+sayfa:antrenman :: 🏛️ Caracas Kurtları from
+sayfa:antrenman :: 🏛️ Gothenburg Boğaları from
+sayfa:antrenman :: 🏛️ İzmir Kartalları from
+sayfa:arena :: Adana Üniversite
+sayfa:arena :: Adana Üniversite — Tallinn Belediyespor
+sayfa:arena :: Bologna Kurtları
+sayfa:arena :: Caracas Kurtları
+sayfa:arena :: Gothenburg Boğaları
 sayfa:arena :: Yerel Esnaf Desteği ·
-sayfa:arena :: Zurich Atmacaları
-sayfa:arena :: 🇩🇪 Marco Müller
-sayfa:arena :: 🇫🇮 Vainö Hakkarainen
-sayfa:arena :: 🇹🇷 Sercan Yücel
+sayfa:arena :: İzmir Kartalları
+sayfa:arena :: İzmir Kartalları — Bologna Kurtları
+sayfa:arena :: 🇹🇷 Osman Çakmak
+sayfa:arena :: 🇹🇷 Sami Sevinç
 sayfa:arena :: 🇹🇷 Türkçe
-sayfa:arena :: 🏛️ Beijing Aslanları from
-sayfa:arena :: 🏛️ Tucumán Kartalları from
-sayfa:bilanco :: Abuja Doğanları
-sayfa:bilanco :: Alexandria Şahinleri
-sayfa:bilanco :: Beijing Aslanları
-sayfa:bilanco :: Brussels Boğaları
-sayfa:bilanco :: Brussels Boğaları — Rotterdam United
-sayfa:bilanco :: Kyiv Koleji — Alexandria Şahinleri
-sayfa:bilanco :: Luanda Aslanları
-sayfa:bilanco :: Siena Basket — Abuja Doğanları
-sayfa:bilanco :: Tampere Warriors — Luanda Aslanları
-sayfa:bilanco :: Tucumán Kartalları
+sayfa:arena :: 🏛️ Adana Üniversite from
+sayfa:arena :: 🏛️ Bologna Kurtları from
+sayfa:arena :: 🏛️ Caracas Kurtları from
+sayfa:arena :: 🏛️ Gothenburg Boğaları from
+sayfa:arena :: 🏛️ İzmir Kartalları from
+sayfa:bilanco :: Adana Üniversite
+sayfa:bilanco :: Adana Üniversite — Tallinn Belediyespor
+sayfa:bilanco :: Bologna Kurtları
+sayfa:bilanco :: Caracas Kurtları
+sayfa:bilanco :: Gothenburg Boğaları
 sayfa:bilanco :: Yerel Esnaf Desteği ·
-sayfa:bilanco :: Zurich Atmacaları
-sayfa:bilanco :: 🇩🇪 Marco Müller
-sayfa:bilanco :: 🇫🇮 Vainö Hakkarainen
-sayfa:bilanco :: 🇹🇷 Sercan Yücel
+sayfa:bilanco :: İzmir Kartalları
+sayfa:bilanco :: İzmir Kartalları — Bologna Kurtları
+sayfa:bilanco :: 🇹🇷 Osman Çakmak
+sayfa:bilanco :: 🇹🇷 Sami Sevinç
 sayfa:bilanco :: 🇹🇷 Türkçe
-sayfa:bilanco :: 🏛️ Beijing Aslanları from
-sayfa:bilanco :: 🏛️ Tucumán Kartalları from
+sayfa:bilanco :: 🏛️ Adana Üniversite from
+sayfa:bilanco :: 🏛️ Bologna Kurtları from
+sayfa:bilanco :: 🏛️ Caracas Kurtları from
+sayfa:bilanco :: 🏛️ Gothenburg Boğaları from
+sayfa:bilanco :: 🏛️ İzmir Kartalları from
 sayfa:bilanco :: 📣 Sponsor income — Yerel Esnaf Desteği
-sayfa:dashboard :: Abuja Doğanları
-sayfa:dashboard :: Alexandria Şahinleri
-sayfa:dashboard :: Beijing Aslanları
-sayfa:dashboard :: Brussels Boğaları
-sayfa:dashboard :: Brussels Boğaları — Rotterdam United
-sayfa:dashboard :: Kyiv Koleji — Alexandria Şahinleri
-sayfa:dashboard :: Luanda Aslanları
-sayfa:dashboard :: Siena Basket — Abuja Doğanları
-sayfa:dashboard :: Tampere Warriors — Luanda Aslanları
-sayfa:dashboard :: Tucumán Kartalları
-sayfa:dashboard :: Zurich Atmacaları
+sayfa:dashboard :: Adana Üniversite
+sayfa:dashboard :: Adana Üniversite — Tallinn Belediyespor
+sayfa:dashboard :: Bologna Kurtları
+sayfa:dashboard :: Caracas Kurtları
+sayfa:dashboard :: Gothenburg Boğaları
+sayfa:dashboard :: İzmir Kartalları
+sayfa:dashboard :: İzmir Kartalları — Bologna Kurtları
 sayfa:dashboard :: 🇹🇷 Türkçe
-sayfa:kadro :: Abuja Doğanları
-sayfa:kadro :: Alexandria Şahinleri
-sayfa:kadro :: Beijing Aslanları
-sayfa:kadro :: Brussels Boğaları
-sayfa:kadro :: Brussels Boğaları — Rotterdam United
-sayfa:kadro :: Kyiv Koleji — Alexandria Şahinleri
-sayfa:kadro :: Luanda Aslanları
-sayfa:kadro :: Siena Basket — Abuja Doğanları
-sayfa:kadro :: Tampere Warriors — Luanda Aslanları
-sayfa:kadro :: Tucumán Kartalları
+sayfa:kadro :: Adana Üniversite
+sayfa:kadro :: Adana Üniversite — Tallinn Belediyespor
+sayfa:kadro :: Bologna Kurtları
+sayfa:kadro :: Caracas Kurtları
+sayfa:kadro :: Gothenburg Boğaları
 sayfa:kadro :: Yerel Esnaf Desteği ·
-sayfa:kadro :: Zurich Atmacaları
+sayfa:kadro :: İzmir Kartalları
+sayfa:kadro :: İzmir Kartalları — Bologna Kurtları
 sayfa:kadro :: 🇹🇷 Türkçe
-sayfa:lig :: Abuja Doğanları
-sayfa:lig :: Alexandria Şahinleri
-sayfa:lig :: Beijing Aslanları
-sayfa:lig :: Brussels Boğaları
-sayfa:lig :: Brussels Boğaları — Rotterdam United
-sayfa:lig :: Kyiv Koleji — Alexandria Şahinleri
-sayfa:lig :: Luanda Aslanları
-sayfa:lig :: Siena Basket — Abuja Doğanları
-sayfa:lig :: Tampere Warriors — Luanda Aslanları
-sayfa:lig :: Tucumán Kartalları
+sayfa:lig :: Adana Üniversite
+sayfa:lig :: Adana Üniversite — Tallinn Belediyespor
+sayfa:lig :: Bologna Kurtları
+sayfa:lig :: Caracas Kurtları
+sayfa:lig :: Gothenburg Boğaları
 sayfa:lig :: Yerel Esnaf Desteği ·
-sayfa:lig :: Zurich Atmacaları
+sayfa:lig :: İzmir Kartalları
+sayfa:lig :: İzmir Kartalları — Bologna Kurtları
 sayfa:lig :: 🇹🇷 Türkçe
-sayfa:mac :: Abuja Doğanları
-sayfa:mac :: Alexandria Şahinleri
-sayfa:mac :: Beijing Aslanları
-sayfa:mac :: Brussels Boğaları
-sayfa:mac :: Brussels Boğaları — Rotterdam United
-sayfa:mac :: Kyiv Koleji — Alexandria Şahinleri
-sayfa:mac :: Luanda Aslanları
-sayfa:mac :: Siena Basket — Abuja Doğanları
-sayfa:mac :: Tampere Warriors — Luanda Aslanları
-sayfa:mac :: Tucumán Kartalları
+sayfa:mac :: Adana Üniversite
+sayfa:mac :: Adana Üniversite — Tallinn Belediyespor
+sayfa:mac :: Bologna Kurtları
+sayfa:mac :: Caracas Kurtları
+sayfa:mac :: Gothenburg Boğaları
 sayfa:mac :: Yerel Esnaf Desteği ·
-sayfa:mac :: Zurich Atmacaları
+sayfa:mac :: İzmir Kartalları
+sayfa:mac :: İzmir Kartalları — Bologna Kurtları
 sayfa:mac :: 🇹🇷 Türkçe
-sayfa:market :: Abuja Doğanları
-sayfa:market :: Alexandria Şahinleri
-sayfa:market :: Beijing Aslanları
-sayfa:market :: Brussels Boğaları
-sayfa:market :: Brussels Boğaları — Rotterdam United
-sayfa:market :: Kyiv Koleji — Alexandria Şahinleri
-sayfa:market :: Luanda Aslanları
-sayfa:market :: Siena Basket — Abuja Doğanları
-sayfa:market :: Tampere Warriors — Luanda Aslanları
-sayfa:market :: Tucumán Kartalları
+sayfa:market :: Adana Üniversite
+sayfa:market :: Adana Üniversite — Tallinn Belediyespor
+sayfa:market :: Bologna Kurtları
+sayfa:market :: Caracas Kurtları
+sayfa:market :: Gothenburg Boğaları
 sayfa:market :: Yerel Esnaf Desteği ·
-sayfa:market :: Zurich Atmacaları
-sayfa:market :: 🇩🇪 Marco Müller
-sayfa:market :: 🇫🇮 Vainö Hakkarainen
-sayfa:market :: 🇹🇷 Sercan Yücel
+sayfa:market :: İzmir Kartalları
+sayfa:market :: İzmir Kartalları — Bologna Kurtları
+sayfa:market :: 🇹🇷 Osman Çakmak
+sayfa:market :: 🇹🇷 Sami Sevinç
 sayfa:market :: 🇹🇷 Türkçe
-sayfa:market :: 🏛️ Beijing Aslanları from
-sayfa:market :: 🏛️ Tucumán Kartalları from
-sayfa:takim :: Abuja Doğanları
-sayfa:takim :: Alexandria Şahinleri
-sayfa:takim :: Beijing Aslanları
-sayfa:takim :: Brussels Boğaları
-sayfa:takim :: Brussels Boğaları — Rotterdam United
-sayfa:takim :: Kyiv Koleji — Alexandria Şahinleri
-sayfa:takim :: Luanda Aslanları
-sayfa:takim :: Siena Basket — Abuja Doğanları
-sayfa:takim :: Tampere Warriors — Luanda Aslanları
-sayfa:takim :: Tucumán Kartalları
+sayfa:market :: 🏛️ Adana Üniversite from
+sayfa:market :: 🏛️ Bologna Kurtları from
+sayfa:market :: 🏛️ Caracas Kurtları from
+sayfa:market :: 🏛️ Gothenburg Boğaları from
+sayfa:market :: 🏛️ İzmir Kartalları from
+sayfa:takim :: Adana Üniversite
+sayfa:takim :: Adana Üniversite — Tallinn Belediyespor
+sayfa:takim :: Bologna Kurtları
+sayfa:takim :: Caracas Kurtları
+sayfa:takim :: Gothenburg Boğaları
 sayfa:takim :: Yerel Esnaf Desteği ·
-sayfa:takim :: Zurich Atmacaları
+sayfa:takim :: İzmir Kartalları
+sayfa:takim :: İzmir Kartalları — Bologna Kurtları
 sayfa:takim :: 🇹🇷 Türkçe
 setup :: 🇹🇷 Türkçe
-tutorial :: Abuja Doğanları
-tutorial :: Alexandria Şahinleri
-tutorial :: Beijing Aslanları
-tutorial :: Brussels Boğaları
-tutorial :: Brussels Boğaları — Rotterdam United
-tutorial :: Kyiv Koleji — Alexandria Şahinleri
-tutorial :: Luanda Aslanları
-tutorial :: Siena Basket — Abuja Doğanları
-tutorial :: Tampere Warriors — Luanda Aslanları
-tutorial :: Tucumán Kartalları
-tutorial :: Zurich Atmacaları
+tutorial :: Adana Üniversite
+tutorial :: Adana Üniversite — Tallinn Belediyespor
+tutorial :: Bologna Kurtları
+tutorial :: Caracas Kurtları
+tutorial :: Gothenburg Boğaları
+tutorial :: İzmir Kartalları
+tutorial :: İzmir Kartalları — Bologna Kurtları
 tutorial :: 🇹🇷 Türkçe

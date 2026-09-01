@@ -56,6 +56,99 @@ function _trIyelikli(kucukKelime){
   }catch(e){ return false; }
 }
 
+/* ── FAZ 33 §2: OKUNUŞ NORMALİZASYONU ─────────────────────────────────────────
+   Türkçe ek uyumu YAZILIŞA değil OKUNUŞA bakar. FAZ 30'a kadar bütün oyuncular
+   Türk'tü ve Türkçede yazılış ≈ okunuş olduğu için sorun görünmedi. Lig
+   küreselleşince yazıldığı gibi okunmayan adlar devreye girdi ve canlıda ölçüldü:
+
+     Đurašković'de  →  doğrusu Đurašković'TE   (sondaki 'ć' Türkçede ç = sert ünsüz)
+     Sy'a · Sy'da   →  doğrusu Sy'YE · Sy'DE   ("Si" okunur; y burada ÜNLÜ)
+
+   Normalizasyon YALNIZ ek seçiminde kullanılır — ekranda ad özgün yazımıyla kalır
+   ("Đurašković'te", "Đuraşkoviç'te" DEĞİL).
+
+   Neden güvenli: ek yalnız iki şeye bakar — (a) sondan ilk ünlü, (b) son harfin
+   sert ünsüz/ünlü olup olmadığı. Kelime ortasındaki dönüşümler bu ikisini
+   etkilemediği sürece sonucu değiştirmez; bu yüzden tablo cömert olabilir.
+
+   TABLO (brif §2.3):
+     ć č c → ç   |  š → ş   |  ž → j   |  đ → c   |  w → v   |  x → ks
+     q → k       |  ñ → ny  |  ll → y  |  j → h   |  th → t  |  y(sonda) → i
+   Artı: aksanlı ünlüler Türkçe karşılığına katlanır (é→e, ú→u, å→o, ø→ö …). */
+
+/* Tek geçişli harf haritası — SIRALI zincir kullanılmaz. 'đ→c' ile 'c→ç' zincirlenirse
+   'đ' iki adımda 'ç' olur (yanlış); tek geçiş bunu yapısal olarak engeller. */
+const _OKU_HARF={
+  'ć':'ç','č':'ç','c':'ç','ĉ':'ç',
+  'š':'ş','ś':'ş','ş':'ş',
+  'ž':'j','ź':'j','ż':'j',
+  'đ':'c','ð':'c',
+  'w':'v','x':'ks','q':'k','j':'h',
+  'ñ':'ny',
+  /* aksanlı ünlüler → Türkçe ünlü değeri */
+  'á':'a','à':'a','ä':'a','ã':'a','å':'o','ā':'a',
+  'é':'e','è':'e','ê':'e','ë':'e','ē':'e','ę':'e',
+  'í':'i','ì':'i','ï':'i','ī':'i','į':'i',
+  'ó':'o','ò':'o','ô':'o','õ':'o','ō':'o','ø':'ö',
+  'ú':'u','ù':'u','ū':'u','ų':'u',
+  'ý':'i','ł':'l','ń':'n','ň':'n','ř':'r','ś':'ş','ť':'t','ď':'d',
+  'ß':'s','æ':'e','œ':'ö'
+};
+/* Çok harfli okunuşlar — tek geçişten ÖNCE uygulanır. */
+const _OKU_IKILI=[
+  [/th/g,'t'],      /* Smith → Smit  (sert t) */
+  [/sch/g,'ş'],     /* Scholz → Şolz */
+  [/ll/g,'y'],      /* Villa → Viya */
+  [/ch/g,'ç'],      /* Bianchi → Bianoçi; sondaki 'ch' sert kalır */
+  [/ph/g,'f']
+];
+/**
+ * Adı Türkçe okunuşa yaklaştırır. SADECE ek seçimi için; ekrana YAZILMAZ.
+ * @param {string} kelime  ekin yapışacağı son kelime (küçük harfe çevrilmiş)
+ */
+function _trOkunus(kelime){
+  try{
+    let t=String(kelime||'');
+    for(let i=0;i<_OKU_IKILI.length;i++) t=t.replace(_OKU_IKILI[i][0],_OKU_IKILI[i][1]);
+    let cik='';
+    for(let i=0;i<t.length;i++){
+      const h=t[i];
+      /* 'y' sonda ya da ünsüzden sonra ÜNLÜDÜR (Sy → "Si", Gyenge → "Gienge").
+         Ünlüden sonra geliyorsa Türkçedeki gibi ünsüzdür (Mihaylov, Bay). */
+      /* 'j' → 'h' YALNIZ kelime ortasında. Brifin tablosu İspanyolca okunuşu verir
+         (Juan → Huan) ama SON harfteki 'j' Slav dillerinde yumuşaktır ve Türkçe 'j'
+         gibi okunur ("Mihalj" = Mihaly). Sonda sertleştirmek "Mihalj'ta" üretiyordu;
+         doğrusu "Mihalj'da". İspanyolcada sözcük sonu 'j' pratikte yoktur, bu yüzden
+         kural kaybı yok. Kelime ortasındaki dönüşüm ek kararını zaten etkilemez. */
+      if(h==='j'&&i===t.length-1){ cik+='j'; continue; }
+      if(h==='y'){
+        const onceki=cik[cik.length-1];
+        const oncekiUnlu=onceki!=null&&_TR_UNLU.indexOf(onceki)>=0;
+        cik+=oncekiUnlu?'y':'i';
+        continue;
+      }
+      cik+=(_OKU_HARF[h]!=null?_OKU_HARF[h]:h);
+    }
+    return cik;
+  }catch(e){ return String(kelime||''); }
+}
+
+/* Türk alfabesinde harf ADLARI. Ünlüsüz KISALTMALAR (BK, TBMM) harf harf okunur ve ek
+   okunuşa uyar: "BK" = "be-ke" → ünlüyle biter → BK'ye · BK'de · BK'nin.
+   Ayrım YAZIMDAN gelir: tamamı büyük harf + ünlüsüz = kısaltma; karışık yazım ise
+   addır ("Ng" bir soyadıdır, harf harf okunmaz → Ng'e). */
+const _HARF_ADI={b:'be',c:'ce','ç':'çe',d:'de',f:'fe',g:'ge','ğ':'ğe',h:'he',j:'je',k:'ke',
+  l:'le',m:'me',n:'ne',p:'pe',r:'re',s:'se','ş':'şe',t:'te',v:'ve',y:'ye',z:'ze'};
+function _trKisaltmaMi(kelimeHam){
+  try{
+    const t=String(kelimeHam||'');
+    if(t.length<2) return false;
+    if(t!==t.toUpperCase()) return false;                 /* karışık yazım → ad */
+    if(!/^[A-ZÇĞİÖŞÜ]+$/.test(t)) return false;
+    return _trSonUnlu(trKucuk(t))==null;                  /* ünlü varsa kısaltma sayma */
+  }catch(e){ return false; }
+}
+
 /** Kelimenin sonundan geriye doğru ilk ünlü. Bulunamazsa null. */
 function _trSonUnlu(s){
   try{
@@ -98,11 +191,17 @@ function turkEk(ad, durum){
     const kelime=_trGovde(_trSonKelime(tam));
     if(!kelime) return tam;
 
-    const kucuk=kelime.toLowerCase();
-    const sonHarf=kucuk[kucuk.length-1];
-    const sonUnlu=_trSonUnlu(kucuk);
-    /* Ünlüsüz ad (kısaltma vb.) için kalın-düz varsayılan; ek yine de doğru "görünür". */
-    const tab=_TR_UNLU_TABLO[sonUnlu]||['a','ı'];
+    /* İyelik tespiti (-ları/-leri) TÜRKÇE yazılışa bakar — normalize edilmiş biçime
+       değil; "Boğaları" okunuşta da aynıdır ama kural Türkçe kalıba bağlıdır. */
+    const kucuk=trKucuk(kelime);
+    /* FAZ 33 §2: ek KARARI okunuş üzerinden verilir, ad özgün yazımıyla döner. */
+    const oku=_trKisaltmaMi(kelime)?(_HARF_ADI[trKucuk(kelime).slice(-1)]||_trOkunus(kucuk)):_trOkunus(kucuk);
+    const sonHarf=oku[oku.length-1];
+    const sonUnlu=_trSonUnlu(oku);
+    /* Ünlüsüz ad (Ng, BK …) Türkçede harf adlarıyla okunur ve harf adlarının hepsi
+       İNCE ünlü taşır (be, ce, de, ge, ne, se, te …) → "Ng'e", "Ng'de". Eskiden kalın
+       varsayılan vardı ve "Ng'a" çıkıyordu. */
+    const tab=_TR_UNLU_TABLO[sonUnlu]||['e','i'];
     const duz=tab[0], dar=tab[1];
     const unluIleBitiyor=_TR_UNLU.indexOf(sonHarf)>=0;
     const sertIleBitiyor=_TR_SERT.indexOf(sonHarf)>=0;

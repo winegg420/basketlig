@@ -347,7 +347,7 @@ function serializeGameState(){
      sessizce kaybolacak TEK yer burasıydı. Artık olduğu gibi saklanır. */
   const pl=(G.ligTeams||[]).slice();
   return{
-    v:9,   /* FAZ 25 USD: para birimi + ekonomi ölçeği (v8: zorluk seviyesi) */
+    v:10,  /* FAZ 33: küresel lig şeması — divizyon anahtarı + takım adları (v9: USD ekonomi) */
     savedAt:new Date().toISOString(),
     coins:G.coins,wins:G.wins,losses:G.losses,points:G.points,chemistry:G.chemistry,winStreak:G.winStreak||0,careerMatches:G.careerMatches||0,careerWins:G.careerWins||0,careerLosses:G.careerLosses||0,clubRecords:G.clubRecords||{},
     team:G.team,
@@ -507,7 +507,7 @@ function migrateEconomyV4ToV5(d){
    eski sürüm kaydı kabul EDİLMEZ, temizlenir ve kullanıcı bilgilendirilir.
    Eski migrasyon fonksiyonları yerinde bırakıldı (silme değil düzenleme kuralı); v<9
    burada elendiği için artık çağrılmıyorlar. */
-const SAVE_VERSIONS=[9];
+const SAVE_VERSIONS=[10];
 /* F7-17: v5 → v6 normalizasyonu. v5'ten sonra eklenen alanlar (rol/eğilim, playbook,
    izci ağı, draft, başkan hedefi, soyunma odası krizi) boşluklarını '||' varsayılanlarıyla
    kapatıyordu; artık sürüm damgası hangi kaydın neyi içerdiğini ayırt ediyor ve eksik

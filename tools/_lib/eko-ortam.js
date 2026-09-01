@@ -126,6 +126,7 @@ function ortamKur(opt) {
     genRoster: ${ad('genRoster')},
     botOvrKaydir: ${ad('botOvrKaydir')},
     divizyonNo: ${ad('divizyonNo')},
+    divizyonAnahtari: ${ad('divizyonAnahtari')},
     divizyonAnahtarlari: ${ad('divizyonAnahtarlari')},
     genPlayer: ${ad('genPlayer')},
     genMarket: ${ad('genMarket')},

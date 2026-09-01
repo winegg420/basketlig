@@ -27,7 +27,12 @@ function rastgeleUlkeAdi(tohum){
    Divizyon 1 tek gruptur; alt divizyonlar paralel gruplara ayrılabilir (kullanıcı
    sayısı arttıkça grup eklenir). Yeni kariyer EN ALT divizyonda başlar — ekonomi
    tasarımı "küçük kulübü devral ve büyüt" üzerine kurulu.
-   Anahtar biçimi korunur: 'tbl' = Divizyon 1, 'd.g' = Divizyon d+1 · Grup g.
+   FAZ 33 §4: ANAHTAR ARTIK GÖSTERİLEN NUMARANIN AYNISINI TAŞIR.
+   Eskiden 'd.g' = Divizyon d+1 idi: ekran "Divizyon 3 · Grup 1" derken anahtar '2.1'
+   yazıyordu. Bu, kodu okuyan herkes için tuzaktı — FAZ 25'te ekonomi denetçisi
+   var olmayan '3.1' divizyonunda ölçüm yaptı ve sponsor çarpanı sessizce tabanda
+   kaldı. Artık: 'tbl' = Divizyon 1, 'd.g' = Divizyon **d** · Grup g (d ≥ 2).
+   Eski anahtarlar okunmaz — kayıt şeması sürümü yükseltildi (§6).
    DIV_SAYISI'nı artırmak yapıyı büyütmeye yeter; depo şablonu 6 divizyona kadar hazır. */
 const DIV_SAYISI=3;              /* Divizyon 1, 2, 3 */
 const DIV_GRUP_SAYISI=5;         /* alt divizyonlarda paralel grup üst sınırı */
@@ -35,7 +40,7 @@ const DIV_GRUP_SAYISI=5;         /* alt divizyonlarda paralel grup üst sınır�
 function divizyonAnahtarlari(div){
   if(div<=1) return ['tbl'];
   const out=[];
-  for(let g=1;g<=DIV_GRUP_SAYISI;g++) out.push((div-1)+'.'+g);
+  for(let g=1;g<=DIV_GRUP_SAYISI;g++) out.push(div+'.'+g);
   return out;
 }
 /** Doldurma sırası: EN ALT divizyondan yukarı. assignUserToTblSlot bunu kullanır. */
@@ -64,6 +69,9 @@ function divizyonOvrKaymasi(key){
 /** Yan panelde gösterilecek ALT divizyon sayısı (Divizyon 1 ayrı listelenir).
     FAZ 30: 1'de sabitti ve üç divizyonlu yapıda en alt divizyon — kullanıcının kendi
     divizyonu — yan panelde hiç görünmüyordu. Merdivenle birlikte büyür. */
+/* FAZ 33 §4: kenar çubuğu artık divizyonları GERÇEK numaralarıyla (2..DIV_SAYISI)
+   listeliyor; "kaç blok" sayısı yerine döngü doğrudan DIV_SAYISI'ye bakıyor. Sabit,
+   eski kayıt/araç referansları kırılmasın diye yerinde bırakıldı. */
 const SIDEBAR_DIV_MAX_VISIBLE=Math.max(1,DIV_SAYISI-1);
 const POZLAR=['PG','SG','SF','PF','C'];
 const POZ_TR={PG:'Organizatör',SG:'Şutör',SF:'K. Forvet',PF:'G. Forvet',C:'Pivot'};
@@ -97,6 +105,56 @@ const SEHIR=[
   'Alexandria','Casablanca','Tunis','Dakar','Lagos','Abuja','Accra','Nairobi','Luanda','Johannesburg',
   'Durban','Sydney','Melbourne','Perth','Auckland','Wellington'
 ];
+
+/* ── FAZ 33 §3: ŞEHİR → ÜLKE ──────────────────────────────────────────────────
+   FAZ 30'da oyuncular küreselleşti ama takım adları ölçülemedi: `SEHIR` düz bir
+   dizeydi, hangi şehrin hangi ülkeye ait olduğu KODDA YOKTU. Dolayısıyla "bir
+   divizyonda tek ülkenin payı %30'u aşmasın, en az 8 ülke bulunsun" kuralı ne
+   uygulanabiliyor ne de denetlenebiliyordu (canlıda 20 takımın 19'u Türk şehriydi).
+   Harita SEHIR ile AYNI SIRADADIR ve `sehirUlkesi()` tek kaynaktır. Havuza şehir
+   eklerken buraya da ülkesini yaz — `lig-check` eksiği yakalar. */
+const SEHIR_ULKE={
+  'İstanbul':'Türkiye', 'Ankara':'Türkiye', 'İzmir':'Türkiye', 'Bursa':'Türkiye', 'Antalya':'Türkiye',
+  'Adana':'Türkiye', 'Konya':'Türkiye', 'Trabzon':'Türkiye', 'Eskişehir':'Türkiye', 'Samsun':'Türkiye',
+  'Athens':'Yunanistan', 'Thessaloniki':'Yunanistan', 'Piraeus':'Yunanistan', 'Belgrade':'Sırbistan', 'Subotica':'Sırbistan',
+  'Zagreb':'Hırvatistan', 'Split':'Hırvatistan', 'Ljubljana':'Slovenya', 'Sarajevo':'Bosna-Hersek', 'Podgorica':'Karadağ',
+  'Skopje':'Kuzey Makedonya', 'Tirana':'Arnavutluk', 'Sofia':'Bulgaristan', 'Plovdiv':'Bulgaristan', 'Bucharest':'Romanya',
+  'Cluj':'Romanya', 'Budapest':'Macaristan', 'Debrecen':'Macaristan', 'Prague':'Çekya', 'Brno':'Çekya',
+  'Bratislava':'Slovakya', 'Warsaw':'Polonya', 'Kraków':'Polonya', 'Gdańsk':'Polonya', 'Vilnius':'Litvanya',
+  'Kaunas':'Litvanya', 'Klaipėda':'Litvanya', 'Riga':'Letonya', 'Tallinn':'Estonya', 'Helsinki':'Finlandiya',
+  'Tampere':'Finlandiya', 'Stockholm':'İsveç', 'Gothenburg':'İsveç', 'Oslo':'Norveç', 'Copenhagen':'Danimarka',
+  'Berlin':'Almanya', 'Munich':'Almanya', 'Hamburg':'Almanya', 'Cologne':'Almanya', 'Frankfurt':'Almanya',
+  'Bamberg':'Almanya', 'Vienna':'Avusturya', 'Zurich':'İsviçre', 'Geneva':'İsviçre', 'Milano':'İtalya',
+  'Bologna':'İtalya', 'Roma':'İtalya', 'Siena':'İtalya', 'Venezia':'İtalya', 'Trento':'İtalya',
+  'Madrid':'İspanya', 'Barcelona':'İspanya', 'Valencia':'İspanya', 'Sevilla':'İspanya', 'Bilbao':'İspanya',
+  'Málaga':'İspanya', 'Vitoria':'İspanya', 'Lisboa':'Portekiz', 'Porto':'Portekiz', 'Paris':'Fransa',
+  'Lyon':'Fransa', 'Marseille':'Fransa', 'Villeurbanne':'Fransa', 'Strasbourg':'Fransa', 'Nantes':'Fransa',
+  'London':'İngiltere', 'Manchester':'İngiltere', 'Leicester':'İngiltere', 'Newcastle':'İngiltere', 'Glasgow':'İskoçya',
+  'Dublin':'İrlanda', 'Antwerp':'Belçika', 'Brussels':'Belçika', 'Ostend':'Belçika', 'Amsterdam':'Hollanda',
+  'Rotterdam':'Hollanda', 'Groningen':'Hollanda', 'Moscow':'Rusya', 'Kazan':'Rusya', 'Perm':'Rusya',
+  'Kyiv':'Ukrayna', 'Odesa':'Ukrayna', 'Dnipro':'Ukrayna', 'Tbilisi':'Gürcistan', 'Yerevan':'Ermenistan',
+  'Minsk':'Belarus', 'Boston':'ABD', 'Chicago':'ABD', 'Denver':'ABD', 'Portland':'ABD',
+  'Austin':'ABD', 'Memphis':'ABD', 'Seattle':'ABD', 'Phoenix':'ABD', 'Detroit':'ABD',
+  'Houston':'ABD', 'Toronto':'Kanada', 'Montréal':'Kanada', 'Vancouver':'Kanada', 'Puebla':'Meksika',
+  'Guadalajara':'Meksika', 'Monterrey':'Meksika', 'Santos':'Brezilya', 'Niterói':'Brezilya', 'Brasília':'Brezilya',
+  'Curitiba':'Brezilya', 'Mendoza':'Arjantin', 'Córdoba':'Arjantin', 'Rosario':'Arjantin', 'Tucumán':'Arjantin',
+  'Santiago':'Şili', 'Montevideo':'Uruguay', 'Bogotá':'Kolombiya', 'Caracas':'Venezuela', 'Lima':'Peru',
+  'Ponce':'Porto Riko', 'Tokyo':'Japonya', 'Osaka':'Japonya', 'Nagoya':'Japonya', 'Seoul':'Güney Kore',
+  'Busan':'Güney Kore', 'Beijing':'Çin', 'Shanghai':'Çin', 'Guangzhou':'Çin', 'Taipei':'Tayvan',
+  'Manila':'Filipinler', 'Cebu':'Filipinler', 'Jakarta':'Endonezya', 'Bangkok':'Tayland', 'Mumbai':'Hindistan',
+  'Delhi':'Hindistan', 'Tehran':'İran', 'Haifa':'İsrail', 'Jerusalem':'İsrail', 'Beirut':'Lübnan',
+  'Cairo':'Mısır', 'Alexandria':'Mısır', 'Casablanca':'Fas', 'Tunis':'Tunus', 'Dakar':'Senegal',
+  'Lagos':'Nijerya', 'Abuja':'Nijerya', 'Accra':'Gana', 'Nairobi':'Kenya', 'Luanda':'Angola',
+  'Johannesburg':'Güney Afrika', 'Durban':'Güney Afrika', 'Sydney':'Avustralya', 'Melbourne':'Avustralya', 'Perth':'Avustralya',
+  'Auckland':'Yeni Zelanda', 'Wellington':'Yeni Zelanda'
+};
+/** Şehrin ülkesi. Haritada yoksa null (lig-check bunu kusur sayar). */
+function sehirUlkesi(sehir){
+  try{ const u=SEHIR_ULKE[String(sehir||'').trim()]; return u||null; }catch(e){ return null; }
+}
+/** Bir divizyonda tek ülkenin en fazla payı ve istenen en az ülke sayısı (brif §3.2). */
+const LIG_ULKE_PAY_MAX=0.30;
+const LIG_ULKE_MIN=8;
 /** Kulüp adı sonekleri — İngilizce + Türkçe + nötr karışık (FAZ 30 §3). */
 const LIG_T=[
   /* Türkçe */
@@ -152,13 +210,13 @@ function randomNameFor(ulkeAd,tohum){
   return `${ch(pool.ilk)} ${ch(pool.sy)}`;
 }
 
-const TBL_STORAGE_KEY='charazay_tbl_v6';   /* FAZ 25 USD: lig depoları eski ekonomi ölçeğinde maaş/arena taşıyordu */
+const TBL_STORAGE_KEY='charazay_tbl_v7';   /* FAZ 33 §4/§6: divizyon anahtarlarının ANLAMI değişti ('d.g' artık Divizyon d) + takım adları küreselleşti */
 const LEAGUE_SIZE=20;
 /* FAZ 30: TBL_COMP_NAME kaldırıldı — hiçbir yerden okunmuyordu, lig adı artık
    formatTblSlotLabel'dan gelir. */
 const CLUB_CACHE_KEY='charazay_club_public_v2';   /* FAZ 25 USD: önbellekteki bot kadroları eski ölçekte maaş taşıyor */
 const NEWS_SESSION_KEY='charazay_news_sess_v1';
-const GAME_SAVE_KEY='charazay_game_save_v4'; /* FAZ 25 USD: para birimi + ekonomi ölçeği — göç yok, eski anahtar silinir */
+const GAME_SAVE_KEY='charazay_game_save_v5'; /* FAZ 33 §6: küresel lig şeması (divizyon anahtarı + takım adları) — göç yok, eski anahtar silinir */
 /* FAZ 19 §6: DESTEKLENMEYEN SÜRÜM ANAHTARLARI.
    Canlıda hem charazay_game_save_v2 hem v3, hem charazay_tbl_v4 hem _v5 yan yana duruyordu.
    "Sessizce yok say" yetmiyor: eski kayıt yer kaplıyor, tarayıcı kotasını yiyor ve bir
@@ -166,7 +224,8 @@ const GAME_SAVE_KEY='charazay_game_save_v4'; /* FAZ 25 USD: para birimi + ekonom
    ve kullanıcıya tek satırlık bilgi veriliyor (sessizce silmek de doğru değil). */
 const ESKI_KAYIT_ANAHTARLARI=[
   'charazay_game_save','charazay_game_save_v1','charazay_game_save_v2','charazay_game_save_v3',
-  'charazay_tbl','charazay_tbl_v1','charazay_tbl_v2','charazay_tbl_v3','charazay_tbl_v4','charazay_tbl_v5',
+  'charazay_game_save_v4',
+  'charazay_tbl','charazay_tbl_v1','charazay_tbl_v2','charazay_tbl_v3','charazay_tbl_v4','charazay_tbl_v5','charazay_tbl_v6',
   'charazay_club_public_v1'
 ];
 /** Şu an KULLANILAN charazay_* anahtarları — bunlar korunur, geri kalanı silinir. */
@@ -316,17 +375,22 @@ function parseTblKey(key){
   const s=String(key||'');
   if(s==='tbl'||s.startsWith('t.')) return {kind:'tbl'};
   const p=s.split('.');
-  return {kind:'div',div:parseInt(p[0],10)||1,grp:parseInt(p[1],10)||1};
+  return {kind:'div',div:parseInt(p[0],10)||2,grp:parseInt(p[1],10)||1};
 }
 /* ── FAZ 30 §4: DİVİZYON ADLARI NÖTR ─────────────────────────────────────────────────
    "TBL — Türkiye Basketbol Ligi" küresel yapıda yanlış. En üst grup Divizyon 1'dir;
    alt divizyonlar paralel gruplara ayrılabilir ("Divizyon 2 · Grup 1").
-   Anahtar biçimi DEĞİŞMEDİ (`tbl` = Divizyon 1, `d.g` = Divizyon d+1 Grup g) — eski
-   kayıtlar ve TBL deposu olduğu gibi okunmaya devam eder, yalnız ETİKET değişir. */
+   FAZ 33 §4: anahtardaki sayı ile gösterilen sayı AYNI (`tbl` = Divizyon 1,
+   `d.g` = Divizyon d · Grup g). Dönüşüm tek yerdedir: divizyonNo / divizyonAnahtarlari. */
 function divizyonNo(key){
   if(!key||key==='tbl'||String(key).startsWith('t.')) return 1;
   const p=String(key).split('.');
-  return (parseInt(p[0],10)||1)+1;      /* '1.1' → Divizyon 2 */
+  return parseInt(p[0],10)||2;          /* '2.1' → Divizyon 2 */
+}
+/** Divizyon numarası + grup → anahtar. Anahtar kuran HER yer buradan geçsin. */
+function divizyonAnahtari(div,grup){
+  const d=Math.max(1,parseInt(div,10)||1);
+  return d<=1?'tbl':(d+'.'+(Math.max(1,parseInt(grup,10)||1)));
 }
 function divizyonGrup(key){
   if(!key||key==='tbl'||String(key).startsWith('t.')) return 1;

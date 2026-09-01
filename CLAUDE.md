@@ -579,3 +579,46 @@ Tam sürüm için doldurulacak boşluklar ve mantık hataları `RAPOR-EKSIKLER.m
 - **Taraftar kitlesi KARİYER galibiyetiyle büyür (FAZ 25 USD):** sürücü `G.wins` idi, o da
   sezon başında sıfırlanıyordu (`match-prep.js`) — kitle her sezon başa dönüyor, "kulüp
   büyüdükçe gelir artar" eğrisi hiç kurulamıyordu. Kalıcı sürücü `G.careerWins`.
+
+- **TÜRKÇE EK YAZILIŞA DEĞİL OKUNUŞA BAKAR (FAZ 33 §2):** FAZ 30'a kadar bütün oyuncular
+  Türk'tü ve Türkçede yazılış ≈ okunuş olduğu için `turkEk()` son harfe bakarak doğru
+  çalışıyordu. Lig küreselleşince yazıldığı gibi okunmayan adlar geldi ve canlıda ölçüldü:
+  "Đurašković'de" (doğrusu **'te** — `ć` Türkçede ç, sert ünsüz), "Sy'a/Sy'da" (doğrusu
+  **'ye/'de** — "Si" okunur, `y` burada ÜNLÜ). Çözüm `_trOkunus()`: ek KARARI normalize
+  edilmiş okunuş üzerinden verilir, ekranda ad **özgün yazımıyla** kalır. Tablo
+  `_OKU_HARF` + `_OKU_IKILI`'dedir. İki incelik: (a) `j` → `h` YALNIZ kelime ortasında —
+  sondaki `j` Slav dillerinde yumuşaktır ("Mihalj'da", "Mihalj'ta" değil); (b) ünlüsüz
+  KISALTMA (`BK`) harf adlarıyla okunur ("be-ke" → **BK'ye**) ama ünlüsüz AD (`Ng`)
+  okunmaz, harf adlarının hepsi ince olduğu için ince ek alır (**Ng'e**). Ayrım
+  YAZIMDAN gelir: tamamı büyük harf = kısaltma. Değişince `node tools/turkek-check.js`
+  ve `anlatim-check` (20 ad × 4 durum + 43 ülke × 5 ad ünlü uyumu).
+- **TAKIM ADLARI DA KÜRESELDİR (FAZ 33 §3):** FAZ 30 oyuncuları küreselleştirdi, takım
+  adlarını değil — `SEHIR` 162 şehirle zaten uluslararasıydı ama HİÇBİR KURAL yoktu ve
+  ülke bilgisi KODDA HİÇ YOKTU, dolayısıyla ölçülemiyordu (canlıda 20 takımın 19'u Türk
+  şehriydi). `SEHIR_ULKE` (162 şehir → 72 ülke) + `sehirUlkesi()` tek kaynaktır; havuza
+  şehir eklerken ülkesini de yaz. Kural: bir divizyonda tek ülkenin payı
+  `LIG_ULKE_PAY_MAX` (%30) tavanını aşamaz — bu `genUniqueClubName`'de şehir/sonek
+  sayaçlarının yanına eklendi; en az `LIG_ULKE_MIN` (8) farklı ülke şartı ise tek tek
+  çekilişte GARANTİ EDİLEMEZ, `ulkeCesitliligiOnar()` kadro kurulduktan sonra onarır.
+  Ölçülen: divizyon başına 12-18 ülke, en büyük pay %25. `lig-check` D3 bölümü sınar.
+- **ŞEHİR TEKRARI KAPISI ÜLKE YIĞILMASINI GÖREMEZ (FAZ 33 §3 dersi):** "aynı şehirden en
+  fazla 2 takım" kuralı 19 FARKLI Türk şehriyle kurulmuş bir ligi kusursuz bulur. Bir
+  dağılımı sınarken hangi BOYUTTA ölçtüğüne bak — şehir ≠ ülke.
+- **ANAHTARDAKİ DİVİZYON NUMARASI = GÖSTERİLEN NUMARA (FAZ 33 §4):** eskiden `'d.g'` =
+  Divizyon **d+1** idi; ekran "Divizyon 3 · Grup 1" derken anahtar `'2.1'` yazıyordu.
+  İki ayrı numaralandırma kodu okuyan herkes için tuzaktı — FAZ 25'te ekonomi denetçisi
+  var olmayan `'3.1'` divizyonunda ölçüm yaptı, sponsorun divizyon çarpanı sessizce
+  tabanda kaldı ve büyüme eğrisi hiç kurulamadı. Artık `'tbl'` = Divizyon 1, `'d.g'` =
+  Divizyon **d** · Grup g (d ≥ 2); `'1.g'` anahtarı ÜRETİLMEZ ve eski depolardan silinir.
+  Anahtar kuran her yer `divizyonAnahtari(div,grup)`'tan geçsin. `schema-check` [7]
+  bölümü her divizyon × grup için anahtar ↔ etiket ↔ `parseTblKey` üçlüsünü sınar.
+- **HTML'de id BENZERSİZDİR — SINIF OLARAK SINANIR (FAZ 33 §5):** kurulum ekranında iki
+  `<select>` aynı `menajerUlkeSec` id'sini taşıyordu (FAZ 30 yamasında blok iki kez
+  yazılmıştı); `getElementById` hep ilkini döndürdüğü için ikincisi hiç doldurulmuyor,
+  ekranda boş bir "ÜLKEN" duruyordu. `schema-check` [6] artık HTML'deki TÜM id'leri
+  sayar — tek seferlik düzeltme değil, sınıf kapısı.
+- **ANLATIMDA ÇOK KISA SOYAD TAM ADLA GEÇER (FAZ 33 §7):** havuzlarda ~100 iki harfli
+  gerçek soyad var (Sy · Ba · Ka · Lo · Ng · Wu · Öz). Tek başına geçince cümle kopuk
+  okunuyordu ("Sa pota altında hükmetti"). `_anlatimAdi()` soyad 3 harften kısaysa tam
+  adı döndürür; sahadaki JETON ETİKETİ için `_tokShort` kısa kalır (yer yok). Ayrım
+  bilinçli — yeni bir anlatım satırı yazarken `_anlatimAdi` kullan, `_tokShort` değil.
