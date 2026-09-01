@@ -229,7 +229,7 @@ function renderLeagueSidebar(){
     const tblOpen=userInTbl;
     const teams=(st.subs.tbl&&st.subs.tbl.teams)||[];
     const cnt=teams.filter(Boolean).length;
-    html+=`<section class="lt-block"><button type="button" class="lt-h">${tblOpen?'▼':'▶'} TBL</button>`;
+    html+=`<section class="lt-block"><button type="button" class="lt-h">${tblOpen?'▼':'▶'} ${escMatch(formatTblSlotLabel('tbl'))}</button>`;
     html+=`<div class="lt-body${tblOpen?' open':''}"><div class="league-slot${userKey==='tbl'?' user':''}" data-lig="tbl">${sidebarSlotLabel('tbl')} · ${cnt}/${LEAGUE_SIZE} takım${userKey==='tbl'?' · sen':''}</div></div></section>`;
   }
   for(let d=1;d<=SIDEBAR_DIV_MAX_VISIBLE;d++){

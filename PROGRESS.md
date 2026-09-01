@@ -4736,3 +4736,38 @@ eşik %80; n=15'te SD ~%9 ile kapı ~%24 olasılıkla düşüyordu, n=60'ta SD ~
 Motorun kendi damgası zaten **193/193 doğru**; kalan fark gözlem vekilinin gürültüsü.
 ⚠ Çok maçlı örneklem için `P.sonEvIx` geriye sarmada sıfırlanır — yoksa ikinci maçın
 hiçbir olayı sayılmaz ve örneklem sessizce tek maçta donardı.
+
+
+## Proje denetimi — FAZ 30 sonrası temizlik (2026-09-01)
+
+Kullanıcı isteğiyle proje baştan sona tarandı. Bulunan sekiz kusur düzeltildi.
+
+### Bulunanlar
+
+| # | Kusur | Etki |
+|---|---|---|
+| 1 | `randomNameFor` yedek dalı `Math.random()` kullanıyordu | FAZ 30 kuralı ihlali + aynı oyuncu yeniden üretilince adı değişiyordu. Ülke adından deterministik türetildi. |
+| 2 | Menajer kartında lig adı `"TBL (üst lig)"` / ham anahtar ("2.1") | FAZ 30 etiket nötrlemesi burayı atlamıştı. Tek kaynak `formatTblSlotLabel`. |
+| 3 | Yükselme/düşme mesajları "TBL Süper Lig", "Alt Lig Div 1", "Üst Div" | Küresel yapıda yanlış ad. Nötrlendi + 7 EN girişi. |
+| 4 | **Merdivenin alt sınırı 5'e gömülüydü** | `DIV_SAYISI=3` iken kullanıcı tasarımda VAR OLMAYAN Divizyon 4-5-6'ya düşebiliyordu. Sınır artık `DIV_SAYISI`den gelir. |
+| 5 | Yan panelde `SIDEBAR_DIV_MAX_VISIBLE=1` | Üç divizyonlu yapıda kullanıcının KENDİ divizyonu yan panelde görünmüyordu. `DIV_SAYISI-1` oldu; başlık da `formatTblSlotLabel`e bağlandı. |
+| 6 | `TR_ILK` / `TR_SY` hâlâ duruyordu | FAZ 24 "silindi" demişti ama liste canlıydı. CLAUDE.md'nin uyardığı mayın: ikinci ad listesi havuz temizliğinden geçmez. Silindi. |
+| 7 | `TR_ULKE` · `TBL_COMP_NAME` ölü sabit | Hiçbir yerden okunmuyordu. Silindi. |
+| 8 | **`menajerUlke` bağlantısı 3 kez yazılmış** | FAZ 30 yamasında `split().join()` (tümünü değiştir) + betiğin iki kez koşması. Davranış doğruydu (son atama kazanır) ama ölü kod. 3 → 1. |
+
+### Denetim yöntemi
+
+Üç statik tarayıcı yazıldı ve koşuldu (sonra silindi):
+- **Tanımsız çağrı taraması** — js/*.js global kapsamda çalışır, yazım hatası ancak o kod
+  yolu çalışınca patlar. 42 aday çıktı, hepsi i18n regex literallerinden gelen yanlış
+  pozitif; gerçek dış bağımlılıklar (`BroadcastChannel`, `URLSearchParams`) `typeof`
+  ile korunuyor.
+- **HTML onclick handler taraması** — 0 tanımsız.
+- **JS ile ÜRETİLEN handler taraması** (şablon dizeleri; statik tarama bunları görmez) — 0 tanımsız.
+
+### Sonuç
+
+`sim-node --n=100 --seed=42` → **88.0 - 81.3 · hata 0 · G değişmedi: EVET**
+milliyet · lig · isim · portre · schema · turkek · bicim · sut · analiz · arena ·
+`anlatim-check` **29/29** · `visual-check` 0 konsol hatası · `i18n-scan` A/B/C/D = 0.
+Sürüm **62 → 63**.

@@ -1503,23 +1503,9 @@ function createTeam(){
   /* FAZ 30 §5: kayıt ülkesi. Oyunun HİÇBİR mekaniğine girmez — yalnız profil kartında
      bayrak + ad olarak görünür. Seçilmezse listenin ilk ülkesi kullanılır. */
   try{
-    const _us=document.getElementById("menajerUlkeSec");
+    const _us=document.getElementById('menajerUlkeSec');
     const _sec=_us&&_us.value;
     G.menajerUlke=(_sec&&ULKE_BUL(_sec))?_sec:((ULKELER[0]&&ULKELER[0].ad)||null);
-  }catch(e){ G.menajerUlke=(ULKELER[0]&&ULKELER[0].ad)||null; }
-  /* FAZ 30 §5: kayıt ülkesi. Oyunun HİÇBİR mekaniğine girmez — yalnız profil kartında
-     bayrak + ad olarak görünür. Seçilmezse listenin ilk ülkesi kullanılır. */
-  try{
-    const _us=document.getElementById('menajerUlkeSec');
-    const _sec=_us&&_us.value;
-    G.menajerUlke=(_sec&&ULKE_BUL(_sec))?_sec:(ULKELER[0]&&ULKELER[0].ad)||null;
-  }catch(e){ G.menajerUlke=(ULKELER[0]&&ULKELER[0].ad)||null; }
-  /* FAZ 30 §5: kayıt ülkesi. Oyunun HİÇBİR mekaniğine girmez — yalnız profil kartında
-     bayrak + ad olarak görünür. Seçilmezse listenin ilk ülkesi kullanılır. */
-  try{
-    const _us=document.getElementById('menajerUlkeSec');
-    const _sec=_us&&_us.value;
-    G.menajerUlke=(_sec&&ULKE_BUL(_sec))?_sec:(ULKELER[0]&&ULKELER[0].ad)||null;
   }catch(e){ G.menajerUlke=(ULKELER[0]&&ULKELER[0].ad)||null; }
   G.joinedAt=new Date().toISOString();
   G.lastActive=G.joinedAt;

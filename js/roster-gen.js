@@ -52,8 +52,9 @@ const DEFAULT_G={
   gameDay:1,
   managerName:'Menajer',
   menajerUlke:null,   /* FAZ 30 §5: profil ülkesi — yalnız görsel */
-  menajerUlke:null,   /* FAZ 30 §5: profil ülkesi — yalnız görsel */
-  menajerUlke:null,   /* FAZ 30 §5: profil ülkesi — yalnız görsel */
+
+
+
   managerRep:0,
   managerHistory:[],
   joinedAt:null,
@@ -893,24 +894,24 @@ function applyPromotionRelegation(){
 
   if(pk.kind==='tbl'){
     if(uix<5){
-      showNotif('Zaten en üst kademe: TBL Süper Lig — üst sıralardasın.');
+      showNotif(t('Zaten en üst divizyondasın — üst sıralardasın.'));
       renderLig();
       return;
     }
     if(uix>=5 && uix<15){
-      showNotif('Sıran '+(uix+1)+'/20 — orta gruptasın, TBL içinde kalırsın.');
+      showNotif(t('Sıran {n}/20 — orta gruptasın, divizyonunda kalırsın.',{n:uix+1}));
       renderLig();
       return;
     }
     const slot=findFirstNullInDivision(1,st);
-    if(!slot){ showNotif('Alt ligde boş yer yok; yerinde kalırsın.'); return; }
-    finish(slot,'↓ TBL Süper Lig’ten Alt Lig Div 1’e düştün:');
+    if(!slot){ showNotif(t('Alt divizyonda boş yer yok; yerinde kalırsın.')); return; }
+    finish(slot,t('↓ Bir alt divizyona düştün:'));
     return;
   }
 
   const divNum=pk.div;
   if(uix>=5 && uix<15){
-    showNotif('Sıran '+(uix+1)+'/20 — orta gruptasın, liginde kalırsın.');
+    showNotif(t('Sıran {n}/20 — orta gruptasın, divizyonunda kalırsın.',{n:uix+1}));
     renderLig();
     return;
   }
@@ -918,26 +919,31 @@ function applyPromotionRelegation(){
   if(uix<5){
     if(divNum<=1){
       const slot=findFirstNullInTbl(st);
-      if(!slot){ showNotif('TBL Süper Lig’de boş yer yok; yerinde kalırsın.'); return; }
+      if(!slot){ showNotif(t('Üst divizyonda boş yer yok; yerinde kalırsın.')); return; }
       unlockAchievement('ustLig');
-      finish(slot,'↑ TBL Süper Lig’e yükseldin:');
+      finish(slot,t('↑ Bir üst divizyona yükseldin:'));
       return;
     }
     const slot=findFirstNullInDivision(divNum-1,st);
-    if(!slot){ showNotif('Üst Div’da boş yer yok; yerinde kalırsın.'); return; }
+    if(!slot){ showNotif(t('Üst divizyonda boş yer yok; yerinde kalırsın.')); return; }
     unlockAchievement('ustLig');
-    finish(slot,'↑ Üst Div’a yükseldin:');
+    finish(slot,t('↑ Bir üst divizyona yükseldin:'));
     return;
   }
 
-  if(uix>=15 && divNum>=5){
-    showNotif('En alt Div (Div 5); daha aşağı grup yok.');
+  /* ⚠ ALT SINIR MERDİVENDEN GELİR. Eskiden 5'e gömülüydü; DIV_SAYISI=3 iken kullanıcı
+     tasarımda VAR OLMAYAN Divizyon 4-5-6'ya düşebiliyordu (depo şablonu o grupları
+     oluşturuyor ama merdiven onları tanımıyor: etiketleri var, güç kaymaları yok).
+     'd.g' anahtarında divNum, Divizyon (divNum+1) demektir — en alt divizyon
+     divNum = DIV_SAYISI-1'dir. */
+  if(uix>=15 && divNum>=DIV_SAYISI-1){
+    showNotif(t('En alt divizyondasın; daha aşağı grup yok.'));
     renderLig();
     return;
   }
 
   const slot=findFirstNullInDivision(divNum+1,st);
-  if(!slot){ showNotif('Alt Div’da boş yer yok; yerinde kalırsın.'); return; }
-  finish(slot,'↓ Alt Div’a düştün:');
+  if(!slot){ showNotif(t('Alt divizyonda boş yer yok; yerinde kalırsın.')); return; }
+  finish(slot,t('↓ Bir alt divizyona düştün:'));
 }
 

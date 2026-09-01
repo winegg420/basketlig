@@ -397,6 +397,14 @@ const I18N_PHRASES=[
 
 /* Ek birebir karşılıklar (F2) — üretilen arayüzde sık görünen tam metinler */
 Object.assign(I18N_TR_EN,{
+/* Denetim düzeltmesi: nötr yükselme/düşme metinleri */
+'Zaten en üst divizyondasın — üst sıralardasın.':'You are already in the top division — near the top of the table.',
+'Sıran {n}/20 — orta gruptasın, divizyonunda kalırsın.':'You are {n}/20 — mid-table, you stay in your division.',
+'↓ Bir alt divizyona düştün:':'↓ You were relegated to a lower division:',
+'↑ Bir üst divizyona yükseldin:':'↑ You were promoted to a higher division:',
+'Alt divizyonda boş yer yok; yerinde kalırsın.':'No free slot in the lower division; you stay put.',
+'Üst divizyonda boş yer yok; yerinde kalırsın.':'No free slot in the higher division; you stay put.',
+'En alt divizyondasın; daha aşağı grup yok.':'You are in the bottom division; there is no group below.',
 'Küresel lig — divizyon kademelerinde 20 takımlı gruplar.':'Global league — 20-team groups across division tiers.',
 'Basketbol menajerlik — küresel lig':'Basketball management — global league',
 'Küresel Lig · Menajerlik':'Global League · Management',

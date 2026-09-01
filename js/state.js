@@ -21,7 +21,7 @@ function rastgeleUlkeAdi(tohum){
 /* FAZ 30: MARKET_YERLI_* ve BOT_YABANCI_* KALDIRILDI — "yerli" diye bir kategori yok.
    Market ve bot kadroları da 43 ülkeden gelişigüzel çekilir. Marketteki OVR primi de
    uyruğa değil, yalnız bant hesabına bağlıdır (aşağıda kullanılmıyor artık). */
-const TR_ULKE={ad:'Türkiye',b:'🇹🇷'};
+/* FAZ 30: TR_ULKE kaldırıldı — "ligin ülkesi" kavramı yok, hiçbir yerde kullanılmıyordu. */
 /* ── FAZ 30 §4: DİVİZYON MERDİVENİ ───────────────────────────────────────────────────
    Divizyon 1 EN ÜST, aşağı doğru istenildiği kadar uzar. Her divizyon 20 takım.
    Divizyon 1 tek gruptur; alt divizyonlar paralel gruplara ayrılabilir (kullanıcı
@@ -61,8 +61,10 @@ function divizyonOvrKaymasi(key){
   const enAlt=DIV_SAYISI;
   return Math.max(0,(enAlt-d))*basamak;
 }
-/** Yan panelde gösterilecek alt lig sayısı (Divizyon 1 ayrı). */
-const SIDEBAR_DIV_MAX_VISIBLE=1;
+/** Yan panelde gösterilecek ALT divizyon sayısı (Divizyon 1 ayrı listelenir).
+    FAZ 30: 1'de sabitti ve üç divizyonlu yapıda en alt divizyon — kullanıcının kendi
+    divizyonu — yan panelde hiç görünmüyordu. Merdivenle birlikte büyür. */
+const SIDEBAR_DIV_MAX_VISIBLE=Math.max(1,DIV_SAYISI-1);
 const POZLAR=['PG','SG','SF','PF','C'];
 const POZ_TR={PG:'Organizatör',SG:'Şutör',SF:'K. Forvet',PF:'G. Forvet',C:'Pivot'};
 /* ── FAZ 30 §3: KÜRESEL TAKIM ADI HAVUZU ─────────────────────────────────────────────
@@ -113,8 +115,10 @@ const LIG_T=[
    %0'dı. Üç yeri besliyordu: lig haberleri (league.js), ekonomi olayları (economy.js) ve
    randomNameFor'un YEDEK DALI (aşağıda). Sonuç: %100 Türk bir ligde "Ja Clark adlı genci
    A takıma çıkardı" gibi haberler. Artık tek isim kaynağı NAME_POOLS. */
-const TR_ILK=['Mehmet','Serkan','Burak','Can','Emre','Ali','Oğuz','Kaan','Berk','Mert','Arda','Enes','Furkan','Alperen','Cedi'];
-const TR_SY=['Yılmaz','Kaya','Demir','Şahin','Çelik','Öztürk','Arslan','Doğan','Kılıç','Aslan'];
+/* FAZ 24'te "ILK/SY genel isim havuzları SİLİNDİ" denmişti ama bu ikili canlı kalmıştı
+   (hiçbir yerden çağrılmıyordu). CLAUDE.md'nin uyardığı mayın tam olarak budur: ikinci bir
+   ad listesi havuz temizliğinden geçmez ve bir gün sessizce kullanılmaya başlanır.
+   Tek ad kaynağı NAME_POOLS'tur — liste silindi. */
 
 /* ── Madde 5 (29. oturum): ülkeye özgü isim havuzları ────────────────────────────────────
    Önceden bayrak ULKELER'den rastgele, isim ise TEK genel havuzdan (ILK/SY) geliyordu; bu
@@ -137,10 +141,12 @@ function randomNameFor(ulkeAd,tohum){
   let pool=NAME_POOLS[ad];
   if(!pool){
     try{ console.warn('randomNameFor: isim havuzu olmayan ülke →',ad||'(boş)'); }catch(e){}
-    /* FAZ 30: ev ülkesi yok — havuzu olmayan ülke için RASTGELE bir havuza düşülür.
-       Yine de uyarı basılır: sessiz yedek bir daha gizlenmesin. */
-    const _hk=Object.keys(NAME_POOLS);
-    pool=NAME_POOLS[_hk[Math.floor(Math.random()*_hk.length)]]||NAME_POOLS['Türkiye'];
+    /* FAZ 30: ev ülkesi yok — havuzu olmayan ülke ADINDAN DETERMİNİSTİK bir havuza
+       düşer. Rastgele seçim iki kusur üretiyordu: kodda Math.random yasağı ve aynı
+       oyuncunun yeniden üretiminde adın değişmesi. Uyarı yine basılır — sessiz yedek
+       bir daha gizlenmesin. */
+    const _hk=Object.keys(NAME_POOLS).sort();
+    pool=NAME_POOLS[prPick('yedekHavuz|'+ad,_hk)]||NAME_POOLS['Türkiye'];
   }
   if(tohum!=null) return `${prPick(tohum+'|ilk',pool.ilk)} ${prPick(tohum+'|sy',pool.sy)}`;
   return `${ch(pool.ilk)} ${ch(pool.sy)}`;
@@ -148,7 +154,8 @@ function randomNameFor(ulkeAd,tohum){
 
 const TBL_STORAGE_KEY='charazay_tbl_v5';   /* FAZ 17: milliyet kuralı — eski kayıt sessizce yok sayılır */
 const LEAGUE_SIZE=20;
-const TBL_COMP_NAME='Küresel Basketbol Ligi';   /* FAZ 30: ülke bazlı ad kalktı */
+/* FAZ 30: TBL_COMP_NAME kaldırıldı — hiçbir yerden okunmuyordu, lig adı artık
+   formatTblSlotLabel'dan gelir. */
 const CLUB_CACHE_KEY='charazay_club_public_v1';
 const NEWS_SESSION_KEY='charazay_news_sess_v1';
 const GAME_SAVE_KEY='charazay_game_save_v3'; /* FAZ 17: milliyet + portre şeması — göç yok, eski anahtar yok sayılır */

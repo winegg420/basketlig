@@ -1838,7 +1838,7 @@ function openCareerModal(){
   const rec=G.clubRecords||{};
   const hist=Array.isArray(G.managerHistory)?G.managerHistory.slice():[];
   hist.sort((a,b)=>(a.year||0)-(b.year||0));
-  const ligAd=(G.team.tblKey==='tbl')?'TBL (üst lig)':String(G.team.tblKey||'').toUpperCase();
+  const ligAd=formatTblSlotLabel(G.team.tblKey);   /* FAZ 30: etiket tek kaynaktan */
   const kutu=(ikon,lbl,val)=>`<div style="flex:1;min-width:120px;background:var(--bg3);border-radius:10px;padding:12px;text-align:center;">
     <div style="font-size:22px;">${ikon}</div>
     <div style="font-size:18px;font-weight:800;color:var(--accent);margin:2px 0;">${val}</div>
