@@ -76,10 +76,15 @@ async function main() {
 
   // Sahneyi her karede örnekle: top taşıyıcısının rolü, şut saati durumu, FT dizilişi.
   await page.evaluate((r) => { try { setMatchRate(r); } catch (e) {} }, RATE);
-  await page.evaluate(() => {
+  /* FAZ 26 §2: maç BAŞLAMADAN önce tabelanın anlık görüntüsü — rakip adı yazıyor mu? */
+  const oncesi = await page.evaluate(() => {
     showPage('mac', document.querySelector('#sbNav button[data-page="mac"]'));
-    startMatch();
+    const g = id => { const e = document.getElementById(id); return e ? (e.textContent || '').trim() : null; };
+    let fik = null;
+    try { const m = findNextUserSeasonMatch(); if (m) fik = (m.home === G.team.isim) ? m.away : m.home; } catch (e) {}
+    return { home: g('liveHome'), away: g('liveAway'), durum: g('liveStatus'), fikstur: fik };
   });
+  await page.evaluate(() => { startMatch(); });
   await page.evaluate(() => {
     /* M12'yi kesin ölçmek için ek atış sahnesini kuran fonksiyonu sarmala: kaç kez
        çağrıldığı tahmine değil sayaca dayansın. */
@@ -294,8 +299,12 @@ async function main() {
   const HAM = await page.evaluate(() => {
     const P = window.__SAHA || {};
     /* Map serileştirilemez — atılır (kapılar zaten kullanmıyor). */
-    return { tasima:P.tasima||[], donma:P.donma||[], sokma:P.sokma||[], ftDrib:P.ftDrib||[],
-             sirtDonuk:P.sirtDonuk||[], perde:P.perde||[], sema:P.sema||{} };
+    /* ⚠ YENİ BİR TOPLAYICI ALAN EKLERKEN BURAYA DA YAZ: bu liste tarayıcıdan Node'a
+       neyin taşınacağını belirler; unutulan alan sessizce boş gelir ve kapı 'ÖRNEK YOK'
+       der (FAZ 26'da 'yay' ve 'titreme' tam olarak böyle kayboldu). */
+    return { tasima:P.tasima||[], donma:P.donma||[], titreme:P.titreme||[], sokma:P.sokma||[],
+             ftDrib:P.ftDrib||[], sirtDonuk:P.sirtDonuk||[], perde:P.perde||[],
+             sema:P.sema||{}, yay:P.yay||[] };
   });
 
   await browser.close();
@@ -423,6 +432,43 @@ async function main() {
   kayit('F25-6b', 'Perdenin üç aşaması da görülüyor',
     SK.perde.evreler.length === 3 && SK.perde.evreler.join(',') === '1,2,3',
     `evreler [${SK.perde.evreler.join(',')}] · ${SK.perde.n} damga · devrilme ${SK.perde.roll} roll / ${SK.perde.pop} pop`);
+
+
+  /* ── FAZ 26 §1: ŞUT TİPİ YÖRÜNGEYE YANSIYOR MU? ──
+     `sut-check.js` motor tarafını (tip alanı + anlatım dili) tarayıcısız sınar; buradaki
+     kapı ekranda GÖRÜLEN farkı ölçer: topun uçuş tepesi. Smaç yukarıdan aşağı gider
+     (yay yok denecek kadar alçak), floater kısa mesafede yüksek kavis çizer. İkisi
+     birbirine yakınsa tip yalnız metinde kalmış demektir — FAZ 26'nın tam olarak
+     düzeltmek için var olduğu durum. */
+  const _yay = SK.yay || [];
+  const _yb = {};
+  _yay.forEach(x => { _yb[x.tip] = x; });
+  console.log(`  şut yörüngesi: ${_yay.map(x => `${x.tip} tepe ${x.tepe}px (${x.n})`).join(' · ') || 'örnek yok'}`);
+  if (!_yb.smac || !(_yb.turnike || _yb.jumper || _yb.uc)) {
+    kayit('F26-1', 'Şut tipi yörüngeye yansıyor', false,
+      `ÖRNEK YOK — bu pencerede smaç ve karşılaştırılacak tip birlikte yakalanmadı (${_yay.map(x => x.tip + ':' + x.n).join(',') || 'hiç'})`);
+  } else {
+    const _ref = _yb.uc || _yb.jumper || _yb.turnike;
+    kayit('F26-1', 'Şut tipi yörüngeye yansıyor (smaç alçak, uzak şut yüksek)',
+      _yb.smac.tepe < _ref.tepe * 0.7,
+      `smaç tepe ${_yb.smac.tepe}px (${_yb.smac.n}) < ${_ref.tip} tepe ${_ref.tepe}px (${_ref.n}) · hedef smaç < %70`);
+  }
+  if (_yb.floater && _yb.turnike) {
+    kayit('F26-2', 'Floater turnikeden belirgin yüksek kavis çiziyor',
+      _yb.floater.tepe > _yb.turnike.tepe * 1.4,
+      `floater ${_yb.floater.tepe}px (${_yb.floater.n}) > turnike ${_yb.turnike.tepe}px (${_yb.turnike.n}) · hedef ≥ 1,4×`);
+  } else {
+    kayit('F26-2', 'Floater turnikeden belirgin yüksek kavis çiziyor', false,
+      'ÖRNEK YOK — floater ve turnike birlikte yakalanmadı');
+  }
+
+  /* ── FAZ 26 §2: MAÇ ÖNCESİ TABELADA RAKİP ADI ──
+     Maç sayfası açıldığında tabelanın sağ sütunu yer tutucu ('Deplasman') kalıyordu.
+     Kapı, maç BAŞLAMADAN önce alınan anlık görüntüyü okur. */
+  kayit('F26-3', 'Maç öncesi tabelada rakibin adı yazıyor',
+    !!(oncesi && oncesi.away && oncesi.away !== 'Deplasman' && oncesi.away !== '—' &&
+       oncesi.home && oncesi.home !== 'Ev Takımı' && oncesi.away === oncesi.fikstur),
+    oncesi ? `tabela "${oncesi.home}" vs "${oncesi.away}" · fikstürdeki rakip "${oncesi.fikstur}" · durum "${oncesi.durum}"` : 'ÖRNEK YOK');
 
   console.log(`  konsol hatası: ${hatalar.length}`, hatalar.length ? hatalar.slice(0, 3) : '');
 

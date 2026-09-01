@@ -6,6 +6,34 @@
    Bu satırlar boot'ta localizeCatalogs() tarafından yerinde çevrilir.
    ══════════════════════════════════════════════════════════════════════════════════════ */
 Object.assign(I18N_TR_EN,{
+/* ── FAZ 26 §1: şut tipi ayrımı (smaç / turnike / floater) ── */
+'%S SMACI ÇAKTI, potaya asıldı! %SC':'%S THROWS IT DOWN and hangs on the rim! %SC',
+'%S SMAÇLA BİTİRDİ — çember titredi! %SC':'%S FINISHES WITH A DUNK — the rim is shaking! %SC',
+'%S çemberi PARÇALADI, smaç! %SC':'%S ATTACKS the rim, SLAM! %SC',
+'%S floater ile yükseldi, içeride! %SC':'%S rises with the floater, it drops! %SC',
+'%S smacı çemberde patladı!':"%S's dunk rattles out!",
+'%S floater kısa kaldı!':"%S's floater is short!",
+'%S smaçla yüksek yüzdeli bitiriş. %SC':'%S finishes at the rim with a dunk. %SC',
+'%S çembere yükselip smaçladı. %SC':'%S elevates and dunks it home. %SC',
+'%S floater ile uzunları aştı. %SC':'%S floats it over the bigs. %SC',
+'%S smaç denemesi çembere takıldı.':"%S's dunk attempt catches the rim.",
+'%S floater kavisi kısa kaldı.':"%S's floater comes up short.",
+'Smaçladı.':'Dunked it.',
+'Çakti, iki.':'Slammed it, two.',
+'Yukarıdan bitirdi.':'Finished it up high.',
+'Smaç geldi.':'A dunk.',
+'Smacı tutmadı.':'The dunk did not go.',
+'Çemberde patladı.':'Rattled out of the rim.',
+'Floater içeride.':'Floater is good.',
+'Kavisi tutturdu.':'Got the arc right.',
+'Uzunların üstünden.':'Over the bigs.',
+'Floater kısa.':'Floater short.',
+'Kavis tutmadı.':'The arc was off.',
+'Turnikeyi bitirdi.':'Finished the layup.',
+'Camdan sakin.':'Calm off the glass.',
+'Turnike içeride.':'Layup is good.',
+'Turnikede takıldı.':'Stuffed on the layup.',
+'Turnike dönmedi.':'The layup rimmed out.',
 /* ── Coşkun (heyecanlı) ── */
 '%S POTAYA ASILDI, İKİ SAYI! %SC':'%S HANGS ON THE RIM, TWO POINTS! %SC',
 '%S BOYALI ALANI YIKTI! %SC':'%S TEARS THROUGH THE PAINT! %SC',
@@ -378,6 +406,8 @@ Object.assign(I18N_TR_EN,{
 });
 
 I18N_PHRASES.unshift(
+  [/faule rağmen smacı çaktı/g,'throws down the dunk through the foul'],
+  [/faule rağmen floater ile bitirdi/g,'finishes the floater through the foul'],
   [/faule rağmen turnikeyi bitirdi/g,'finishes the layup through the foul'],
   [/faule rağmen şutu soktu/g,'makes the shot through the foul'],
   [/devam sayısı tamam!/g,'and the AND-1 is good!'],

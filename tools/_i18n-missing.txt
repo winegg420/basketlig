@@ -1,1679 +1,1669 @@
-canli-mac :: (Formal). The game begins with the tip-off. Ankara Eagles as the away side; Latif Demir at the circle, Batuhan Dinç sets up the first possession. The stands are packed.
+canli-mac :: (Analytical). The game begins with the tip-off. Ankara Eagles as the away side; Cengiz Sağlam at the circle, Fikret Taş sets up the first possession. The stands are packed.
 canli-mac :: /100 · 92 seviyesine doğru rising ↑
-canli-mac :: Adana Atmacaları
-canli-mac :: Afyonkarahisar Şahinleri
-canli-mac :: Ankara Eagles — Konya Aslanları
-canli-mac :: Antalya Aslanları
-canli-mac :: Aydın Üniversite
-canli-mac :: Balıkesir Panterleri
-canli-mac :: Balıkesir Yıldızları
-canli-mac :: Balıkesir Yıldızları — Kütahya Şahinleri
-canli-mac :: Batuhan Dinç
-canli-mac :: Batuhan Dinç (PG) — Overall: 74
-canli-mac :: Batuhan Dinç (PG) → SG
-canli-mac :: Batuhan Dinç (PG·OVR 74)
-canli-mac :: Bursa Şimşekleri
-canli-mac :: Cihan Ünver
-canli-mac :: Coşkun Pekmez
-canli-mac :: Coşkun Pekmez (PF) — Overall: 68
-canli-mac :: Coşkun Pekmez (PF) → C
-canli-mac :: Coşkun Pekmez (PF) → SF
-canli-mac :: Coşkun Pekmez (PF·OVR 68)
-canli-mac :: Dinç
+canli-mac :: Ankara Doğanları
+canli-mac :: Aydın Spor
+canli-mac :: Balıkesir Boğaları
+canli-mac :: Burak Ateş
+canli-mac :: Burak Ateş (PF) — Overall: 71
+canli-mac :: Burak Ateş (PF) → C
+canli-mac :: Burak Ateş (PF) → SF
+canli-mac :: Burak Ateş (PF·OVR 71)
+canli-mac :: Bursa Gençlik
+canli-mac :: Bursa Kurtları
+canli-mac :: Cem Kılıç
+canli-mac :: Cengiz Sağlam
+canli-mac :: Cengiz Sağlam (C) — Overall: 72
+canli-mac :: Cengiz Sağlam (C) → PF
+canli-mac :: Cengiz Sağlam (C·OVR 72)
 canli-mac :: Doluluk (taraftar + form + bilet fiyatı)
-canli-mac :: Doğuş Turgut
-canli-mac :: Ediz Uçar
-canli-mac :: Fatih Öcal
-canli-mac :: Fatih Öcal (SF) — Overall: 67
-canli-mac :: Fatih Öcal (SF) → PF
-canli-mac :: Fatih Öcal (SF) → SG
-canli-mac :: Fatih Öcal (SF·OVR 67)
-canli-mac :: Fuat Yağmur
-canli-mac :: Gaziantep Doğanları
-canli-mac :: Hüsnü Ateş
-canli-mac :: Hüsnü Ateş (SF) — Overall: 72
-canli-mac :: Hüsnü Ateş (SF) → PF
-canli-mac :: Hüsnü Ateş (SF) → SG
-canli-mac :: Hüsnü Ateş (SF·OVR 72)
+canli-mac :: Doğuş Gökçe
+canli-mac :: Doğuş Gökçe (SG) — Overall: 76
+canli-mac :: Doğuş Gökçe (SG) → PG
+canli-mac :: Doğuş Gökçe (SG) → SF
+canli-mac :: Doğuş Gökçe (SG·OVR 76)
+canli-mac :: Elazığ Doğanları
+canli-mac :: Eskişehir Yıldızları
+canli-mac :: Fikret Taş
+canli-mac :: Fikret Taş (PG) — Overall: 71
+canli-mac :: Fikret Taş (PG) → SG
+canli-mac :: Fikret Taş (PG·OVR 71)
+canli-mac :: Fuat Yalçın
+canli-mac :: Hakan Yılmaz
+canli-mac :: Hüseyin Elmas
+canli-mac :: Hüseyin Elmas (C) — Overall: 67
+canli-mac :: Hüseyin Elmas (C) → PF
+canli-mac :: Hüseyin Elmas (C·OVR 67)
+canli-mac :: Işıtan Savaş
 canli-mac :: Kasa bu gidişle ~9 weeks yeter
-canli-mac :: Konya Aslanları
-canli-mac :: Konya Boğaları
-canli-mac :: Kütahya Şahinleri
+canli-mac :: Kağan Özgün
+canli-mac :: Kocaeli Doğanları
+canli-mac :: Kocaeli Yıldızları
+canli-mac :: Konya Gençlik
+canli-mac :: Konya Üniversite
+canli-mac :: Konya Üniversite — Bursa Gençlik
+canli-mac :: Kütahya Koleji
+canli-mac :: Kütahya Koleji — Ankara Doğanları
 canli-mac :: Malatya Boğaları
-canli-mac :: Malatya Boğaları — Balıkesir Panterleri
-canli-mac :: Muğla Gençlik
-canli-mac :: Muğla Gençlik — Bursa Şimşekleri
-canli-mac :: Oktay Çetin
-canli-mac :: Rahmi Sevinç
-canli-mac :: Rıza Baştürk
-canli-mac :: Rıza Baştürk (C) — Overall: 67
-canli-mac :: Rıza Baştürk (C) → PF
-canli-mac :: Rıza Baştürk (C·OVR 67)
-canli-mac :: Selim Çakır
-canli-mac :: Selçuk Taşkın
-canli-mac :: Selçuk Taşkın (SG) — Overall: 76
-canli-mac :: Selçuk Taşkın (SG) → PG
-canli-mac :: Selçuk Taşkın (SG) → SF
-canli-mac :: Selçuk Taşkın (SG·OVR 76)
-canli-mac :: Sivas Boğaları
-canli-mac :: Taşkın
-canli-mac :: Tekirdağ Spor
-canli-mac :: Uras Uludağ
+canli-mac :: Malatya Boğaları — İzmir Şimşekleri
+canli-mac :: Malatya Spor — Kocaeli Yıldızları
+canli-mac :: Mersin Kartalları
+canli-mac :: Mersin Şahinleri
+canli-mac :: Ramazan Gündoğdu
+canli-mac :: Sağlam
+canli-mac :: Tarık Yıldız
+canli-mac :: Taş
+canli-mac :: Uludağ
+canli-mac :: Uras Doğan
 canli-mac :: Yalın
-canli-mac :: Yiğit Sönmez
-canli-mac :: Yiğit Sönmez (C) — Overall: 69
-canli-mac :: Yiğit Sönmez (C) → PF
-canli-mac :: Yiğit Sönmez (C·OVR 69)
-canli-mac :: Yıldırım
-canli-mac :: Öcal
-canli-mac :: Şafak Duman
-canli-mac :: Şafak Duman (SG) — Overall: 71
-canli-mac :: Şafak Duman (SG) → PG
-canli-mac :: Şafak Duman (SG) → SF
-canli-mac :: Şafak Duman (SG·OVR 71)
-canli-mac :: Şafak Yıldırım
-canli-mac :: Şafak Yıldırım (SF) — Overall: 73
-canli-mac :: Şafak Yıldırım (SF) → PF
-canli-mac :: Şafak Yıldırım (SF) → SG
-canli-mac :: Şafak Yıldırım (SF·OVR 73)
-canli-mac :: 🇹🇷 Ahmet Dinç
-canli-mac :: 🇹🇷 Bahadır Şimşek
-canli-mac :: 🇹🇷 Batıkan Tetik
-canli-mac :: 🇹🇷 Burak Taş
-canli-mac :: 🇹🇷 Cem Genç
-canli-mac :: 🇹🇷 Emre Karataş
-canli-mac :: 🇹🇷 Enes Aktaş
-canli-mac :: 🇹🇷 Fikret Baştürk
-canli-mac :: 🇹🇷 Işıtan Baştürk
-canli-mac :: 🇹🇷 Kağan Erdoğan
-canli-mac :: 🇹🇷 Levent Aktaş
-canli-mac :: 🇹🇷 Murat Aydın
-canli-mac :: 🇹🇷 Nail Ateş
-canli-mac :: 🇹🇷 Nuri Koç
-canli-mac :: 🇹🇷 Oktay Bektaş
-canli-mac :: 🇹🇷 Onur Çetin
-canli-mac :: 🇹🇷 Orhan Doğan
-canli-mac :: 🇹🇷 Oğuzhan Balcı
-canli-mac :: 🇹🇷 Poyraz Balcı
-canli-mac :: 🇹🇷 Rahmi Öner
-canli-mac :: 🇹🇷 Rıza Genç
-canli-mac :: 🇹🇷 Sedat Güngör
-canli-mac :: 🇹🇷 Serdar Özel
-canli-mac :: 🇹🇷 Taner Yıldız
-canli-mac :: 🇹🇷 Tarık Sönmez
-canli-mac :: 🇹🇷 Tayfun Çakmak
+canli-mac :: Yasin Sarı (SG)
+canli-mac :: Zeki Yalın
+canli-mac :: Zeki Yalın (SG) — Overall: 76
+canli-mac :: Zeki Yalın (SG) → PG
+canli-mac :: Zeki Yalın (SG) → SF
+canli-mac :: Zeki Yalın (SG·OVR 76)
+canli-mac :: Zonguldak Kurtları
+canli-mac :: Çağrı Ünver
+canli-mac :: İsmail Serin
+canli-mac :: İsmet Nalbant
+canli-mac :: İsmet Nalbant (PF) — Overall: 71
+canli-mac :: İsmet Nalbant (PF) → C
+canli-mac :: İsmet Nalbant (PF) → SF
+canli-mac :: İsmet Nalbant (PF·OVR 71)
+canli-mac :: İzmir Şimşekleri
+canli-mac :: 🇪🇪 Vahur Kütt
+canli-mac :: 🇹🇷 Ahmet Baş
+canli-mac :: 🇹🇷 Aykut Pınar
+canli-mac :: 🇹🇷 Batıkan Kara
+canli-mac :: 🇹🇷 Cihan Yıldız
+canli-mac :: 🇹🇷 Davut Sevinç
+canli-mac :: 🇹🇷 Doğuş Örs
+canli-mac :: 🇹🇷 Efe Özdemir
+canli-mac :: 🇹🇷 Ferit Bektaş
+canli-mac :: 🇹🇷 Fikret Doğan
+canli-mac :: 🇹🇷 Gökay Koç
+canli-mac :: 🇹🇷 Gökhan Çevik
+canli-mac :: 🇹🇷 Görkem Turgut
+canli-mac :: 🇹🇷 Halil Kırca
+canli-mac :: 🇹🇷 Hüseyin Öcal
+canli-mac :: 🇹🇷 Kağan Kılıç
+canli-mac :: 🇹🇷 Koray Yağmur
+canli-mac :: 🇹🇷 Kürşat Umutlu
+canli-mac :: 🇹🇷 Mahmut Coşkun
+canli-mac :: 🇹🇷 Murat Tatlı
+canli-mac :: 🇹🇷 Nuri Ateş
+canli-mac :: 🇹🇷 Oktay Taşkın
+canli-mac :: 🇹🇷 Orhan Coşkun
+canli-mac :: 🇹🇷 Oğuz Tekin
+canli-mac :: 🇹🇷 Oğuz Çiftçi
+canli-mac :: 🇹🇷 Recep Taşkın
+canli-mac :: 🇹🇷 Sami Sevinç
+canli-mac :: 🇹🇷 Selim Genç
+canli-mac :: 🇹🇷 Süleyman Aslan
+canli-mac :: 🇹🇷 Tarık Karaca
+canli-mac :: 🇹🇷 Tolga Gül
 canli-mac :: 🇹🇷 Türkçe
-canli-mac :: 🇹🇷 Volkan Koçak
-canli-mac :: 🇹🇷 Yalçın Kartal
-canli-mac :: 🇹🇷 Yağız Şahin
-canli-mac :: 🇹🇷 Yiğit Demirci
-canli-mac :: 🇹🇷 Yiğit Polat
-canli-mac :: 🇹🇷 Öner Duman
-canli-mac :: 🇹🇷 Özgür Aktaş
-canli-mac :: 🇹🇷 İlker Kılınç
-canli-mac :: 🇹🇷 İlker Polat
-canli-mac :: 🇹🇷 İsmet Uçar
-canli-mac :: 🏛️ Adana Atmacaları from
-canli-mac :: 🏛️ Afyonkarahisar Şahinleri from
-canli-mac :: 🏛️ Aydın Üniversite from
-canli-mac :: 🏛️ Balıkesir Panterleri from
-canli-mac :: 🏛️ Balıkesir Yıldızları from
-canli-mac :: 🏛️ Gaziantep Doğanları from
-canli-mac :: 🏛️ Konya Aslanları from
-canli-mac :: 🏛️ Kütahya Şahinleri from
-canli-mac :: 🔔 Quarter 1 gets going — Ankara Eagles 0 - 0 Tekirdağ Spor.
-canli-mac :: 🤝 Latif Ersoy – Şafak Yıldırım
-canli-mac :: 🤝 Selçuk Taşkın – Timur Nalbant
+canli-mac :: 🇹🇷 Uğur Hakyemez
+canli-mac :: 🇹🇷 Yalçın Köse
+canli-mac :: 🇹🇷 Yalçın Uçar
+canli-mac :: 🇹🇷 Çağrı Örs
+canli-mac :: 🇹🇷 Ünal Bulut
+canli-mac :: 🇹🇷 İlker Uysal
+canli-mac :: 🇹🇷 İsmail Aydın
+canli-mac :: 🇹🇷 İsmail Karaca
+canli-mac :: 🏛️ Aydın Spor from
+canli-mac :: 🏛️ Balıkesir Boğaları from
+canli-mac :: 🏛️ Bursa Gençlik from
+canli-mac :: 🏛️ Bursa Kurtları from
+canli-mac :: 🏛️ Eskişehir Yıldızları from
+canli-mac :: 🏛️ Kütahya Koleji from
+canli-mac :: 🏛️ Malatya Boğaları from
+canli-mac :: 🏛️ Mersin Kartalları from
+canli-mac :: 🏛️ Mersin Şahinleri from
+canli-mac :: 🏛️ Zonguldak Kurtları from
+canli-mac :: 🏛️ İzmir Şimşekleri from
+canli-mac :: 🔔 The whistle goes for quarter 1 — Ankara Eagles 0 - 0 Kocaeli Yıldızları.
+canli-mac :: 🤝 Fikret Taş – Doğuş Gökçe
 login :: Doluluk (taraftar + form + bilet fiyatı)
 login :: 🇹🇷 Türkçe
 modal:ayarlar :: /100 · 92 seviyesine doğru rising ↑
-modal:ayarlar :: Adana Atmacaları
-modal:ayarlar :: Afyonkarahisar Şahinleri
-modal:ayarlar :: Ankara Eagles — Konya Aslanları
-modal:ayarlar :: Antalya Aslanları
-modal:ayarlar :: Aydın Üniversite
-modal:ayarlar :: Balıkesir Panterleri
-modal:ayarlar :: Balıkesir Yıldızları
-modal:ayarlar :: Balıkesir Yıldızları — Kütahya Şahinleri
-modal:ayarlar :: Batuhan Dinç
-modal:ayarlar :: Batuhan Dinç (PG) — Overall: 74
-modal:ayarlar :: Batuhan Dinç (PG) → SG
-modal:ayarlar :: Batuhan Dinç (PG·OVR 74)
-modal:ayarlar :: Bursa Şimşekleri
-modal:ayarlar :: Cihan Ünver
-modal:ayarlar :: Coşkun Pekmez
-modal:ayarlar :: Coşkun Pekmez (PF) — Overall: 68
-modal:ayarlar :: Coşkun Pekmez (PF) → C
-modal:ayarlar :: Coşkun Pekmez (PF) → SF
-modal:ayarlar :: Coşkun Pekmez (PF·OVR 68)
+modal:ayarlar :: Ankara Doğanları
+modal:ayarlar :: Aydın Spor
+modal:ayarlar :: Balıkesir Boğaları
+modal:ayarlar :: Burak Ateş
+modal:ayarlar :: Burak Ateş (PF) — Overall: 71
+modal:ayarlar :: Burak Ateş (PF) → C
+modal:ayarlar :: Burak Ateş (PF) → SF
+modal:ayarlar :: Burak Ateş (PF·OVR 71)
+modal:ayarlar :: Bursa Gençlik
+modal:ayarlar :: Bursa Kurtları
+modal:ayarlar :: Cem Kılıç
+modal:ayarlar :: Cengiz Sağlam
+modal:ayarlar :: Cengiz Sağlam (C) — Overall: 72
+modal:ayarlar :: Cengiz Sağlam (C) → PF
+modal:ayarlar :: Cengiz Sağlam (C·OVR 72)
 modal:ayarlar :: Doluluk (taraftar + form + bilet fiyatı)
-modal:ayarlar :: Doğuş Turgut
-modal:ayarlar :: Ediz Uçar
-modal:ayarlar :: Fatih Öcal
-modal:ayarlar :: Fatih Öcal (SF) — Overall: 67
-modal:ayarlar :: Fatih Öcal (SF) → PF
-modal:ayarlar :: Fatih Öcal (SF) → SG
-modal:ayarlar :: Fatih Öcal (SF·OVR 67)
-modal:ayarlar :: Fuat Yağmur
-modal:ayarlar :: Gaziantep Doğanları
-modal:ayarlar :: Hüsnü Ateş
-modal:ayarlar :: Hüsnü Ateş (SF) — Overall: 72
-modal:ayarlar :: Hüsnü Ateş (SF) → PF
-modal:ayarlar :: Hüsnü Ateş (SF) → SG
-modal:ayarlar :: Hüsnü Ateş (SF·OVR 72)
+modal:ayarlar :: Doğuş Gökçe
+modal:ayarlar :: Doğuş Gökçe (SG) — Overall: 76
+modal:ayarlar :: Doğuş Gökçe (SG) → PG
+modal:ayarlar :: Doğuş Gökçe (SG) → SF
+modal:ayarlar :: Doğuş Gökçe (SG·OVR 76)
+modal:ayarlar :: Elazığ Doğanları
+modal:ayarlar :: Eskişehir Yıldızları
+modal:ayarlar :: Fikret Taş
+modal:ayarlar :: Fikret Taş (PG) — Overall: 71
+modal:ayarlar :: Fikret Taş (PG) → SG
+modal:ayarlar :: Fikret Taş (PG·OVR 71)
+modal:ayarlar :: Fuat Yalçın
+modal:ayarlar :: Hakan Yılmaz
+modal:ayarlar :: Hüseyin Elmas
+modal:ayarlar :: Hüseyin Elmas (C) — Overall: 67
+modal:ayarlar :: Hüseyin Elmas (C) → PF
+modal:ayarlar :: Hüseyin Elmas (C·OVR 67)
+modal:ayarlar :: Işıtan Savaş
 modal:ayarlar :: Kasa bu gidişle ~9 weeks yeter
-modal:ayarlar :: Konya Aslanları
-modal:ayarlar :: Konya Boğaları
-modal:ayarlar :: Kütahya Şahinleri
+modal:ayarlar :: Kağan Özgün
+modal:ayarlar :: Kocaeli Doğanları
+modal:ayarlar :: Kocaeli Yıldızları
+modal:ayarlar :: Konya Gençlik
+modal:ayarlar :: Konya Üniversite
+modal:ayarlar :: Konya Üniversite — Bursa Gençlik
+modal:ayarlar :: Kütahya Koleji
+modal:ayarlar :: Kütahya Koleji — Ankara Doğanları
 modal:ayarlar :: Malatya Boğaları
-modal:ayarlar :: Malatya Boğaları — Balıkesir Panterleri
-modal:ayarlar :: Muğla Gençlik
-modal:ayarlar :: Muğla Gençlik — Bursa Şimşekleri
-modal:ayarlar :: Oktay Çetin
-modal:ayarlar :: Rahmi Sevinç
-modal:ayarlar :: Rıza Baştürk
-modal:ayarlar :: Rıza Baştürk (C) — Overall: 67
-modal:ayarlar :: Rıza Baştürk (C) → PF
-modal:ayarlar :: Rıza Baştürk (C·OVR 67)
-modal:ayarlar :: Selim Çakır
-modal:ayarlar :: Selçuk Taşkın
-modal:ayarlar :: Selçuk Taşkın (SG) — Overall: 76
-modal:ayarlar :: Selçuk Taşkın (SG) → PG
-modal:ayarlar :: Selçuk Taşkın (SG) → SF
-modal:ayarlar :: Selçuk Taşkın (SG·OVR 76)
-modal:ayarlar :: Sivas Boğaları
-modal:ayarlar :: Tekirdağ Spor
-modal:ayarlar :: Uras Uludağ
-modal:ayarlar :: Yiğit Sönmez
-modal:ayarlar :: Yiğit Sönmez (C) — Overall: 69
-modal:ayarlar :: Yiğit Sönmez (C) → PF
-modal:ayarlar :: Yiğit Sönmez (C·OVR 69)
-modal:ayarlar :: Şafak Duman
-modal:ayarlar :: Şafak Duman (SG) — Overall: 71
-modal:ayarlar :: Şafak Duman (SG) → PG
-modal:ayarlar :: Şafak Duman (SG) → SF
-modal:ayarlar :: Şafak Duman (SG·OVR 71)
-modal:ayarlar :: Şafak Yıldırım
-modal:ayarlar :: Şafak Yıldırım (SF) — Overall: 73
-modal:ayarlar :: Şafak Yıldırım (SF) → PF
-modal:ayarlar :: Şafak Yıldırım (SF) → SG
-modal:ayarlar :: Şafak Yıldırım (SF·OVR 73)
-modal:ayarlar :: 🇹🇷 Ahmet Dinç
-modal:ayarlar :: 🇹🇷 Bahadır Şimşek
-modal:ayarlar :: 🇹🇷 Batıkan Tetik
-modal:ayarlar :: 🇹🇷 Burak Taş
-modal:ayarlar :: 🇹🇷 Cem Genç
-modal:ayarlar :: 🇹🇷 Enes Aktaş
-modal:ayarlar :: 🇹🇷 Fikret Baştürk
-modal:ayarlar :: 🇹🇷 Işıtan Baştürk
-modal:ayarlar :: 🇹🇷 Kağan Erdoğan
-modal:ayarlar :: 🇹🇷 Murat Aydın
-modal:ayarlar :: 🇹🇷 Nuri Koç
-modal:ayarlar :: 🇹🇷 Onur Çetin
-modal:ayarlar :: 🇹🇷 Oğuzhan Balcı
-modal:ayarlar :: 🇹🇷 Poyraz Balcı
-modal:ayarlar :: 🇹🇷 Rahmi Öner
-modal:ayarlar :: 🇹🇷 Rıza Genç
-modal:ayarlar :: 🇹🇷 Sedat Güngör
-modal:ayarlar :: 🇹🇷 Serdar Özel
-modal:ayarlar :: 🇹🇷 Taner Yıldız
-modal:ayarlar :: 🇹🇷 Tayfun Çakmak
+modal:ayarlar :: Malatya Boğaları — İzmir Şimşekleri
+modal:ayarlar :: Malatya Spor — Kocaeli Yıldızları
+modal:ayarlar :: Mersin Kartalları
+modal:ayarlar :: Mersin Şahinleri
+modal:ayarlar :: Ramazan Gündoğdu
+modal:ayarlar :: Tarık Yıldız
+modal:ayarlar :: Uras Doğan
+modal:ayarlar :: Zeki Yalın
+modal:ayarlar :: Zeki Yalın (SG) — Overall: 76
+modal:ayarlar :: Zeki Yalın (SG) → PG
+modal:ayarlar :: Zeki Yalın (SG) → SF
+modal:ayarlar :: Zeki Yalın (SG·OVR 76)
+modal:ayarlar :: Zonguldak Kurtları
+modal:ayarlar :: Çağrı Ünver
+modal:ayarlar :: İsmail Serin
+modal:ayarlar :: İsmet Nalbant
+modal:ayarlar :: İsmet Nalbant (PF) — Overall: 71
+modal:ayarlar :: İsmet Nalbant (PF) → C
+modal:ayarlar :: İsmet Nalbant (PF) → SF
+modal:ayarlar :: İsmet Nalbant (PF·OVR 71)
+modal:ayarlar :: İzmir Şimşekleri
+modal:ayarlar :: 🇪🇪 Vahur Kütt
+modal:ayarlar :: 🇹🇷 Ahmet Baş
+modal:ayarlar :: 🇹🇷 Batıkan Kara
+modal:ayarlar :: 🇹🇷 Cihan Yıldız
+modal:ayarlar :: 🇹🇷 Davut Sevinç
+modal:ayarlar :: 🇹🇷 Doğuş Örs
+modal:ayarlar :: 🇹🇷 Efe Özdemir
+modal:ayarlar :: 🇹🇷 Ferit Bektaş
+modal:ayarlar :: 🇹🇷 Fikret Doğan
+modal:ayarlar :: 🇹🇷 Gökay Koç
+modal:ayarlar :: 🇹🇷 Gökhan Çevik
+modal:ayarlar :: 🇹🇷 Görkem Turgut
+modal:ayarlar :: 🇹🇷 Hüseyin Öcal
+modal:ayarlar :: 🇹🇷 Kağan Kılıç
+modal:ayarlar :: 🇹🇷 Kürşat Umutlu
+modal:ayarlar :: 🇹🇷 Mahmut Coşkun
+modal:ayarlar :: 🇹🇷 Nuri Ateş
+modal:ayarlar :: 🇹🇷 Oktay Taşkın
+modal:ayarlar :: 🇹🇷 Orhan Coşkun
+modal:ayarlar :: 🇹🇷 Oğuz Tekin
+modal:ayarlar :: 🇹🇷 Recep Taşkın
+modal:ayarlar :: 🇹🇷 Sami Sevinç
+modal:ayarlar :: 🇹🇷 Selim Genç
+modal:ayarlar :: 🇹🇷 Süleyman Aslan
+modal:ayarlar :: 🇹🇷 Tolga Gül
 modal:ayarlar :: 🇹🇷 Türkçe
-modal:ayarlar :: 🇹🇷 Volkan Koçak
-modal:ayarlar :: 🇹🇷 Yağız Şahin
-modal:ayarlar :: 🇹🇷 Yiğit Demirci
-modal:ayarlar :: 🇹🇷 Yiğit Polat
-modal:ayarlar :: 🇹🇷 Öner Duman
-modal:ayarlar :: 🇹🇷 Özgür Aktaş
-modal:ayarlar :: 🇹🇷 İlker Kılınç
-modal:ayarlar :: 🇹🇷 İlker Polat
-modal:ayarlar :: 🇹🇷 İsmet Uçar
-modal:ayarlar :: 🏛️ Adana Atmacaları from
-modal:ayarlar :: 🏛️ Afyonkarahisar Şahinleri from
-modal:ayarlar :: 🏛️ Aydın Üniversite from
-modal:ayarlar :: 🏛️ Balıkesir Panterleri from
-modal:ayarlar :: 🏛️ Balıkesir Yıldızları from
-modal:ayarlar :: 🏛️ Gaziantep Doğanları from
-modal:ayarlar :: 🏛️ Konya Aslanları from
-modal:ayarlar :: 🏛️ Kütahya Şahinleri from
-modal:ayarlar :: 🤝 Latif Ersoy – Şafak Yıldırım
-modal:ayarlar :: 🤝 Selçuk Taşkın – Timur Nalbant
+modal:ayarlar :: 🇹🇷 Uğur Hakyemez
+modal:ayarlar :: 🇹🇷 Yalçın Köse
+modal:ayarlar :: 🇹🇷 Yalçın Uçar
+modal:ayarlar :: 🇹🇷 Çağrı Örs
+modal:ayarlar :: 🇹🇷 İlker Uysal
+modal:ayarlar :: 🇹🇷 İsmail Aydın
+modal:ayarlar :: 🇹🇷 İsmail Karaca
+modal:ayarlar :: 🏛️ Aydın Spor from
+modal:ayarlar :: 🏛️ Balıkesir Boğaları from
+modal:ayarlar :: 🏛️ Bursa Gençlik from
+modal:ayarlar :: 🏛️ Bursa Kurtları from
+modal:ayarlar :: 🏛️ Eskişehir Yıldızları from
+modal:ayarlar :: 🏛️ Kütahya Koleji from
+modal:ayarlar :: 🏛️ Malatya Boğaları from
+modal:ayarlar :: 🏛️ Mersin Kartalları from
+modal:ayarlar :: 🏛️ Mersin Şahinleri from
+modal:ayarlar :: 🏛️ Zonguldak Kurtları from
+modal:ayarlar :: 🏛️ İzmir Şimşekleri from
+modal:ayarlar :: 🤝 Fikret Taş – Doğuş Gökçe
 modal:basarim :: /100 · 92 seviyesine doğru rising ↑
-modal:basarim :: Adana Atmacaları
-modal:basarim :: Afyonkarahisar Şahinleri
-modal:basarim :: Ankara Eagles — Konya Aslanları
-modal:basarim :: Antalya Aslanları
-modal:basarim :: Aydın Üniversite
-modal:basarim :: Balıkesir Panterleri
-modal:basarim :: Balıkesir Yıldızları
-modal:basarim :: Balıkesir Yıldızları — Kütahya Şahinleri
-modal:basarim :: Batuhan Dinç
-modal:basarim :: Batuhan Dinç (PG) — Overall: 74
-modal:basarim :: Batuhan Dinç (PG) → SG
-modal:basarim :: Batuhan Dinç (PG·OVR 74)
-modal:basarim :: Bursa Şimşekleri
-modal:basarim :: Cihan Ünver
-modal:basarim :: Coşkun Pekmez
-modal:basarim :: Coşkun Pekmez (PF) — Overall: 68
-modal:basarim :: Coşkun Pekmez (PF) → C
-modal:basarim :: Coşkun Pekmez (PF) → SF
-modal:basarim :: Coşkun Pekmez (PF·OVR 68)
+modal:basarim :: Ankara Doğanları
+modal:basarim :: Aydın Spor
+modal:basarim :: Balıkesir Boğaları
+modal:basarim :: Burak Ateş
+modal:basarim :: Burak Ateş (PF) — Overall: 71
+modal:basarim :: Burak Ateş (PF) → C
+modal:basarim :: Burak Ateş (PF) → SF
+modal:basarim :: Burak Ateş (PF·OVR 71)
+modal:basarim :: Bursa Gençlik
+modal:basarim :: Bursa Kurtları
+modal:basarim :: Cem Kılıç
+modal:basarim :: Cengiz Sağlam
+modal:basarim :: Cengiz Sağlam (C) — Overall: 72
+modal:basarim :: Cengiz Sağlam (C) → PF
+modal:basarim :: Cengiz Sağlam (C·OVR 72)
 modal:basarim :: Doluluk (taraftar + form + bilet fiyatı)
-modal:basarim :: Doğuş Turgut
-modal:basarim :: Ediz Uçar
-modal:basarim :: Fatih Öcal
-modal:basarim :: Fatih Öcal (SF) — Overall: 67
-modal:basarim :: Fatih Öcal (SF) → PF
-modal:basarim :: Fatih Öcal (SF) → SG
-modal:basarim :: Fatih Öcal (SF·OVR 67)
-modal:basarim :: Fuat Yağmur
-modal:basarim :: Gaziantep Doğanları
-modal:basarim :: Hüsnü Ateş
-modal:basarim :: Hüsnü Ateş (SF) — Overall: 72
-modal:basarim :: Hüsnü Ateş (SF) → PF
-modal:basarim :: Hüsnü Ateş (SF) → SG
-modal:basarim :: Hüsnü Ateş (SF·OVR 72)
+modal:basarim :: Doğuş Gökçe
+modal:basarim :: Doğuş Gökçe (SG) — Overall: 76
+modal:basarim :: Doğuş Gökçe (SG) → PG
+modal:basarim :: Doğuş Gökçe (SG) → SF
+modal:basarim :: Doğuş Gökçe (SG·OVR 76)
+modal:basarim :: Elazığ Doğanları
+modal:basarim :: Eskişehir Yıldızları
+modal:basarim :: Fikret Taş
+modal:basarim :: Fikret Taş (PG) — Overall: 71
+modal:basarim :: Fikret Taş (PG) → SG
+modal:basarim :: Fikret Taş (PG·OVR 71)
+modal:basarim :: Fuat Yalçın
+modal:basarim :: Hakan Yılmaz
+modal:basarim :: Hüseyin Elmas
+modal:basarim :: Hüseyin Elmas (C) — Overall: 67
+modal:basarim :: Hüseyin Elmas (C) → PF
+modal:basarim :: Hüseyin Elmas (C·OVR 67)
+modal:basarim :: Işıtan Savaş
 modal:basarim :: Kasa bu gidişle ~9 weeks yeter
-modal:basarim :: Konya Aslanları
-modal:basarim :: Konya Boğaları
-modal:basarim :: Kütahya Şahinleri
+modal:basarim :: Kağan Özgün
+modal:basarim :: Kocaeli Doğanları
+modal:basarim :: Kocaeli Yıldızları
+modal:basarim :: Konya Gençlik
+modal:basarim :: Konya Üniversite
+modal:basarim :: Konya Üniversite — Bursa Gençlik
+modal:basarim :: Kütahya Koleji
+modal:basarim :: Kütahya Koleji — Ankara Doğanları
 modal:basarim :: Malatya Boğaları
-modal:basarim :: Malatya Boğaları — Balıkesir Panterleri
-modal:basarim :: Muğla Gençlik
-modal:basarim :: Muğla Gençlik — Bursa Şimşekleri
-modal:basarim :: Oktay Çetin
-modal:basarim :: Rahmi Sevinç
-modal:basarim :: Rıza Baştürk
-modal:basarim :: Rıza Baştürk (C) — Overall: 67
-modal:basarim :: Rıza Baştürk (C) → PF
-modal:basarim :: Rıza Baştürk (C·OVR 67)
-modal:basarim :: Selim Çakır
-modal:basarim :: Selçuk Taşkın
-modal:basarim :: Selçuk Taşkın (SG) — Overall: 76
-modal:basarim :: Selçuk Taşkın (SG) → PG
-modal:basarim :: Selçuk Taşkın (SG) → SF
-modal:basarim :: Selçuk Taşkın (SG·OVR 76)
-modal:basarim :: Sivas Boğaları
-modal:basarim :: Tekirdağ Spor
-modal:basarim :: Uras Uludağ
-modal:basarim :: Yiğit Sönmez
-modal:basarim :: Yiğit Sönmez (C) — Overall: 69
-modal:basarim :: Yiğit Sönmez (C) → PF
-modal:basarim :: Yiğit Sönmez (C·OVR 69)
-modal:basarim :: Şafak Duman
-modal:basarim :: Şafak Duman (SG) — Overall: 71
-modal:basarim :: Şafak Duman (SG) → PG
-modal:basarim :: Şafak Duman (SG) → SF
-modal:basarim :: Şafak Duman (SG·OVR 71)
-modal:basarim :: Şafak Yıldırım
-modal:basarim :: Şafak Yıldırım (SF) — Overall: 73
-modal:basarim :: Şafak Yıldırım (SF) → PF
-modal:basarim :: Şafak Yıldırım (SF) → SG
-modal:basarim :: Şafak Yıldırım (SF·OVR 73)
-modal:basarim :: 🇹🇷 Ahmet Dinç
-modal:basarim :: 🇹🇷 Bahadır Şimşek
-modal:basarim :: 🇹🇷 Batıkan Tetik
-modal:basarim :: 🇹🇷 Burak Taş
-modal:basarim :: 🇹🇷 Cem Genç
-modal:basarim :: 🇹🇷 Enes Aktaş
-modal:basarim :: 🇹🇷 Fikret Baştürk
-modal:basarim :: 🇹🇷 Işıtan Baştürk
-modal:basarim :: 🇹🇷 Kağan Erdoğan
-modal:basarim :: 🇹🇷 Murat Aydın
-modal:basarim :: 🇹🇷 Nuri Koç
-modal:basarim :: 🇹🇷 Onur Çetin
-modal:basarim :: 🇹🇷 Oğuzhan Balcı
-modal:basarim :: 🇹🇷 Poyraz Balcı
-modal:basarim :: 🇹🇷 Rahmi Öner
-modal:basarim :: 🇹🇷 Rıza Genç
-modal:basarim :: 🇹🇷 Sedat Güngör
-modal:basarim :: 🇹🇷 Serdar Özel
-modal:basarim :: 🇹🇷 Taner Yıldız
-modal:basarim :: 🇹🇷 Tayfun Çakmak
+modal:basarim :: Malatya Boğaları — İzmir Şimşekleri
+modal:basarim :: Malatya Spor — Kocaeli Yıldızları
+modal:basarim :: Mersin Kartalları
+modal:basarim :: Mersin Şahinleri
+modal:basarim :: Ramazan Gündoğdu
+modal:basarim :: Tarık Yıldız
+modal:basarim :: Uras Doğan
+modal:basarim :: Zeki Yalın
+modal:basarim :: Zeki Yalın (SG) — Overall: 76
+modal:basarim :: Zeki Yalın (SG) → PG
+modal:basarim :: Zeki Yalın (SG) → SF
+modal:basarim :: Zeki Yalın (SG·OVR 76)
+modal:basarim :: Zonguldak Kurtları
+modal:basarim :: Çağrı Ünver
+modal:basarim :: İsmail Serin
+modal:basarim :: İsmet Nalbant
+modal:basarim :: İsmet Nalbant (PF) — Overall: 71
+modal:basarim :: İsmet Nalbant (PF) → C
+modal:basarim :: İsmet Nalbant (PF) → SF
+modal:basarim :: İsmet Nalbant (PF·OVR 71)
+modal:basarim :: İzmir Şimşekleri
+modal:basarim :: 🇪🇪 Vahur Kütt
+modal:basarim :: 🇹🇷 Ahmet Baş
+modal:basarim :: 🇹🇷 Batıkan Kara
+modal:basarim :: 🇹🇷 Cihan Yıldız
+modal:basarim :: 🇹🇷 Davut Sevinç
+modal:basarim :: 🇹🇷 Doğuş Örs
+modal:basarim :: 🇹🇷 Efe Özdemir
+modal:basarim :: 🇹🇷 Ferit Bektaş
+modal:basarim :: 🇹🇷 Fikret Doğan
+modal:basarim :: 🇹🇷 Gökay Koç
+modal:basarim :: 🇹🇷 Gökhan Çevik
+modal:basarim :: 🇹🇷 Görkem Turgut
+modal:basarim :: 🇹🇷 Hüseyin Öcal
+modal:basarim :: 🇹🇷 Kağan Kılıç
+modal:basarim :: 🇹🇷 Kürşat Umutlu
+modal:basarim :: 🇹🇷 Mahmut Coşkun
+modal:basarim :: 🇹🇷 Nuri Ateş
+modal:basarim :: 🇹🇷 Oktay Taşkın
+modal:basarim :: 🇹🇷 Orhan Coşkun
+modal:basarim :: 🇹🇷 Oğuz Tekin
+modal:basarim :: 🇹🇷 Recep Taşkın
+modal:basarim :: 🇹🇷 Sami Sevinç
+modal:basarim :: 🇹🇷 Selim Genç
+modal:basarim :: 🇹🇷 Süleyman Aslan
+modal:basarim :: 🇹🇷 Tolga Gül
 modal:basarim :: 🇹🇷 Türkçe
-modal:basarim :: 🇹🇷 Volkan Koçak
-modal:basarim :: 🇹🇷 Yağız Şahin
-modal:basarim :: 🇹🇷 Yiğit Demirci
-modal:basarim :: 🇹🇷 Yiğit Polat
-modal:basarim :: 🇹🇷 Öner Duman
-modal:basarim :: 🇹🇷 Özgür Aktaş
-modal:basarim :: 🇹🇷 İlker Kılınç
-modal:basarim :: 🇹🇷 İlker Polat
-modal:basarim :: 🇹🇷 İsmet Uçar
-modal:basarim :: 🏛️ Adana Atmacaları from
-modal:basarim :: 🏛️ Afyonkarahisar Şahinleri from
-modal:basarim :: 🏛️ Aydın Üniversite from
-modal:basarim :: 🏛️ Balıkesir Panterleri from
-modal:basarim :: 🏛️ Balıkesir Yıldızları from
-modal:basarim :: 🏛️ Gaziantep Doğanları from
-modal:basarim :: 🏛️ Konya Aslanları from
-modal:basarim :: 🏛️ Kütahya Şahinleri from
-modal:basarim :: 🤝 Latif Ersoy – Şafak Yıldırım
-modal:basarim :: 🤝 Selçuk Taşkın – Timur Nalbant
+modal:basarim :: 🇹🇷 Uğur Hakyemez
+modal:basarim :: 🇹🇷 Yalçın Köse
+modal:basarim :: 🇹🇷 Yalçın Uçar
+modal:basarim :: 🇹🇷 Çağrı Örs
+modal:basarim :: 🇹🇷 İlker Uysal
+modal:basarim :: 🇹🇷 İsmail Aydın
+modal:basarim :: 🇹🇷 İsmail Karaca
+modal:basarim :: 🏛️ Aydın Spor from
+modal:basarim :: 🏛️ Balıkesir Boğaları from
+modal:basarim :: 🏛️ Bursa Gençlik from
+modal:basarim :: 🏛️ Bursa Kurtları from
+modal:basarim :: 🏛️ Eskişehir Yıldızları from
+modal:basarim :: 🏛️ Kütahya Koleji from
+modal:basarim :: 🏛️ Malatya Boğaları from
+modal:basarim :: 🏛️ Mersin Kartalları from
+modal:basarim :: 🏛️ Mersin Şahinleri from
+modal:basarim :: 🏛️ Zonguldak Kurtları from
+modal:basarim :: 🏛️ İzmir Şimşekleri from
+modal:basarim :: 🤝 Fikret Taş – Doğuş Gökçe
 modal:draft :: /100 · 92 seviyesine doğru rising ↑
-modal:draft :: Adana Atmacaları
-modal:draft :: Afyonkarahisar Şahinleri
-modal:draft :: Ankara Eagles — Konya Aslanları
-modal:draft :: Antalya Aslanları
-modal:draft :: Aydın Üniversite
-modal:draft :: Balıkesir Panterleri
-modal:draft :: Balıkesir Yıldızları
-modal:draft :: Balıkesir Yıldızları — Kütahya Şahinleri
-modal:draft :: Batuhan Dinç
-modal:draft :: Batuhan Dinç (PG) — Overall: 74
-modal:draft :: Batuhan Dinç (PG) → SG
-modal:draft :: Batuhan Dinç (PG·OVR 74)
-modal:draft :: Bursa Şimşekleri
-modal:draft :: Cihan Ünver
-modal:draft :: Coşkun Pekmez
-modal:draft :: Coşkun Pekmez (PF) — Overall: 68
-modal:draft :: Coşkun Pekmez (PF) → C
-modal:draft :: Coşkun Pekmez (PF) → SF
-modal:draft :: Coşkun Pekmez (PF·OVR 68)
+modal:draft :: Ankara Doğanları
+modal:draft :: Aydın Spor
+modal:draft :: Balıkesir Boğaları
+modal:draft :: Burak Ateş
+modal:draft :: Burak Ateş (PF) — Overall: 71
+modal:draft :: Burak Ateş (PF) → C
+modal:draft :: Burak Ateş (PF) → SF
+modal:draft :: Burak Ateş (PF·OVR 71)
+modal:draft :: Bursa Gençlik
+modal:draft :: Bursa Kurtları
+modal:draft :: Cem Kılıç
+modal:draft :: Cengiz Sağlam
+modal:draft :: Cengiz Sağlam (C) — Overall: 72
+modal:draft :: Cengiz Sağlam (C) → PF
+modal:draft :: Cengiz Sağlam (C·OVR 72)
 modal:draft :: Doluluk (taraftar + form + bilet fiyatı)
-modal:draft :: Doğuş Turgut
-modal:draft :: Ediz Uçar
-modal:draft :: Fatih Öcal
-modal:draft :: Fatih Öcal (SF) — Overall: 67
-modal:draft :: Fatih Öcal (SF) → PF
-modal:draft :: Fatih Öcal (SF) → SG
-modal:draft :: Fatih Öcal (SF·OVR 67)
-modal:draft :: Fuat Yağmur
-modal:draft :: Gaziantep Doğanları
-modal:draft :: Hüsnü Ateş
-modal:draft :: Hüsnü Ateş (SF) — Overall: 72
-modal:draft :: Hüsnü Ateş (SF) → PF
-modal:draft :: Hüsnü Ateş (SF) → SG
-modal:draft :: Hüsnü Ateş (SF·OVR 72)
+modal:draft :: Doğuş Gökçe
+modal:draft :: Doğuş Gökçe (SG) — Overall: 76
+modal:draft :: Doğuş Gökçe (SG) → PG
+modal:draft :: Doğuş Gökçe (SG) → SF
+modal:draft :: Doğuş Gökçe (SG·OVR 76)
+modal:draft :: Elazığ Doğanları
+modal:draft :: Eskişehir Yıldızları
+modal:draft :: Fikret Taş
+modal:draft :: Fikret Taş (PG) — Overall: 71
+modal:draft :: Fikret Taş (PG) → SG
+modal:draft :: Fikret Taş (PG·OVR 71)
+modal:draft :: Fuat Yalçın
+modal:draft :: Hakan Yılmaz
+modal:draft :: Hüseyin Elmas
+modal:draft :: Hüseyin Elmas (C) — Overall: 67
+modal:draft :: Hüseyin Elmas (C) → PF
+modal:draft :: Hüseyin Elmas (C·OVR 67)
+modal:draft :: Işıtan Savaş
 modal:draft :: Kasa bu gidişle ~9 weeks yeter
-modal:draft :: Konya Aslanları
-modal:draft :: Konya Boğaları
-modal:draft :: Kütahya Şahinleri
+modal:draft :: Kağan Özgün
+modal:draft :: Kocaeli Doğanları
+modal:draft :: Kocaeli Yıldızları
+modal:draft :: Konya Gençlik
+modal:draft :: Konya Üniversite
+modal:draft :: Konya Üniversite — Bursa Gençlik
+modal:draft :: Kütahya Koleji
+modal:draft :: Kütahya Koleji — Ankara Doğanları
 modal:draft :: Malatya Boğaları
-modal:draft :: Malatya Boğaları — Balıkesir Panterleri
-modal:draft :: Muğla Gençlik
-modal:draft :: Muğla Gençlik — Bursa Şimşekleri
-modal:draft :: Oktay Çetin
-modal:draft :: Rahmi Sevinç
-modal:draft :: Rıza Baştürk
-modal:draft :: Rıza Baştürk (C) — Overall: 67
-modal:draft :: Rıza Baştürk (C) → PF
-modal:draft :: Rıza Baştürk (C·OVR 67)
-modal:draft :: Selim Çakır
-modal:draft :: Selçuk Taşkın
-modal:draft :: Selçuk Taşkın (SG) — Overall: 76
-modal:draft :: Selçuk Taşkın (SG) → PG
-modal:draft :: Selçuk Taşkın (SG) → SF
-modal:draft :: Selçuk Taşkın (SG·OVR 76)
-modal:draft :: Sivas Boğaları
-modal:draft :: Tekirdağ Spor
-modal:draft :: Uras Uludağ
-modal:draft :: Yiğit Sönmez
-modal:draft :: Yiğit Sönmez (C) — Overall: 69
-modal:draft :: Yiğit Sönmez (C) → PF
-modal:draft :: Yiğit Sönmez (C·OVR 69)
-modal:draft :: Şafak Duman
-modal:draft :: Şafak Duman (SG) — Overall: 71
-modal:draft :: Şafak Duman (SG) → PG
-modal:draft :: Şafak Duman (SG) → SF
-modal:draft :: Şafak Duman (SG·OVR 71)
-modal:draft :: Şafak Yıldırım
-modal:draft :: Şafak Yıldırım (SF) — Overall: 73
-modal:draft :: Şafak Yıldırım (SF) → PF
-modal:draft :: Şafak Yıldırım (SF) → SG
-modal:draft :: Şafak Yıldırım (SF·OVR 73)
-modal:draft :: 🇹🇷 Ahmet Dinç
-modal:draft :: 🇹🇷 Bahadır Şimşek
-modal:draft :: 🇹🇷 Batıkan Tetik
-modal:draft :: 🇹🇷 Burak Taş
-modal:draft :: 🇹🇷 Cem Genç
-modal:draft :: 🇹🇷 Emre Karataş
-modal:draft :: 🇹🇷 Enes Aktaş
-modal:draft :: 🇹🇷 Fikret Baştürk
-modal:draft :: 🇹🇷 Işıtan Baştürk
-modal:draft :: 🇹🇷 Kağan Erdoğan
-modal:draft :: 🇹🇷 Levent Aktaş
-modal:draft :: 🇹🇷 Murat Aydın
-modal:draft :: 🇹🇷 Nail Ateş
-modal:draft :: 🇹🇷 Nuri Koç
-modal:draft :: 🇹🇷 Oktay Bektaş
-modal:draft :: 🇹🇷 Onur Çetin
-modal:draft :: 🇹🇷 Orhan Doğan
-modal:draft :: 🇹🇷 Oğuzhan Balcı
-modal:draft :: 🇹🇷 Poyraz Balcı
-modal:draft :: 🇹🇷 Rahmi Öner
-modal:draft :: 🇹🇷 Rıza Genç
-modal:draft :: 🇹🇷 Sedat Güngör
-modal:draft :: 🇹🇷 Serdar Özel
-modal:draft :: 🇹🇷 Taner Yıldız
-modal:draft :: 🇹🇷 Tarık Sönmez
-modal:draft :: 🇹🇷 Tayfun Çakmak
+modal:draft :: Malatya Boğaları — İzmir Şimşekleri
+modal:draft :: Malatya Spor — Kocaeli Yıldızları
+modal:draft :: Mersin Kartalları
+modal:draft :: Mersin Şahinleri
+modal:draft :: Ramazan Gündoğdu
+modal:draft :: Tarık Yıldız
+modal:draft :: Uras Doğan
+modal:draft :: Yasin Sarı (SG)
+modal:draft :: Zeki Yalın
+modal:draft :: Zeki Yalın (SG) — Overall: 76
+modal:draft :: Zeki Yalın (SG) → PG
+modal:draft :: Zeki Yalın (SG) → SF
+modal:draft :: Zeki Yalın (SG·OVR 76)
+modal:draft :: Zonguldak Kurtları
+modal:draft :: Çağrı Ünver
+modal:draft :: İsmail Serin
+modal:draft :: İsmet Nalbant
+modal:draft :: İsmet Nalbant (PF) — Overall: 71
+modal:draft :: İsmet Nalbant (PF) → C
+modal:draft :: İsmet Nalbant (PF) → SF
+modal:draft :: İsmet Nalbant (PF·OVR 71)
+modal:draft :: İzmir Şimşekleri
+modal:draft :: 🇪🇪 Vahur Kütt
+modal:draft :: 🇹🇷 Ahmet Baş
+modal:draft :: 🇹🇷 Aykut Pınar
+modal:draft :: 🇹🇷 Batıkan Kara
+modal:draft :: 🇹🇷 Cihan Yıldız
+modal:draft :: 🇹🇷 Davut Sevinç
+modal:draft :: 🇹🇷 Doğuş Örs
+modal:draft :: 🇹🇷 Efe Özdemir
+modal:draft :: 🇹🇷 Ferit Bektaş
+modal:draft :: 🇹🇷 Fikret Doğan
+modal:draft :: 🇹🇷 Gökay Koç
+modal:draft :: 🇹🇷 Gökhan Çevik
+modal:draft :: 🇹🇷 Görkem Turgut
+modal:draft :: 🇹🇷 Halil Kırca
+modal:draft :: 🇹🇷 Hüseyin Öcal
+modal:draft :: 🇹🇷 Kağan Kılıç
+modal:draft :: 🇹🇷 Koray Yağmur
+modal:draft :: 🇹🇷 Kürşat Umutlu
+modal:draft :: 🇹🇷 Mahmut Coşkun
+modal:draft :: 🇹🇷 Murat Tatlı
+modal:draft :: 🇹🇷 Nuri Ateş
+modal:draft :: 🇹🇷 Oktay Taşkın
+modal:draft :: 🇹🇷 Orhan Coşkun
+modal:draft :: 🇹🇷 Oğuz Tekin
+modal:draft :: 🇹🇷 Oğuz Çiftçi
+modal:draft :: 🇹🇷 Recep Taşkın
+modal:draft :: 🇹🇷 Sami Sevinç
+modal:draft :: 🇹🇷 Selim Genç
+modal:draft :: 🇹🇷 Süleyman Aslan
+modal:draft :: 🇹🇷 Tarık Karaca
+modal:draft :: 🇹🇷 Tolga Gül
 modal:draft :: 🇹🇷 Türkçe
-modal:draft :: 🇹🇷 Volkan Koçak
-modal:draft :: 🇹🇷 Yalçın Kartal
-modal:draft :: 🇹🇷 Yağız Şahin
-modal:draft :: 🇹🇷 Yiğit Demirci
-modal:draft :: 🇹🇷 Yiğit Polat
-modal:draft :: 🇹🇷 Öner Duman
-modal:draft :: 🇹🇷 Özgür Aktaş
-modal:draft :: 🇹🇷 İlker Kılınç
-modal:draft :: 🇹🇷 İlker Polat
-modal:draft :: 🇹🇷 İsmet Uçar
-modal:draft :: 🏛️ Adana Atmacaları from
-modal:draft :: 🏛️ Afyonkarahisar Şahinleri from
-modal:draft :: 🏛️ Aydın Üniversite from
-modal:draft :: 🏛️ Balıkesir Panterleri from
-modal:draft :: 🏛️ Balıkesir Yıldızları from
-modal:draft :: 🏛️ Gaziantep Doğanları from
-modal:draft :: 🏛️ Konya Aslanları from
-modal:draft :: 🏛️ Kütahya Şahinleri from
-modal:draft :: 🤝 Latif Ersoy – Şafak Yıldırım
-modal:draft :: 🤝 Selçuk Taşkın – Timur Nalbant
+modal:draft :: 🇹🇷 Uğur Hakyemez
+modal:draft :: 🇹🇷 Yalçın Köse
+modal:draft :: 🇹🇷 Yalçın Uçar
+modal:draft :: 🇹🇷 Çağrı Örs
+modal:draft :: 🇹🇷 Ünal Bulut
+modal:draft :: 🇹🇷 İlker Uysal
+modal:draft :: 🇹🇷 İsmail Aydın
+modal:draft :: 🇹🇷 İsmail Karaca
+modal:draft :: 🏛️ Aydın Spor from
+modal:draft :: 🏛️ Balıkesir Boğaları from
+modal:draft :: 🏛️ Bursa Gençlik from
+modal:draft :: 🏛️ Bursa Kurtları from
+modal:draft :: 🏛️ Eskişehir Yıldızları from
+modal:draft :: 🏛️ Kütahya Koleji from
+modal:draft :: 🏛️ Malatya Boğaları from
+modal:draft :: 🏛️ Mersin Kartalları from
+modal:draft :: 🏛️ Mersin Şahinleri from
+modal:draft :: 🏛️ Zonguldak Kurtları from
+modal:draft :: 🏛️ İzmir Şimşekleri from
+modal:draft :: 🤝 Fikret Taş – Doğuş Gökçe
 modal:ilk5 :: /100 · 92 seviyesine doğru rising ↑
-modal:ilk5 :: Adana Atmacaları
-modal:ilk5 :: Afyonkarahisar Şahinleri
-modal:ilk5 :: Ankara Eagles — Konya Aslanları
-modal:ilk5 :: Antalya Aslanları
-modal:ilk5 :: Aydın Üniversite
-modal:ilk5 :: Balıkesir Panterleri
-modal:ilk5 :: Balıkesir Yıldızları
-modal:ilk5 :: Balıkesir Yıldızları — Kütahya Şahinleri
-modal:ilk5 :: Batuhan Dinç
-modal:ilk5 :: Batuhan Dinç (PG) — Overall: 74
-modal:ilk5 :: Batuhan Dinç (PG) → SG
-modal:ilk5 :: Batuhan Dinç (PG·OVR 74)
-modal:ilk5 :: Bursa Şimşekleri
-modal:ilk5 :: Cihan Ünver
-modal:ilk5 :: Coşkun Pekmez
-modal:ilk5 :: Coşkun Pekmez (PF) — Overall: 68
-modal:ilk5 :: Coşkun Pekmez (PF) → C
-modal:ilk5 :: Coşkun Pekmez (PF) → SF
-modal:ilk5 :: Coşkun Pekmez (PF·OVR 68)
+modal:ilk5 :: Ankara Doğanları
+modal:ilk5 :: Aydın Spor
+modal:ilk5 :: Balıkesir Boğaları
+modal:ilk5 :: Burak Ateş
+modal:ilk5 :: Burak Ateş (PF) — Overall: 71
+modal:ilk5 :: Burak Ateş (PF) → C
+modal:ilk5 :: Burak Ateş (PF) → SF
+modal:ilk5 :: Burak Ateş (PF·OVR 71)
+modal:ilk5 :: Bursa Gençlik
+modal:ilk5 :: Bursa Kurtları
+modal:ilk5 :: Cem Kılıç
+modal:ilk5 :: Cengiz Sağlam
+modal:ilk5 :: Cengiz Sağlam (C) — Overall: 72
+modal:ilk5 :: Cengiz Sağlam (C) → PF
+modal:ilk5 :: Cengiz Sağlam (C·OVR 72)
 modal:ilk5 :: Doluluk (taraftar + form + bilet fiyatı)
-modal:ilk5 :: Doğuş Turgut
-modal:ilk5 :: Ediz Uçar
-modal:ilk5 :: Fatih Öcal
-modal:ilk5 :: Fatih Öcal (SF) — Overall: 67
-modal:ilk5 :: Fatih Öcal (SF) → PF
-modal:ilk5 :: Fatih Öcal (SF) → SG
-modal:ilk5 :: Fatih Öcal (SF·OVR 67)
-modal:ilk5 :: Fuat Yağmur
-modal:ilk5 :: Gaziantep Doğanları
-modal:ilk5 :: Hüsnü Ateş
-modal:ilk5 :: Hüsnü Ateş (SF) — Overall: 72
-modal:ilk5 :: Hüsnü Ateş (SF) → PF
-modal:ilk5 :: Hüsnü Ateş (SF) → SG
-modal:ilk5 :: Hüsnü Ateş (SF·OVR 72)
+modal:ilk5 :: Doğuş Gökçe
+modal:ilk5 :: Doğuş Gökçe (SG) — Overall: 76
+modal:ilk5 :: Doğuş Gökçe (SG) → PG
+modal:ilk5 :: Doğuş Gökçe (SG) → SF
+modal:ilk5 :: Doğuş Gökçe (SG·OVR 76)
+modal:ilk5 :: Elazığ Doğanları
+modal:ilk5 :: Eskişehir Yıldızları
+modal:ilk5 :: Fikret Taş
+modal:ilk5 :: Fikret Taş (PG) — Overall: 71
+modal:ilk5 :: Fikret Taş (PG) → SG
+modal:ilk5 :: Fikret Taş (PG·OVR 71)
+modal:ilk5 :: Fuat Yalçın
+modal:ilk5 :: Hakan Yılmaz
+modal:ilk5 :: Hüseyin Elmas
+modal:ilk5 :: Hüseyin Elmas (C) — Overall: 67
+modal:ilk5 :: Hüseyin Elmas (C) → PF
+modal:ilk5 :: Hüseyin Elmas (C·OVR 67)
+modal:ilk5 :: Işıtan Savaş
 modal:ilk5 :: Kasa bu gidişle ~9 weeks yeter
-modal:ilk5 :: Konya Aslanları
-modal:ilk5 :: Konya Boğaları
-modal:ilk5 :: Kütahya Şahinleri
+modal:ilk5 :: Kağan Özgün
+modal:ilk5 :: Kocaeli Doğanları
+modal:ilk5 :: Kocaeli Yıldızları
+modal:ilk5 :: Konya Gençlik
+modal:ilk5 :: Konya Üniversite
+modal:ilk5 :: Konya Üniversite — Bursa Gençlik
+modal:ilk5 :: Kütahya Koleji
+modal:ilk5 :: Kütahya Koleji — Ankara Doğanları
 modal:ilk5 :: Malatya Boğaları
-modal:ilk5 :: Malatya Boğaları — Balıkesir Panterleri
-modal:ilk5 :: Muğla Gençlik
-modal:ilk5 :: Muğla Gençlik — Bursa Şimşekleri
-modal:ilk5 :: Oktay Çetin
-modal:ilk5 :: Rahmi Sevinç
-modal:ilk5 :: Rıza Baştürk
-modal:ilk5 :: Rıza Baştürk (C) — Overall: 67
-modal:ilk5 :: Rıza Baştürk (C) → PF
-modal:ilk5 :: Rıza Baştürk (C·OVR 67)
-modal:ilk5 :: Selim Çakır
-modal:ilk5 :: Selçuk Taşkın
-modal:ilk5 :: Selçuk Taşkın (SG) — Overall: 76
-modal:ilk5 :: Selçuk Taşkın (SG) → PG
-modal:ilk5 :: Selçuk Taşkın (SG) → SF
-modal:ilk5 :: Selçuk Taşkın (SG·OVR 76)
-modal:ilk5 :: Sivas Boğaları
-modal:ilk5 :: Tekirdağ Spor
-modal:ilk5 :: Uras Uludağ
-modal:ilk5 :: Yiğit Sönmez
-modal:ilk5 :: Yiğit Sönmez (C) — Overall: 69
-modal:ilk5 :: Yiğit Sönmez (C) → PF
-modal:ilk5 :: Yiğit Sönmez (C·OVR 69)
-modal:ilk5 :: Şafak Duman
-modal:ilk5 :: Şafak Duman (SG) — Overall: 71
-modal:ilk5 :: Şafak Duman (SG) → PG
-modal:ilk5 :: Şafak Duman (SG) → SF
-modal:ilk5 :: Şafak Duman (SG·OVR 71)
-modal:ilk5 :: Şafak Yıldırım
-modal:ilk5 :: Şafak Yıldırım (SF) — Overall: 73
-modal:ilk5 :: Şafak Yıldırım (SF) → PF
-modal:ilk5 :: Şafak Yıldırım (SF) → SG
-modal:ilk5 :: Şafak Yıldırım (SF·OVR 73)
-modal:ilk5 :: 🇹🇷 Ahmet Dinç
-modal:ilk5 :: 🇹🇷 Bahadır Şimşek
-modal:ilk5 :: 🇹🇷 Batıkan Tetik
-modal:ilk5 :: 🇹🇷 Burak Taş
-modal:ilk5 :: 🇹🇷 Cem Genç
-modal:ilk5 :: 🇹🇷 Enes Aktaş
-modal:ilk5 :: 🇹🇷 Fikret Baştürk
-modal:ilk5 :: 🇹🇷 Işıtan Baştürk
-modal:ilk5 :: 🇹🇷 Kağan Erdoğan
-modal:ilk5 :: 🇹🇷 Murat Aydın
-modal:ilk5 :: 🇹🇷 Nuri Koç
-modal:ilk5 :: 🇹🇷 Onur Çetin
-modal:ilk5 :: 🇹🇷 Oğuzhan Balcı
-modal:ilk5 :: 🇹🇷 Poyraz Balcı
-modal:ilk5 :: 🇹🇷 Rahmi Öner
-modal:ilk5 :: 🇹🇷 Rıza Genç
-modal:ilk5 :: 🇹🇷 Sedat Güngör
-modal:ilk5 :: 🇹🇷 Serdar Özel
-modal:ilk5 :: 🇹🇷 Taner Yıldız
-modal:ilk5 :: 🇹🇷 Tayfun Çakmak
+modal:ilk5 :: Malatya Boğaları — İzmir Şimşekleri
+modal:ilk5 :: Malatya Spor — Kocaeli Yıldızları
+modal:ilk5 :: Mersin Kartalları
+modal:ilk5 :: Mersin Şahinleri
+modal:ilk5 :: Ramazan Gündoğdu
+modal:ilk5 :: Tarık Yıldız
+modal:ilk5 :: Uras Doğan
+modal:ilk5 :: Zeki Yalın
+modal:ilk5 :: Zeki Yalın (SG) — Overall: 76
+modal:ilk5 :: Zeki Yalın (SG) → PG
+modal:ilk5 :: Zeki Yalın (SG) → SF
+modal:ilk5 :: Zeki Yalın (SG·OVR 76)
+modal:ilk5 :: Zonguldak Kurtları
+modal:ilk5 :: Çağrı Ünver
+modal:ilk5 :: İsmail Serin
+modal:ilk5 :: İsmet Nalbant
+modal:ilk5 :: İsmet Nalbant (PF) — Overall: 71
+modal:ilk5 :: İsmet Nalbant (PF) → C
+modal:ilk5 :: İsmet Nalbant (PF) → SF
+modal:ilk5 :: İsmet Nalbant (PF·OVR 71)
+modal:ilk5 :: İzmir Şimşekleri
+modal:ilk5 :: 🇪🇪 Vahur Kütt
+modal:ilk5 :: 🇹🇷 Ahmet Baş
+modal:ilk5 :: 🇹🇷 Batıkan Kara
+modal:ilk5 :: 🇹🇷 Cihan Yıldız
+modal:ilk5 :: 🇹🇷 Davut Sevinç
+modal:ilk5 :: 🇹🇷 Doğuş Örs
+modal:ilk5 :: 🇹🇷 Efe Özdemir
+modal:ilk5 :: 🇹🇷 Ferit Bektaş
+modal:ilk5 :: 🇹🇷 Fikret Doğan
+modal:ilk5 :: 🇹🇷 Gökay Koç
+modal:ilk5 :: 🇹🇷 Gökhan Çevik
+modal:ilk5 :: 🇹🇷 Görkem Turgut
+modal:ilk5 :: 🇹🇷 Hüseyin Öcal
+modal:ilk5 :: 🇹🇷 Kağan Kılıç
+modal:ilk5 :: 🇹🇷 Kürşat Umutlu
+modal:ilk5 :: 🇹🇷 Mahmut Coşkun
+modal:ilk5 :: 🇹🇷 Nuri Ateş
+modal:ilk5 :: 🇹🇷 Oktay Taşkın
+modal:ilk5 :: 🇹🇷 Orhan Coşkun
+modal:ilk5 :: 🇹🇷 Oğuz Tekin
+modal:ilk5 :: 🇹🇷 Recep Taşkın
+modal:ilk5 :: 🇹🇷 Sami Sevinç
+modal:ilk5 :: 🇹🇷 Selim Genç
+modal:ilk5 :: 🇹🇷 Süleyman Aslan
+modal:ilk5 :: 🇹🇷 Tolga Gül
 modal:ilk5 :: 🇹🇷 Türkçe
-modal:ilk5 :: 🇹🇷 Volkan Koçak
-modal:ilk5 :: 🇹🇷 Yağız Şahin
-modal:ilk5 :: 🇹🇷 Yiğit Demirci
-modal:ilk5 :: 🇹🇷 Yiğit Polat
-modal:ilk5 :: 🇹🇷 Öner Duman
-modal:ilk5 :: 🇹🇷 Özgür Aktaş
-modal:ilk5 :: 🇹🇷 İlker Kılınç
-modal:ilk5 :: 🇹🇷 İlker Polat
-modal:ilk5 :: 🇹🇷 İsmet Uçar
-modal:ilk5 :: 🏛️ Adana Atmacaları from
-modal:ilk5 :: 🏛️ Afyonkarahisar Şahinleri from
-modal:ilk5 :: 🏛️ Aydın Üniversite from
-modal:ilk5 :: 🏛️ Balıkesir Panterleri from
-modal:ilk5 :: 🏛️ Balıkesir Yıldızları from
-modal:ilk5 :: 🏛️ Gaziantep Doğanları from
-modal:ilk5 :: 🏛️ Konya Aslanları from
-modal:ilk5 :: 🏛️ Kütahya Şahinleri from
-modal:ilk5 :: 🤝 Latif Ersoy – Şafak Yıldırım
-modal:ilk5 :: 🤝 Selçuk Taşkın – Timur Nalbant
+modal:ilk5 :: 🇹🇷 Uğur Hakyemez
+modal:ilk5 :: 🇹🇷 Yalçın Köse
+modal:ilk5 :: 🇹🇷 Yalçın Uçar
+modal:ilk5 :: 🇹🇷 Çağrı Örs
+modal:ilk5 :: 🇹🇷 İlker Uysal
+modal:ilk5 :: 🇹🇷 İsmail Aydın
+modal:ilk5 :: 🇹🇷 İsmail Karaca
+modal:ilk5 :: 🏛️ Aydın Spor from
+modal:ilk5 :: 🏛️ Balıkesir Boğaları from
+modal:ilk5 :: 🏛️ Bursa Gençlik from
+modal:ilk5 :: 🏛️ Bursa Kurtları from
+modal:ilk5 :: 🏛️ Eskişehir Yıldızları from
+modal:ilk5 :: 🏛️ Kütahya Koleji from
+modal:ilk5 :: 🏛️ Malatya Boğaları from
+modal:ilk5 :: 🏛️ Mersin Kartalları from
+modal:ilk5 :: 🏛️ Mersin Şahinleri from
+modal:ilk5 :: 🏛️ Zonguldak Kurtları from
+modal:ilk5 :: 🏛️ İzmir Şimşekleri from
+modal:ilk5 :: 🤝 Fikret Taş – Doğuş Gökçe
 modal:oyuncu :: /100 · 92 seviyesine doğru rising ↑
-modal:oyuncu :: Adana Atmacaları
-modal:oyuncu :: Afyonkarahisar Şahinleri
-modal:oyuncu :: Ankara Eagles — Konya Aslanları
-modal:oyuncu :: Antalya Aslanları
-modal:oyuncu :: Aydın Üniversite
-modal:oyuncu :: Balıkesir Panterleri
-modal:oyuncu :: Balıkesir Yıldızları
-modal:oyuncu :: Balıkesir Yıldızları — Kütahya Şahinleri
-modal:oyuncu :: Batuhan Dinç
-modal:oyuncu :: Batuhan Dinç (PG) — Overall: 74
-modal:oyuncu :: Batuhan Dinç (PG) → SG
-modal:oyuncu :: Batuhan Dinç (PG·OVR 74)
-modal:oyuncu :: Bursa Şimşekleri
-modal:oyuncu :: Cihan Ünver
-modal:oyuncu :: Coşkun Pekmez
-modal:oyuncu :: Coşkun Pekmez (PF) — Overall: 68
-modal:oyuncu :: Coşkun Pekmez (PF) → C
-modal:oyuncu :: Coşkun Pekmez (PF) → SF
-modal:oyuncu :: Coşkun Pekmez (PF·OVR 68)
+modal:oyuncu :: Ankara Doğanları
+modal:oyuncu :: Aydın Spor
+modal:oyuncu :: Balıkesir Boğaları
+modal:oyuncu :: Burak Ateş
+modal:oyuncu :: Burak Ateş (PF) — Overall: 71
+modal:oyuncu :: Burak Ateş (PF) → C
+modal:oyuncu :: Burak Ateş (PF) → SF
+modal:oyuncu :: Burak Ateş (PF·OVR 71)
+modal:oyuncu :: Bursa Gençlik
+modal:oyuncu :: Bursa Kurtları
+modal:oyuncu :: Cem Kılıç
+modal:oyuncu :: Cengiz Sağlam
+modal:oyuncu :: Cengiz Sağlam (C) — Overall: 72
+modal:oyuncu :: Cengiz Sağlam (C) → PF
+modal:oyuncu :: Cengiz Sağlam (C·OVR 72)
 modal:oyuncu :: Doluluk (taraftar + form + bilet fiyatı)
-modal:oyuncu :: Doğuş Turgut
-modal:oyuncu :: Ediz Uçar
-modal:oyuncu :: Fatih Öcal
-modal:oyuncu :: Fatih Öcal (SF) — Overall: 67
-modal:oyuncu :: Fatih Öcal (SF) → PF
-modal:oyuncu :: Fatih Öcal (SF) → SG
-modal:oyuncu :: Fatih Öcal (SF·OVR 67)
-modal:oyuncu :: Fuat Yağmur
-modal:oyuncu :: Gaziantep Doğanları
-modal:oyuncu :: Hüsnü Ateş
-modal:oyuncu :: Hüsnü Ateş (SF) — Overall: 72
-modal:oyuncu :: Hüsnü Ateş (SF) → PF
-modal:oyuncu :: Hüsnü Ateş (SF) → SG
-modal:oyuncu :: Hüsnü Ateş (SF·OVR 72)
+modal:oyuncu :: Doğuş Gökçe
+modal:oyuncu :: Doğuş Gökçe (SG) — Overall: 76
+modal:oyuncu :: Doğuş Gökçe (SG) → PG
+modal:oyuncu :: Doğuş Gökçe (SG) → SF
+modal:oyuncu :: Doğuş Gökçe (SG·OVR 76)
+modal:oyuncu :: Elazığ Doğanları
+modal:oyuncu :: Eskişehir Yıldızları
+modal:oyuncu :: Fikret Taş
+modal:oyuncu :: Fikret Taş (PG) — Overall: 71
+modal:oyuncu :: Fikret Taş (PG) → SG
+modal:oyuncu :: Fikret Taş (PG·OVR 71)
+modal:oyuncu :: Fuat Yalçın
+modal:oyuncu :: Hakan Yılmaz
+modal:oyuncu :: Hüseyin Elmas
+modal:oyuncu :: Hüseyin Elmas (C) — Overall: 67
+modal:oyuncu :: Hüseyin Elmas (C) → PF
+modal:oyuncu :: Hüseyin Elmas (C·OVR 67)
+modal:oyuncu :: Işıtan Savaş
 modal:oyuncu :: Kasa bu gidişle ~9 weeks yeter
-modal:oyuncu :: Konya Aslanları
-modal:oyuncu :: Konya Boğaları
-modal:oyuncu :: Kütahya Şahinleri
+modal:oyuncu :: Kağan Özgün
+modal:oyuncu :: Kocaeli Doğanları
+modal:oyuncu :: Kocaeli Yıldızları
+modal:oyuncu :: Konya Gençlik
+modal:oyuncu :: Konya Üniversite
+modal:oyuncu :: Konya Üniversite — Bursa Gençlik
+modal:oyuncu :: Kütahya Koleji
+modal:oyuncu :: Kütahya Koleji — Ankara Doğanları
 modal:oyuncu :: Malatya Boğaları
-modal:oyuncu :: Malatya Boğaları — Balıkesir Panterleri
-modal:oyuncu :: Muğla Gençlik
-modal:oyuncu :: Muğla Gençlik — Bursa Şimşekleri
-modal:oyuncu :: Oktay Çetin
-modal:oyuncu :: Rahmi Sevinç
-modal:oyuncu :: Rıza Baştürk
-modal:oyuncu :: Rıza Baştürk (C) — Overall: 67
-modal:oyuncu :: Rıza Baştürk (C) → PF
-modal:oyuncu :: Rıza Baştürk (C·OVR 67)
-modal:oyuncu :: Selim Çakır
-modal:oyuncu :: Selçuk Taşkın
-modal:oyuncu :: Selçuk Taşkın (SG) — Overall: 76
-modal:oyuncu :: Selçuk Taşkın (SG) → PG
-modal:oyuncu :: Selçuk Taşkın (SG) → SF
-modal:oyuncu :: Selçuk Taşkın (SG·OVR 76)
-modal:oyuncu :: Sivas Boğaları
-modal:oyuncu :: Tekirdağ Spor
-modal:oyuncu :: Uras Uludağ
-modal:oyuncu :: Yiğit Sönmez
-modal:oyuncu :: Yiğit Sönmez (C) — Overall: 69
-modal:oyuncu :: Yiğit Sönmez (C) → PF
-modal:oyuncu :: Yiğit Sönmez (C·OVR 69)
-modal:oyuncu :: Şafak Duman
-modal:oyuncu :: Şafak Duman (SG) — Overall: 71
-modal:oyuncu :: Şafak Duman (SG) → PG
-modal:oyuncu :: Şafak Duman (SG) → SF
-modal:oyuncu :: Şafak Duman (SG·OVR 71)
-modal:oyuncu :: Şafak Yıldırım
-modal:oyuncu :: Şafak Yıldırım (SF) — Overall: 73
-modal:oyuncu :: Şafak Yıldırım (SF) → PF
-modal:oyuncu :: Şafak Yıldırım (SF) → SG
-modal:oyuncu :: Şafak Yıldırım (SF·OVR 73)
-modal:oyuncu :: 🇹🇷 Ahmet Dinç
-modal:oyuncu :: 🇹🇷 Bahadır Şimşek
-modal:oyuncu :: 🇹🇷 Batıkan Tetik
-modal:oyuncu :: 🇹🇷 Burak Taş
-modal:oyuncu :: 🇹🇷 Cem Genç
-modal:oyuncu :: 🇹🇷 Enes Aktaş
-modal:oyuncu :: 🇹🇷 Fikret Baştürk
-modal:oyuncu :: 🇹🇷 Işıtan Baştürk
-modal:oyuncu :: 🇹🇷 Kağan Erdoğan
-modal:oyuncu :: 🇹🇷 Murat Aydın
-modal:oyuncu :: 🇹🇷 Nuri Koç
-modal:oyuncu :: 🇹🇷 Onur Çetin
-modal:oyuncu :: 🇹🇷 Oğuzhan Balcı
-modal:oyuncu :: 🇹🇷 Poyraz Balcı
-modal:oyuncu :: 🇹🇷 Rahmi Öner
-modal:oyuncu :: 🇹🇷 Rıza Genç
-modal:oyuncu :: 🇹🇷 Sedat Güngör
-modal:oyuncu :: 🇹🇷 Serdar Özel
-modal:oyuncu :: 🇹🇷 Taner Yıldız
-modal:oyuncu :: 🇹🇷 Tayfun Çakmak
+modal:oyuncu :: Malatya Boğaları — İzmir Şimşekleri
+modal:oyuncu :: Malatya Spor — Kocaeli Yıldızları
+modal:oyuncu :: Mersin Kartalları
+modal:oyuncu :: Mersin Şahinleri
+modal:oyuncu :: Ramazan Gündoğdu
+modal:oyuncu :: Tarık Yıldız
+modal:oyuncu :: Uras Doğan
+modal:oyuncu :: Zeki Yalın
+modal:oyuncu :: Zeki Yalın (SG) — Overall: 76
+modal:oyuncu :: Zeki Yalın (SG) → PG
+modal:oyuncu :: Zeki Yalın (SG) → SF
+modal:oyuncu :: Zeki Yalın (SG·OVR 76)
+modal:oyuncu :: Zonguldak Kurtları
+modal:oyuncu :: Çağrı Ünver
+modal:oyuncu :: İsmail Serin
+modal:oyuncu :: İsmet Nalbant
+modal:oyuncu :: İsmet Nalbant (PF) — Overall: 71
+modal:oyuncu :: İsmet Nalbant (PF) → C
+modal:oyuncu :: İsmet Nalbant (PF) → SF
+modal:oyuncu :: İsmet Nalbant (PF·OVR 71)
+modal:oyuncu :: İzmir Şimşekleri
+modal:oyuncu :: 🇪🇪 Vahur Kütt
+modal:oyuncu :: 🇹🇷 Ahmet Baş
+modal:oyuncu :: 🇹🇷 Batıkan Kara
+modal:oyuncu :: 🇹🇷 Cihan Yıldız
+modal:oyuncu :: 🇹🇷 Davut Sevinç
+modal:oyuncu :: 🇹🇷 Doğuş Örs
+modal:oyuncu :: 🇹🇷 Efe Özdemir
+modal:oyuncu :: 🇹🇷 Ferit Bektaş
+modal:oyuncu :: 🇹🇷 Fikret Doğan
+modal:oyuncu :: 🇹🇷 Fikret Taş
+modal:oyuncu :: 🇹🇷 Gökay Koç
+modal:oyuncu :: 🇹🇷 Gökhan Çevik
+modal:oyuncu :: 🇹🇷 Görkem Turgut
+modal:oyuncu :: 🇹🇷 Hüseyin Öcal
+modal:oyuncu :: 🇹🇷 Kağan Kılıç
+modal:oyuncu :: 🇹🇷 Kürşat Umutlu
+modal:oyuncu :: 🇹🇷 Mahmut Coşkun
+modal:oyuncu :: 🇹🇷 Nuri Ateş
+modal:oyuncu :: 🇹🇷 Oktay Taşkın
+modal:oyuncu :: 🇹🇷 Orhan Coşkun
+modal:oyuncu :: 🇹🇷 Oğuz Tekin
+modal:oyuncu :: 🇹🇷 Recep Taşkın
+modal:oyuncu :: 🇹🇷 Sami Sevinç
+modal:oyuncu :: 🇹🇷 Selim Genç
+modal:oyuncu :: 🇹🇷 Süleyman Aslan
+modal:oyuncu :: 🇹🇷 Tolga Gül
 modal:oyuncu :: 🇹🇷 Türkçe
-modal:oyuncu :: 🇹🇷 Volkan Koçak
-modal:oyuncu :: 🇹🇷 Yağız Şahin
-modal:oyuncu :: 🇹🇷 Yiğit Demirci
-modal:oyuncu :: 🇹🇷 Yiğit Polat
-modal:oyuncu :: 🇹🇷 Öner Duman
-modal:oyuncu :: 🇹🇷 Özgür Aktaş
-modal:oyuncu :: 🇹🇷 İlker Kılınç
-modal:oyuncu :: 🇹🇷 İlker Polat
-modal:oyuncu :: 🇹🇷 İsmet Uçar
-modal:oyuncu :: 🏛️ Adana Atmacaları from
-modal:oyuncu :: 🏛️ Afyonkarahisar Şahinleri from
-modal:oyuncu :: 🏛️ Aydın Üniversite from
-modal:oyuncu :: 🏛️ Balıkesir Panterleri from
-modal:oyuncu :: 🏛️ Balıkesir Yıldızları from
-modal:oyuncu :: 🏛️ Gaziantep Doğanları from
-modal:oyuncu :: 🏛️ Konya Aslanları from
-modal:oyuncu :: 🏛️ Kütahya Şahinleri from
-modal:oyuncu :: 🤝 Latif Ersoy – Şafak Yıldırım
-modal:oyuncu :: 🤝 Selçuk Taşkın – Timur Nalbant
+modal:oyuncu :: 🇹🇷 Uğur Hakyemez
+modal:oyuncu :: 🇹🇷 Yalçın Köse
+modal:oyuncu :: 🇹🇷 Yalçın Uçar
+modal:oyuncu :: 🇹🇷 Çağrı Örs
+modal:oyuncu :: 🇹🇷 İlker Uysal
+modal:oyuncu :: 🇹🇷 İsmail Aydın
+modal:oyuncu :: 🇹🇷 İsmail Karaca
+modal:oyuncu :: 🏛️ Aydın Spor from
+modal:oyuncu :: 🏛️ Balıkesir Boğaları from
+modal:oyuncu :: 🏛️ Bursa Gençlik from
+modal:oyuncu :: 🏛️ Bursa Kurtları from
+modal:oyuncu :: 🏛️ Eskişehir Yıldızları from
+modal:oyuncu :: 🏛️ Kütahya Koleji from
+modal:oyuncu :: 🏛️ Malatya Boğaları from
+modal:oyuncu :: 🏛️ Mersin Kartalları from
+modal:oyuncu :: 🏛️ Mersin Şahinleri from
+modal:oyuncu :: 🏛️ Zonguldak Kurtları from
+modal:oyuncu :: 🏛️ İzmir Şimşekleri from
+modal:oyuncu :: 🤝 Fikret Taş – Doğuş Gökçe
 modal:soyunma :: /100 · 92 seviyesine doğru rising ↑
-modal:soyunma :: Adana Atmacaları
-modal:soyunma :: Afyonkarahisar Şahinleri
-modal:soyunma :: Ankara Eagles — Konya Aslanları
-modal:soyunma :: Antalya Aslanları
-modal:soyunma :: Aydın Üniversite
-modal:soyunma :: Balıkesir Panterleri
-modal:soyunma :: Balıkesir Yıldızları
-modal:soyunma :: Balıkesir Yıldızları — Kütahya Şahinleri
-modal:soyunma :: Batuhan Dinç
-modal:soyunma :: Batuhan Dinç (PG) — Overall: 74
-modal:soyunma :: Batuhan Dinç (PG) → SG
-modal:soyunma :: Batuhan Dinç (PG·OVR 74)
-modal:soyunma :: Bursa Şimşekleri
-modal:soyunma :: Cihan Ünver
-modal:soyunma :: Coşkun Pekmez
-modal:soyunma :: Coşkun Pekmez (PF) — Overall: 68
-modal:soyunma :: Coşkun Pekmez (PF) → C
-modal:soyunma :: Coşkun Pekmez (PF) → SF
-modal:soyunma :: Coşkun Pekmez (PF·OVR 68)
+modal:soyunma :: Ankara Doğanları
+modal:soyunma :: Aydın Spor
+modal:soyunma :: Balıkesir Boğaları
+modal:soyunma :: Burak Ateş
+modal:soyunma :: Burak Ateş (PF) — Overall: 71
+modal:soyunma :: Burak Ateş (PF) → C
+modal:soyunma :: Burak Ateş (PF) → SF
+modal:soyunma :: Burak Ateş (PF·OVR 71)
+modal:soyunma :: Bursa Gençlik
+modal:soyunma :: Bursa Kurtları
+modal:soyunma :: Cem Kılıç
+modal:soyunma :: Cengiz Sağlam
+modal:soyunma :: Cengiz Sağlam (C) — Overall: 72
+modal:soyunma :: Cengiz Sağlam (C) → PF
+modal:soyunma :: Cengiz Sağlam (C·OVR 72)
 modal:soyunma :: Doluluk (taraftar + form + bilet fiyatı)
-modal:soyunma :: Doğuş Turgut
-modal:soyunma :: Ediz Uçar
-modal:soyunma :: Fatih Öcal
-modal:soyunma :: Fatih Öcal (SF) — Overall: 67
-modal:soyunma :: Fatih Öcal (SF) → PF
-modal:soyunma :: Fatih Öcal (SF) → SG
-modal:soyunma :: Fatih Öcal (SF·OVR 67)
-modal:soyunma :: Fuat Yağmur
-modal:soyunma :: Gaziantep Doğanları
-modal:soyunma :: Hüsnü Ateş
-modal:soyunma :: Hüsnü Ateş (SF) — Overall: 72
-modal:soyunma :: Hüsnü Ateş (SF) → PF
-modal:soyunma :: Hüsnü Ateş (SF) → SG
-modal:soyunma :: Hüsnü Ateş (SF·OVR 72)
+modal:soyunma :: Doğuş Gökçe
+modal:soyunma :: Doğuş Gökçe (SG) — Overall: 76
+modal:soyunma :: Doğuş Gökçe (SG) → PG
+modal:soyunma :: Doğuş Gökçe (SG) → SF
+modal:soyunma :: Doğuş Gökçe (SG·OVR 76)
+modal:soyunma :: Elazığ Doğanları
+modal:soyunma :: Eskişehir Yıldızları
+modal:soyunma :: Fikret Taş
+modal:soyunma :: Fikret Taş (PG) — Overall: 71
+modal:soyunma :: Fikret Taş (PG) → SG
+modal:soyunma :: Fikret Taş (PG·OVR 71)
+modal:soyunma :: Fuat Yalçın
+modal:soyunma :: Hakan Yılmaz
+modal:soyunma :: Hüseyin Elmas
+modal:soyunma :: Hüseyin Elmas (C) — Overall: 67
+modal:soyunma :: Hüseyin Elmas (C) → PF
+modal:soyunma :: Hüseyin Elmas (C·OVR 67)
+modal:soyunma :: Işıtan Savaş
 modal:soyunma :: Kasa bu gidişle ~9 weeks yeter
-modal:soyunma :: Konya Aslanları
-modal:soyunma :: Konya Boğaları
-modal:soyunma :: Kütahya Şahinleri
+modal:soyunma :: Kağan Özgün
+modal:soyunma :: Kocaeli Doğanları
+modal:soyunma :: Kocaeli Yıldızları
+modal:soyunma :: Konya Gençlik
+modal:soyunma :: Konya Üniversite
+modal:soyunma :: Konya Üniversite — Bursa Gençlik
+modal:soyunma :: Kütahya Koleji
+modal:soyunma :: Kütahya Koleji — Ankara Doğanları
 modal:soyunma :: Malatya Boğaları
-modal:soyunma :: Malatya Boğaları — Balıkesir Panterleri
-modal:soyunma :: Muğla Gençlik
-modal:soyunma :: Muğla Gençlik — Bursa Şimşekleri
-modal:soyunma :: Oktay Çetin
-modal:soyunma :: Rahmi Sevinç
-modal:soyunma :: Rıza Baştürk
-modal:soyunma :: Rıza Baştürk (C) — Overall: 67
-modal:soyunma :: Rıza Baştürk (C) → PF
-modal:soyunma :: Rıza Baştürk (C·OVR 67)
-modal:soyunma :: Selim Çakır
-modal:soyunma :: Selçuk Taşkın
-modal:soyunma :: Selçuk Taşkın (SG) — Overall: 76
-modal:soyunma :: Selçuk Taşkın (SG) → PG
-modal:soyunma :: Selçuk Taşkın (SG) → SF
-modal:soyunma :: Selçuk Taşkın (SG·OVR 76)
-modal:soyunma :: Sivas Boğaları
-modal:soyunma :: Tekirdağ Spor
-modal:soyunma :: Uras Uludağ
-modal:soyunma :: Yiğit Sönmez
-modal:soyunma :: Yiğit Sönmez (C) — Overall: 69
-modal:soyunma :: Yiğit Sönmez (C) → PF
-modal:soyunma :: Yiğit Sönmez (C·OVR 69)
-modal:soyunma :: Şafak Duman
-modal:soyunma :: Şafak Duman (SG) — Overall: 71
-modal:soyunma :: Şafak Duman (SG) → PG
-modal:soyunma :: Şafak Duman (SG) → SF
-modal:soyunma :: Şafak Duman (SG·OVR 71)
-modal:soyunma :: Şafak Yıldırım
-modal:soyunma :: Şafak Yıldırım (SF) — Overall: 73
-modal:soyunma :: Şafak Yıldırım (SF) → PF
-modal:soyunma :: Şafak Yıldırım (SF) → SG
-modal:soyunma :: Şafak Yıldırım (SF·OVR 73)
-modal:soyunma :: 🇹🇷 Ahmet Dinç
-modal:soyunma :: 🇹🇷 Bahadır Şimşek
-modal:soyunma :: 🇹🇷 Batıkan Tetik
-modal:soyunma :: 🇹🇷 Burak Taş
-modal:soyunma :: 🇹🇷 Cem Genç
-modal:soyunma :: 🇹🇷 Enes Aktaş
-modal:soyunma :: 🇹🇷 Fikret Baştürk
-modal:soyunma :: 🇹🇷 Işıtan Baştürk
-modal:soyunma :: 🇹🇷 Kağan Erdoğan
-modal:soyunma :: 🇹🇷 Murat Aydın
-modal:soyunma :: 🇹🇷 Nuri Koç
-modal:soyunma :: 🇹🇷 Onur Çetin
-modal:soyunma :: 🇹🇷 Oğuzhan Balcı
-modal:soyunma :: 🇹🇷 Poyraz Balcı
-modal:soyunma :: 🇹🇷 Rahmi Öner
-modal:soyunma :: 🇹🇷 Rıza Genç
-modal:soyunma :: 🇹🇷 Sedat Güngör
-modal:soyunma :: 🇹🇷 Serdar Özel
-modal:soyunma :: 🇹🇷 Taner Yıldız
-modal:soyunma :: 🇹🇷 Tayfun Çakmak
+modal:soyunma :: Malatya Boğaları — İzmir Şimşekleri
+modal:soyunma :: Malatya Spor — Kocaeli Yıldızları
+modal:soyunma :: Mersin Kartalları
+modal:soyunma :: Mersin Şahinleri
+modal:soyunma :: Ramazan Gündoğdu
+modal:soyunma :: Tarık Yıldız
+modal:soyunma :: Uras Doğan
+modal:soyunma :: Zeki Yalın
+modal:soyunma :: Zeki Yalın (SG) — Overall: 76
+modal:soyunma :: Zeki Yalın (SG) → PG
+modal:soyunma :: Zeki Yalın (SG) → SF
+modal:soyunma :: Zeki Yalın (SG·OVR 76)
+modal:soyunma :: Zonguldak Kurtları
+modal:soyunma :: Çağrı Ünver
+modal:soyunma :: İsmail Serin
+modal:soyunma :: İsmet Nalbant
+modal:soyunma :: İsmet Nalbant (PF) — Overall: 71
+modal:soyunma :: İsmet Nalbant (PF) → C
+modal:soyunma :: İsmet Nalbant (PF) → SF
+modal:soyunma :: İsmet Nalbant (PF·OVR 71)
+modal:soyunma :: İzmir Şimşekleri
+modal:soyunma :: 🇪🇪 Vahur Kütt
+modal:soyunma :: 🇹🇷 Ahmet Baş
+modal:soyunma :: 🇹🇷 Batıkan Kara
+modal:soyunma :: 🇹🇷 Cihan Yıldız
+modal:soyunma :: 🇹🇷 Davut Sevinç
+modal:soyunma :: 🇹🇷 Doğuş Örs
+modal:soyunma :: 🇹🇷 Efe Özdemir
+modal:soyunma :: 🇹🇷 Ferit Bektaş
+modal:soyunma :: 🇹🇷 Fikret Doğan
+modal:soyunma :: 🇹🇷 Gökay Koç
+modal:soyunma :: 🇹🇷 Gökhan Çevik
+modal:soyunma :: 🇹🇷 Görkem Turgut
+modal:soyunma :: 🇹🇷 Hüseyin Öcal
+modal:soyunma :: 🇹🇷 Kağan Kılıç
+modal:soyunma :: 🇹🇷 Kürşat Umutlu
+modal:soyunma :: 🇹🇷 Mahmut Coşkun
+modal:soyunma :: 🇹🇷 Nuri Ateş
+modal:soyunma :: 🇹🇷 Oktay Taşkın
+modal:soyunma :: 🇹🇷 Orhan Coşkun
+modal:soyunma :: 🇹🇷 Oğuz Tekin
+modal:soyunma :: 🇹🇷 Recep Taşkın
+modal:soyunma :: 🇹🇷 Sami Sevinç
+modal:soyunma :: 🇹🇷 Selim Genç
+modal:soyunma :: 🇹🇷 Süleyman Aslan
+modal:soyunma :: 🇹🇷 Tolga Gül
 modal:soyunma :: 🇹🇷 Türkçe
-modal:soyunma :: 🇹🇷 Volkan Koçak
-modal:soyunma :: 🇹🇷 Yağız Şahin
-modal:soyunma :: 🇹🇷 Yiğit Demirci
-modal:soyunma :: 🇹🇷 Yiğit Polat
-modal:soyunma :: 🇹🇷 Öner Duman
-modal:soyunma :: 🇹🇷 Özgür Aktaş
-modal:soyunma :: 🇹🇷 İlker Kılınç
-modal:soyunma :: 🇹🇷 İlker Polat
-modal:soyunma :: 🇹🇷 İsmet Uçar
-modal:soyunma :: 🏛️ Adana Atmacaları from
-modal:soyunma :: 🏛️ Afyonkarahisar Şahinleri from
-modal:soyunma :: 🏛️ Aydın Üniversite from
-modal:soyunma :: 🏛️ Balıkesir Panterleri from
-modal:soyunma :: 🏛️ Balıkesir Yıldızları from
-modal:soyunma :: 🏛️ Gaziantep Doğanları from
-modal:soyunma :: 🏛️ Konya Aslanları from
-modal:soyunma :: 🏛️ Kütahya Şahinleri from
-modal:soyunma :: 💬 Locker Room — Şafak Duman
-modal:soyunma :: 🤝 Latif Ersoy – Şafak Yıldırım
-modal:soyunma :: 🤝 Selçuk Taşkın – Timur Nalbant
+modal:soyunma :: 🇹🇷 Uğur Hakyemez
+modal:soyunma :: 🇹🇷 Yalçın Köse
+modal:soyunma :: 🇹🇷 Yalçın Uçar
+modal:soyunma :: 🇹🇷 Çağrı Örs
+modal:soyunma :: 🇹🇷 İlker Uysal
+modal:soyunma :: 🇹🇷 İsmail Aydın
+modal:soyunma :: 🇹🇷 İsmail Karaca
+modal:soyunma :: 🏛️ Aydın Spor from
+modal:soyunma :: 🏛️ Balıkesir Boğaları from
+modal:soyunma :: 🏛️ Bursa Gençlik from
+modal:soyunma :: 🏛️ Bursa Kurtları from
+modal:soyunma :: 🏛️ Eskişehir Yıldızları from
+modal:soyunma :: 🏛️ Kütahya Koleji from
+modal:soyunma :: 🏛️ Malatya Boğaları from
+modal:soyunma :: 🏛️ Mersin Kartalları from
+modal:soyunma :: 🏛️ Mersin Şahinleri from
+modal:soyunma :: 🏛️ Zonguldak Kurtları from
+modal:soyunma :: 🏛️ İzmir Şimşekleri from
+modal:soyunma :: 💬 Locker Room — Zeki Yalın
+modal:soyunma :: 🤝 Fikret Taş – Doğuş Gökçe
 modal:taktik :: /100 · 92 seviyesine doğru rising ↑
-modal:taktik :: Adana Atmacaları
-modal:taktik :: Afyonkarahisar Şahinleri
-modal:taktik :: Ankara Eagles — Konya Aslanları
-modal:taktik :: Antalya Aslanları
-modal:taktik :: Aydın Üniversite
-modal:taktik :: Balıkesir Panterleri
-modal:taktik :: Balıkesir Yıldızları
-modal:taktik :: Balıkesir Yıldızları — Kütahya Şahinleri
-modal:taktik :: Batuhan Dinç
-modal:taktik :: Batuhan Dinç (PG) — Overall: 74
-modal:taktik :: Batuhan Dinç (PG) → SG
-modal:taktik :: Batuhan Dinç (PG·OVR 74)
-modal:taktik :: Bursa Şimşekleri
-modal:taktik :: Cihan Ünver
-modal:taktik :: Coşkun Pekmez
-modal:taktik :: Coşkun Pekmez (PF) — Overall: 68
-modal:taktik :: Coşkun Pekmez (PF) → C
-modal:taktik :: Coşkun Pekmez (PF) → SF
-modal:taktik :: Coşkun Pekmez (PF·OVR 68)
+modal:taktik :: Ankara Doğanları
+modal:taktik :: Aydın Spor
+modal:taktik :: Balıkesir Boğaları
+modal:taktik :: Burak Ateş
+modal:taktik :: Burak Ateş (PF) — Overall: 71
+modal:taktik :: Burak Ateş (PF) → C
+modal:taktik :: Burak Ateş (PF) → SF
+modal:taktik :: Burak Ateş (PF·OVR 71)
+modal:taktik :: Bursa Gençlik
+modal:taktik :: Bursa Kurtları
+modal:taktik :: Cem Kılıç
+modal:taktik :: Cengiz Sağlam
+modal:taktik :: Cengiz Sağlam (C) — Overall: 72
+modal:taktik :: Cengiz Sağlam (C) → PF
+modal:taktik :: Cengiz Sağlam (C·OVR 72)
 modal:taktik :: Doluluk (taraftar + form + bilet fiyatı)
-modal:taktik :: Doğuş Turgut
-modal:taktik :: Ediz Uçar
-modal:taktik :: Fatih Öcal
-modal:taktik :: Fatih Öcal (SF) — Overall: 67
-modal:taktik :: Fatih Öcal (SF) → PF
-modal:taktik :: Fatih Öcal (SF) → SG
-modal:taktik :: Fatih Öcal (SF·OVR 67)
-modal:taktik :: Fuat Yağmur
-modal:taktik :: Gaziantep Doğanları
-modal:taktik :: Hüsnü Ateş
-modal:taktik :: Hüsnü Ateş (SF) — Overall: 72
-modal:taktik :: Hüsnü Ateş (SF) → PF
-modal:taktik :: Hüsnü Ateş (SF) → SG
-modal:taktik :: Hüsnü Ateş (SF·OVR 72)
+modal:taktik :: Doğuş Gökçe
+modal:taktik :: Doğuş Gökçe (SG) — Overall: 76
+modal:taktik :: Doğuş Gökçe (SG) → PG
+modal:taktik :: Doğuş Gökçe (SG) → SF
+modal:taktik :: Doğuş Gökçe (SG·OVR 76)
+modal:taktik :: Elazığ Doğanları
+modal:taktik :: Eskişehir Yıldızları
+modal:taktik :: Fikret Taş
+modal:taktik :: Fikret Taş (PG) — Overall: 71
+modal:taktik :: Fikret Taş (PG) → SG
+modal:taktik :: Fikret Taş (PG·OVR 71)
+modal:taktik :: Fuat Yalçın
+modal:taktik :: Hakan Yılmaz
+modal:taktik :: Hüseyin Elmas
+modal:taktik :: Hüseyin Elmas (C) — Overall: 67
+modal:taktik :: Hüseyin Elmas (C) → PF
+modal:taktik :: Hüseyin Elmas (C·OVR 67)
+modal:taktik :: Işıtan Savaş
 modal:taktik :: Kasa bu gidişle ~9 weeks yeter
-modal:taktik :: Konya Aslanları
-modal:taktik :: Konya Boğaları
-modal:taktik :: Kütahya Şahinleri
+modal:taktik :: Kağan Özgün
+modal:taktik :: Kocaeli Doğanları
+modal:taktik :: Kocaeli Yıldızları
+modal:taktik :: Konya Gençlik
+modal:taktik :: Konya Üniversite
+modal:taktik :: Konya Üniversite — Bursa Gençlik
+modal:taktik :: Kütahya Koleji
+modal:taktik :: Kütahya Koleji — Ankara Doğanları
 modal:taktik :: Malatya Boğaları
-modal:taktik :: Malatya Boğaları — Balıkesir Panterleri
-modal:taktik :: Muğla Gençlik
-modal:taktik :: Muğla Gençlik — Bursa Şimşekleri
-modal:taktik :: Oktay Çetin
-modal:taktik :: Rahmi Sevinç
-modal:taktik :: Rıza Baştürk
-modal:taktik :: Rıza Baştürk (C) — Overall: 67
-modal:taktik :: Rıza Baştürk (C) → PF
-modal:taktik :: Rıza Baştürk (C·OVR 67)
-modal:taktik :: Selim Çakır
-modal:taktik :: Selçuk Taşkın
-modal:taktik :: Selçuk Taşkın (SG) — Overall: 76
-modal:taktik :: Selçuk Taşkın (SG) → PG
-modal:taktik :: Selçuk Taşkın (SG) → SF
-modal:taktik :: Selçuk Taşkın (SG·OVR 76)
-modal:taktik :: Sivas Boğaları
-modal:taktik :: Tekirdağ Spor
-modal:taktik :: Uras Uludağ
-modal:taktik :: Yiğit Sönmez
-modal:taktik :: Yiğit Sönmez (C) — Overall: 69
-modal:taktik :: Yiğit Sönmez (C) → PF
-modal:taktik :: Yiğit Sönmez (C·OVR 69)
-modal:taktik :: Şafak Duman
-modal:taktik :: Şafak Duman (SG) — Overall: 71
-modal:taktik :: Şafak Duman (SG) → PG
-modal:taktik :: Şafak Duman (SG) → SF
-modal:taktik :: Şafak Duman (SG·OVR 71)
-modal:taktik :: Şafak Yıldırım
-modal:taktik :: Şafak Yıldırım (SF) — Overall: 73
-modal:taktik :: Şafak Yıldırım (SF) → PF
-modal:taktik :: Şafak Yıldırım (SF) → SG
-modal:taktik :: Şafak Yıldırım (SF·OVR 73)
-modal:taktik :: 🇹🇷 Ahmet Dinç
-modal:taktik :: 🇹🇷 Bahadır Şimşek
-modal:taktik :: 🇹🇷 Batıkan Tetik
-modal:taktik :: 🇹🇷 Burak Taş
-modal:taktik :: 🇹🇷 Cem Genç
-modal:taktik :: 🇹🇷 Enes Aktaş
-modal:taktik :: 🇹🇷 Fikret Baştürk
-modal:taktik :: 🇹🇷 Işıtan Baştürk
-modal:taktik :: 🇹🇷 Kağan Erdoğan
-modal:taktik :: 🇹🇷 Murat Aydın
-modal:taktik :: 🇹🇷 Nuri Koç
-modal:taktik :: 🇹🇷 Onur Çetin
-modal:taktik :: 🇹🇷 Oğuzhan Balcı
-modal:taktik :: 🇹🇷 Poyraz Balcı
-modal:taktik :: 🇹🇷 Rahmi Öner
-modal:taktik :: 🇹🇷 Rıza Genç
-modal:taktik :: 🇹🇷 Sedat Güngör
-modal:taktik :: 🇹🇷 Serdar Özel
-modal:taktik :: 🇹🇷 Taner Yıldız
-modal:taktik :: 🇹🇷 Tayfun Çakmak
+modal:taktik :: Malatya Boğaları — İzmir Şimşekleri
+modal:taktik :: Malatya Spor — Kocaeli Yıldızları
+modal:taktik :: Mersin Kartalları
+modal:taktik :: Mersin Şahinleri
+modal:taktik :: Ramazan Gündoğdu
+modal:taktik :: Tarık Yıldız
+modal:taktik :: Uras Doğan
+modal:taktik :: Zeki Yalın
+modal:taktik :: Zeki Yalın (SG) — Overall: 76
+modal:taktik :: Zeki Yalın (SG) → PG
+modal:taktik :: Zeki Yalın (SG) → SF
+modal:taktik :: Zeki Yalın (SG·OVR 76)
+modal:taktik :: Zonguldak Kurtları
+modal:taktik :: Çağrı Ünver
+modal:taktik :: İsmail Serin
+modal:taktik :: İsmet Nalbant
+modal:taktik :: İsmet Nalbant (PF) — Overall: 71
+modal:taktik :: İsmet Nalbant (PF) → C
+modal:taktik :: İsmet Nalbant (PF) → SF
+modal:taktik :: İsmet Nalbant (PF·OVR 71)
+modal:taktik :: İzmir Şimşekleri
+modal:taktik :: 🇪🇪 Vahur Kütt
+modal:taktik :: 🇹🇷 Ahmet Baş
+modal:taktik :: 🇹🇷 Batıkan Kara
+modal:taktik :: 🇹🇷 Cihan Yıldız
+modal:taktik :: 🇹🇷 Davut Sevinç
+modal:taktik :: 🇹🇷 Doğuş Örs
+modal:taktik :: 🇹🇷 Efe Özdemir
+modal:taktik :: 🇹🇷 Ferit Bektaş
+modal:taktik :: 🇹🇷 Fikret Doğan
+modal:taktik :: 🇹🇷 Gökay Koç
+modal:taktik :: 🇹🇷 Gökhan Çevik
+modal:taktik :: 🇹🇷 Görkem Turgut
+modal:taktik :: 🇹🇷 Hüseyin Öcal
+modal:taktik :: 🇹🇷 Kağan Kılıç
+modal:taktik :: 🇹🇷 Kürşat Umutlu
+modal:taktik :: 🇹🇷 Mahmut Coşkun
+modal:taktik :: 🇹🇷 Nuri Ateş
+modal:taktik :: 🇹🇷 Oktay Taşkın
+modal:taktik :: 🇹🇷 Orhan Coşkun
+modal:taktik :: 🇹🇷 Oğuz Tekin
+modal:taktik :: 🇹🇷 Recep Taşkın
+modal:taktik :: 🇹🇷 Sami Sevinç
+modal:taktik :: 🇹🇷 Selim Genç
+modal:taktik :: 🇹🇷 Süleyman Aslan
+modal:taktik :: 🇹🇷 Tolga Gül
 modal:taktik :: 🇹🇷 Türkçe
-modal:taktik :: 🇹🇷 Volkan Koçak
-modal:taktik :: 🇹🇷 Yağız Şahin
-modal:taktik :: 🇹🇷 Yiğit Demirci
-modal:taktik :: 🇹🇷 Yiğit Polat
-modal:taktik :: 🇹🇷 Öner Duman
-modal:taktik :: 🇹🇷 Özgür Aktaş
-modal:taktik :: 🇹🇷 İlker Kılınç
-modal:taktik :: 🇹🇷 İlker Polat
-modal:taktik :: 🇹🇷 İsmet Uçar
-modal:taktik :: 🎯 Tactics — vs Tekirdağ Spor
-modal:taktik :: 🏛️ Adana Atmacaları from
-modal:taktik :: 🏛️ Afyonkarahisar Şahinleri from
-modal:taktik :: 🏛️ Aydın Üniversite from
-modal:taktik :: 🏛️ Balıkesir Panterleri from
-modal:taktik :: 🏛️ Balıkesir Yıldızları from
-modal:taktik :: 🏛️ Gaziantep Doğanları from
-modal:taktik :: 🏛️ Konya Aslanları from
-modal:taktik :: 🏛️ Kütahya Şahinleri from
-modal:taktik :: 🤝 Latif Ersoy – Şafak Yıldırım
-modal:taktik :: 🤝 Selçuk Taşkın – Timur Nalbant
+modal:taktik :: 🇹🇷 Uğur Hakyemez
+modal:taktik :: 🇹🇷 Yalçın Köse
+modal:taktik :: 🇹🇷 Yalçın Uçar
+modal:taktik :: 🇹🇷 Çağrı Örs
+modal:taktik :: 🇹🇷 İlker Uysal
+modal:taktik :: 🇹🇷 İsmail Aydın
+modal:taktik :: 🇹🇷 İsmail Karaca
+modal:taktik :: 🎯 Tactics — vs Kocaeli Yıldızları
+modal:taktik :: 🏛️ Aydın Spor from
+modal:taktik :: 🏛️ Balıkesir Boğaları from
+modal:taktik :: 🏛️ Bursa Gençlik from
+modal:taktik :: 🏛️ Bursa Kurtları from
+modal:taktik :: 🏛️ Eskişehir Yıldızları from
+modal:taktik :: 🏛️ Kütahya Koleji from
+modal:taktik :: 🏛️ Malatya Boğaları from
+modal:taktik :: 🏛️ Mersin Kartalları from
+modal:taktik :: 🏛️ Mersin Şahinleri from
+modal:taktik :: 🏛️ Zonguldak Kurtları from
+modal:taktik :: 🏛️ İzmir Şimşekleri from
+modal:taktik :: 🤝 Fikret Taş – Doğuş Gökçe
 sayfa:altyapi :: /100 · 92 seviyesine doğru rising ↑
-sayfa:altyapi :: Adana Atmacaları
-sayfa:altyapi :: Afyonkarahisar Şahinleri
-sayfa:altyapi :: Ankara Eagles — Konya Aslanları
-sayfa:altyapi :: Antalya Aslanları
-sayfa:altyapi :: Aydın Üniversite
-sayfa:altyapi :: Balıkesir Panterleri
-sayfa:altyapi :: Balıkesir Yıldızları
-sayfa:altyapi :: Balıkesir Yıldızları — Kütahya Şahinleri
-sayfa:altyapi :: Batuhan Dinç
-sayfa:altyapi :: Bursa Şimşekleri
-sayfa:altyapi :: Cihan Ünver
-sayfa:altyapi :: Coşkun Pekmez
+sayfa:altyapi :: Ankara Doğanları
+sayfa:altyapi :: Aydın Spor
+sayfa:altyapi :: Balıkesir Boğaları
+sayfa:altyapi :: Burak Ateş
+sayfa:altyapi :: Bursa Gençlik
+sayfa:altyapi :: Bursa Kurtları
+sayfa:altyapi :: Cengiz Sağlam
 sayfa:altyapi :: Doluluk (taraftar + form + bilet fiyatı)
-sayfa:altyapi :: Fatih Öcal
-sayfa:altyapi :: Gaziantep Doğanları
-sayfa:altyapi :: Hüsnü Ateş
-sayfa:altyapi :: Konya Aslanları
-sayfa:altyapi :: Konya Boğaları
-sayfa:altyapi :: Kütahya Şahinleri
+sayfa:altyapi :: Doğuş Gökçe
+sayfa:altyapi :: Elazığ Doğanları
+sayfa:altyapi :: Eskişehir Yıldızları
+sayfa:altyapi :: Fikret Taş
+sayfa:altyapi :: Hüseyin Elmas
+sayfa:altyapi :: Kocaeli Doğanları
+sayfa:altyapi :: Kocaeli Yıldızları
+sayfa:altyapi :: Konya Gençlik
+sayfa:altyapi :: Konya Üniversite
+sayfa:altyapi :: Konya Üniversite — Bursa Gençlik
+sayfa:altyapi :: Kütahya Koleji
+sayfa:altyapi :: Kütahya Koleji — Ankara Doğanları
 sayfa:altyapi :: Malatya Boğaları
-sayfa:altyapi :: Malatya Boğaları — Balıkesir Panterleri
-sayfa:altyapi :: Muğla Gençlik
-sayfa:altyapi :: Muğla Gençlik — Bursa Şimşekleri
-sayfa:altyapi :: Rıza Baştürk
-sayfa:altyapi :: Selçuk Taşkın
-sayfa:altyapi :: Sivas Boğaları
-sayfa:altyapi :: Tekirdağ Spor
-sayfa:altyapi :: Yiğit Sönmez
-sayfa:altyapi :: Şafak Duman
-sayfa:altyapi :: Şafak Yıldırım
-sayfa:altyapi :: 🇹🇷 Ahmet Dinç
-sayfa:altyapi :: 🇹🇷 Bahadır Şimşek
-sayfa:altyapi :: 🇹🇷 Batıkan Tetik
-sayfa:altyapi :: 🇹🇷 Burak Taş
-sayfa:altyapi :: 🇹🇷 Cem Genç
-sayfa:altyapi :: 🇹🇷 Enes Aktaş
-sayfa:altyapi :: 🇹🇷 Fikret Baştürk
-sayfa:altyapi :: 🇹🇷 Işıtan Baştürk
-sayfa:altyapi :: 🇹🇷 Kağan Erdoğan
-sayfa:altyapi :: 🇹🇷 Murat Aydın
-sayfa:altyapi :: 🇹🇷 Nuri Koç
-sayfa:altyapi :: 🇹🇷 Onur Çetin
-sayfa:altyapi :: 🇹🇷 Oğuzhan Balcı
-sayfa:altyapi :: 🇹🇷 Poyraz Balcı
-sayfa:altyapi :: 🇹🇷 Rahmi Öner
-sayfa:altyapi :: 🇹🇷 Rıza Genç
-sayfa:altyapi :: 🇹🇷 Sedat Güngör
-sayfa:altyapi :: 🇹🇷 Serdar Özel
-sayfa:altyapi :: 🇹🇷 Taner Yıldız
-sayfa:altyapi :: 🇹🇷 Tayfun Çakmak
+sayfa:altyapi :: Malatya Boğaları — İzmir Şimşekleri
+sayfa:altyapi :: Malatya Spor — Kocaeli Yıldızları
+sayfa:altyapi :: Mersin Kartalları
+sayfa:altyapi :: Mersin Şahinleri
+sayfa:altyapi :: Zeki Yalın
+sayfa:altyapi :: Zonguldak Kurtları
+sayfa:altyapi :: İsmet Nalbant
+sayfa:altyapi :: İzmir Şimşekleri
+sayfa:altyapi :: 🇪🇪 Vahur Kütt
+sayfa:altyapi :: 🇹🇷 Ahmet Baş
+sayfa:altyapi :: 🇹🇷 Batıkan Kara
+sayfa:altyapi :: 🇹🇷 Cihan Yıldız
+sayfa:altyapi :: 🇹🇷 Davut Sevinç
+sayfa:altyapi :: 🇹🇷 Doğuş Örs
+sayfa:altyapi :: 🇹🇷 Efe Özdemir
+sayfa:altyapi :: 🇹🇷 Ferit Bektaş
+sayfa:altyapi :: 🇹🇷 Fikret Doğan
+sayfa:altyapi :: 🇹🇷 Gökay Koç
+sayfa:altyapi :: 🇹🇷 Gökhan Çevik
+sayfa:altyapi :: 🇹🇷 Görkem Turgut
+sayfa:altyapi :: 🇹🇷 Hüseyin Öcal
+sayfa:altyapi :: 🇹🇷 Kağan Kılıç
+sayfa:altyapi :: 🇹🇷 Kürşat Umutlu
+sayfa:altyapi :: 🇹🇷 Mahmut Coşkun
+sayfa:altyapi :: 🇹🇷 Nuri Ateş
+sayfa:altyapi :: 🇹🇷 Oktay Taşkın
+sayfa:altyapi :: 🇹🇷 Orhan Coşkun
+sayfa:altyapi :: 🇹🇷 Oğuz Tekin
+sayfa:altyapi :: 🇹🇷 Recep Taşkın
+sayfa:altyapi :: 🇹🇷 Sami Sevinç
+sayfa:altyapi :: 🇹🇷 Selim Genç
+sayfa:altyapi :: 🇹🇷 Süleyman Aslan
+sayfa:altyapi :: 🇹🇷 Tolga Gül
 sayfa:altyapi :: 🇹🇷 Türkçe
-sayfa:altyapi :: 🇹🇷 Volkan Koçak
-sayfa:altyapi :: 🇹🇷 Yağız Şahin
-sayfa:altyapi :: 🇹🇷 Yiğit Demirci
-sayfa:altyapi :: 🇹🇷 Yiğit Polat
-sayfa:altyapi :: 🇹🇷 Öner Duman
-sayfa:altyapi :: 🇹🇷 Özgür Aktaş
-sayfa:altyapi :: 🇹🇷 İlker Kılınç
-sayfa:altyapi :: 🇹🇷 İlker Polat
-sayfa:altyapi :: 🇹🇷 İsmet Uçar
-sayfa:altyapi :: 🏛️ Adana Atmacaları from
-sayfa:altyapi :: 🏛️ Afyonkarahisar Şahinleri from
-sayfa:altyapi :: 🏛️ Aydın Üniversite from
-sayfa:altyapi :: 🏛️ Balıkesir Panterleri from
-sayfa:altyapi :: 🏛️ Balıkesir Yıldızları from
-sayfa:altyapi :: 🏛️ Gaziantep Doğanları from
-sayfa:altyapi :: 🏛️ Konya Aslanları from
-sayfa:altyapi :: 🏛️ Kütahya Şahinleri from
-sayfa:altyapi :: 🤝 Latif Ersoy – Şafak Yıldırım
-sayfa:altyapi :: 🤝 Selçuk Taşkın – Timur Nalbant
+sayfa:altyapi :: 🇹🇷 Uğur Hakyemez
+sayfa:altyapi :: 🇹🇷 Yalçın Köse
+sayfa:altyapi :: 🇹🇷 Yalçın Uçar
+sayfa:altyapi :: 🇹🇷 Çağrı Örs
+sayfa:altyapi :: 🇹🇷 İlker Uysal
+sayfa:altyapi :: 🇹🇷 İsmail Aydın
+sayfa:altyapi :: 🇹🇷 İsmail Karaca
+sayfa:altyapi :: 🏛️ Aydın Spor from
+sayfa:altyapi :: 🏛️ Balıkesir Boğaları from
+sayfa:altyapi :: 🏛️ Bursa Gençlik from
+sayfa:altyapi :: 🏛️ Bursa Kurtları from
+sayfa:altyapi :: 🏛️ Eskişehir Yıldızları from
+sayfa:altyapi :: 🏛️ Kütahya Koleji from
+sayfa:altyapi :: 🏛️ Malatya Boğaları from
+sayfa:altyapi :: 🏛️ Mersin Kartalları from
+sayfa:altyapi :: 🏛️ Mersin Şahinleri from
+sayfa:altyapi :: 🏛️ Zonguldak Kurtları from
+sayfa:altyapi :: 🏛️ İzmir Şimşekleri from
+sayfa:altyapi :: 🤝 Fikret Taş – Doğuş Gökçe
 sayfa:analiz :: /100 · 92 seviyesine doğru rising ↑
-sayfa:analiz :: Adana Atmacaları
-sayfa:analiz :: Afyonkarahisar Şahinleri
-sayfa:analiz :: Ankara Eagles — Konya Aslanları
-sayfa:analiz :: Antalya Aslanları
-sayfa:analiz :: Aydın Üniversite
-sayfa:analiz :: Balıkesir Panterleri
-sayfa:analiz :: Balıkesir Yıldızları
-sayfa:analiz :: Balıkesir Yıldızları — Kütahya Şahinleri
-sayfa:analiz :: Batuhan Dinç
-sayfa:analiz :: Batuhan Dinç (PG) — Overall: 74
-sayfa:analiz :: Batuhan Dinç (PG) → SG
-sayfa:analiz :: Batuhan Dinç (PG·OVR 74)
-sayfa:analiz :: Bursa Şimşekleri
-sayfa:analiz :: Cihan Ünver
-sayfa:analiz :: Coşkun Pekmez
-sayfa:analiz :: Coşkun Pekmez (PF) — Overall: 68
-sayfa:analiz :: Coşkun Pekmez (PF) → C
-sayfa:analiz :: Coşkun Pekmez (PF) → SF
-sayfa:analiz :: Coşkun Pekmez (PF·OVR 68)
+sayfa:analiz :: Ankara Doğanları
+sayfa:analiz :: Aydın Spor
+sayfa:analiz :: Balıkesir Boğaları
+sayfa:analiz :: Burak Ateş
+sayfa:analiz :: Burak Ateş (PF) — Overall: 71
+sayfa:analiz :: Burak Ateş (PF) → C
+sayfa:analiz :: Burak Ateş (PF) → SF
+sayfa:analiz :: Burak Ateş (PF·OVR 71)
+sayfa:analiz :: Bursa Gençlik
+sayfa:analiz :: Bursa Kurtları
+sayfa:analiz :: Cem Kılıç
+sayfa:analiz :: Cengiz Sağlam
+sayfa:analiz :: Cengiz Sağlam (C) — Overall: 72
+sayfa:analiz :: Cengiz Sağlam (C) → PF
+sayfa:analiz :: Cengiz Sağlam (C·OVR 72)
 sayfa:analiz :: Doluluk (taraftar + form + bilet fiyatı)
-sayfa:analiz :: Doğuş Turgut
-sayfa:analiz :: Ediz Uçar
-sayfa:analiz :: Fatih Öcal
-sayfa:analiz :: Fatih Öcal (SF) — Overall: 67
-sayfa:analiz :: Fatih Öcal (SF) → PF
-sayfa:analiz :: Fatih Öcal (SF) → SG
-sayfa:analiz :: Fatih Öcal (SF·OVR 67)
-sayfa:analiz :: Fuat Yağmur
-sayfa:analiz :: Gaziantep Doğanları
-sayfa:analiz :: Hüsnü Ateş
-sayfa:analiz :: Hüsnü Ateş (SF) — Overall: 72
-sayfa:analiz :: Hüsnü Ateş (SF) → PF
-sayfa:analiz :: Hüsnü Ateş (SF) → SG
-sayfa:analiz :: Hüsnü Ateş (SF·OVR 72)
+sayfa:analiz :: Doğuş Gökçe
+sayfa:analiz :: Doğuş Gökçe (SG) — Overall: 76
+sayfa:analiz :: Doğuş Gökçe (SG) → PG
+sayfa:analiz :: Doğuş Gökçe (SG) → SF
+sayfa:analiz :: Doğuş Gökçe (SG·OVR 76)
+sayfa:analiz :: Elazığ Doğanları
+sayfa:analiz :: Eskişehir Yıldızları
+sayfa:analiz :: Fikret Taş
+sayfa:analiz :: Fikret Taş (PG) — Overall: 71
+sayfa:analiz :: Fikret Taş (PG) → SG
+sayfa:analiz :: Fikret Taş (PG·OVR 71)
+sayfa:analiz :: Fuat Yalçın
+sayfa:analiz :: Hakan Yılmaz
+sayfa:analiz :: Hüseyin Elmas
+sayfa:analiz :: Hüseyin Elmas (C) — Overall: 67
+sayfa:analiz :: Hüseyin Elmas (C) → PF
+sayfa:analiz :: Hüseyin Elmas (C·OVR 67)
+sayfa:analiz :: Işıtan Savaş
 sayfa:analiz :: Kasa bu gidişle ~9 weeks yeter
-sayfa:analiz :: Konya Aslanları
-sayfa:analiz :: Konya Boğaları
-sayfa:analiz :: Kütahya Şahinleri
+sayfa:analiz :: Kağan Özgün
+sayfa:analiz :: Kocaeli Doğanları
+sayfa:analiz :: Kocaeli Yıldızları
+sayfa:analiz :: Konya Gençlik
+sayfa:analiz :: Konya Üniversite
+sayfa:analiz :: Konya Üniversite — Bursa Gençlik
+sayfa:analiz :: Kütahya Koleji
+sayfa:analiz :: Kütahya Koleji — Ankara Doğanları
 sayfa:analiz :: Malatya Boğaları
-sayfa:analiz :: Malatya Boğaları — Balıkesir Panterleri
-sayfa:analiz :: Muğla Gençlik
-sayfa:analiz :: Muğla Gençlik — Bursa Şimşekleri
-sayfa:analiz :: Oktay Çetin
-sayfa:analiz :: Rahmi Sevinç
-sayfa:analiz :: Rıza Baştürk
-sayfa:analiz :: Rıza Baştürk (C) — Overall: 67
-sayfa:analiz :: Rıza Baştürk (C) → PF
-sayfa:analiz :: Rıza Baştürk (C·OVR 67)
-sayfa:analiz :: Selim Çakır
-sayfa:analiz :: Selçuk Taşkın
-sayfa:analiz :: Selçuk Taşkın (SG) — Overall: 76
-sayfa:analiz :: Selçuk Taşkın (SG) → PG
-sayfa:analiz :: Selçuk Taşkın (SG) → SF
-sayfa:analiz :: Selçuk Taşkın (SG·OVR 76)
-sayfa:analiz :: Sivas Boğaları
-sayfa:analiz :: Tekirdağ Spor
-sayfa:analiz :: Uras Uludağ
-sayfa:analiz :: Yiğit Sönmez
-sayfa:analiz :: Yiğit Sönmez (C) — Overall: 69
-sayfa:analiz :: Yiğit Sönmez (C) → PF
-sayfa:analiz :: Yiğit Sönmez (C·OVR 69)
-sayfa:analiz :: Şafak Duman
-sayfa:analiz :: Şafak Duman (SG) — Overall: 71
-sayfa:analiz :: Şafak Duman (SG) → PG
-sayfa:analiz :: Şafak Duman (SG) → SF
-sayfa:analiz :: Şafak Duman (SG·OVR 71)
-sayfa:analiz :: Şafak Yıldırım
-sayfa:analiz :: Şafak Yıldırım (SF) — Overall: 73
-sayfa:analiz :: Şafak Yıldırım (SF) → PF
-sayfa:analiz :: Şafak Yıldırım (SF) → SG
-sayfa:analiz :: Şafak Yıldırım (SF·OVR 73)
-sayfa:analiz :: 🇹🇷 Ahmet Dinç
-sayfa:analiz :: 🇹🇷 Bahadır Şimşek
-sayfa:analiz :: 🇹🇷 Batıkan Tetik
-sayfa:analiz :: 🇹🇷 Burak Taş
-sayfa:analiz :: 🇹🇷 Cem Genç
-sayfa:analiz :: 🇹🇷 Enes Aktaş
-sayfa:analiz :: 🇹🇷 Fikret Baştürk
-sayfa:analiz :: 🇹🇷 Işıtan Baştürk
-sayfa:analiz :: 🇹🇷 Kağan Erdoğan
-sayfa:analiz :: 🇹🇷 Murat Aydın
-sayfa:analiz :: 🇹🇷 Nuri Koç
-sayfa:analiz :: 🇹🇷 Onur Çetin
-sayfa:analiz :: 🇹🇷 Oğuzhan Balcı
-sayfa:analiz :: 🇹🇷 Poyraz Balcı
-sayfa:analiz :: 🇹🇷 Rahmi Öner
-sayfa:analiz :: 🇹🇷 Rıza Genç
-sayfa:analiz :: 🇹🇷 Sedat Güngör
-sayfa:analiz :: 🇹🇷 Serdar Özel
-sayfa:analiz :: 🇹🇷 Taner Yıldız
-sayfa:analiz :: 🇹🇷 Tayfun Çakmak
+sayfa:analiz :: Malatya Boğaları — İzmir Şimşekleri
+sayfa:analiz :: Malatya Spor — Kocaeli Yıldızları
+sayfa:analiz :: Mersin Kartalları
+sayfa:analiz :: Mersin Şahinleri
+sayfa:analiz :: Ramazan Gündoğdu
+sayfa:analiz :: Tarık Yıldız
+sayfa:analiz :: Uras Doğan
+sayfa:analiz :: Zeki Yalın
+sayfa:analiz :: Zeki Yalın (SG) — Overall: 76
+sayfa:analiz :: Zeki Yalın (SG) → PG
+sayfa:analiz :: Zeki Yalın (SG) → SF
+sayfa:analiz :: Zeki Yalın (SG·OVR 76)
+sayfa:analiz :: Zonguldak Kurtları
+sayfa:analiz :: Çağrı Ünver
+sayfa:analiz :: İsmail Serin
+sayfa:analiz :: İsmet Nalbant
+sayfa:analiz :: İsmet Nalbant (PF) — Overall: 71
+sayfa:analiz :: İsmet Nalbant (PF) → C
+sayfa:analiz :: İsmet Nalbant (PF) → SF
+sayfa:analiz :: İsmet Nalbant (PF·OVR 71)
+sayfa:analiz :: İzmir Şimşekleri
+sayfa:analiz :: 🇪🇪 Vahur Kütt
+sayfa:analiz :: 🇹🇷 Ahmet Baş
+sayfa:analiz :: 🇹🇷 Batıkan Kara
+sayfa:analiz :: 🇹🇷 Cihan Yıldız
+sayfa:analiz :: 🇹🇷 Davut Sevinç
+sayfa:analiz :: 🇹🇷 Doğuş Örs
+sayfa:analiz :: 🇹🇷 Efe Özdemir
+sayfa:analiz :: 🇹🇷 Ferit Bektaş
+sayfa:analiz :: 🇹🇷 Fikret Doğan
+sayfa:analiz :: 🇹🇷 Gökay Koç
+sayfa:analiz :: 🇹🇷 Gökhan Çevik
+sayfa:analiz :: 🇹🇷 Görkem Turgut
+sayfa:analiz :: 🇹🇷 Hüseyin Öcal
+sayfa:analiz :: 🇹🇷 Kağan Kılıç
+sayfa:analiz :: 🇹🇷 Kürşat Umutlu
+sayfa:analiz :: 🇹🇷 Mahmut Coşkun
+sayfa:analiz :: 🇹🇷 Nuri Ateş
+sayfa:analiz :: 🇹🇷 Oktay Taşkın
+sayfa:analiz :: 🇹🇷 Orhan Coşkun
+sayfa:analiz :: 🇹🇷 Oğuz Tekin
+sayfa:analiz :: 🇹🇷 Recep Taşkın
+sayfa:analiz :: 🇹🇷 Sami Sevinç
+sayfa:analiz :: 🇹🇷 Selim Genç
+sayfa:analiz :: 🇹🇷 Süleyman Aslan
+sayfa:analiz :: 🇹🇷 Tolga Gül
 sayfa:analiz :: 🇹🇷 Türkçe
-sayfa:analiz :: 🇹🇷 Volkan Koçak
-sayfa:analiz :: 🇹🇷 Yağız Şahin
-sayfa:analiz :: 🇹🇷 Yiğit Demirci
-sayfa:analiz :: 🇹🇷 Yiğit Polat
-sayfa:analiz :: 🇹🇷 Öner Duman
-sayfa:analiz :: 🇹🇷 Özgür Aktaş
-sayfa:analiz :: 🇹🇷 İlker Kılınç
-sayfa:analiz :: 🇹🇷 İlker Polat
-sayfa:analiz :: 🇹🇷 İsmet Uçar
-sayfa:analiz :: 🏛️ Adana Atmacaları from
-sayfa:analiz :: 🏛️ Afyonkarahisar Şahinleri from
-sayfa:analiz :: 🏛️ Aydın Üniversite from
-sayfa:analiz :: 🏛️ Balıkesir Panterleri from
-sayfa:analiz :: 🏛️ Balıkesir Yıldızları from
-sayfa:analiz :: 🏛️ Gaziantep Doğanları from
-sayfa:analiz :: 🏛️ Konya Aslanları from
-sayfa:analiz :: 🏛️ Kütahya Şahinleri from
-sayfa:analiz :: 🤝 Latif Ersoy – Şafak Yıldırım
-sayfa:analiz :: 🤝 Selçuk Taşkın – Timur Nalbant
+sayfa:analiz :: 🇹🇷 Uğur Hakyemez
+sayfa:analiz :: 🇹🇷 Yalçın Köse
+sayfa:analiz :: 🇹🇷 Yalçın Uçar
+sayfa:analiz :: 🇹🇷 Çağrı Örs
+sayfa:analiz :: 🇹🇷 İlker Uysal
+sayfa:analiz :: 🇹🇷 İsmail Aydın
+sayfa:analiz :: 🇹🇷 İsmail Karaca
+sayfa:analiz :: 🏛️ Aydın Spor from
+sayfa:analiz :: 🏛️ Balıkesir Boğaları from
+sayfa:analiz :: 🏛️ Bursa Gençlik from
+sayfa:analiz :: 🏛️ Bursa Kurtları from
+sayfa:analiz :: 🏛️ Eskişehir Yıldızları from
+sayfa:analiz :: 🏛️ Kütahya Koleji from
+sayfa:analiz :: 🏛️ Malatya Boğaları from
+sayfa:analiz :: 🏛️ Mersin Kartalları from
+sayfa:analiz :: 🏛️ Mersin Şahinleri from
+sayfa:analiz :: 🏛️ Zonguldak Kurtları from
+sayfa:analiz :: 🏛️ İzmir Şimşekleri from
+sayfa:analiz :: 🤝 Fikret Taş – Doğuş Gökçe
 sayfa:antrenman :: /100 · 92 seviyesine doğru rising ↑
-sayfa:antrenman :: Adana Atmacaları
-sayfa:antrenman :: Afyonkarahisar Şahinleri
-sayfa:antrenman :: Ankara Eagles — Konya Aslanları
-sayfa:antrenman :: Antalya Aslanları
-sayfa:antrenman :: Aydın Üniversite
-sayfa:antrenman :: Balıkesir Panterleri
-sayfa:antrenman :: Balıkesir Yıldızları
-sayfa:antrenman :: Balıkesir Yıldızları — Kütahya Şahinleri
-sayfa:antrenman :: Batuhan Dinç
-sayfa:antrenman :: Batuhan Dinç (PG) — Overall: 74
-sayfa:antrenman :: Batuhan Dinç (PG) → SG
-sayfa:antrenman :: Bursa Şimşekleri
-sayfa:antrenman :: Cihan Ünver
-sayfa:antrenman :: Coşkun Pekmez
-sayfa:antrenman :: Coşkun Pekmez (PF) — Overall: 68
-sayfa:antrenman :: Coşkun Pekmez (PF) → C
-sayfa:antrenman :: Coşkun Pekmez (PF) → SF
+sayfa:antrenman :: Ankara Doğanları
+sayfa:antrenman :: Aydın Spor
+sayfa:antrenman :: Balıkesir Boğaları
+sayfa:antrenman :: Burak Ateş
+sayfa:antrenman :: Burak Ateş (PF) — Overall: 71
+sayfa:antrenman :: Burak Ateş (PF) → C
+sayfa:antrenman :: Burak Ateş (PF) → SF
+sayfa:antrenman :: Bursa Gençlik
+sayfa:antrenman :: Bursa Kurtları
+sayfa:antrenman :: Cem Kılıç
+sayfa:antrenman :: Cengiz Sağlam
+sayfa:antrenman :: Cengiz Sağlam (C) — Overall: 72
+sayfa:antrenman :: Cengiz Sağlam (C) → PF
 sayfa:antrenman :: Doluluk (taraftar + form + bilet fiyatı)
-sayfa:antrenman :: Doğuş Turgut
-sayfa:antrenman :: Ediz Uçar
-sayfa:antrenman :: Fatih Öcal
-sayfa:antrenman :: Fatih Öcal (SF) — Overall: 67
-sayfa:antrenman :: Fatih Öcal (SF) → PF
-sayfa:antrenman :: Fatih Öcal (SF) → SG
-sayfa:antrenman :: Fuat Yağmur
-sayfa:antrenman :: Gaziantep Doğanları
-sayfa:antrenman :: Hüsnü Ateş
-sayfa:antrenman :: Hüsnü Ateş (SF) — Overall: 72
-sayfa:antrenman :: Hüsnü Ateş (SF) → PF
-sayfa:antrenman :: Hüsnü Ateş (SF) → SG
-sayfa:antrenman :: Konya Aslanları
-sayfa:antrenman :: Konya Boğaları
-sayfa:antrenman :: Kütahya Şahinleri
+sayfa:antrenman :: Doğuş Gökçe
+sayfa:antrenman :: Doğuş Gökçe (SG) — Overall: 76
+sayfa:antrenman :: Doğuş Gökçe (SG) → PG
+sayfa:antrenman :: Doğuş Gökçe (SG) → SF
+sayfa:antrenman :: Elazığ Doğanları
+sayfa:antrenman :: Eskişehir Yıldızları
+sayfa:antrenman :: Fikret Taş
+sayfa:antrenman :: Fikret Taş (PG) — Overall: 71
+sayfa:antrenman :: Fikret Taş (PG) → SG
+sayfa:antrenman :: Fuat Yalçın
+sayfa:antrenman :: Hakan Yılmaz
+sayfa:antrenman :: Hüseyin Elmas
+sayfa:antrenman :: Hüseyin Elmas (C) — Overall: 67
+sayfa:antrenman :: Hüseyin Elmas (C) → PF
+sayfa:antrenman :: Işıtan Savaş
+sayfa:antrenman :: Kağan Özgün
+sayfa:antrenman :: Kocaeli Doğanları
+sayfa:antrenman :: Kocaeli Yıldızları
+sayfa:antrenman :: Konya Gençlik
+sayfa:antrenman :: Konya Üniversite
+sayfa:antrenman :: Konya Üniversite — Bursa Gençlik
+sayfa:antrenman :: Kütahya Koleji
+sayfa:antrenman :: Kütahya Koleji — Ankara Doğanları
 sayfa:antrenman :: Malatya Boğaları
-sayfa:antrenman :: Malatya Boğaları — Balıkesir Panterleri
-sayfa:antrenman :: Muğla Gençlik
-sayfa:antrenman :: Muğla Gençlik — Bursa Şimşekleri
-sayfa:antrenman :: Oktay Çetin
-sayfa:antrenman :: Rahmi Sevinç
-sayfa:antrenman :: Rıza Baştürk
-sayfa:antrenman :: Rıza Baştürk (C) — Overall: 67
-sayfa:antrenman :: Rıza Baştürk (C) → PF
-sayfa:antrenman :: Selim Çakır
-sayfa:antrenman :: Selçuk Taşkın
-sayfa:antrenman :: Selçuk Taşkın (SG) — Overall: 76
-sayfa:antrenman :: Selçuk Taşkın (SG) → PG
-sayfa:antrenman :: Selçuk Taşkın (SG) → SF
-sayfa:antrenman :: Sivas Boğaları
-sayfa:antrenman :: Tekirdağ Spor
-sayfa:antrenman :: Uras Uludağ
-sayfa:antrenman :: Yiğit Sönmez
-sayfa:antrenman :: Yiğit Sönmez (C) — Overall: 69
-sayfa:antrenman :: Yiğit Sönmez (C) → PF
-sayfa:antrenman :: Şafak Duman
-sayfa:antrenman :: Şafak Duman (SG) — Overall: 71
-sayfa:antrenman :: Şafak Duman (SG) → PG
-sayfa:antrenman :: Şafak Duman (SG) → SF
-sayfa:antrenman :: Şafak Yıldırım
-sayfa:antrenman :: Şafak Yıldırım (SF) — Overall: 73
-sayfa:antrenman :: Şafak Yıldırım (SF) → PF
-sayfa:antrenman :: Şafak Yıldırım (SF) → SG
-sayfa:antrenman :: 🇹🇷 Ahmet Dinç
-sayfa:antrenman :: 🇹🇷 Bahadır Şimşek
-sayfa:antrenman :: 🇹🇷 Batıkan Tetik
-sayfa:antrenman :: 🇹🇷 Burak Taş
-sayfa:antrenman :: 🇹🇷 Cem Genç
-sayfa:antrenman :: 🇹🇷 Enes Aktaş
-sayfa:antrenman :: 🇹🇷 Fikret Baştürk
-sayfa:antrenman :: 🇹🇷 Işıtan Baştürk
-sayfa:antrenman :: 🇹🇷 Kağan Erdoğan
-sayfa:antrenman :: 🇹🇷 Murat Aydın
-sayfa:antrenman :: 🇹🇷 Nuri Koç
-sayfa:antrenman :: 🇹🇷 Onur Çetin
-sayfa:antrenman :: 🇹🇷 Oğuzhan Balcı
-sayfa:antrenman :: 🇹🇷 Poyraz Balcı
-sayfa:antrenman :: 🇹🇷 Rahmi Öner
-sayfa:antrenman :: 🇹🇷 Rıza Genç
-sayfa:antrenman :: 🇹🇷 Sedat Güngör
-sayfa:antrenman :: 🇹🇷 Serdar Özel
-sayfa:antrenman :: 🇹🇷 Taner Yıldız
-sayfa:antrenman :: 🇹🇷 Tayfun Çakmak
+sayfa:antrenman :: Malatya Boğaları — İzmir Şimşekleri
+sayfa:antrenman :: Malatya Spor — Kocaeli Yıldızları
+sayfa:antrenman :: Mersin Kartalları
+sayfa:antrenman :: Mersin Şahinleri
+sayfa:antrenman :: Ramazan Gündoğdu
+sayfa:antrenman :: Tarık Yıldız
+sayfa:antrenman :: Uras Doğan
+sayfa:antrenman :: Zeki Yalın
+sayfa:antrenman :: Zeki Yalın (SG) — Overall: 76
+sayfa:antrenman :: Zeki Yalın (SG) → PG
+sayfa:antrenman :: Zeki Yalın (SG) → SF
+sayfa:antrenman :: Zonguldak Kurtları
+sayfa:antrenman :: Çağrı Ünver
+sayfa:antrenman :: İsmail Serin
+sayfa:antrenman :: İsmet Nalbant
+sayfa:antrenman :: İsmet Nalbant (PF) — Overall: 71
+sayfa:antrenman :: İsmet Nalbant (PF) → C
+sayfa:antrenman :: İsmet Nalbant (PF) → SF
+sayfa:antrenman :: İzmir Şimşekleri
+sayfa:antrenman :: 🇪🇪 Vahur Kütt
+sayfa:antrenman :: 🇹🇷 Ahmet Baş
+sayfa:antrenman :: 🇹🇷 Batıkan Kara
+sayfa:antrenman :: 🇹🇷 Cihan Yıldız
+sayfa:antrenman :: 🇹🇷 Davut Sevinç
+sayfa:antrenman :: 🇹🇷 Doğuş Örs
+sayfa:antrenman :: 🇹🇷 Efe Özdemir
+sayfa:antrenman :: 🇹🇷 Ferit Bektaş
+sayfa:antrenman :: 🇹🇷 Fikret Doğan
+sayfa:antrenman :: 🇹🇷 Gökay Koç
+sayfa:antrenman :: 🇹🇷 Gökhan Çevik
+sayfa:antrenman :: 🇹🇷 Görkem Turgut
+sayfa:antrenman :: 🇹🇷 Hüseyin Öcal
+sayfa:antrenman :: 🇹🇷 Kağan Kılıç
+sayfa:antrenman :: 🇹🇷 Kürşat Umutlu
+sayfa:antrenman :: 🇹🇷 Mahmut Coşkun
+sayfa:antrenman :: 🇹🇷 Nuri Ateş
+sayfa:antrenman :: 🇹🇷 Oktay Taşkın
+sayfa:antrenman :: 🇹🇷 Orhan Coşkun
+sayfa:antrenman :: 🇹🇷 Oğuz Tekin
+sayfa:antrenman :: 🇹🇷 Recep Taşkın
+sayfa:antrenman :: 🇹🇷 Sami Sevinç
+sayfa:antrenman :: 🇹🇷 Selim Genç
+sayfa:antrenman :: 🇹🇷 Süleyman Aslan
+sayfa:antrenman :: 🇹🇷 Tolga Gül
 sayfa:antrenman :: 🇹🇷 Türkçe
-sayfa:antrenman :: 🇹🇷 Volkan Koçak
-sayfa:antrenman :: 🇹🇷 Yağız Şahin
-sayfa:antrenman :: 🇹🇷 Yiğit Demirci
-sayfa:antrenman :: 🇹🇷 Yiğit Polat
-sayfa:antrenman :: 🇹🇷 Öner Duman
-sayfa:antrenman :: 🇹🇷 Özgür Aktaş
-sayfa:antrenman :: 🇹🇷 İlker Kılınç
-sayfa:antrenman :: 🇹🇷 İlker Polat
-sayfa:antrenman :: 🇹🇷 İsmet Uçar
-sayfa:antrenman :: 🏛️ Adana Atmacaları from
-sayfa:antrenman :: 🏛️ Afyonkarahisar Şahinleri from
-sayfa:antrenman :: 🏛️ Aydın Üniversite from
-sayfa:antrenman :: 🏛️ Balıkesir Panterleri from
-sayfa:antrenman :: 🏛️ Balıkesir Yıldızları from
-sayfa:antrenman :: 🏛️ Gaziantep Doğanları from
-sayfa:antrenman :: 🏛️ Konya Aslanları from
-sayfa:antrenman :: 🏛️ Kütahya Şahinleri from
-sayfa:antrenman :: 🤝 Latif Ersoy – Şafak Yıldırım
-sayfa:antrenman :: 🤝 Selçuk Taşkın – Timur Nalbant
+sayfa:antrenman :: 🇹🇷 Uğur Hakyemez
+sayfa:antrenman :: 🇹🇷 Yalçın Köse
+sayfa:antrenman :: 🇹🇷 Yalçın Uçar
+sayfa:antrenman :: 🇹🇷 Çağrı Örs
+sayfa:antrenman :: 🇹🇷 İlker Uysal
+sayfa:antrenman :: 🇹🇷 İsmail Aydın
+sayfa:antrenman :: 🇹🇷 İsmail Karaca
+sayfa:antrenman :: 🏛️ Aydın Spor from
+sayfa:antrenman :: 🏛️ Balıkesir Boğaları from
+sayfa:antrenman :: 🏛️ Bursa Gençlik from
+sayfa:antrenman :: 🏛️ Bursa Kurtları from
+sayfa:antrenman :: 🏛️ Eskişehir Yıldızları from
+sayfa:antrenman :: 🏛️ Kütahya Koleji from
+sayfa:antrenman :: 🏛️ Malatya Boğaları from
+sayfa:antrenman :: 🏛️ Mersin Kartalları from
+sayfa:antrenman :: 🏛️ Mersin Şahinleri from
+sayfa:antrenman :: 🏛️ Zonguldak Kurtları from
+sayfa:antrenman :: 🏛️ İzmir Şimşekleri from
+sayfa:antrenman :: 🤝 Fikret Taş – Doğuş Gökçe
 sayfa:arena :: /100 · 92 seviyesine doğru rising ↑
-sayfa:arena :: Adana Atmacaları
-sayfa:arena :: Afyonkarahisar Şahinleri
-sayfa:arena :: Ankara Eagles — Konya Aslanları
-sayfa:arena :: Antalya Aslanları
-sayfa:arena :: Aydın Üniversite
-sayfa:arena :: Balıkesir Panterleri
-sayfa:arena :: Balıkesir Yıldızları
-sayfa:arena :: Balıkesir Yıldızları — Kütahya Şahinleri
-sayfa:arena :: Batuhan Dinç
-sayfa:arena :: Batuhan Dinç (PG) — Overall: 74
-sayfa:arena :: Batuhan Dinç (PG) → SG
-sayfa:arena :: Bursa Şimşekleri
-sayfa:arena :: Cihan Ünver
-sayfa:arena :: Coşkun Pekmez
-sayfa:arena :: Coşkun Pekmez (PF) — Overall: 68
-sayfa:arena :: Coşkun Pekmez (PF) → C
-sayfa:arena :: Coşkun Pekmez (PF) → SF
+sayfa:arena :: Ankara Doğanları
+sayfa:arena :: Aydın Spor
+sayfa:arena :: Balıkesir Boğaları
+sayfa:arena :: Burak Ateş
+sayfa:arena :: Burak Ateş (PF) — Overall: 71
+sayfa:arena :: Burak Ateş (PF) → C
+sayfa:arena :: Burak Ateş (PF) → SF
+sayfa:arena :: Bursa Gençlik
+sayfa:arena :: Bursa Kurtları
+sayfa:arena :: Cem Kılıç
+sayfa:arena :: Cengiz Sağlam
+sayfa:arena :: Cengiz Sağlam (C) — Overall: 72
+sayfa:arena :: Cengiz Sağlam (C) → PF
 sayfa:arena :: Doluluk (taraftar + form + bilet fiyatı)
-sayfa:arena :: Doğuş Turgut
-sayfa:arena :: Ediz Uçar
-sayfa:arena :: Fatih Öcal
-sayfa:arena :: Fatih Öcal (SF) — Overall: 67
-sayfa:arena :: Fatih Öcal (SF) → PF
-sayfa:arena :: Fatih Öcal (SF) → SG
-sayfa:arena :: Fuat Yağmur
-sayfa:arena :: Gaziantep Doğanları
-sayfa:arena :: Hüsnü Ateş
-sayfa:arena :: Hüsnü Ateş (SF) — Overall: 72
-sayfa:arena :: Hüsnü Ateş (SF) → PF
-sayfa:arena :: Hüsnü Ateş (SF) → SG
-sayfa:arena :: Konya Aslanları
-sayfa:arena :: Konya Boğaları
-sayfa:arena :: Kütahya Şahinleri
+sayfa:arena :: Doğuş Gökçe
+sayfa:arena :: Doğuş Gökçe (SG) — Overall: 76
+sayfa:arena :: Doğuş Gökçe (SG) → PG
+sayfa:arena :: Doğuş Gökçe (SG) → SF
+sayfa:arena :: Elazığ Doğanları
+sayfa:arena :: Eskişehir Yıldızları
+sayfa:arena :: Fikret Taş
+sayfa:arena :: Fikret Taş (PG) — Overall: 71
+sayfa:arena :: Fikret Taş (PG) → SG
+sayfa:arena :: Fuat Yalçın
+sayfa:arena :: Hakan Yılmaz
+sayfa:arena :: Hüseyin Elmas
+sayfa:arena :: Hüseyin Elmas (C) — Overall: 67
+sayfa:arena :: Hüseyin Elmas (C) → PF
+sayfa:arena :: Işıtan Savaş
+sayfa:arena :: Kağan Özgün
+sayfa:arena :: Kocaeli Doğanları
+sayfa:arena :: Kocaeli Yıldızları
+sayfa:arena :: Konya Gençlik
+sayfa:arena :: Konya Üniversite
+sayfa:arena :: Konya Üniversite — Bursa Gençlik
+sayfa:arena :: Kütahya Koleji
+sayfa:arena :: Kütahya Koleji — Ankara Doğanları
 sayfa:arena :: Malatya Boğaları
-sayfa:arena :: Malatya Boğaları — Balıkesir Panterleri
-sayfa:arena :: Muğla Gençlik
-sayfa:arena :: Muğla Gençlik — Bursa Şimşekleri
-sayfa:arena :: Oktay Çetin
-sayfa:arena :: Rahmi Sevinç
-sayfa:arena :: Rıza Baştürk
-sayfa:arena :: Rıza Baştürk (C) — Overall: 67
-sayfa:arena :: Rıza Baştürk (C) → PF
-sayfa:arena :: Selim Çakır
-sayfa:arena :: Selçuk Taşkın
-sayfa:arena :: Selçuk Taşkın (SG) — Overall: 76
-sayfa:arena :: Selçuk Taşkın (SG) → PG
-sayfa:arena :: Selçuk Taşkın (SG) → SF
-sayfa:arena :: Sivas Boğaları
-sayfa:arena :: Tekirdağ Spor
-sayfa:arena :: Uras Uludağ
-sayfa:arena :: Yiğit Sönmez
-sayfa:arena :: Yiğit Sönmez (C) — Overall: 69
-sayfa:arena :: Yiğit Sönmez (C) → PF
-sayfa:arena :: Şafak Duman
-sayfa:arena :: Şafak Duman (SG) — Overall: 71
-sayfa:arena :: Şafak Duman (SG) → PG
-sayfa:arena :: Şafak Duman (SG) → SF
-sayfa:arena :: Şafak Yıldırım
-sayfa:arena :: Şafak Yıldırım (SF) — Overall: 73
-sayfa:arena :: Şafak Yıldırım (SF) → PF
-sayfa:arena :: Şafak Yıldırım (SF) → SG
-sayfa:arena :: 🇹🇷 Ahmet Dinç
-sayfa:arena :: 🇹🇷 Bahadır Şimşek
-sayfa:arena :: 🇹🇷 Batıkan Tetik
-sayfa:arena :: 🇹🇷 Burak Taş
-sayfa:arena :: 🇹🇷 Cem Genç
-sayfa:arena :: 🇹🇷 Enes Aktaş
-sayfa:arena :: 🇹🇷 Fikret Baştürk
-sayfa:arena :: 🇹🇷 Işıtan Baştürk
-sayfa:arena :: 🇹🇷 Kağan Erdoğan
-sayfa:arena :: 🇹🇷 Murat Aydın
-sayfa:arena :: 🇹🇷 Nuri Koç
-sayfa:arena :: 🇹🇷 Onur Çetin
-sayfa:arena :: 🇹🇷 Oğuzhan Balcı
-sayfa:arena :: 🇹🇷 Poyraz Balcı
-sayfa:arena :: 🇹🇷 Rahmi Öner
-sayfa:arena :: 🇹🇷 Rıza Genç
-sayfa:arena :: 🇹🇷 Sedat Güngör
-sayfa:arena :: 🇹🇷 Serdar Özel
-sayfa:arena :: 🇹🇷 Taner Yıldız
-sayfa:arena :: 🇹🇷 Tayfun Çakmak
+sayfa:arena :: Malatya Boğaları — İzmir Şimşekleri
+sayfa:arena :: Malatya Spor — Kocaeli Yıldızları
+sayfa:arena :: Mersin Kartalları
+sayfa:arena :: Mersin Şahinleri
+sayfa:arena :: Ramazan Gündoğdu
+sayfa:arena :: Tarık Yıldız
+sayfa:arena :: Uras Doğan
+sayfa:arena :: Zeki Yalın
+sayfa:arena :: Zeki Yalın (SG) — Overall: 76
+sayfa:arena :: Zeki Yalın (SG) → PG
+sayfa:arena :: Zeki Yalın (SG) → SF
+sayfa:arena :: Zonguldak Kurtları
+sayfa:arena :: Çağrı Ünver
+sayfa:arena :: İsmail Serin
+sayfa:arena :: İsmet Nalbant
+sayfa:arena :: İsmet Nalbant (PF) — Overall: 71
+sayfa:arena :: İsmet Nalbant (PF) → C
+sayfa:arena :: İsmet Nalbant (PF) → SF
+sayfa:arena :: İzmir Şimşekleri
+sayfa:arena :: 🇪🇪 Vahur Kütt
+sayfa:arena :: 🇹🇷 Ahmet Baş
+sayfa:arena :: 🇹🇷 Batıkan Kara
+sayfa:arena :: 🇹🇷 Cihan Yıldız
+sayfa:arena :: 🇹🇷 Davut Sevinç
+sayfa:arena :: 🇹🇷 Doğuş Örs
+sayfa:arena :: 🇹🇷 Efe Özdemir
+sayfa:arena :: 🇹🇷 Ferit Bektaş
+sayfa:arena :: 🇹🇷 Fikret Doğan
+sayfa:arena :: 🇹🇷 Gökay Koç
+sayfa:arena :: 🇹🇷 Gökhan Çevik
+sayfa:arena :: 🇹🇷 Görkem Turgut
+sayfa:arena :: 🇹🇷 Hüseyin Öcal
+sayfa:arena :: 🇹🇷 Kağan Kılıç
+sayfa:arena :: 🇹🇷 Kürşat Umutlu
+sayfa:arena :: 🇹🇷 Mahmut Coşkun
+sayfa:arena :: 🇹🇷 Nuri Ateş
+sayfa:arena :: 🇹🇷 Oktay Taşkın
+sayfa:arena :: 🇹🇷 Orhan Coşkun
+sayfa:arena :: 🇹🇷 Oğuz Tekin
+sayfa:arena :: 🇹🇷 Recep Taşkın
+sayfa:arena :: 🇹🇷 Sami Sevinç
+sayfa:arena :: 🇹🇷 Selim Genç
+sayfa:arena :: 🇹🇷 Süleyman Aslan
+sayfa:arena :: 🇹🇷 Tolga Gül
 sayfa:arena :: 🇹🇷 Türkçe
-sayfa:arena :: 🇹🇷 Volkan Koçak
-sayfa:arena :: 🇹🇷 Yağız Şahin
-sayfa:arena :: 🇹🇷 Yiğit Demirci
-sayfa:arena :: 🇹🇷 Yiğit Polat
-sayfa:arena :: 🇹🇷 Öner Duman
-sayfa:arena :: 🇹🇷 Özgür Aktaş
-sayfa:arena :: 🇹🇷 İlker Kılınç
-sayfa:arena :: 🇹🇷 İlker Polat
-sayfa:arena :: 🇹🇷 İsmet Uçar
-sayfa:arena :: 🏛️ Adana Atmacaları from
-sayfa:arena :: 🏛️ Afyonkarahisar Şahinleri from
-sayfa:arena :: 🏛️ Aydın Üniversite from
-sayfa:arena :: 🏛️ Balıkesir Panterleri from
-sayfa:arena :: 🏛️ Balıkesir Yıldızları from
-sayfa:arena :: 🏛️ Gaziantep Doğanları from
-sayfa:arena :: 🏛️ Konya Aslanları from
-sayfa:arena :: 🏛️ Kütahya Şahinleri from
-sayfa:arena :: 🤝 Latif Ersoy – Şafak Yıldırım
-sayfa:arena :: 🤝 Selçuk Taşkın – Timur Nalbant
+sayfa:arena :: 🇹🇷 Uğur Hakyemez
+sayfa:arena :: 🇹🇷 Yalçın Köse
+sayfa:arena :: 🇹🇷 Yalçın Uçar
+sayfa:arena :: 🇹🇷 Çağrı Örs
+sayfa:arena :: 🇹🇷 İlker Uysal
+sayfa:arena :: 🇹🇷 İsmail Aydın
+sayfa:arena :: 🇹🇷 İsmail Karaca
+sayfa:arena :: 🏛️ Aydın Spor from
+sayfa:arena :: 🏛️ Balıkesir Boğaları from
+sayfa:arena :: 🏛️ Bursa Gençlik from
+sayfa:arena :: 🏛️ Bursa Kurtları from
+sayfa:arena :: 🏛️ Eskişehir Yıldızları from
+sayfa:arena :: 🏛️ Kütahya Koleji from
+sayfa:arena :: 🏛️ Malatya Boğaları from
+sayfa:arena :: 🏛️ Mersin Kartalları from
+sayfa:arena :: 🏛️ Mersin Şahinleri from
+sayfa:arena :: 🏛️ Zonguldak Kurtları from
+sayfa:arena :: 🏛️ İzmir Şimşekleri from
+sayfa:arena :: 🤝 Fikret Taş – Doğuş Gökçe
 sayfa:bilanco :: /100 · 92 seviyesine doğru rising ↑
-sayfa:bilanco :: Adana Atmacaları
-sayfa:bilanco :: Afyonkarahisar Şahinleri
-sayfa:bilanco :: Ankara Eagles — Konya Aslanları
-sayfa:bilanco :: Antalya Aslanları
-sayfa:bilanco :: Aydın Üniversite
-sayfa:bilanco :: Balıkesir Panterleri
-sayfa:bilanco :: Balıkesir Yıldızları
-sayfa:bilanco :: Balıkesir Yıldızları — Kütahya Şahinleri
-sayfa:bilanco :: Batuhan Dinç
-sayfa:bilanco :: Batuhan Dinç (PG) — Overall: 74
-sayfa:bilanco :: Batuhan Dinç (PG) → SG
-sayfa:bilanco :: Bursa Şimşekleri
-sayfa:bilanco :: Cihan Ünver
-sayfa:bilanco :: Coşkun Pekmez
-sayfa:bilanco :: Coşkun Pekmez (PF) — Overall: 68
-sayfa:bilanco :: Coşkun Pekmez (PF) → C
-sayfa:bilanco :: Coşkun Pekmez (PF) → SF
+sayfa:bilanco :: Ankara Doğanları
+sayfa:bilanco :: Aydın Spor
+sayfa:bilanco :: Balıkesir Boğaları
+sayfa:bilanco :: Burak Ateş
+sayfa:bilanco :: Burak Ateş (PF) — Overall: 71
+sayfa:bilanco :: Burak Ateş (PF) → C
+sayfa:bilanco :: Burak Ateş (PF) → SF
+sayfa:bilanco :: Bursa Gençlik
+sayfa:bilanco :: Bursa Kurtları
+sayfa:bilanco :: Cem Kılıç
+sayfa:bilanco :: Cengiz Sağlam
+sayfa:bilanco :: Cengiz Sağlam (C) — Overall: 72
+sayfa:bilanco :: Cengiz Sağlam (C) → PF
 sayfa:bilanco :: Doluluk (taraftar + form + bilet fiyatı)
-sayfa:bilanco :: Doğuş Turgut
-sayfa:bilanco :: Ediz Uçar
-sayfa:bilanco :: Fatih Öcal
-sayfa:bilanco :: Fatih Öcal (SF) — Overall: 67
-sayfa:bilanco :: Fatih Öcal (SF) → PF
-sayfa:bilanco :: Fatih Öcal (SF) → SG
-sayfa:bilanco :: Fuat Yağmur
-sayfa:bilanco :: Gaziantep Doğanları
-sayfa:bilanco :: Hüsnü Ateş
-sayfa:bilanco :: Hüsnü Ateş (SF) — Overall: 72
-sayfa:bilanco :: Hüsnü Ateş (SF) → PF
-sayfa:bilanco :: Hüsnü Ateş (SF) → SG
+sayfa:bilanco :: Doğuş Gökçe
+sayfa:bilanco :: Doğuş Gökçe (SG) — Overall: 76
+sayfa:bilanco :: Doğuş Gökçe (SG) → PG
+sayfa:bilanco :: Doğuş Gökçe (SG) → SF
+sayfa:bilanco :: Elazığ Doğanları
+sayfa:bilanco :: Eskişehir Yıldızları
+sayfa:bilanco :: Fikret Taş
+sayfa:bilanco :: Fikret Taş (PG) — Overall: 71
+sayfa:bilanco :: Fikret Taş (PG) → SG
+sayfa:bilanco :: Fuat Yalçın
+sayfa:bilanco :: Hakan Yılmaz
+sayfa:bilanco :: Hüseyin Elmas
+sayfa:bilanco :: Hüseyin Elmas (C) — Overall: 67
+sayfa:bilanco :: Hüseyin Elmas (C) → PF
+sayfa:bilanco :: Işıtan Savaş
 sayfa:bilanco :: Kasa bu gidişle ~9 weeks yeter
-sayfa:bilanco :: Konya Aslanları
-sayfa:bilanco :: Konya Boğaları
-sayfa:bilanco :: Kütahya Şahinleri
+sayfa:bilanco :: Kağan Özgün
+sayfa:bilanco :: Kocaeli Doğanları
+sayfa:bilanco :: Kocaeli Yıldızları
+sayfa:bilanco :: Konya Gençlik
+sayfa:bilanco :: Konya Üniversite
+sayfa:bilanco :: Konya Üniversite — Bursa Gençlik
+sayfa:bilanco :: Kütahya Koleji
+sayfa:bilanco :: Kütahya Koleji — Ankara Doğanları
 sayfa:bilanco :: Malatya Boğaları
-sayfa:bilanco :: Malatya Boğaları — Balıkesir Panterleri
-sayfa:bilanco :: Muğla Gençlik
-sayfa:bilanco :: Muğla Gençlik — Bursa Şimşekleri
-sayfa:bilanco :: Oktay Çetin
-sayfa:bilanco :: Rahmi Sevinç
-sayfa:bilanco :: Rıza Baştürk
-sayfa:bilanco :: Rıza Baştürk (C) — Overall: 67
-sayfa:bilanco :: Rıza Baştürk (C) → PF
-sayfa:bilanco :: Selim Çakır
-sayfa:bilanco :: Selçuk Taşkın
-sayfa:bilanco :: Selçuk Taşkın (SG) — Overall: 76
-sayfa:bilanco :: Selçuk Taşkın (SG) → PG
-sayfa:bilanco :: Selçuk Taşkın (SG) → SF
-sayfa:bilanco :: Sivas Boğaları
-sayfa:bilanco :: Tekirdağ Spor
-sayfa:bilanco :: Uras Uludağ
-sayfa:bilanco :: Yiğit Sönmez
-sayfa:bilanco :: Yiğit Sönmez (C) — Overall: 69
-sayfa:bilanco :: Yiğit Sönmez (C) → PF
-sayfa:bilanco :: Şafak Duman
-sayfa:bilanco :: Şafak Duman (SG) — Overall: 71
-sayfa:bilanco :: Şafak Duman (SG) → PG
-sayfa:bilanco :: Şafak Duman (SG) → SF
-sayfa:bilanco :: Şafak Yıldırım
-sayfa:bilanco :: Şafak Yıldırım (SF) — Overall: 73
-sayfa:bilanco :: Şafak Yıldırım (SF) → PF
-sayfa:bilanco :: Şafak Yıldırım (SF) → SG
-sayfa:bilanco :: 🇹🇷 Ahmet Dinç
-sayfa:bilanco :: 🇹🇷 Bahadır Şimşek
-sayfa:bilanco :: 🇹🇷 Batıkan Tetik
-sayfa:bilanco :: 🇹🇷 Burak Taş
-sayfa:bilanco :: 🇹🇷 Cem Genç
-sayfa:bilanco :: 🇹🇷 Enes Aktaş
-sayfa:bilanco :: 🇹🇷 Fikret Baştürk
-sayfa:bilanco :: 🇹🇷 Işıtan Baştürk
-sayfa:bilanco :: 🇹🇷 Kağan Erdoğan
-sayfa:bilanco :: 🇹🇷 Murat Aydın
-sayfa:bilanco :: 🇹🇷 Nuri Koç
-sayfa:bilanco :: 🇹🇷 Onur Çetin
-sayfa:bilanco :: 🇹🇷 Oğuzhan Balcı
-sayfa:bilanco :: 🇹🇷 Poyraz Balcı
-sayfa:bilanco :: 🇹🇷 Rahmi Öner
-sayfa:bilanco :: 🇹🇷 Rıza Genç
-sayfa:bilanco :: 🇹🇷 Sedat Güngör
-sayfa:bilanco :: 🇹🇷 Serdar Özel
-sayfa:bilanco :: 🇹🇷 Taner Yıldız
-sayfa:bilanco :: 🇹🇷 Tayfun Çakmak
+sayfa:bilanco :: Malatya Boğaları — İzmir Şimşekleri
+sayfa:bilanco :: Malatya Spor — Kocaeli Yıldızları
+sayfa:bilanco :: Mersin Kartalları
+sayfa:bilanco :: Mersin Şahinleri
+sayfa:bilanco :: Ramazan Gündoğdu
+sayfa:bilanco :: Tarık Yıldız
+sayfa:bilanco :: Uras Doğan
+sayfa:bilanco :: Zeki Yalın
+sayfa:bilanco :: Zeki Yalın (SG) — Overall: 76
+sayfa:bilanco :: Zeki Yalın (SG) → PG
+sayfa:bilanco :: Zeki Yalın (SG) → SF
+sayfa:bilanco :: Zonguldak Kurtları
+sayfa:bilanco :: Çağrı Ünver
+sayfa:bilanco :: İsmail Serin
+sayfa:bilanco :: İsmet Nalbant
+sayfa:bilanco :: İsmet Nalbant (PF) — Overall: 71
+sayfa:bilanco :: İsmet Nalbant (PF) → C
+sayfa:bilanco :: İsmet Nalbant (PF) → SF
+sayfa:bilanco :: İzmir Şimşekleri
+sayfa:bilanco :: 🇪🇪 Vahur Kütt
+sayfa:bilanco :: 🇹🇷 Ahmet Baş
+sayfa:bilanco :: 🇹🇷 Batıkan Kara
+sayfa:bilanco :: 🇹🇷 Cihan Yıldız
+sayfa:bilanco :: 🇹🇷 Davut Sevinç
+sayfa:bilanco :: 🇹🇷 Doğuş Örs
+sayfa:bilanco :: 🇹🇷 Efe Özdemir
+sayfa:bilanco :: 🇹🇷 Ferit Bektaş
+sayfa:bilanco :: 🇹🇷 Fikret Doğan
+sayfa:bilanco :: 🇹🇷 Gökay Koç
+sayfa:bilanco :: 🇹🇷 Gökhan Çevik
+sayfa:bilanco :: 🇹🇷 Görkem Turgut
+sayfa:bilanco :: 🇹🇷 Hüseyin Öcal
+sayfa:bilanco :: 🇹🇷 Kağan Kılıç
+sayfa:bilanco :: 🇹🇷 Kürşat Umutlu
+sayfa:bilanco :: 🇹🇷 Mahmut Coşkun
+sayfa:bilanco :: 🇹🇷 Nuri Ateş
+sayfa:bilanco :: 🇹🇷 Oktay Taşkın
+sayfa:bilanco :: 🇹🇷 Orhan Coşkun
+sayfa:bilanco :: 🇹🇷 Oğuz Tekin
+sayfa:bilanco :: 🇹🇷 Recep Taşkın
+sayfa:bilanco :: 🇹🇷 Sami Sevinç
+sayfa:bilanco :: 🇹🇷 Selim Genç
+sayfa:bilanco :: 🇹🇷 Süleyman Aslan
+sayfa:bilanco :: 🇹🇷 Tolga Gül
 sayfa:bilanco :: 🇹🇷 Türkçe
-sayfa:bilanco :: 🇹🇷 Volkan Koçak
-sayfa:bilanco :: 🇹🇷 Yağız Şahin
-sayfa:bilanco :: 🇹🇷 Yiğit Demirci
-sayfa:bilanco :: 🇹🇷 Yiğit Polat
-sayfa:bilanco :: 🇹🇷 Öner Duman
-sayfa:bilanco :: 🇹🇷 Özgür Aktaş
-sayfa:bilanco :: 🇹🇷 İlker Kılınç
-sayfa:bilanco :: 🇹🇷 İlker Polat
-sayfa:bilanco :: 🇹🇷 İsmet Uçar
-sayfa:bilanco :: 🏛️ Adana Atmacaları from
-sayfa:bilanco :: 🏛️ Afyonkarahisar Şahinleri from
-sayfa:bilanco :: 🏛️ Aydın Üniversite from
-sayfa:bilanco :: 🏛️ Balıkesir Panterleri from
-sayfa:bilanco :: 🏛️ Balıkesir Yıldızları from
-sayfa:bilanco :: 🏛️ Gaziantep Doğanları from
-sayfa:bilanco :: 🏛️ Konya Aslanları from
-sayfa:bilanco :: 🏛️ Kütahya Şahinleri from
-sayfa:bilanco :: 🤝 Latif Ersoy – Şafak Yıldırım
-sayfa:bilanco :: 🤝 Selçuk Taşkın – Timur Nalbant
+sayfa:bilanco :: 🇹🇷 Uğur Hakyemez
+sayfa:bilanco :: 🇹🇷 Yalçın Köse
+sayfa:bilanco :: 🇹🇷 Yalçın Uçar
+sayfa:bilanco :: 🇹🇷 Çağrı Örs
+sayfa:bilanco :: 🇹🇷 İlker Uysal
+sayfa:bilanco :: 🇹🇷 İsmail Aydın
+sayfa:bilanco :: 🇹🇷 İsmail Karaca
+sayfa:bilanco :: 🏛️ Aydın Spor from
+sayfa:bilanco :: 🏛️ Balıkesir Boğaları from
+sayfa:bilanco :: 🏛️ Bursa Gençlik from
+sayfa:bilanco :: 🏛️ Bursa Kurtları from
+sayfa:bilanco :: 🏛️ Eskişehir Yıldızları from
+sayfa:bilanco :: 🏛️ Kütahya Koleji from
+sayfa:bilanco :: 🏛️ Malatya Boğaları from
+sayfa:bilanco :: 🏛️ Mersin Kartalları from
+sayfa:bilanco :: 🏛️ Mersin Şahinleri from
+sayfa:bilanco :: 🏛️ Zonguldak Kurtları from
+sayfa:bilanco :: 🏛️ İzmir Şimşekleri from
+sayfa:bilanco :: 🤝 Fikret Taş – Doğuş Gökçe
 sayfa:dashboard :: /100 · 92 seviyesine doğru rising ↑
-sayfa:dashboard :: Adana Atmacaları
-sayfa:dashboard :: Afyonkarahisar Şahinleri
-sayfa:dashboard :: Ankara Eagles — Konya Aslanları
-sayfa:dashboard :: Antalya Aslanları
-sayfa:dashboard :: Aydın Üniversite
-sayfa:dashboard :: Balıkesir Panterleri
-sayfa:dashboard :: Balıkesir Yıldızları
-sayfa:dashboard :: Balıkesir Yıldızları — Kütahya Şahinleri
-sayfa:dashboard :: Batuhan Dinç
-sayfa:dashboard :: Bursa Şimşekleri
-sayfa:dashboard :: Cihan Ünver
-sayfa:dashboard :: Coşkun Pekmez
+sayfa:dashboard :: Ankara Doğanları
+sayfa:dashboard :: Aydın Spor
+sayfa:dashboard :: Balıkesir Boğaları
+sayfa:dashboard :: Burak Ateş
+sayfa:dashboard :: Bursa Gençlik
+sayfa:dashboard :: Bursa Kurtları
+sayfa:dashboard :: Cengiz Sağlam
 sayfa:dashboard :: Doluluk (taraftar + form + bilet fiyatı)
-sayfa:dashboard :: Fatih Öcal
-sayfa:dashboard :: Gaziantep Doğanları
-sayfa:dashboard :: Hüsnü Ateş
-sayfa:dashboard :: Konya Aslanları
-sayfa:dashboard :: Konya Boğaları
-sayfa:dashboard :: Kütahya Şahinleri
+sayfa:dashboard :: Doğuş Gökçe
+sayfa:dashboard :: Elazığ Doğanları
+sayfa:dashboard :: Eskişehir Yıldızları
+sayfa:dashboard :: Fikret Taş
+sayfa:dashboard :: Hüseyin Elmas
+sayfa:dashboard :: Kocaeli Doğanları
+sayfa:dashboard :: Kocaeli Yıldızları
+sayfa:dashboard :: Konya Gençlik
+sayfa:dashboard :: Konya Üniversite
+sayfa:dashboard :: Konya Üniversite — Bursa Gençlik
+sayfa:dashboard :: Kütahya Koleji
+sayfa:dashboard :: Kütahya Koleji — Ankara Doğanları
 sayfa:dashboard :: Malatya Boğaları
-sayfa:dashboard :: Malatya Boğaları — Balıkesir Panterleri
-sayfa:dashboard :: Muğla Gençlik
-sayfa:dashboard :: Muğla Gençlik — Bursa Şimşekleri
-sayfa:dashboard :: Rıza Baştürk
-sayfa:dashboard :: Selçuk Taşkın
-sayfa:dashboard :: Sivas Boğaları
-sayfa:dashboard :: Tekirdağ Spor
-sayfa:dashboard :: Yiğit Sönmez
-sayfa:dashboard :: Şafak Duman
-sayfa:dashboard :: Şafak Yıldırım
+sayfa:dashboard :: Malatya Boğaları — İzmir Şimşekleri
+sayfa:dashboard :: Malatya Spor — Kocaeli Yıldızları
+sayfa:dashboard :: Mersin Kartalları
+sayfa:dashboard :: Mersin Şahinleri
+sayfa:dashboard :: Zeki Yalın
+sayfa:dashboard :: Zonguldak Kurtları
+sayfa:dashboard :: İsmet Nalbant
+sayfa:dashboard :: İzmir Şimşekleri
 sayfa:dashboard :: 🇹🇷 Türkçe
-sayfa:dashboard :: 🤝 Latif Ersoy – Şafak Yıldırım
-sayfa:dashboard :: 🤝 Selçuk Taşkın – Timur Nalbant
+sayfa:dashboard :: 🤝 Fikret Taş – Doğuş Gökçe
 sayfa:kadro :: /100 · 92 seviyesine doğru rising ↑
-sayfa:kadro :: Adana Atmacaları
-sayfa:kadro :: Afyonkarahisar Şahinleri
-sayfa:kadro :: Ankara Eagles — Konya Aslanları
-sayfa:kadro :: Antalya Aslanları
-sayfa:kadro :: Aydın Üniversite
-sayfa:kadro :: Balıkesir Panterleri
-sayfa:kadro :: Balıkesir Yıldızları
-sayfa:kadro :: Balıkesir Yıldızları — Kütahya Şahinleri
-sayfa:kadro :: Batuhan Dinç
-sayfa:kadro :: Bursa Şimşekleri
-sayfa:kadro :: Cihan Ünver
-sayfa:kadro :: Coşkun Pekmez
+sayfa:kadro :: Ankara Doğanları
+sayfa:kadro :: Aydın Spor
+sayfa:kadro :: Balıkesir Boğaları
+sayfa:kadro :: Burak Ateş
+sayfa:kadro :: Bursa Gençlik
+sayfa:kadro :: Bursa Kurtları
+sayfa:kadro :: Cengiz Sağlam
 sayfa:kadro :: Doluluk (taraftar + form + bilet fiyatı)
-sayfa:kadro :: Fatih Öcal
-sayfa:kadro :: Gaziantep Doğanları
-sayfa:kadro :: Hüsnü Ateş
-sayfa:kadro :: Konya Aslanları
-sayfa:kadro :: Konya Boğaları
-sayfa:kadro :: Kütahya Şahinleri
+sayfa:kadro :: Doğuş Gökçe
+sayfa:kadro :: Elazığ Doğanları
+sayfa:kadro :: Eskişehir Yıldızları
+sayfa:kadro :: Fikret Taş
+sayfa:kadro :: Hüseyin Elmas
+sayfa:kadro :: Kocaeli Doğanları
+sayfa:kadro :: Kocaeli Yıldızları
+sayfa:kadro :: Konya Gençlik
+sayfa:kadro :: Konya Üniversite
+sayfa:kadro :: Konya Üniversite — Bursa Gençlik
+sayfa:kadro :: Kütahya Koleji
+sayfa:kadro :: Kütahya Koleji — Ankara Doğanları
 sayfa:kadro :: Malatya Boğaları
-sayfa:kadro :: Malatya Boğaları — Balıkesir Panterleri
-sayfa:kadro :: Muğla Gençlik
-sayfa:kadro :: Muğla Gençlik — Bursa Şimşekleri
-sayfa:kadro :: Rıza Baştürk
-sayfa:kadro :: Selçuk Taşkın
-sayfa:kadro :: Sivas Boğaları
-sayfa:kadro :: Tekirdağ Spor
-sayfa:kadro :: Yiğit Sönmez
-sayfa:kadro :: Şafak Duman
-sayfa:kadro :: Şafak Yıldırım
+sayfa:kadro :: Malatya Boğaları — İzmir Şimşekleri
+sayfa:kadro :: Malatya Spor — Kocaeli Yıldızları
+sayfa:kadro :: Mersin Kartalları
+sayfa:kadro :: Mersin Şahinleri
+sayfa:kadro :: Zeki Yalın
+sayfa:kadro :: Zonguldak Kurtları
+sayfa:kadro :: İsmet Nalbant
+sayfa:kadro :: İzmir Şimşekleri
 sayfa:kadro :: 🇹🇷 Türkçe
-sayfa:kadro :: 🤝 Latif Ersoy – Şafak Yıldırım
-sayfa:kadro :: 🤝 Selçuk Taşkın – Timur Nalbant
+sayfa:kadro :: 🤝 Fikret Taş – Doğuş Gökçe
 sayfa:lig :: /100 · 92 seviyesine doğru rising ↑
-sayfa:lig :: Adana Atmacaları
-sayfa:lig :: Afyonkarahisar Şahinleri
-sayfa:lig :: Ankara Eagles — Konya Aslanları
-sayfa:lig :: Antalya Aslanları
-sayfa:lig :: Aydın Üniversite
-sayfa:lig :: Balıkesir Panterleri
-sayfa:lig :: Balıkesir Yıldızları
-sayfa:lig :: Balıkesir Yıldızları — Kütahya Şahinleri
-sayfa:lig :: Batuhan Dinç
-sayfa:lig :: Bursa Şimşekleri
-sayfa:lig :: Cihan Ünver
-sayfa:lig :: Coşkun Pekmez
+sayfa:lig :: Ankara Doğanları
+sayfa:lig :: Aydın Spor
+sayfa:lig :: Balıkesir Boğaları
+sayfa:lig :: Burak Ateş
+sayfa:lig :: Bursa Gençlik
+sayfa:lig :: Bursa Kurtları
+sayfa:lig :: Cengiz Sağlam
 sayfa:lig :: Doluluk (taraftar + form + bilet fiyatı)
-sayfa:lig :: Fatih Öcal
-sayfa:lig :: Gaziantep Doğanları
-sayfa:lig :: Hüsnü Ateş
-sayfa:lig :: Konya Aslanları
-sayfa:lig :: Konya Boğaları
-sayfa:lig :: Kütahya Şahinleri
+sayfa:lig :: Doğuş Gökçe
+sayfa:lig :: Elazığ Doğanları
+sayfa:lig :: Eskişehir Yıldızları
+sayfa:lig :: Fikret Taş
+sayfa:lig :: Hüseyin Elmas
+sayfa:lig :: Kocaeli Doğanları
+sayfa:lig :: Kocaeli Yıldızları
+sayfa:lig :: Konya Gençlik
+sayfa:lig :: Konya Üniversite
+sayfa:lig :: Konya Üniversite — Bursa Gençlik
+sayfa:lig :: Kütahya Koleji
+sayfa:lig :: Kütahya Koleji — Ankara Doğanları
 sayfa:lig :: Malatya Boğaları
-sayfa:lig :: Malatya Boğaları — Balıkesir Panterleri
-sayfa:lig :: Muğla Gençlik
-sayfa:lig :: Muğla Gençlik — Bursa Şimşekleri
-sayfa:lig :: Rıza Baştürk
-sayfa:lig :: Selçuk Taşkın
-sayfa:lig :: Sivas Boğaları
-sayfa:lig :: Tekirdağ Spor
-sayfa:lig :: Yiğit Sönmez
-sayfa:lig :: Şafak Duman
-sayfa:lig :: Şafak Yıldırım
+sayfa:lig :: Malatya Boğaları — İzmir Şimşekleri
+sayfa:lig :: Malatya Spor — Kocaeli Yıldızları
+sayfa:lig :: Mersin Kartalları
+sayfa:lig :: Mersin Şahinleri
+sayfa:lig :: Zeki Yalın
+sayfa:lig :: Zonguldak Kurtları
+sayfa:lig :: İsmet Nalbant
+sayfa:lig :: İzmir Şimşekleri
 sayfa:lig :: 🇹🇷 Türkçe
-sayfa:lig :: 🤝 Latif Ersoy – Şafak Yıldırım
-sayfa:lig :: 🤝 Selçuk Taşkın – Timur Nalbant
+sayfa:lig :: 🤝 Fikret Taş – Doğuş Gökçe
 sayfa:mac :: /100 · 92 seviyesine doğru rising ↑
-sayfa:mac :: Adana Atmacaları
-sayfa:mac :: Afyonkarahisar Şahinleri
-sayfa:mac :: Ankara Eagles — Konya Aslanları
-sayfa:mac :: Antalya Aslanları
-sayfa:mac :: Aydın Üniversite
-sayfa:mac :: Balıkesir Panterleri
-sayfa:mac :: Balıkesir Yıldızları
-sayfa:mac :: Balıkesir Yıldızları — Kütahya Şahinleri
-sayfa:mac :: Batuhan Dinç
-sayfa:mac :: Bursa Şimşekleri
-sayfa:mac :: Cihan Ünver
-sayfa:mac :: Coşkun Pekmez
+sayfa:mac :: Ankara Doğanları
+sayfa:mac :: Aydın Spor
+sayfa:mac :: Balıkesir Boğaları
+sayfa:mac :: Burak Ateş
+sayfa:mac :: Bursa Gençlik
+sayfa:mac :: Bursa Kurtları
+sayfa:mac :: Cengiz Sağlam
 sayfa:mac :: Doluluk (taraftar + form + bilet fiyatı)
-sayfa:mac :: Fatih Öcal
-sayfa:mac :: Gaziantep Doğanları
-sayfa:mac :: Hüsnü Ateş
-sayfa:mac :: Konya Aslanları
-sayfa:mac :: Konya Boğaları
-sayfa:mac :: Kütahya Şahinleri
+sayfa:mac :: Doğuş Gökçe
+sayfa:mac :: Elazığ Doğanları
+sayfa:mac :: Eskişehir Yıldızları
+sayfa:mac :: Fikret Taş
+sayfa:mac :: Hüseyin Elmas
+sayfa:mac :: Kocaeli Doğanları
+sayfa:mac :: Kocaeli Yıldızları
+sayfa:mac :: Konya Gençlik
+sayfa:mac :: Konya Üniversite
+sayfa:mac :: Konya Üniversite — Bursa Gençlik
+sayfa:mac :: Kütahya Koleji
+sayfa:mac :: Kütahya Koleji — Ankara Doğanları
 sayfa:mac :: Malatya Boğaları
-sayfa:mac :: Malatya Boğaları — Balıkesir Panterleri
-sayfa:mac :: Muğla Gençlik
-sayfa:mac :: Muğla Gençlik — Bursa Şimşekleri
-sayfa:mac :: Rıza Baştürk
-sayfa:mac :: Selçuk Taşkın
-sayfa:mac :: Sivas Boğaları
-sayfa:mac :: Tekirdağ Spor
-sayfa:mac :: Yiğit Sönmez
-sayfa:mac :: Şafak Duman
-sayfa:mac :: Şafak Yıldırım
+sayfa:mac :: Malatya Boğaları — İzmir Şimşekleri
+sayfa:mac :: Malatya Spor — Kocaeli Yıldızları
+sayfa:mac :: Mersin Kartalları
+sayfa:mac :: Mersin Şahinleri
+sayfa:mac :: Zeki Yalın
+sayfa:mac :: Zonguldak Kurtları
+sayfa:mac :: İsmet Nalbant
+sayfa:mac :: İzmir Şimşekleri
 sayfa:mac :: 🇹🇷 Türkçe
-sayfa:mac :: 🤝 Latif Ersoy – Şafak Yıldırım
-sayfa:mac :: 🤝 Selçuk Taşkın – Timur Nalbant
+sayfa:mac :: 🤝 Fikret Taş – Doğuş Gökçe
 sayfa:market :: /100 · 92 seviyesine doğru rising ↑
-sayfa:market :: Adana Atmacaları
-sayfa:market :: Afyonkarahisar Şahinleri
-sayfa:market :: Ankara Eagles — Konya Aslanları
-sayfa:market :: Antalya Aslanları
-sayfa:market :: Aydın Üniversite
-sayfa:market :: Balıkesir Panterleri
-sayfa:market :: Balıkesir Yıldızları
-sayfa:market :: Balıkesir Yıldızları — Kütahya Şahinleri
-sayfa:market :: Batuhan Dinç
-sayfa:market :: Bursa Şimşekleri
-sayfa:market :: Cihan Ünver
-sayfa:market :: Coşkun Pekmez
+sayfa:market :: Ankara Doğanları
+sayfa:market :: Aydın Spor
+sayfa:market :: Balıkesir Boğaları
+sayfa:market :: Burak Ateş
+sayfa:market :: Bursa Gençlik
+sayfa:market :: Bursa Kurtları
+sayfa:market :: Cengiz Sağlam
 sayfa:market :: Doluluk (taraftar + form + bilet fiyatı)
-sayfa:market :: Fatih Öcal
-sayfa:market :: Gaziantep Doğanları
-sayfa:market :: Hüsnü Ateş
-sayfa:market :: Konya Aslanları
-sayfa:market :: Konya Boğaları
-sayfa:market :: Kütahya Şahinleri
+sayfa:market :: Doğuş Gökçe
+sayfa:market :: Elazığ Doğanları
+sayfa:market :: Eskişehir Yıldızları
+sayfa:market :: Fikret Taş
+sayfa:market :: Hüseyin Elmas
+sayfa:market :: Kocaeli Doğanları
+sayfa:market :: Kocaeli Yıldızları
+sayfa:market :: Konya Gençlik
+sayfa:market :: Konya Üniversite
+sayfa:market :: Konya Üniversite — Bursa Gençlik
+sayfa:market :: Kütahya Koleji
+sayfa:market :: Kütahya Koleji — Ankara Doğanları
 sayfa:market :: Malatya Boğaları
-sayfa:market :: Malatya Boğaları — Balıkesir Panterleri
-sayfa:market :: Muğla Gençlik
-sayfa:market :: Muğla Gençlik — Bursa Şimşekleri
-sayfa:market :: Rıza Baştürk
-sayfa:market :: Selçuk Taşkın
-sayfa:market :: Sivas Boğaları
-sayfa:market :: Tekirdağ Spor
-sayfa:market :: Yiğit Sönmez
-sayfa:market :: Şafak Duman
-sayfa:market :: Şafak Yıldırım
-sayfa:market :: 🇹🇷 Ahmet Dinç
-sayfa:market :: 🇹🇷 Batıkan Tetik
-sayfa:market :: 🇹🇷 Burak Taş
-sayfa:market :: 🇹🇷 Işıtan Baştürk
-sayfa:market :: 🇹🇷 Kağan Erdoğan
-sayfa:market :: 🇹🇷 Murat Aydın
-sayfa:market :: 🇹🇷 Nuri Koç
-sayfa:market :: 🇹🇷 Onur Çetin
-sayfa:market :: 🇹🇷 Rahmi Öner
-sayfa:market :: 🇹🇷 Rıza Genç
-sayfa:market :: 🇹🇷 Sedat Güngör
-sayfa:market :: 🇹🇷 Serdar Özel
-sayfa:market :: 🇹🇷 Taner Yıldız
-sayfa:market :: 🇹🇷 Tayfun Çakmak
+sayfa:market :: Malatya Boğaları — İzmir Şimşekleri
+sayfa:market :: Malatya Spor — Kocaeli Yıldızları
+sayfa:market :: Mersin Kartalları
+sayfa:market :: Mersin Şahinleri
+sayfa:market :: Zeki Yalın
+sayfa:market :: Zonguldak Kurtları
+sayfa:market :: İsmet Nalbant
+sayfa:market :: İzmir Şimşekleri
+sayfa:market :: 🇪🇪 Vahur Kütt
+sayfa:market :: 🇹🇷 Ahmet Baş
+sayfa:market :: 🇹🇷 Batıkan Kara
+sayfa:market :: 🇹🇷 Cihan Yıldız
+sayfa:market :: 🇹🇷 Doğuş Örs
+sayfa:market :: 🇹🇷 Ferit Bektaş
+sayfa:market :: 🇹🇷 Fikret Doğan
+sayfa:market :: 🇹🇷 Gökay Koç
+sayfa:market :: 🇹🇷 Gökhan Çevik
+sayfa:market :: 🇹🇷 Hüseyin Öcal
+sayfa:market :: 🇹🇷 Mahmut Coşkun
+sayfa:market :: 🇹🇷 Nuri Ateş
+sayfa:market :: 🇹🇷 Oktay Taşkın
+sayfa:market :: 🇹🇷 Sami Sevinç
+sayfa:market :: 🇹🇷 Tolga Gül
 sayfa:market :: 🇹🇷 Türkçe
-sayfa:market :: 🇹🇷 Volkan Koçak
-sayfa:market :: 🇹🇷 Yağız Şahin
-sayfa:market :: 🇹🇷 Yiğit Demirci
-sayfa:market :: 🇹🇷 Yiğit Polat
-sayfa:market :: 🇹🇷 Öner Duman
-sayfa:market :: 🇹🇷 Özgür Aktaş
-sayfa:market :: 🇹🇷 İlker Kılınç
-sayfa:market :: 🏛️ Adana Atmacaları from
-sayfa:market :: 🏛️ Afyonkarahisar Şahinleri from
-sayfa:market :: 🏛️ Aydın Üniversite from
-sayfa:market :: 🏛️ Balıkesir Panterleri from
-sayfa:market :: 🏛️ Balıkesir Yıldızları from
-sayfa:market :: 🏛️ Gaziantep Doğanları from
-sayfa:market :: 🏛️ Konya Aslanları from
-sayfa:market :: 🏛️ Kütahya Şahinleri from
-sayfa:market :: 🤝 Latif Ersoy – Şafak Yıldırım
-sayfa:market :: 🤝 Selçuk Taşkın – Timur Nalbant
+sayfa:market :: 🇹🇷 Yalçın Köse
+sayfa:market :: 🇹🇷 Yalçın Uçar
+sayfa:market :: 🇹🇷 Çağrı Örs
+sayfa:market :: 🇹🇷 İlker Uysal
+sayfa:market :: 🇹🇷 İsmail Aydın
+sayfa:market :: 🇹🇷 İsmail Karaca
+sayfa:market :: 🏛️ Aydın Spor from
+sayfa:market :: 🏛️ Balıkesir Boğaları from
+sayfa:market :: 🏛️ Bursa Gençlik from
+sayfa:market :: 🏛️ Bursa Kurtları from
+sayfa:market :: 🏛️ Eskişehir Yıldızları from
+sayfa:market :: 🏛️ Kütahya Koleji from
+sayfa:market :: 🏛️ Malatya Boğaları from
+sayfa:market :: 🏛️ Mersin Kartalları from
+sayfa:market :: 🏛️ Mersin Şahinleri from
+sayfa:market :: 🏛️ Zonguldak Kurtları from
+sayfa:market :: 🏛️ İzmir Şimşekleri from
+sayfa:market :: 🤝 Fikret Taş – Doğuş Gökçe
 sayfa:takim :: /100 · 92 seviyesine doğru rising ↑
-sayfa:takim :: Adana Atmacaları
-sayfa:takim :: Afyonkarahisar Şahinleri
-sayfa:takim :: Ankara Eagles — Konya Aslanları
-sayfa:takim :: Antalya Aslanları
-sayfa:takim :: Aydın Üniversite
-sayfa:takim :: Balıkesir Panterleri
-sayfa:takim :: Balıkesir Yıldızları
-sayfa:takim :: Balıkesir Yıldızları — Kütahya Şahinleri
-sayfa:takim :: Batuhan Dinç
-sayfa:takim :: Bursa Şimşekleri
-sayfa:takim :: Cihan Ünver
-sayfa:takim :: Coşkun Pekmez
+sayfa:takim :: Ankara Doğanları
+sayfa:takim :: Aydın Spor
+sayfa:takim :: Balıkesir Boğaları
+sayfa:takim :: Burak Ateş
+sayfa:takim :: Bursa Gençlik
+sayfa:takim :: Bursa Kurtları
+sayfa:takim :: Cengiz Sağlam
 sayfa:takim :: Doluluk (taraftar + form + bilet fiyatı)
-sayfa:takim :: Fatih Öcal
-sayfa:takim :: Gaziantep Doğanları
-sayfa:takim :: Hüsnü Ateş
-sayfa:takim :: Konya Aslanları
-sayfa:takim :: Konya Boğaları
-sayfa:takim :: Kütahya Şahinleri
+sayfa:takim :: Doğuş Gökçe
+sayfa:takim :: Elazığ Doğanları
+sayfa:takim :: Eskişehir Yıldızları
+sayfa:takim :: Fikret Taş
+sayfa:takim :: Hüseyin Elmas
+sayfa:takim :: Kocaeli Doğanları
+sayfa:takim :: Kocaeli Yıldızları
+sayfa:takim :: Konya Gençlik
+sayfa:takim :: Konya Üniversite
+sayfa:takim :: Konya Üniversite — Bursa Gençlik
+sayfa:takim :: Kütahya Koleji
+sayfa:takim :: Kütahya Koleji — Ankara Doğanları
 sayfa:takim :: Malatya Boğaları
-sayfa:takim :: Malatya Boğaları — Balıkesir Panterleri
-sayfa:takim :: Muğla Gençlik
-sayfa:takim :: Muğla Gençlik — Bursa Şimşekleri
-sayfa:takim :: Rıza Baştürk
-sayfa:takim :: Selçuk Taşkın
-sayfa:takim :: Sivas Boğaları
-sayfa:takim :: Tekirdağ Spor
-sayfa:takim :: Yiğit Sönmez
-sayfa:takim :: Şafak Duman
-sayfa:takim :: Şafak Yıldırım
+sayfa:takim :: Malatya Boğaları — İzmir Şimşekleri
+sayfa:takim :: Malatya Spor — Kocaeli Yıldızları
+sayfa:takim :: Mersin Kartalları
+sayfa:takim :: Mersin Şahinleri
+sayfa:takim :: Zeki Yalın
+sayfa:takim :: Zonguldak Kurtları
+sayfa:takim :: İsmet Nalbant
+sayfa:takim :: İzmir Şimşekleri
 sayfa:takim :: 🇹🇷 Türkçe
-sayfa:takim :: 🤝 Latif Ersoy – Şafak Yıldırım
-sayfa:takim :: 🤝 Selçuk Taşkın – Timur Nalbant
+sayfa:takim :: 🤝 Fikret Taş – Doğuş Gökçe
 setup :: Doluluk (taraftar + form + bilet fiyatı)
 setup :: 🇹🇷 Türkçe
 tutorial :: /100 · 92 seviyesine doğru rising ↑
-tutorial :: Adana Atmacaları
-tutorial :: Afyonkarahisar Şahinleri
-tutorial :: Ankara Eagles — Konya Aslanları
-tutorial :: Antalya Aslanları
-tutorial :: Aydın Üniversite
-tutorial :: Balıkesir Panterleri
-tutorial :: Balıkesir Yıldızları
-tutorial :: Balıkesir Yıldızları — Kütahya Şahinleri
-tutorial :: Batuhan Dinç
-tutorial :: Bursa Şimşekleri
-tutorial :: Coşkun Pekmez
+tutorial :: Ankara Doğanları
+tutorial :: Aydın Spor
+tutorial :: Balıkesir Boğaları
+tutorial :: Burak Ateş
+tutorial :: Bursa Gençlik
+tutorial :: Bursa Kurtları
+tutorial :: Cengiz Sağlam
 tutorial :: Doluluk (taraftar + form + bilet fiyatı)
-tutorial :: Fatih Öcal
-tutorial :: Gaziantep Doğanları
-tutorial :: Hüsnü Ateş
-tutorial :: Konya Aslanları
-tutorial :: Konya Boğaları
-tutorial :: Kütahya Şahinleri
+tutorial :: Doğuş Gökçe
+tutorial :: Elazığ Doğanları
+tutorial :: Eskişehir Yıldızları
+tutorial :: Fikret Taş
+tutorial :: Hüseyin Elmas
+tutorial :: Kocaeli Doğanları
+tutorial :: Kocaeli Yıldızları
+tutorial :: Konya Gençlik
+tutorial :: Konya Üniversite
+tutorial :: Konya Üniversite — Bursa Gençlik
+tutorial :: Kütahya Koleji
+tutorial :: Kütahya Koleji — Ankara Doğanları
 tutorial :: Malatya Boğaları
-tutorial :: Malatya Boğaları — Balıkesir Panterleri
-tutorial :: Muğla Gençlik
-tutorial :: Muğla Gençlik — Bursa Şimşekleri
-tutorial :: Rıza Baştürk
-tutorial :: Selçuk Taşkın
-tutorial :: Sivas Boğaları
-tutorial :: Tekirdağ Spor
-tutorial :: Yiğit Sönmez
-tutorial :: Şafak Duman
-tutorial :: Şafak Yıldırım
+tutorial :: Malatya Boğaları — İzmir Şimşekleri
+tutorial :: Malatya Spor — Kocaeli Yıldızları
+tutorial :: Mersin Kartalları
+tutorial :: Mersin Şahinleri
+tutorial :: Zeki Yalın
+tutorial :: Zonguldak Kurtları
+tutorial :: İsmet Nalbant
+tutorial :: İzmir Şimşekleri
 tutorial :: 🇹🇷 Türkçe
-tutorial :: 🤝 Latif Ersoy – Şafak Yıldırım
-tutorial :: 🤝 Selçuk Taşkın – Timur Nalbant
+tutorial :: 🤝 Fikret Taş – Doğuş Gökçe

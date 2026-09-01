@@ -21,6 +21,7 @@ const ORNEKLEYICI = `(function(){
     sirtDonuk: [],    /* {t, aci} — post-up'ta hücumcunun potaya göre açısı */
     perde: [],        /* {t, evre, roll} */
     sema: {},         /* şema → {kare, boyaGiris, yayDisiKare, xTop} */
+    yay: [],          /* FAZ 26 §1: {tip, tepe, sure} — şut yörüngesinin tepe yüksekliği */
     _sonTasiyici: null, _sonYari: null, _sokmaGorulen: null, _sonFtDrib: null,
     _perdeSon: null, _hedefT: new Map(), _sonSimT: -1, _sonDurakT: 0
   };
@@ -94,6 +95,21 @@ const ORNEKLEYICI = `(function(){
             }
           });
         } else if (!S.canliSet) { P._hedefT.clear(); }
+        /* ── FAZ 26 §1: ŞUT YÖRÜNGESİ ──
+           Şut tipi topun YAYINI değiştiriyor mu? Ölçüt topun uçuş boyunca ulaştığı en
+           yüksek nokta (b.h) ve uçuş süresidir; ikisi de doğrudan ekrandaki görüntüdür.
+           Tip damgası b.tip'tedir (motor _ballShoot'a geçirir). */
+        if (b.mode === 'shot') {
+          if (!P._yayAktif || P._yayAktif.tip !== (b.tip||null) || P._yayAktif.t0 > t) {
+            P._yayAktif = { tip: b.tip||null, tepe: b.h||0, t0: t };
+          }
+          if ((b.h||0) > P._yayAktif.tepe) P._yayAktif.tepe = b.h||0;
+          P._yayAktif.son = t;
+        } else if (P._yayAktif) {
+          if (P._yayAktif.tip) P.yay.push({ tip: P._yayAktif.tip, tepe: +P._yayAktif.tepe.toFixed(1),
+            sure: +(((P._yayAktif.son||P._yayAktif.t0) - P._yayAktif.t0)/1000).toFixed(2) });
+          P._yayAktif = null;
+        }
         /* ── §3: kenardan sokma ── */
         if (S.inb && S.inb.tok && P._sokmaGorulen !== S.inb.tok) {
           P._sokmaGorulen = S.inb.tok;
@@ -157,6 +173,15 @@ function kapilar(P) {
     rolDagilim: (P.donma || []).reduce((d, x) => { d[x.role] = (d[x.role] || 0) + 1; return d; }, {}),
     ornek: (P.donma || []).slice(0, 6) };
   r.titreme = { n: (P.titreme || []).length, ortHiz: (P.titreme||[]).length ? +((P.titreme).reduce((a2,c)=>a2+c.hiz,0)/(P.titreme).length).toFixed(1) : null };
+  /* FAZ 26 §1 — şut yörüngesi: tip başına ortalama tepe yüksekliği ve süre */
+  const _y = P.yay || [];
+  const _grup = {};
+  _y.forEach(x => { (_grup[x.tip] || (_grup[x.tip] = [])).push(x); });
+  r.yay = Object.keys(_grup).map(k => ({
+    tip: k, n: _grup[k].length,
+    tepe: +(_grup[k].reduce((a2, c2) => a2 + c2.tepe, 0) / _grup[k].length).toFixed(1),
+    sure: +(_grup[k].reduce((a2, c2) => a2 + c2.sure, 0) / _grup[k].length).toFixed(2),
+  })).sort((a2, b2) => b2.n - a2.n);
   /* §3 */
   const sk = (P.sokma || []).filter(x => x.ortM != null);
   r.sokma = {

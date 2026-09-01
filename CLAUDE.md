@@ -84,6 +84,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/generate-portraits.js` | Portre üretimi + işleme (kova bazlı). Bu makinede Python kurulu olmadığı için `.py` sürümünün çalışan Node karşılığı; aynı dosya adlarını, eşikleri ve manifest'i üretir. **Tek akış zorunlu** — servis IP başına tek istek kabul ediyor. |
 | `tools/portre-uret-hepsi.js` | **Havuzu kotaya tamamlayan koşucu** — en geride kalan kovadan doldurur, her dilimde commit + push eder, kaldığı yerden devam eder. `--hedef=3000 --dilim=100`. |
 | `tools/surum-check.js` | **FAZ 20 sürüm damgası denetçisi** — HTML `?v=` ↔ `sw.js` SCRIPT_V uyumu, HTML script listesi ↔ sw.js önbellek listesi, ve **yayın dosyaları değiştiği hâlde sürüm artmadıysa DÜŞER** (içerik hash'i `tools/.surum-hash.json`). Sürümü artırdıktan sonra `--yaz` ile kaydı tazele. |
+| `tools/sut-check.js` | **FAZ 26 şut tipi denetçisi** (tarayıcısız) — her saha şutunun tipi var mı, tip bölgeyle tutarlı mı, smaç/floater payı gerçekçi mi, smaç/turnike/floater dili doğru tipte mi, tip deterministik mi. Şut tipi ya da anlatım havuzları değişince çalıştır. |
 | `tools/lig-check.js` | **FAZ 19 lig denetçisi** — standings ↔ fikstür tek kaynak, ayrışma senaryosunda onarım, tablo tutarlılığı (o = g + m), 10 sezonluk denge kapıları (ortalama fark, 20+/5- oranı, 16-0 takım), şehir tekrarı. Lig/tablo/denge değişince çalıştır. |
 | `tools/arena-check.js` | **FAZ 24 arena doluluğu denetçisi** — 125 arena×bilet fiyatı×form birleşiminde **seyirci ≤ taraftar tabanı**, doluluk sınırları, sezon başı bilet gelirinin değişmezliği, `TARAFTAR_KATSAYI`nın tek kaynak olması. Arena / bilet / taraftar formülü değişince çalıştır. |
 | `tools/analiz-check.js` | **FAZ 24 analiz sayı tutarlılığı** — Analiz kartındaki "Sayı ort. (attı)" ile "Attığı sayı" grafiğinin aynı diziden beslendiğini ve grafik eksen etiketlerinin ÇİZİM için açılan banttan değil gerçek min/max'tan basıldığını (FAZ 22 §4.1 gerilemesi) 3 maçlık veriyle sınar. |
@@ -333,6 +334,27 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   yakın hedefi değiştirmez (F15-1) ve salınımı yutar — hedef doğrudan yazılır;
   (c) eşik SAHNE saatinde değil **gerçek saatte** ölçülür (sahne duvar saatinin ~0,45 katı
   akıyor). `_lock` "yeniden yönlendirme yasağı"dır, kıpırdama yasağı değil.
+- **Şut TİPİ vardır ve yörüngeyi o belirler (FAZ 26 §1):** `shot.sut` ∈
+  {smac, turnike, floater, jumper, uc}. `_ballShoot(to,dur,made,onDone,**tip**)` yayı ve
+  süreyi tipten türetir (smaç ≤9 px yay · floater ≥62 px), `shooter.pop` sıçramayı verir.
+  Tip bir SUNUM kararıdır: `pr` ile seçilir, isabeti/sayıyı/kutu skoru DEĞİŞTİRMEZ.
+  Yeni bir şut yolu eklersen tipi `_ballShoot`'a geçir, yoksa şut yine "mesafeye bağlı
+  tek yay" ile çizilir. Değişince `node tools/sut-check.js` + `sunum-check` F26-1/F26-2.
+- **Şut tipi sözcükleri süzgeçten geçer (FAZ 26 §1):** `_sutSuz` ile `_DUNK_WORDS` /
+  `_LAYUP_WORDS` / `_FLOAT_WORDS`. Üç küme AYRIK olmalı ve regexler **iki dilli** yazılır —
+  `localizeCatalogs()` havuzları EN'de yerinde çevirdiği için yalnız Türkçe arayan süzgeç
+  EN'de hiç eşleşmez ve tip ayrımı sessizce kaybolur. Şablonla kurulan sabit cümleler
+  (ör. AND-1 satırı) de tipe duyarlı olmalı: `cls` "yakın mı" der, tipi söylemez —
+  ölçümde 79 vakada floater/smaç "turnikeyi bitirdi" diye anlatılıyordu.
+- **Maç öncesi tabela sıradaki maçı gösterir (FAZ 26 §2):** `syncLiveScoreboardPreview()`
+  (`js/render.js`) adları `findNextUserSeasonMatch()`ten okur — Ana Panel kartıyla TEK
+  KAYNAK. İki koruma zorunludur: maç canlıyken ve **oynanmış bir maçın tabelası dururken**
+  yazmaz (skor/kutu skor o maçı gösterirken adı değiştirmek F13-18'in "aynı ekranda iki
+  farklı maç" hatasıdır).
+- **Ölçüm aracına alan eklerken TAŞIMA LİSTESİNİ de güncelle (FAZ 26):** `sunum-check`
+  tarayıcıdan Node'a sabit bir alan listesi taşır (`const HAM = await page.evaluate(...)`).
+  Listeye yazılmayan toplayıcı sessizce boş gelir ve kapı "ÖRNEK YOK" der — `yay` ve
+  `titreme` tam olarak böyle kayboldu.
 - **SAHNE KATMANI KOREOGRAFİYİ EZMEZ (FAZ 26 dersi — canlıda oyunu bozdu):** set
   salınımı (§2), hedefine DOĞRU YÜRÜYEN jetonun `p.tx/p.ty` değerini de yeniden yazıyordu.
   Sonuç: `_chase` topa koşmayı bırakıyor (ribaund sahada olmayan oyuncuya gidiyor),

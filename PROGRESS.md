@@ -4360,3 +4360,70 @@ Yan kazanç — FAZ 25'te düşmüş kapılar toparlandı:
 | `spacing` orta üçte bir (set) | %23,4 | **%19,4 ✓** | < %20 |
 
 Script sürümü **57 → 58** (JS değişti — FAZ 20 dersi), `surum-check --yaz` ile kayıt tazelendi.
+
+
+## FAZ 26 §1-§2 — Şut tipleri + maç öncesi tabela (2026-09-01)
+
+### §1 Şut tipleri — smaç / turnike / floater ayrımı
+
+**Sorun.** `_ballShoot` şut tipi almıyordu; yay YALNIZ mesafeye bağlıydı. Pota dibindeki
+smaç, turnike ve floater ekranda **birebir aynı yörüngeyi** çiziyordu. Anlatım da tek
+havuzdan besleniyordu: turnikede "potaya asıldı", smaçta "turnikeyi tamamladı" çıkabiliyordu.
+Kısacası oyunda smaç diye bir şey yoktu.
+
+**Motor.** Her saha şutu artık bir tip taşır (`shot.sut`): `smac` · `turnike` · `floater` ·
+`jumper` · `uc`. Tip bölgeden, pozisyondan, kontestten ve hızlı hücumdan türer; karar
+**`pr` (sunum PRNG'si)** ile verilir — isabeti, sayıyı, kutu skorunu DEĞİŞTİRMEZ (F13-3).
+
+**Sahne.** `_ballShoot(to,dur,made,onDone,tip)` — yay ve süre tipten gelir:
+
+| Tip | Yay | Sıçrama (`pop`) | Ölçülen tepe |
+|---|---|---|---|
+| smaç | ≤9 px (yok denecek kadar alçak), hızlı | 1,6 | **34,4 px** |
+| turnike | 16-30 px, yumuşak | 0,85 | 49,6 px |
+| floater | ≥62 px + mesafe payı, kısa mesafede yüksek kavis | 1,15 | 90,8 px |
+| jumper | ≥48 px | 1,0 | 95,2 px |
+| üçlük | ≥64 px | 1,0 | **107,6 px** |
+
+**Anlatım.** `_DUNK_WORDS` / `_LAYUP_WORDS` / `_FLOAT_WORDS` süzgeci (`_sutSuz`) her iki
+anlatım yoluna da (`spikerLine`, `spikerLinePR`) bağlandı; zincir ritmine tipe özgü
+çekirdekler eklendi (`KISA_CEKIRDEK_SUT`). Regexler **iki dillidir** — `localizeCatalogs()`
+havuzları EN'de yerinde çevirdiği için yalnız Türkçe arayan süzgeç EN'de sessizce ölürdü.
+27 yeni satırın EN karşılığı `i18n-commentary.js`e yazıldı.
+
+AND-1 cümlesi (`cls==='yakin'?'turnikeyi bitirdi':…`) tipe duyarlı yapıldı — ölçümde
+**79 vakada** floater/smaç şutu "turnikeyi bitirdi" diye anlatılıyordu.
+
+**Ölçüm — yeni araç `tools/sut-check.js` (tarayıcısız, 60 maç · 7.056 saha şutu): 10/10.**
+Dağılım: turnike %45,0 · üçlük %34,0 · floater %8,4 · **smaç %7,4** · jumper %5,2.
+Smaçların %82,7'si çember bölgesinden; %55,5'i gerçekten smaç diliyle anlatılıyor.
+İlk koşuda iki kapı düştü ve ikisi de gerçek kusurdu: boyadan smaç payı yüksekti
+(çember payı %73,8 → 0,09/0,03 oranları 0,045/0,012'ye çekildi → %82,7) ve AND-1 cümlesi.
+
+Tarayıcı tarafı `sunum-check`e girdi: **F26-1** (smaç tepesi uzak şutun %70'inin altında)
+ve **F26-2** (floater turnikeden ≥1,4× yüksek).
+
+### §2 Maç öncesi tabelada rakip adı
+
+Maç sayfası açıldığında tabela yer tutucularla duruyordu (sol "Ev Takımı", sağ
+"Deplasman"); oyuncu kiminle oynayacağını ancak "Maçı Başlat"a bastıktan sonra görüyordu.
+Yeni `syncLiveScoreboardPreview()` (`js/render.js`) adı **tek kaynaktan** —
+`findNextUserSeasonMatch()`, Ana Panel'deki kartla aynı maç — yazar. Düzen maçtakiyle
+aynıdır: sol sütun kullanıcı, sağ sütun rakip. İki koruma var: maç CANLIYKEN dokunmaz ve
+**oynanmış bir maçın tabelasına** dokunmaz (skor/çeyrek kutusu/kutu skor o maçı gösterirken
+adı değiştirmek F13-18'in "aynı ekranda iki farklı maç" hatasıdır). Kapı: **F26-3**.
+
+### Ölçüm aracında bulunan kusur
+
+`sunum-check` tarayıcıdan Node'a yalnız SABİT bir alan listesi taşıyor; `yay` ve
+`titreme` listeye yazılmadığı için toplanan veri sessizce boşa gidiyor, kapı "ÖRNEK YOK"
+diyordu. Liste artık uyarı yorumu taşıyor.
+
+### Sonuçlar
+
+`sut-check` **10/10** · `sunum-check` **15/15** (F26-1/2/3 dahil) · `anlatim-check` 23/23 ·
+`band.js` hash **99bb9ceb67917bd0 değişmedi** · `sim-node` deterministik (92-103 ↔ 92-103) ·
+`visual-check` masaüstü+mobil 0 konsol hatası · `mobile-check` 18/18 · `i18n-scan` canlı
+anlatım Türkçe %0,0 · `surum-check` (58 → **59**).
+
+Değişmeyen (FAZ 25'ten devreden, bu işle ilgisiz): `spacing` 3 kapı · `hareket` 2 kapı.

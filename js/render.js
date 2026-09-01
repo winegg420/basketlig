@@ -75,6 +75,43 @@ function renderDashboardSummary(){
   }catch(e){ dbg('dash summary',e); }
   box.innerHTML=parts.join('');
 }
+/* ── FAZ 26 §2: MAÇ ÖNCESİ TABELADA RAKİP ADI ──
+   Canlı maç tabelası, maç BAŞLAYANA kadar `charazay2.0.html`'deki yer tutucularla
+   duruyordu: sol "Ev Takımı", sağ "Deplasman". Oyuncu maç sayfasını açtığında kiminle
+   oynayacağını tabelada göremiyor, adı ancak "Maçı Başlat"a bastıktan sonra öğreniyordu
+   (fikstür kartı ayrı yerde). Ad tek kaynaktan gelir: `findNextUserSeasonMatch()` —
+   Ana Panel'deki sıradaki maç kartıyla AYNI maç. Tabela düzeni maçtaki gibidir:
+   SOL sütun daima kullanıcının takımı, SAĞ sütun rakip (ev/deplasman rolü fikstür
+   kartında yazar; burada iki farklı düzen olması kafa karıştırır).
+   ⚠ Maç CANLIYKEN dokunulmaz — `startMatch` adları zaten yazdı, üzerine yazmak
+   F13-18'deki "üç kaynak üç farklı gerçek" hatasını geri getirir. */
+function syncLiveScoreboardPreview(){
+  try{
+    const _ms=(typeof mState!=='undefined')?mState:null;
+    if(_ms&&_ms.running) return;
+    /* Oynanmış/oynanmakta olan bir maçın tabelası ONA aittir: skor, çeyrek kutusu ve kutu
+       skor o maçı gösterirken adları sıradaki rakiple değiştirmek F13-18'in ta kendisidir
+       (aynı ekranda iki farklı maç). Önizleme yalnız tabela HENÜZ bir maça bağlanmamışken
+       yazar; `startMatch` adları kendisi tazeler. */
+    if(_ms&&_ms.events&&_ms.events.length&&(_ms.idx|0)>0) return;
+    const lh=document.getElementById('liveHome');
+    const la=document.getElementById('liveAway');
+    if(!lh||!la||!G||!G.team) return;
+    lh.textContent=G.team.isim;
+    let rakip=null;
+    try{
+      const m=(typeof findNextUserSeasonMatch==='function')?findNextUserSeasonMatch():null;
+      if(m) rakip=(m.home===G.team.isim)?m.away:m.home;
+    }catch(e){ dbg('tabela onizleme',e); }
+    /* Maç durdurulmuş ama sonuçlanmamışsa (kilitli sonuç) o maçın rakibi geçerlidir. */
+    if(!rakip&&typeof mState!=='undefined'&&mState&&mState.rakipName) rakip=mState.rakipName;
+    la.textContent=rakip||'—';
+    const st=document.getElementById('liveStatus');
+    if(st&&!(typeof mState!=='undefined'&&mState&&mState.running)){
+      st.textContent=rakip?'BEKLEMEDE':'MAÇ YOK';
+    }
+  }catch(e){ dbg('syncLiveScoreboardPreview',e); }
+}
 function renderDashboardNextMatch(){
   const nh=document.getElementById('nextHome');
   const na=document.getElementById('nextAway');
@@ -88,6 +125,7 @@ function renderDashboardNextMatch(){
   if(!nh||!na||!G.team) return;
   ensureMatchKickoffs();
   const m=findNextUserSeasonMatch();
+  syncLiveScoreboardPreview();   /* FAZ 26 §2: tabela önizlemesi aynı kaynaktan tazelenir */
   if(homeCol) homeCol.classList.remove('mine');
   if(awayCol) awayCol.classList.remove('mine');
   if(!m){

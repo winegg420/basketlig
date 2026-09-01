@@ -828,7 +828,8 @@ function _ballPass(to,dur,bounce){
   b.bounce=!!bounce;
   b.arc=bounce?-1:(7+d*0.040);
 }
-function _ballShoot(to,dur,made,onDone){
+/** @param tip FAZ 26 §1: 'smac' | 'turnike' | 'floater' | 'jumper' | 'uc' | null (ör. serbest atış) */
+function _ballShoot(to,dur,made,onDone,tip){
   const b=_ball();
   const d=Math.hypot(to[0]-b.x,to[1]-b.y);
   b.mode='shot'; b.carrier=null; b.from=[b.x,b.y]; b.to=[to[0],to[1]]; b.noDrib=false;
@@ -837,6 +838,25 @@ function _ballShoot(to,dur,made,onDone){
   b.t=0; b.dur=dur||Math.max(0.42,Math.min(0.78,0.34+d/560));
   b.arc=d<90?(18+d*0.11):(54+d*0.13);
   if(d<90&&!dur) b.dur=Math.max(0.32,0.24+d/500);
+  /* ── FAZ 26 §1: YAY ARTIK ŞUT TİPİNDEN GELİR ──
+     Eskiden yay YALNIZ mesafeye bağlıydı; pota dibindeki smaç, turnike ve floater ekranda
+     birebir aynı yörüngeyi çiziyordu — üçünün ayrımı yalnız metinde kalıyordu. Gerçek
+     basketbolda fark tam olarak yörüngededir:
+       smaç    — top yukarıdan aşağı gider, yay YOK denecek kadar alçak, hızlı ve sert
+       turnike — camdan/çemberden yumuşak, alçak ama smaçtan belirgin yüksek
+       floater — KISA mesafede YÜKSEK parabol (uzunların uzanamayacağı kavis) — imza tipi
+       jumper  — orta mesafe, dengeli kavis
+       üçlük   — en uzun ve en yüksek parabol
+     `dur` açıkça verildiyse (serbest atış, blok) ona dokunulmaz. */
+  if(tip){
+    const _serbest=(dur==null||dur===0);
+    if(tip==='smac'){       b.arc=Math.min(b.arc,9);          if(_serbest) b.dur=Math.max(0.24,0.18+d/900); }
+    else if(tip==='turnike'){ b.arc=Math.max(16,Math.min(b.arc,30)); if(_serbest) b.dur=Math.max(0.34,0.26+d/620); }
+    else if(tip==='floater'){ b.arc=Math.max(b.arc,62)+d*0.05;       if(_serbest) b.dur=Math.max(0.52,0.44+d/620); }
+    else if(tip==='jumper'){  b.arc=Math.max(b.arc,48); }
+    else if(tip==='uc'){      b.arc=Math.max(b.arc,64); }
+  }
+  b.tip=tip||null;
   b.made=!!made; b.onDone=onDone||null;
 }
 function _ballLoose(vx,vy,vh){
@@ -1910,8 +1930,12 @@ function animateShotPossession(sh,onShoot,onResult){
          kucukse hizalanir, buyukse sut topun GERCEK konumundan cikar (tek karelik
          100+ px sicrama boylece kalkti). */
       { const dF=Math.hypot(b.x-sh.x,b.y-sh.y); if(dF<=40){ b.x=sh.x; b.y=sh.y; } }
-      shooter.pop=1;                       /* şutör yükselir (sıçrama) */
-      _lockTok(shooter,0.8);
+      /* FAZ 26 §1: sıçrama da şut tipinden gelir — smaçta jeton belirgin yükselir ve
+         havada daha uzun kalır, floater'da kısa bir sıçrama vardır, turnikede en az.
+         `pop` hem ölçeği (jeton büyür) hem "havada" hissini verir. */
+      const _sTip=sh.sut||null;
+      shooter.pop=(_sTip==='smac')?1.6:(_sTip==='turnike')?0.85:(_sTip==='floater')?1.15:1;
+      _lockTok(shooter,_sTip==='smac'?1.0:0.8);
       if(sh.blk){
         /* Blok: top çembere ULAŞMAZ — kısa yükselip çelinir, serbest kalır. */
         const bx=sh.x+(rim[0]-sh.x)*0.22+_srand(-16,16), by=sh.y+(rim[1]-sh.y)*0.22+_srand(-16,16);
@@ -1928,7 +1952,11 @@ function animateShotPossession(sh,onShoot,onResult){
         return;
       }
       const rimD=Math.hypot(sh.x-rim[0],sh.y-rim[1]);
-      _ballShoot(rim,rimD<90?0:0.58,sh.made,()=>{
+      /* FAZ 26 §1: uzak şutta süre sabit 0,58 idi ve tip yayı ezemiyordu. Süre artık
+         yalnız ORTA/UZAK jumper-üçlük için sabitlenir; tip verilen her şutta `_ballShoot`
+         kendi tempo hesabını yapsın diye 0 geçilir. */
+      const _durSabit=(rimD<90||_sTip==='smac'||_sTip==='turnike'||_sTip==='floater')?0:0.58;
+      _ballShoot(rim,_durSabit,sh.made,()=>{
         _rimFlash(rim[0],rim[1],sh.made);
         /* M12: AND-1 — saha şutu girdi + faul. Eskiden çizgide kimse görünmezken tabela
            3 artıyor, spiker "AND-1 tamam!" diyordu. Artık ek atış canlandırılır; anlatım
@@ -1948,7 +1976,7 @@ function animateShotPossession(sh,onShoot,onResult){
           S.inb=null;
           _rebScramble(offP,defP,rim,offLeft);
         }
-      });
+      },_sTip);
     };
 
     /* Ribaund mücadelesi: iki taraftan da uzunlar cama yüklenir; topu ALAN,
@@ -2385,18 +2413,18 @@ const SPIKERS=[
    score2/miss2 havuzunda yakın + orta + nötr kalıplar dengeli tutuldu. */
 const SPIKER_LINES={
   cosku:{
-    score2:['%S POTAYA ASILDI, İKİ SAYI! %SC','%S BOYALI ALANI YIKTI! %SC','%S turnikeyi PATLATTI! %SC','%S pota altında CANAVAR gibi, iki! %SC','%S ORTA MESAFEDEN VURDU, muhteşem! %SC','%S orta mesafeden soğukkanlı, iki! %SC','%S orta mesafe şutunu tutturdu! %SC','%S DURDURULAMIYOR, iki sayı! %SC','%S sayıyı yazdırdı, tribün ayakta! %SC','%S buz gibi bitirdi! %SC','%S coştu, iki daha geldi! %SC'],
+    score2:['%S SMACI ÇAKTI, potaya asıldı! %SC','%S SMAÇLA BİTİRDİ — çember titredi! %SC','%S çemberi PARÇALADI, smaç! %SC','%S floater ile yükseldi, içeride! %SC','%S POTAYA ASILDI, İKİ SAYI! %SC','%S BOYALI ALANI YIKTI! %SC','%S turnikeyi PATLATTI! %SC','%S pota altında CANAVAR gibi, iki! %SC','%S ORTA MESAFEDEN VURDU, muhteşem! %SC','%S orta mesafeden soğukkanlı, iki! %SC','%S orta mesafe şutunu tutturdu! %SC','%S DURDURULAMIYOR, iki sayı! %SC','%S sayıyı yazdırdı, tribün ayakta! %SC','%S buz gibi bitirdi! %SC','%S coştu, iki daha geldi! %SC'],
     score3:['%S DERİNDEN BOMBAYI PATLATTI — ÜÇLÜK! %SC','%S ÜÇLÜĞÜ GÖMDÜ, tribün ayakta! %SC','%S köşeden NİŞANCI gibi, üç! %SC','%S UZAKTAN VURDU, inanılmaz! %SC','%S yaydan ATEŞ etti — SWISH! %SC','%S logodan denedi ve GİRDİ! %SC','%S kanattan bombayı bıraktı! %SC','%S tereddütsüz çekti, üç geldi! %SC','%S file sallandı, muhteşem üçlük! %SC','%S yay dışından acımadı! %SC','%S üçlükte ateş hattında! %SC'],
-    miss2:['%S turnikede tökezledi!','%S POTA İZİN VERMEDİ, kaçtı!','%S yakındaydı ama SEKTİ!','%S orta mesafeden kaçırdı!','%S orta mesafe şutu kısa kaldı!','%S uzaktan denedi, olmadı!','%S çember reddetti!','%S bu sefer olmadı, yazık!','%S demire takıldı!','%S ıskaladı, seyirci sustu!'],
+    miss2:['%S smacı çemberde patladı!','%S floater kısa kaldı!','%S turnikede tökezledi!','%S POTA İZİN VERMEDİ, kaçtı!','%S yakındaydı ama SEKTİ!','%S orta mesafeden kaçırdı!','%S orta mesafe şutu kısa kaldı!','%S uzaktan denedi, olmadı!','%S çember reddetti!','%S bu sefer olmadı, yazık!','%S demire takıldı!','%S ıskaladı, seyirci sustu!'],
     miss3:['%S üçlüğü KAÇTI, çemberden döndü!','%S uzaktan ıskaladı, olmadı!','%S bombayı boşa harcadı!','%S yay dışından vuramadı!','%S köşe üçlüğü havada kaldı!','%S demir dedi, girmedi!','%S üçlük kısa düştü!','%S file yerine demiri buldu!','%S dış atış tutmadı!'],
     block:['%B MUAZZAM BLOK! %S geri döndü!','%B ŞAPKAYI TAKTI, inanılmaz savunma!','%B topu SİLİP ATTI!','%B duvar gibi, %S durduruldu!','%B kapağı kapadı, %S şaşkın!','%B uzun topu geri çevirdi!','%B savunmada devleşti!'],
     steal:['%C TOPU KAPTI, koşuyoo!','%C pas arasını OKUDU, çaldı!','%C elini uzattı ve ALDI!','%C müthiş bir top çalma!','%C çizgiyi okudu, top bizde!','%C hücumu ters çevirdi!','%C aktif eller, çaldı gitti!'],
     tactic:['Ritim değişiyor — tempo yükseliyoo!','Savunma kilitlendi, enerji tavanda!','Baskı artıyor, tribün ayakta!','Hücumda yeni varyasyon geliyoo!','Koç kenardan bağırıyor, tempo!']
   },
   bilge:{
-    score2:['%S doğru okumayla pota altında bitirdi. %SC','%S boyalı alanda yüksek yüzdeli bitiriş. %SC','%S turnikeyi sakin tamamladı. %SC','%S pota altı pozisyonunu iyi kullandı. %SC','%S orta mesafe şutu, mekanik kusursuz. %SC','%S orta mesafeden yüksek yüzde. %SC','%S uzaktan dengeli bir jumper, iki. %SC','%S savunmanın açığını görüp bitirdi. %SC','%S sabırlı hücum, temiz iki. %SC','%S pozisyonu iyi okudu, iki. %SC','%S soğukkanlı bir bitiriş. %SC'],
+    score2:['%S smaçla yüksek yüzdeli bitiriş. %SC','%S çembere yükselip smaçladı. %SC','%S floater ile uzunları aştı. %SC','%S doğru okumayla pota altında bitirdi. %SC','%S boyalı alanda yüksek yüzdeli bitiriş. %SC','%S turnikeyi sakin tamamladı. %SC','%S pota altı pozisyonunu iyi kullandı. %SC','%S orta mesafe şutu, mekanik kusursuz. %SC','%S orta mesafeden yüksek yüzde. %SC','%S uzaktan dengeli bir jumper, iki. %SC','%S savunmanın açığını görüp bitirdi. %SC','%S sabırlı hücum, temiz iki. %SC','%S pozisyonu iyi okudu, iki. %SC','%S soğukkanlı bir bitiriş. %SC'],
     score3:['%S ayakları hazır, ritimli üçlük. %SC','%S sahayı geniş kullandı, açık üç. %SC','%S kusursuz mekanikle üç. %SC','%S savunmayı yaydı ve cezalandırdı. %SC','%S yüksek yüzdeli konumdan üç. %SC','%S dengeli çıkış, temiz üçlük. %SC','%S köşe üçlüğünü değerlendirdi. %SC','%S kanattan isabetli üç. %SC','%S sabırlı organizasyon, açık üçlük. %SC','%S doğru karar, yay dışından üç. %SC','%S ritmini buldu, üç sayı. %SC'],
-    miss2:['%S zorlama şut seçti, isabetsiz.','%S dengesi bozuktu, kaçtı.','%S savunma baskısında yüzde düştü.','%S bitiriş açısı kapalıydı.','%S acele etti, olmadı.','%S orta mesafeden kısa kaldı.','%S turnikede denge kaybı, kaçtı.','%S seçim hatalıydı, isabet yok.','%S ritim bozuldu, ıskaladı.','%S kontrolsüz şut, girmedi.'],
+    miss2:['%S smaç denemesi çembere takıldı.','%S floater kavisi kısa kaldı.','%S zorlama şut seçti, isabetsiz.','%S dengesi bozuktu, kaçtı.','%S savunma baskısında yüzde düştü.','%S bitiriş açısı kapalıydı.','%S acele etti, olmadı.','%S orta mesafeden kısa kaldı.','%S turnikede denge kaybı, kaçtı.','%S seçim hatalıydı, isabet yok.','%S ritim bozuldu, ıskaladı.','%S kontrolsüz şut, girmedi.'],
     miss3:['%S ayakları hazır değildi, kısa.','%S kontestli üçlük, düşük yüzde.','%S ritim tutmadı, ıskaladı.','%S seçim tartışılır, kaçtı.','%S dengesiz çıkış, isabet yok.','%S zorlama üçlük, girmedi.','%S yay dışından yüzde düşük, kaçtı.','%S erken şut, demire geldi.','%S kapalı pozisyondan zorladı, olmadı.'],
     block:['%B iyi zamanlama, temiz blok — %S durdu.','%B rotasyonu erken geldi, blokladı.','%B dikey savunma, kurallı blok.','%B okuma harika, %S engellendi.','%B yardım geldi ve blokladı.','%B pozisyonu tuttu, temiz blok.','%B disiplinli savunma, %S durduruldu.'],
     steal:['%C pas hattını kesti, kontrol onda.','%C okuması üst düzey, çaldı.','%C ellerini aktif kullandı, top kaybı.','%C savunma disiplini, topu aldı.','%C pasör hatasını cezalandırdı.','%C boşluğu okudu, top bizde.','%C erken rotasyonla topu kaptı.'],
@@ -2660,8 +2688,40 @@ const CORNER3_MISS=[
   'Köşe üçlüğü %S için bugün gelmiyor.',
   '%S köşeden attı — pota izin vermedi.'
 ];
-const _NEAR_WORDS=/turnike|pota altı|potaya asıldı|boyalı alan|dibe|smaç|pota ile anlaştı|potaya "merhaba"/i;
+const _NEAR_WORDS=/turnike|pota altı|potaya asıldı|boyalı alan|dibe|smaç|smac|pota ile anlaştı|potaya "merhaba"/i;
 const _MID_WORDS=/orta mesafe|jump shot|uzaktan|kısa kaldı/i;
+/* ── FAZ 26 §1: ŞUT TİPİ SÖZCÜKLERİ ──
+   Bölge süzgeci (_NEAR/_MID) "yakın mı uzak mı" sorusunu çözüyordu ama yakın şutların
+   ÜÇÜ DE aynı havuzdan besleniyordu: turnikede "potaya asıldı", smaçta "turnikeyi
+   tamamladı" çıkabiliyordu. Tip artık kendi sözcüklerini seçer.
+   ⚠ Üç küme AYRIK olmalı — bir satır iki kümeye birden girerse süzgeç onu her tipte
+   eler ve havuz boşalır (o durumda süzgeç kendini iptal eder, aşağıdaki `f.length`). */
+/* ⚠ İKİ DİLLİ: `localizeCatalogs()` havuzları EN modunda YERİNDE çevirir; yalnız Türkçe
+   arayan bir süzgeç EN'de hiç eşleşmez ve tip ayrımı sessizce kaybolur (i18n dersi). */
+const _DUNK_WORDS=/smaç|smac|potaya asıldı|çemberi parçala|çember titredi|boyalı alanı yıktı|canavar gibi|dunk|slam|throws it down|hangs on the rim|tears through the paint|beast down low/i;
+const _LAYUP_WORDS=/turnike|layup/i;
+const _FLOAT_WORDS=/floater|floats it/i;
+/** Şut tipine uymayan betimleri havuzdan eler; hiç satır kalmazsa süzgeç uygulanmaz. */
+function _sutSuz(pool,sut){
+  if(!sut||!Array.isArray(pool)||!pool.length) return pool;
+  let f;
+  if(sut==='smac'){
+    /* Smaçta ÖNCE gerçek smaç satırları denenir; havuzda yoksa en azından
+       turnike/floater dili elenir (yanlış tip iddiası çıkmasın). */
+    f=pool.filter(t=>_DUNK_WORDS.test(t));
+    if(f.length) return f;
+    f=pool.filter(t=>!_LAYUP_WORDS.test(t)&&!_FLOAT_WORDS.test(t));
+  } else if(sut==='floater'){
+    f=pool.filter(t=>_FLOAT_WORDS.test(t));
+    if(f.length) return f;
+    f=pool.filter(t=>!_DUNK_WORDS.test(t)&&!_LAYUP_WORDS.test(t));
+  } else if(sut==='turnike'){
+    f=pool.filter(t=>!_DUNK_WORDS.test(t)&&!_FLOAT_WORDS.test(t));
+  } else {  /* jumper / uc — yakın mesafe dilinin hiçbiri geçerli değil */
+    f=pool.filter(t=>!_DUNK_WORDS.test(t)&&!_LAYUP_WORDS.test(t)&&!_FLOAT_WORDS.test(t));
+  }
+  return (f&&f.length)?f:pool;
+}
 function spikerLine(spId,kind,v){
   const set=SPIKER_LINES[spId]||SPIKER_LINES.reha;
   let pool=set[kind]||SPIKER_LINES.reha[kind]||[''];
@@ -2670,6 +2730,7 @@ function spikerLine(spId,kind,v){
   if(v.cls&&(kind==='score2'||kind==='miss2')){
     const f=pool.filter(t=>v.cls==='yakin'?!_MID_WORDS.test(t):!_NEAR_WORDS.test(t));
     if(f.length) pool=f;
+    pool=_sutSuz(pool,v.sut);   /* FAZ 26 §1: smaç/turnike/floater ayrımı */
   }
   /* %SC (skor) önce değiştirilmeli; yoksa %S onun içindeki "%S"i yiyip skoru "AdC"ye çevirir. */
   return adKoy(ch(pool),{SC:v.sc,S:v.s,B:v.b,C:v.c});
@@ -2783,6 +2844,17 @@ const KISA_CEKIRDEK={
   miss2: ['İsabet yok.','Kaçırdı.','Olmadı.','Kısa kaldı.','Çemberden döndü.','Demire takıldı.'],
   miss3: ['Üçlük kaçtı.','İsabet yok.','Havada kaldı.','Demire geldi.','Uzun düştü.']
 };
+/* FAZ 26 §1: zincir çekirdekleri tip-nötrdü ("Bitirdi."), yani hızlı ritimli anlatımda
+   smaç ile turnike hiç ayrışmıyordu. Tipi olan şutlarda önce bu havuz denenir; yoksa
+   nötr çekirdeğe düşülür (çeşitlilik korunur, F25 §7.2 dersi). */
+const KISA_CEKIRDEK_SUT={
+  smac:{ score2:['Smaçladı.','Çakti, iki.','Yukarıdan bitirdi.','Smaç geldi.'],
+         miss2:['Smacı tutmadı.','Çemberde patladı.'] },
+  floater:{ score2:['Floater içeride.','Kavisi tutturdu.','Uzunların üstünden.'],
+            miss2:['Floater kısa.','Kavis tutmadı.'] },
+  turnike:{ score2:['Turnikeyi bitirdi.','Camdan sakin.','Turnike içeride.'],
+            miss2:['Turnikede takıldı.','Turnike dönmedi.'] }
+};
 /** Ön parça + kısa çekirdek [+ skor] birleşimi. Yalnız sunum PRNG'si kullanır. */
 function zincirLine(kind,v,pr,memo){
   try{
@@ -2801,7 +2873,9 @@ function zincirLine(kind,v,pr,memo){
        cümlelerde tam ad korunur — ayrım bilinçli. */
     const kisaAd=(typeof _tokShort==='function'&&v.s)?_tokShort(v.s):v.s;
     const on=adKoy(onHam,{S:kisaAd});
-    let cek=pickLine(KISA_CEKIRDEK[kind]||[''],pr,memo,'kisa'+kind);
+    /* FAZ 26 §1: tipi olan yakın şutlarda önce tipe özgü çekirdek denenir. */
+    const _sutCek=(v.sut&&KISA_CEKIRDEK_SUT[v.sut])?KISA_CEKIRDEK_SUT[v.sut][kind]:null;
+    let cek=pickLine((_sutCek&&_sutCek.length?_sutCek:KISA_CEKIRDEK[kind])||[''],pr,memo,'kisa'+(v.sut||'')+kind);
     if(!adVar&&kisaAd&&cek){
       /* Türkçe küçük harf: İ→i, I→ı. Tarayıcı yereli varsayılamaz (trKucuk). */
       cek=kisaAd+' '+(typeof trKucuk==='function'?trKucuk(cek.charAt(0)):cek.charAt(0).toLowerCase())+cek.slice(1);
@@ -2831,6 +2905,7 @@ function spikerLinePR(spId,kind,v,pr,memo){
   if(v.cls&&(kind==='score2'||kind==='miss2')){
     const f=pool.filter(t=>v.cls==='yakin'?!_MID_WORDS.test(t):!_NEAR_WORDS.test(t));
     if(f.length) pool=f;
+    pool=_sutSuz(pool,v.sut);   /* FAZ 26 §1: smaç/turnike/floater ayrımı */
   }
   /* §7.5: BLOK cümlesi bölge süzgecinden geçmiyordu — üç sayılık deneme bloklanınca
      "boyalı alanın kapısını kapadı!" çıkıyordu. Yay dışı denemede boya/pota dibi
@@ -3769,7 +3844,36 @@ function generateMatchEvents(rakip, opts){
         else move=prCh(['drive','crossover','hesitation']);
       }
       const contest=blocked?'heavy':(made?(prChance(0.42)?'contested':'open'):(prChance(0.5)?'contested':'heavy'));
-      const play={scheme,zone,is3:!!is3,shooterId:shooter.id!=null?shooter.id:undefined,passerId:(passer&&passer.id!=null)?passer.id:undefined,move,contest,result:blocked?'block':and1?'and1':made?'make':'miss'};
+      /* ── FAZ 26 §1: ŞUT TİPİ ── Bölge tek başına yetmiyordu: pota dibindeki her şut aynı
+         yayla, aynı sürede ve aynı dille (hep "turnike") oynuyordu; smaç diye bir şey yoktu.
+         Tip bir SUNUM kararıdır — isabeti, sayıyı, kutu skoru DEĞİŞTİRMEZ; yalnız topun
+         yörüngesini, şutörün sıçramasını ve spiker sözcüklerini seçer.
+         ⚠ Karar `pr` (sunum PRNG'si) üzerinden verilir (F13-3): `rand()`/`Math.random`
+         kullanılırsa maçın rastgele akışı kayar ve `band.js` hash'i değişir.
+           smac    — pota dibinden yukarıdan bitiriş (uzun/kanat, açık, hızlı hücum)
+           turnike — pota dibi/boya, çemberi yalayan yumuşak bitiriş
+           floater — boyada kısa parabol; guard'ın uzunların üstünden attığı şut
+           jumper  — orta mesafe sıçrama şutu
+           uc      — yay dışı */
+      let sut;
+      if(is3) sut='uc';
+      else if(zone==='midrange') sut='jumper';
+      else {
+        const _big=(shooter.poz==='C'||shooter.poz==='PF');
+        const _wing=(shooter.poz==='SF');
+        /* Gerçekte smaçların neredeyse tamamı ÇEMBER bölgesinden ve uzunlardan gelir;
+           boyanın dışından smaç istisnadır. Kaçan smaç nadirdir (top çemberden döner
+           değil, tutulur) — kaçışta oran düşürülür. */
+        let _dp=(zone==='rim')?(_big?0.46:_wing?0.30:0.13):(_big?0.045:0.012);
+        if(fb) _dp+=0.14;                       /* hızlı hücumda serbest koşu */
+        if(contest==='heavy') _dp*=0.45;
+        if(!made) _dp*=0.55;
+        if(prChance(_dp)) sut='smac';
+        /* Floater guard/kanat işidir ve boyada anlamlıdır — pivot floater atmaz. */
+        else if(!_big&&zone==='paint'&&prChance(0.38)) sut='floater';
+        else sut='turnike';
+      }
+      const play={scheme,zone,sut,is3:!!is3,shooterId:shooter.id!=null?shooter.id:undefined,passerId:(passer&&passer.id!=null)?passer.id:undefined,move,contest,result:blocked?'block':and1?'and1':made?'make':'miss'};
       /* Faz 3: bağlam öneki (seri/fark/sıcaklık/kritik) — seçili ve throttled (spam değil). */
       let ctxPre='';
       if(made){
@@ -3811,10 +3915,10 @@ function generateMatchEvents(rakip, opts){
                                                                  hamle ibaresi eklenmez */
             : movePhrase+pasTxt+spikerLinePR(SP.id,'score3',_v,pr,narr.recent);
         }
-        else if(and1){ txt=`${shooter.isim} faule rağmen ${cls==='yakin'?'turnikeyi bitirdi':'şutu soktu'} — ${and1Made?'devam sayısı tamam!':'ek atış kaçtı.'} (${_and1Foul}) ${sc()}`; }
+        else if(and1){ txt=`${shooter.isim} faule rağmen ${(sut==='smac'?'smacı çaktı':sut==='floater'?'floater ile bitirdi':sut==='turnike'?'turnikeyi bitirdi':'şutu soktu')} — ${and1Made?'devam sayısı tamam!':'ek atış kaçtı.'} (${_and1Foul}) ${sc()}`; }
         else {
           const pasTxt=passer?assistPhrase(_tokShort(passer.isim),scheme,pr,narr.recent):'';
-          const _v={s:shooter.isim,sc:scGate(q,t),cls,zone};
+          const _v={s:shooter.isim,sc:scGate(q,t),cls,zone,sut};
           txt=(_zincirMod&&!pasTxt)
             ? (_zincirKul=true,zincirLine('score2',_v,pr,narr.recent))
             : movePhrase+pasTxt+spikerLinePR(SP.id,'score2',_v,pr,narr.recent);
@@ -3823,7 +3927,7 @@ function generateMatchEvents(rakip, opts){
         txt=spikerLinePR(SP.id,'block',{s:_tokShort(shooter.isim),b:_tokShort(blk.isim),uzak:is3},pr,narr.recent);
       } else {
         const _k=is3?'miss3':'miss2';
-        const _v={s:shooter.isim,cls,zone};
+        const _v={s:shooter.isim,cls,zone,sut};
         txt=_zincirMod
           ? (_zincirKul=true,zincirLine(_k,_v,pr,narr.recent))
           : spikerLinePR(SP.id,_k,_v,pr,narr.recent);
@@ -3850,7 +3954,7 @@ function generateMatchEvents(rakip, opts){
                                  vur:()=>{ narr.imzaCd=8; }},pr,narr.recent);
         }catch(e){}
       }
-      events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,play,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q,fb:fb||undefined,pb:putback||undefined,blk:blocked||undefined,scheme,zone,move:move||undefined,contest,sid:shooter.id!=null?shooter.id:undefined,pid:(passer&&passer.id!=null)?passer.id:undefined,and1:and1?{made:and1Made}:undefined,zincir:_zincirKul||undefined},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,play,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q,fb:fb||undefined,pb:putback||undefined,blk:blocked||undefined,scheme,zone,sut,move:move||undefined,contest,sid:shooter.id!=null?shooter.id:undefined,pid:(passer&&passer.id!=null)?passer.id:undefined,and1:and1?{made:and1Made}:undefined,zincir:_zincirKul||undefined},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       _flushReb();   /* and-1 ek atışının ribaundu şut cümlesinden SONRA gelir */
       /* F13-1: kaçan şutların yalnız ~%22'sinde ribaund ANLATILIYORDU; kalan %78'de top
          sessizce el değiştiriyor, anlatım "biz kaçırdık → rakip sayı attı" diye atlıyordu

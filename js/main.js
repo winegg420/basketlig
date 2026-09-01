@@ -1358,6 +1358,8 @@ function showPage(page,btn){
     }
     if(page==='mac'){
       renderFixture();
+      /* FAZ 26 §2: sayfa açılır açılmaz tabelada rakibin adı görünsün (maç başlamadan). */
+      if(typeof syncLiveScoreboardPreview==='function') syncLiveScoreboardPreview();
       /* F13-18: sayfa her açılışında maç içi istatistik paneli BOŞ kutu ile eziliyordu —
          canlı maç sürerken başka sayfaya gidip dönen oyuncu paneli sıfırlanmış, rakip adını
          "Deplasman" olmuş buluyordu (skor tabelası ve saha ise doğru kalıyordu: üç kaynak

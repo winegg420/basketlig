@@ -199,6 +199,10 @@ function localizeCatalogs(){
   /* F14: zincir anlatım + spiker imzası + yorumcu havuzları. */
   try{ if(typeof AKIS_ON!=='undefined') Object.keys(AKIS_ON).forEach(k=>mapStrArr(AKIS_ON[k])); }catch(e){}
   try{ if(typeof KISA_CEKIRDEK!=='undefined') Object.keys(KISA_CEKIRDEK).forEach(k=>mapStrArr(KISA_CEKIRDEK[k])); }catch(e){}
+  /* FAZ 26 §1: şut tipine özgü zincir çekirdekleri (smaç / floater / turnike). */
+  try{ if(typeof KISA_CEKIRDEK_SUT!=='undefined') Object.keys(KISA_CEKIRDEK_SUT).forEach(t=>{
+    const set=KISA_CEKIRDEK_SUT[t]; Object.keys(set).forEach(k=>mapStrArr(set[k]));
+  }); }catch(e){}
   try{ if(typeof YORUMCU_LINES!=='undefined') Object.keys(YORUMCU_LINES).forEach(k=>mapStrArr(YORUMCU_LINES[k])); }catch(e){}
   try{ mapStrArr(typeof IMZA_ESPRI!=='undefined'?IMZA_ESPRI:null); }catch(e){}
   try{ mapStrArr(typeof IMZA_ISTAT!=='undefined'?IMZA_ISTAT:null); }catch(e){}
