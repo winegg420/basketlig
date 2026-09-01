@@ -83,13 +83,18 @@ const TR_SY=['Yılmaz','Kaya','Demir','Şahin','Çelik','Öztürk','Arslan','Do�
  *  sessizce NBA adı üretiyordu — bu bir mayındı: 43 ülkenin hepsi kapsansa da yeni bir
  *  ülke eklendiği gün fark edilmeden geri gelirdi. Sıra: istenen ülke → ligin ev ülkesi →
  *  Türkiye. Bilinmeyen ülke ayrıca konsola UYARI yazar; sessiz yedek bir daha gizlenmesin. */
-function randomNameFor(ulkeAd){
+/*  FAZ 29 §7: isteğe bağlı `tohum` — verilirse ad DETERMİNİSTİK seçilir (prPick, hiç
+ *  rastgelelik tüketmez). Eski kayıt onarımlarında zorunludur: `ch()` ile seçilen ad
+ *  her açılışta değişir ve oyuncu kadrosunun her seferinde başka isimler almasına yol
+ *  açar (FAZ 24'te koç adında yaşandı). Tohumsuz çağrı davranışı DEĞİŞMEZ. */
+function randomNameFor(ulkeAd,tohum){
   const ad=String(ulkeAd||'');
   let pool=NAME_POOLS[ad];
   if(!pool){
     try{ console.warn('randomNameFor: isim havuzu olmayan ülke →',ad||'(boş)'); }catch(e){}
     pool=NAME_POOLS[typeof LIG_EV_ULKE!=='undefined'?LIG_EV_ULKE:'Türkiye']||NAME_POOLS['Türkiye'];
   }
+  if(tohum!=null) return `${prPick(tohum+'|ilk',pool.ilk)} ${prPick(tohum+'|sy',pool.sy)}`;
   return `${ch(pool.ilk)} ${ch(pool.sy)}`;
 }
 

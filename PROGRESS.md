@@ -4510,3 +4510,101 @@ sezon 3 · 200 takım → %9,3, takım başına en fazla 2.
 `schema-check` · `turkek-check` · `analiz-check` · `i18n-scan` (canlı anlatım %0,0).
 
 Sürüm **59 → 60**.
+
+
+## FAZ 29 — İngilizce mod (i18n) denetimi (2026-09-01)
+
+Kaynak: site İngilizce moda alınıp tüm ekranlar gezildi, canlı maç İngilizce izlendi.
+
+### §1 Önce araç: `i18n-scan` KÖRDÜ
+
+Araç "eksik 0" diyordu ama bulguların hepsi ekranda duruyordu. İki kademeli süzgeç vardı
+ve **ikinci kademeyi birinci kademe kör ediyordu**: tarayıcı içindeki toplayıcı yalnız
+"Türkçe harf ya da dar bir sözcük listesi" eşleşen düğümleri dışarı veriyor, geri kalan
+her şey Node tarafına HİÇ ulaşmıyordu. Üstelik bulunanlar 1700 satırlık özel isim
+gürültüsünün içinde BİLGİ olarak listeleniyor, hiçbir kapıyı düşürmüyordu.
+
+Yeni `tools/_lib/i18n-kapilari.js` — **dört sınıf, dördü de KAPI**:
+
+| Sınıf | Ne yakalar | Örnek |
+|---|---|---|
+| **A** kısmi çeviri | aynı satırda TR + EN belirteç | "Kasa bu gidişle ~14 **weeks** yeter" |
+| **B** biçim | Türkçe sayı/yüzde/sıra biçimi (satırda Türkçe HARF YOK — eski araç için görünmezdi) | "14.714" · "%55" · "2. place" |
+| **C** kelime sırası | İngilizce cümle asılı ilgeçle bitiyor | "… have announced a deal **for.**" |
+| **D** tamamen çevrilmemiş | Türkçe **cins isim** var (özel isim sayılmaz) | "⏹ Durdur" · "Doluluk (taraftar + form + bilet fiyatı)" |
+
+Toplayıcı artık ham metni de gönderir; sınıflandırma **tek yerde** yapılır.
+
+**Sınıflandırıcının iki tuzağı ölçülerek kapatıldı:**
+- `[^A-Za-z]` sözcük sınırı Türkçe harfi dışlamıyordu: "K**ür**ş**at**" içindeki "at"
+  İngilizce sözcük sanılıyor, her Türk oyuncu adı "kısmi çeviri" raporlanıyordu
+  (**181 yanlış pozitif**). FAZ 17 i18n dersinin aynısı.
+- "Türkçe harf var" ölçütü özel isimleri de yakalıyordu. Kural: **Türkçe harf içeren
+  KÜÇÜK harfli sözcük cins isimdir** ("gidişle", "fiyatı"); büyük harfle başlayan özel
+  isimdir ve zaten çevrilmez.
+
+**Doğrulama:** araç, düzeltmelerden ÖNCE brifin bulgularının hepsini yakaladı —
+A 1 · B 95 · C 2 · D 7.
+
+### §3 Biçim dile bağlandı
+
+`fmtSayi` / `fmtYuzde` / `fmtSira` (`js/i18n.js`) **tek kaynaktır**. `fmtn` bunlara
+bağlandı (71 çağrı); `toLocaleString('tr-TR')` sabiti ve elle '%' öneki kalmadı —
+`tools/bicim-check.js` kaynağı da tarıyor. İngilizce sıra eki 11/12/13 istisnası dâhil
+**32/32** birim testi geçiyor (1st · 2nd · 3rd · 11th · 21st · 101st · 111th).
+
+### §4 Haber cümlesi kelime sırası
+
+"X — lig — BEDEL **ile** OYUNCU **için anlaşma duyurdu.**" parça parça çevrilince
+İngilizcede nesne düşüyor, ilgeç havada kalıyordu. İngilizce dizilim **ayrı yazıldı**:
+"X (TBL) have announced a deal for OYUNCU — 14,714 KR." Diğer 7 haber şablonu tarandı,
+aynı kusur yok.
+
+### §2 · §5 · §6
+
+Çevrilenler: Bilanço ("Cash lasts ~N weeks at this rate", "Weekly wages + upkeep",
+"Match bonus (win)", "Away travel costs") · Arena ("Attendance (fans + form + ticket
+price)", "Fan base", kapasite "seats") · düğmeler ("Pause", "Timeout (N)") · Ana Panel
+("Away · YOU") · anlatım açılışı ("are the home side") · kimya trendi ("trending rising
+toward 96") · başarım ("Full Coffers").
+
+Kutu skor sütunu (§5) **her iki dilde** rakip adını gösteriyor — kapılar `F28-1`
+(TR, sunum-check) ve i18n-scan §5 (EN).
+
+Üslup (§6): "The three misses." → "The three-pointer is off." · "Off the iron." tek
+varyanttı, ayrıştırıldı ("Off the front rim." / "Long off the back iron.").
+
+**Kendi bulduğum kusur — FAZ 28'in i18n borcu:** kelime bütçesi için kısaltılan 36 Türkçe
+satırın anahtarı değişmiş, sözlükteki eski girişler ölü kalmıştı; EN oyuncu o satırları
+Türkçe görüyordu (ölçülen **%9,1**). Hepsi yazıldı ve **kalıcı kapı** eklendi:
+`anlatim-check` artık her anlatım havuzu satırının EN karşılığını arıyor (**29/29**).
+
+### §7 Sezon 1'de yabancı — üçüncü vaka açıklandı
+
+Kaynak kural FAZ 28'de düzeltilmişti ve doğru çalışıyor: sezon 1 gün 1'de `genRoster`
+(300 oyuncu), `botClubEnsureDepth` (400), altyapı (60), draft (50) → **yabancı 0**.
+
+**Ama delik kapanmamıştı:** bot kadroları localStorage **kulüp önbelleğinde** saklanır ve
+bir kez kurulduktan sonra yeniden ÜRETİLMEZ. Kural değişmeden önce kurulmuş kayıtlarda
+yabancılar duruyordu — üç vakanın (Detlef Maier, Krsman Cerović, Wei Zhen) kaynağı budur.
+Ölçüldü: eski kuralla kurulan 30 takımda 30 yabancı.
+
+`faz29BotUyrukOnar()` (`js/league.js`) önbellekten okunan kadroyu sezon 1'de onarır:
+**yalnız ad ve ülke** değişir, id/seed/mevki/genel/enerji/istatistik korunur. Ad
+deterministiktir — `randomNameFor`a isteğe bağlı tohum eklendi (`prPick`); `ch()` ile
+seçilseydi kadro her açılışta başka isimler alırdı (FAZ 24 koç adı dersi).
+Kapı: `milliyet-check` **K bölümü** (4 ölçüt).
+
+### Sonuçlar
+
+`sim-node --n=100 --seed=42` → **87.2 - 80.0 · hata 0 · G değişmedi: EVET**
+`i18n-scan` **A/B/C/D = 0 · canlı anlatım Türkçe %0,0** · `bicim-check` 32/32 ·
+`anlatim-check` 29/29 · `sut-check` 14/14 · `milliyet-check` (J + K) · `lig-check` ·
+`isim-check` · `schema-check` · `turkek-check` · `analiz-check` · `band.js` hash
+**99bb9ceb67917bd0 değişmedi** · `visual-check` 0 konsol hatası · `mobile-check` 18/18.
+
+`sunum-check` **kararsız**: art arda koşularda bir kez M9, bir kez F14-7 düştü, aynı
+koşullarda tekrar %100 geçti (M9 %100 · 11/11). Motor tarafındaki tek değişiklik anlatım
+açılışının `t()` çağrısıdır — sahneye dokunmaz. Küçük örneklem kararsızlığıdır.
+
+Sürüm **60 → 61**.

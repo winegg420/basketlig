@@ -74,6 +74,32 @@ function botClubEnsureDepth(roster,ck){
   });
   return eklendi;
 }
+/* ── FAZ 29 §7: ESKİ ÖNBELLEKTEKİ YABANCILARIN ONARIMI ──────────────────────────────
+   FAZ 28 §5 kuralı kaynağında düzeltti (sezon 1'de `botYabanciOran()`=0), ama bot
+   kadroları localStorage'daki KULÜP ÖNBELLEĞİNDE saklanır ve bir kez kurulduktan sonra
+   yeniden ÜRETİLMEZ. Kural değişmeden önce kurulmuş kayıtlarda yabancılar duruyordu —
+   canlıda üç ayrı bot takımda görülen vakaların (Detlef Maier, Krsman Cerović, Wei Zhen)
+   kaynağı budur; ölçüldü: eski kuralla kurulan 40 takımda 35 yabancı.
+   Onarım YALNIZ ADI ve ÜLKEYİ değiştirir: id, seed, mevki, nitelikler, enerji, sezon
+   istatistiği ve portre alanları KORUNUR (FAZ 24 personel onarımıyla aynı disiplin).
+   Ad deterministiktir — `rand()` kullanılsaydı kadro her açılışta değişirdi. */
+function faz29BotUyrukOnar(roster,ck){
+  try{
+    if(!Array.isArray(roster)) return false;
+    const sezon=(G&&G.season&&G.season.year)|0;
+    if(sezon>1) return false;              /* yabancı sezon 2+'de meşrudur */
+    let degisti=false;
+    roster.forEach((p,i)=>{
+      if(!p||!p.ulke||p.ulke===LIG_EV_ULKE) return;
+      p.ulke=LIG_EV_ULKE;
+      p.isim=randomNameFor(LIG_EV_ULKE,'onar|'+ck+'|'+i);
+      /* Portre ülkeye bağlıdır; saklanan dosya artık uymuyorsa yeniden seçilsin. */
+      p.portreDosya=null; p.portreBand=null;
+      degisti=true;
+    });
+    return degisti;
+  }catch(e){ return false; }
+}
 function getBotClubProfile(teamName,ligKey){
   if(G.team&&teamName===G.team.isim&&ligKey===G.team.tblKey){
     return {human:true,teamName,ligKey,logoUrl:G.team.logoUrl||'',arena:G.arena.isim,renk:G.team.renk||'#f97316',roster:G.players.slice()};
@@ -91,7 +117,8 @@ function getBotClubProfile(teamName,ligKey){
     ensureRoles(hit.roster);
     /* M20: eski kayıtlardaki 7 kişilik kadrolar 10'a tamamlanır (sakatlık + 5 faul + rotasyon
        derinliği için); mevcut oyuncuların id/seed değerleri korunur. */
-    if(botClubEnsureDepth(hit.roster,ck)){
+    const _uyrukOnarildi=faz29BotUyrukOnar(hit.roster,ck);   /* FAZ 29 §7 */
+    if(botClubEnsureDepth(hit.roster,ck)||_uyrukOnarildi){
       cache[ck]=Object.assign({},cache[ck],{roster:hit.roster});
       _clubCacheMem=cache;
       try{ localStorage.setItem(CLUB_CACHE_KEY,JSON.stringify(cache)); }catch(e){}
@@ -175,12 +202,15 @@ function maybeSimOtherTransfers(){
   const oyuncu=escMatch(randomNameFor(LIG_EV_ULKE));
   const lig=escMatch(formatTblSlotLabel(G.team.tblKey));   /* iç anahtar değil, okunabilir lig adı */
   const kalip=[
-    ()=>_newsBox('blue','💰',`<strong>${t1}</strong> — ${lig} — <strong>${fmtn(rand(4000,80000))} KR</strong> ile <strong>${oyuncu}</strong> için anlaşma duyurdu.`),
+    ()=>{ const bedel=fmtn(rand(4000,80000));
+      return _newsBox('blue','💰', (typeof isEN==='function'&&isEN())
+        ? `<strong>${t1}</strong> (${lig}) have announced a deal for <strong>${oyuncu}</strong> — <strong>${bedel} KR</strong>.`
+        : `<strong>${t1}</strong> — ${lig} — <strong>${bedel} KR</strong> ile <strong>${oyuncu}</strong> için anlaşma duyurdu.`); },
     ()=>_newsBox('red','🩹',`<strong>${t1}</strong> kötü haber aldı: ${oyuncu} ${rand(2,7)} hafta sahalardan uzak kalacak.`),
     ()=>_newsBox('green','🔥',`<strong>${t1}</strong> son ${rand(3,6)} maçını kazandı — ${lig} formda takım.`),
     ()=>_newsBox('gold','🗣️',`<strong>${t1}</strong> başkanı: "Bu sezon hedefimiz ilk ${ch([4,6,8])}. Kadromuza güveniyoruz."`),
     ()=>_newsBox('purple','📣',`<strong>${t1}</strong> taraftarı sonuçlardan memnun değil — tribünde pankart açıldı.`),
-    ()=>_newsBox('accent','🏟️',`<strong>${t1}</strong> bilet fiyatlarını güncelledi; iç saha doluluğu <strong>%${rand(58,96)}</strong>.`),
+    ()=>_newsBox('accent','🏟️',`<strong>${t1}</strong> bilet fiyatlarını güncelledi; iç saha doluluğu <strong>${fmtYuzde(rand(58,96))}</strong>.`),
     /* Not: vurgu etiketi cümleyi metin düğümlerine BÖLER ve ifade kalıbı eşleşmez —
        çevrilmesi gereken cümleler tek düğümde tutulur (F8-5/F8-6 dersi). */
     ()=>_newsBox('green','🌱',`<strong>${t1}</strong> altyapıdan ${oyuncu} adlı genci A takıma çıkardı — ${rand(17,19)} yaşında.`),
@@ -331,7 +361,7 @@ function renderTeamDetailPage(){
   const key=G.team.tblKey||'tbl';
   const rows=buildLeagueRows(key);
   const rank=rows.findIndex(t=>t.isUser);
-  const rankStr=rank>=0?`${rank+1}. sıra · ${formatTblSlotLabel(key)}`:formatTblSlotLabel(key);
+  const rankStr=rank>=0?`${fmtSira(rank+1)} ${t('sıra')} · ${formatTblSlotLabel(key)}`:formatTblSlotLabel(key);
   const avg=G.players.length?Math.round(G.players.reduce((s,p)=>s+p.genel,0)/G.players.length):0;
   const ages=G.players.length?(G.players.reduce((s,p)=>s+p.yas,0)/G.players.length).toFixed(1):'—';
   const top8=G.players.slice().sort((a,b)=>b.genel-a.genel).slice(0,8);
@@ -353,9 +383,9 @@ function renderTeamDetailPage(){
     ['🏟️ Lig',rankStr],
     ['🌱 Altyapı',`<button type="button" class="linklike" onclick="gotoAltyapiPage()">Altyapı →</button>`],
     ['⚔️ Rakip (ör.)',rival],
-    ['🏀 Arena',`${G.arena.isim||'Arena'} — ${fmtn(G.arena.kap)} kişi`],
+    [t('🏀 Arena'),`${G.arena.isim||'Arena'} — ${fmtn(G.arena.kap)} ${t('kişi')}`],
     ['🌍 Ülke','🇹🇷 Türkiye'],
-    ['👥 Taraftar grubu',`${fs.group} · ~${fmtn(fan)} taraftar`],
+    [t('👥 Taraftar grubu'),`${fs.group} · ~${fmtn(fan)} ${t('taraftar')}`],
     ['📊 Taraftar havası',fanLbl+' <div class="chem-bar" style="margin-top:6px;"><div class="chem-fill" style="width:'+Math.min(100,G.chemistry)+'%;"></div></div>'],
     ['📈 Oyuncu ort. güç',`${avg} <span style="color:var(--text2);font-size:11px;">(İlk 8 ort: ${top8avg})</span>`],
     ['⚡ Takım OVR',String(teamOvr)],

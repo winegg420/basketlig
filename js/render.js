@@ -168,8 +168,8 @@ function renderDashboardNextMatch(){
   const u=G.team.isim;
   if(m.home===u&&homeCol) homeCol.classList.add('mine');
   if(m.away===u&&awayCol) awayCol.classList.add('mine');
-  setTxt('dnHomeRole','Ev'+(m.home===u?' · SEN':''));
-  setTxt('dnAwayRole','Deplasman'+(m.away===u?' · SEN':''));
+  setTxt('dnHomeRole',t('Ev')+(m.home===u?' · '+t('SEN'):''));
+  setTxt('dnAwayRole',t('Deplasman')+(m.away===u?' · '+t('SEN'):''));
   const us=m.home===u?'Ev':'Dep.';
   const tClock=formatKickClock(m);
   if(meta) meta.textContent=`${formatFixtureDayLabel(m.day)} · ${tClock} · Tur ${m.round}/${totalRounds()} · Sen: ${us}`;
@@ -1017,7 +1017,7 @@ function renderLockerRoomPanel(){
   el.innerHTML=`<div style="padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
       <strong style="font-size:13px;">🧬 Soyunma Odası</strong>
-      <span style="font-size:11px;color:var(--text2);">Kimya <strong style="color:${col};">${cur}</strong>/100 · ${yon==='sabit'?`bu kadroyla ulaşacağı seviye ${t}`:`${t} seviyesine doğru ${yon}`}</span>
+      <span style="font-size:11px;color:var(--text2);">Kimya <strong style="color:${col};">${cur}</strong>/100 · ${yon==='sabit'?window.t('bu kadroyla ulaşacağı seviye {n}',{n:t}):window.t('{n} seviyesine doğru {y}',{n:t,y:yon})}</span>
     </div>
     <div style="font-size:10px;color:var(--text2);margin-bottom:7px;">Kimya; moral ortalaması, liderlik, süre alamayanlar ve rol çakışmalarından hesaplanır. Maç başına en fazla ±3 hareket eder.</div>
     <div style="margin-bottom:6px;">
@@ -1463,7 +1463,7 @@ function renderAntrenman(){
   const mgrBanner=`<div style="grid-column:1/-1;padding:11px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
       <div><strong style="font-size:13px;">👔 ${escMatch(G.managerName||'Menajer')}</strong> <span style="font-size:11px;color:var(--gold);">${repTitle}</span></div>
-      <div style="font-size:11px;color:var(--text2);">İtibar: <strong style="color:var(--blue);">${repPts}</strong> · takım bonusu +%${repBonusPct}${(G.managerHistory&&G.managerHistory.length)?` · ${G.managerHistory.length} kupa`:''}</div>
+      <div style="font-size:11px;color:var(--text2);">İtibar: <strong style="color:var(--blue);">${repPts}</strong> · takım bonusu +${fmtYuzde(repBonusPct)}${(G.managerHistory&&G.managerHistory.length)?` · ${G.managerHistory.length} kupa`:''}</div>
     </div>
   </div>`;
   // Koçlar
@@ -1559,7 +1559,7 @@ function playbookCardHtml(pb,cur,court,kind){
     ${playbookSvg(pb.dia,{h:96})}
     <div class="pb-name">${pb.ikon} ${pb.ad}</div>
     <div class="pb-sum">${pb.ozet}</div>
-    ${fitPct!=null?`<div class="pb-fit">Kadro uyumu: <strong style="color:${fitCol};">%${fitPct}</strong> <span style="opacity:.7;">(${pb.uyum.ad})</span></div>`:''}
+    ${fitPct!=null?`<div class="pb-fit">Kadro uyumu: <strong style="color:${fitCol};">${fmtYuzde(fitPct)}</strong> <span style="opacity:.7;">(${pb.uyum.ad})</span></div>`:''}
   </button>`;
 }
 /** FAZ 22 §4.2: tek maçla grafikler ekranı kaplıyor ve içinde tek nokta duruyordu.
@@ -1702,7 +1702,7 @@ function renderArena(){
   const occ=arenaDolulukOrani();
   const dol=document.getElementById('arenaDoluluk');
   if(dol){
-    dol.textContent='%'+Math.round(occ*100);
+    dol.textContent=fmtYuzde(Math.round(occ*100));   /* FAZ 29 §3 */
     const seyirci=Math.round(occ*((G.arena&&G.arena.kap)||5000));
     dol.title=seyirci+' kişi';
   }
@@ -1804,10 +1804,10 @@ function renderBilanço(){
   if(kd){
     if(haftalikNet<0){
       const hafta=Math.floor((Number(G.coins)||0)/Math.abs(haftalikNet));
-      kd.textContent=`Kasa bu gidişle ~${hafta} hafta yeter`;
+      kd.textContent=t('Kasa bu gidişle ~{n} hafta yeter',{n:hafta});
       kd.style.color=hafta<=6?'var(--red)':'var(--text2)';
     }else{
-      kd.textContent='Kasa büyüyor';
+      kd.textContent=t('Kasa büyüyor');
       kd.style.color='var(--green)';
     }
   }

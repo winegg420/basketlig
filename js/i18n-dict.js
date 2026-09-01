@@ -374,7 +374,6 @@ const I18N_PHRASES=[
      şekilde açık yazıldı. UZUN KALIP ÖNCE: 'Türkiye Basketbol Ligi' tek başına 'Türkiye'
      kalıbına yakalanıp "Turkey Basketbol Ligi" melezi üretiyordu (B-1 dersi). */
   /* FAZ 22 §2: kasa dayanma süresi — sayı içerdiği için kalıp */
-  [/Kasa bu gidişle ~(d+) hafta yeter/g,'Balance lasts ~$1 more weeks at this rate'],
   [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Türkiye Basketbol Ligi(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Turkish Basketball League'],
   [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Türkiye(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Turkey'],
   [/(^|[^A-Za-zÇĞİÖŞÜçğıöşü])Rusya(?![A-Za-zÇĞİÖŞÜçğıöşü])/g,'$1Russia'],
@@ -398,6 +397,33 @@ const I18N_PHRASES=[
 
 /* Ek birebir karşılıklar (F2) — üretilen arayüzde sık görünen tam metinler */
 Object.assign(I18N_TR_EN,{
+'sıra':'place',
+'kişi':'seats',
+'🏀 Arena':'🏀 Arena',
+'Başlangıç Arena':'Starter Arena',
+'Küçük Arena':'Small Arena',
+'{n} seviyesine doğru {y}':'trending {y} toward {n}',
+'bu kadroyla ulaşacağı seviye {n}':'will reach {n} with this squad',
+'⏸ Mola ({n})':'⏸ Timeout ({n})',
+'⏸ Mola (5)':'⏸ Timeout (5)',
+'Mola':'Timeout',
+/* ── FAZ 29 §2: EN modunda ekranda kalan Türkçe ── */
+'Kasa bu gidişle ~{n} hafta yeter':'Cash lasts ~{n} weeks at this rate',
+'Haftalık maaş + bakım':'Weekly wages + upkeep',
+'Maç ödülü (galibiyet)':'Match bonus (win)',
+'Maç ödülü (beraberlik)':'Match bonus (draw)',
+'Maç ödülü (mağlubiyet)':'Match bonus (loss)',
+'Deplasman seyahat masrafı':'Away travel costs',
+'Doluluk (taraftar + form + bilet fiyatı)':'Attendance (fans + form + ticket price)',
+'Taraftar grubu':'Fan base',
+'👥 Taraftar grubu':'👥 Fan base',
+'taraftar':'fans',
+'⏹ Durdur':'⏹ Pause',
+'Durdur':'Pause',
+'SEN':'YOU',
+'ev sahibi':'are the home side',
+'deplasman takımı olarak':'as the away side',
+'Kasa Doldu':'Full Coffers',
 'ANA PANEL':'DASHBOARD',
 'TBL · Menajerlik':'TBL · Manager',
 'Soyunma Odası':'Locker Room',
@@ -666,7 +692,9 @@ I18N_PHRASES.unshift(
   [/şu an/g,'now'],
   [/Adaylar/g,'Prospects'],
   [/(\d+) kaldı/g,'$1 left'],
-  [/(\d+)\.\s*sıra/g,'$1. place'],
+  /* FAZ 29 §3: İngilizce sıra eki NOKTA değil 1st/2nd/3rd/4th'tir (11-12-13 istisna).
+     Kalıp "2. place" üretiyordu; ek tek kaynaktan gelir (fmtSira, js/i18n.js). */
+  [/(\d+)\.\s*sıra/g,(m,n)=>fmtSira(n,'en')+' place'],
   [/(\d+)\s*genç/g,'$1 youth players'],
   [/Yerel oluşum/g,'Local support'],
   [/orta sıra — en fazla/g,'mid-table — no worse than'],
@@ -806,8 +834,8 @@ Object.assign(I18N_TR_EN,{
 I18N_PHRASES.unshift(
   /* Ana Panel özeti */
   [/(\d+)G · (\d+)M$/g,'$1W · $2L'],
-  [/hedef (\d+)\. sıra/g,'target: $1. place'],
-  [/(\d+)\. sıra/g,'$1. place'],
+  [/hedef (\d+)\. sıra/g,(m,x)=>'target: '+fmtSira(x,'en')+' place'],
+  [/(\d+)\. sıra/g,(m,x)=>fmtSira(x,'en')+' place'],
   [/🩹 (\d+) sakat/g,'🩹 $1 injured'],
   [/😮‍💨 (\d+) yorgun \(enerji/g,'😮‍💨 $1 fatigued (energy'],
   [/💬 (\d+) morali düşük/g,'💬 $1 with low morale'],

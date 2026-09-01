@@ -84,6 +84,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/generate-portraits.js` | Portre üretimi + işleme (kova bazlı). Bu makinede Python kurulu olmadığı için `.py` sürümünün çalışan Node karşılığı; aynı dosya adlarını, eşikleri ve manifest'i üretir. **Tek akış zorunlu** — servis IP başına tek istek kabul ediyor. |
 | `tools/portre-uret-hepsi.js` | **Havuzu kotaya tamamlayan koşucu** — en geride kalan kovadan doldurur, her dilimde commit + push eder, kaldığı yerden devam eder. `--hedef=3000 --dilim=100`. |
 | `tools/surum-check.js` | **FAZ 20 sürüm damgası denetçisi** — HTML `?v=` ↔ `sw.js` SCRIPT_V uyumu, HTML script listesi ↔ sw.js önbellek listesi, ve **yayın dosyaları değiştiği hâlde sürüm artmadıysa DÜŞER** (içerik hash'i `tools/.surum-hash.json`). Sürümü artırdıktan sonra `--yaz` ile kaydı tazele. |
+| `tools/bicim-check.js` | **FAZ 29 biçim birim testi** — `fmtSayi`/`fmtYuzde`/`fmtSira` TR ve EN çıktıları, İngilizce sıra ekinin 11/12/13 istisnası, ve kaynakta elle kalmış `toLocaleString('tr-TR')` / `'%'+n` taraması. Biçim değişince çalıştır. |
 | `tools/sut-check.js` | **FAZ 26 şut tipi denetçisi** (tarayıcısız) — her saha şutunun tipi var mı, tip bölgeyle tutarlı mı, smaç/floater payı gerçekçi mi, smaç/turnike/floater dili doğru tipte mi, tip deterministik mi. Şut tipi ya da anlatım havuzları değişince çalıştır. |
 | `tools/lig-check.js` | **FAZ 19 lig denetçisi** — standings ↔ fikstür tek kaynak, ayrışma senaryosunda onarım, tablo tutarlılığı (o = g + m), 10 sezonluk denge kapıları (ortalama fark, 20+/5- oranı, 16-0 takım), şehir tekrarı. Lig/tablo/denge değişince çalıştır. |
 | `tools/arena-check.js` | **FAZ 24 arena doluluğu denetçisi** — 125 arena×bilet fiyatı×form birleşiminde **seyirci ≤ taraftar tabanı**, doluluk sınırları, sezon başı bilet gelirinin değişmezliği, `TARAFTAR_KATSAYI`nın tek kaynak olması. Arena / bilet / taraftar formülü değişince çalıştır. |
@@ -355,6 +356,36 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   tarayıcıdan Node'a sabit bir alan listesi taşır (`const HAM = await page.evaluate(...)`).
   Listeye yazılmayan toplayıcı sessizce boş gelir ve kapı "ÖRNEK YOK" der — `yay` ve
   `titreme` tam olarak böyle kayboldu.
+- **BİÇİM DİLE BAĞLIDIR (FAZ 29 §3):** binlik ayracı, yüzde işaretinin YERİ ve sıra eki
+  dile göre değişir. Tek kaynak `fmtSayi` / `fmtYuzde` / `fmtSira` (`js/i18n.js`);
+  `fmtn` bunlara bağlıdır. Koda `toLocaleString('tr-TR')` ya da elle `'%'+n` YAZMA —
+  `tools/bicim-check.js` kaynağı tarar ve düşer. İngilizce sıra ekinde 11/12/13
+  İSTİSNADIR (11th, 12th, 13th — 11st değil).
+- **Şablon yer tutucuları diller arasında SIRAYLA doldurulmaz (FAZ 29 §4):** Türkçe
+  dizilim birebir çevrilince İngilizce cümlenin nesnesi düşüyor ve ilgeç havada kalıyor
+  ("… have announced a deal for."). Kelime sırası değişen cümlelerde İngilizce şablonu
+  AYRI yaz (`isEN()` dalı), tek şablonu parçalayıp çevirme.
+- **İki kademeli süzgeç ikinci kademeyi KÖR EDER (FAZ 29 §1 dersi):** `i18n-scan`in
+  tarayıcı içindeki toplayıcısı kendi sözcük listesiyle eliyor, Node tarafındaki
+  sınıflandırıcıya yalnız elenenler ulaşıyordu; "Durdur", "14.714", "2. place" hiç
+  görünmüyordu. Toplayıcı HAM metni de gönderir, karar tek yerde verilir. Kusur sınıfı
+  eklerken önce toplayıcının o satırı gönderdiğinden emin ol.
+- **Türkçe belirteç ÖZEL İSİM OLAMAZ (FAZ 29 §1):** "Türkçe harf var" ölçütü her Türk
+  oyuncu/takım adını kusur sayar. Kural: Türkçe harf içeren **küçük harfli** sözcük cins
+  isimdir; büyük harfle başlayan özel isimdir ve çevrilmez. Ayrıca ASCII sözcük sınırı
+  (`[^A-Za-z]`) Türkçe harfi dışlamalıdır — yoksa "Kürşat" içindeki "at" İngilizce
+  sözcük sanılır (ölçüldü: 181 yanlış pozitif).
+- **Anlatım satırını KISALTIRSAN sözlük anahtarı da değişir (FAZ 29 dersi):** FAZ 28'de
+  kelime bütçesi için kısaltılan 36 satırın eski EN girişleri ölü kaldı ve EN oyuncu o
+  satırları Türkçe gördü (%9,1). `anlatim-check` artık her havuz satırının EN karşılığını
+  arar — havuzu değiştirdiğinde çeviriyi de güncelle.
+- **Kural kaynağı düzeltmek YETMEZ, ÖNBELLEK de onarılmalı (FAZ 29 §7):** bot kadroları
+  localStorage kulüp önbelleğinde saklanır ve yeniden ÜRETİLMEZ; FAZ 28'in sezon-1
+  yabancı kuralı yalnız YENİ kadrolara işledi, eski kayıtlarda yabancılar kaldı (canlıda
+  üç vaka). `faz29BotUyrukOnar()` onarır — yalnız ad ve ülke değişir, id/seed/nitelik
+  korunur ve ad DETERMİNİSTİKTİR (`randomNameFor(ulke, tohum)`); `ch()` kullanılırsa
+  kadro her açılışta başka isimler alır. Yeni bir kalıcı önbellek eklersen onarım yolunu
+  da düşün.
 - **"Servis" basketbol terimi DEĞİLDİR (FAZ 28 §2):** voleybol/tenis sözcüğüdür; pas ve
   kenardan sokma için "topu oyuna soktu / kenara aktardı / yan çizgiye çıkardı" kullanılır.
   Yeni anlatım yazarken deyim uydurma — "demire geldi", "turnike dönmedi", "smacı tutmadı"

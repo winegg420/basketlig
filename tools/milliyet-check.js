@@ -133,6 +133,54 @@ yaz(J2.yabanci > 0, `sezon 3'te yabancı transferi çalışıyor (%${oranJ.toFix
 yaz(oranJ <= 12, `sezon 3 bot yabancı oranı %${oranJ.toFixed(1)} (kapı ≤%12)`);
 yaz(J2.maxTakim <= run('BOT_YABANCI_MAX'), `sezon 3'te takım başına en fazla ${J2.maxTakim} yabancı (kapı ≤${run('BOT_YABANCI_MAX')})`);
 
+/* ── FAZ 29 §7: ESKİ ÖNBELLEKTEKİ YABANCILAR ──
+   FAZ 28 kuralı KAYNAKTA düzeltti ama bot kadroları localStorage önbelleğinde saklanır
+   ve bir kez kurulduktan sonra yeniden ÜRETİLMEZ. Kural değişmeden önce kurulmuş
+   kayıtlarda yabancılar duruyordu — canlıda üç ayrı bot takımda görülen vakaların
+   (Detlef Maier, Krsman Cerović, Wei Zhen) kaynağı budur.
+   `faz29BotUyrukOnar` sezon 1'de bunları ev ülkesine çevirir; YALNIZ ad ve ülke değişir. */
+console.log(String.fromCharCode(10)+"K) Eski önbellekteki yabancıların onarımı");
+const K1 = run(`(function(){
+  G.season = { year: 3 };                      /* eski kuralı taklit et */
+  const kadrolar = [];
+  for (let t = 0; t < 30; t++) {
+    const r = [];
+    botClubEnsureDepth(r, 'TBL||Eski ' + t);
+    kadrolar.push(r);
+  }
+  const oncekiYabanci = kadrolar.reduce((a, r) => a + r.filter(p => p.ulke !== LIG_EV_ULKE).length, 0);
+  /* Alanların korunduğunu kanıtlamak için bir örnek yabancıyı işaretle. */
+  let ornek = null;
+  for (const r of kadrolar) { const p = r.find(x => x.ulke !== LIG_EV_ULKE); if (p) { ornek = {id:p.id, seed:p.seed, poz:p.poz, genel:p.genel, isim:p.isim}; break; } }
+  G.season = { year: 1 };                      /* sezon 1'e dön → onarım devreye girsin */
+  kadrolar.forEach((r, t) => faz29BotUyrukOnar(r, 'TBL||Eski ' + t));
+  const sonrakiYabanci = kadrolar.reduce((a, r) => a + r.filter(p => p.ulke !== LIG_EV_ULKE).length, 0);
+  let korundu = true, yeniAd = null;
+  if (ornek) {
+    for (const r of kadrolar) { const p = r.find(x => x.id === ornek.id); if (p) {
+      korundu = (p.seed === ornek.seed && p.poz === ornek.poz && p.genel === ornek.genel);
+      yeniAd = p.isim; break; } }
+  }
+  /* Determinizm: aynı onarım iki kez çalışsa da ad DEĞİŞMEMELİ. */
+  const r2 = [];
+  G.season = { year: 3 }; botClubEnsureDepth(r2, 'TBL||Eski 0'); G.season = { year: 1 };
+  faz29BotUyrukOnar(r2, 'TBL||Eski 0');
+  const yab2 = []; r2.forEach((p,i) => { if (prChance('TBL||Eski 0|yabanci|'+i, BOT_YABANCI_ORAN)) yab2.push(i); });
+  const adlar1 = yab2.map(i => r2[i] && r2[i].isim).join('|');
+  const r3 = [];
+  G.season = { year: 3 }; botClubEnsureDepth(r3, 'TBL||Eski 0'); G.season = { year: 1 };
+  faz29BotUyrukOnar(r3, 'TBL||Eski 0');
+  const adlar2 = yab2.map(i => r3[i] && r3[i].isim).join('|');
+  G.season = null;
+  return { oncekiYabanci, sonrakiYabanci, korundu, eskiAd: ornek && ornek.isim, yeniAd, deterministik: adlar1 === adlar2 };
+})()`);
+console.log(`    onarım öncesi ${K1.oncekiYabanci} yabancı → sonrası ${K1.sonrakiYabanci}` +
+  (K1.eskiAd ? ` · örnek "${K1.eskiAd}" → "${K1.yeniAd}"` : ''));
+yaz(K1.oncekiYabanci > 0, `eski kuralla kurulmuş kadroda yabancı vardı (${K1.oncekiYabanci}) — onarımın konusu bu`);
+yaz(K1.sonrakiYabanci === 0, 'onarım sonrası sezon 1 kadrolarında yabancı 0');
+yaz(K1.korundu, 'onarım id / seed / mevki / genel alanlarına dokunmuyor');
+yaz(K1.deterministik, 'onarım deterministik — ad her açılışta değişmiyor');
+
 /* E) Bot kararı deterministik mi (Math.random kullanılmamalı) */
 console.log('\nE) Bot milliyet kararı deterministik mi');
 /* Sınanan şey KAPI'nın kendisidir. Kapı açıldığında oyuncunun ülkesi ch(ULKELER) ile

@@ -3,6 +3,7 @@
    Türkçeye özgü karakter (çğıöşü…) içeren ya da bilinen TR sözcük geçen metin düğümleri listelenir. */
 const http=require('http'),fs=require('fs'),path=require('path');
 const {chromium}=require('playwright');
+const KAPI=require('./_lib/i18n-kapilari.js');   /* FAZ 29 §1: kör nokta sınıfları */
 const ROOT=path.resolve(__dirname,'..');
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.css':'text/css; charset=utf-8','.jpg':'image/jpeg','.png':'image/png','.svg':'image/svg+xml'};
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -62,6 +63,7 @@ const MAC_MS=Number((process.argv.find(a=>a.startsWith('--mac='))||'--mac=60000'
         return i?t.slice(i).trim():t;
       };
       const out=[];
+      const ham=new Set();
       let sayac=0;
       const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null);
       let n;
@@ -73,14 +75,22 @@ const MAC_MS=Number((process.argv.find(a=>a.startsWith('--mac='))||'--mac=60000'
         sayac++;
         const gov=soy(s);
         if(TR.test(s)||WORDS.test(s)||TR.test(gov)||WORDS.test(gov)) out.push(s);
+        /* ⚠ FAZ 29: TOPLAYICININ KENDİ SÖZCÜK LİSTESİ DE BİR KÖR NOKTAYDI. Yukarıdaki
+           `WORDS` listesinde olmayan ve Türkçe harf de içermeyen satırlar ("Durdur",
+           "Mola (5)", "14.714 KR", "2. place") Node tarafındaki sınıflandırıcıya HİÇ
+           ulaşmıyordu — iki kademeli süzgeç ikinci kademeyi kör ediyordu. Ham (benzersiz)
+           metin ayrıca gönderilir; A/B/C/D kararını tek yerde sınıflandırıcı verir. */
+        ham.add(s);
       }
-      return {out,sayac};
+      return {out,sayac,ham:Array.from(ham)};
     });
     taranan+=res.sayac;
     kapsam.push(etiket+':'+res.sayac);
     res.out.forEach(r=>bulunan.add(etiket+' :: '+r));
+    (res.ham||[]).forEach(r=>hamTum.add(r));
   };
   const bulunan=new Set();
+  const hamTum=new Set();   /* FAZ 29: süzülmemiş metin — sınıflandırma tek yerde yapılır */
   await collect('login');
   await page.click('#loginPage button.btn-p');
   await page.waitForSelector('#setupPage',{state:'visible'});
@@ -115,6 +125,15 @@ const MAC_MS=Number((process.argv.find(a=>a.startsWith('--mac='))||'--mac=60000'
   }
   await page.evaluate(()=>{try{clearDraftTimer&&clearDraftTimer();closeAppModal();}catch(e){}});
   await sleep(200);
+  /* FAZ 29 §5: EN modunda maç ÖNCESİ kutu skor sütunu takım adını mı gösteriyor?
+     Türkçede "DEPLASMAN" kalıyordu (FAZ 28 §3), İngilizcede "AWAY" — aynı kusur. */
+  const enTablo=await page.evaluate(()=>{
+    try{ showPage('mac',document.querySelector('#sbNav button[data-page="mac"]')); }catch(e){}
+    const g=id=>{const e=document.getElementById(id);return e?(e.textContent||'').trim():null;};
+    let fik=null;
+    try{ const m=findNextUserSeasonMatch(); if(m) fik=(m.home===G.team.isim)?m.away:m.home; }catch(e){}
+    return {tabela:g('liveAway'),stat:g('bsAwayNamemac'),kutu:g('bsAwayName'),fikstur:fik};
+  });
   // canlı maç
   await page.evaluate(()=>{try{showPage('mac',document.querySelector('#sbNav button[data-page="mac"]'));startMatch();}catch(e){}});
   await sleep(4000);
@@ -173,11 +192,40 @@ const MAC_MS=Number((process.argv.find(a=>a.startsWith('--mac='))||'--mac=60000'
   arr.slice(0,LIMIT).forEach(r=>console.log('  '+r));
   console.log('konsol hata:',errs.length,errs.slice(0,3));
   await browser.close();server.close();
+
+  /* ── FAZ 29 §1: KÖR NOKTA SINIFLARI ────────────────────────────────────────────────
+     Yukarıdaki liste BİLGİDİR (kalanların çoğu özel isim). Aşağıdaki üç sınıf KAPIDIR:
+     hepsi 0 olmalı. Kapı olmadığı için bu kusurlar sessizce birikiyordu. */
+  const S=KAPI.siniflandir(Array.from(hamTum));
+  console.log('\n── FAZ 29: İ18N KÖR NOKTA SINIFLARI ──');
+  console.log('  A) kısmi çeviri (aynı satırda TR+EN) : '+S.A.length);
+  S.A.slice(0,12).forEach(x=>console.log('     ✗ '+x));
+  console.log('  B) Türkçe sayı/yüzde/sıra biçimi     : '+S.B.length);
+  S.B.slice(0,12).forEach(x=>console.log('     ✗ '+x));
+  console.log('  C) bozuk kelime sırası (asılı ilgeç) : '+S.C.length);
+  S.C.slice(0,12).forEach(x=>console.log('     ✗ '+x));
+  console.log('  D) tamamen çevrilmemiş (özel isim değil): '+S.D.length);
+  S.D.slice(0,20).forEach(x=>console.log('     ✗ '+x));
+
+  console.log('\n── FAZ 29 §5: EN kutu skor sütunu ──');
+  const tabloOk=!!(enTablo&&enTablo.fikstur&&enTablo.tabela===enTablo.fikstur&&
+                   enTablo.stat===enTablo.fikstur&&enTablo.kutu===enTablo.fikstur);
+  console.log('  '+(tabloOk?'✓':'✗')+' tabela "'+(enTablo&&enTablo.tabela)+'" · maç içi tablo "'+
+    (enTablo&&enTablo.stat)+'" · özet kutu "'+(enTablo&&enTablo.kutu)+'" · fikstür "'+(enTablo&&enTablo.fikstur)+'"');
+
+  const dusen=[];
+  if(S.A.length) dusen.push('A kısmi çeviri '+S.A.length);
+  if(S.B.length) dusen.push('B biçim '+S.B.length);
+  if(S.C.length) dusen.push('C kelime sırası '+S.C.length);
+  if(S.D.length) dusen.push('D çevrilmemiş '+S.D.length);
+  if(!tabloOk) dusen.push('EN kutu skor sütunu');
+  if(errs.length) dusen.push('konsol hatası '+errs.length);
   /* Sayfa listesi BİLGİDİR (kalanlar özel isim), canlı anlatım oranı ise KAPIDIR:
      B-1 gerilemesi tam olarak burada görünmüyordu. */
-  if(oran>=5){
-    console.error('\n✗ Canlı anlatımda Türkçe oranı %'+oran.toFixed(1)+' (hedef < %5)');
+  if(oran>=5) dusen.push('canlı anlatım Türkçe %'+oran.toFixed(1));
+  if(dusen.length){
+    console.error('\n✗ DÜŞEN: '+dusen.join(' · '));
     process.exit(1);
   }
-  console.log('\n✓ canlı anlatım EN oranı hedefte (Türkçe %'+oran.toFixed(1)+')');
+  console.log('\n✓ i18n denetimi geçti (canlı anlatım Türkçe %'+oran.toFixed(1)+' · A/B/C sınıfları 0)');
 })();

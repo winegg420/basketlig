@@ -4164,7 +4164,7 @@ function generateMatchEvents(rakip, opts){
   if(!resume){
     events.push({
       type:'start',spId:SP.id,
-      text:`${SP.emoji} Bugünün spikeri: <strong>${SP.ad}</strong> (${SP.stil}). Maç hava atışıyla başlıyor. ${escMatch(MC.home.name)} ${userIsHome?'ev sahibi':'deplasman takımı olarak'}; ${c.isim} dairede, ${pg.isim} ilk hücumu kuruyor. Tribünler doldu.`,
+      text:`${SP.emoji} Bugünün spikeri: <strong>${SP.ad}</strong> (${SP.stil}). Maç hava atışıyla başlıyor. ${escMatch(MC.home.name)} ${userIsHome?t('ev sahibi'):t('deplasman takımı olarak')}; ${c.isim} dairede, ${pg.isim} ilk hücumu kuruyor. Tribünler doldu.`,
       /* F: hava atışı maç saatinden süre YEMEZ. dt verilmezse oynatma 12 sn varsayıp
          3,6 sn bekliyor; koreografi 1,4 sn'de bittiği için saha donup kalıyordu
          ("düdük çaldı, herkes sabit kaldı"). */

@@ -73,7 +73,7 @@ function ortamKur() {
   vm.createContext(ctx);
   const kaynak = FILES.map(f => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
   vm.runInContext(kaynak + `
-;globalThis.__api={simulateMatch,genRoster};globalThis.SUT_LINES=(typeof SUT_LINES!=="undefined")?SUT_LINES:null;globalThis.KISA_CEKIRDEK_SUT=(typeof KISA_CEKIRDEK_SUT!=="undefined")?KISA_CEKIRDEK_SUT:null;`, ctx, { filename: 'charazay-bundle.js' });
+;globalThis.__api={simulateMatch,genRoster};globalThis.SUT_LINES=(typeof SUT_LINES!=="undefined")?SUT_LINES:null;globalThis.KISA_CEKIRDEK_SUT=(typeof KISA_CEKIRDEK_SUT!=="undefined")?KISA_CEKIRDEK_SUT:null;globalThis.__i18n={dict:(typeof I18N_TR_EN!=='undefined')?I18N_TR_EN:null,havuz:{SUT_LINES:(typeof SUT_LINES!=='undefined')?SUT_LINES:null,KISA_CEKIRDEK_SUT:(typeof KISA_CEKIRDEK_SUT!=='undefined')?KISA_CEKIRDEK_SUT:null,KISA_CEKIRDEK:(typeof KISA_CEKIRDEK!=='undefined')?KISA_CEKIRDEK:null,AKIS_ON:(typeof AKIS_ON!=='undefined')?AKIS_ON:null,SON_BOLUM:(typeof SON_BOLUM!=='undefined')?SON_BOLUM:null,SAAT_LINES:(typeof SAAT_LINES!=='undefined')?SAAT_LINES:null,SAAT_QSON:(typeof SAAT_QSON!=='undefined')?SAAT_QSON:null,SPIKER_LINES:(typeof SPIKER_LINES!=='undefined')?SPIKER_LINES:null,IMZA_ESPRI:(typeof IMZA_ESPRI!=='undefined')?IMZA_ESPRI:null,ASSIST_PHRASES:(typeof ASSIST_PHRASES!=='undefined')?ASSIST_PHRASES:null}};`, ctx, { filename: 'charazay-bundle.js' });
   return ctx;
 }
 function kadroUret(ctx, seed) {
@@ -508,6 +508,26 @@ function analizEt(events) {
   ok('her şut sınıfı için havuzda ≥8 ifade var', _eksik.length === 0,
      _sinif.map(k => `${k} ${_ifade[k] || 0}`).join(' · ') +
      (_eksik.length ? ' — eksik: ' + _eksik.join(', ') : ''));
+
+  /* ── FAZ 29: HER ANLATIM SATIRININ İNGİLİZCESİ VAR MI? ─────────────────────────────
+     FAZ 28'de Türkçe satırlar KISALTILDI (kelime bütçesi); anahtar değişince sözlükteki
+     eski girişler ölü kaldı ve EN oyuncu o satırları Türkçe gördü (canlıda %9,1).
+     Bu kapı havuzları sözlükle karşılaştırır — çeviri unutması bir daha canlıda
+     keşfedilmesin. */
+  console.log(String.fromCharCode(10)+"── FAZ 29: anlatım çevirisi ──");
+  const _i18n = ctx.__i18n || {dict:null,havuz:{}};
+  const _eksikEN = [];
+  (function bak(v){
+    if (typeof v === 'string') {
+      if (v.trim() && _i18n.dict && !Object.prototype.hasOwnProperty.call(_i18n.dict, v)) _eksikEN.push(v);
+      return;
+    }
+    if (Array.isArray(v)) { v.forEach(bak); return; }
+    if (v && typeof v === 'object') Object.keys(v).forEach(k => bak(v[k]));
+  })(_i18n.havuz);
+  ok('her anlatım havuzu satırının EN karşılığı var', _eksikEN.length === 0,
+     _eksikEN.length ? _eksikEN.slice(0,5).map(x=>JSON.stringify(x)).join(' | ')
+                     : 'SUT_LINES · KISA_CEKIRDEK(_SUT) · AKIS_ON · SON_BOLUM · SAAT · SPIKER · ASSIST tarandı');
 
   /* ── FAZ 28 §4: ARDIŞIK OLAY DAMGASI ───────────────────────────────────────────── */
   console.log(String.fromCharCode(10)+"── FAZ 28: olay saati ──");

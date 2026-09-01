@@ -88,6 +88,35 @@ function i18nNum(n){
   try{ return v.toLocaleString(_lang==='tr'?'tr-TR':'en-US'); }catch(e){ return String(v); }
 }
 
+/* ══ FAZ 29 §3 — BİÇİM DİLE BAĞLIDIR ═══════════════════════════════════════════════════
+   EN modunda Türkçe biçimler aynen ekranda duruyordu: binlik ayracı NOKTA (14.714 yerine
+   14,714), yüzde işareti ÖNDE (%77 yerine 77%), sıra sayısı NOKTALI (2. place yerine
+   2nd place). Bu satırlarda tek bir Türkçe HARF olmadığı için eski tarayıcı onları hiç
+   göremiyordu (kör nokta sınıfı B).
+   Üç yardımcı TEK KAYNAKTIR: kodda dağınık `toLocaleString('tr-TR')` ya da elle nokta
+   koyan yer BIRAKMA — hepsi buradan geçsin. `dil` parametresi test içindir; verilmezse
+   oturum dili kullanılır. */
+
+/** 14714 → TR "14.714" · EN "14,714" */
+function fmtSayi(n,dil){
+  const v=Number(n)||0;
+  const l=(dil||_lang)==='tr'?'tr-TR':'en-US';
+  try{ return v.toLocaleString(l); }catch(e){ return String(v); }
+}
+/** 77 → TR "%77" · EN "77%"  (işaretin YERİ dile göre değişir) */
+function fmtYuzde(n,dil){
+  const v=(n==null||isNaN(Number(n)))?0:Number(n);
+  return (dil||_lang)==='tr' ? ('%'+v) : (v+'%');
+}
+/** 2 → TR "2." · EN "2nd".  İngilizce sıra eki: 1st/2nd/3rd/4th, 11-12-13 İSTİSNADIR. */
+function fmtSira(n,dil){
+  const v=Math.abs(Math.round(Number(n)||0));
+  if((dil||_lang)==='tr') return v+'.';
+  const yuz=v%100, on=v%10;
+  const ek=(yuz>=11&&yuz<=13)?'th':(on===1?'st':on===2?'nd':on===3?'rd':'th');
+  return v+ek;
+}
+
 const I18N_SKIP_TAGS={SCRIPT:1,STYLE:1,SVG:1,CANVAS:1,TEXTAREA:1};
 function _i18nWalk(root){
   if(!root) return;

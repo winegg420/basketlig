@@ -674,7 +674,7 @@ function callTimeout(){
 }
 function updateTimeoutBtn(){
   const b=document.getElementById('timeoutBtn');
-  if(b) b.textContent=`⏸ Mola (${mState.timeoutsLeft!=null?mState.timeoutsLeft:0})`;
+  if(b) b.textContent=t('⏸ Mola ({n})',{n:mState.timeoutsLeft!=null?mState.timeoutsLeft:0});
 }
 function substituteLive(outId,inId){
   if(!inId){ showNotif('Yedek oyuncu seç.'); return; }

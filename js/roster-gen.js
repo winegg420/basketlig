@@ -99,7 +99,10 @@ const MARKET_TARGET=40;
 
 function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 function ch(arr){return arr[Math.floor(Math.random()*arr.length)];}
-function fmtn(n){return n.toLocaleString('tr-TR');}
+/* FAZ 29 §3: binlik ayracı DİLE BAĞLIDIR. Burası 'tr-TR' sabitiyle yazılmıştı ve
+   oyundaki bütün para/sayı gösterimi (71 çağrı) İngilizce modda da "14.714" diyordu.
+   Biçim tek kaynaktan gelir: `fmtSayi` (js/i18n.js). */
+function fmtn(n){return (typeof fmtSayi==='function')?fmtSayi(n):Number(n||0).toLocaleString('tr-TR');}
 /** Takım adı birçok yerde HTML içine gömülüyor — kaynağında işaretleme karakterlerini temizle. */
 function sanitizeTeamName(s){return String(s||'').replace(/[<>&"'`]/g,'').trim().slice(0,40);}
 function sv(v){return v>=75?'sv-h':v>=55?'sv-m':'sv-l';}
