@@ -113,36 +113,54 @@ async function main() {
       `${R.takimSayisi} takım, ${R.sehirSayisi} şehir · en yoğun şehirde ${R.sehirEnCok} takım` +
       (R.sehirDagilim.length ? ' · 2 üstü: ' + R.sehirDagilim.join(', ') : ''));
 
-    // ── A4: v7 migrasyonu — eski (bozuk) kayıt yüklenince düzeliyor mu ──────
+    // ── A4: ESKİ SÜRÜM KAYIT REDDEDİLİYOR MU (FAZ 25 §3.3 / FAZ 33 §6) ─────────
+    /* Kapı eskiden v7 GÖÇÜNÜ sınıyordu: v=6 damgalı bir kayıt yazıp boy/isim
+       düzelmesini bekliyordu. O mekanizma FAZ 25 USD ve FAZ 33'te BİLİNÇLİ olarak
+       kaldırıldı — `SAVE_VERSIONS=[10]`, göç kodu yazılmıyor, eski sürüm kaydı
+       reddedilip temizleniyor ve kullanıcı bilgilendiriliyor. Dolayısıyla kapı
+       var olmayan bir davranışı arıyordu ve zorunlu olarak düşüyordu.
+
+       Kapının KENDİ hatası da vardı: `serializeGameState()` `players` alanını
+       REFERANSLA döndürür (persistence.js: `players:G.players`); test dönen nesnenin
+       oyuncularını değiştirince CANLI kadroyu bozuyor, "önce" ile "sonra" ölçümü
+       zorunlu olarak aynı çıkıyordu. Artık derin kopya alınır.
+
+       Yeni ölçüt yürürlükteki sözleşmedir: (a) eski sürüm kaydı YARIM UYGULANMAZ,
+       (b) canlı oyun durumu bozulmaz, (c) güncel sürüm kaydı sorunsuz yüklenir. */
     const M = await page.evaluate(async () => {
-      // FAZ 8 öncesi bozuk veriyi taklit et: pozisyondan bağımsız boy + tekrar eden soyadı
-      const d = serializeGameState();
-      d.v = 6;                                   // v7 migrasyonu çalışsın
+      const kadroOzet = () => (G.players || []).map(p => p.id + ':' + p.boy + ':' + p.isim).join('|');
+      const oncekiKadro = kadroOzet();
+      const oncekiTakim = (G.team && G.team.isim) || null;
+      /* DERİN KOPYA — serializeGameState canlı diziyi referansla verir. */
+      const d = JSON.parse(JSON.stringify(serializeGameState()));
+      const eskiSurum = 6;
+      d.v = eskiSurum;
       (d.players || []).forEach((p, i) => {
-        p.boy = (p.poz === 'C') ? 198 : 205;     // pivotlar guard'lardan KISA (bozuk hâl)
+        p.boy = (p.poz === 'C') ? 198 : 205;
         p.isim = (i % 3 === 0) ? 'Marcus Martinez' : (i % 3 === 1 ? 'Kevin Jones' : 'Luka Martinez');
       });
       localStorage.setItem(GAME_SAVE_KEY, JSON.stringify(d));
-      const oncesi = (() => {
-        const g = (poz) => { const a = (d.players || []).filter(p => p.poz === poz).map(p => p.boy); return a.length ? Math.round(a.reduce((x, y) => x + y, 0) / a.length) : 0; };
-        const sy = {}; (d.players || []).forEach(p => { const s = p.isim.split(' ').pop(); sy[s] = (sy[s] || 0) + 1; });
-        return { C: g('C'), SG: g('SG'), enCokSoyad: Math.max.apply(null, Object.keys(sy).map(k => sy[k])) };
-      })();
       resumeFromSavedGame();
       await new Promise(r => setTimeout(r, 600));
-      const g = (poz) => { const a = (G.players || []).filter(p => p.poz === poz).map(p => Number(p.boy) || 0); return a.length ? Math.round(a.reduce((x, y) => x + y, 0) / a.length) : 0; };
-      const sy = {}; (G.players || []).forEach(p => { const s = String(p.isim || '').split(' ').pop(); sy[s] = (sy[s] || 0) + 1; });
+      const redKadro = kadroOzet();
+      /* Güncel sürüm kaydı hâlâ yükleniyor mu? (yuvarlak yolculuk) */
+      const g = JSON.parse(JSON.stringify(serializeGameState()));
+      localStorage.setItem(GAME_SAVE_KEY, JSON.stringify(g));
+      resumeFromSavedGame();
+      await new Promise(r => setTimeout(r, 600));
       return {
-        oncesi,
-        C: g('C'), SG: g('SG'),
-        enCokSoyad: Math.max.apply(null, Object.keys(sy).map(k => sy[k])),
-        surum: G && G.team ? 'yüklendi' : 'yüklenemedi'
+        destekli: (typeof SAVE_VERSIONS !== 'undefined') ? SAVE_VERSIONS.slice() : [],
+        eskiSurum,
+        bozulmadi: redKadro === oncekiKadro,
+        takimDuruyor: ((G.team && G.team.isim) || null) === oncekiTakim,
+        guncelYuklendi: !!(G.team && G.players && G.players.length),
+        guncelSurum: g.v
       };
     });
-    kayit('A4', 'Eski kayıt yüklenince boy/isim düzeliyor (v7 migrasyonu)',
-      M.C > M.SG && M.enCokSoyad <= 2,
-      `ÖNCE: C ${M.oncesi.C}cm · SG ${M.oncesi.SG}cm · aynı soyadı ${M.oncesi.enCokSoyad} oyuncuda` +
-      `\n       SONRA: C ${M.C}cm · SG ${M.SG}cm · aynı soyadı ${M.enCokSoyad} oyuncuda`);
+    kayit('A4', 'Eski sürüm kaydı reddediliyor, oyun durumu bozulmuyor (FAZ 25 §3.3 / FAZ 33 §6)',
+      M.destekli.indexOf(M.eskiSurum) < 0 && M.bozulmadi && M.takimDuruyor && M.guncelYuklendi,
+      `desteklenen sürüm [${M.destekli.join(',')}] · v${M.eskiSurum} kaydı uygulanmadı: ${M.bozulmadi}` +
+      `\n       takım korundu: ${M.takimDuruyor} · güncel sürüm (v${M.guncelSurum}) yüklendi: ${M.guncelYuklendi}`);
     await ctx.close();
   }
 

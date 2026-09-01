@@ -669,6 +669,12 @@ function _simTick(dt){
         if(p._mkx==null||Math.hypot(m.x-p._mkx,m.y-p._mky)>8||Math.hypot(b.x-(p._bbx||0),b.y-(p._bby||0))>20){
           p._mkx=m.x; p._mky=m.y; p._bbx=b.x; p._bby=b.y;
           const hx=onBall?rim[0]:(rim[0]+b.x)/2, hy=onBall?rim[1]:(rim[1]+b.y)/2;
+          /* ⚠ ARALIK DARALTMASI DENENDİ VE GERİ ALINDI (27 → 21 px): savunmacı adamına
+             yaklaşınca _defBehind'in adam-pota doğrultusuna oturması için yer kalmıyor,
+             savunmacı ARASINA değil YANINA geçiyor — ölçüldü, ball-you-man %83,8-85,6'dan
+             %78,7-81,7'ye düştü, markaj mesafesi ise kayda değer düzelmedi. Ölçülen
+             mesafe (1,85 m) hedefin (0,91 m) çok üstünde çünkü fark TAKİP GECİKMESİDİR;
+             hedefi kısmak gecikmeyi kısmıyor. */
           const gap=onBall?(p._press?22:27):_defGap(Math.hypot(m.x-b.x,m.y-b.y));
           const dx=hx-m.x, dy=hy-m.y, d=Math.hypot(dx,dy)||1;
           { const bh=_defBehind(m.x+dx/d*gap,m.y+dy/d*gap,m,rim); p.tx=_inX(bh[0]); p.ty=_inY(bh[1]); }
@@ -682,7 +688,23 @@ function _simTick(dt){
           /* F15-1: savunmacı adamının POTA TARAFINDA değilse (ball-you-man bozuk) toparlanma
              KOŞUDUR — jog ile kurtarmaya çalışınca oran %87'den %74'e düşüyordu (ölçüm). */
           const _rimSide=Math.hypot(p.x-rim[0],p.y-rim[1])<=Math.hypot(m.x-rim[0],m.y-rim[1]);
-          const _taban=onBall?_URG.KOS:(!_rimSide?_URG.KOS:(_kd>_YERINDE_ESIK?_URG.JOG:_URG.YURU));
+          /* ── FAZ 34 eki: TOPARLANMA SPRİNTTİR ────────────────────────────────────
+             FAZ 34 özel yetenek sistemi `hiz` bandını 55-92'den 20-99'a genişletti;
+             taban hız stattan türediği için (`_tokBaseV`) yavaş savunmacı ile hızlı
+             hücumcu arasındaki fark %17'den %44'e çıktı. Kademe eşitlemesi (F15-1)
+             tek başına yetmiyor: aynı kademede bile savunmacı geride kalıyor ve
+             ölçüldü — ball-you-man %85'in altına (%81,8), topu tutana markaj mesafesi
+             1,81 m'den 1,90 m'ye çıktı. Pozisyonunu KAYBETMİŞ savunmacı (adamının pota
+             tarafında değil) ya da topu tutana uzak düşmüş savunmacı artık SPRINT ile
+             toparlanır — gerçek basketbolda da toparlanma koşusu sprinttir.
+             ⚠ Yalnız SAHNE katmanı; maç matematiğine dokunmaz. */
+          /* ⚠ EŞİK DARALTILMASI DENENDİ VE GERİ ALINDI: 0,8× ile topu tutanın
+             savunmacısı sürekli sprinte geçiyor, 24 px'lik varış freniyle birlikte
+             hedefini AŞIYOR ve salınıyor — ölçüldü, markaj 1,92 → 2,00 m'ye, ball-you-man
+             %85,8 → %84,6'ya geriledi. Sprint yalnız GERÇEKTEN uzak düşünce anlamlı. */
+          const _uzakOnBall=onBall&&_kd>_YERINDE_ESIK*1.5;
+          const _taban=(!_rimSide||_uzakOnBall)?_URG.SPRINT
+            :(onBall?_URG.KOS:(_kd>_YERINDE_ESIK?_URG.JOG:_URG.YURU));
           _setUrg(p,Math.max(_taban,_mu));
         }
       }

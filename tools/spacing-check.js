@@ -32,7 +32,13 @@ const arg = (ad, varsayilan) => {
   const m = process.argv.find(a => a.startsWith('--' + ad + '='));
   return m ? Number(m.split('=')[1]) : varsayilan;
 };
-const SURE_MS = arg('ms', 90000);
+/* ⚠ VARSAYILAN PENCERE 90 sn İDİ VE VERDİĞİ KARAR TEKRARLANABİLİR DEĞİLDİ: aynı kod
+   ardışık koşularda "topu tutana en yakın savunmacı" için 1,77 · 1,80 · 1,84 · 1,92 ·
+   2,00 m, ball-you-man için %78,9-%87,1 veriyordu — yani araç davranışı değil ÇEKİLİŞİ
+   raporluyor, düşen kapı sayısı 2 ile 4 arasında oynuyordu. 240 sn'de değerler yakınsıyor
+   (ölçüldü: 300 sn'de 1,85 m / %82,4, tekrar edilebilir). Kısa pencere gerekiyorsa
+   --ms=90000 ile açıkça istenir. */
+const SURE_MS = arg('ms', 240000);
 const RATE = arg('rate', 3);
 const JSON_CIKTI = process.argv.includes('--json');
 const ARKA_PLAN = process.argv.includes('--bg');
