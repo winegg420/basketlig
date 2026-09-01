@@ -71,7 +71,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/faz11-check.js` | **FAZ 11 kabul kriterleri** — dizilim geometrisi, kare kaybında yetişme, kesme noktası çakışması, `startMatch` sessiz kilitlenmesi. |
 | `tools/anlatim-check.js` | **FAZ 13 anlatım denetçisi** — maçı TARAYICISIZ üretip olay listesini denetler (ribaund/şut eşitliği, seri iddiası, faul adı ve sayacı, çalma iki taraflılığı, kalıp çeşitliliği, devre arası, saha değişimi, köşe bölgesi). `--freeze` ile sekme donması + maç içi panel kalıcılığı tarayıcıda sınanır. **Anlatım değişince çalıştır.** |
 | `tools/mobile-check.js` | **FAZ 12 mobil denetçisi** (390×844) — dokunma sayısı (gerçekten tıklayarak), maç sayfası düzeni, bilgi yoğunluğu, 44 px dokunma hedefi, market yoğunluğu. Mobil düzen değişince çalıştır. |
-| `tools/sim-node.js` | **Tarayıcısız maç simülasyonu** — 14 modülü düz Node'da (vm) yükler, `simulateMatch()` sözleşmesini ve determinizmi sınar. Motor sözleşmesi değişince çalıştır. **Regresyon tabanı (FAZ 30 sonrası): `--n=100 --seed=42` → 88.0 - 81.3 · olay/maç 248 · tohum 42 → 93-82.** |
+| `tools/sim-node.js` | **Tarayıcısız maç simülasyonu** — 14 modülü düz Node'da (vm) yükler, `simulateMatch()` sözleşmesini ve determinizmi sınar. Motor sözleşmesi değişince çalıştır. **Regresyon tabanı (FAZ 34 sonrası): `--n=1000 --seed=42` → 88.5 - 80.2 · olay/maç 248.** ⚠ `--n=100` TEK TOHUMDA GÜRÜLTÜ BASKINDIR (deplasman ortalaması tohuma göre 78,5-87,1 arası salınır) — taban artık n=1000 ile okunur. |
 | `tools/schema-check.js` | **`db/schema.sql` denetçisi** — sözdizimi (varsa gerçek PostgreSQL ayrıştırıcısı), lig kuralları, RLS, "kod tabanında bağlantı yok". |
 | `db/schema.sql` | **Çok oyunculu veri modeli** (Postgres/Supabase). Yalnız dosya — hiçbir bağlantı kurulmuyor. |
 | `tools/gen-brand-images.js` | og:image (1200×630) + PWA ikonlarını üretir (Playwright). Marka görselini değiştirince tekrar çalıştır. |
@@ -84,6 +84,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/generate-portraits.js` | Portre üretimi + işleme (kova bazlı). Bu makinede Python kurulu olmadığı için `.py` sürümünün çalışan Node karşılığı; aynı dosya adlarını, eşikleri ve manifest'i üretir. **Tek akış zorunlu** — servis IP başına tek istek kabul ediyor. |
 | `tools/portre-uret-hepsi.js` | **Havuzu kotaya tamamlayan koşucu** — en geride kalan kovadan doldurur, her dilimde commit + push eder, kaldığı yerden devam eder. `--hedef=3000 --dilim=100`. |
 | `tools/surum-check.js` | **FAZ 20 sürüm damgası denetçisi** — HTML `?v=` ↔ `sw.js` SCRIPT_V uyumu, HTML script listesi ↔ sw.js önbellek listesi, ve **yayın dosyaları değiştiği hâlde sürüm artmadıysa DÜŞER** (içerik hash'i `tools/.surum-hash.json`). Sürümü artırdıktan sonra `--yaz` ile kaydı tazele. |
+| `tools/yetenek-check.js` | **FAZ 34 özel yetenek / gecelik form denetçisi** (tarayıcısız) — üretim dağılımı (%70/%25/%5/%20), determinizm, stat sınırları, pozisyona aykırılık, **rozet YOK** taraması · 40 maçta kuyruk dağılımı ve §4 lig ortalamaları · motorun statı gerçekten okuduğu (95 vs 60 karşılaştırması) · anlatım sıklığı. Oyuncu üretimi ya da ağırlık fonksiyonları değişince çalıştır. |
 | `tools/ekonomi-check.js` | **FAZ 25 USD ekonomi denetçisi** (tarayıcısız) — kaynakta `KR` yok · maaş dağılımı §2.1 bantlarında · başlangıç kasası $120.000 ve haftalık denge ±$2.000 · 10 sezonluk iflas oranları ve büyüme eğrisi · seyirci ≤ taraftar · sponsor bilançoda ayrı satır · negatif/sıfır değer yok. Ortamı `tools/_lib/eko-ortam.js` kurar. Ekonomi değişince çalıştır. |
 | `tools/_lib/eko-ortam.js` | Ekonomi ölçüm ortamı — 14 modülü düz Node'da (vm) yükler, `main.js` yerine UI kancalarını boş bırakır ve ekonomi tutamaklarını dışa verir. `sim-node`'un yükleyicisinin ekonomi tarafına açılmış hâli; kopyalamak yerine BUNU kullan. |
 | `tools/bicim-check.js` | **FAZ 29 biçim birim testi** — `fmtSayi`/`fmtYuzde`/`fmtSira` TR ve EN çıktıları, İngilizce sıra ekinin 11/12/13 istisnası, ve kaynakta elle kalmış `toLocaleString('tr-TR')` / `'%'+n` taraması. Biçim değişince çalıştır. |
@@ -622,3 +623,57 @@ Tam sürüm için doldurulacak boşluklar ve mantık hataları `RAPOR-EKSIKLER.m
   okunuyordu ("Sa pota altında hükmetti"). `_anlatimAdi()` soyad 3 harften kısaysa tam
   adı döndürür; sahadaki JETON ETİKETİ için `_tokShort` kısa kalır (yer yok). Ayrım
   bilinçli — yeni bir anlatım satırı yazarken `_anlatimAdi` kullan, `_tokShort` değil.
+
+- **ÖZEL YETENEK: SAPMA SEED'DEN TÜRER, ROZET YOKTUR (FAZ 34 §2):** oyuncular birbirinin
+  kopyasıydı (statlar 55-92 dar bandında). `ozelYetenekUygula()` her oyuncuya `p.seed`den
+  DETERMİNİSTİK bir sapma verir: %25 belirgin üstün (+10..+15) · %5 olağanüstü (+20..+25) ·
+  bağımsız %20 belirgin zayıf (−10..−20). `rand()`/`Math.random` ÇAĞIRMAZ — bu yüzden
+  `genPlayer`ın RNG sırasına dokunulmaz, sapma nesne kurulduktan sonra uygulanır ve
+  `genel`/`maas`/`potansiyel` yeniden türetilir. Uzmanın OVR'si yalnız ~+2 arttığı için
+  **uzman oyuncu ucuz kalır** (maaş OVR'den gelir) — markette avlanabilir olması budur.
+  Arayüzde HİÇBİR yeni etiket yoktur (`p.ozel` yalnız motor/denetim verisidir);
+  `yetenek-check` A bölümü dizge sabitlerini tarayarak bunu sınar.
+- **SAPMA YERLEŞİMİ SİMETRİK OLMALI (FAZ 34, ölçülerek bulundu):** yalnız POZİTİF sapmayı
+  "yeri olan" stata kaydırmak, artıyı sistemli olarak düşük (motorda az ağırlıklı) statlara
+  iter; eksi ise serbestçe yüksek statı vurur ve lig skoru düşer. İki yön de aynı ölçütten
+  geçer: sapmanın TAMAMI [20,99] içinde kalsın. Aynı gerekçeyle `OZEL_POZ_STAT` listeleri
+  hücum/savunma AĞIRLIĞINDA dengelenir (`computeRosterOfrDef` savunma formülü daha ağır
+  katsayı taşır: savunma 1,15 · blok 1,0 · topCalma 1,0).
+- **GECELİK FORM GÖRELİ PAYA UYGULANIR (FAZ 34 §3/§4):** `macFormu(p)` maç tohumundan
+  deterministik türer (%10 sıcak +8..+14 · %10 soğuk −8..−14 · %80 normal ±4) ve yalnız
+  `statF()` üzerinden AĞIRLIK fonksiyonlarında okunur (`usageW`/`rebW`/`blkW`/`stlW`/`astW`)
+  artı `shooterAcc`ın yetenek terimi. Takım toplamları motorun kendi mantığından gelmeye
+  devam eder — değişen yalnız KİMİN aldığıdır. ⚠ `statF`in ÜST SINIRI YOKTUR: 99'da kırpmak
+  sıcak geceyi budar, soğuk geceyi budamaz ve lig skorunu tek yönlü aşağı çeker. Değer bir
+  ORAN girdisidir, stat kutusu değil.
+- **FORM İSABETE DE YANSIMALI (FAZ 34 ölçümü):** formu yalnız kullanım payına bağlamak,
+  usage ile yetenek arasındaki korelasyonu seyreltir (şutlar sıcak ama zayıf şutörlere
+  kayar) ve takım FG%'si SİSTEMLİ düşer — ölçüldü, deplasman ortalaması −2,3. Sıcak gece
+  hem daha çok hem daha isabetli şut demektir; dağılım simetrik olduğu için lig korunur.
+- **`prChance` MAÇ MOTORUNDA YERELDİR (FAZ 34 tuzağı):** `const prChance=x=>pr()<x` (tek
+  argüman) global iki argümanlı sürümü gölgeler. `prChance(tohum,0.85)` yazmak dizgeyi
+  olasılık sanır, karşılaştırma hep false döner ve kapı SESSİZCE hiç açılmaz — ölçüldü,
+  40 maçta 0 cümle. Motor içinde yeni bir olasılık kapısı yazarken tek argümanlı yerel
+  sürümü kullan.
+- **ANLATIM SAYAÇLARI MAÇ DÜZEYİNDE (FAZ 34, F13-3/F14-1 tuzağının tekrarı):** uzmanlık
+  kapısının sayaçları (`_uzG`) ilk kurguda POZİSYON fonksiyonunun içindeydi ve her
+  pozisyonda sıfırlanıyordu; "3. ribaunttan sonra" eşiğine hiç ulaşılamadı. `_saatG` ile
+  aynı kapsamda dururlar.
+- **BLOK/ÖVGÜ SATIRLARI MESAFEDEN BAĞIMSIZ OLMALI (FAZ 34):** "Boyalı alanın kapısını
+  kapattı" bir 3'lük bloğuna eklenince anlatım-saha çelişmesi doğuyor (`anlatim-check`
+  yakaladı). Şut yerine bağlı dil, ancak şut tipini BİLEN dalda kullanılabilir.
+- **SABİT TOPLAMDA "STD GENİŞLEDİ" YANLIŞ ÖLÇÜTTÜR (FAZ 34 §7 dersi):** takım toplamı
+  korunduğu için (§4) bireysel dağılım sıfır toplamlı bir yeniden paylaşımdır ve standart
+  sapma neredeyse hiç oynamaz — ölçüldü: sayı std 7,28 → 7,23, ribaunt 2,78 → 2,81.
+  Değişen KUYRUKLARDIR: 30+ sayı %0,52 → %1,18 · 13+ ribaunt %0,39 → %0,79 · en yüksek
+  bireysel ribaunt 13 → 18. Ayırt edici ölçü tek oyuncunun takım toplamından aldığı EN
+  BÜYÜK PAYDIR (%43 → %51).
+- **BU MOTORDA TAKIM RİBAUNDU ~29'DUR (FAZ 34):** gerçek basketbolda ~43. "20+ ribaunt"
+  gibi mutlak eşikler bu hacme ÖLÇEKLENMELİ (20 × 29/43 ≈ 13); toplamı şişirmek §4'ü
+  ihlal eder. `yetenek-check` eşiği `--rebEsik` ile taşınabilir ve ham 20+ sayısını da
+  ayrıca raporlar.
+- **`sim-node --n=100` TEK TOHUMDA GÜRÜLTÜ BASKINDIR (FAZ 34 ölçümü):** aynı yapıda
+  tohum 42/7/123/999/555/31 için deplasman ortalaması **78,5 … 87,1** arasında salınır
+  (yayılım 8,6 puan). ±1,5'lik bir toleransı bu örneklemde tek tohumla yargılamak
+  davranışı değil çekilişi ölçer. Yakınsak ölçüm için **`--n=1000`** (ya da 3-4 tohumun
+  n=400 ortalaması) kullan.

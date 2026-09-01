@@ -1,290 +1,220 @@
-canli-mac :: Adana Üniversite
-canli-mac :: Adana Üniversite — Tallinn Belediyespor
-canli-mac :: Bologna Kurtları
-canli-mac :: Caracas Kurtları
-canli-mac :: Gothenburg Boğaları
+canli-mac :: Delhi Kurtları
+canli-mac :: Furkan İnce
+canli-mac :: Furkan İnce (PF) — Overall: 70
+canli-mac :: Furkan İnce (PF) → C
+canli-mac :: Furkan İnce (PF) → SF
+canli-mac :: Furkan İnce (PF·OVR 70)
+canli-mac :: Henn Kesküla
+canli-mac :: Henn Kesküla (PF) — Overall: 69
+canli-mac :: Henn Kesküla (PF) → C
+canli-mac :: Henn Kesküla (PF) → SF
+canli-mac :: Henn Kesküla (PF·OVR 69)
+canli-mac :: Houston Şahinleri
 canli-mac :: Yerel Esnaf Desteği ·
-canli-mac :: İzmir Kartalları
-canli-mac :: İzmir Kartalları — Bologna Kurtları
-canli-mac :: 🇹🇷 Osman Çakmak
-canli-mac :: 🇹🇷 Sami Sevinç
 canli-mac :: 🇹🇷 Türkçe
-canli-mac :: 🏛️ Adana Üniversite from
-canli-mac :: 🏛️ Bologna Kurtları from
-canli-mac :: 🏛️ Caracas Kurtları from
-canli-mac :: 🏛️ Gothenburg Boğaları from
-canli-mac :: 🏛️ İzmir Kartalları from
 canli-mac :: 📣 Sponsor income — Yerel Esnaf Desteği
-canli-mac :: 🔔 The first possession of quarter 1 is being set up — Ankara Eagles 0 - 0 Bologna Kurtları.
 login :: 🇹🇷 Türkçe
-modal:ayarlar :: Adana Üniversite
-modal:ayarlar :: Adana Üniversite — Tallinn Belediyespor
-modal:ayarlar :: Bologna Kurtları
-modal:ayarlar :: Caracas Kurtları
-modal:ayarlar :: Gothenburg Boğaları
+modal:ayarlar :: Delhi Kurtları
+modal:ayarlar :: Furkan İnce
+modal:ayarlar :: Furkan İnce (PF) — Overall: 70
+modal:ayarlar :: Furkan İnce (PF) → C
+modal:ayarlar :: Furkan İnce (PF) → SF
+modal:ayarlar :: Furkan İnce (PF·OVR 70)
+modal:ayarlar :: Henn Kesküla
+modal:ayarlar :: Henn Kesküla (PF) — Overall: 69
+modal:ayarlar :: Henn Kesküla (PF) → C
+modal:ayarlar :: Henn Kesküla (PF) → SF
+modal:ayarlar :: Henn Kesküla (PF·OVR 69)
+modal:ayarlar :: Houston Şahinleri
 modal:ayarlar :: Yerel Esnaf Desteği ·
-modal:ayarlar :: İzmir Kartalları
-modal:ayarlar :: İzmir Kartalları — Bologna Kurtları
-modal:ayarlar :: 🇹🇷 Osman Çakmak
-modal:ayarlar :: 🇹🇷 Sami Sevinç
 modal:ayarlar :: 🇹🇷 Türkçe
-modal:ayarlar :: 🏛️ Adana Üniversite from
-modal:ayarlar :: 🏛️ Bologna Kurtları from
-modal:ayarlar :: 🏛️ Caracas Kurtları from
-modal:ayarlar :: 🏛️ Gothenburg Boğaları from
-modal:ayarlar :: 🏛️ İzmir Kartalları from
 modal:ayarlar :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:basarim :: Adana Üniversite
-modal:basarim :: Adana Üniversite — Tallinn Belediyespor
-modal:basarim :: Bologna Kurtları
-modal:basarim :: Caracas Kurtları
-modal:basarim :: Gothenburg Boğaları
+modal:basarim :: Delhi Kurtları
+modal:basarim :: Furkan İnce
+modal:basarim :: Furkan İnce (PF) — Overall: 70
+modal:basarim :: Furkan İnce (PF) → C
+modal:basarim :: Furkan İnce (PF) → SF
+modal:basarim :: Furkan İnce (PF·OVR 70)
+modal:basarim :: Henn Kesküla
+modal:basarim :: Henn Kesküla (PF) — Overall: 69
+modal:basarim :: Henn Kesküla (PF) → C
+modal:basarim :: Henn Kesküla (PF) → SF
+modal:basarim :: Henn Kesküla (PF·OVR 69)
+modal:basarim :: Houston Şahinleri
 modal:basarim :: Yerel Esnaf Desteği ·
-modal:basarim :: İzmir Kartalları
-modal:basarim :: İzmir Kartalları — Bologna Kurtları
-modal:basarim :: 🇹🇷 Osman Çakmak
-modal:basarim :: 🇹🇷 Sami Sevinç
 modal:basarim :: 🇹🇷 Türkçe
-modal:basarim :: 🏛️ Adana Üniversite from
-modal:basarim :: 🏛️ Bologna Kurtları from
-modal:basarim :: 🏛️ Caracas Kurtları from
-modal:basarim :: 🏛️ Gothenburg Boğaları from
-modal:basarim :: 🏛️ İzmir Kartalları from
 modal:basarim :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:draft :: Adana Üniversite
-modal:draft :: Adana Üniversite — Tallinn Belediyespor
-modal:draft :: Bologna Kurtları
-modal:draft :: Caracas Kurtları
-modal:draft :: Gothenburg Boğaları
+modal:draft :: Delhi Kurtları
+modal:draft :: Furkan İnce
+modal:draft :: Furkan İnce (PF) — Overall: 70
+modal:draft :: Furkan İnce (PF) → C
+modal:draft :: Furkan İnce (PF) → SF
+modal:draft :: Furkan İnce (PF·OVR 70)
+modal:draft :: Henn Kesküla
+modal:draft :: Henn Kesküla (PF) — Overall: 69
+modal:draft :: Henn Kesküla (PF) → C
+modal:draft :: Henn Kesküla (PF) → SF
+modal:draft :: Henn Kesküla (PF·OVR 69)
+modal:draft :: Houston Şahinleri
 modal:draft :: Yerel Esnaf Desteği ·
-modal:draft :: İzmir Kartalları
-modal:draft :: İzmir Kartalları — Bologna Kurtları
-modal:draft :: 🇹🇷 Osman Çakmak
-modal:draft :: 🇹🇷 Sami Sevinç
 modal:draft :: 🇹🇷 Türkçe
-modal:draft :: 🏛️ Adana Üniversite from
-modal:draft :: 🏛️ Bologna Kurtları from
-modal:draft :: 🏛️ Caracas Kurtları from
-modal:draft :: 🏛️ Gothenburg Boğaları from
-modal:draft :: 🏛️ İzmir Kartalları from
 modal:draft :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:ilk5 :: Adana Üniversite
-modal:ilk5 :: Adana Üniversite — Tallinn Belediyespor
-modal:ilk5 :: Bologna Kurtları
-modal:ilk5 :: Caracas Kurtları
-modal:ilk5 :: Gothenburg Boğaları
+modal:ilk5 :: Delhi Kurtları
+modal:ilk5 :: Furkan İnce
+modal:ilk5 :: Furkan İnce (PF) — Overall: 70
+modal:ilk5 :: Furkan İnce (PF) → C
+modal:ilk5 :: Furkan İnce (PF) → SF
+modal:ilk5 :: Furkan İnce (PF·OVR 70)
+modal:ilk5 :: Henn Kesküla
+modal:ilk5 :: Henn Kesküla (PF) — Overall: 69
+modal:ilk5 :: Henn Kesküla (PF) → C
+modal:ilk5 :: Henn Kesküla (PF) → SF
+modal:ilk5 :: Henn Kesküla (PF·OVR 69)
+modal:ilk5 :: Houston Şahinleri
 modal:ilk5 :: Yerel Esnaf Desteği ·
-modal:ilk5 :: İzmir Kartalları
-modal:ilk5 :: İzmir Kartalları — Bologna Kurtları
-modal:ilk5 :: 🇹🇷 Osman Çakmak
-modal:ilk5 :: 🇹🇷 Sami Sevinç
 modal:ilk5 :: 🇹🇷 Türkçe
-modal:ilk5 :: 🏛️ Adana Üniversite from
-modal:ilk5 :: 🏛️ Bologna Kurtları from
-modal:ilk5 :: 🏛️ Caracas Kurtları from
-modal:ilk5 :: 🏛️ Gothenburg Boğaları from
-modal:ilk5 :: 🏛️ İzmir Kartalları from
 modal:ilk5 :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:oyuncu :: Adana Üniversite
-modal:oyuncu :: Adana Üniversite — Tallinn Belediyespor
-modal:oyuncu :: Bologna Kurtları
-modal:oyuncu :: Caracas Kurtları
-modal:oyuncu :: Gothenburg Boğaları
+modal:oyuncu :: Delhi Kurtları
+modal:oyuncu :: Furkan İnce
+modal:oyuncu :: Furkan İnce (PF) — Overall: 70
+modal:oyuncu :: Furkan İnce (PF) → C
+modal:oyuncu :: Furkan İnce (PF) → SF
+modal:oyuncu :: Furkan İnce (PF·OVR 70)
+modal:oyuncu :: Henn Kesküla
+modal:oyuncu :: Henn Kesküla (PF) — Overall: 69
+modal:oyuncu :: Henn Kesküla (PF) → C
+modal:oyuncu :: Henn Kesküla (PF) → SF
+modal:oyuncu :: Henn Kesküla (PF·OVR 69)
+modal:oyuncu :: Houston Şahinleri
 modal:oyuncu :: Yerel Esnaf Desteği ·
-modal:oyuncu :: İzmir Kartalları
-modal:oyuncu :: İzmir Kartalları — Bologna Kurtları
-modal:oyuncu :: 🇹🇷 Osman Çakmak
-modal:oyuncu :: 🇹🇷 Sami Sevinç
 modal:oyuncu :: 🇹🇷 Türkçe
-modal:oyuncu :: 🏛️ Adana Üniversite from
-modal:oyuncu :: 🏛️ Bologna Kurtları from
-modal:oyuncu :: 🏛️ Caracas Kurtları from
-modal:oyuncu :: 🏛️ Gothenburg Boğaları from
-modal:oyuncu :: 🏛️ İzmir Kartalları from
 modal:oyuncu :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:soyunma :: Adana Üniversite
-modal:soyunma :: Adana Üniversite — Tallinn Belediyespor
-modal:soyunma :: Bologna Kurtları
-modal:soyunma :: Caracas Kurtları
-modal:soyunma :: Gothenburg Boğaları
+modal:soyunma :: Delhi Kurtları
+modal:soyunma :: Furkan İnce
+modal:soyunma :: Furkan İnce (PF) — Overall: 70
+modal:soyunma :: Furkan İnce (PF) → C
+modal:soyunma :: Furkan İnce (PF) → SF
+modal:soyunma :: Furkan İnce (PF·OVR 70)
+modal:soyunma :: Henn Kesküla
+modal:soyunma :: Henn Kesküla (PF) — Overall: 69
+modal:soyunma :: Henn Kesküla (PF) → C
+modal:soyunma :: Henn Kesküla (PF) → SF
+modal:soyunma :: Henn Kesküla (PF·OVR 69)
+modal:soyunma :: Houston Şahinleri
 modal:soyunma :: Yerel Esnaf Desteği ·
-modal:soyunma :: İzmir Kartalları
-modal:soyunma :: İzmir Kartalları — Bologna Kurtları
-modal:soyunma :: 🇹🇷 Osman Çakmak
-modal:soyunma :: 🇹🇷 Sami Sevinç
 modal:soyunma :: 🇹🇷 Türkçe
-modal:soyunma :: 🏛️ Adana Üniversite from
-modal:soyunma :: 🏛️ Bologna Kurtları from
-modal:soyunma :: 🏛️ Caracas Kurtları from
-modal:soyunma :: 🏛️ Gothenburg Boğaları from
-modal:soyunma :: 🏛️ İzmir Kartalları from
 modal:soyunma :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:taktik :: Adana Üniversite
-modal:taktik :: Adana Üniversite — Tallinn Belediyespor
-modal:taktik :: Bologna Kurtları
-modal:taktik :: Caracas Kurtları
-modal:taktik :: Gothenburg Boğaları
+modal:taktik :: Delhi Kurtları
+modal:taktik :: Furkan İnce
+modal:taktik :: Furkan İnce (PF) — Overall: 70
+modal:taktik :: Furkan İnce (PF) → C
+modal:taktik :: Furkan İnce (PF) → SF
+modal:taktik :: Furkan İnce (PF·OVR 70)
+modal:taktik :: Henn Kesküla
+modal:taktik :: Henn Kesküla (PF) — Overall: 69
+modal:taktik :: Henn Kesküla (PF) → C
+modal:taktik :: Henn Kesküla (PF) → SF
+modal:taktik :: Henn Kesküla (PF·OVR 69)
+modal:taktik :: Houston Şahinleri
 modal:taktik :: Yerel Esnaf Desteği ·
-modal:taktik :: İzmir Kartalları
-modal:taktik :: İzmir Kartalları — Bologna Kurtları
-modal:taktik :: 🇹🇷 Osman Çakmak
-modal:taktik :: 🇹🇷 Sami Sevinç
 modal:taktik :: 🇹🇷 Türkçe
-modal:taktik :: 🎯 Tactics — vs Bologna Kurtları
-modal:taktik :: 🏛️ Adana Üniversite from
-modal:taktik :: 🏛️ Bologna Kurtları from
-modal:taktik :: 🏛️ Caracas Kurtları from
-modal:taktik :: 🏛️ Gothenburg Boğaları from
-modal:taktik :: 🏛️ İzmir Kartalları from
 modal:taktik :: 📣 Sponsor income — Yerel Esnaf Desteği
-sayfa:altyapi :: Adana Üniversite
-sayfa:altyapi :: Adana Üniversite — Tallinn Belediyespor
-sayfa:altyapi :: Bologna Kurtları
-sayfa:altyapi :: Caracas Kurtları
-sayfa:altyapi :: Gothenburg Boğaları
+sayfa:altyapi :: Delhi Kurtları
+sayfa:altyapi :: Furkan İnce
+sayfa:altyapi :: Henn Kesküla
+sayfa:altyapi :: Houston Şahinleri
 sayfa:altyapi :: Yerel Esnaf Desteği ·
-sayfa:altyapi :: İzmir Kartalları
-sayfa:altyapi :: İzmir Kartalları — Bologna Kurtları
-sayfa:altyapi :: 🇹🇷 Osman Çakmak
-sayfa:altyapi :: 🇹🇷 Sami Sevinç
 sayfa:altyapi :: 🇹🇷 Türkçe
-sayfa:altyapi :: 🏛️ Adana Üniversite from
-sayfa:altyapi :: 🏛️ Bologna Kurtları from
-sayfa:altyapi :: 🏛️ Caracas Kurtları from
-sayfa:altyapi :: 🏛️ Gothenburg Boğaları from
-sayfa:altyapi :: 🏛️ İzmir Kartalları from
-sayfa:analiz :: Adana Üniversite
-sayfa:analiz :: Adana Üniversite — Tallinn Belediyespor
-sayfa:analiz :: Bologna Kurtları
-sayfa:analiz :: Caracas Kurtları
-sayfa:analiz :: Gothenburg Boğaları
+sayfa:analiz :: Delhi Kurtları
+sayfa:analiz :: Furkan İnce
+sayfa:analiz :: Furkan İnce (PF) — Overall: 70
+sayfa:analiz :: Furkan İnce (PF) → C
+sayfa:analiz :: Furkan İnce (PF) → SF
+sayfa:analiz :: Furkan İnce (PF·OVR 70)
+sayfa:analiz :: Henn Kesküla
+sayfa:analiz :: Henn Kesküla (PF) — Overall: 69
+sayfa:analiz :: Henn Kesküla (PF) → C
+sayfa:analiz :: Henn Kesküla (PF) → SF
+sayfa:analiz :: Henn Kesküla (PF·OVR 69)
+sayfa:analiz :: Houston Şahinleri
 sayfa:analiz :: Yerel Esnaf Desteği ·
-sayfa:analiz :: İzmir Kartalları
-sayfa:analiz :: İzmir Kartalları — Bologna Kurtları
-sayfa:analiz :: 🇹🇷 Osman Çakmak
-sayfa:analiz :: 🇹🇷 Sami Sevinç
 sayfa:analiz :: 🇹🇷 Türkçe
-sayfa:analiz :: 🏛️ Adana Üniversite from
-sayfa:analiz :: 🏛️ Bologna Kurtları from
-sayfa:analiz :: 🏛️ Caracas Kurtları from
-sayfa:analiz :: 🏛️ Gothenburg Boğaları from
-sayfa:analiz :: 🏛️ İzmir Kartalları from
 sayfa:analiz :: 📣 Sponsor income — Yerel Esnaf Desteği
-sayfa:antrenman :: Adana Üniversite
-sayfa:antrenman :: Adana Üniversite — Tallinn Belediyespor
-sayfa:antrenman :: Bologna Kurtları
-sayfa:antrenman :: Caracas Kurtları
-sayfa:antrenman :: Gothenburg Boğaları
+sayfa:antrenman :: Delhi Kurtları
+sayfa:antrenman :: Furkan İnce
+sayfa:antrenman :: Furkan İnce (PF) — Overall: 70
+sayfa:antrenman :: Furkan İnce (PF) → C
+sayfa:antrenman :: Furkan İnce (PF) → SF
+sayfa:antrenman :: Henn Kesküla
+sayfa:antrenman :: Henn Kesküla (PF) — Overall: 69
+sayfa:antrenman :: Henn Kesküla (PF) → C
+sayfa:antrenman :: Henn Kesküla (PF) → SF
+sayfa:antrenman :: Houston Şahinleri
 sayfa:antrenman :: Yerel Esnaf Desteği ·
-sayfa:antrenman :: İzmir Kartalları
-sayfa:antrenman :: İzmir Kartalları — Bologna Kurtları
-sayfa:antrenman :: 🇹🇷 Osman Çakmak
-sayfa:antrenman :: 🇹🇷 Sami Sevinç
 sayfa:antrenman :: 🇹🇷 Türkçe
-sayfa:antrenman :: 🏛️ Adana Üniversite from
-sayfa:antrenman :: 🏛️ Bologna Kurtları from
-sayfa:antrenman :: 🏛️ Caracas Kurtları from
-sayfa:antrenman :: 🏛️ Gothenburg Boğaları from
-sayfa:antrenman :: 🏛️ İzmir Kartalları from
-sayfa:arena :: Adana Üniversite
-sayfa:arena :: Adana Üniversite — Tallinn Belediyespor
-sayfa:arena :: Bologna Kurtları
-sayfa:arena :: Caracas Kurtları
-sayfa:arena :: Gothenburg Boğaları
+sayfa:arena :: Delhi Kurtları
+sayfa:arena :: Furkan İnce
+sayfa:arena :: Furkan İnce (PF) — Overall: 70
+sayfa:arena :: Furkan İnce (PF) → C
+sayfa:arena :: Furkan İnce (PF) → SF
+sayfa:arena :: Henn Kesküla
+sayfa:arena :: Henn Kesküla (PF) — Overall: 69
+sayfa:arena :: Henn Kesküla (PF) → C
+sayfa:arena :: Henn Kesküla (PF) → SF
+sayfa:arena :: Houston Şahinleri
 sayfa:arena :: Yerel Esnaf Desteği ·
-sayfa:arena :: İzmir Kartalları
-sayfa:arena :: İzmir Kartalları — Bologna Kurtları
-sayfa:arena :: 🇹🇷 Osman Çakmak
-sayfa:arena :: 🇹🇷 Sami Sevinç
 sayfa:arena :: 🇹🇷 Türkçe
-sayfa:arena :: 🏛️ Adana Üniversite from
-sayfa:arena :: 🏛️ Bologna Kurtları from
-sayfa:arena :: 🏛️ Caracas Kurtları from
-sayfa:arena :: 🏛️ Gothenburg Boğaları from
-sayfa:arena :: 🏛️ İzmir Kartalları from
-sayfa:bilanco :: Adana Üniversite
-sayfa:bilanco :: Adana Üniversite — Tallinn Belediyespor
-sayfa:bilanco :: Bologna Kurtları
-sayfa:bilanco :: Caracas Kurtları
-sayfa:bilanco :: Gothenburg Boğaları
+sayfa:bilanco :: Delhi Kurtları
+sayfa:bilanco :: Furkan İnce
+sayfa:bilanco :: Furkan İnce (PF) — Overall: 70
+sayfa:bilanco :: Furkan İnce (PF) → C
+sayfa:bilanco :: Furkan İnce (PF) → SF
+sayfa:bilanco :: Henn Kesküla
+sayfa:bilanco :: Henn Kesküla (PF) — Overall: 69
+sayfa:bilanco :: Henn Kesküla (PF) → C
+sayfa:bilanco :: Henn Kesküla (PF) → SF
+sayfa:bilanco :: Houston Şahinleri
 sayfa:bilanco :: Yerel Esnaf Desteği ·
-sayfa:bilanco :: İzmir Kartalları
-sayfa:bilanco :: İzmir Kartalları — Bologna Kurtları
-sayfa:bilanco :: 🇹🇷 Osman Çakmak
-sayfa:bilanco :: 🇹🇷 Sami Sevinç
 sayfa:bilanco :: 🇹🇷 Türkçe
-sayfa:bilanco :: 🏛️ Adana Üniversite from
-sayfa:bilanco :: 🏛️ Bologna Kurtları from
-sayfa:bilanco :: 🏛️ Caracas Kurtları from
-sayfa:bilanco :: 🏛️ Gothenburg Boğaları from
-sayfa:bilanco :: 🏛️ İzmir Kartalları from
 sayfa:bilanco :: 📣 Sponsor income — Yerel Esnaf Desteği
-sayfa:dashboard :: Adana Üniversite
-sayfa:dashboard :: Adana Üniversite — Tallinn Belediyespor
-sayfa:dashboard :: Bologna Kurtları
-sayfa:dashboard :: Caracas Kurtları
-sayfa:dashboard :: Gothenburg Boğaları
-sayfa:dashboard :: İzmir Kartalları
-sayfa:dashboard :: İzmir Kartalları — Bologna Kurtları
+sayfa:dashboard :: Delhi Kurtları
+sayfa:dashboard :: Furkan İnce
+sayfa:dashboard :: Henn Kesküla
+sayfa:dashboard :: Houston Şahinleri
 sayfa:dashboard :: 🇹🇷 Türkçe
-sayfa:kadro :: Adana Üniversite
-sayfa:kadro :: Adana Üniversite — Tallinn Belediyespor
-sayfa:kadro :: Bologna Kurtları
-sayfa:kadro :: Caracas Kurtları
-sayfa:kadro :: Gothenburg Boğaları
+sayfa:kadro :: Delhi Kurtları
+sayfa:kadro :: Furkan İnce
+sayfa:kadro :: Henn Kesküla
+sayfa:kadro :: Houston Şahinleri
 sayfa:kadro :: Yerel Esnaf Desteği ·
-sayfa:kadro :: İzmir Kartalları
-sayfa:kadro :: İzmir Kartalları — Bologna Kurtları
 sayfa:kadro :: 🇹🇷 Türkçe
-sayfa:lig :: Adana Üniversite
-sayfa:lig :: Adana Üniversite — Tallinn Belediyespor
-sayfa:lig :: Bologna Kurtları
-sayfa:lig :: Caracas Kurtları
-sayfa:lig :: Gothenburg Boğaları
+sayfa:lig :: Delhi Kurtları
+sayfa:lig :: Furkan İnce
+sayfa:lig :: Henn Kesküla
+sayfa:lig :: Houston Şahinleri
 sayfa:lig :: Yerel Esnaf Desteği ·
-sayfa:lig :: İzmir Kartalları
-sayfa:lig :: İzmir Kartalları — Bologna Kurtları
 sayfa:lig :: 🇹🇷 Türkçe
-sayfa:mac :: Adana Üniversite
-sayfa:mac :: Adana Üniversite — Tallinn Belediyespor
-sayfa:mac :: Bologna Kurtları
-sayfa:mac :: Caracas Kurtları
-sayfa:mac :: Gothenburg Boğaları
+sayfa:mac :: Delhi Kurtları
+sayfa:mac :: Furkan İnce
+sayfa:mac :: Henn Kesküla
+sayfa:mac :: Houston Şahinleri
 sayfa:mac :: Yerel Esnaf Desteği ·
-sayfa:mac :: İzmir Kartalları
-sayfa:mac :: İzmir Kartalları — Bologna Kurtları
 sayfa:mac :: 🇹🇷 Türkçe
-sayfa:market :: Adana Üniversite
-sayfa:market :: Adana Üniversite — Tallinn Belediyespor
-sayfa:market :: Bologna Kurtları
-sayfa:market :: Caracas Kurtları
-sayfa:market :: Gothenburg Boğaları
+sayfa:market :: Delhi Kurtları
+sayfa:market :: Furkan İnce
+sayfa:market :: Henn Kesküla
+sayfa:market :: Houston Şahinleri
 sayfa:market :: Yerel Esnaf Desteği ·
-sayfa:market :: İzmir Kartalları
-sayfa:market :: İzmir Kartalları — Bologna Kurtları
-sayfa:market :: 🇹🇷 Osman Çakmak
-sayfa:market :: 🇹🇷 Sami Sevinç
 sayfa:market :: 🇹🇷 Türkçe
-sayfa:market :: 🏛️ Adana Üniversite from
-sayfa:market :: 🏛️ Bologna Kurtları from
-sayfa:market :: 🏛️ Caracas Kurtları from
-sayfa:market :: 🏛️ Gothenburg Boğaları from
-sayfa:market :: 🏛️ İzmir Kartalları from
-sayfa:takim :: Adana Üniversite
-sayfa:takim :: Adana Üniversite — Tallinn Belediyespor
-sayfa:takim :: Bologna Kurtları
-sayfa:takim :: Caracas Kurtları
-sayfa:takim :: Gothenburg Boğaları
+sayfa:takim :: Delhi Kurtları
+sayfa:takim :: Furkan İnce
+sayfa:takim :: Henn Kesküla
+sayfa:takim :: Houston Şahinleri
 sayfa:takim :: Yerel Esnaf Desteği ·
-sayfa:takim :: İzmir Kartalları
-sayfa:takim :: İzmir Kartalları — Bologna Kurtları
 sayfa:takim :: 🇹🇷 Türkçe
 setup :: 🇹🇷 Türkçe
-tutorial :: Adana Üniversite
-tutorial :: Adana Üniversite — Tallinn Belediyespor
-tutorial :: Bologna Kurtları
-tutorial :: Caracas Kurtları
-tutorial :: Gothenburg Boğaları
-tutorial :: İzmir Kartalları
-tutorial :: İzmir Kartalları — Bologna Kurtları
+tutorial :: Delhi Kurtları
+tutorial :: Furkan İnce
+tutorial :: Henn Kesküla
+tutorial :: Houston Şahinleri
 tutorial :: 🇹🇷 Türkçe

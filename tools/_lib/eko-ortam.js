@@ -106,6 +106,8 @@ function ortamKur(opt) {
 ;globalThis.__eko = {
   get G(){ return ${ad('G')}; },
   ARENA_LVL: ${ad('ARENA_LVL')},
+  STAT_KEYS: ${ad('STAT_KEYS')},
+  OZEL_POZ_STAT: ${ad('OZEL_POZ_STAT')},
   DIV_SAYISI: ${ad('DIV_SAYISI')},
   LEAGUE_SIZE: ${ad('LEAGUE_SIZE')},
   START_USD: ${ad('START_USD')},
@@ -129,6 +131,8 @@ function ortamKur(opt) {
     divizyonAnahtari: ${ad('divizyonAnahtari')},
     divizyonAnahtarlari: ${ad('divizyonAnahtarlari')},
     genPlayer: ${ad('genPlayer')},
+    ozelYetenekUygula: ${ad('ozelYetenekUygula')},
+    ensureRole: ${ad('ensureRole')},
     genMarket: ${ad('genMarket')},
     startLeagueSeason: ${ad('startLeagueSeason')},
     processEconomyWeeks: ${ad('processEconomyWeeks')},

@@ -5035,3 +5035,113 @@ F26-2 floater 92px > turnike 50,2px · konsol hatası 0.
 `analiz-check` · `arena-check` · `ekonomi-check` **36/36** ✓ ·
 `i18n-scan` **A/B/C/D = 0 · çakışan 0 · canlı anlatım Türkçe %0,0** ·
 `visual-check` masaüstü+mobil **0 konsol hatası** · `sunum-check` ✓. Sürüm **65 → 66**.
+
+## FAZ 34 — Özel yetenekler ve gecelik form (2026-09-01)
+
+### §2 Kalıcı özel yetenek
+
+`ozelYetenekUygula()` (`js/roster-gen.js`) her oyuncuya `p.seed`den **deterministik** sapma
+verir: %25 belirgin üstün (+10..+15) · %5 olağanüstü (+20..+25) · **bağımsız** %20 belirgin
+zayıf (−10..−20). `rand()`/`Math.random` çağırmaz. `genPlayer`ın RNG sırası korunsun diye
+sapma nesne kurulduktan sonra uygulanır ve `genel`/`maas`/`potansiyel` yeniden türetilir.
+Arayüzde **hiçbir yeni etiket yok** — `p.ozel` yalnız motor/denetim verisi.
+
+⚠ `STAT_KEYS` **14** stat taşıyor (brifte 11 yazıyor; `serbest`, `zeka`, `liderlik`
+sayılmamış). Brifin kendi örneği "serbest atışı berbat ribaund canavarı" olduğu için aday
+küme 14'ün tamamı.
+
+**Ölçülen (2.000 oyuncu):** sapmasız %68,5 · üstün %26,9 · olağanüstü %4,7 · zayıf %19,7 ·
+pozisyona aykırı %24,4 · stat aralığı 37-99 · determinizm 300/300.
+
+### §3 Gecelik form
+
+`macFormu(p)` maç tohumundan türer (%10 sıcak +8..+14 · %10 soğuk −8..−14 · %80 ±4) ve
+`statF()` üzerinden **yalnız göreli ağırlıklarda** okunur (`usageW`/`rebW`/`blkW`/`stlW`/
+`astW`) artı `shooterAcc`ın yetenek terimi. `simulateMatch` maç tohumunu `ctx.macSeed` ile
+taşır (sunucu tarafı determinizm sözleşmesi).
+
+### §4 Lig ortalamaları — korundu
+
+| Ölçü | Hedef | Sonuç |
+|---|---|---|
+| Ortalama skor (`--n=1000 --seed=42`) | 88,0-81,3 ±1,5 | **88,5 - 80,2** |
+| Olay/maç | 248 ±5 | **248** |
+| Ortalama sayı farkı (`lig-check`) | 9-13 | **10,3** |
+| 20+ farkla biten | <%25 | **%10,9** |
+| 5 ve altı farkla biten | >%25 | **%31,9** |
+| Toplam skor std | 13-18 | **14,4** |
+
+⚠ **`--n=100 --seed=42` kapısı düşüyor: 88,7 − 78,5 (deplasman −2,8).** Bu bir davranış
+kayması değil ÖRNEKLEM etkisidir; kanıt: aynı yapıda n=100 ölçümü tohum 42/7/123/999/555/31
+için deplasman ortalamasını **78,5 · 83,5 · 80,6 · 84,4 · 87,1 · 84,4** veriyor (yayılım
+8,6 puan). Yakınsak ölçüm (n=1000 seed 42 + n=400 × 3 tohum): **ev −0,42 · deplasman −0,35**
+— ikisi de ±1,5 içinde. CLAUDE.md'deki taban n=1000'e taşındı.
+
+### §5 Motor gerçekten okuyor
+
+`rebW`/`blkW`/`stlW`/`astW`/`shooterAcc` zaten ilgili statları okuyordu ve `wPick` **takım
+içi göreli pay** modeli — §4'ün istediği yapı. Eklenen: `shot.blkId` (blok artık oyuncuya
+atfedilebiliyor; önce yalnız takım toplamındaydı) ve `rebW`de **üstel** stat tepkisi
+(doğrusalken elit ribaundcu ortalamanın yalnız 1,41 katı ağırlık taşıyordu).
+
+**Motor kapısı (aynı takım, aynı süre, 60 maç):**
+ribaund 95 vs 60 → **676 / 206 (3,28×)** · topCalma 95 vs 60 → **147 / 112 (1,31×)** ·
+blok 95 vs 60 → **55 / 30 (1,83×)**.
+
+### §6 Anlatım
+
+5 havuz × 6-7 varyant (`UZMAN_RIBAUND`/`UZMAN_CALMA`/`UZMAN_BLOK`/`FORM_SICAK`/`FORM_SOGUK`),
+maç içi birikime bağlı (3. ribaunt · 2. çalma/blok · 4. isabet/ıska), oyuncu+kategori başına
+**bir kez**, cooldown ile ardışık tekrar yok. Ölçülen: **maç başına 2,40 cümle**, ardışık
+tekrar 0. 37 satırın TR+EN karşılığı yazıldı (sözlük + kalıp — FAZ 31 dersi).
+
+### Öncesi/sonrası dağılım (40 maç, aynı kadrolar)
+
+| Ölçü | Önce | Sonra |
+|---|---|---|
+| Oyuncu başına sayı std | 7,28 | 7,23 |
+| Oyuncu başına ribaunt std | 2,78 | 2,81 |
+| Oyuncu başına çalma std | 1,29 | 1,23 |
+| **30+ sayı atan oyuncu-maç** | **%0,52** | **%1,18** |
+| **13+ ribaunt alan oyuncu-maç** | **%0,39** | **%0,79** |
+| **En yüksek bireysel ribaunt** | **13** | **18** |
+| **Tek oyuncunun takım ribaundundaki en büyük payı** | **%43** | **%51** |
+
+**Standart sapma yanlış ölçüttür** — takım toplamı korunduğu için (§4) bireysel dağılım
+sıfır toplamlı bir yeniden paylaşımdır ve std neredeyse hiç oynamaz. Değişen kuyruklardır.
+
+### Yol boyunca bulunan tuzaklar
+
+1. **Çift kırpma asimetrisi** — 99 tavanı yalnız pozitif sapmayı buduyordu (3.000 oyuncuda
+   94 kırpma / 0), lig skorunu tek yönlü aşağı çekiyordu.
+2. **Yerleşim asimetrisi** — artıyı "yeri olan" stata kaydırmak onu düşük ağırlıklı statlara
+   itiyor, eksi serbestçe yüksek statı vuruyordu. İki yön de aynı ölçütten geçirildi.
+3. **`OZEL_POZ_STAT` savunma ağırlıklıydı** (12 slot def / 10 off) — `computeRosterOfrDef`in
+   savunma katsayıları daha ağır olduğu için takım DEF'i yükselip skor düşüyordu.
+4. **Form yalnız kullanım payına bağlıydı** — usage-yetenek korelasyonu seyreliyor, takım
+   FG%'si sistemli düşüyordu (−2,3). İsabete de bağlandı.
+5. **`prChance` motor içinde yerel ve tek argümanlı** — `prChance(tohum,0.85)` sessizce hep
+   false döndü, 40 maçta 0 cümle çıktı.
+6. **Anlatım sayaçları pozisyon kapsamındaydı** (F13-3/F14-1 tuzağının tekrarı) — her
+   pozisyonda sıfırlanıyor, eşiğe hiç ulaşılamıyordu.
+7. **Blok satırında boya dili** 3'lük bloğunda anlatım-saha çelişmesi üretiyordu
+   (`anlatim-check` yakaladı); havuz mesafe-nötr yapıldı.
+8. **Botun pozisyonlu ilk beşi denendi ve GERİ ALINDI** — en iyi 5 zaten daha güçlü,
+   pozisyon dengesi ham kaliteye mal oluyor ve deplasman skorunu düşürüyor.
+
+### Testler
+`yetenek-check` **30/30** · `sim-node --n=1000 --seed=42` → **88,5 - 80,2 · olay 248 ·
+hata 0 · G değişmedi** · `lig-check` ✓ (§4 korundu) · `ekonomi-check` **36/36** ·
+`anlatim-check` **31/31** · `milliyet-check` · `isim-check` · `schema-check` ·
+`turkek-check` · `bicim-check` · `sut-check` · `analiz-check` · `arena-check` ·
+`portre-check` ✓ · `i18n-scan` **A/B/C/D = 0 · çakışan 0** · `visual-check` masaüstü+mobil
+**0 konsol hatası**. Sürüm **66 → 67**.
+
+### Yapamadığım / farklı yaptığım
+- **`--n=100 --seed=42` regresyon kapısı bu tohumda düşüyor** (yukarıda gerekçesi ve kanıtı).
+- **"20+ ribaunt %0,3-1,5" hedefi bu motorda matematiksel olarak erişilemez:** takım
+  ribaundu ~29 (gerçek basketbolda ~43); 20 ribaunt takım toplamının %70'i demek olurdu.
+  Toplamı şişirmek §4'ü ihlal ederdi, o yüzden eşik hacme ölçeklendi (20 × 29/43 ≈ 13) ve
+  ham 20+ sayısı ayrıca raporlanıyor.
+- **"std belirgin genişlemiş" kapısı ölçüt olarak kullanılmadı** — sabit toplamda anlamsız
+  olduğu ölçülerek gösterildi; yerine kuyruk oranları ve en büyük pay kapıya bağlandı.

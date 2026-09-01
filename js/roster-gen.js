@@ -303,6 +303,105 @@ function genDraftProspect(i){
   p.enerji=100;
   return p;
 }
+/* ── FAZ 34 §2: KALICI ÖZEL YETENEK ──────────────────────────────────────────────
+   Sorun: statlar 55-92 gibi dar bir bantta üretiliyordu; 14 statın hepsi aynı pencerede
+   olunca hiçbir oyuncu bir alanda öne çıkmıyor, kadro kurmak anlamsızlaşıyordu.
+   Gerçek basketbolda bazı oyuncular TEK bir işte olağanüstüdür.
+
+   Dağılım (brif §2.1) — her oyuncu için BAĞIMSIZ iki çekiliş:
+     güçlü:  %70 yok · %25 belirgin (+10..+15) · %5 olağanüstü (+20..+25)
+     zayıf:  %20 belirgin zayıf (−10..−20)
+   İkisi AYNI oyuncuda olabilir — serbest atışı berbat ribaund canavarı gerçekçidir.
+
+   ⚠ STAT_KEYS 14 stat taşır (brif 11 yazıyor; serbest, zeka, liderlik sayılmamış).
+   Brifin kendi örneği "serbest atışı berbat" olduğu için ADAY KÜME 14'ün tamamıdır.
+
+   ⚠ ROZET/ETİKET YOK (brif §2.3): arayüzde hiçbir yeni etiket üretilmez, yalnız sayılar
+   değişir. Mevcut rol etiketleri (ensureRole) olduğu gibi kalır.
+
+   DETERMİNİZM: sapma yalnız p.seedden türer (prUnit/prChance), rand()/Math.random
+   ÇAĞIRMAZ — maçın rastgele akışını tüketmez, aynı tohum aynı oyuncuyu verir. Bu yüzden
+   genPlayer'ın RNG sırasına da dokunulmaz: sapma nesne kurulduktan SONRA uygulanır ve
+   genel/maas yeniden türetilir (brif §2.4 "genel hesaplanmadan önce" ile aynı sonuç). */
+const OZEL_TAVAN=99, OZEL_TABAN=20;
+/** Pozisyonun "doğal" statları — sapma %75 buradan, %25 dışarıdan seçilir (brif §2.2). */
+/* ⚠ LİSTELER HÜCUM/SAVUNMA DENGESİNDE TUTULUR. İlk kurguda savunma statları 12 slot,
+   hücum statları 10 slot kaplıyordu; computeRosterOfrDef'in savunma formülü daha ağır
+   katsayılar taşıdığı için (savunma 1,15 · blok 1,0 · topCalma 1,0) takım DEF'i sistemli
+   olarak yükseliyor ve lig skoru düşüyordu (ölçüldü: 400 maç × 3 tohum, ev sahibi
+   ortalaması −0,8). Slotlar ağırlıkça dengelendi: hücum 9,75 · savunma 9,05. */
+const OZEL_POZ_STAT={
+  PG:['pas','topSurme','hiz','topCalma','zeka'],
+  SG:['sutIsabeti','hucum','hiz','serbest','topCalma'],
+  SF:['hucum','sutIsabeti','hiz','savunma','ribaund'],
+  PF:['ribaund','savunma','blok','hucum','sutIsabeti'],
+  C: ['ribaund','blok','savunma','hucum','dayaniklilik']
+};
+/** Sapma statını seçer: pozisyona uygun %75, aykırı %25 (kısa guard'ın 92 ribaundu nadir ama mümkün). */
+function _ozelStatSec(tohum,poz,p,mik){
+  const uygun=OZEL_POZ_STAT[poz]||STAT_KEYS;
+  const aykiri=STAT_KEYS.filter(k=>uygun.indexOf(k)<0);
+  const pozUyumlu=prChance(tohum+'|uyum',0.75)||!aykiri.length;
+  let havuz=pozUyumlu?uygun:aykiri;
+  /* 99 TAVANI YALNIZ POZİTİF SAPMAYI BUDAR — 20 tabanına hiç çarpılmıyor (ölçüldü:
+     3.000 oyuncuda 94 kırpma / 0). Bu tek yönlü kayıp lig skorunu sistemli olarak
+     aşağı çekiyordu. Uzmanlık, YERİ OLAN stata verilir: sapmanın tamamı sığmıyorsa
+     havuz sığanlarla daraltılır. Gerçekçi de: zaten 92 ribaundu olan oyuncu
+     "ribaund uzmanı" diye ayrıca öne çıkmaz, uzmanlık boşlukta doğar. */
+  /* ⚠ YERLEŞİM SİMETRİK OLMALI (ölçülerek bulundu). İlk kurguda yalnız POZİTİF sapma
+     "yeri olan" stata kaydırılıyordu; bu, artıyı sistemli olarak DÜŞÜK (dolayısıyla
+     motorda az ağırlıklı) statlara itiyor, eksi ise serbestçe yüksek statları
+     vurabiliyordu. Ölçüldü: zayıf sapma kapatılınca lig skoru tabana dönüyor
+     (88,8-80,9 ≈ taban 89,0-80,8), açıkken ev sahibi −0,6…−1,0 düşüyordu.
+     Artık iki yön de aynı ölçütle yerleşir: sapmanın TAMAMI sınırlar içinde kalsın. */
+  if(p&&mik){
+    const sigar=havuz.filter(k=>{
+      const v=(Number(p[k])||0)+mik;
+      return v<=OZEL_TAVAN&&v>=OZEL_TABAN;
+    });
+    if(sigar.length) havuz=sigar;
+  }
+  return prPick(tohum+'|stat',havuz);
+}
+/**
+ * Oyuncuya kalıcı özel yeteneği uygular; genel, maas ve potansiyel yeniden türetilir.
+ * Uzman oyuncunun OVR'si yalnız ~+2 artar (14 statın biri +25 ise), maaş OVR'den geldiği
+ * için UZMAN OYUNCU UCUZ KALIR — brifin istediği "markette avlanabilir" etkisi budur.
+ * @returns {object} p (yerinde değiştirilir)
+ */
+function ozelYetenekUygula(p){
+  try{
+    if(!p||!p.seed) return p;
+    const t=String(p.seed);
+    p.ozel=null; p.ozelZayif=null;
+    /* ── güçlü yön ── */
+    const u=prUnit(t+'|guclu');
+    let gucKat=0;
+    if(u<0.05) gucKat=2;            /* olağanüstü */
+    else if(u<0.30) gucKat=1;       /* belirgin üstün (0.05..0.30 = %25) */
+    if(gucKat){
+      const mik=gucKat===2
+        ? 20+Math.floor(prUnit(t+'|gm')*6)      /* +20..+25 */
+        : 10+Math.floor(prUnit(t+'|gm')*6);     /* +10..+15 */
+      const k=_ozelStatSec(t+'|g',p.poz,p,mik);
+      if(k){ p[k]=Math.min(OZEL_TAVAN,(Number(p[k])||0)+mik); p.ozel={k:k,m:mik}; }
+    }
+    /* ── zayıf yön (BAĞIMSIZ %20) ── */
+    if(prChance(t+'|zayif',0.20)){
+      const mik=10+Math.floor(prUnit(t+'|zm')*11);   /* −10..−20 */
+      const k=_ozelStatSec(t+'|z',p.poz,p,-mik);
+      if(k){ p[k]=Math.max(OZEL_TABAN,(Number(p[k])||0)-mik); p.ozelZayif={k:k,m:mik}; }
+    }
+    /* Sapma sonrası tüm statlar sınırda tutulur (üst üste binme olabilir). */
+    STAT_KEYS.forEach(k=>{ p[k]=Math.max(OZEL_TABAN,Math.min(OZEL_TAVAN,Number(p[k])||0)); });
+    p.genel=Math.round(STAT_KEYS.reduce((s,k)=>s+(Number(p[k])||0),0)/STAT_KEYS.length);
+    if(typeof salaryUSDFromGenel==='function') p.maas=salaryUSDFromGenel(p.genel);
+    /* Potansiyel genelin altına düşmemeli (sapma OVR'yi yukarı itmiş olabilir). */
+    if(p.potansiyel!=null) p.potansiyel=Math.max(p.genel,Math.min(99,Number(p.potansiyel)||p.genel));
+  }catch(e){}
+  return p;
+}
+
 /* Pozisyona göre gerçekçi boy (cm) / kilo (kg) aralıkları — Madde 4 */
 const HW_RANGE={PG:[[178,196],[75,92]],SG:[[188,203],[82,98]],SF:[[196,208],[88,105]],PF:[[201,213],[95,115]],C:[[206,223],[100,130]]};
 /* FAZ 17: ikinci parametre artık boolean değil, ÜLKE.
@@ -341,6 +440,9 @@ function genPlayer(poz=null,ulkeArg=null){
   /* FAZ 17: portre yaş bandı ÜRETİM ANINDA dondurulur — oyuncu yaşlansa da yüzü
      değişmez. Dosya adı (portreDosya) manifest yüklendikten sonra portreAta ile yazılır. */
   const out={id,isim,poz:p,yas,ulke:ulke.ad,bayrak:ulke.b,portreBand:portreBandFromYas(yas),boy:rand(hR[0],hR[1]),kilo:rand(wR[0],wR[1]),seed,maas,...stats,genel,mood,enerji:100,potansiyel:rand(genel,Math.min(99,genel+20)),formDay:0,kontratSezon:rand(1,3),kisilik:ch(KISILIK_KEYS),sezon:{mac:0,pts:0,ast:0,reb:0}};
+  /* FAZ 34 §2: özel yetenek ensureRole'DAN ÖNCE uygulanır — rol/eğilim sapmış
+     statlardan türesin (ribaundu 95'e çıkan oyuncu 'ribaundcu' rolüne geçebilsin). */
+  ozelYetenekUygula(out);
   return ensureRole(out); /* FAZ A: rol + eğilimler statlardan türetilir */
 }
 

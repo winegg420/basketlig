@@ -2607,6 +2607,55 @@ const SON_BOLUM={
     'Kalan süre yetmez.'
   ]
 };
+/* ── FAZ 34 §6: UZMANLIK VE GECELİK FORM ANLATIMI ──────────────────────────────
+   Rakam yükselip sahada karşılığı olmazsa süs olur. Anlatım bu oyuncuları TANIR ama
+   ROZET YAZMAZ (brif §2.3/§6): "Ribaund Canavarı" gibi bir etiket YOK, yalnız doğal
+   cümle. Tetikleme maç içi BİRİKİME bağlıdır (3. ribaunt, 2. çalma…), her olayda
+   tekrarlamaz; cooldown ile ardışık tekrar engellenir. */
+const UZMAN_RIBAUND=[
+  'Camı kimseye bırakmıyor.',
+  'Pota altı bu akşam onun.',
+  'Her sekeni okuyor.',
+  'Ribaunt bölgesinde tek başına hüküm sürüyor.',
+  'Rakip uzunlar onunla baş edemiyor.',
+  'Şişeyi kapatıyor, ikinci şans vermiyor.',
+  'Cam onun tekelinde.'
+];
+const UZMAN_CALMA=[
+  'Pas yollarını okuyor.',
+  'Eli çok çabuk.',
+  'Rakip ona bakarak pas atmaya korkuyor.',
+  'Her pasın önünde o var.',
+  'Elleri her yerde.',
+  'Topu görmesi yetiyor.',
+  'Pasa uzanan eli hep bir adım önde.'
+];
+const UZMAN_BLOK=[
+  'Kimse üstünden atamıyor.',
+  'Yükselen her topa ulaşıyor.',
+  'Kolları sanki iki metre daha uzun.',
+  'Her şutun önüne bir el çıkıyor.',
+  'Zamanlaması kusursuz.',
+  'Ne mesafeden olursa olsun ulaşıyor.',
+  'Şut atmadan önce iki kere düşünmek gerekiyor.'
+];
+const FORM_SICAK=[
+  'Bu akşam durdurulamıyor.',
+  'Eli çok sıcak.',
+  'Ne atsa giriyor.',
+  'Bu gece onun gecesi.',
+  'Kendine olan güveni tavan yapmış.',
+  'Potayı deniz gibi görüyor.',
+  'Sıcaklığı sürüyor.'
+];
+const FORM_SOGUK=[
+  'Bu akşam tutturamıyor.',
+  'Eli bir türlü ısınmadı.',
+  'Bugün ritmini bulamıyor.',
+  'Gecenin ona göre gitmediği belli.',
+  'Denemeye devam ediyor ama olmuyor.',
+  'Şutları bu akşam kısa kalıyor.'
+];
 const FATIGUE_LINES=[
   '%P nefes nefese kaldı, bacakları ağırlaşıyor — kenar değişiklik düşünüyor.',
   '%P dizlerine yaslandı; enerjisi düşüyor.',
@@ -3128,6 +3177,9 @@ function _seedRandom(seed){
 function simulateMatch(o){
   o=o||{};
   const ctx={
+    /* FAZ 34 §3: gecelik form maç tohumundan türer; sunucu tarafı simülasyonda da
+       aynı tohum aynı formu vermeli (determinizm sözleşmesi). */
+    macSeed:(o.seed!=null)?(o.seed|0):null,
     gameDay:o.gameDay||1,
     difficultyOpp:o.difficultyOpp!=null?o.difficultyOpp:1,
     home:{
@@ -3168,6 +3220,40 @@ function generateMatchEvents(rakip, opts){
   const resume=opts.resume||null;   /* Madde 12: manuel değişiklik sonrası kalan maçı yeniden üret */
   /* Maç başına spiker ata (rotasyonlu — sezon maç sayısına göre + rastgele öğe). */
   const MC=buildMatchCtx(rakip,opts);
+  /* ── FAZ 34 §3: GECELİK FORM ────────────────────────────────────────────────────
+     Aynı oyuncu bazı maçlar uçar, bazı maçlar söner — gerçek hayattaki istisnai
+     istatistikler böyle doğar. Dağılım (brif §3.1):
+       %10 sıcak gece +8..+14 · %10 soğuk gece −8..−14 · %80 normal −4..+4
+     Deterministik: hash32(oyuncu.seed + maçTohumu). rand()/Math.random ÇAĞIRMAZ.
+
+     ⚠ §4 KISITI: form MUTLAK olasılığı değil TAKIM İÇİ GÖRELİ PAYI etkiler. Yani
+     sıcak gecedeki oyuncu daha çok şut/ribaund/asist ALIR, ama takımın toplam şutu,
+     ribaundu ve isabeti DEĞİŞMEZ — motorun mevcut mantığından gelmeye devam eder.
+     Bu yüzden form yalnız ağırlık fonksiyonlarında (usageW/rebW/blkW/stlW/astW)
+     okunur; shooterAcc'ın mutlak isabetine DOKUNULMAZ, yoksa lig FG%'si kayardı. */
+  const _macTohum=(MC.macSeed!=null)?String(MC.macSeed)
+    :String(hash32(String(MC.away&&MC.away.name||'')+'|'+(MC.home.wins||0)+'|'+(MC.home.losses||0)+'|'+(MC.gameDay||1)+'|'+(userIsHome?1:0)));
+  const _formCache=new Map();
+  /** Oyuncunun bu maçtaki form sapması (stat puanı cinsinden). */
+  function macFormu(p){
+    if(!p) return 0;
+    const anahtar=String(p.seed||p.id||'');
+    if(_formCache.has(anahtar)) return _formCache.get(anahtar);
+    const t=anahtar+'|form|'+_macTohum;
+    const u=prUnit(t);
+    let v;
+    if(u<0.10)      v= 8+Math.floor(prUnit(t+'|s')*7);     /* sıcak  +8..+14 */
+    else if(u<0.20) v=-(8+Math.floor(prUnit(t+'|c')*7));   /* soğuk  −8..−14 */
+    else            v=-4+Math.floor(prUnit(t+'|n')*9);     /* normal −4..+4  */
+    _formCache.set(anahtar,v);
+    return v;
+  }
+  /** Form uygulanmış stat okuması — yalnız GÖRELİ ağırlıklarda kullanılır. */
+  /* TAVAN YOK — bilinçli. 99'da kırpmak sıcak geceyi budar, soğuk geceyi budamaz
+     (taban 0'a hiç çarpılmaz) ve bu tek yönlü kayıp lig skorunu aşağı çekiyordu.
+     Değer bir ORAN girdisidir (wPick ağırlığı / skillMul), stat kutusu değil;
+     106 gibi bir ara değer hiçbir yerde gösterilmez. */
+  function statF(p,k){ return Math.max(0,statN(p,k)+macFormu(p)); }
   const spikerIx=(Math.abs((MC.home.wins||0)+(MC.home.losses||0))+rand(0,3))%SPIKERS.length;
   const SP=(resume&&resume.spId)?(SPIKERS.find(s=>s.id===resume.spId)||SPIKERS[spikerIx]):SPIKERS[spikerIx];
   const lu=MC.home.lineup;
@@ -3280,22 +3366,37 @@ function generateMatchEvents(rakip, opts){
        yaklaşık 2 kat, 10 kat değil. Çarpanlar bilinçli olarak dar tutuldu. */
     const rolMul=rol==='skorer'?1.34:rol==='sutor'?1.20:rol==='slasher'?1.14:rol==='oyunKurucu'?1.02:
                  rol==='kilit'?0.86:rol==='karartici'?0.86:rol==='ribaundcu'?0.88:1.0;
-    const sk=(statN(p,'hucum')*0.6+statN(p,'sutIsabeti')*0.4);
+    /* FAZ 34 §3: kullanım payı forma duyarlı — sıcak gecedeki oyuncu daha çok şut alır.
+       İsabet (shooterAcc) DEĞİŞMEZ; değişen yalnız şutların takım içi dağılımıdır. */
+    const sk=(statF(p,'hucum')*0.6+statF(p,'sutIsabeti')*0.4);
     return Math.max(0.20,rolMul*(0.62+sk/150));
   };
   /* FAZ B: seçilen hücum seti bazı ROLLERİ besler (Pick&Roll → kurucu+pivot, Dip Köşe → şutör).
      Yalnız KULLANICI takımına uygulanır; rakip kendi setini FAZ C'de seçecek. */
   const _pbRoleW=(pb&&pb.roleW)||{};
   const usageWU=(p)=>usageW(p)*(_pbRoleW[(p&&p.rol)||'']||1);
-  const astW=(p)=>Math.max(0.12,(_eg(p,'pas')/100)*1.5+statN(p,'pas')/140+(p&&p.rol==='oyunKurucu'?0.55:0));
-  const rebW=(p)=>Math.max(0.12,statN(p,'ribaund')/70+((Number(p&&p.boy)||200)-198)/40+(p&&p.rol==='ribaundcu'?0.8:0));
-  const blkW=(p)=>Math.max(0.08,statN(p,'blok')/60+(p&&p.rol==='karartici'?1.1:0));
-  const stlW=(p)=>Math.max(0.10,statN(p,'topCalma')/65+(p&&p.rol==='kilit'?0.9:0));
+  /* FAZ 34 §2/§3: bu dört ağırlık ÖZEL YETENEĞİN ve GECELİK FORMUN sahaya yansıdığı
+     yerdir. wPick bunları takım içinde oranlar — toplam ribaund/çalma/blok/asist sayısı
+     motorun kendi mantığından gelmeye devam eder, değişen yalnız KİMİN aldığıdır (§4). */
+  const astW=(p)=>Math.max(0.12,(_eg(p,'pas')/100)*1.5+statF(p,'pas')/140+(p&&p.rol==='oyunKurucu'?0.55:0));
+  /* FAZ 34 §7: ribaunt ağırlığı statla DOĞRUSAL değil ÜSTEL artar. Doğrusalken elit
+     ribaundcu (99) ortalamanın (70) yalnız 1,41 katı ağırlık taşıyordu ve takım içi
+     payı %37'de kalıyordu — 40 maçta 20+ ribaunt alan TEK oyuncu-maç çıkmadı (brif
+     hedefi %0,3-1,5). Üs, payı gerçek basketbolun dominant ribaundcusuna yaklaştırır.
+     ⚠ TOPLAM ribaunt DEĞİŞMEZ: wPick yalnız takım içinde oranlar (§4). */
+  const rebW=(p)=>Math.max(0.12,Math.pow(Math.max(1,statF(p,'ribaund'))/70,2.4)+((Number(p&&p.boy)||200)-198)/40+(p&&p.rol==='ribaundcu'?0.8:0));
+  const blkW=(p)=>Math.max(0.08,statF(p,'blok')/60+(p&&p.rol==='karartici'?1.1:0));
+  const stlW=(p)=>Math.max(0.10,statF(p,'topCalma')/65+(p&&p.rol==='kilit'?0.9:0));
   /* Faul disiplini düşük olan oyuncu faulleri toplar (gerçek hayatta pivotlar). */
   const foulW=(p)=>Math.max(0.15,(100-_eg(p,'disiplin'))/45);
   const shooterAcc=(shooter,is3,base,clutch,isUser)=>{
-    const s2=statN(shooter,'hucum')*0.5+statN(shooter,'sutIsabeti')*0.5;
-    const s3=statN(shooter,'sutIsabeti')*0.7+statN(shooter,'hucum')*0.3;
+    /* FAZ 34 §3: form İSABETE de yansır — yoksa kullanım payı forma göre kayarken
+       isabet sabit kalıyor, usage-yetenek korelasyonu seyreliyor ve takım FG%'si
+       SİSTEMLİ olarak düşüyordu (ölçüldü: ligin deplasman ortalaması −2,3).
+       Sıcak gece hem daha çok şut hem daha isabetli şut demektir; dağılım simetrik
+       olduğu için (%10 sıcak / %10 soğuk) lig ortalaması korunur. */
+    const s2=statF(shooter,'hucum')*0.5+statF(shooter,'sutIsabeti')*0.5;
+    const s3=statF(shooter,'sutIsabeti')*0.7+statF(shooter,'hucum')*0.3;
     const skill=is3?s3:s2;
     const skillMul=1+(skill-70)/100*0.6;                 /* ~0.91..1.13 (avg 70 → 1.0) */
     const en=Math.max(0,Math.min(100,Number(shooter.enerji!=null?shooter.enerji:100)));
@@ -3547,6 +3648,49 @@ function generateMatchEvents(rakip, opts){
      kapsamında tanımlanırsa her pozisyonda sıfırlanır, cooldown hiç çalışmaz ve kapı
      ya sürekli açık ya sürekli kapalı kalır. `narr` ile aynı kapsamda olmalı. */
   const _saatG={cd:0,say:0,sonQ:0,tonSay:0,tonCd:0};
+  /* ── FAZ 34 §6 kapısı ──
+     ⚠ SAYAÇLAR MAÇ DÜZEYİNDE (F13-3/F14-1 tuzağı): ilk kurguda blok pozisyon
+     fonksiyonunun içindeydi, her pozisyonda sıfırlanıyor ve "3. ribaunt" eşiğine
+     HİÇ ulaşılamıyordu (ölçüldü: 40 maçta 0 cümle). _saatG ile aynı kapsamda durur.
+     Birikim: oyuncu başına ribaunt/çalma/blok/sayı sayacı tutulur. Eşiği GEÇEN ve
+     ilgili statı gerçekten yüksek olan oyuncuda cümle basılır; sonra o kategori o
+     oyuncu için susar (tekrar için yeni bir eşik gerekir).
+     ⚠ Seçim SUNUM PRNG'si (pr/prChance) ile yapılır — maçın rastgele akışını
+     TÜKETMEZ (F13-3/B-5 kuralı). */
+  const _uzG={cd:0,say:0,bas:{}};
+  const _uzSay=(p,tur)=>{
+    if(!p||!p.id) return 0;
+    const k=p.id+'|'+tur;
+    _uzG.bas[k]=(_uzG.bas[k]||0)+1;
+    return _uzG.bas[k];
+  };
+  /** Uzmanlık/form cümlesi — yoksa boş dize. Olay metnine EK olarak döner. */
+  const uzmanGate=(p,tur)=>{
+    try{
+      if(!p) return '';
+      const n=_uzSay(p,tur);
+      if(_uzG.cd>0){ _uzG.cd--; return ''; }
+      if(_uzG.bas['said|'+p.id+'|'+tur]) return '';   /* bu oyuncu+kategori bir kez */
+      let havuz=null;
+      const form=macFormu(p);
+      if(tur==='reb'&&n>=3&&statN(p,'ribaund')>=85) havuz=UZMAN_RIBAUND;
+      else if(tur==='stl'&&n>=2&&statN(p,'topCalma')>=85) havuz=UZMAN_CALMA;
+      else if(tur==='blk'&&n>=2&&statN(p,'blok')>=85) havuz=UZMAN_BLOK;
+      else if(tur==='sco'&&n>=4&&form>=8) havuz=FORM_SICAK;
+      else if(tur==='mis'&&n>=4&&form<=-8) havuz=FORM_SOGUK;
+      if(!havuz) return '';
+      /* ⚠ prChance BURADA YERELDİR (satır ~3621: const prChance=x=>pr()<x) ve global
+         iki argümanlı sürümü gölgeler. İlk kurguda prChance(damga,0.85) yazılmıştı;
+         dizge olasılık sanıldı, karşılaştırma hep false döndü ve 40 maçta 0 cümle
+         çıktı. Sunum PRNG'si zaten deterministiktir, ayrıca tohum vermeye gerek yok. */
+      if(!prChance(0.85)) return '';
+      _uzG.bas['said|'+p.id+'|'+tur]=1;
+      _uzG.cd=2;
+      _uzG.say++;
+      return ' '+pickLine(havuz,pr,narr.recent,'uzman');
+    }catch(e){ return ''; }
+  };
+
   const _runEkle=(takim,n)=>{ if(n<=0) return; if(_runTeam===takim) _runPts+=n; else { _runTeam=takim; _runPts=n; } };
 
   /* Serbest atış metni AÇIKÇA "serbest atış" der — saha şutuyla karışmasın. */
@@ -4017,7 +4161,7 @@ function generateMatchEvents(rakip, opts){
             : movePhrase+pasTxt+spikerLinePR(SP.id,'score2',_v,pr,narr.recent);
         }
       } else if(blocked){
-        txt=spikerLinePR(SP.id,'block',{s:_anlatimAdi(shooter.isim),b:_anlatimAdi(blk.isim),uzak:is3},pr,narr.recent);
+        txt=spikerLinePR(SP.id,'block',{s:_anlatimAdi(shooter.isim),b:_anlatimAdi(blk.isim),uzak:is3},pr,narr.recent)+uzmanGate(blk,'blk');
       } else {
         const _k=is3?'miss3':'miss2';
         const _v={s:shooter.isim,cls,zone,sut};
@@ -4025,6 +4169,9 @@ function generateMatchEvents(rakip, opts){
           ? (_zincirKul=true,zincirLine(_k,_v,pr,narr.recent))
           : spikerLinePR(SP.id,_k,_v,pr,narr.recent);
       }
+      /* FAZ 34 §6: sıcak/soğuk gece — 4. isabet / 4. ıskadan sonra, formu uçta olan
+         oyuncuda bir kez. */
+      txt=txt+uzmanGate(shooter,made?'sco':'mis');
       txt=ctxPre+txt;
       if(fb) txt='⚡ Hızlı hücum! '+txt;
       else if(putback) txt='İkinci şans! '+txt;
@@ -4047,7 +4194,9 @@ function generateMatchEvents(rakip, opts){
                                  vur:()=>{ narr.imzaCd=8; }},pr,narr.recent);
         }catch(e){}
       }
-      events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,play,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q,fb:fb||undefined,pb:putback||undefined,blk:blocked||undefined,scheme,zone,sut,move:move||undefined,contest,sid:shooter.id!=null?shooter.id:undefined,pid:(passer&&passer.id!=null)?passer.id:undefined,and1:and1?{made:and1Made}:undefined,zincir:_zincirKul||undefined},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,play,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q,fb:fb||undefined,pb:putback||undefined,blk:blocked||undefined,/* FAZ 34 §5: bloğun SAHİBİ de kaydedilir — blok yalnız takım
+         toplamında (D.blk) duruyordu, oyuncuya atfedilemiyordu ve "blok statı sahaya
+         yansıyor mu" ölçülemiyordu. */blkId:(blocked&&blk&&blk.id!=null)?blk.id:undefined,scheme,zone,sut,move:move||undefined,contest,sid:shooter.id!=null?shooter.id:undefined,pid:(passer&&passer.id!=null)?passer.id:undefined,and1:and1?{made:and1Made}:undefined,zincir:_zincirKul||undefined},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       _flushReb();   /* and-1 ek atışının ribaundu şut cümlesinden SONRA gelir */
       /* F13-1: kaçan şutların yalnız ~%22'sinde ribaund ANLATILIYORDU; kalan %78'de top
          sessizce el değiştiriyor, anlatım "biz kaçırdık → rakip sayı attı" diye atlıyordu
@@ -4067,7 +4216,8 @@ function generateMatchEvents(rakip, opts){
           {R:_anlatimAdi(rebounder.isim),T:rebIsUser?MC.home.name:rname});
         /* §7.3: ribaund da saat referansı için doğal bir yer — kapı aday havuzu
            yalnız şutlara takılıyken %5'te kalıyordu (hedef %6-14). */
-        const rl2=rl+saatGate(q,t)+tonGate(q,t);
+        /* FAZ 34 §6: ribaunt uzmanı 3. ribaundundan sonra anlatımda tanınır. */
+        const rl2=rl+uzmanGate(rebounder,'reb')+saatGate(q,t)+tonGate(q,t);
         events.push({type:'reb',text:rl2,dt:0,q,t,home:homeScore,away:awayScore,rebId:rebounder.id,rebIsUser,rebOff:!!rebOff,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});   /* M14: hücum ribaundunda şut saati 24 değil 14 */
         /* Hücum ribaundu + renkli anlatım varsa: ~%55 aynı oyuncu pota dibinden tekrar dener. */
         if(_rebAnlat&&rebOff&&rebounder.id!=null&&Math.random()<0.55) shooterHint=rebounder;
@@ -4129,7 +4279,7 @@ function generateMatchEvents(rakip, opts){
             /* F13-6: top çalma iki farklı dille anlatılıyordu ve spiker kalıbında TOPU KAYBEDEN
                hiç geçmiyordu ("Victor Kim müthiş bir top çalma!" — kimden aldı?). Artık her
                çalma satırı iki taraflı: kaybeden + kapan. */
-            events.push({type:'steal',text:pickLine(STEAL_LOSS,pr,narr.recent,'stl2').replace('%L',_anlatimAdi(loser.isim)).replace('%C',_anlatimAdi(stealer.isim))+' '+spikerLinePR(SP.id,'steal',{c:_anlatimAdi(stealer.isim)},pr,narr.recent),q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+            events.push({type:'steal',text:pickLine(STEAL_LOSS,pr,narr.recent,'stl2').replace('%L',_anlatimAdi(loser.isim)).replace('%C',_anlatimAdi(stealer.isim))+' '+spikerLinePR(SP.id,'steal',{c:_anlatimAdi(stealer.isim)},pr,narr.recent)+uzmanGate(stealer,'stl'),q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
           } else if(tur<0.86){
             B.to++;
             fastNext='steal';

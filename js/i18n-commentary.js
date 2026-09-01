@@ -963,3 +963,93 @@ I18N_PHRASES.push(
   [/hiçbiri girmedi\./g, "none of them dropped."],
   [/hepsi içeride\./g, "all of them good."]
 );
+
+/* ── FAZ 34: uzmanlık ve gecelik form anlatımı ──
+   Satırlar olay metninin SONUNA parça olarak eklenir (metin + ' ' + satır), bu yüzden
+   sözlük girişi TEK BAŞINA yetmez — kalıp da yazılır (FAZ 31 dersi: I18N_TR_EN tam
+   düğüm eşler, cümle içi parça yalnız I18N_PHRASES ile çevrilir). İkisi birden zararsız. */
+Object.assign(I18N_TR_EN,{
+  "Camı kimseye bırakmıyor.":"He is not giving up a single board.",
+  "Pota altı bu akşam onun.":"The paint belongs to him tonight.",
+  "Her sekeni okuyor.":"He reads every bounce.",
+  "Ribaunt bölgesinde tek başına hüküm sürüyor.":"He rules the rebounding area on his own.",
+  "Rakip uzunlar onunla baş edemiyor.":"The opposing bigs cannot handle him.",
+  "Şişeyi kapatıyor, ikinci şans vermiyor.":"He seals the glass and allows no second chances.",
+  "Cam onun tekelinde.":"The glass is his alone.",
+  "Pas yollarını okuyor.":"He is reading the passing lanes.",
+  "Eli çok çabuk.":"His hands are lightning quick.",
+  "Rakip ona bakarak pas atmaya korkuyor.":"Opponents are afraid to pass anywhere near him.",
+  "Her pasın önünde o var.":"He is in front of every pass.",
+  "Elleri her yerde.":"His hands are everywhere.",
+  "Topu görmesi yetiyor.":"He only needs to see the ball.",
+  "Pasa uzanan eli hep bir adım önde.":"His hand reaches the pass a step early every time.",
+  "Boyalı alanın kapısını kapattı.":"He has shut the door on the paint.",
+  "Kimse üstünden atamıyor.":"Nobody can shoot over him.",
+  "Potaya giden her yolu tıkıyor.":"He is blocking every road to the rim.",
+  "Yükselen her topa ulaşıyor.":"He gets to every ball that goes up.",
+  "İçeriye girmek bu akşam cesaret istiyor.":"Driving inside takes courage tonight.",
+  "Kolları sanki iki metre daha uzun.":"His arms seem two metres longer.",
+  "Bu akşam durdurulamıyor.":"He cannot be stopped tonight.",
+  "Eli çok sıcak.":"He is red hot.",
+  "Ne atsa giriyor.":"Everything he throws up is going in.",
+  "Bu gece onun gecesi.":"Tonight is his night.",
+  "Kendine olan güveni tavan yapmış.":"His confidence is through the roof.",
+  "Potayı deniz gibi görüyor.":"The rim looks like an ocean to him.",
+  "Sıcaklığı sürüyor.":"He is staying hot.",
+  "Bu akşam tutturamıyor.":"He cannot find the range tonight.",
+  "Eli bir türlü ısınmadı.":"His hand never warmed up.",
+  "Bugün ritmini bulamıyor.":"He cannot find his rhythm today.",
+  "Gecenin ona göre gitmediği belli.":"It is clear the night is not going his way.",
+  "Denemeye devam ediyor ama olmuyor.":"He keeps trying but it is not falling.",
+  "Şutları bu akşam kısa kalıyor.":"His shots are coming up short tonight."
+});
+I18N_PHRASES.unshift(
+  [/Camı kimseye bırakmıyor\./g, "He is not giving up a single board."],
+  [/Pota altı bu akşam onun\./g, "The paint belongs to him tonight."],
+  [/Her sekeni okuyor\./g, "He reads every bounce."],
+  [/Ribaunt bölgesinde tek başına hüküm sürüyor\./g, "He rules the rebounding area on his own."],
+  [/Rakip uzunlar onunla baş edemiyor\./g, "The opposing bigs cannot handle him."],
+  [/Şişeyi kapatıyor, ikinci şans vermiyor\./g, "He seals the glass and allows no second chances."],
+  [/Cam onun tekelinde\./g, "The glass is his alone."],
+  [/Pas yollarını okuyor\./g, "He is reading the passing lanes."],
+  [/Eli çok çabuk\./g, "His hands are lightning quick."],
+  [/Rakip ona bakarak pas atmaya korkuyor\./g, "Opponents are afraid to pass anywhere near him."],
+  [/Her pasın önünde o var\./g, "He is in front of every pass."],
+  [/Elleri her yerde\./g, "His hands are everywhere."],
+  [/Topu görmesi yetiyor\./g, "He only needs to see the ball."],
+  [/Pasa uzanan eli hep bir adım önde\./g, "His hand reaches the pass a step early every time."],
+  [/Boyalı alanın kapısını kapattı\./g, "He has shut the door on the paint."],
+  [/Kimse üstünden atamıyor\./g, "Nobody can shoot over him."],
+  [/Potaya giden her yolu tıkıyor\./g, "He is blocking every road to the rim."],
+  [/Yükselen her topa ulaşıyor\./g, "He gets to every ball that goes up."],
+  [/İçeriye girmek bu akşam cesaret istiyor\./g, "Driving inside takes courage tonight."],
+  [/Kolları sanki iki metre daha uzun\./g, "His arms seem two metres longer."],
+  [/Bu akşam durdurulamıyor\./g, "He cannot be stopped tonight."],
+  [/Eli çok sıcak\./g, "He is red hot."],
+  [/Ne atsa giriyor\./g, "Everything he throws up is going in."],
+  [/Bu gece onun gecesi\./g, "Tonight is his night."],
+  [/Kendine olan güveni tavan yapmış\./g, "His confidence is through the roof."],
+  [/Potayı deniz gibi görüyor\./g, "The rim looks like an ocean to him."],
+  [/Sıcaklığı sürüyor\./g, "He is staying hot."],
+  [/Bu akşam tutturamıyor\./g, "He cannot find the range tonight."],
+  [/Eli bir türlü ısınmadı\./g, "His hand never warmed up."],
+  [/Bugün ritmini bulamıyor\./g, "He cannot find his rhythm today."],
+  [/Gecenin ona göre gitmediği belli\./g, "It is clear the night is not going his way."],
+  [/Denemeye devam ediyor ama olmuyor\./g, "He keeps trying but it is not falling."],
+  [/Şutları bu akşam kısa kalıyor\./g, "His shots are coming up short tonight."]
+);
+
+/* FAZ 34: blok havuzu mesafe-nötr yapıldı (boya dili 3'lükte anlatım-saha çelişmesi
+   üretiyordu, anlatim-check yakaladı) — yeni satırların karşılıkları. */
+Object.assign(I18N_TR_EN,{
+  "Her şutun önüne bir el çıkıyor.":"A hand goes up in front of every shot.",
+  "Zamanlaması kusursuz.":"His timing is flawless.",
+  "Ne mesafeden olursa olsun ulaşıyor.":"He gets there from any distance.",
+  "Şut atmadan önce iki kere düşünmek gerekiyor.":"You have to think twice before shooting."
+});
+I18N_PHRASES.unshift(
+  [/Her şutun önüne bir el çıkıyor\./g, "A hand goes up in front of every shot."],
+  [/Zamanlaması kusursuz\./g, "His timing is flawless."],
+  [/Ne mesafeden olursa olsun ulaşıyor\./g, "He gets there from any distance."],
+  [/Şut atmadan önce iki kere düşünmek gerekiyor\./g, "You have to think twice before shooting."]
+);
