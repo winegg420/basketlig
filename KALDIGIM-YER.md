@@ -333,7 +333,7 @@ sıfırdan derlenir); sonrakiler önbellekten hızlanır.
   eklerken `botClubEnsureDepth` içindeki geriye dönük doldurmaya da ekle. `BOT_ROSTER_DIST`
   başındaki İLK 7 SIRA tarihseldir — id/seed'ler ona bağlı, değiştirme.
 - **`cpuMatchScore()` tek kaynaktır** — bot-bot skor formülünü test de oradan çağırır.
-- **Script sürüm etiketi** her yayın öncesi artırılmalı — şu an **`?v=43`**; `faz8-check` A7 sınıyor.
+- **Script sürüm etiketi** her yayın öncesi artırılmalı — şu an **`?v=68`**; `faz8-check` A7 ve `surum-check` sınıyor (içerik değişip sürüm sabit kalırsa DÜŞER).
 - **Mobil alt sekme çubuğu (F12-1)** `#mobileTabs`; yeni sayfa eklerken günlük kullanımdaysa
   çubuğa, değilse hamburgerde bırak. `showPage` çubuğu, katlamaları, sabit eylemi ve rozetleri
   kendisi tazeler — yeni sayfa eklerken ek bağlantı gerekmez.

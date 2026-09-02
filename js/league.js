@@ -537,7 +537,11 @@ function kariyerAkislariniSifirla(){
   try{ sessionStorage.removeItem(NEWS_SESSION_KEY); }catch(e){}
   try{ localStorage.removeItem(CLUB_CACHE_KEY); }catch(e){}
   try{ if(typeof invalidateClubCacheMem==='function') invalidateClubCacheMem(); }catch(e){}
-  try{ const el=document.getElementById('newsList'); if(el) el.innerHTML=''; }catch(e){}
+  /* Denetim (FAZ 36 eki): element kimliği 'newsList' YAZILMIŞTI, HTML'de 'newsLog' —
+     yani bu satır hiçbir zaman çalışmadı. Pratikte zarar vermedi çünkü
+     renderDashboardNews() paneli her çizimde sessionStorage'dan yeniden kuruyor;
+     yine de niyet (DOM'u hemen boşalt) gerçekleşmiyordu. */
+  try{ const el=document.getElementById('newsLog'); if(el) el.innerHTML=''; }catch(e){}
 }
 
 function ligAdlariniOnar(){

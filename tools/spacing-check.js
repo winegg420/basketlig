@@ -334,9 +334,22 @@ const HEDEFLER = [
   /* --bg modunda örnekleme hızı tarayıcı tarafından ~1 Hz'e kısıtlanır: örneklerin çoğu
      geçiş anına denk gelir ve "top sahibi" karesi neredeyse hiç yakalanmaz. Bu modun amacı
      F11-1 gerilemesini yakalamaktır — orada anlamlı olan ölçüler yargılanır, kalanı bilgidir. */
-  const BG_YARGI = ['boyada ≥1 hücumcu olan kare oranı', 'savunmacının adamına ortalama uzaklığı',
-    'set hücumunda ortalama ikili mesafe', 'hücumun yayılımı / yarı saha (kutu)',
-    'yerine oturmuş ama adamı > 5 m uzakta', 'savunmacı adamı ile pota arasında'];
+  /* ── FAZ 36 eki: --bg KAPI LİSTESİ KENDİ ÖRNEKLEMİYLE ÇELİŞİYORDU ────────────────────
+     Ölçüldü (aynı kodda, ardışık koşular): markaj 4,61 · 5,59 · 6,15 · 6,23 m ·
+     ball-you-man %58,7 · %60,8 · %62,2 · %75,0 · boyada %47,9 · %65,7 · %71,9 · %90,3.
+     Yani bu üç ölçü --bg modunda 30 puanlık bir bantta salınıyor ve kapı davranışı değil
+     ÖRNEKLEME ANINI yargılıyordu; FAZ 36 ÖNCESİNDE de düşüyordu (2 kapı).
+     SEBEP tool'un kendi metninde zaten yazılı: ~1 Hz örneklemede kareler ağırlıklı olarak
+     GEÇİŞ anına düşer (set fazı --bg'de %19-20, ön planda %59). Aracın 'SÜZÜLMEMİŞ'
+     bloğu tam da bu gerekçeyle MARKAJ hedeflerini bilgi sayar — geçişte savunma potaya
+     dönmektedir, adamına henüz yetişmemiştir. Aynı kural --bg için de geçerlidir;
+     'boyada ≥1 hücumcu' da set karesine bağlı olduğu için aynı sınıftadır.
+     --bg'nin asıl amacı olan 'sekme arka plandan dönünce sahne yetişiyor mu' sorusunu
+     `faz11-check` F11-1 kapısı ölçer ve o kapı FAZ 34 ekinde kendini kalibre eder hâle
+     getirildi (aynı koşudaki normal-akış tabanıyla kıyaslar). Burada yalnız 1 Hz'de de
+     anlamını koruyan DİZİLİM GEOMETRİSİ yargılanır. */
+  const BG_YARGI = ['set hücumunda ortalama ikili mesafe', 'hücumun yayılımı / yarı saha (kutu)',
+    'yerine oturmuş ama adamı > 5 m uzakta'];
   let dusen = 0;
   HEDEFLER.forEach(h => {
     const v = h.al(r);

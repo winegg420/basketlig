@@ -6,7 +6,7 @@ Bu dosya, bu depoda çalışan Claude Code oturumları için proje rehberidir. Y
 
 **Charazay 2.0**, Türkçe, tek dosyalık bir **basketbol menajerlik oyunu**dur. Oyuncu bir kulüp menajeri olarak takım kurar, kadro/taktik yönetir, canlı maç simülasyonu izler, transfer yapar, altyapı/arena/ekonomi yönetir ve lig + playoff sezonları oynar. Steam yayınına hazırlanıyor.
 
-- Ana oyun: **`charazay2.0.html`** (~6445 satır, tek dosya: HTML + CSS + JS gömülü).
+- Ana oyun: **`charazay2.0.html`** (1484 satır — HTML gövdesi + CSS; JS artık `js/*.js` içinde, 15 `<script src>`).
 - Dil: arayüz ve tüm metinler **Türkçe**.
 
 ## Nasıl çalıştırılır?
@@ -55,7 +55,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `js/*.js` | **Oyun mantığı** — 11 çekirdek modül + 3 dil modülü (aşağıdaki kod haritası). |
 | `index.html`, `Charazay-2.0-BASLAT.html` | `charazay2.0.html`'e yönlendiren giriş sayfaları. |
 | `charazay-mentor-panel.html` | Geliştirici öz-denetim aracı — **oyunun parçası değil**, dokunma. |
-| `assets/portraits/` | 201 oyuncu portresi (`p_0000.jpg`…`p_0200.jpg`) + `manifest.json`. |
+| `assets/portraits/` | **468 oyuncu portresi** — FAZ 17 kova+bant adlandırması (`<kova>_<bant>_<sıra>.jpg`, ör. `akd_genc_0042.jpg`) + `manifest.json` (sürüm 2, `buckets` sayaçları). Eski `p_0000.jpg` şeması KALKTI; kodda sabit havuz boyu yok. |
 | `tools/generate-portraits.py` / `.ps1` | Portre üretim scriptleri (pollinations.ai, deterministik seed). |
 | `tools/visual-check.js` | **Otomatik görsel/konsol testi** (Playwright + sistem Chrome, masaüstü+mobil). Her değişiklikten sonra çalıştır. |
 | `tools/realism-check.js` | **Canlı maç gerçekçilik denetimi**: saha-dışı/ışınlanma/üst üste binme/sahipsiz top ihlalleri + anlatım-görüntü senkron gecikmesi. `--fire` şut anı, `--inb` kenardan sokma anı ekran görüntüsü, `--full` tam maç, `--rate=` izleme hızı. |
@@ -72,6 +72,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/anlatim-check.js` | **FAZ 13 anlatım denetçisi** — maçı TARAYICISIZ üretip olay listesini denetler (ribaund/şut eşitliği, seri iddiası, faul adı ve sayacı, çalma iki taraflılığı, kalıp çeşitliliği, devre arası, saha değişimi, köşe bölgesi). `--freeze` ile sekme donması + maç içi panel kalıcılığı tarayıcıda sınanır. **Anlatım değişince çalıştır.** |
 | `tools/mobile-check.js` | **FAZ 12 mobil denetçisi** (390×844) — dokunma sayısı (gerçekten tıklayarak), maç sayfası düzeni, bilgi yoğunluğu, 44 px dokunma hedefi, market yoğunluğu. Mobil düzen değişince çalıştır. |
 | `tools/sim-node.js` | **Tarayıcısız maç simülasyonu** — 14 modülü düz Node'da (vm) yükler, `simulateMatch()` sözleşmesini ve determinizmi sınar. Motor sözleşmesi değişince çalıştır. **Regresyon tabanı (FAZ 36 sonrası): `--n=1000 --seed=42` → 88.5 - 80.2 · olay/maç 203.** (FAZ 34: olay/maç 248 — FAZ 36 §B1 rutin savunma ribaundunu anlatımdan çıkardı, SKOR DEĞİŞMEDİ.) ⚠ `--n=100` TEK TOHUMDA GÜRÜLTÜ BASKINDIR (deplasman ortalaması tohuma göre 78,5-87,1 arası salınır) — taban artık n=1000 ile okunur. |
+| `tools/bozukdeger-check.js` | **Bozuk değer tarayıcısı** — 2 sezon sürülüp TR+EN, 11 sayfa + 4 modal gezilir ve GÖRÜNÜR metinde `NaN`/`undefined`/`null`/`Infinity`/`[object Object]` aranır. `visual-check` yalnız KONSOL hatasına bakar; bozuk değer sessizdir — bu kapı onu yakalar. Sayı/biçim üreten her değişiklikten sonra çalıştır. |
 | `tools/schema-check.js` | **`db/schema.sql` denetçisi** — sözdizimi (varsa gerçek PostgreSQL ayrıştırıcısı), lig kuralları, RLS, "kod tabanında bağlantı yok". |
 | `db/schema.sql` | **Çok oyunculu veri modeli** (Postgres/Supabase). Yalnız dosya — hiçbir bağlantı kurulmuyor. |
 | `tools/gen-brand-images.js` | og:image (1200×630) + PWA ikonlarını üretir (Playwright). Marka görselini değiştirince tekrar çalıştır. |
@@ -756,3 +757,21 @@ Tam sürüm için doldurulacak boşluklar ve mantık hataları `RAPOR-EKSIKLER.m
   temizlenmişti ama `charazay2.0.html`deki sabit " KR" ekleri kaldı; kenar çubuğu
   "120.000 KR" gösterirken haber satırı dolar diyordu. `ekonomi-check` A bölümü artık
   HTML'i de tarar (yorumlar hariç). Tek kaynak `fmtPara`/`fmtMaas`.
+
+- **`spacing-check --bg` KAPI LİSTESİ KENDİ ÖRNEKLEMİYLE ÇELİŞİYORDU (FAZ 36 eki):** arka
+  plan modunda üç kapı (markaj mesafesi · ball-you-man · boyada hücumcu) ön plandaki
+  EŞİKLERLE yargılanıyordu. Ölçüldü — aynı kodda ardışık koşular: markaj 4,61-6,23 m ·
+  ball-you-man %58,7-75,0 · boyada %47,9-90,3. Yani 30 puanlık bir bantta salınıp davranışı
+  değil ÖRNEKLEME ANINI ölçüyor, FAZ 36 ÖNCESİNDE de düşüyordu. Sebep aracın kendi metninde
+  yazılıydı: ~1 Hz örneklemede kareler ağırlıklı GEÇİŞ anına düşer (set fazı --bg'de %19-20,
+  ön planda %59) ve aracın "SÜZÜLMEMİŞ" bloğu tam bu gerekçeyle markaj hedeflerini zaten
+  BİLGİ sayıyor. Aynı kural --bg'ye de uygulandı; --bg artık yalnız 1 Hz'de anlamını koruyan
+  DİZİLİM GEOMETRİSİNİ yargılar. "Sekme arka plandan dönünce sahne yetişiyor mu" sorusunu
+  `faz11-check` F11-1 ölçer ve o kapı FAZ 34 ekinde kendini kalibre eder hâle getirilmişti.
+- **`season-loop` VARSAYILAN UFKU 3 SEZONDUR — K1 6 SEZONDA DÜŞER (FAZ 36 eki, ölçüldü):**
+  9 koşuda kadro OVR farkı n=3'te **+1,38**, n=6'da **−3,06**. Sebep KUSUR DEĞİL TASARIM:
+  harness hiç antrenman/transfer yapmaz, 21 yaşına gelen altyapı oyuncuları her sezon
+  otomatik terfi eder (`match-prep.js`, Madde 21) ve kadro 11 → 18'e çıkarken yaş 28,8 →
+  22,9'a iner. Pasif menajerin kadrosu uzun vadede zayıflar. Denge değişikliği yapmadan
+  önce ufku ve koşu sayısını yaz — n=6'lık bir düşüşü "gerileme" sanmak yanlış yerde hata
+  aratır.

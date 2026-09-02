@@ -5274,3 +5274,62 @@ Kenar çubuğu / market / bilanço "KR" etiketleri kaldırıldı, `fmtPara` tek 
   diğer 9 oyuncunun saha içinde kalması zaten garantiliydi (ihlal 0).
 - **B7'de "her satır farklı damga" tam olarak sağlanamaz**: tek olayın iki parçası ve
   serbest atış dizisi saat durmuşken aynı saniyeyi paylaşır (brifin kendi istisnası).
+
+---
+
+## FAZ 36 eki — baştan sona denetim taraması (2026-09-02)
+
+Kullanıcı isteği: "Projeyi baştan sona kontrol et, hata varsa ayıkla."
+
+### Koşturulan denetimler (tamamı)
+`sim-node` (n=1000) · `band` · `measure` · `schema-check` · `turkek-check` · `bicim-check` ·
+`isim-check` · `portre-check` · `sut-check` · `yetenek-check` · `analiz-check` ·
+`arena-check` · `milliyet-check` · `lig-check` · `ekonomi-check` · `surum-check` ·
+`anlatim-check` (+`--freeze`) · `sunum-check` · `visual-check` · `faz6/7/8/10/11-check` ·
+`m20-check` · `mobile-check` · `geometri-check` · `hareket-check` · `spacing-check`
+(+`--bg`) · `realism-check` (+`--full`) · `i18n-scan` · `season-loop` (n=3 ve n=6, 9 koşu) ·
+`live-check` (yayın).
+
+### Bulunan ve DÜZELTİLEN hatalar
+
+1. **`tools/.surum-hash.json` bayat kalmıştı** — FAZ 36'da `--yaz` çalıştırıldıktan SONRA üç
+   dosya daha düzenlendi; kayıtlı hash (`546a…`) yayınlanan içerikle (`eda0…`) uyuşmuyordu ve
+   `surum-check` düşüyordu. Kayıt tazelendi.
+2. **`kariyerAkislariniSifirla()` var olmayan bir elemente yazıyordu** — `getElementById('newsList')`,
+   HTML'deki kimlik ise `newsLog`. Satır hiçbir zaman çalışmadı; FAZ 20 §6'nın "yeni kariyerde
+   DOM'u hemen boşalt" niyeti gerçekleşmiyordu. Pratikte zarar vermemişti çünkü
+   `renderDashboardNews()` paneli her çizimde `sessionStorage`'dan yeniden kuruyor.
+3. **`spacing-check --bg` kapı listesi kendi örneklemiyle çelişiyordu** (ayrıntı CLAUDE.md'de).
+   Aynı kodda ardışık koşularda markaj 4,61-6,23 m · ball-you-man %58,7-75,0 · boyada
+   %47,9-90,3 salınıyordu; kapı davranışı değil örnekleme anını yargılıyor ve **FAZ 36
+   öncesinde de düşüyordu** (worktree ile HEAD~1'de doğrulandı: 2 kapı). --bg artık yalnız
+   1 Hz'de anlamını koruyan dizilim geometrisini yargılar.
+4. **`'Grupta 20 kulüp olmalı'` sabit sayı** (C5 sınıfının kalıntısı) — koşul `LEAGUE_SIZE`
+   okuyor, metin 20 yazıyordu. Şablona çevrildi, EN karşılığı `I18N_PHRASES` kalıbı olarak
+   eklendi.
+5. **Belge sürüklenmesi:** CLAUDE.md "201 portre `p_0000.jpg`" diyordu (gerçek: 468 portre,
+   FAZ 17 kova adlandırması) ve "charazay2.0.html ~6445 satır" (gerçek: 1484 — JS ayrıldı).
+   KALDIGIM-YER.md "şu an `?v=43`" diyordu. Üçü de düzeltildi.
+
+### Yeni kapı — `tools/bozukdeger-check.js`
+Mevcut hiçbir araç ekrana basılan **bozuk değeri** aramıyordu (`visual-check` yalnız KONSOL
+hatasına bakar; `NaN`/`undefined` sessizce görünür). Yeni araç 2 sezon sürer, TR ve EN'de
+11 sayfa + 4 modal gezer, görünür metin düğümlerinde `NaN` · `Infinity` · `undefined` ·
+`null` · `[object Object]` arar. **Sonuç: 0 bulgu, 0 konsol hatası.**
+
+### Bulunan ama DÜZELTİLMEYEN (gerekçesiyle)
+
+| Bulgu | Ölçüm | Neden dokunulmadı |
+|---|---|---|
+| `season-loop` K2 — pasif kulüp kasası | 9 koşu medyan **2,08×** (hedef ≤2×) | Önceki oturumdan devreden bilinen kalem. Yayılım 1,12×-3,4×; ekonomi kaldıracı denendiğinde `ekonomi-check` bot iflas oranı bandın dışına çıkıyor (belgeli). İki kapı ters yönde çekiyor, doğru çözüm 9 koşuluk medyanlarla yeniden dengeleme — ayrı bir iş. |
+| `season-loop` K1 — 6 sezonda kadro OVR | n=3'te **+1,38** (geçer) · n=6'da **−3,06** | Aracın sözleşmesi n=3. Düşüş KUSUR DEĞİL: harness hiç antrenman/transfer yapmıyor, altyapı 21 yaşında otomatik terfi ediyor (Madde 21), kadro 11 → 18 büyürken yaş 28,8 → 22,9'a iniyor. Pasif menajerin kadrosu zayıflar — tasarım gereği. |
+| `deneme/` klasörü (2,9 MB, 40+ eleme PNG'si) git'te izleniyor | — | Silme geri dönüşsüz; kullanıcı kararı. GitHub Pages'te yayınlanıyor ama zarar vermiyor. |
+| `clearMatchCourt` içindeki `getElementById('shotsLayer')` | ölü no-op | 37. oturumda O/X şut izi katmanı kaldırıldı; `if(layer)` korumalı, davranışa etkisi yok. Maç kodunda gereksiz değişiklik yapılmadı. |
+
+### Doğrulama (düzeltmelerden sonra)
+`sim-node --n=1000 --seed=42` → **88,5 - 80,2 · hata 0 · G değişmedi** ·
+`band.js` **3225bf641b79dea7** (değişmedi) · `visual-check` masaüstü+mobil 0 konsol hatası ·
+`i18n-scan` A/B/C/D = 0 · çakışan 0 · `lig-check` ✓ · `faz8` ✓ · `faz10` 27/27 ·
+`schema-check` 21/21 · `spacing-check` ön plan ✓ ve `--bg` ✓ (iki koşu) ·
+`realism-check --full` tam maç: senkron kapılarının tamamı geçti (score2 n=52 · miss2 n=28 ·
+reb n=20), en uzun anlatım sessizliği 4174 ms, 0 konsol hatası. Sürüm **68 → 69**.

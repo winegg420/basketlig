@@ -1021,3 +1021,7 @@ Object.assign(I18N_TR_EN,{
   'Lig yapısı küresel sisteme geçtiği için önceki kayıt uyumsuz kaldı ve temizlendi.':
     'The league has moved to a global structure, so your previous save was incompatible and has been cleared.'
 });
+
+/* ── FAZ 36 eki: takım sayısı artık şablondan geldiği için sabit dize sözlükte
+   eşleşmiyor; kalıp olarak yazılır (i18n-scan D sınıfı). ── */
+I18N_PHRASES.unshift([/^Grupta (\d+) kulüp olmalı; eksik slot var\.$/, 'The group must have $1 clubs; a slot is missing.']);

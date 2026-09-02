@@ -1382,7 +1382,7 @@ function startLeagueSeason(){
   const sub=getTblState().subs[G.team.tblKey];
   if(!sub||!sub.teams){ showNotif('Lig verisi yok.'); return; }
   const names=sub.teams.filter(Boolean);
-  if(names.length!==LEAGUE_SIZE){ showNotif('Grupta 20 kulüp olmalı; eksik slot var.'); return; }
+  if(names.length!==LEAGUE_SIZE){ showNotif(`Grupta ${LEAGUE_SIZE} kulüp olmalı; eksik slot var.`); return; }
   G.ligTeams=genLigTeams();
   const matches=genRoundRobinMatches(names);
   assignSeasonMatchdays(matches,30);
