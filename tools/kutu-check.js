@@ -6,11 +6,23 @@
  * Hiçbiri "2 sayılık isabet %61 gerçek mi?" diye sormuyordu — bu araç onu sorar.
  * 60 maç, takım başına maç başına ortalama, tarayıcısız (`simulateMatch`).
  *
- * Hedef bantlar FIBA / BSL gerçek değerlerinden alınmıştır; kaynak PROGRESS.md FAZ 38.
+ * ⚠ FAZ 39: EŞİKLER ARTIK ELLE YAZILMIYOR. Hepsi tools/_lib/gercek-bantlar.json
+ *   dosyasından okunur (3 sezon NBA play-by-play · 3.690 maç · 90 takım-sezon).
+ *   Eski FAZ 38 bantları BRİFTEN TAHMİNDİ; ölçüldüğünde bir kısmı tutmadı
+ *   (ör. 3PA/FGA tahmin %33-38, gerçek %36,3-44,0).
+ *
+ * ⚠ SAYIM ÖLÇÜTLERİ İKİ KEZ YARGILANIR — ve asıl kapı POZİSYON BAŞINA olandır.
+ *   Ham sayım (maç başına sayı, FGA, ribaunt…) TEMPOYA bağlıdır: aynı verimlilikte
+ *   daha hızlı oynayan takım daha çok sayı atar. NBA verisini 40/48 ile ölçeklemek
+ *   SÜREYİ düzeltir ama VERİMİ düzeltmez — ölçüldü: ölçeklenmiş NBA takımı 40
+ *   dakikada 95,2 sayı atar, gerçek FIBA maçı ise ~80. Tempodan bağımsız ve
+ *   dolayısıyla FIBA'ya doğrudan taşınabilen ölçüt POZİSYON BAŞINA orandır
+ *   (NBA 1,155 sayı/pozisyon). Bu yüzden ham sayım BİLGİ, oran KAPIDIR.
  *
  * Kullanım: node tools/kutu-check.js [--mac=60] [--tohum=20000]
  */
 const { ortamKur, kadroUret } = require('./_lib/anlatim-ornek.js');
+const G = require('./_lib/gercek-bant.js');
 
 const arg = (ad, v) => { const m = process.argv.find(a => a.startsWith('--' + ad + '=')); return m ? Number(m.split('=')[1]) : v; };
 /* 60 maç uzatma satırı için YETERSİZDİ: hedef %4-8 bandı 60 maçta 2,4-4,8 maç
@@ -24,7 +36,7 @@ const ev = kadroUret(ctx, 0x1111), dep = kadroUret(ctx, 0x2222);
 
 /* İki takımın kutu skorları ayrı ayrı toplanır: "takım başına maç başına" ölçü budur. */
 const T = { n: 0, pts: 0, fga: 0, fgm: 0, tpa: 0, tpm: 0, fta: 0, ftm: 0, reb: 0, ast: 0, to: 0, stl: 0, blk: 0, foul: 0 };
-let uzatma = 0, mac = 0, pozToplam = 0;
+let uzatma = 0, mac = 0, pozToplam = 0, hamPoz = 0;
 
 for (let i = 0; i < MAC; i++) {
   const m = ctx.__api.simulateMatch({ homeRoster: ev, awayRoster: dep, homeName: 'A', awayName: 'B', seed: TOHUM + i });
@@ -43,31 +55,54 @@ for (let i = 0; i < MAC; i++) {
     T.fta += b.ftAtt; T.ftm += b.ftMade;
     T.reb += b.reb; T.ast += b.ast; T.to += b.to; T.stl += b.stl; T.blk += b.blk; T.foul += b.foul;
   });
-  es.forEach(e => { if (e.shot || e.type === 'steal' || e.type === 'free') { } });
-  pozToplam += es.filter(e => Number(e.dtPos) > 0).length;
+  /* Pozisyon sayımı pbpstats TANIMIYLA yapılır: ardışık ve aynı takımın hücumu olan
+     parçalar TEK pozisyondur (hücum ribaundu / savuşturulan top kaybı yeni pozisyon
+     başlatmaz). Motorun ham pozIx sayacı bundan farklıdır — pozisyon başına oranları
+     ham sayaçla bölmek gerçekle kıyaslanamaz bir büyüklük üretir. */
+  { const P = new Map();
+    es.forEach(e => { const d = Number(e.dtPos); if (!(d > 0) || e.pozIx == null) return;
+      if (!P.has(e.pozIx)) P.set(e.pozIx, { off: e.off, q: e.q }); });
+    const ks = [...P.keys()].sort((a, b) => a - b);
+    let cur = null, say = 0;
+    ks.forEach(k => { const v = P.get(k);
+      if (cur && cur.off === v.off && cur.q === v.q) return;
+      cur = v; say++; });
+    pozToplam += say; hamPoz += P.size; }
 }
-const o = k => T[k] / Math.max(1, T.n);
-const twoA = (T.fga - T.tpa) / Math.max(1, T.n), twoM = (T.fgm - T.tpm) / Math.max(1, T.n);
-
 const H = [];
-const ok = (ad, deger, alt, ust, birim) => H.push({ ad, deger, alt, ust, birim: birim || '' });
-ok('sayı', o('pts'), 78, 92);
-ok('FGA (saha şutu denemesi)', o('fga'), 58, 68);
-ok('FG%', 100 * T.fgm / Math.max(1, T.fga), 45, 49, '%');
-ok('2P%', 100 * twoM / Math.max(0.001, twoA), 51, 56, '%');
-ok('3PA', o('tpa'), 20, 27);
-ok('3PA / FGA', 100 * T.tpa / Math.max(1, T.fga), 33, 38, '%');
-ok('3P%', 100 * T.tpm / Math.max(1, T.tpa), 34, 37, '%');
-ok('FTA', o('fta'), 16, 24);
-ok('FTA / FGA', T.fta / Math.max(1, T.fga), 0.24, 0.32);
-ok('FT%', 100 * T.ftm / Math.max(1, T.fta), 72, 78, '%');
-ok('ribaunt', o('reb'), 33, 39);
-ok('asist', o('ast'), 17, 22);
-ok('asist / isabetli şut', T.ast / Math.max(1, T.fgm), 0.55, 0.68);
-ok('top kaybı', o('to'), 11, 14);
-ok('top çalma', o('stl'), 6.5, 8.5);
-ok('blok', o('blk'), 3, 4.5);
-ok('faul', o('foul'), 17, 21);
+const o = k => T[k] / Math.max(1, T.n);            /* takım başına maç başına */
+const twoA = (T.fga - T.tpa) / Math.max(1, T.n), twoM = (T.fgm - T.tpm) / Math.max(1, T.n);
+const pozTakim = pozToplam / Math.max(1, mac) / 2; /* takım başına pozisyon (pbpstats tanımı) */
+const pb = k => T[k] / Math.max(1, T.n) / Math.max(0.001, pozTakim);
+
+/* ── ORANLAR — tempodan bağımsız, doğrudan taşınır ─────────────────────────── */
+G.kapi(H, 'FG%', 100 * T.fgm / Math.max(1, T.fga), 'isabet.sahaSutu');
+G.kapi(H, '2P%', 100 * twoM / Math.max(0.001, twoA), 'isabet.ikiSayi');
+G.kapi(H, '3P%', 100 * T.tpm / Math.max(1, T.tpa), 'isabet.ucSayi');
+G.kapi(H, 'FT%', 100 * T.ftm / Math.max(1, T.fta), 'isabet.serbestAtis');
+G.kapi(H, '3PA / FGA', 100 * T.tpa / Math.max(1, T.fga), 'kutuOranlari.ucPayi');
+G.kapi(H, 'FTA / FGA', T.fta / Math.max(1, T.fga), 'kutuOranlari.ftaFgaOrani');
+G.kapi(H, 'asist / isabetli şut', T.ast / Math.max(1, T.fgm), 'kutuOranlari.asistIsabetliSutOrani');
+
+/* ── POZİSYON BAŞINA — asıl kapı (§3.2: oran taşınır, sayım taşınmaz) ──────── */
+G.kapi(H, 'sayı / pozisyon', pb('pts'), 'pozisyonBasina.sayi');
+G.kapi(H, 'FGA / pozisyon', pb('fga'), 'pozisyonBasina.fga');
+G.kapi(H, 'FTA / pozisyon', pb('fta'), 'pozisyonBasina.fta');
+G.kapi(H, 'ribaunt / pozisyon', pb('reb'), 'pozisyonBasina.ribaunt');
+G.kapi(H, 'asist / pozisyon', pb('ast'), 'pozisyonBasina.asist');
+G.kapi(H, 'top kaybı / pozisyon', pb('to'), 'pozisyonBasina.topKaybi');
+G.kapi(H, 'top çalma / pozisyon', pb('stl'), 'pozisyonBasina.calma');
+G.kapi(H, 'blok / pozisyon', pb('blk'), 'pozisyonBasina.blok');
+G.kapi(H, 'faul / pozisyon', pb('foul'), 'pozisyonBasina.faul');
+
+/* ── HAM SAYIM — BİLGİ. Ölçeklenmiş NBA değeri FIBA maçının üst sınırıdır ──── */
+[['sayı', 'pts', 'kutuOranlari.sayi'], ['FGA', 'fga', 'kutuOranlari.fga'],
+ ['FTA', 'fta', 'kutuOranlari.fta'], ['ribaunt', 'reb', 'kutuOranlari.ribaunt'],
+ ['asist', 'ast', 'kutuOranlari.asist'], ['top kaybı', 'to', 'kutuOranlari.topKaybi'],
+ ['top çalma', 'stl', 'kutuOranlari.calma'], ['blok', 'blk', 'kutuOranlari.blok'],
+ ['faul', 'foul', 'kutuOranlari.faul']]
+  .forEach(([ad, k, yol]) => G.kapi(H, ad + ' (maç başına)', o(k), yol, { bilgi: true }));
+
 /* ── UZATMA ORANI DENK KADROLARDA ÖLÇÜLÜR ────────────────────────────────────────
    Uzatma, skorun BERABERE bitmesiyle doğar; iki kadro arasında sabit bir güç farkı
    varsa (bu araçtaki ev/dep çifti ~8 sayı) beraberlik gerçek ligdekinden çok daha
@@ -86,31 +121,21 @@ for (let i = 0; i < 400; i++) {
   macD++; if ((son.q || 4) > 4) otD++;
   farklar.push((son.home | 0) - (son.away | 0));
 }
-ok('uzatmaya giden maç (denk kadro)', 100 * otD / Math.max(1, macD), 4, 8, '%');
+G.kapi(H, 'uzatmaya giden maç (denk kadro)', 100 * otD / Math.max(1, macD), 'macSonu.uzatmaOrani');
 /* TEŞHİS: uzatma oranı skor FARKI dağılımının doğrudan sonucudur — beraberlik
-   olasılığının aritmetik tavanı ≈ 1/(σ√2π). Kapı düştüğünde "neden" sorusu
+   olasılığının aritmetik tavanı ≈ 1/(σ√2π). Kapı düştüğünde 'neden' sorusu
    okuyucuya bırakılmasın diye bu satır her koşuda basılır. */
 const _fOrt = farklar.reduce((a, b) => a + b, 0) / Math.max(1, farklar.length);
 const _fSd = Math.sqrt(farklar.reduce((a, b) => a + (b - _fOrt) * (b - _fOrt), 0) / Math.max(1, farklar.length));
 const _tavan = 100 / (Math.max(0.001, _fSd) * Math.sqrt(2 * Math.PI));
+const _gercekSd = G.al('macSonu.farkStandartSapmasi');
 
-console.log('\n' + '='.repeat(70));
-console.log(`KUTU SKOR GERÇEKÇİLİĞİ — ${mac} maç · ${T.n} takım-maç · tohum ${TOHUM}`);
-console.log('='.repeat(70));
-let dusen = 0;
-H.forEach(h => {
-  /* Kayan nokta payı: 9,9875 ekranda "10.0" yazılıp eşiği (10) kılpayı kaçırıyordu —
-     kapı sayıyı değil YUVARLAMAYI yargılıyordu. Gösterilen basamak kadar tolerans. */
-  const _eps = Math.max(1e-9, (h.ust - h.alt) * 0.02);
-  const gec = h.deger >= h.alt - _eps && h.deger <= h.ust + _eps;
-  if (!gec) dusen++;
-  const d = h.birim === '%' ? h.deger.toFixed(1) + '%' : h.deger.toFixed(h.deger < 3 ? 3 : 1);
-  const b = h.birim === '%' ? `%${h.alt} - %${h.ust}` : `${h.alt} - ${h.ust}`;
-  console.log('  ' + (gec ? '✓' : '✗') + ' ' + h.ad.padEnd(26) + d.padStart(9) + '   hedef ' + b);
-});
-console.log('  bilgi: skor farkı (denk kadro) ort ' + _fOrt.toFixed(1) + ' · std ' + _fSd.toFixed(1) +
-  ' → beraberliğin aritmetik tavanı %' + _tavan.toFixed(1) + ' (gerçek lig std ~13)');
-console.log(`\n  bilgi: pozisyon/maç ${(pozToplam / Math.max(1, mac)).toFixed(0)} · 2PA ${twoA.toFixed(1)} · 2PM ${twoM.toFixed(1)}`);
-console.log('='.repeat(70));
-console.log(dusen ? `✗ ${dusen} satır bandın dışında` : '✓ kutu skor gerçek bantlarda');
-process.exit(dusen ? 1 : 0);
+console.log('');
+console.log(`KUTU SKOR — ${mac} maç · ${T.n} takım-maç · tohum ${TOHUM} · pozisyon/takım ${pozTakim.toFixed(1)} (ham ${(hamPoz / Math.max(1, mac) / 2).toFixed(1)})`);
+const gecti = G.bas(H, 'KUTU SKOR GERÇEKÇİLİĞİ — gerçek bantlara karşı');
+console.log('  bilgi: skor farkı (denk kadro) ort ' + _fOrt.toFixed(1) + ' · mutlak farkın std ' + _fSd.toFixed(1) +
+  ' → beraberliğin aritmetik tavanı %' + _tavan.toFixed(1) +
+  (_gercekSd ? ' · gerçek (ölçekli) ' + _gercekSd.deger : ''));
+console.log(`  bilgi: 2PA ${twoA.toFixed(1)} · 2PM ${twoM.toFixed(1)}`);
+console.log(gecti ? '✓ kutu skor gerçek bantlarda' : '✗ kutu skor bandın dışında');
+process.exit(gecti ? 0 : 1);

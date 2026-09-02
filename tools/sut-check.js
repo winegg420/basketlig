@@ -137,7 +137,12 @@ function kayit(kod, ad, gecti, detay) {
     const t = x.s.sut, z = x.s.zone, u = (x.s.kind === '3');
     if (u) return t !== 'uc';
     if (t === 'uc') return true;
-    if (t === 'jumper') return z !== 'midrange';
+    /* FAZ 39: JUMPER BOYADA DA MEŞRUDUR. Gerçek şut verisinde raketin dip yarısından
+       atılan ayak üstü şutlar 'Jump Shot' etiketlidir ve azımsanacak sayıda değildir;
+       motor eskiden boyadaki HER bitirişi turnikeye yazıyordu (ölçüldü %31,5 · gerçek
+       %24,7) ve gerçek jumper payını (%15,2) yakalayamıyordu. Yasak olan tek şey
+       jumper'ın ÇEMBER dibinde ya da üçlük yayında çıkmasıdır. */
+    if (t === 'jumper') return (z !== 'midrange' && z !== 'paint');
     if (yakinTipler.indexOf(t) >= 0) return z === 'midrange';
     return true;
   });

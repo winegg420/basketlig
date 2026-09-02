@@ -6113,3 +6113,268 @@ bitişi koreografiyi kesiyor. Ayrı bir iş.
 
 `sim-node --n=1000 --seed=42`: 81,0 - 76,8 · olay/maç 231 · hata 0 · deterministik ·
 `G` değişmedi.
+
+---
+
+## 39. oturum — FAZ 39: GERÇEK VERİYLE KALİBRASYON (2 Eylül 2026)
+
+Brif: `KALIBRASYON-FAZ39.md`. Tezi tek cümleyle: *FAZ 34-38 arasındaki beş turda
+kapılar hep yeşile döndü ama oyun "basketbola benzemiyor" kaldı; çünkü kod değil
+**hedefin kendisi** yanlıştı — bütün "gerçek: %14-18" bantları brifi yazan taraf
+TAHMİN etmişti.* Bu oturumda eşikler ölçülmüş gerçek maç verisinden çıkarıldı.
+
+### §1 — Uzatma oranı: brifin teşhisi ÖLÇÜMLE DOĞRULANMADI
+
+Brif "uzatma %0 → %17,5 çıktı, %4-8'e geri çek" diyordu ve bunu paketin geri kalanından
+önce yapmamı istiyordu. Ölçtüm — **HEAD'de zaten banttaydı**:
+
+| Örneklem | Uzatma oranı |
+|---|---|
+| 400 maç, denk kadro | **%7,5** |
+| 600 maç, 6 kadroluk havuz | **%5,8** |
+| `kutu-check` kendi kapısı (240 maç) | **%4,8** |
+| 40 maçlık 20 ayrı pencere | **%0,0 – %15,0** |
+
+Yani %17,5, 40 maçlık bir örneklemin gürültü zarfının içindedir (aynı kodda 40 maçta
+%0 da %15 de çıkıyor). Brifin ölçtüğü "önce %0 sonra %17,5" ikilisi de tek bir davranış
+değişikliğinin değil, iki farklı çekilişin sonucudur. **Değişiklik yapılmadı** — kapıyı
+yeşile döndürmek için var olmayan bir kusuru "düzeltmek" tam olarak bu paketin
+engellemeye çalıştığı şey. (Sonradan gerçek veriyle de doğrulandı: NBA'de 3.690 maçta
+uzatma oranı **%5,37**.)
+
+### §2 — Canlı sahne: iki hipotezden biri doğru çıktı
+
+**§2.1 koreografi kesiliyor mu — HAYIR.** `js/main.js` oynatım gecikmesi
+`delay = max(simMs, dtMs)`; koreografi süresi bir ALT SINIRDIR, pozisyonun maç saati
+kısalsa bile animasyon kesilmez. Yapısal olarak imkânsız.
+
+**§2.2 yedi yeni olayın sahnesi var mı — HAYIR, ve maç başına 14,4 olayı etkiliyordu.**
+Ölçüm (120 maç): `mola` 5,61 · `tac` 2,64 · `hucumFaulu` 2,42 · `ihlal` 1,87 ·
+`ihlal24` 1,74 · `teknik` 0,13 · `sakatlikMac` 0,07 · `sportmenlikDisi` 0,03.
+`teknik`/`sportmenlikDisi` FAZ 38 eki-3'te serbest atış dalına bağlanmıştı; **kalan
+14,4 olayın tamamı** `movePlayersForEvent`'in sondaki genel dalına düşüyordu ve o dal
+topu **hücumda sanılan takımda** tutup çevresinde paslıyordu. Yani her maçta ~14 kez
+düdük çalıyor, oyun durmuyor ve top yanlış takımda kalıyordu.
+
+Yapılanlar (`js/match-engine.js`):
+- **Kural ihlali dalı** (`tac` · `ihlal` · `hucumFaulu` · `ihlal24`): düdük → ölü top →
+  herkes yürür → top KAZANAN takıma geçer → kenardan sokma. Taç yan çizgiden, pota
+  dibindeki ihlal dip çizgiden.
+- **Mola dalı**: iki takım kendi kulübesinde toplanır, top hakemde, sonra sahaya döner.
+  ⚠ İlk kurguda jetonlar kulübede BIRAKILIYORDU; molayı bir serbest atış izlediğinde
+  on oyuncu da çizgiye 400 px uzaktan başlıyor, `_ftHazir`'ın +2,5 sn tavanı yetmiyor
+  ve atış boş sahada patlıyordu (`sahne-check` en kötü karesi 3/10 → **0/10**).
+  Koreografi iki adımlı yapıldı: toplanma (0,05 sn) → dizilime dönüş (1,30 sn).
+- `sakatlikMac` faul dalına bağlandı (ölü top + değişiklik).
+- Olaylara **`kazananIsUser`** alanı eklendi — sahne sözleşmesi. Saf veri, rastgelelik
+  tüketmez; `band.js` hash'i bu adımda DEĞİŞMEDİ (`46a19413380a8f07` korundu).
+
+### §3.1-3.3 — Veri hattı
+
+Yeni klasör `tools/gercek-veri/`:
+- **`indir.js`** — `shufinskiy/nba_data` (Apache-2.0), 3 sezon (2022/23, 2023/24,
+  2024/25) × 3 veri kümesi (`pbpstats` · `nbastats` · `shotdetail`), 784 MB açılmış CSV.
+  `_ham/` `.gitignore`'da; **ham veri commit EDİLMEDİ**.
+  ⚠ GNU tar (Git Bash) `C:\...` yolunu uzak sunucu sanıyor ("Cannot connect to C") —
+  arşiv kendi klasöründen göreceli adla açılıyor.
+- **`_csv.js`** — akışlı CSV okuyucu. `cut -d,` / `split(',')` bu veride ÇALIŞMAZ:
+  `pbpstats`in EVENTS sütunu tırnak içinde hem virgül hem SATIR SONU taşıyor; ilk
+  denemede STARTTYPE sütunu %53 boş göründü.
+- **`cikar.js`** — 3.690 maç · 729.559 pozisyon · 655.446 şut · 1.716.435 olay ·
+  90 takım-sezon → **`tools/_lib/gercek-bantlar.json`** (commit edilir).
+
+Ölçerek bulunan üç incelik:
+1. **`pbpstats` satırları pozisyon başına TEKRAR EDER** (pozisyon alanları her olay
+   satırında aynı, yalnız DESCRIPTION/URL değişir). Ham 392,8 satır/maç — gerçeğin iki
+   katı. Tekillenmiş: 198,2 pozisyon/maç = takım başına 99,1 (NBA yayımlanmış pace ~99).
+2. **Takım olayları oyuncuya değil TAKIMA yazılır** (`PLAYER1_TEAM_ID` boş, TEAM_ID
+   `PLAYER1_ID` alanında, `PERSON1TYPE` 2/3). Bu ayrım yapılmadan **şut saati ihlali
+   sıfır çıkıyordu**.
+3. **Üç dosya üç ayrı takım anahtarı kullanıyor** (TEAM_ID / kısaltma / tam ad).
+   Birleştirilmeden FTA/FGA gibi çapraz oranlar ve pozisyon başına ölçütler kurulamıyor.
+
+**Ölçekleme (§3.2).** Oran ve dağılım ölçütleri doğrudan taşınır; sayım ölçütleri
+40/48 = 0,8333 ile çarpılır. Ama ölçüm şunu gösterdi: **süre ölçeklemesi VERİMİ
+düzeltmez.** Ölçeklenmiş NBA takımı 40 dakikada **95,2 sayı** atar; gerçek FIBA maçı
+~80'dir. Fark tempodan değil pozisyon başına verimden gelir (NBA 1,155 sayı/pozisyon).
+Bu yüzden JSON'a **`pozisyonBasina` bloğu** eklendi — saf oran, süreden ve tempodan
+bağımsız, FIBA'ya doğrudan taşınabilir. Kapılar artık ONU okuyor, ham sayımı değil.
+
+**Bant genişliği kararı:** brif "±1 standart sapma" diyor ama hangi dağılımın olduğunu
+söylemiyor. Tek maçların sapması bir LİG ORTALAMASINI yargılamak için çok geniştir
+(kapılar 240 maçlık ortalama ölçer). Bant **takım-sezon** değerlerinden kuruldu:
+30 takım × 3 sezon = 90 gözlem, "gerçek takımlar birbirinden ne kadar farklı".
+
+**`null` kalan ölçütler** (uydurulmadı, kapı kurulmadı): `kutuOranlari.ORB` ve
+`kutuOranlari.DRB` — hücum/savunma ribaunt YÜZDESİ için savunma ribaundunun hangi
+pozisyona ait olduğu gerekiyor, `pbpstats` satırında o alan yok. Yerine pozisyon başına
+hücum ribaundu (0,129) çıkarıldı. `sutTipi`nin yedi sınıfının tamamı ACTION_TYPE
+metninden çıkarılabildi — orada `null` yok.
+
+### §3.4 — Kapılar JSON'dan okuyor
+
+Yeni ortak okuyucu **`tools/_lib/gercek-bant.js`** (`al` / `ham` / `kapi` / `bas`).
+Bağlananlar: `tempo-check` · `kutu-check` · `rotasyon-check` · `sut-cografya-check`.
+Her satır artık **ölçülen · gerçek · bant · kaynak dosya+alan · n** basıyor.
+
+Silinen tahmin eşikleri ve ölçülen gerçekleri:
+
+| Eski (tahmin) | Gerçek (ölçülen) |
+|---|---|
+| pozisyon süresi 0-4 sn: %1-2 | **%7,93** |
+| pozisyon süresi 25+ sn: %0-2 | **%8,50** |
+| 3PA/FGA: %33-38 | **%40,12** [36,1-44,1] |
+| yedeklerin sayı payı: %25-35 | **%36,55** |
+| oyuncu değişikliği (iki takım): 16-22 | **39,5** |
+| hızlı hücum üçlükle bitmesin (≤%20) | geçiş pozisyonlarının **%30,1'i** üçlükle biter |
+| şut bölgesi hedefleri (brif + motora ölçekleme) | doğrudan pay, ölçeklemeye gerek yok |
+
+⚠ **İKİ AYRI "POZİSYON" TANIMI VAR.** `pbpstats` bir pozisyonu top el değiştirene kadar
+sayar (hücum ribaundu / savuşturulan top kaybı / savunma faulü pozisyonu UZATIR);
+motorun döngüsü her yeni şut denemesini ayrı `pozIx` yapar. Ölçüldü: aynı 60 maçta ham
+176,4 pozisyon/maç, birleştirilmiş 144,5 — gerçek değer (164,9) tam ikisinin arasında.
+Ham sayımı gerçekle kıyaslamak kapının kendi tanımını ölçmesidir. `tempo-check` ve
+`kutu-check` artık **birleştirerek** sayıyor. Aynı ayrım "geçiş" için de var: gerçek
+veride geçiş = pozisyonun canlı topla başlaması (%40,05); motorun `fbPoz` bayrağı bundan
+DARDIR. Motora saf veri damgası **`transPoz`** eklendi ve kapı onunla kuruldu.
+
+### §3.5 — Motor gerçek bantlara ayarlandı
+
+**1) FIBA 14 SANİYE KURALI EKSİKTİ (en büyük yapısal kusur).** Top el değiştirmediyse
+(hücum ribaundu, savuşturulan top kaybı, savunma faulü) şut saati 24'e değil 14'e döner
+ve ikinci şans pozisyonu KISADIR. Motorda bu kural yoktu; topu koruyan takım yepyeni
+bir 13-21 sn'lik set hücumu maliyeti ödüyordu. Sonuç: pozisyonlar gerçeğin bir buçuk
+katı uzuyor, 25+ sn payı **%14,7** (gerçek %8,5) ve 40 dakikaya daha az pozisyon
+sığıyordu. `pozTuru`'ya `devam` dalı eklendi (`posNext===_lastOff`).
+
+**2) BOYA YARIÇAP DEĞİL DİKDÖRTGENDİR.** `classifyZone` iki sayılık şutu potaya
+uzaklığa göre ayırıyordu (≤44 px çember, ≤112 px boya). Gerçek şut verisi boyayı ALANLA
+tanımlar: restricted area 1,25 m yarıçap, boya ise RAKETİN KENDİSİ (4,9 × 5,8 m).
+112 px = 3,79 m yarıçap raketin dip yarısını orta mesafeye yazıyordu (ölçüm: motor
+%15,6 orta mesafe, gerçek %11,0). Sınıflama ve `randShotXY` üretim bantları
+(10-35 / 38-99 / 106-187) gerçek tanıma oturtuldu. `rand()` çağrı sayısı değişmedi.
+
+**3) BOYADAN SIÇRAMA ŞUTU YOKTU.** Motor boyadaki her bitirişi turnikeye yazıyordu
+(%31,5 · gerçek %24,7) ve gerçek jumper payını (%15,2) yakalayamıyordu. `zone==='paint'`
+için %30 jumper dalı eklendi; kanca 0,16 → 0,26 (gerçek %2,93). Karar `pr` ile verilir.
+
+**4) ÜÇLÜK PAYI.** Taban 0,44 → 0,475 (ölçülen %35,7 → **%38,0**, gerçek %36,1-44,1).
+
+**5) POZİSYON SONUCU DAĞILIMI.** Pozisyonlar şut yerine top kaybı/faulle bitiyordu.
+`roll` eşikleri 0,700/0,7455 → **0,740/0,782**, faul–top kaybı ayrımı 0,40 → 0,35.
+
+**6) SERBEST ATIŞ İSABETİ.** Taban 0,55 → 0,58 (bot 0,72 → 0,755). Ölçülen %74,9 →
+**%77,9**, gerçek %78,1 [75,5-80,7].
+
+### ⚠ ÇÖZÜLMEYEN GERİLİM: NBA VERİSİ ↔ FIBA FORMATI
+
+Bu paketin en önemli bulgusu ve dürüstçe raporlanması gereken şey: **motor aynı anda
+NBA temposuna, NBA isabetine ve FIBA skoruna sahip olamaz.** Ölçüldü:
+
+- Gerçek bantların tamamı kovalandığında (tempo 165,9 pozisyon · sayı/pozisyon 1,15)
+  `band.js` kullanıcı ortalaması **96,2** oluyor, en yüksek skor 123.
+- Brif §1 skor bandını (**78-95**) bozmamayı kırmızı çizgi olarak yazıyor.
+
+Bu yüzden tempo bilerek gerçeğin **%6 altında** bırakıldı (154,5 · gerçek 164,9) ve
+pozisyon sonucu dağılımı tam gerçek orana çekilmedi. Sonuç: kullanıcı ortalaması
+**89,9** (81,3 idi), skor bandı korunuyor. Kalan açık `tempo-check` ve `kutu-check`
+çıktısında ölçülü olarak duruyor — gizlenmedi. `gercek-bantlar.json` içindeki
+`pozisyonSayisi.not` alanı da bunu belgeler: NBA'nin süreyle ölçeklenmiş temposu
+40 dakikalık maçın ÜST sınırıdır, yayımlanmış FIBA tempoları (~72-78) daha düşüktür ve
+bu ek fark **ölçülmedi, uydurulmadı**.
+
+Skoru 80'e geri çekmek isteyen tek yeri bilir: `pozTuru` içindeki dört süre bandı
+(`devam` / `fb` / `fromTrans` / set). Bantları 1 sn uzatmak ≈ 4-5 sayı düşürür ve
+tempo kapısını o kadar uzaklaştırır. Bu bir DENGE tercihidir, kusur değil.
+
+### Ölçüm araçlarında düzeltilen iki kapı kusuru
+
+- **`yetenek-check` ribaunt eşiği ELLE YAZILIYDI** (13). Brifin ölçütü "20+ ribaunt"
+  gerçek basketbolun hacmine (takım başına ~43,7) göredir; motorun hacmi FAZ 39 tempo
+  düzeltmesiyle 29 → 37,1'e çıkınca sabit eşik kapıyı **davranış değişmeden** düşürdü.
+  Eşik artık `gercek-bantlar.json`'dan oranla türetiliyor. Yuvarlama değil **taban**
+  alınıyor: 16,98 → 17 ölçümde %0,25 (bandın altı), 16 → %0,40 (bandın içi) — eşik bir
+  SAYIM sınırıdır, yukarı yuvarlamak bandı bir kova kaydırır.
+- **`sut-check` F26-A2** "jumper yalnız orta mesafede" diyordu. Gerçek veride boyadan
+  atılan ayak üstü şutlar 'Jump Shot' etiketlidir; kural jumper'ın yalnız ÇEMBER
+  dibinde ve üçlük yayında yasak olması şeklinde düzeltildi.
+
+### Referans değerler (yenilendi — bilerek)
+
+- `band.js`: `46a19413380a8f07` → **`76351f00455b3a5e`**
+- `measure.js`: `df5e0c6fa1630b6c` → **`0132d9fff6e778d0`** (kanonik maç 84-81 → 82-98)
+- `sim-node --n=1000 --seed=42`: 88,5-80,2 · olay/maç 203 → **91,3 - 85,4 · olay/maç 248**
+- Sürüm **74 → 75**.
+
+### Yapılmayanlar (dürüst liste)
+
+- **§3.3.3 / §3.6 — tracking verisi ve sahne katmanının ona oturtulması YAPILMADI.**
+  Brif bunları 6-7. sıraya koyup "ayrı bir oturum olabilir" diyor. `gercek-hareket.json`
+  üretilmedi; `sahne-check` · `hareket-check` · `spacing-check` · `realism-check`
+  eşikleri hâlâ elle yazılı ve gerçeklik iddiası taşımıyor.
+- **Tip-in payı** %0,76 (gerçek %2,55). Sebep ölçüldü: motorda ikinci şans şutu
+  `shooterHint` üzerinden gelir ve **anlatım bayrağına** (`_rebAnlat`) bağlıdır —
+  mekanik bir sunum kararına bağlanmış durumda. Düzeltmek sonuç matematiğine dokunur,
+  ayrı ve ölçülü bir adım gerektirir.
+- **Oyuncu değişikliği** 20,3 (gerçek 39,5). Bu ölçüt kural farkından en çok etkilenen
+  kalem: NBA sınırsız değişiklik hakkına ve daha çok ölü topa sahip. JSON'da `not`
+  alanıyla belgelendi.
+- **Ribaunt / top kaybı / çalma / faul pozisyon başına** hâlâ gerçeğin üstünde; §3.5-5
+  bunları gerçek orana çekiyordu ama skor bandı kırmızı çizgisi yüzünden yarı yolda
+  bırakıldı (yukarıdaki gerilim maddesi).
+
+### Önce / gerçek / sonra (ölçülen)
+
+| Ölçüt | FAZ 38 sonu | **Gerçek** (3 sezon NBA) | FAZ 39 sonu | Kapı |
+|---|---|---|---|---|
+| pozisyon/maç (pbpstats tanımı) | 144,5 | **164,9** [161,8-167,9] | 155,1 | ✗ |
+| ortalama pozisyon süresi | 16,85 sn | **14,57** [14,33-14,81] | 15,56 sn | ✗ |
+| 25+ sn pozisyon payı | %14,73 | **%8,50** [7,73-9,28] | %7,95 | bilgi |
+| 0-4 sn pozisyon payı | %0,91 | **%7,93** [7,17-8,69] | %3,08 | bilgi |
+| geçiş pozisyonu ort. süresi | 13,11 sn | **10,45** [10,16-10,74] | 11,86 sn | ✗ |
+| set hücumu ort. süresi | 19,68 sn | **17,32** [17,04-17,60] | 18,46 sn | ✗ |
+| FG% | %47,2 | **%47,24** [45,57-48,90] | %46,76 | ✓ |
+| 2P% | %53,2 | **%54,64** [52,62-56,66] | %53,59 | ✓ |
+| 3P% | %36,2 | **%36,19** [34,62-37,77] | %35,71 | ✓ |
+| FT% | %76,5 | **%78,13** [75,53-80,74] | %77,92 | ✓ |
+| 3PA / FGA | %35,4 | **%40,12** [36,13-44,11] | %38,20 | ✓ |
+| FTA / FGA | 0,306 | **0,251** [0,229-0,274] | 0,269 | ✓ |
+| asist / isabetli şut | 0,623 | **0,624** [0,587-0,661] | 0,621 | ✓ |
+| **sayı / pozisyon** | 0,90 | **1,155** [1,121-1,189] | 1,13 | ✓ |
+| FGA / pozisyon | 0,691 | **0,898** [0,879-0,917] | 0,883 | ✓ |
+| FTA / pozisyon | 0,211 | **0,226** [0,208-0,243] | 0,238 | ✓ |
+| blok / pozisyon | 0,045 | **0,049** [0,042-0,057] | 0,048 | ✓ |
+| ribaunt / pozisyon | 0,468 | **0,442** [0,423-0,460] | 0,482 | ✗ |
+| top kaybı / pozisyon | 0,185 | **0,142** [0,130-0,153] | 0,170 | ✗ |
+| top çalma / pozisyon | 0,107 | **0,077** [0,069-0,086] | 0,098 | ✗ |
+| faul / pozisyon | 0,252 | **0,198** [0,184-0,213] | 0,218 | ✗ |
+| bölge: çember | %27,3 | **%29,11** [25,96-32,27] | %27,3 | ✓ |
+| bölge: boya | %20,5 | **%19,82** [17,19-22,46] | %21,3 | ✓ |
+| bölge: orta mesafe | %15,6 | **%10,96** [8,13-13,79] | %13,4 | ✓ |
+| bölge: köşe üçlüğü | %9,7 | **%10,19** [8,73-11,65] | %9,6 | ✓ |
+| bölge: kanat+tepe üçlüğü | %27,0 | **%29,70** [26,30-33,10] | %28,4 | ✓ |
+| tip: turnike | %31,5 | **%24,74** [22,06-27,42] | %26,3 | ✓ |
+| tip: jumper (2 sayılık) | %13,4 | **%15,21** [11,31-19,11] | %15,9 | ✓ |
+| tip: kanca | %1,8 | **%2,93** [1,79-4,08] | %2,9 | ✓ |
+| tip: tip-in | %0,4 | **%2,55** [2,05-3,05] | %0,8 | ✗ |
+| yedeklerin sayı payı | ~%19 | **%36,55** [30,85-42,24] | %38,9 | ✓ |
+| en skorer oyuncunun payı | — | **%24,80** [22,76-26,84] | %26,3 | ✓ |
+| kutu skorda görünen oyuncu | — | **10,65** [10,15-11,15] | 10,0 | ✗ |
+| oyuncu değişikliği (iki takım) | 19,5 | **39,48** [34,80-44,14] | 20,3 | ✗ |
+| uzatmaya giden maç | %4,8 | **%5,37** [4,80-6,42] | %4,8 | ~ |
+| `band.js` kullanıcı ortalaması | 81,3 | (ölçekli NBA 95,2) | **89,9** | — |
+
+Kapı özeti: `kutu-check` 12/16 · `sut-cografya-check` 12/13 · `rotasyon-check` 2/4 ·
+`tempo-check` 0/5 (ama beş satırın hepsi öncekinden gerçeğe yakın).
+Geçen denetimler: `sim-node` (1000 maç, determinizm ✓, `G` değişmedi) · `visual-check`
+(masaüstü+mobil, 0 hata) · `bozukdeger-check` · `anlatim-check` 31/31 ·
+`yetenek-check` 30/30 · `sut-check` 14/14 · `sunum-check` · `realism-check` ·
+`box-band` · `season-loop --runs=3` 6/6 · `lig-check` · `milliyet-check` ·
+`turkek-check` · `bicim-check` · `schema-check` · `m20-check` · `faz11-check` ·
+`surum-check`. `sahne-check` 5/8 (HEAD'de 6/8; ayrıntı aşağıda).
+
+`sahne-check` durumu: serbest atış dizilişi **8,43 → 9,32 iyileşti** (mola koreografisi
+sayesinde), buna karşılık "orta çizgi geçişi / pozisyon değişimi" %97 → %83 düştü.
+Sebep ölçüldü: ihlal olayları artık pozisyonu GERÇEKTEN el değiştiriyor, dolayısıyla
+aracın saydığı "pozisyon değişimi" 35 → 40'a çıktı; payda büyürken pay aynı kaldı.
+Bu, sahne katmanının gerçek hareket verisine oturtulmasını bekleyen bir kalem (§3.6).

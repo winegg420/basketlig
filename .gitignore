@@ -44,3 +44,6 @@ tools/_e/
 
 # --- FAZ 23: yuz tespiti modeli (yeniden indirilebilir) ---
 tools/models/
+
+# --- FAZ 39: gercek mac verisi (ham NBA PBP / tracking) — turetilen JSON commit edilir, ham veri EDILMEZ ---
+tools/gercek-veri/_ham/

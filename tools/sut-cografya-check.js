@@ -17,6 +17,7 @@
  * Kullanım: node tools/sut-cografya-check.js [--mac=15]
  */
 const { ortamKur, kadroUret } = require('./_lib/anlatim-ornek.js');
+const G = require('./_lib/gercek-bant.js');
 
 const arg = (ad, v) => { const m = process.argv.find(a => a.startsWith('--' + ad + '=')); return m ? Number(m.split('=')[1]) : v; };
 const MAC = arg('mac', 15);
@@ -51,59 +52,60 @@ for (let i = 0; i < MAC; i++) {
 const pct = n => 100 * (n || 0) / sut;
 const f = n => pct(n).toFixed(1) + '%';
 
-/* İki sayılık payı: motorun üçlük payı sabit olduğu için bölge/tip hedefleri buna ölçeklenir. */
-const ikiPay = 100 - pct(say['t:uc']);
-const BRIF_IKI = 25 + 6 + 9 + 16 + 2.25 + 5;      /* turnike+smaç+floater+jumper+kanca+tipin */
-const K = ikiPay / BRIF_IKI;                       /* ölçek katsayısı */
-const bant = (a, b) => [a * K, b * K];
-
+/* ── FAZ 39 §3.4: EŞİKLER GERÇEK VERİDEN ────────────────────────────────────────
+   Eski sürüm hedefleri BRİFTEN alıyor, sonra motorun üçlük payına ÖLÇEKLİYORDU
+   (K / Ku katsayıları). O ölçekleme tahmini bir tabloyu motorun kendi davranışına
+   uydurma girişimiydi ve kapıyı gerçeğe değil MOTORA bağlıyordu. Artık paylar
+   3 sezonluk NBA şut detayından (655.446 şut · 90 takım-sezon) doğrudan okunuyor;
+   toplamları zaten %100, ölçeklemeye gerek yok.
+   ⚠ NBA bölge sözlüğünde 'Above the Break 3' KANAT ve TEPE üçlüğünü BİRLİKTE sayar;
+     motorun ayrı tuttuğu wing3 + top3 bu yüzden TOPLANARAK karşılaştırılır. */
 const H = [];
-const ok = (ad, deger, alt, ust, not) => H.push({ ad, deger, alt, ust, not });
-/* Bölge (iki sayılık hedefler ölçeklenir, üçlük bölgeleri üçlük payına ölçeklenir) */
-const ucPay = pct(say['t:uc']);
-const Ku = ucPay / (9 + 14 + 12);
-ok('bölge: rim', pct(say['z:rim']), 26 * K, 30 * K);
-ok('bölge: boya (rim dışı)', pct(say['z:paint']), 18 * K, 22 * K);
-ok('bölge: orta mesafe', pct(say['z:midrange']), 14 * K, 18 * K);
-ok('bölge: köşe üçlüğü', pct(say['z:corner3']), 8 * Ku, 10 * Ku);
-ok('bölge: kanat üçlüğü', pct(say['z:wing3']), 13 * Ku, 15 * Ku);
-ok('bölge: tepe üçlüğü', pct(say['z:top3']), 11 * Ku, 13 * Ku);
-/* Tip */
-/* Tip-in bütçesi kilitli (hücum ribaundu sıklığı sonuç matematiğinde) ve gerçekleşmeyen
-   pay TURNİKEYE düşüyor — bant o kadar yukarı kaydırılır, yoksa kapı erişilemez bir sayıyı
-   savunur (CLAUDE.md: 'kapı eşiği TABLODAN türetilmeli, elle yazılmamalı'). */
-const tipinAcik = Math.max(0, 5 * K - pct(say['t:tipin']));
-ok('tip: turnike', pct(say['t:turnike']), 22 * K + tipinAcik, 28 * K + tipinAcik, 'tip-in açığı (' + tipinAcik.toFixed(1) + ' puan) eklendi');
-ok('tip: smaç', pct(say['t:smac']), 5 * K, 7 * K);
-ok('tip: floater', pct(say['t:floater']), 8 * K, 10 * K);
-ok('tip: jumper (orta mesafe)', pct(say['t:jumper']), 14 * K, 18 * K);
-ok('tip: kanca', pct(say['t:kanca']), 1.5 * K, 3 * K);
-/* Hızlı hücum */
-ok('hızlı hücum payı', pct(fb), 14, 18);
-ok('hızlı hücumun üçlükle bitişi', fb ? 100 * fb3 / fb : 0, 0, 20);
-/* §10: pozisyon kilidi — bozulmayı yakalar, bir şey "düzeltmez". */
+G.kapi(H, 'bölge: çember (rim)', pct(say['z:rim']), 'sutBolgesi.cember');
+G.kapi(H, 'bölge: boya (çember dışı)', pct(say['z:paint']), 'sutBolgesi.boya');
+G.kapi(H, 'bölge: orta mesafe', pct(say['z:midrange']), 'sutBolgesi.ortaMesafe');
+G.kapi(H, 'bölge: köşe üçlüğü', pct(say['z:corner3']), 'sutBolgesi.kose3');
+G.kapi(H, 'bölge: kanat + tepe üçlüğü', pct(say['z:wing3']) + pct(say['z:top3']), 'sutBolgesi.kanatVeTepe3');
+/* Tip — gerçek veride ACTION_TYPE metninden sınıflandırıldı (Dunk / Layup / Float /
+   Hook / Tip / Jump). 'jumper' burada YALNIZ iki sayılık jump shot'tır. */
+G.kapi(H, 'tip: turnike', pct(say['t:turnike']), 'sutTipi.turnike');
+G.kapi(H, 'tip: smaç', pct(say['t:smac']), 'sutTipi.smac');
+G.kapi(H, 'tip: floater', pct(say['t:floater']), 'sutTipi.floater');
+G.kapi(H, 'tip: jumper (2 sayılık)', pct(say['t:jumper']), 'sutTipi.jumper');
+G.kapi(H, 'tip: kanca', pct(say['t:kanca']), 'sutTipi.kanca');
+G.kapi(H, 'tip: tip-in', pct(say['t:tipin']), 'sutTipi.tipin');
+G.kapi(H, 'tip: üçlük', pct(say['t:uc']), 'sutTipi.uc');
+/* Hızlı hücum: motorun `fb` bayrağı gerçek verinin GEÇİŞ tanımından dardır
+   (tempo-check'teki aynı ayrım) — kapı orada, burada bilgi. */
+H.push({ ad: 'hızlı hücum payı (motorun dar tanımı)', deger: pct(fb), alt: null, ust: null,
+  neden: 'gerçek karşılığı GEÇİŞ payıdır; tempo-check ölçer' });
+/* Eski kapı 'hızlı hücum üçlükle bitmesin, ≤%20' diyordu — bu ELLE YAZILMIŞ bir
+   tahmindi ve gerçek veri TERSİNİ söylüyor: geçiş pozisyonlarının %30,1'i üçlükle
+   bitiyor (köşe %8,28 + kanat/tepe %21,85). Bant (±sd) çıkarılamadığı için kapı
+   kurulmuyor, gerçek değer bilgi olarak basılıyor (§3.4). */
+{ const bb = G.ham('gecisHucumu.bitisBolgesi.gecis');
+  const ucGercek = bb ? (bb.paylar.kose3 + bb.paylar.kanatVeTepe3) : null;
+  H.push({ ad: 'hızlı hücumun üçlükle bitişi', deger: fb ? 100 * fb3 / fb : 0,
+    alt: null, ust: null, gercek: ucGercek,
+    neden: 'gerçek geçiş bitiş bölgesinden okunur; takım-sezon bandı yok' }); }
+/* §10: pozisyon kilidi — GERÇEKLİK bandı değil, BOZULMA dedektörü. Gerçek veride
+   oyuncu pozisyonu (PG/SG/SF/PF/C) yok; elle yazılı kalmaları bilinçlidir ve
+   gerçekçilik iddiası TAŞIMAZLAR. */
 const uT = Object.values(uc3Poz).reduce((a, b) => a + b, 0) || 1;
 const aT = Object.values(astPoz).reduce((a, b) => a + b, 0) || 1;
-ok('üçlüklerin C payı', 100 * (uc3Poz.C || 0) / uT, 0, 2);
-ok('üçlüklerin PF payı', 100 * (uc3Poz.PF || 0) / uT, 0, 14);
-ok('üçlüklerin PG+SG+SF payı', 100 * ((uc3Poz.PG || 0) + (uc3Poz.SG || 0) + (uc3Poz.SF || 0)) / uT, 85, 100);
-ok('asistlerin PG+SG payı', 100 * ((astPoz.PG || 0) + (astPoz.SG || 0)) / aT, 45, 100);
-ok('asistlerin C payı', 100 * (astPoz.C || 0) / aT, 0, 15);
+const kilit = (ad, deger, alt, ust) => H.push({ ad, deger, alt, ust, birim: '%' });
+kilit('üçlüklerin C payı [kilit]', 100 * (uc3Poz.C || 0) / uT, 0, 2);
+kilit('üçlüklerin PF payı [kilit]', 100 * (uc3Poz.PF || 0) / uT, 0, 14);
+kilit('üçlüklerin PG+SG+SF payı [kilit]', 100 * ((uc3Poz.PG || 0) + (uc3Poz.SG || 0) + (uc3Poz.SF || 0)) / uT, 85, 100);
+kilit('asistlerin PG+SG payı [kilit]', 100 * ((astPoz.PG || 0) + (astPoz.SG || 0)) / aT, 45, 100);
+kilit('asistlerin C payı [kilit]', 100 * (astPoz.C || 0) / aT, 0, 15);
 
-console.log('\n' + '='.repeat(74));
+console.log('');
 console.log(`ŞUT COĞRAFYASI VE TİP DAĞILIMI — ${MAC} maç · ${sut} şut`);
-console.log('='.repeat(74));
-console.log(`  üçlük DENEME payı ${f(say['t:uc'])} (sonuç matematiği — §1 gereği sabit) · iki sayılık pay ${ikiPay.toFixed(1)}% · ölçek ×${K.toFixed(2)}`);
-let dusen = 0;
-H.forEach(h => {
-  const gec = h.deger >= h.alt - 0.05 && h.deger <= h.ust + 0.05;
-  if (!gec) dusen++;
-  console.log('  ' + (gec ? '✓' : '✗') + ' ' + h.ad.padEnd(30) + (h.deger.toFixed(1) + '%').padStart(8) +
-    '   hedef %' + h.alt.toFixed(1) + ' - %' + h.ust.toFixed(1) + (h.not ? '  (' + h.not + ')' : ''));
-});
-console.log('\n  bilgi: üçlük pozisyon dağılımı ' + JSON.stringify(uc3Poz) + ' · asist ' + JSON.stringify(astPoz));
-console.log('  bilgi: tip-in %' + pct(say['t:tipin']).toFixed(1) +
-  ' — hücum ribaundu sıklığı sonuç matematiğindedir, sunumdan artırılamaz (§1).');
-console.log('='.repeat(74));
-console.log(dusen ? `✗ ${dusen} hedef düştü` : '✓ şut dağılımı hedef bantlarında');
-process.exit(dusen ? 1 : 0);
+const gecti = G.bas(H, 'ŞUT COĞRAFYASI — gerçek bantlara karşı');
+{ const bb = G.ham('gecisHucumu.bitisBolgesi.gecis'), bs = G.ham('gecisHucumu.bitisBolgesi.set');
+  if (bb) console.log('  bilgi: gerçek GEÇİŞ pozisyonu bitiş bölgesi ' + JSON.stringify(bb.paylar) + ' (n=' + bb.n + ')');
+  if (bs) console.log('  bilgi: gerçek SET pozisyonu bitiş bölgesi   ' + JSON.stringify(bs.paylar) + ' (n=' + bs.n + ')'); }
+console.log('  bilgi: üçlük pozisyon dağılımı ' + JSON.stringify(uc3Poz) + ' · asist ' + JSON.stringify(astPoz));
+console.log(gecti ? '✓ şut dağılımı gerçek bantlarda' : '✗ şut dağılımı bandın dışında');
+process.exit(gecti ? 0 : 1);

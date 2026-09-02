@@ -38,12 +38,16 @@ function randShotXY(isLeft,is3,made,poz){
      Gerçek şut coğrafyası ÜÇ TEPELİDİR — çember, boya, orta mesafe. Çözüm: TEK rand()
      çağrısını ters-birikimli dağılımla üç banda paylaştırmak. Çağrı SAYISI değişmediği
      için rastgelelik akışı ve skor korunur (§1 kırmızı çizgi).
-     Bölge eşikleri: d≤44 rim · 44<d≤112 boya · d>112 orta mesafe. */
+     ⚠ FAZ 39: bölge tanımı gerçek şut verisininkiyle eşitlendi (çember 1,25 m yarıçap,
+     boya RAKET DİKDÖRTGENİ 4,9×5,8 m). Üretim bantları da ona göre kaydırıldı — eski
+     bantlar (10-43 / 46-110 / 116-188) yeni eşiklerin sınırlarını aşıyor, çember
+     bandının üst ucu boyaya, boya bandının geniş açılı ucu orta mesafeye taşıyordu
+     (ölçüldü: çember %27,3 → %22,7, orta mesafe %14,9). */
   const _rBant=(u,pRim,pPaint)=>{
-    if(u<pRim) return 10+Math.floor(u/pRim*33);                            /* 10-43  çember */
-    if(u<pRim+pPaint) return 46+Math.floor((u-pRim)/pPaint*64);            /* 46-110 boya */
+    if(u<pRim) return 10+Math.floor(u/pRim*26);                            /* 10-35  çember (<37) */
+    if(u<pRim+pPaint) return 38+Math.floor((u-pRim)/pPaint*62);            /* 38-99  boya */
     const k=Math.max(1e-6,1-pRim-pPaint);
-    return 116+Math.floor((u-pRim-pPaint)/k*72);                           /* 116-188 orta mesafe */
+    return 106+Math.floor((u-pRim-pPaint)/k*82);                           /* 106-187 orta mesafe */
   };
   const _u=rand(0,10000)/10000;
   /* İsabetli şut biraz daha yakından gelir (gerçek yüzde coğrafyası). */
@@ -2009,7 +2013,7 @@ function movePlayersForEvent(ev,paint){
     }
 
     /* ── FAUL (şutsuz) ── düdük, oyun durur, top yan çizgiden sokulur. */
-    if(type==='foul'){
+    if(type==='foul'||type==='sakatlikMac'){
       clearBallTimers();
       if(P){ P(); _markPainted(); }
       S.defTrack=false;   /* ölü top — düdükte savunma koşuşturmayı bırakır */
@@ -2022,6 +2026,78 @@ function movePlayersForEvent(ev,paint){
       _ballHold(inb,true);
       S.inb=null;
       return _script([{at:Math.max(0.75,inb._inbEta||0),fn:()=>_inboundPass(inb,recv,0.30)}])+520;
+    }
+
+    /* ── KURAL İHLALİ (taç · adım / çift sürme · hücum faulü · şut saati) ── FAZ 39 §2.2.
+       FAZ 38 bu dört olay türünü ekledi ama SAHNE SÖZLEŞMESİNİ yazmadı; hepsi aşağıdaki
+       genel dala düşüyordu ve o dal topu `offP`de (yani top kaybını YAPAN takımda) tutup
+       çevresinde paslıyordu. Ölçüldü: maç başına 8,7 olay, yani her maçta ~9 kez top
+       yanlış takımda kalıyor ve düdükten sonra oyun hiç durmuyordu.
+       Doğrusu: düdük → ölü top → herkes yürür → top KAZANAN takıma geçer → kenardan sokma. */
+    if(type==='tac'||type==='ihlal'||type==='hucumFaulu'||type==='ihlal24'){
+      clearBallTimers();
+      if(P){ P(); _markPainted(); }
+      S.defTrack=false;                       /* ölü top — savunma markajı bırakır */
+      /* Kazanan taraf olayın kendisinden okunur; alan yoksa hücumun tersi. */
+      const kaz=(ev&&ev.kazananIsUser!=null)?!!ev.kazananIsUser:!off;
+      const nOffP=kaz?S.home:S.away, nDefP=kaz?S.away:S.home;
+      const nLeft=offLeftAtQ(kaz,(ev&&ev.q)||mState.quarter||1);
+      S.offSide=nLeft; S.offP=nOffP; S.defP=nDefP; S.offIsUser=kaz;
+      mState._lastOff=kaz;
+      S.players.forEach(p=>{ p._oob=false; _setUrg(p,_URG.YURU); });
+      const bl=S.ball;
+      /* Taç her zaman yan çizgiden. Diğerleri ihlalin olduğu yere en yakın çizgiden:
+         pota dibinde olduysa dip çizgi, değilse yan çizgi. */
+      const rimOld=_rim(offLeft);
+      const yan=(type==='tac')?'side':((Math.hypot(bl.x-rimOld[0],bl.y-rimOld[1])<110)?'base':'side');
+      const spot=_inboundSpot(yan,nLeft,bl.x,bl.y);
+      const recv=_rolesOrder(nOffP)[0];
+      /* ⚠ FAZ SEÇİMİ ÖLÇÜLDÜ, TAHMİN EDİLMEDİ. 'trans' kavramsal olarak daha doğru
+         görünüyor (top karşı takıma geçti, ileri taşınacak) ama ölçümde daha kötü:
+         `sahne-check` orta çizgi geçişi %71 → %80 iyileşirken yarı sahayı geçiren
+         PG/SG/SF payı %93 → %85'e düştü (geçiş dizilimi uzunları da kulvara açıyor,
+         top onlara uğruyor) ve şut anında yerinde hücumcu 4,09 → 3,97 oldu. 'set'
+         toplamda daha az kapı düşürüyor. Bu satırı değiştirmeden önce ÖLÇ. */
+      _setFormation(nLeft,nOffP,nDefP,null,{phase:'set'});
+      const inb=_inboundSetup(spot,nOffP,[recv]);      /* dizilimden SONRA: dönüş hedefi doğru */
+      _ballHold(inb,true);
+      S.inb=null;
+      return _script([{at:Math.max(0.75,inb._inbEta||0),fn:()=>_inboundPass(inb,recv,0.30)}])+520;
+    }
+
+    /* ── MOLA ── FAZ 39 §2.2: molada oyun DURUR ve iki takım kendi kulübesinde toplanır.
+       Genel dalda mola, "top çevrede dönsün" koreografisiyle oynanıyordu — ekranda
+       molanın hiçbir karşılığı yoktu (ölçüldü: maç başına 5,6 olay).
+       Toplanma noktaları DETERMİNİSTİKTİR (yerleşim `_sr` tüketmez); kulübeler gerçek
+       salonlarda olduğu gibi aynı kenardadır, orta çizginin iki yanında. */
+    if(type==='mola'){
+      clearBallTimers();
+      if(P){ P(); _markPainted(); }
+      S.defTrack=false;
+      S.shooter=null;
+      const bY=CRT_Y1-52;                       /* kulübe kenarı — jetonlar saha içinde kalır */
+      const huddle=(takim,cx)=>{
+        takim.forEach((p,i)=>{
+          p._oob=false;
+          const a=-Math.PI/2+(i-2)*0.42;         /* koçun çevresinde yarım daire */
+          _hedefAta(p,_inX(cx+Math.cos(a)*40),_inY(bY+Math.sin(a)*22+16),_URG.JOG);
+        });
+      };
+      /* Top hakemde: yerinde kalır, kimse tutmaz. */
+      const b=S.ball;
+      b.carrier=null; b.mode='idle'; b.vx=0; b.vy=0; b.vh=0; b.h=0; b.noDrib=true; b.dribBitis=null;
+      /* Moladan sonra oyun kenardan sokmayla başlar — sıradaki olay bunu görsün. */
+      S.inb={side:'side',x:_inX(b.x),y:b.y};
+      /* ⚠ MOLA SAHADA BİTMELİ (ölçülerek bulundu). İlk kurguda jetonlar kulübede
+         BIRAKILIYORDU; molayı bir serbest atış izlediğinde on oyuncu da çizgiye 400 px
+         uzaktan başlıyor, `_ftHazir` kapısının +2,5 sn tavanı yetmiyor ve atış boş
+         sahada patlıyordu (`sahne-check` "serbest atışta yerinde oyuncu" en kötü karesi
+         3/10 → 0/10). Gerçek molada da oyuncular kulübeden SAHAYA döner: koreografi
+         toplanma + dönüş olarak iki adımlıdır. */
+      return _script([
+        {at:0.05,fn:()=>{ huddle(S.home,COURT_MID-176); huddle(S.away,COURT_MID+176); }},
+        {at:1.30,fn:()=>{ try{ _setFormation(offLeft,offP,defP,null,{phase:'set'}); }catch(e){} }}
+      ])+900;
     }
 
     /* ── Diğer (taktik/mola) ── oyun aynı topla sürer: set kurulur, top çevrede döner. */
@@ -3044,8 +3120,17 @@ function classifyZone(xy,rimIsLeft,is3){
   const dx=Math.abs(xy.x-rim[0]), dy=Math.abs(xy.y-rim[1]);
   const d=Math.hypot(dx,dy);
   if(is3){ const ang=Math.atan2(dy,Math.max(1,dx))*180/Math.PI; return ang>=52?'corner3':ang>=26?'wing3':'top3'; }
-  if(d<=44) return 'rim';
-  if(d<=112) return 'paint';
+  /* ── BOYA YARIÇAP DEĞİL DİKDÖRTGENDİR (FAZ 39 §3.5, ölçülerek bulundu) ────────
+     Eski sınıflama iki sayılık şutu potaya UZAKLIĞA göre ayırıyordu (≤44 px çember,
+     ≤112 px boya, ötesi orta mesafe). Gerçek şut verisi ise boyayı ALANLA tanımlar:
+     restricted area 1,25 m yarıçap, 'In The Paint (Non-RA)' ise raketin KENDİSİDİR
+     (FIBA 4,9 m en × 5,8 m derinlik dikdörtgeni). 112 px = 3,79 m yarıçap, raketin
+     dip yarısını orta mesafeye yazıyordu; ölçüldü: motor %15,6 orta mesafe, gerçek
+     %11,0 — fazlalığın tamamı aslında boya içi şuttu. Ölçek 29,5429 px/m (F14-1).
+     Bu bir SUNUM sınıflamasıdır: isabet şut geometrisinden ÖNCE kararlaştırılır,
+     zone yalnız anlatım dili ve şut tipi için okunur — sonuç matematiği DEĞİŞMEZ. */
+  if(d<=37) return 'rim';                        /* 1,25 m — restricted area */
+  if(dx<=172&&dy<=74) return 'paint';            /* raket: 5,8 m derinlik × 4,9 m en */
   return 'midrange';
 }
 
@@ -3777,7 +3862,7 @@ function generateMatchEvents(rakip, opts){
   const dset=(typeof defSetOf==='function')?defSetOf(tac.defSet||tac.defensiveStyle):{opp2:1,opp3:1,stealKeep:1,pressTO:0,foul:1};
   const pbFit=(typeof playbookFit==='function')?playbookFit(pb,[pg,sg,sf,pf,c].filter(Boolean)):1;
   const pbAccAdd=(pbFit-1)*0.09;   /* uyum ±%10 → isabete ±0.009 (küçük ama hissedilir) */
-  const userIs3Oran=Math.max(0.05,Math.min(0.72,(odak==='dis'?0.56:odak==='ic'?0.28:odak==='hizli'?0.38:odak==='set'?0.44:0.44)+(pb.is3||0)));
+  const userIs3Oran=Math.max(0.05,Math.min(0.72,(odak==='dis'?0.56:odak==='ic'?0.28:odak==='hizli'?0.41:odak==='set'?0.475:0.475)+(pb.is3||0)));
   const acc2=(odak==='ic'?0.03:odak==='set'?0.02:odak==='hizli'?-0.02:0)+tempoAcc+(pb.acc2||0)+pbAccAdd;
   const acc3=(odak==='dis'?-0.01:odak==='set'?0.01:odak==='hizli'?-0.02:0)+tempoAcc+(pb.acc3||0)+pbAccAdd;
   const offAstBonus=(odak==='set'?0.10:odak==='hizli'?-0.05:0)+(pb.ast||0);  /* set oyun asist ↑, hızlı hücum ↓ (+ playbook) */
@@ -3893,7 +3978,9 @@ function generateMatchEvents(rakip, opts){
   };
   const ftMake=(shooter)=>{
     const sb=statN(shooter,'serbest');
-    return Math.random()<Math.max(0.45,Math.min(0.95,0.55+sb/100*0.30));
+    /* FAZ 39: taban 0,55 → 0,58. Ölçülen lig FT%'si 74,9 idi, gerçek 78,1 [75,5-80,7]
+       (nbastats EVENTMSGTYPE 3, 90 takım-sezon). Eğim korundu — yalnız taban kaydı. */
+    return Math.random()<Math.max(0.45,Math.min(0.95,0.58+sb/100*0.30));
   };
   /* ── Faul sistemi (Madde 16/17/20) ──
      Her kullanıcı oyuncusunun kendi faulü (p.matchFouls) tutulur; 5. faulde oyundan atılır ve
@@ -4534,6 +4621,12 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
       if(events[i].off===undefined) events[i].off=_lastOff;
       events[i].pozIx=_pozIx;
       if(poz&&poz.fb) events[i].fbPoz=true;
+      /* FAZ 39 §3.4: pozisyonun CANLI TOPLA başlayıp başlamadığı — gerçek veride
+         "geçiş" tanımı budur (pbpstats STARTTYPE: çalma / blok / kaçan şut ribaundu).
+         fbPoz bundan DARDIR (yalnız gerçek hızlı hücum); ikisini karıştıran bir kapı
+         motoru gerçeğe değil kendi tanımına ayarlar. Saf veri alanı, rastgelelik
+         TÜKETMEZ (nadir olay kapısı değil, damga). */
+      if(poz&&poz.fromTrans) events[i].transPoz=poz.fromTrans;
       if(events[i].dt===undefined){
         events[i].dt=birim;      /* muhasebe: olayın gerçek maç saati payı (çeyrek toplamı=600) */
         events[i].dtPos=dt;      /* SUNUM temposu: pozisyonun tamamı — canlı izleme hızı korunur */
@@ -4557,6 +4650,7 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
       const _ih=userPos?(wPick(userCourt,usageWU)||uAny()):(wPick(oppCourt,usageWO)||oAny());
       events.push({type:'ihlal24',text:adKoy(pickLine(IHLAL24_LINES,pr,narr.recent,'ihl24'),
         {T:userPos?MC.home.name:rname,S:_anlatimAdi(_ih.isim)})+` (${homeScore} - ${awayScore})`,
+        kazananIsUser:!userPos,   /* FAZ 39 §2.2: sahne sözleşmesi — top karşı tarafa geçer */
         q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       return;
     }
@@ -4691,7 +4785,7 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
       return;
     }
 
-    if(roll<0.700){
+    if(roll<0.740){
       /* Saha içi şut denemesi. Hızlı hücum: çalma/savunma ribaundu sonrası her iki takım
          için doğal olarak tetiklenir; kullanıcının hızlı tempo/odak seçimi ihtimali artırır. */
       /* Hızlı hücum GERÇEK basketboldaki gibi seyrek: çoğu top çalma/savunma ribaundu
@@ -4718,7 +4812,7 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
          normalize edildiği için TAKIMIN üçlük payı (userIs3Oran / 0.32) korunur; değişen,
          o denemeyi kimin yaptığı — şutör rolü dışarıdan, pivot boyalı alandan oynar. */
       const _court3=userPos?userCourt:oppCourt;
-      let _is3p=userPos?userIs3Oran:Math.max(0.08,Math.min(0.68,(0.44+(botPb.is3||0))*(dset.opp3Rate!=null?dset.opp3Rate:1)));
+      let _is3p=userPos?userIs3Oran:Math.max(0.08,Math.min(0.68,(0.475+(botPb.is3||0))*(dset.opp3Rate!=null?dset.opp3Rate:1)));
       if(!putback&&_court3.length){
         const _avgUc=_court3.reduce((q,p)=>q+_eg(p,'uc'),0)/_court3.length;
         if(_avgUc>0) _is3p=Math.max(0.03,Math.min(0.74,_is3p*(_eg(shooter,'uc')/_avgUc)));
@@ -4921,10 +5015,10 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
         const _wing=(shooter.poz==='SF');
         /* FAZ 28 §2: TIP-IN — hücum ribaundu çemberin dibinde tek dokunuşla tamamlanır.
            Zaten `putback` bayrağı vardı ama sunumda turnikeden ayrışmıyordu. */
-        if(putback&&zone==='rim'&&prChance(0.55)) sut='tipin';
+        if(putback&&zone==='rim'&&prChance(0.90)) sut='tipin';   /* FAZ 39: gerçek %2,55 — motorda tavan ikinci şans SIKLIĞIDIR, aşağıdaki nota bak */
         /* FAZ 28 §2: KANCA — postta sırtı dönük uzunun omuz üstü şutu. Yalnız postup
            şemasında ve uzun oyuncuda anlamlıdır; guard kanca atmaz. */
-        else if(scheme==='postup'&&_big&&prChance(0.16)) sut='kanca';   /* §6: %6,3 → hedef %1,5-3 */
+        else if(scheme==='postup'&&_big&&prChance(0.26)) sut='kanca';   /* FAZ 39: gerçek %2,93 */
         else {
         /* Gerçekte smaçların neredeyse tamamı ÇEMBER bölgesinden ve uzunlardan gelir;
            boyanın dışından smaç istisnadır. Kaçan smaç nadirdir (top çemberden döner
@@ -4936,6 +5030,11 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
         if(prChance(_dp)) sut='smac';
         /* Floater guard/kanat işidir ve boyada anlamlıdır — pivot floater atmaz. */
         else if(!_big&&zone==='paint'&&prChance(0.79)) sut='floater';   /* §6: floater %3,9 → hedef %8-10 */
+        /* FAZ 39: BOYA İÇİNDEN KISA SIÇRAMA ŞUTU. Motor boyadaki her bitirişi turnikeye
+           yazıyordu (ölçüldü %31,5; gerçek %24,7) ve gerçek verideki 'Jump Shot' etiketli
+           boya içi şutlar hiç yoktu (jumper %13,4, gerçek %15,2). Raketin dip yarısından
+           atılan ayak üstü şut turnike DEĞİLDİR. Karar `pr` ile verilir — sonuç değişmez. */
+        else if(zone==='paint'&&prChance(0.30)) sut='jumper';
         else sut='turnike';
         }
       }
@@ -5091,7 +5190,7 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
         if(_rebAnlat&&rebOff&&rebounder.id!=null&&Math.random()<0.55) shooterHint=rebounder;
       }
 
-    } else if(roll<0.7455){
+    } else if(roll<0.782){
       /* Şut faulü — çizgide 2 serbest atış. M18: pay %10 → %6 (serbest atış enflasyonu). */
       let nMade=0;
       if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++;     /* M20: iki taraf da aynı yoldan */
@@ -5106,13 +5205,13 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
 
     } else if(roll<0.985){
       /* M17: bu dalın payı %6 → %14,5; içindeki top kaybı ağırlığı %68 → %82. */
-      if(Math.random()<0.40){
+      if(Math.random()<0.35){
         /* Şutsuz ortak faul — Madde 17: takım çeyrek faulü 5'i geçtiyse bonus (2 serbest atış). */
         D.foul++; const _fp=recordFoul(defenderIsUser,q,t);
         if(inBonus(defenderIsUser,q)){
           let nMade=0;
           if(userPos){ if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++; }
-          else { if(Math.random()<0.72)nMade++; if(Math.random()<0.72)nMade++; }
+          else { if(Math.random()<0.755)nMade++; if(Math.random()<0.755)nMade++; }
           B.ftAtt+=2; B.ftMade+=nMade;
           if(ftRebound(userPos,B,D,nMade,2,q,t)) posNext=userPos;
           addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
@@ -5166,7 +5265,7 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
             else if(_ihTur<0.62){ _tip='ihlal'; _hav=ADIM_LINES; }
             else { _tip='tac'; _hav=TAC_LINES; }
             events.push({type:_tip,text:adKoy(pickLine(_hav,pr,narr.recent,'ih'+_tip),{S:_L,R:_R}),
-              q,t,home:homeScore,away:awayScore,stealId:alan2.id,stealIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+              q,t,home:homeScore,away:awayScore,stealId:alan2.id,stealIsUser:!userPos,kazananIsUser:!userPos,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
           }
         } else {
           /* Top kaybı savuşturuldu — sabırlı/kontrollü pozisyon, top el değiştirmedi (sayı yok). */
@@ -5341,10 +5440,23 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
     }
     const ihlal24=(!putbackVar&&!fb&&!fromTrans&&Math.random()<0.016);
     if(ihlal24) return {userPos,fromTrans,fb:false,ihlal24:true,maliyet:24};
+    /* ── FIBA 14 SANİYE KURALI (FAZ 39 §3.5-1, ölçülerek bulundu) ────────────────
+       Top el DEĞİŞTİRMEDİYSE (hücum ribaundu, savuşturulan top kaybı, savunma faulü,
+       serbest atış ribaundu) şut saati 24'e değil 14'e döner ve gerçek ikinci şans
+       pozisyonu KISADIR. Motorda bu kural yoktu: topu koruyan takım yepyeni bir
+       13-21 sn'lik set hücumu maliyeti ödüyordu.
+       Ölçüldü (60 maç, pbpstats'in kendi pozisyon tanımıyla — ardışık aynı-takım
+       parçaları birleştirilerek): motor 144,5 pozisyon/maç · ortalama 16,85 sn ·
+       25+ sn payı %14,7. Gerçek: 164,9 · 14,57 sn · %8,5. Yani motorun pozisyonları
+       gerçeğin bir buçuk katı uzuyor ve 40 dakikaya daha az pozisyon sığıyordu.
+       İki gözlem aynı gerçeğin iki yüzüdür: 2400 sn / 14,57 = 164,7.
+       `putbackVar` (anında tip-in) zaten kısaydı; eksik olan öteki devam yollarıydı. */
+    const devam=(posNext!==null&&posNext===_lastOff);
     if(putbackVar){ lo=3; hi=6; }
-    else if(fb){ lo=5; hi=9; }
-    else if(fromTrans){ lo=9+kay; hi=14+kay; }        /* erken hücum: geçişten geldi ama koştu */
-    else { lo=13+kay; hi=21+kay; }                    /* kurulmuş set hücumu */
+    else if(devam){ lo=4; hi=13; }                    /* 14 sn geri sayım: ikinci şans */
+    else if(fb){ lo=4; hi=10; }                        /* gerçek veride pozisyonların %7,9'u 0-4 sn */
+    else if(fromTrans){ lo=9+kay; hi=15+kay; }        /* erken hücum: geçişten geldi ama koştu */
+    else { lo=13+kay; hi=22+kay; }                    /* kurulmuş set hücumu */
     /* ── SON DAKİKA SAAT YÖNETİMİ ────────────────────────────────────────────
        Gerçek basketbolda son dakikanın saati iki takım için AYRI akar: geride
        kalan hızlanır (erken şut, uzun ribaunt kovalama, faul), önde olan saati

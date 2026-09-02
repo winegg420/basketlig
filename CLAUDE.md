@@ -71,11 +71,16 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/faz11-check.js` | **FAZ 11 kabul kriterleri** — dizilim geometrisi, kare kaybında yetişme, kesme noktası çakışması, `startMatch` sessiz kilitlenmesi. |
 | `tools/anlatim-check.js` | **FAZ 13 anlatım denetçisi** — maçı TARAYICISIZ üretip olay listesini denetler (ribaund/şut eşitliği, seri iddiası, faul adı ve sayacı, çalma iki taraflılığı, kalıp çeşitliliği, devre arası, saha değişimi, köşe bölgesi). `--freeze` ile sekme donması + maç içi panel kalıcılığı tarayıcıda sınanır. **Anlatım değişince çalıştır.** |
 | `tools/mobile-check.js` | **FAZ 12 mobil denetçisi** (390×844) — dokunma sayısı (gerçekten tıklayarak), maç sayfası düzeni, bilgi yoğunluğu, 44 px dokunma hedefi, market yoğunluğu. Mobil düzen değişince çalıştır. |
-| `tools/sim-node.js` | **Tarayıcısız maç simülasyonu** — 14 modülü düz Node'da (vm) yükler, `simulateMatch()` sözleşmesini ve determinizmi sınar. Motor sözleşmesi değişince çalıştır. **Regresyon tabanı (FAZ 36 sonrası): `--n=1000 --seed=42` → 88.5 - 80.2 · olay/maç 203.** (FAZ 34: olay/maç 248 — FAZ 36 §B1 rutin savunma ribaundunu anlatımdan çıkardı, SKOR DEĞİŞMEDİ.) ⚠ `--n=100` TEK TOHUMDA GÜRÜLTÜ BASKINDIR (deplasman ortalaması tohuma göre 78,5-87,1 arası salınır) — taban artık n=1000 ile okunur. |
+| `tools/sim-node.js` | **Tarayıcısız maç simülasyonu** — 14 modülü düz Node'da (vm) yükler, `simulateMatch()` sözleşmesini ve determinizmi sınar. Motor sözleşmesi değişince çalıştır. **Regresyon tabanı (FAZ 39 sonrası): `--n=1000 --seed=42` → 91.3 - 85.4 · olay/maç 248.** (FAZ 36-38: 88.5 - 80.2 · 203.) (FAZ 34: olay/maç 248 — FAZ 36 §B1 rutin savunma ribaundunu anlatımdan çıkardı, SKOR DEĞİŞMEDİ.) ⚠ `--n=100` TEK TOHUMDA GÜRÜLTÜ BASKINDIR (deplasman ortalaması tohuma göre 78,5-87,1 arası salınır) — taban artık n=1000 ile okunur. |
 | `tools/kutu-check.js` | **Kutu skor gerçekçiliği (FAZ 38)** — 18 satır (FG%, 2P%, 3PA/FGA, ribaunt, top kaybı, çalma, blok, faul, uzatma) gerçek FIBA/BSL bantlarıyla. 60-120 maç, tarayıcısız. Sonuç matematiğine dokunan her değişiklikten sonra çalıştır. |
 | `tools/tempo-check.js` | **Pozisyon süresi / tempo (FAZ 38)** — `dtPos` dağılımı iki tepeli mi (geçiş 5-9 sn · set 13-21 sn), hızlı hücumun ortalama süresi, pozisyon/maç. Bant tablosu BİLGİDİR; kapı §İŞ2 kabul ölçütleridir. |
 | `tools/rotasyon-check.js` | **Rotasyon (FAZ 38)** — yedeklerin sayı payı, kutu skorda görünen oyuncu, en skorerin payı, değişiklik sayısı. İlk beş TAHMİN EDİLMEZ, motorun `matchLineup` kuralıyla (pozisyon dengeli) hesaplanır. |
 | `tools/bozukdeger-check.js` | **Bozuk değer tarayıcısı** — 2 sezon sürülüp TR+EN, 11 sayfa + 4 modal gezilir ve GÖRÜNÜR metinde `NaN`/`undefined`/`null`/`Infinity`/`[object Object]` aranır. `visual-check` yalnız KONSOL hatasına bakar; bozuk değer sessizdir — bu kapı onu yakalar. Sayı/biçim üreten her değişiklikten sonra çalıştır. |
+| `tools/gercek-veri/indir.js` | **FAZ 39 gerçek maç verisi indirici** — `shufinskiy/nba_data` (Apache-2.0), sezon başına play-by-play + şut detayı. Ham veri `tools/gercek-veri/_ham/` altına iner ve `.gitignore`'dadır — **DEPOYA KOYMA**. |
+| `tools/gercek-veri/cikar.js` | **FAZ 39 bant çıkarıcı** — ham veriden `tools/_lib/gercek-bantlar.json` üretir (3.690 maç · 729.559 pozisyon · 655.446 şut · 90 takım-sezon). Bir eşiği değiştirmek isteyen veriyi yeniden çıkarmak zorunda. |
+| `tools/gercek-veri/_csv.js` | Akışlı CSV okuyucu. `cut -d,` / `split(',')` bu veride ÇALIŞMAZ — `pbpstats`in EVENTS sütunu tırnak içinde virgül VE satır sonu taşır. |
+| `tools/_lib/gercek-bantlar.json` | **TEK DOĞRULUK KAYNAĞI** — check araçlarının eşikleri. Elle DÜZENLEME; `cikar.js` üretir. |
+| `tools/_lib/gercek-bant.js` | Bant okuyucu + kapı yardımcısı (`al` / `ham` / `kapi` / `bas`). Yeni bir gerçekçilik kapısı yazarken eşiği BURADAN oku. |
 | `tools/schema-check.js` | **`db/schema.sql` denetçisi** — sözdizimi (varsa gerçek PostgreSQL ayrıştırıcısı), lig kuralları, RLS, "kod tabanında bağlantı yok". |
 | `db/schema.sql` | **Çok oyunculu veri modeli** (Postgres/Supabase). Yalnız dosya — hiçbir bağlantı kurulmuyor. |
 | `tools/gen-brand-images.js` | og:image (1200×630) + PWA ikonlarını üretir (Playwright). Marka görselini değiştirince tekrar çalıştır. |
@@ -100,7 +105,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/portre-uret-yerel.py` | **FAZ 17C yerel portre üretimi** (SD-Turbo, CPU). Kova kotaları, bant dengesi, kaldığı yerden devam, dilim başına commit+push. Boru hattı `tools/portre_boru.py`. |
 | `tools/portre_boru.py` | Portre işleme boru hattı (kadraj, fon eşitleme, eleme kapıları). Üretim kaynağı değişse de bu modül aynı kalır. |
 | `tools/i18n-scan.js` | **EN modunda çeviri denetimi** — tüm sayfa/modal/canlı maçı gezip çevrilmemiş metin düğümlerini raporlar. Dil değişikliğinden sonra çalıştır. |
-| `tools/measure.js` / `tools/band.js` | Canlı sunum ölçümü + **sonuç değişmezliği** (kanonik tohum imzası / 200 maç skor hash'i). Sunum değişikliklerinden sonra ikisi de aynı hash'i vermeli. `band.js` referans hash: **`46a19413380a8f07`** (FAZ 38 eki-3 sonrası) · `measure.js` bazı **`df5e0c6fa1630b6c`** (varsayılan tohum 987654321; eski değerler: `060c5f1763cd3699` FAZ 38 eki-2, `c89ce408ca435845` FAZ 38, `3225bf641b79dea7` FAZ 34-37, `99bb9ceb67917bd0` FAZ 19-33, `89b5436137c1da14` FAZ 17-18, `fb393bdab878e699` FAZ 13-16, `ec630b3a512bb3b2` FAZ 13 öncesi). *FAZ 38'de hash BİLEREK değişti: kutu skor gerçekçiliği (isabet tabanları, üçlük payı, pozisyon süresi, rotasyon) sonuç matematiğini doğrudan değiştirdi — kullanıcı kararıyla FAZ 37'nin "dokunma" yasağı kaldırıldı. Ölçüm `kutu-check` (18 satır) ve `tempo-check` ile korunuyor.* *FAZ 34'te hash bilerek değişti: özel yetenek sistemi oyuncu statlarını (dolayısıyla maç sonuçlarını) doğrudan değiştirdi; lig ortalamaları korundu (`yetenek-check` B bölümü ölçüyor).* *FAZ 19'da hash bilerek değişti: lig dengesi düzeltmesi (`cpuMatchScore` kırpması 35→20, `pseudoTeamStrength` bandı 42→20) maç skorlarını doğrudan değiştirdi; ortalama fark 21,4→10,5 (`lig-check` C bölümü ölçüyor).* *FAZ 17'de hash bilerek değişti: isim havuzu ülke başına 256'dan 21.000 kombinasyona çıkınca `ensureUniquePlayerNames` içindeki ad çakışması yeniden-çekilişleri neredeyse sıfıra indi ve rastgelelik akışı kaydı. Milliyet seçiminin kendisi akışı KAYDIRMAZ — `genPlayer` ülke sabitlense bile `ch(ULKELER)` çekilişini yapar, sonucu sonra ezer.* *32. oturum: `if(SEED)` koruması + varsayılan 0 yüzünden tohum hiç kurulmuyordu, araç her çalıştırmada farklı hash veriyordu — düzeltildi.* |
+| `tools/measure.js` / `tools/band.js` | Canlı sunum ölçümü + **sonuç değişmezliği** (kanonik tohum imzası / 200 maç skor hash'i). Sunum değişikliklerinden sonra ikisi de aynı hash'i vermeli. `band.js` referans hash: **`76351f00455b3a5e`** (FAZ 39 sonrası) · `measure.js` bazı **`0132d9fff6e778d0`** (varsayılan tohum 987654321; eski değerler: `df5e0c6fa1630b6c` FAZ 38 eki-3, `060c5f1763cd3699` FAZ 38 eki-2, `c89ce408ca435845` FAZ 38, `3225bf641b79dea7` FAZ 34-37, `99bb9ceb67917bd0` FAZ 19-33, `89b5436137c1da14` FAZ 17-18, `fb393bdab878e699` FAZ 13-16, `ec630b3a512bb3b2` FAZ 13 öncesi). *FAZ 39'da hash BİLEREK değişti: eşikler gerçek NBA verisinden çıkarılıp motor onlara ayarlandı — FIBA 14 saniye kuralı, boya geometrisi, şut tipi karışımı, üçlük payı, pozisyon sonucu dağılımı ve serbest atış tabanı. Ayrıntı ve önce/sonra tablosu `PROGRESS.md` 39. oturum.* *FAZ 38'de hash BİLEREK değişti: kutu skor gerçekçiliği (isabet tabanları, üçlük payı, pozisyon süresi, rotasyon) sonuç matematiğini doğrudan değiştirdi — kullanıcı kararıyla FAZ 37'nin "dokunma" yasağı kaldırıldı. Ölçüm `kutu-check` (18 satır) ve `tempo-check` ile korunuyor.* *FAZ 34'te hash bilerek değişti: özel yetenek sistemi oyuncu statlarını (dolayısıyla maç sonuçlarını) doğrudan değiştirdi; lig ortalamaları korundu (`yetenek-check` B bölümü ölçüyor).* *FAZ 19'da hash bilerek değişti: lig dengesi düzeltmesi (`cpuMatchScore` kırpması 35→20, `pseudoTeamStrength` bandı 42→20) maç skorlarını doğrudan değiştirdi; ortalama fark 21,4→10,5 (`lig-check` C bölümü ölçüyor).* *FAZ 17'de hash bilerek değişti: isim havuzu ülke başına 256'dan 21.000 kombinasyona çıkınca `ensureUniquePlayerNames` içindeki ad çakışması yeniden-çekilişleri neredeyse sıfıra indi ve rastgelelik akışı kaydı. Milliyet seçiminin kendisi akışı KAYDIRMAZ — `genPlayer` ülke sabitlense bile `ch(ULKELER)` çekilişini yapar, sonucu sonra ezer.* *32. oturum: `if(SEED)` koruması + varsayılan 0 yüzünden tohum hiç kurulmuyordu, araç her çalıştırmada farklı hash veriyordu — düzeltildi.* |
 | `*.bat`, `OYUNU-AC.txt` | Windows başlatıcılar / kullanıcı yardım notu. |
 | `PROGRESS.md` | **Oturum günlüğü** — yapılanlar, kararlar, nedenleri. Her oturumda güncelle. |
 | `RAPOR-EKSIKLER.md` | Tam sürüm için eksik/hata denetim raporu (öncelik sıralı). |
@@ -918,3 +923,55 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   cümlesi atış anında, sonuç son atış çemberden geçince). Kelime ortalaması EKRANDAKİ
   SATIR başına ölçülür; tek satır sayılınca 19 kelimelik serbest atış olayı ortalamayı
   tek başına bandın dışına çıkarıyordu.
+
+- **EŞİK ELLE YAZILMAZ, ÖLÇÜLÜR (FAZ 39 — bu deponun en pahalı dersi):** FAZ 34'ten
+  38'e kadar beş tur ayar yapıldı, her turda kapılar yeşile döndü ve oyun yine
+  "basketbola benzemiyor" kaldı. Sebep kod değil HEDEFİN KENDİSİYDİ — "gerçek: %14-18"
+  tarzı bantların hiçbiri ölçülmemişti. Motor yanlış hedefe kusursuzca ayarlanmıştı.
+  Artık `tempo-check` · `kutu-check` · `rotasyon-check` · `sut-cografya-check` eşiklerini
+  `tools/_lib/gercek-bantlar.json`'dan okur; o dosya 3 sezonluk NBA play-by-play'den
+  üretilir. Ölçüldüğünde yanlış çıkan tahminler: pozisyon süresi 0-4 sn tahmin %1-2 /
+  gerçek **%7,9** · 25+ sn tahmin %0-2 / gerçek **%8,5** · 3PA/FGA tahmin %33-38 /
+  gerçek **%40,1** · yedek sayı payı tahmin %25-35 / gerçek **%36,6** · "hızlı hücum
+  üçlükle bitmesin" / gerçekte geçişlerin **%30,1'i** üçlükle biter.
+  Yeni bir gerçekçilik kapısı yazarken eşiği `gercek-bant.js` üzerinden oku; veriden
+  çıkarılamıyorsa **kapı KURMA**, `bilgi:` satırı bırak (uydurulmuş eşik, eşiksizlikten
+  kötüdür).
+- **"POZİSYON" İKİ FARKLI ŞEYDİR (FAZ 39):** `pbpstats` bir pozisyonu TOP EL DEĞİŞTİRENE
+  kadar sayar — hücum ribaundu, savuşturulan top kaybı ve savunma faulü pozisyonu
+  UZATIR, yenisini başlatmaz. Motorun döngüsü ise her yeni şut denemesini ayrı `pozIx`
+  yapar. Ölçüldü: aynı 60 maçta ham 176,4 pozisyon/maç, birleştirilmiş 144,5, gerçek
+  164,9 — yani ham sayacı gerçekle kıyaslamak kapının kendi tanımını ölçmesidir.
+  Tempo/kutu ölçen araçlar ardışık AYNI TAKIM parçalarını birleştirir. Aynı ayrım
+  "geçiş" için de geçerli: gerçek tanım pozisyonun CANLI TOPLA başlamasıdır (`transPoz`
+  damgası), motorun `fbPoz` bayrağı bundan dardır — ikisini aynı kapıda kıyaslama.
+- **SÜRE ÖLÇEKLEMESİ VERİMİ DÜZELTMEZ (FAZ 39 §3.2 ölçümü):** NBA sayımlarını 40/48 ile
+  çarpmak maçı 40 dakikaya indirir ama NBA'nin pozisyon başına verimini (1,155
+  sayı/pozisyon) taşır; sonuç 40 dakikada **95,2 sayı** olur, gerçek FIBA maçı ise ~80.
+  Bu yüzden `gercek-bantlar.json` içinde ayrı bir **`pozisyonBasina`** bloğu var —
+  saf oran, tempodan bağımsız, doğrudan taşınabilir. Sayım ölçütlerine kapı kurma,
+  ORANA kur. ⚠ Bunun sonucu olarak motor aynı anda NBA temposuna, NBA isabetine ve
+  FIBA skoruna sahip OLAMAZ: gerçek bantların tamamı kovalandığında `band.js`
+  kullanıcı ortalaması 96,2'ye çıkıyor ve brifin 78-95 skor bandı kırılıyor. Tempo
+  bilerek gerçeğin %6 altında bırakıldı; bu bir DENGE tercihidir, kusur değil. Skoru
+  değiştirmek isteyen tek yer `pozTuru` içindeki dört süre bandıdır.
+- **FIBA 14 SANİYE KURALI (FAZ 39):** top el değiştirmediyse şut saati 24'e değil 14'e
+  döner ve ikinci şans pozisyonu KISADIR. `pozTuru` içindeki `devam` dalı bunu kurar
+  (`posNext===_lastOff`). Kural eklenmeden önce topu koruyan takım yepyeni bir set
+  hücumu maliyeti ödüyordu; 25+ sn pozisyon payı %14,7 idi (gerçek %8,5) ve 40 dakikaya
+  gerçeğin çok altında pozisyon sığıyordu. Yeni bir "top bizde kalır" yolu eklersen
+  `posNext`i doğru kur, yoksa o yol bu daldan geçmez.
+- **BOYA YARIÇAP DEĞİL DİKDÖRTGENDİR (FAZ 39):** gerçek şut verisi çemberi 1,25 m
+  YARIÇAPLA, boyayı RAKETLE (4,9 × 5,8 m dikdörtgen) tanımlar. `classifyZone` eskiden
+  ikisini de yarıçapla ayırıyordu ve raketin dip yarısını orta mesafeye yazıyordu.
+  `randShotXY`'nin üretim bantları (10-35 / 38-99 / 106-187) bu eşiklere BAĞLIDIR —
+  birini değiştirirsen ötekini de güncelle, yoksa bant sınırı eşiği aşar ve paylar kayar.
+- **YENİ OLAY TÜRÜNÜN SAHNE SÖZLEŞMESİ VARDIR (FAZ 39 §2.2, FAZ 38 dersinin tekrarı):**
+  FAZ 38 yedi yeni olay türü ekledi ama `movePlayersForEvent` dalını yazmadı; maç başına
+  **14,4 olay** sondaki genel dala düşüyor ve o dal topu KAYBEDEN takımda tutup
+  çevresinde paslıyordu (düdük çalıyor, oyun durmuyor). Kural ihlalleri (`tac` · `ihlal`
+  · `hucumFaulu` · `ihlal24`) artık ölü top + taraf değişimi + kenardan sokma; `mola`
+  kulübe toplanması + SAHAYA DÖNÜŞ. ⚠ Mola dalı jetonları kulübede bırakırsa hemen
+  ardından gelen serbest atış boş sahada patlar (`sahne-check` en kötü karesi 3/10 →
+  0/10 ölçüldü) — koreografi sahada BİTMELİ. Taraf bilgisi `kazananIsUser` alanından
+  okunur; yeni bir top kaybı olayı eklersen o alanı da doldur.

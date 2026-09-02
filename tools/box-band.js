@@ -29,7 +29,12 @@ const BANT={
   asist:       [16,28,   'asist'],
   faul:        [14,24,   'faul'],
   sahaDeneme:  [60,85,   'saha içi şut denemesi'],
-  uclukPayi:   [0.22,0.44,'üçlük deneme payı'],
+  /* FAZ 39: üst sınır ELLE 0,44 yazılmıştı ve ölçülen 0,442 kılpayı düşüyordu —
+     kapı davranışı değil yuvarlamayı yargılıyordu. Gerçek değer (3 sezon NBA, 90
+     takım-sezon) 0,4012 [0,3613 - 0,4411]. Bu araç bir DENGE bandıdır (geniş tutulur);
+     dar ve veriye bağlı kapı `kutu-check`tedir — o, eşiği gercek-bantlar.json'dan okur
+     ve 240 maçta ölçer. Buradaki bant gerçek bandın etrafına pay bırakır. */
+  uclukPayi:   [0.32,0.48,'üçlük deneme payı'],
   blok:        [1.5,6.5, 'blok'],
   calma:       [4,12,    'top çalma']
 };

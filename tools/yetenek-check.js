@@ -27,7 +27,15 @@ const N_MAC = arg('mac', 320);
 const TOHUM = arg('tohum', 1234);
 /* Bireysel ribaunt eşiği — brifin 20'si gerçek basketbolun ~43 takım ribaunduna göredir;
    bu motorda takım ribaundu ~29 olduğu için eşik oranla taşınır (bkz. B bölümü notu). */
-const REB_ESIK = arg('rebEsik', 13);
+/* ── EŞİK ELLE YAZILMAZ, ÖLÇÜLEN HACİMDEN TÜRETİLİR (FAZ 39 §3.4) ─────────────
+   Brifin ölçütü '20+ ribaunt alan oyuncu-maç %0,3-1,5'. Ama 20 sayısı GERÇEK
+   basketbolun ribaunt hacmine (takım başına ~43,7) göre yazılmıştır; bu motorun
+   hacmi farklıdır ve zamanla DEĞİŞİR (FAZ 39 tempo düzeltmesi takım ribaundunu
+   29 → 38 seviyesine taşıdı ve sabit 13 eşiği kapıyı davranış değişmeden düşürdü).
+   Eşik artık gerçek ribaunt bandından (gercek-bantlar.json) oranla taşınıyor:
+   20 × (motorun hacmi / gerçek hacim). Elle geçersiz kılmak için --rebEsik=N. */
+const GB = require('./_lib/gercek-bant.js');
+let REB_ESIK = arg('rebEsik', 0);
 
 let gecti = 0, kaldi = 0;
 const yaz = (ok, mesaj, detay) => {
@@ -208,10 +216,22 @@ let B = null;
         kutu.pts.push(pts); kutu.reb.push(reb); kutu.stl.push(stl);
         if (pts >= 30) otuzArti++;
         if (reb >= 20) yirmiReb++;
-        if (reb >= REB_ESIK) esikReb++;
       });
     });
   }
+  /* Eşik ÖLÇÜMDEN SONRA kurulur: motorun kendi ribaunt hacmini bilmek gerekiyor.
+     20 ribaunt, gerçek basketbolun takım hacminin (ölçekten arındırılmış gerçek
+     değer) %45,8'idir; aynı ORAN motorun hacmine uygulanır. */
+  if (!REB_ESIK) {
+    const gr = GB.al('kutuOranlari.ribaunt');
+    const gercekHam = gr ? gr.deger / (gr.olcek || 1) : 43.7;   /* 48 dakikalık gerçek hacim */
+    const motorHam = ort(takimReb) || 29;
+    /* YUVARLAMA DEĞİL TABAN: eşik bir SAYIM sınırıdır ve yukarı yuvarlamak bandın
+       tamamını bir kova kaydırır (16,98 → 17 ölçüldü: %0,25, bandın altı; 16 → %0,5).
+       Sınırı aşağı almak ölçütü GEVŞETMEZ, brifin oranını doğru kovaya oturtur. */
+    REB_ESIK = Math.max(5, Math.floor(20 * motorHam / gercekHam));
+  }
+  esikReb = kutu.reb.filter(r => r >= REB_ESIK).length;
   B = { kutu, skorlar, farklar, toplamlar, olay, otuzArti, yirmiReb, oyuncuMac };
   const ortSkor = ort(skorlar), ortFark = ort(farklar);
   const buyuk = farklar.filter(x => x >= 20).length / farklar.length;

@@ -1,0 +1,775 @@
+{
+  "_aciklama": "FAZ 39 — GERÇEK MAÇ VERİSİNDEN ÇIKARILMIŞ BANTLAR. Bu dosya TEK DOĞRULUK KAYNAĞIDIR: check araçlarındaki eşikler buradan okunur, elle YAZILMAZ. Bir eşiği değiştirmek isteyen veriyi yeniden çıkarmak zorundadır (node tools/gercek-veri/indir.js && node tools/gercek-veri/cikar.js). null = bu veriden ÇIKARILAMADI; o ölçüt için kapı KURULMAZ, bilgi satırı olarak raporlanır.",
+  "meta": {
+    "sezonlar": [
+      "2022",
+      "2023",
+      "2024"
+    ],
+    "lig": "NBA — düzenli sezon",
+    "mac": 3690,
+    "pozisyon": 729559,
+    "sut": 655446,
+    "olay": 1716435,
+    "takimSezon": 90,
+    "olcekKatsayisi": 0.8333,
+    "olcekAciklama": "Maç süresi FIBA 4×10 = 40 dk, NBA 4×12 = 48 dk. SAYIM ölçütleri (sayı, FGA, ribaunt, faul, pozisyon, değişiklik, kural olayı) bu katsayıyla çarpıldı — `olcek` alanı taşıyan her kayıt ölçeklidir. ORAN/DAĞILIM ölçütleri (yüzde, pay, süre histogramı, isabet) ölçeklenmedi.",
+    "bantAciklama": "alt/ust = TAKIM-SEZON ortalamalarının ±1 standart sapması, yani \"gerçek takımlar birbirinden ne kadar farklı\". Tek maç sapması DEĞİL: kapılar yüzlerce maçlık lig ortalamasını ölçer, tek maçı değil.",
+    "ucSayiYayi": "FIBA 6,75 m (köşe 6,60) · NBA 7,24 m (köşe 6,71). Mesafe farkı ÖLÇEKLENMEDİ; etkilenen ölçütlerde `not` alanı var.",
+    "kaynak": "https://github.com/shufinskiy/nba_data",
+    "lisans": "Apache-2.0",
+    "cikarimTarihi": "2026-09-02"
+  },
+  "pozisyonSuresi": {
+    "birim": "sn",
+    "ortalama": {
+      "deger": 14.57,
+      "alt": 14.34,
+      "ust": 14.8,
+      "kaynak": "pbpstats (2022+2023+2024) · STARTTIME−ENDTIME",
+      "n": 90,
+      "birim": "sn"
+    },
+    "histogram": {
+      "0-4": {
+        "deger": 7.93,
+        "alt": 7.2,
+        "ust": 8.66,
+        "kaynak": "pbpstats (2022+2023+2024)",
+        "n": 90,
+        "birim": "%"
+      },
+      "5-7": {
+        "deger": 9.99,
+        "alt": 9.49,
+        "ust": 10.49,
+        "kaynak": "pbpstats (2022+2023+2024)",
+        "n": 90,
+        "birim": "%"
+      },
+      "8-10": {
+        "deger": 12.38,
+        "alt": 11.77,
+        "ust": 12.99,
+        "kaynak": "pbpstats (2022+2023+2024)",
+        "n": 90,
+        "birim": "%"
+      },
+      "11-13": {
+        "deger": 14.96,
+        "alt": 14.36,
+        "ust": 15.56,
+        "kaynak": "pbpstats (2022+2023+2024)",
+        "n": 90,
+        "birim": "%"
+      },
+      "14-16": {
+        "deger": 15.98,
+        "alt": 15.43,
+        "ust": 16.54,
+        "kaynak": "pbpstats (2022+2023+2024)",
+        "n": 90,
+        "birim": "%"
+      },
+      "17-19": {
+        "deger": 14.26,
+        "alt": 13.79,
+        "ust": 14.72,
+        "kaynak": "pbpstats (2022+2023+2024)",
+        "n": 90,
+        "birim": "%"
+      },
+      "20-24": {
+        "deger": 15.99,
+        "alt": 15.28,
+        "ust": 16.7,
+        "kaynak": "pbpstats (2022+2023+2024)",
+        "n": 90,
+        "birim": "%"
+      },
+      "25+": {
+        "deger": 8.5,
+        "alt": 7.76,
+        "ust": 9.25,
+        "kaynak": "pbpstats (2022+2023+2024)",
+        "n": 90,
+        "birim": "%"
+      }
+    }
+  },
+  "pozisyonSayisi": {
+    "deger": 82.43,
+    "alt": 80.91,
+    "ust": 83.94,
+    "kaynak": "pbpstats (2022+2023+2024) · tekilleştirilmiş pozisyon / maç (takım başına)",
+    "n": 90,
+    "olcek": 0.8333,
+    "not": "NBA gerçeği takım başına ~99 pozisyon / 48 dk; süreyle ölçeklenmiş hâli 40 dakikalık maçın ÜST sınırıdır. Yayımlanmış FIBA tempoları (~72-78) daha düşüktür, çünkü FIBA dakika başına da daha yavaş oynanır. Bu ek fark ÖLÇÜLMEDİ ve uydurulmadı."
+  },
+  "gecisHucumu": {
+    "pay": {
+      "deger": 40.05,
+      "alt": 38.79,
+      "ust": 41.3,
+      "kaynak": "pbpstats (2022+2023+2024) · STARTTYPE (çalma/blok/ribaunt = canlı top)",
+      "n": 90,
+      "birim": "%"
+    },
+    "ortalamaSure": {
+      "deger": 10.45,
+      "alt": 10.17,
+      "ust": 10.73,
+      "kaynak": "pbpstats (2022+2023+2024)",
+      "n": 90,
+      "birim": "sn"
+    },
+    "setOrtalamaSure": {
+      "deger": 17.32,
+      "alt": 17.05,
+      "ust": 17.59,
+      "kaynak": "pbpstats (2022+2023+2024)",
+      "n": 90,
+      "birim": "sn"
+    },
+    "baslangicTuru": {
+      "calma": {
+        "deger": 7.55,
+        "alt": 6.76,
+        "ust": 8.34,
+        "kaynak": "pbpstats (2022+2023+2024) · STARTTYPE",
+        "n": 90,
+        "birim": "%"
+      },
+      "blok": {
+        "deger": 2.54,
+        "alt": 2.19,
+        "ust": 2.88,
+        "kaynak": "pbpstats (2022+2023+2024) · STARTTYPE",
+        "n": 90,
+        "birim": "%"
+      },
+      "ribaund": {
+        "deger": 29.96,
+        "alt": 28.78,
+        "ust": 31.13,
+        "kaynak": "pbpstats (2022+2023+2024) · STARTTYPE",
+        "n": 90,
+        "birim": "%"
+      },
+      "sayiSonrasi": {
+        "deger": 44.7,
+        "alt": 43.48,
+        "ust": 45.93,
+        "kaynak": "pbpstats (2022+2023+2024) · STARTTYPE",
+        "n": 90,
+        "birim": "%"
+      },
+      "mola": {
+        "deger": 5.3,
+        "alt": 4.96,
+        "ust": 5.64,
+        "kaynak": "pbpstats (2022+2023+2024) · STARTTYPE",
+        "n": 90,
+        "birim": "%"
+      },
+      "oluTop": {
+        "deger": 9.95,
+        "alt": 9.22,
+        "ust": 10.68,
+        "kaynak": "pbpstats (2022+2023+2024) · STARTTYPE",
+        "n": 90,
+        "birim": "%"
+      },
+      "diger": {
+        "deger": 0,
+        "alt": 0,
+        "ust": 0,
+        "kaynak": "pbpstats (2022+2023+2024) · STARTTYPE",
+        "n": 90,
+        "birim": "%"
+      }
+    },
+    "bitisBolgesi": {
+      "gecis": {
+        "paylar": {
+          "cember": 46.37,
+          "boya": 15.9,
+          "ortaMesafe": 7.51,
+          "kose3": 8.28,
+          "kanatVeTepe3": 21.85
+        },
+        "birim": "%",
+        "kaynak": "pbpstats (2022+2023+2024) ↔ shotdetail (2022+2023+2024) (pozisyon bitiş anı ↔ şut saati eşleşmesi)",
+        "n": 135948
+      },
+      "set": {
+        "paylar": {
+          "cember": 35.36,
+          "boya": 20.64,
+          "ortaMesafe": 11.38,
+          "kose3": 8.46,
+          "kanatVeTepe3": 24
+        },
+        "birim": "%",
+        "kaynak": "pbpstats (2022+2023+2024) ↔ shotdetail (2022+2023+2024) (pozisyon bitiş anı ↔ şut saati eşleşmesi)",
+        "n": 191701
+      }
+    }
+  },
+  "sutBolgesi": {
+    "cember": {
+      "deger": 29.11,
+      "alt": 26.08,
+      "ust": 32.15,
+      "kaynak": "shotdetail (2022+2023+2024) · SHOT_ZONE_BASIC",
+      "n": 90,
+      "birim": "%"
+    },
+    "boya": {
+      "deger": 19.82,
+      "alt": 17.29,
+      "ust": 22.36,
+      "kaynak": "shotdetail (2022+2023+2024) · SHOT_ZONE_BASIC",
+      "n": 90,
+      "birim": "%"
+    },
+    "ortaMesafe": {
+      "deger": 10.96,
+      "alt": 8.24,
+      "ust": 13.68,
+      "kaynak": "shotdetail (2022+2023+2024) · SHOT_ZONE_BASIC",
+      "n": 90,
+      "birim": "%"
+    },
+    "kose3": {
+      "deger": 10.19,
+      "alt": 8.79,
+      "ust": 11.59,
+      "kaynak": "shotdetail (2022+2023+2024) · SHOT_ZONE_BASIC",
+      "n": 90,
+      "birim": "%"
+    },
+    "kanatVeTepe3": {
+      "deger": 29.7,
+      "alt": 26.43,
+      "ust": 32.97,
+      "kaynak": "shotdetail (2022+2023+2024) · SHOT_ZONE_BASIC",
+      "n": 90,
+      "birim": "%"
+    }
+  },
+  "isabet": {
+    "ikiSayi": {
+      "deger": 54.64,
+      "alt": 52.7,
+      "ust": 56.58,
+      "kaynak": "shotdetail (2022+2023+2024)",
+      "n": 90,
+      "birim": "%",
+      "not": "FIBA yayı daha kısadır (6,75 m / köşe 6,60 · NBA 7,24 / 6,71): FIBA 3P% bir tık YUKARI, orta mesafe payı bir tık AŞAĞI kayar. Yön bilinir, büyüklüğü ÖLÇÜLMEDİ — bant NBA değerinin kendisidir (§3.2)."
+    },
+    "ucSayi": {
+      "deger": 36.19,
+      "alt": 34.68,
+      "ust": 37.71,
+      "kaynak": "shotdetail (2022+2023+2024)",
+      "n": 90,
+      "birim": "%",
+      "not": "FIBA yayı daha kısadır (6,75 m / köşe 6,60 · NBA 7,24 / 6,71): FIBA 3P% bir tık YUKARI, orta mesafe payı bir tık AŞAĞI kayar. Yön bilinir, büyüklüğü ÖLÇÜLMEDİ — bant NBA değerinin kendisidir (§3.2)."
+    },
+    "sahaSutu": {
+      "deger": 47.24,
+      "alt": 45.63,
+      "ust": 48.84,
+      "kaynak": "shotdetail (2022+2023+2024)",
+      "n": 90,
+      "birim": "%"
+    },
+    "bolgeye": {
+      "cember": {
+        "deger": 66.53,
+        "alt": 63.89,
+        "ust": 69.17,
+        "kaynak": "shotdetail (2022+2023+2024)",
+        "n": 90,
+        "birim": "%"
+      },
+      "boya": {
+        "deger": 44.24,
+        "alt": 41.26,
+        "ust": 47.21,
+        "kaynak": "shotdetail (2022+2023+2024)",
+        "n": 90,
+        "birim": "%"
+      },
+      "ortaMesafe": {
+        "deger": 41.59,
+        "alt": 38.61,
+        "ust": 44.58,
+        "kaynak": "shotdetail (2022+2023+2024)",
+        "n": 90,
+        "birim": "%"
+      },
+      "kose3": {
+        "deger": 38.73,
+        "alt": 36.72,
+        "ust": 40.74,
+        "kaynak": "shotdetail (2022+2023+2024)",
+        "n": 90,
+        "birim": "%"
+      },
+      "kanatVeTepe3": {
+        "deger": 35.55,
+        "alt": 33.95,
+        "ust": 37.14,
+        "kaynak": "shotdetail (2022+2023+2024)",
+        "n": 90,
+        "birim": "%"
+      }
+    },
+    "serbestAtis": {
+      "deger": 78.13,
+      "alt": 75.63,
+      "ust": 80.64,
+      "kaynak": "nbastats (2022+2023+2024) · EVENTMSGTYPE 3",
+      "n": 90,
+      "birim": "%"
+    }
+  },
+  "sutTipi": {
+    "smac": {
+      "deger": 5.65,
+      "alt": 4.65,
+      "ust": 6.64,
+      "kaynak": "shotdetail (2022+2023+2024) · ACTION_TYPE",
+      "n": 90,
+      "birim": "%"
+    },
+    "turnike": {
+      "deger": 24.74,
+      "alt": 22.16,
+      "ust": 27.32,
+      "kaynak": "shotdetail (2022+2023+2024) · ACTION_TYPE",
+      "n": 90,
+      "birim": "%"
+    },
+    "floater": {
+      "deger": 8.8,
+      "alt": 6.57,
+      "ust": 11.02,
+      "kaynak": "shotdetail (2022+2023+2024) · ACTION_TYPE",
+      "n": 90,
+      "birim": "%"
+    },
+    "kanca": {
+      "deger": 2.93,
+      "alt": 1.83,
+      "ust": 4.04,
+      "kaynak": "shotdetail (2022+2023+2024) · ACTION_TYPE",
+      "n": 90,
+      "birim": "%"
+    },
+    "tipin": {
+      "deger": 2.55,
+      "alt": 2.07,
+      "ust": 3.03,
+      "kaynak": "shotdetail (2022+2023+2024) · ACTION_TYPE",
+      "n": 90,
+      "birim": "%"
+    },
+    "jumper": {
+      "deger": 15.21,
+      "alt": 11.46,
+      "ust": 18.96,
+      "kaynak": "shotdetail (2022+2023+2024) · ACTION_TYPE",
+      "n": 90,
+      "birim": "%"
+    },
+    "uc": {
+      "deger": 40.12,
+      "alt": 36.28,
+      "ust": 43.96,
+      "kaynak": "shotdetail (2022+2023+2024) · ACTION_TYPE",
+      "n": 90,
+      "birim": "%"
+    }
+  },
+  "kutuOranlari": {
+    "sayi": {
+      "deger": 95.2,
+      "alt": 91.95,
+      "ust": 98.46,
+      "kaynak": "nbastats (2022+2023+2024) · açıklamadaki \"(N PTS)\" en büyüğü",
+      "n": 90,
+      "olcek": 0.8333
+    },
+    "fga": {
+      "deger": 74.01,
+      "alt": 72.1,
+      "ust": 75.93,
+      "kaynak": "shotdetail (2022+2023+2024)",
+      "n": 90,
+      "olcek": 0.8333
+    },
+    "ucPayi": {
+      "deger": 40.12,
+      "alt": 36.28,
+      "ust": 43.96,
+      "kaynak": "shotdetail (2022+2023+2024) · 3PA/FGA",
+      "n": 90,
+      "birim": "%"
+    },
+    "fta": {
+      "deger": 18.59,
+      "alt": 17.22,
+      "ust": 19.96,
+      "kaynak": "nbastats (2022+2023+2024)",
+      "n": 90,
+      "olcek": 0.8333
+    },
+    "ftaFgaOrani": {
+      "deger": 0.251,
+      "alt": 0.23,
+      "ust": 0.273,
+      "kaynak": "nbastats (2022+2023+2024) (FTA) + shotdetail (2022+2023+2024) (FGA), TEAM_ID ile eşleştirildi",
+      "n": 90
+    },
+    "asist": {
+      "deger": 21.82,
+      "alt": 20.18,
+      "ust": 23.45,
+      "kaynak": "nbastats (2022+2023+2024) · EVENTMSGTYPE 1 PLAYER2",
+      "n": 90,
+      "olcek": 0.8333
+    },
+    "asistIsabetliSutOrani": {
+      "deger": 0.624,
+      "alt": 0.588,
+      "ust": 0.66,
+      "kaynak": "nbastats (2022+2023+2024)",
+      "n": 90
+    },
+    "ribaunt": {
+      "deger": 36.41,
+      "alt": 34.88,
+      "ust": 37.94,
+      "kaynak": "nbastats (2022+2023+2024) · EVENTMSGTYPE 4",
+      "n": 90,
+      "olcek": 0.8333
+    },
+    "topKaybi": {
+      "deger": 11.67,
+      "alt": 10.73,
+      "ust": 12.6,
+      "kaynak": "nbastats (2022+2023+2024) · EVENTMSGTYPE 5",
+      "n": 90,
+      "olcek": 0.8333
+    },
+    "topKaybiPozisyonBasina": {
+      "deger": 0.141,
+      "alt": 0.129,
+      "ust": 0.153,
+      "kaynak": "pbpstats (2022+2023+2024) · TURNOVERS",
+      "n": 90
+    },
+    "calma": {
+      "deger": 6.38,
+      "alt": 5.71,
+      "ust": 7.05,
+      "kaynak": "nbastats (2022+2023+2024) · EVENTMSGTYPE 5 PLAYER2",
+      "n": 90,
+      "olcek": 0.8333
+    },
+    "blok": {
+      "deger": 4.08,
+      "alt": 3.48,
+      "ust": 4.67,
+      "kaynak": "nbastats (2022+2023+2024) · EVENTMSGTYPE 2 PLAYER3",
+      "n": 90,
+      "olcek": 0.8333
+    },
+    "faul": {
+      "deger": 16.35,
+      "alt": 15.15,
+      "ust": 17.56,
+      "kaynak": "nbastats (2022+2023+2024) · EVENTMSGTYPE 6",
+      "n": 90,
+      "olcek": 0.8333,
+      "not": "Yalnız SÜREYE göre ölçeklenmiştir. FIBA gerçekte NBA’den daha çok faul üretir (dar boya, farklı temas yorumu); yön bilinir, büyüklüğü bu veriden ÖLÇÜLEMEZ — bant NBA’nin ölçeklenmiş hâlidir."
+    },
+    "hucumRibaunduPozisyonBasina": {
+      "deger": 0.129,
+      "alt": 0.121,
+      "ust": 0.137,
+      "kaynak": "pbpstats (2022+2023+2024) · OFFENSIVEREBOUNDS",
+      "n": 90
+    },
+    "ORB": null,
+    "DRB": null
+  },
+  "pozisyonBasina": {
+    "_aciklama": "Pozisyon başına oran — süreden ve tempodan BAĞIMSIZ. Bir ölçütü gerçeğe oturtmanın doğru yolu budur: motorun kendi pozisyon sayısıyla çarpılır. Ölçek UYGULANMAZ.",
+    "sayi": {
+      "deger": 1.155,
+      "alt": 1.1208,
+      "ust": 1.1892,
+      "kaynak": "nbastats (2022+2023+2024) + pbpstats (2022+2023+2024)",
+      "n": 90
+    },
+    "fga": {
+      "deger": 0.898,
+      "alt": 0.8793,
+      "ust": 0.9167,
+      "kaynak": "shotdetail (2022+2023+2024) + pbpstats (2022+2023+2024)",
+      "n": 90
+    },
+    "fta": {
+      "deger": 0.2256,
+      "alt": 0.2089,
+      "ust": 0.2422,
+      "kaynak": "nbastats (2022+2023+2024) + pbpstats (2022+2023+2024)",
+      "n": 90
+    },
+    "ribaunt": {
+      "deger": 0.4418,
+      "alt": 0.424,
+      "ust": 0.4596,
+      "kaynak": "nbastats (2022+2023+2024) + pbpstats (2022+2023+2024)",
+      "n": 90
+    },
+    "asist": {
+      "deger": 0.2646,
+      "alt": 0.2464,
+      "ust": 0.2828,
+      "kaynak": "nbastats (2022+2023+2024) + pbpstats (2022+2023+2024)",
+      "n": 90
+    },
+    "topKaybi": {
+      "deger": 0.1415,
+      "alt": 0.1308,
+      "ust": 0.1522,
+      "kaynak": "nbastats (2022+2023+2024) + pbpstats (2022+2023+2024)",
+      "n": 90
+    },
+    "calma": {
+      "deger": 0.0774,
+      "alt": 0.0692,
+      "ust": 0.0857,
+      "kaynak": "nbastats (2022+2023+2024) + pbpstats (2022+2023+2024)",
+      "n": 90
+    },
+    "blok": {
+      "deger": 0.0494,
+      "alt": 0.0423,
+      "ust": 0.0566,
+      "kaynak": "nbastats (2022+2023+2024) + pbpstats (2022+2023+2024)",
+      "n": 90
+    },
+    "faul": {
+      "deger": 0.1984,
+      "alt": 0.1841,
+      "ust": 0.2127,
+      "kaynak": "nbastats (2022+2023+2024) + pbpstats (2022+2023+2024)",
+      "n": 90
+    },
+    "oyuncuDegisikligi": {
+      "deger": 0.2393,
+      "alt": 0.2127,
+      "ust": 0.266,
+      "kaynak": "nbastats (2022+2023+2024) + pbpstats (2022+2023+2024)",
+      "n": 90
+    },
+    "sutSaatiIhlali": {
+      "deger": 0.00686,
+      "alt": 0.00521,
+      "ust": 0.00851,
+      "kaynak": "nbastats (2022+2023+2024) + pbpstats (2022+2023+2024)",
+      "n": 90
+    },
+    "hucumFaulu": {
+      "deger": 0.01652,
+      "alt": 0.01339,
+      "ust": 0.01966,
+      "kaynak": "nbastats (2022+2023+2024) + pbpstats (2022+2023+2024)",
+      "n": 90
+    },
+    "tac": {
+      "deger": 0.02742,
+      "alt": 0.02411,
+      "ust": 0.03072,
+      "kaynak": "nbastats (2022+2023+2024) + pbpstats (2022+2023+2024)",
+      "n": 90
+    },
+    "adimCiftSurme": {
+      "deger": 0.00877,
+      "alt": 0.00615,
+      "ust": 0.01139,
+      "kaynak": "nbastats (2022+2023+2024) + pbpstats (2022+2023+2024)",
+      "n": 90
+    },
+    "teknikFaul": {
+      "deger": 0.00342,
+      "alt": 0.00204,
+      "ust": 0.0048,
+      "kaynak": "nbastats (2022+2023+2024) + pbpstats (2022+2023+2024)",
+      "n": 90
+    },
+    "mola": {
+      "deger": 0.05574,
+      "alt": 0.05201,
+      "ust": 0.05946,
+      "kaynak": "nbastats (2022+2023+2024) + pbpstats (2022+2023+2024)",
+      "n": 90
+    }
+  },
+  "rotasyon": {
+    "oynayanOyuncu": {
+      "deger": 10.65,
+      "alt": 10.17,
+      "ust": 11.13,
+      "kaynak": "nbastats (2022+2023+2024) · maçta en az bir olayı olan oyuncu",
+      "n": 90
+    },
+    "yedekSayiPayi": {
+      "deger": 36.55,
+      "alt": 31.07,
+      "ust": 42.02,
+      "kaynak": "nbastats (2022+2023+2024) · değişiklik kaydından ilk beş/yedek ayrımı",
+      "n": 90,
+      "birim": "%",
+      "not": "Yedek = maçtaki İLK değişikliğinde GİREN taraf olan oyuncu. Hiç değişikliğe girmeyen oyuncu ilk beş sayılır — bu MUHAFAZAKÂR yöndür, gerçek yedek payı bu değerin biraz üstünde olabilir."
+    },
+    "enSkorerPayi": {
+      "deger": 24.8,
+      "alt": 22.84,
+      "ust": 26.76,
+      "kaynak": "nbastats (2022+2023+2024)",
+      "n": 90,
+      "birim": "%"
+    },
+    "oyuncuDegisikligi": {
+      "deger": 19.74,
+      "alt": 17.4,
+      "ust": 22.07,
+      "kaynak": "nbastats (2022+2023+2024) · EVENTMSGTYPE 8 (takım başına)",
+      "n": 90,
+      "olcek": 0.8333,
+      "not": "NBA sınırsız değişiklik hakkına sahiptir ve mola/ölü top sayısı FIBA’dan fazladır; bu ölçüt kural farkından en çok etkilenen kalemlerdendir."
+    }
+  },
+  "kuralOlaylari": {
+    "_birim": "takım başına maç başına (FIBA süresine ölçekli)",
+    "sutSaatiIhlali": {
+      "deger": 0.564,
+      "alt": 0.435,
+      "ust": 0.694,
+      "kaynak": "nbastats (2022+2023+2024) · EVENTMSGTYPE 5 / EVENTMSGACTIONTYPE",
+      "n": 90,
+      "olcek": 0.8333
+    },
+    "hucumFaulu": {
+      "deger": 1.362,
+      "alt": 1.103,
+      "ust": 1.62,
+      "kaynak": "nbastats (2022+2023+2024) · EVENTMSGTYPE 5 / EVENTMSGACTIONTYPE",
+      "n": 90,
+      "olcek": 0.8333
+    },
+    "tac": {
+      "deger": 2.261,
+      "alt": 1.978,
+      "ust": 2.543,
+      "kaynak": "nbastats (2022+2023+2024) · EVENTMSGTYPE 5 / EVENTMSGACTIONTYPE",
+      "n": 90,
+      "olcek": 0.8333
+    },
+    "adimCiftSurme": {
+      "deger": 0.724,
+      "alt": 0.503,
+      "ust": 0.945,
+      "kaynak": "nbastats (2022+2023+2024) · EVENTMSGTYPE 5 / EVENTMSGACTIONTYPE",
+      "n": 90,
+      "olcek": 0.8333
+    },
+    "kotuPas": {
+      "deger": 4.069,
+      "alt": 3.564,
+      "ust": 4.574,
+      "kaynak": "nbastats (2022+2023+2024) · EVENTMSGTYPE 5 / EVENTMSGACTIONTYPE",
+      "n": 90,
+      "olcek": 0.8333
+    },
+    "topKaptirma": {
+      "deger": 2.398,
+      "alt": 2.037,
+      "ust": 2.758,
+      "kaynak": "nbastats (2022+2023+2024) · EVENTMSGTYPE 5 / EVENTMSGACTIONTYPE",
+      "n": 90,
+      "olcek": 0.8333
+    },
+    "teknikFaul": {
+      "deger": 0.282,
+      "alt": 0.167,
+      "ust": 0.396,
+      "kaynak": "nbastats (2022+2023+2024) · EVENTMSGTYPE 6, teknik alt türleri",
+      "n": 90,
+      "olcek": 0.8333
+    },
+    "mola": {
+      "deger": 4.59,
+      "alt": 4.28,
+      "ust": 4.91,
+      "kaynak": "nbastats (2022+2023+2024) · EVENTMSGTYPE 9",
+      "n": 90,
+      "olcek": 0.8333,
+      "not": "NBA mola kuralı FIBA’dan farklıdır (NBA 7 mola + zorunlu yayın molaları · FIBA 5). Ölçek yalnız SÜREYİ düzeltir, KURAL farkını değil — bu ölçüt FIBA için üst sınırdır."
+    }
+  },
+  "macSonu": {
+    "uzatmaOrani": {
+      "deger": 5.37,
+      "alt": 4.8,
+      "ust": 6.42,
+      "birim": "%",
+      "kaynak": "nbastats (2022+2023+2024) · maçın en büyük PERIOD > 4",
+      "n": 3690,
+      "not": "Bant SEZONLAR ARASI gerçek aralıktır (takım-sezon değil): uzatma maç düzeyinde bir orandır, takım başına anlamlı değildir. Süreyle ÖLÇEKLENMEZ."
+    },
+    "farkOrtalamasi": {
+      "deger": 10.14,
+      "alt": null,
+      "ust": null,
+      "kaynak": "nbastats (2022+2023+2024) · |ev − deplasman| mutlak fark",
+      "n": 3690,
+      "olcek": 0.8333
+    },
+    "farkStandartSapmasi": {
+      "deger": 7.65,
+      "alt": null,
+      "ust": null,
+      "kaynak": "nbastats (2022+2023+2024) · mutlak farkın std sapması",
+      "n": 3690,
+      "olcek": 0.8333
+    },
+    "farkDagilimi": {
+      "0-3": 14.85,
+      "4-5": 11.38,
+      "6-10": 24.61,
+      "11-19": 21.73,
+      "20+": 11.49,
+      "birim": "%",
+      "kaynak": "nbastats (2022+2023+2024)",
+      "n": 3690,
+      "olcek": 0.8333,
+      "not": "Farklar 40/48 ile ÖLÇEKLENDİKTEN SONRA kovalara ayrıldı — 40 dakikalık maçta aynı güç farkı daha küçük sayı farkı üretir. Ölçeksiz kovalanırsa kapı motoru 48 dakikalık NBA maçına ayarlar."
+    },
+    "ceyrekBasinaSayi": {
+      "deger": 23.8,
+      "alt": 22.99,
+      "ust": 24.61,
+      "kaynak": "nbastats (2022+2023+2024)",
+      "n": 90,
+      "olcek": 0.8333
+    }
+  }
+}

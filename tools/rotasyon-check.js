@@ -13,6 +13,7 @@
  * Kullanım: node tools/rotasyon-check.js [--mac=40] [--tohum=20000]
  */
 const { ortamKur, kadroUret } = require('./_lib/anlatim-ornek.js');
+const G = require('./_lib/gercek-bant.js');
 
 const arg = (ad, v) => { const m = process.argv.find(a => a.startsWith('--' + ad + '=')); return m ? Number(m.split('=')[1]) : v; };
 const MAC = arg('mac', 40);
@@ -71,27 +72,26 @@ for (let i = 0; i < MAC; i++) {
 }
 const tm = 2 * macN;
 const H = [];
-const ok = (ad, deger, alt, ust, birim) => H.push({ ad, deger, alt, ust, birim: birim || '' });
-ok('yedeklerin sayı payı', yedekPay / tm, 25, 35, '%');
-ok('kutu skorda görünen oyuncu', gorunenOyuncu / tm, 10, 12);
-ok('en skorer oyuncunun sayı payı', enSkorerPay / tm, 18, 26, '%');
-ok('sayı bulan oyuncu', sayiBulan / tm, 8, 11);
-ok('oyuncu değişikliği (iki takım)', subT / macN, 16, 22);
+/* FAZ 39 §3.4: eşikler tools/_lib/gercek-bantlar.json'dan okunur (3 sezon NBA PBP,
+   3.690 maç). Eski eller yazılmış bantlar TAHMİNDİ; ölçüldüğünde yedek payı gerçekte
+   %36,6 çıktı (tahmin %25-35) ve oyuncu değişikliği takım başına 19,7 (tahmin: iki
+   takım için 16-22, yani gerçeğin yarısı). İlk beş / yedek ayrımı gerçek veride
+   DEĞİŞİKLİK KAYDINDAN çıkarıldı — ayrı bir kadro dosyası gerekmedi. */
+G.kapi(H, 'yedeklerin sayı payı', yedekPay / tm, 'rotasyon.yedekSayiPayi');
+G.kapi(H, 'kutu skorda görünen oyuncu', gorunenOyuncu / tm, 'rotasyon.oynayanOyuncu');
+G.kapi(H, 'en skorer oyuncunun sayı payı', enSkorerPay / tm, 'rotasyon.enSkorerPayi');
+/* JSON'daki değişiklik sayısı TAKIM başınadır; motorun sayacı iki takımın toplamı. */
+{ const d = G.al('rotasyon.oyuncuDegisikligi');
+  H.push({ ad: 'oyuncu değişikliği (iki takım)', deger: subT / macN,
+    alt: d.alt * 2, ust: d.ust * 2, gercek: d.deger * 2, kaynak: d.kaynak + ' ×2', n: d.n,
+    olcek: d.olcek, not: d.not }); }
+/* 'sayı bulan oyuncu' gerçek veriden AYRI bir ölçüt olarak çıkarılmadı (oynayan oyuncu
+   sayısı var, sayı bulanınki yok) — kapı KURULMAZ, bilgi olarak basılır (§3.4). */
+H.push({ ad: 'sayı bulan oyuncu', deger: sayiBulan / tm, alt: null, ust: null,
+  neden: 'gerçek veriden ayrıca çıkarılmadı' });
 
-console.log('\n' + '='.repeat(66));
+console.log('');
 console.log(`ROTASYON — ${macN} maç · tohum ${TOHUM}`);
-console.log('='.repeat(66));
-let dusen = 0;
-H.forEach(h => {
-  /* Kayan nokta payı: 9,9875 ekranda "10.0" yazılıp eşiği (10) kılpayı kaçırıyordu —
-     kapı sayıyı değil YUVARLAMAYI yargılıyordu. Gösterilen basamak kadar tolerans. */
-  const _eps = Math.max(1e-9, (h.ust - h.alt) * 0.02);
-  const gec = h.deger >= h.alt - _eps && h.deger <= h.ust + _eps;
-  if (!gec) dusen++;
-  const d = h.birim === '%' ? h.deger.toFixed(1) + '%' : h.deger.toFixed(1);
-  const b = h.birim === '%' ? `%${h.alt} - %${h.ust}` : `${h.alt} - ${h.ust}`;
-  console.log('  ' + (gec ? '✓' : '✗') + ' ' + h.ad.padEnd(32) + d.padStart(8) + '   hedef ' + b);
-});
-console.log('='.repeat(66));
-console.log(dusen ? `✗ ${dusen} hedef düştü` : '✓ rotasyon gerçek bantlarda');
-process.exit(dusen ? 1 : 0);
+const gecti = G.bas(H, 'ROTASYON — gerçek bantlara karşı');
+console.log(gecti ? '✓ rotasyon gerçek bantlarda' : '✗ rotasyon bandın dışında');
+process.exit(gecti ? 0 : 1);
