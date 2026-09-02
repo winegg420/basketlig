@@ -90,7 +90,44 @@ function failVar(txt) {
 }
 
 /* ── Yabancı terim ───────────────────────────────────────────────────────────────── */
-const YABANCI = /\bspacing\b|\bbox-?out\b|\bdrive\b|\broll\b|\bAND-?1\b|\bpick\b|\bclutch\b|\bcrossover\b|\bstep-?back\b|\bspin move\b/i;
+/* ── FAZ 36 §B5: YABANCI TERİM ARTIK LİSTEYLE DEĞİL SINIFLA ARANIR ────────────────────
+   Eski kapı sabit bir kelime listesiydi (spacing · box-out · drive · roll · AND-1 …).
+   FAZ 26 şut tiplerini eklerken "floater" havuza girdi ve listede olmadığı için kapı
+   onu HİÇ görmedi — canlıda 256 olayda 6 kez geçiyordu. Liste, yeni terim eklendikçe
+   geride kalır; sınıf kalmaz.
+   ÖLÇÜT: Türkçede BULUNMAYAN harf/harf öbeği taşıyan KÜÇÜK HARFLİ sözcük. Küçük harf
+   koşulu zorunludur (FAZ 29 §1 kuralı): özel adlar büyük harfle başlar ve "Washington",
+   "Smith", "Cooper", "Ng" birer oyuncu/şehir adıdır, kusur değil. Cümle başındaki
+   büyük harfli terim ise (ör. "Floater kısa kaldı.") ayrıca AÇIK listeyle yakalanır.
+   Türkçede geçmeyen öbekler: q w x · ck sh th ph ch oo ee ea ou oa · sonda ng/ll/ss/ff. */
+const _YABANCI_OBEK = /(q|w|x|ck|sh|th|ph|ch|oo|ee|ea|ou|oa)/;
+const _YABANCI_SON  = /(ng|ll|ss|ff|tt)$/;
+const _YABANCI_ACIK = /^(floater|floaters|dunk|layup|jumper|spacing|drive|roll|pick|clutch|crossover|stepback|screen|fadeaway|putback|and-?1)$/i;
+/* Türkçe anlatımda bilinçli olarak uzatılan spiker söyleyişleri (ünlü tekrarı). */
+const _YABANCI_MUAF = /^(geliyoo|yükseliyoo|gidiyoo|olduu|hadii)$/i;
+function _yabanciSozcuk(w) {
+  const t = String(w).replace(/[^\p{L}-]/gu, "");
+  if (t.length < 3) return null;
+  if (_YABANCI_ACIK.test(t)) return t.toLowerCase();
+  if (_YABANCI_MUAF.test(t)) return null;
+  /* Türkçe ALFABE DIŞI bir Latin harfi (ł ć ž đ å ø …) varsa bu bir ÖZEL ADDIR —
+     havuzlardaki oyuncu/şehir adları böyle yazılır. Sözcük parçalayıp "awek" gibi
+     hayalet kök üretmemek için tüm sözcük atlanır (ölçüldü: 340 yanlış pozitif). */
+  if (/[^A-Za-zÇĞİÖŞÜçğıöşü-]/.test(t)) return null;
+  if (/[ÇĞİÖŞÜçğıöşü]/.test(t)) return null;      /* Türkçe harf → Türkçe sözcük */
+  if (!/^[a-z]/.test(t)) return null;             /* büyük harfli = özel ad */
+  const l = t.toLowerCase();
+  if (_YABANCI_OBEK.test(l) || _YABANCI_SON.test(l)) return l;
+  return null;
+}
+function yabanciTerimler(tx) {
+  const out = [];
+  String(tx).replace(/<[^>]+>/g, " ").split(/[^\p{L}-]+/u).forEach(w => {
+    const y = _yabanciSozcuk(w);
+    if (y) out.push(y);
+  });
+  return out;
+}
 
 /* ── Saat referansı ──────────────────────────────────────────────────────────────── */
 const SAAT = /süre|saat|saniye|çeyrek biterken|çeyrek kapan|son saniyeler|zaman daral/i;
@@ -177,7 +214,7 @@ function fiilsizCumleler(tx) {
 
 function olcumler(events, macSayisi) {
   const r = {
-    olay: 0, kelime: 0, sut: 0, zincir: 0,
+    olay: 0, satir: 0, kelime: 0, sut: 0, zincir: 0,
     ekHata: [], failsiz: [], yabanci: {},
     saat: 0, ton: 0, foul: 0, foulKunye: 0, hepsiIceride: 0,
     celiski: [],
@@ -189,13 +226,32 @@ function olcumler(events, macSayisi) {
     if (!tx) return;
     r.olay++;
     r.kelime += tx.replace(/\([^)]*\)/g, '').trim().split(/\s+/).filter(Boolean).length;
+    /* FAZ 36 §A1: şut olayı EKRANA İKİ SATIR basar — top elden çıkarken ön parça
+       (e.preText), çemberde sonuç parçası (e.text). Kelime ortalaması ekranda görünen
+       SATIR başına ölçülür; ön parçayı saymazsak metrik ekranı değil veri modelini ölçer.
+       ⚠ Oran kapıları (saat/ton/künye) OLAY başına kalır — bantları ön parçasız
+       kalibre edildi, paydayı büyütmek davranış değişmeden oranı düşürürdü. */
+    r.satir++;
+    if (e.preText) {
+      const px = String(e.preText).replace(/<[^>]+>/g, '').trim();
+      if (px) {
+        r.satir++;
+        r.kelime += px.trim().split(/s+/).filter(Boolean).length;
+        ekHatalari(px).forEach(h => { if (r.ekHata.length < 12) r.ekHata.push(h); });
+        yabanciTerimler(px).forEach(y => { r.yabanci[y] = (r.yabanci[y] || 0) + 1; });
+        if (SERVIS_RE.test(px) && r.servis.length < 8) r.servis.push(px.slice(0, 90));
+        KARA_LISTE.forEach(re => { if (re.test(px) && r.kara.length < 8) r.kara.push(px.slice(0, 90)); });
+        const _pc = cumleler(px); r.cumle += _pc.length;
+        const _pf = fiilsizCumleler(px); r.fiilsizN += _pf.length;
+        _pf.forEach(x => { if (r.fiilsiz.length < 8) r.fiilsiz.push(x); });
+      }
+    }
 
     ekHatalari(tx).forEach(h => { if (r.ekHata.length < 12) r.ekHata.push(h); });
 
     if (FAILLI_TIP.has(e.type) && !failVar(tx) && r.failsiz.length < 12) r.failsiz.push(`[${e.type}] ${tx}`);
 
-    const y = tx.match(YABANCI);
-    if (y) r.yabanci[y[0].toLowerCase()] = (r.yabanci[y[0].toLowerCase()] || 0) + 1;
+    yabanciTerimler(tx).forEach(y => { r.yabanci[y] = (r.yabanci[y] || 0) + 1; });
 
     if (SAAT.test(tx)) r.saat++;
     if (TON.test(tx)) r.ton++;
@@ -224,7 +280,7 @@ function olcumler(events, macSayisi) {
     }
   });
   r.mac = macSayisi;
-  r.kelimeOrt = r.olay ? r.kelime / r.olay : 0;
+  r.kelimeOrt = r.satir ? r.kelime / r.satir : 0;
   r.saatOran = r.olay ? r.saat / r.olay : 0;
   r.zincirOran = r.sut ? r.zincir / r.sut : 0;
   r.foulKunyeOran = r.foul ? r.foulKunye / r.foul : 0;
@@ -336,5 +392,5 @@ function damgaCakismasi(events) {
   return cak;
 }
 
-module.exports = { olcumler, ekHatalari, ekDenetle, failVar, metin, adlariBul, foulOku,
+module.exports = { olcumler, yabanciTerimler, ekHatalari, ekDenetle, failVar, metin, adlariBul, foulOku,
                    sutIfadeSayisi, damgaCakismasi, fiilsizCumleler, cumleler };

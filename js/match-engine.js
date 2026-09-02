@@ -191,13 +191,27 @@ function _tokShort(name){ const a=String(name||'').trim().split(/\s+/); return a
    ise tam adı kullanır. Ayrım bilinçli: _tokShort jeton içindir, _anlatimAdi anlatım.
    Eşik 3 harf — "Öz" ve "Ng" tam adla, "Kaya" tek adla geçer. */
 const _ANLATIM_MIN_SOYAD=3;
+/* ── FAZ 36 §B6: PARÇACIKLI SOYADLAR BÖLÜNMEZ ──────────────────────────────────────
+   "Guillaume Van Hooren" kısaltılırken yalnız son kelime alınıyor ve anlatımda
+   "Hooren topu yukarı taşıdı" çıkıyordu — soyad "Van Hooren"dir, "Hooren" değil.
+   Aynı sınıf: "De Vries", "Von Scholz", "De la Cruz", "Dos Santos", "Di Marco",
+   "Le Roux", "Van der Berg". Parçacık soyadın PARÇASIDIR; ek çekimi de (turkEk)
+   tam soyad üzerinden yapılır çünkü okunuş son heceden gelir.
+   ⚠ Yalnız SON kelimeden geriye doğru yürünür ve ilk kelime asla yenmez — "De" bir
+   ön ad olsaydı (a[0]) soyad boş kalırdı. */
+const _AD_PARCACIK=/^(van|von|de|del|della|di|da|das|dos|du|der|den|le|la|el|ter|ten|bin|ibn|mac|mc|af|av)$/i;
+function _soyadTam(a){
+  let i=a.length-1;
+  while(i>0&&_AD_PARCACIK.test(a[i-1])) i--;
+  return a.slice(i).join(' ');
+}
 function _anlatimAdi(name){
   const tam=String(name||'').trim();
   if(!tam) return tam;
   const a=tam.split(/\s+/);
   if(a.length<2) return tam;                 /* tek kelimelik adda yapacak bir şey yok */
-  const son=a[a.length-1]||tam;
-  return (son.length<_ANLATIM_MIN_SOYAD)?tam:son;
+  const son=_soyadTam(a)||tam;
+  return (son.replace(/\s+/g,'').length<_ANLATIM_MIN_SOYAD)?tam:son;
 }
 function _tokSet(g,x,y,sc){
   if(!g) return;
@@ -666,7 +680,10 @@ function _simTick(dt){
         /* F16-A: ölü bölge 12/30 px idi; savunmacının hedefi o kadar bayat kalabildiği için
            adamı hareket edince kısa süre pota tarafını kaybediyordu. 8/20 px'e çekildi —
            jitter koruması sürüyor, gecikme azalıyor. */
-        if(p._mkx==null||Math.hypot(m.x-p._mkx,m.y-p._mky)>8||Math.hypot(b.x-(p._bbx||0),b.y-(p._bby||0))>20){
+        /* FAZ 36 §A3: ölü bölge 8/20 → 6/14 px. Ball-you-man kaybının kalan payı TAKİP
+           GECİKMESİDİR; hedef ne kadar bayat kalırsa savunmacı o kadar uzun süre yanlış
+           tarafta durur. Jitter koruması (deadzone fikri) sürüyor, gecikme kısalıyor. */
+        if(p._mkx==null||Math.hypot(m.x-p._mkx,m.y-p._mky)>6||Math.hypot(b.x-(p._bbx||0),b.y-(p._bby||0))>14){
           p._mkx=m.x; p._mky=m.y; p._bbx=b.x; p._bby=b.y;
           const hx=onBall?rim[0]:(rim[0]+b.x)/2, hy=onBall?rim[1]:(rim[1]+b.y)/2;
           /* ⚠ ARALIK DARALTMASI DENENDİ VE GERİ ALINDI (27 → 21 px): savunmacı adamına
@@ -677,7 +694,7 @@ function _simTick(dt){
              hedefi kısmak gecikmeyi kısmıyor. */
           const gap=onBall?(p._press?22:27):_defGap(Math.hypot(m.x-b.x,m.y-b.y));
           const dx=hx-m.x, dy=hy-m.y, d=Math.hypot(dx,dy)||1;
-          { const bh=_defBehind(m.x+dx/d*gap,m.y+dy/d*gap,m,rim); p.tx=_inX(bh[0]); p.ty=_inY(bh[1]); }
+          { const bh=_defBehind(m.x+dx/d*gap,m.y+dy/d*gap,m,rim,onBall?gap:46); p.tx=_inX(bh[0]); p.ty=_inY(bh[1]); }
           /* F11-4: topsuz savunmacı yalnız baseV ile takip ediyordu; hücum sprintle yer
              değiştirince (kesme, geç şutör koşusu) adamından 5-7 m geride kalıyordu.
              Hücumun sprint hızının (baseV*1,62) altında ama takip edebilecek kadar hızlı. */
@@ -704,7 +721,7 @@ function _simTick(dt){
              %85,8 → %84,6'ya geriledi. Sprint yalnız GERÇEKTEN uzak düşünce anlamlı. */
           const _uzakOnBall=onBall&&_kd>_YERINDE_ESIK*1.5;
           const _taban=(!_rimSide||_uzakOnBall)?_URG.SPRINT
-            :(onBall?_URG.KOS:(_kd>_YERINDE_ESIK?_URG.JOG:_URG.YURU));
+            :(onBall?_URG.KOS:_URG.JOG);   /* FAZ 36 §A2: topsuz savunmacı da savunma duruşunda kayar (YÜRÜ değil) */
           _setUrg(p,Math.max(_taban,_mu));
         }
       }
@@ -728,7 +745,13 @@ function _simTick(dt){
        ediyor ve YÜRÜ payı ölçümde %3,7'de kalıyordu. Davranış neredeyse değişmez (varış
        freni zaten hızı sınırlıyor), ama kademe artık gerçeği söyler. SPRINT ve koreografi
        kilidi altındaki jeton muaftır. */
-    if(p.urg!=null&&p.urg!==_URG.SPRINT&&p.urg!==_URG.YURU&&(p._lock||0)<=S.time&&
+    /* FAZ 36 §A2: SAVUNMACI YÜRÜMEZ. Yerine varan jetonu YÜRÜ'ye düşüren bu kural,
+       markajdaki savunmacıyı da kapsıyordu ve ölçümde zamanın %47'si YÜRÜ kademesinde
+       geçiyordu (hedef %20-45) — sahayı 'ağır çekim' gösteren asıl etken buydu. Gerçek
+       basketbolda savunmacı adamının yanında dururken de savunma duruşunda kayar.
+       Hücumda ve ölü topta kural aynen sürer. */
+    const _savunmada=!!(S.defTrack&&S.defP&&S.defP.indexOf(p)>=0&&p._mark);
+    if(!_savunmada&&p.urg!=null&&p.urg!==_URG.SPRINT&&p.urg!==_URG.YURU&&(p._lock||0)<=S.time&&
        Math.hypot(p.x-p.tx,p.y-p.ty)<_YERINDE_ESIK){
       /* Markajdaki savunmacı da yürür: "ball-you-man" kaybının sebebi bu değil, savunmanın
          ölü bölgesiydi (yukarıda 12/30 → 8/20 px'e çekildi ve ölçü %85,6'ya döndü). */
@@ -1068,15 +1091,20 @@ function _defGap(distManBall){ return Math.min(34,17+distManBall*0.09); }
 /** F11-5 (ball-you-man): savunmacının hedefi HER ZAMAN adamının pota tarafında kalsın.
     Yardım pozisyonu top ile pota arasına bakar; adamı potaya çok yakınken (post) kural
     uygulanmaz — orada iki jetonu ayıran zaten üst üste binme çözücüsüdür. */
-function _defBehind(tx,ty,m,rim){
+function _defBehind(tx,ty,m,rim,pay){
   const dm=Math.hypot(m.x-rim[0],m.y-rim[1]);
-  if(dm<64) return [tx,ty];
+  if(dm<34) return [tx,ty];
   const dd=Math.hypot(tx-rim[0],ty-rim[1]);
   /* F15-1: pay 8 px idi — savunmacı adamının pota tarafında ANCAK 0,27 m kalıyordu ve
      hareket gecikmesi bu farkı kolayca yiyordu ("ball-you-man" ölçüsü %87 → %78).
      Pay 22 px (0,74 m): savunmacı belirgin biçimde pota tarafında durur. */
-  if(dd<=dm-30) return [tx,ty];
-  const k=(dm-30)/(dd||1);
+  /* FAZ 36 §A3: pay artık ÇAĞIRANDAN gelir. Tek bir 38 px'lik pay topsuz savunmacı için
+     doğru (ball-you-man %81 → %88) ama TOPU TUTANIN savunmacısını da 38 px'e itiyordu:
+     hedef zaten adam-pota doğrultusunda 27 px'te kurulduğu için projeksiyon onu geriye
+     çekiyor ve markaj mesafesi 1,80 → 1,86 m'ye çıkıyordu. Top savunmacısında pay = aralık. */
+  const _pay=(pay!=null?pay:46);
+  if(dd<=dm-_pay) return [tx,ty];
+  const k=(dm-_pay)/(dd||1);
   return [rim[0]+(tx-rim[0])*k, rim[1]+(ty-rim[1])*k];
 }
 /** Bir jetonun hedefini kısa süre "kilitle" — savunma takibi/dizilim üzerine yazmasın. */
@@ -1111,7 +1139,7 @@ const SET_ALL=[SET_SPREAD,SET_HORNS,SET_POST,SET_MOTION,SET_5OUT,SET_SPREAD];
 /* GEÇİŞ: hücum ÜÇ KULVAR — top ortadan sürülür, kanatlar KENAR çizgilerine yakın koşar,
    büyükler arkadan gelir. Kulvarlar geniş tutulur (y 58/442) ki iki takım orta bantta tek
    yumak hâlinde koşmasın; savunma ise ortadan potaya döner. */
-const TRANS_OFF=[[404,250],[300, 58],[300,442],[440,116],[452,384]];
+const TRANS_OFF=[[306,250],[160, 50],[160,450],[262,132],[298,368]];   /* FAZ 36 §A3: hedefler ön sahaya taşındı (orta üçte bir boşalsın) */
 /* GEÇİŞ: savunma önce POTAYA döner (adamı orta sahada kovalamaz), kendi arasında da yayılır */
 const TRANS_DEF=[[188,250],[140,178],[140,322],[252,200],[252,300]];
 /* 2-3 bölge savunması bölge merkezleri: 2 guard yay dirseklerinde (geniş), 3 uzun
@@ -2456,20 +2484,20 @@ const SPIKERS=[
    score2/miss2 havuzunda yakın + orta + nötr kalıplar dengeli tutuldu. */
 const SPIKER_LINES={
   cosku:{
-    score2:['%S SMACI ÇAKTI, potaya asıldı! %SC','%S SMAÇLA BİTİRDİ — çember titredi! %SC','%S çemberi PARÇALADI, smaç! %SC','%S floater ile yükseldi, içeride! %SC','%S POTAYA ASILDI, İKİ SAYI! %SC','%S BOYALI ALANI YIKTI! %SC','%S turnikeyi PATLATTI! %SC','%S pota altında CANAVAR gibi, iki! %SC','%S ORTA MESAFEDEN VURDU, muhteşem! %SC','%S orta mesafeden soğukkanlı, iki! %SC','%S orta mesafe şutunu tutturdu! %SC','%S DURDURULAMIYOR, iki sayı! %SC','%S sayıyı yazdırdı, tribün ayakta! %SC','%S buz gibi bitirdi! %SC','%S coştu, iki daha geldi! %SC'],
+    score2:['%S SMACI ÇAKTI, potaya asıldı! %SC','%S SMAÇLA BİTİRDİ — çember titredi! %SC','%S çemberi PARÇALADI, smaç! %SC','%S yumuşak kavisle yükseldi, içeride! %SC','%S POTAYA ASILDI, İKİ SAYI! %SC','%S BOYALI ALANI YIKTI! %SC','%S turnikeyi PATLATTI! %SC','%S pota altında CANAVAR gibi, iki! %SC','%S ORTA MESAFEDEN VURDU, muhteşem! %SC','%S orta mesafeden soğukkanlı, iki! %SC','%S orta mesafe şutunu tutturdu! %SC','%S DURDURULAMIYOR, iki sayı! %SC','%S sayıyı yazdırdı, tribün ayakta! %SC','%S buz gibi bitirdi! %SC','%S coştu, iki daha geldi! %SC'],
     score3:['%S DERİNDEN BOMBAYI PATLATTI — ÜÇLÜK! %SC','%S ÜÇLÜĞÜ GÖMDÜ, tribün ayakta! %SC','%S köşeden NİŞANCI gibi, üç! %SC','%S UZAKTAN VURDU, inanılmaz! %SC','%S yaydan ATEŞ etti — SWISH! %SC','%S logodan denedi ve GİRDİ! %SC','%S kanattan bombayı bıraktı! %SC','%S tereddütsüz çekti, üç geldi! %SC','%S file sallandı, muhteşem üçlük! %SC','%S yay dışından acımadı! %SC','%S üçlükte ateş hattında! %SC'],
-    miss2:['%S smacı çemberde patladı!','%S floater kısa kaldı!','%S turnikede tökezledi!','%S POTA İZİN VERMEDİ, kaçtı!','%S yakındaydı ama SEKTİ!','%S orta mesafeden kaçırdı!','%S orta mesafe şutu kısa kaldı!','%S uzaktan denedi, olmadı!','%S çember reddetti!','%S bu sefer olmadı, yazık!','%S demire takıldı!','%S ıskaladı, seyirci sustu!'],
+    miss2:['%S smacı çemberde patladı!','%S kavisi kısa kaldı!','%S turnikede tökezledi!','%S POTA İZİN VERMEDİ, kaçtı!','%S yakındaydı ama SEKTİ!','%S orta mesafeden kaçırdı!','%S orta mesafe şutu kısa kaldı!','%S uzaktan denedi, olmadı!','%S çember reddetti!','%S bu sefer olmadı, yazık!','%S demire takıldı!','%S ıskaladı, seyirci sustu!'],
     miss3:['%S üçlüğü KAÇTI, çemberden döndü!','%S uzaktan ıskaladı, olmadı!','%S bombayı boşa harcadı!','%S yay dışından vuramadı!','%S köşe üçlüğü havada kaldı!','%S demir dedi, girmedi!','%S üçlük kısa düştü!','%S file yerine demiri buldu!','%S dış atış tutmadı!'],
     block:['%B MUAZZAM BLOK! %S geri döndü!','%B ŞAPKAYI TAKTI, inanılmaz savunma!','%B topu SİLİP ATTI!','%B duvar gibi, %S durduruldu!','%B kapağı kapadı, %S şaşkın!','%B uzun topu geri çevirdi!','%B savunmada devleşti!'],
     steal:['%C TOPU KAPTI, koşuyoo!','%C pas arasını OKUDU, çaldı!','%C elini uzattı ve ALDI!','%C müthiş bir top çalma!','%C çizgiyi okudu, top bizde!','%C hücumu ters çevirdi!','%C aktif eller, çaldı gitti!'],
     tactic:['Ritim değişiyor — tempo yükseliyoo!','Savunma kilitlendi, enerji tavanda!','Baskı artıyor, tribün ayakta!','Hücumda yeni varyasyon geliyoo!','Koç kenardan bağırıyor, tempo!']
   },
   bilge:{
-    score2:['%S smaçla yüksek yüzdeli bitiriş. %SC','%S çembere yükselip smaçladı. %SC','%S floater ile uzunları aştı. %SC','%S doğru okumayla pota altında bitirdi. %SC','%S boyalı alanda yüksek yüzdeli bitiriş. %SC','%S turnikeyi sakin tamamladı. %SC','%S pota altı pozisyonunu iyi kullandı. %SC','%S orta mesafe şutu, mekanik kusursuz. %SC','%S orta mesafeden yüksek yüzde. %SC','%S uzaktan dengeli bir jumper, iki. %SC','%S savunmanın açığını görüp bitirdi. %SC','%S sabırlı hücum, temiz iki. %SC','%S pozisyonu iyi okudu, iki. %SC','%S soğukkanlı bir bitiriş. %SC'],
+    score2:['%S smaçla yüksek yüzdeli bitiriş. %SC','%S çembere yükselip smaçladı. %SC','%S kavisle uzunları aştı. %SC','%S doğru okumayla pota altında bitirdi. %SC','%S boyalı alanda yüksek yüzdeli bitiriş. %SC','%S turnikeyi sakin tamamladı. %SC','%S pota altı pozisyonunu iyi kullandı. %SC','%S orta mesafe şutu, mekanik kusursuz. %SC','%S orta mesafeden yüksek yüzde. %SC','%S uzaktan dengeli bir jumper, iki. %SC','%S savunmanın açığını görüp bitirdi. %SC','%S sabırlı hücum, temiz iki. %SC','%S pozisyonu iyi okudu, iki. %SC','%S soğukkanlı bir bitiriş. %SC'],
     score3:['%S ayakları hazır, ritimli üçlük. %SC','%S sahayı geniş kullandı, açık üç. %SC','%S kusursuz mekanikle üç. %SC','%S savunmayı yaydı ve cezalandırdı. %SC','%S yüksek yüzdeli konumdan üç. %SC','%S dengeli çıkış, temiz üçlük. %SC','%S köşe üçlüğünü değerlendirdi. %SC','%S kanattan isabetli üç. %SC','%S sabırlı organizasyon, açık üçlük. %SC','%S doğru karar, yay dışından üç. %SC','%S ritmini buldu, üç sayı. %SC'],
-    miss2:['%S smaç denemesi çembere takıldı.','%S floater kavisi kısa kaldı.','%S zorlama şut seçti, isabetsiz.','%S dengesi bozuktu, kaçtı.','%S savunma baskısında yüzde düştü.','%S bitiriş açısı kapalıydı.','%S acele etti, olmadı.','%S orta mesafeden kısa kaldı.','%S turnikede denge kaybı, kaçtı.','%S seçim hatalıydı, isabet yok.','%S ritim bozuldu, ıskaladı.','%S kontrolsüz şut, girmedi.'],
+    miss2:['%S smaç denemesi çembere takıldı.','%S kavisi kısa kaldı, olmadı.','%S zorlama şut seçti, isabetsiz.','%S dengesi bozuktu, kaçtı.','%S savunma baskısında yüzde düştü.','%S bitiriş açısı kapalıydı.','%S acele etti, olmadı.','%S orta mesafeden kısa kaldı.','%S turnikede denge kaybı, kaçtı.','%S seçim hatalıydı, isabet yok.','%S{in} ritmi bozuldu, ıskaladı.','%S kontrolsüz şut, girmedi.'],
     miss3:['%S ayakları hazır değildi, kısa.','%S kontestli üçlük, düşük yüzde.','%S ritim tutmadı, ıskaladı.','%S seçim tartışılır, kaçtı.','%S dengesiz çıkış, isabet yok.','%S zorlama üçlük, girmedi.','%S yay dışından yüzde düşük, kaçtı.','%S erken şut, demire takıldı.','%S kapalı pozisyondan zorladı, olmadı.'],
-    block:['%B iyi zamanlama, temiz blok — %S{i} durdurdu.','%B rotasyonu erken geldi, blokladı.','%B dikey savunmayla kurallı blok yaptı.','%B okuma harika, %S engellendi.','%B yardım geldi ve blokladı.','%B pozisyonu tuttu, temiz blok.','%B disiplinli savunma, %S durduruldu.'],
+    block:['%B iyi zamanlama, temiz blok — %S{i} durdurdu.','%B rotasyonu erken geldi, blokladı.','%B dikey savunmayla kurallı blok yaptı.','%B{in} okuması harika, %S engellendi.','%B yardım geldi ve blokladı.','%B pozisyonu tuttu, temiz blok.','%B disiplinli savunma, %S durduruldu.'],
     steal:['%C pas hattını kesti, kontrol onda.','%C okuması üst düzey, çaldı.','%C ellerini aktif kullandı, top kaybı.','%C savunma disiplini, topu aldı.','%C pasör hatasını cezalandırdı.','%C boşluğu okudu, top bizde.','%C erken rotasyonla topu kaptı.'],
     tactic:['Set oyunu düzenleniyor, sabırlı hücum.','Savunma rotasyonu yeniden ayarlanıyor.','Tempo kontrolü — doğru karar.','Açılma yeniden kuruluyor, akıllı oyun.','Hücum organizasyonu netleşiyor.']
   },
@@ -2511,7 +2539,7 @@ const MOVE_LINES=[
   'İnanılmaz güzel bir sahte çalım (fake), savunmacı dondu —',
   'Geriye çekilerek (step-back) alanı açtı —',
   'Dönerek (spin move) savunmadan sıyrıldı —',
-  'Çift krosover sonrası rakibini adeta pazara yolladı —',
+  'Çift çalımla rakibini yerinden etti —',
   'Yıldırım gibi ilk adımla dibe indi —',
   'Beklet-yükle ile savunmayı ters ayak yakaladı —',
   'Hesitasyon (bekletme) çalımıyla geçti —',
@@ -2519,7 +2547,7 @@ const MOVE_LINES=[
 ];
 const REB_OFF_LINES=[
   '%R hücum ribaundunu çok yükseklerden çekti — ikinci şans bizde!',
-  'Muhteşem ribaunt bloğu; %R rakibini pazara yolladı, top yeniden bizde!',
+  'Muhteşem ribaunt bloğu; %R rakibini uzakta tuttu, top yeniden bizde!',
   '%R camlara asıldı ve hücum ribaundunu kaptı!',
   '%R topu adeta tavandan indirdi, ekstra hücum!',
   '%R kaçan topu boyada avladı — ikinci şans!',
@@ -2640,7 +2668,7 @@ const UZMAN_RIBAUND=[
   'Her sekeni okuyor.',
   'Ribaunt bölgesinde tek başına hüküm sürüyor.',
   'Rakip uzunlar onunla baş edemiyor.',
-  'Şişeyi kapatıyor, ikinci şans vermiyor.',
+  'Camı kapatıyor, ikinci şans vermiyor.',
   'Cam onun tekelinde.'
 ];
 const UZMAN_CALMA=[
@@ -2792,7 +2820,7 @@ const _MID_WORDS=/orta mesafe|jump shot|uzaktan|kısa kaldı/i;
    arayan bir süzgeç EN'de hiç eşleşmez ve tip ayrımı sessizce kaybolur (i18n dersi). */
 const _DUNK_WORDS=/smaç|smac|potaya asıldı|çemberi salla|çemberi parçala|çember titredi|boyalı alanı yıktı|canavar gibi|yukarıdan bastır|çakmak istedi|üstünden çaktı|dunk|slam|throws it down|hangs on the rim|tears through the paint|beast down low/i;
 const _LAYUP_WORDS=/turnike|layup/i;
-const _FLOAT_WORDS=/floater|havada asılı bırak|parmak ucundan|floats it|hangs it up in the air|fingertips/i;
+const _FLOAT_WORDS=/kavis|havada asılı bırak|parmak ucu|floater|floats it|hangs it up in the air|fingertips|teardrop/i;
 /* FAZ 28 §2: iki yeni sınıf. Kanca posttaki uzunun omuz üstü şutu, tip-in ise hücum
    ribaundunun havada tek dokunuşla tamamlanmasıdır; ikisinin de kendi dili vardır. */
 const _HOOK_WORDS=/kanca|omzunun üstünden|hook shot|over his shoulder/i;
@@ -2921,6 +2949,36 @@ function adKoy(txt,map){
     return out.replace(/\s+([.!?,;])/g,'$1').replace(/\s{2,}/g,' ').trim();
   }catch(e){ return String(txt==null?'':txt); }
 }
+/* ── FAZ 36 §B8: VİRGÜLDEN SONRA BÜYÜK HARF ───────────────────────────────────────
+   Asist öneki ("Juárez topu kenara aktardı, ") ile şut cümlesi ("Kısa köşeden Süleyman
+   Demirel, üçlük içeride!") birleşince ikinci parçanın baş harfi büyük kalıyordu.
+   Virgülle biten önek CÜMLEYİ SÜRDÜRÜR — gövdenin ilk harfi küçülür. Noktalı virgül
+   ya da nokta ile biten önekte cümle biter, harf büyük kalır.
+   ⚠ Özel ad (oyuncu/takım adı) ile başlayan gövdeye DOKUNULMAZ; ölçüt, ilk sözcüğün
+   havuz metninden gelen bir CİNS sözcük olmasıdır — özel adlar `%S`/`%A` ile sonradan
+   yerleşir, bu yüzden burada ilk sözcük büyük harfli iki+ harfli bir ADSA korunur.
+   Türkçe küçük harf zorunlu: İ→i, I→ı (trKucuk). */
+function _birlestir(on,govde,korunan){
+  const o=String(on||''), g=String(govde||'');
+  if(!o||!g) return o+g;
+  if(!/,\s*$/.test(o)) return o+g;
+  const ilk=g.split(/\s+/)[0]||'';
+  /* Yer tutucudan gelen özel ad (ör. "%S") ya da simge ile başlıyorsa dokunma. */
+  if(/^[%\d🔥⚡]/.test(g)) return o+g;
+  /* ÖZEL AD KORUMASI: gövde oyuncu/takım adıyla başlıyorsa küçültme (Türkçede özel ad
+     cümle ortasında da büyük harfle yazılır). Adlar çağıran taraftan gelir — metinden
+     "büyük harfli sözcük" diye tahmin etmek her cins sözcüğü de korur ve kapı işlemez. */
+  if(korunan) for(const ad of korunan){
+    if(!ad) continue;
+    const ilkAd=String(ad).trim().split(/\s+/)[0];
+    if(ilkAd&&ilk.replace(/[^\p{L}'’]/gu,'')===ilkAd) return o+g;
+  }
+  /* TAMAMI büyük harf (vurgu: "SMACI ÇAKTI") korunur. */
+  if(ilk.length>1&&ilk===_trUst(ilk)) return o+g;
+  const k=(typeof trKucuk==='function')?trKucuk(g.charAt(0)):g.charAt(0).toLowerCase();
+  return o+k+g.slice(1);
+}
+function _trUst(s){ try{ return String(s).replace(/i/g,'İ').replace(/ı/g,'I').toUpperCase(); }catch(e){ return String(s).toUpperCase(); } }
 /* İŞ 4: asist ibareleri şemayla uyumlu ve ÇEŞİTLİ (eski monoton "X buldu; Y…" bitti). */
 /* ── F14-2: ZİNCİR ANLATIM ────────────────────────────────────────────────────────────
    Gerçek Türkçe basketbol anlatımının temel birimi 2-5 kelimelik bir parçadır
@@ -2931,7 +2989,7 @@ function adKoy(txt,map){
    içlerinde mesafe/bölge iddiası olan kelime BULUNMAMALI (köşe, boyalı alan, orta
    mesafe, yay dışı…). FAZ 13'te düzeltilen "söz ile saha çelişmesi" tekrarlamasın. */
 const AKIS_ON={
-  gelis:  ['%S geldi.','%S topu aldı.','%S topu yukarı taşıdı.','Topu %S kullanıyor.','%S ilerletiyor.','%S rakip yarı sahaya geçti.'],
+  gelis:  ['%S geldi.','%S topu aldı.','%S tempoyu kurdu.','Topu %S kullanıyor.','%S ilerletiyor.','%S rakip yarı sahaya geçti.'],
   perde:  ['Perde geldi.','%S perdeden çıktı.','Yüksek perde kuruldu.','Perde arkasından %S çıktı.','İkili oyun geldi.','%S perde istedi.'],
   /* §7.5: 'sırtını döndü' / 'adamını sırtladı' POST OYUNU iddiasıdır ve zincir bölge
      filtresinden geçmediği için spotup/pnr/cut pozisyonlarında da çıkıyordu. Bölge ve
@@ -2952,8 +3010,8 @@ const KISA_CEKIRDEK={
 const KISA_CEKIRDEK_SUT={
   smac:{ score2:['Smaçladı.','Çemberi salladı.','Yukarıdan bastırdı.','Smaçla bitirdi.'],
          miss2:['Smacı çember reddetti.','Smaçta çembere takıldı.'] },
-  floater:{ score2:['Floater ile bitirdi.','Kavisi tutturdu.','Havada asılı bıraktı.'],
-            miss2:['Floater kısa kaldı.','Floater kavisini uzun bıraktı.'] },
+  floater:{ score2:['Yumuşak kavisle bitirdi.','Kavisi tutturdu.','Havada asılı bıraktı.'],
+            miss2:['Kavisi kısa kaldı.','Kavisi uzun bıraktı.'] },
   turnike:{ score2:['Turnikeyi tamamladı.','Camdan yumuşak bıraktı.','Turnikeyi geçirdi.'],
             miss2:['Turnikede tökezledi.','Turnikesi çemberden döndü.'] },
   kanca:{ score2:['Kancayı kullandı.','Omzunun üstünden gönderdi.','Kancayı geçirdi.'],
@@ -2969,6 +3027,30 @@ const KISA_CEKIRDEK_SUT={
    Bu havuz spikerin KENDİ satırlarına EKLENİR (üslup kaybolmasın diye onların yerini
    almaz); `_sutSuz` tipe uyanları birleştirir. Sınıf başına ≥8 ifade zorunludur —
    `tools/anlatim-check.js` sayar. */
+/* ── FAZ 36 §A1: ŞUT ANLATIMI İKİ BEAT ────────────────────────────────────────────
+   Şutun TAMAMI (deneme + sonuç) tek cümlede ve top çembere varınca basılıyordu; hücum
+   koreografisi boyunca (ölçüldü: üçlükte 7,2 sn) anlatım tamamen susuyor, sonra tek
+   pakette dökülüyordu. Gerçek yayında anlatım şutla birlikte akar: top elden çıkarken
+   "çekti", çemberden geçerken "içeride!".
+   Bu havuz TOP ELDEN ÇIKTIĞI an basılan kısa ön parçadır (ev.preText); sonuç parçası
+   (ev.text) eskisi gibi çember anında basılır. SONUCU ELE VERMEZ.
+   ⚠ Yalnız `pr` tüketir (F13-3). */
+const SUT_ON_LINES={
+  uc:['%S üçlük için kalktı.','%S dıştan tetiği çekti.','%S yaydan bıraktı.',
+      '%S üçlüğü denedi.','%S dıştan gönderdi.','%S ayakları hazır, bıraktı.',
+      '%S yay dışından kalktı.','%S üçlüğü havaya bıraktı.','%S uzaktan şansını denedi.',
+      '%S dıştan kalktı.','%S üç sayı için bıraktı.','%S yay ötesinden gönderdi.',
+      '%S bileği kalktı, üçlük havada.','%S dışarıdan denedi.','%S yaydan şutu bıraktı.',
+      '%S üçlüğe yükseldi.','%S dış şutu havaya gönderdi.','%S uzaktan bıraktı.',
+      '%S tereddüt etmedi, üçlüğü attı.','%S dıştan havaya bıraktı.'],
+  ic:['%S şutu bıraktı.','%S çembere yükseldi.','%S denemesini gönderdi.',
+      '%S kalktı ve bıraktı.','%S topu çembere yolladı.','%S bitirmeye gitti.',
+      '%S şutunu havaya bıraktı.','%S potaya yüklendi.','%S çembere doğru gitti.',
+      '%S denemesi havada.','%S şutunu gönderdi.','%S yükselip bıraktı.',
+      '%S bitirmek için kalktı.','%S topu havaya bıraktı.','%S çembere yollandı.',
+      '%S şansını kullandı.','%S şutuna kalktı.','%S potaya gönderdi.',
+      '%S içeriden denedi.','%S bitirişe gitti.']
+};
 const SUT_LINES={
   smac:{
     score2:['%S çemberi salladı! %SC','%S potaya asıldı! %SC',
@@ -2987,10 +3069,13 @@ const SUT_LINES={
   },
   floater:{
     score2:['%S havada asılı bıraktı! %SC','%S parmak ucundan yolladı. %SC',
-            '%S floater ile uzunları aştı. %SC','%S kavisi tutturdu. %SC',
-            '%S boyadan floater bıraktı. %SC'],
-    miss2:['%S floater denedi, takıldı.','%S floater kavisini uzun bıraktı.',
-           '%S parmak ucundan denedi, olmadı.','%S floater zorladı, girmedi.']
+            '%S uzunların üstünden kavisledi. %SC','%S kavisi tutturdu. %SC',
+            '%S boyadan yumuşak kavis bıraktı. %SC','%S yüksek kavisle geçirdi. %SC',
+            '%S kavisli şutu fileye bıraktı. %SC','%S parmak ucuyla yumuşacık bıraktı. %SC'],
+    miss2:['%S kavisli şutu denedi, takıldı.','%S kavisi uzun bıraktı.',
+           '%S parmak ucundan denedi, olmadı.','%S yumuşak kavisi zorladı, girmedi.',
+           '%S havada asılı bıraktı ama olmadı.','%S kavisi çemberden döndü.',
+           '%S yüksek kavisi kısa kaldı.','%S uzunların üstünden denedi, girmedi.']
   },
   kanca:{
     score2:['%S kancayı kullandı. %SC','%S omzunun üstünden gönderdi. %SC',
@@ -3537,9 +3622,11 @@ function generateMatchEvents(rakip, opts){
   const FOUL_SIRA_I=['ilki','ikincisi','üçüncüsü','dördüncüsü','beşincisi'];
   /* Sonda nokta YOK: çağıran taraf ' · ' ile devam ettiriyor (künye biçimi de noktasız). */
   const FOUL_CUMLE=[
+    /* FAZ 36 §B2: 'Hakem %A{i} gördü' KALDIRILDI — Türkçede hakem oyuncuyu "görmez",
+       faul çalar. Kalan dört kalıp TEK ailedendir: hepsi "fail + kaçıncı faul" cümlesi. */
     '%A{in} %S faulü',
     '%A yine faulde — bu %I',
-    'Hakem %A{i} gördü, %S faul',
+    'Hakem düdüğü çaldı — %A{in} %S faulü',
     '%A faul yaptı; maçtaki %S faulü'
   ];
   function foulPrefix(fp){
@@ -3579,6 +3666,10 @@ function generateMatchEvents(rakip, opts){
        ek atışın sonucu şut cümlesinin içinde). Ribaundu burada eklersek anlatım "ribaund →
        basket" sırasıyla ters okunur. Bu yüzden olay BEKLETİLİR ve _flushReb() ile şuttan
        hemen sonra basılır. */
+    /* FAZ 36 §B1: serbest atış ribaundu da aynı kapıdan geçer — rutin savunma ribaundu
+       sessiz kalır, hücum ribaundu (ikinci şans) daima anlatılır. İstatistik yukarıda
+       zaten yazıldı; kapı YALNIZ anlatım satırını yargılar. */
+    if(!rebOff&&!prChance(0.02)) return rebOff;
     try{
       const rebIsUser=rebOff?userPos:!userPos;
       _pendingReb={type:'reb',dt:0,text:adKoy(pickLine(rebOff?REB_OFF_SHORT:REB_DEF_SHORT,pr,narr.recent,rebOff?'rebO':'rebD'),
@@ -3648,7 +3739,36 @@ function generateMatchEvents(rakip, opts){
   const prCh=a=>a[Math.floor(pr()*a.length)];
   const prChance=x=>pr()<x;
   /* Bağlam durumu: seri (cevapsız sayı), oyuncu sıcaklığı (art arda isabet), öneki throttle. */
-  const narr={runOff:null,run:0,heat:{},recent:{},ctxCd:0,yorumCd:0,imzaCd:0};
+  const narr={runOff:null,run:0,heat:{},recent:{},ctxCd:0,yorumCd:0,imzaCd:0,
+    /* FAZ 36 §B3: MAÇ DÜZEYİNDE tekrar hafızası. `pickLine` yalnız ŞABLON tekrarını
+       engelliyor; aynı şablon + aynı oyuncu birleşince ortaya çıkan BİREBİR cümle
+       (ör. "Rakibini arkada tuttu, ribaund Furtado'da.") tek maçta 2 kez görülüyordu.
+       Burada üretilmiş METİN tutulur, tekrar gelirse yeniden çekilir. */
+    said:Object.create(null),
+    /* FAZ 36 §B9: bilgi taşımayan dolgu kalıpları maç başına en fazla 1 kez. */
+    dolgu:Object.create(null)};
+  /* Üreticiyi en çok 4 kez dener, hep görülmüş metin dönerse sonuncuyu kabul eder
+     (havuz tükendiyse anlatım susmasın). Yalnız `pr` tüketir — sonuç matematiği değişmez. */
+  const benzersiz=(uret)=>{
+    let son='';
+    for(let i=0;i<4;i++){
+      son=uret();
+      if(!son) return son;
+      if(!narr.said[son]){ narr.said[son]=1; return son; }
+    }
+    return son;
+  };
+  /* §B9: "topu yukarı taşı…" ve "…güvene aldı" gibi bilgi taşımayan dolgular. */
+  const DOLGU_RE=[{k:'yukari',re:/topu yukarı (taşı|çıkar)/i},{k:'guven',re:/güvene aldı|top güvende/i}];
+  const dolguKota=(txt)=>{
+    for(const d of DOLGU_RE){
+      if(!d.re.test(txt)) continue;
+      const n=(narr.dolgu[d.k]||0);
+      if(n>=1) return false;
+      narr.dolgu[d.k]=n+1;
+    }
+    return true;
+  };
   /* F14-3: yorumcu ~%35 olasılıkla ve en az 5 olay arayla konuşur (ölü toplarda). */
   const yorumEk=(tur)=>{
     try{
@@ -4172,15 +4292,15 @@ function generateMatchEvents(rakip, opts){
           txt=(_zincirMod&&!pasTxt)
             ? (_zincirKul=true,zincirLine('score3',_v,pr,narr.recent))          /* zincir kendi ritmini kurar:
                                                                  hamle ibaresi eklenmez */
-            : movePhrase+pasTxt+spikerLinePR(SP.id,'score3',_v,pr,narr.recent);
+            : _birlestir(movePhrase+pasTxt,spikerLinePR(SP.id,'score3',_v,pr,narr.recent),[shooter.isim,passer&&passer.isim]);
         }
-        else if(and1){ txt=`${shooter.isim} faule rağmen ${(sut==='smac'?'smacı çaktı':sut==='floater'?'floater ile bitirdi':sut==='turnike'?'turnikeyi bitirdi':'şutu soktu')} — ${and1Made?'devam sayısı tamam!':'ek atış kaçtı.'} (${_and1Foul}) ${sc()}`; }
+        else if(and1){ txt=`${shooter.isim} faule rağmen ${(sut==='smac'?'smacı çaktı':sut==='floater'?'yumuşak kavisle bitirdi':sut==='turnike'?'turnikeyi bitirdi':'şutu soktu')} — ${and1Made?'devam sayısı tamam!':'ek atış kaçtı.'} (${_and1Foul}) ${sc()}`; }
         else {
           const pasTxt=passer?assistPhrase(_anlatimAdi(passer.isim),scheme,pr,narr.recent):'';
           const _v={s:shooter.isim,sc:scGate(q,t),cls,zone,sut};
           txt=(_zincirMod&&!pasTxt)
             ? (_zincirKul=true,zincirLine('score2',_v,pr,narr.recent))
-            : movePhrase+pasTxt+spikerLinePR(SP.id,'score2',_v,pr,narr.recent);
+            : _birlestir(movePhrase+pasTxt,spikerLinePR(SP.id,'score2',_v,pr,narr.recent),[shooter.isim,passer&&passer.isim]);
         }
       } else if(blocked){
         txt=spikerLinePR(SP.id,'block',{s:_anlatimAdi(shooter.isim),b:_anlatimAdi(blk.isim),uzak:is3},pr,narr.recent)+uzmanGate(blk,'blk');
@@ -4216,7 +4336,10 @@ function generateMatchEvents(rakip, opts){
                                  vur:()=>{ narr.imzaCd=8; }},pr,narr.recent);
         }catch(e){}
       }
-      events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,play,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q,fb:fb||undefined,pb:putback||undefined,blk:blocked||undefined,/* FAZ 34 §5: bloğun SAHİBİ de kaydedilir — blok yalnız takım
+      /* §A1: top elden çıkarken basılacak ön parça. */
+      const _onTxt=benzersiz(()=>adKoy(pickLine(is3?SUT_ON_LINES.uc:SUT_ON_LINES.ic,pr,narr.recent,'suton'+(is3?'3':'2')),
+                         {S:_anlatimAdi(shooter.isim)}));
+      events.push({type:made?(is3?'score3':'score2'):(is3?'miss3':'miss2'),text:txt,preText:_onTxt,play,shot:{x:xy.x,y:xy.y,made,isHome:userPos,kind:is3?'3':'2',q,fb:fb||undefined,pb:putback||undefined,blk:blocked||undefined,/* FAZ 34 §5: bloğun SAHİBİ de kaydedilir — blok yalnız takım
          toplamında (D.blk) duruyordu, oyuncuya atfedilemiyordu ve "blok statı sahaya
          yansıyor mu" ölçülemiyordu. */blkId:(blocked&&blk&&blk.id!=null)?blk.id:undefined,scheme,zone,sut,move:move||undefined,contest,sid:shooter.id!=null?shooter.id:undefined,pid:(passer&&passer.id!=null)?passer.id:undefined,and1:and1?{made:and1Made}:undefined,zincir:_zincirKul||undefined},q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       _flushReb();   /* and-1 ek atışının ribaundu şut cümlesinden SONRA gelir */
@@ -4230,12 +4353,32 @@ function generateMatchEvents(rakip, opts){
          matematiği (skorlar, band.js hash'i) değişmez; değişen tek şey anlatımdır.
          `dt:0` — ribaund, şut pozisyonunun İÇİNDE geçer, çeyrek saatine süre eklemez. */
       const _rebAnlat=(!made&&rebounder)?(Math.random()<0.22):false;
-      if(!made&&rebounder){
+      /* ── FAZ 36 §B1: RUTİN SAVUNMA RİBAUNDU ANLATILMAZ ─────────────────────────────
+         F13-1 "her kaçan şutun ribaundu anlatılsın" kuralı kopukluğu çözdü ama tersine
+         düştü: 256 satırın 69'u (%27) ribaund/top değişimiydi ve anlatım istatistik
+         akışı gibi okunuyordu. Gerçek spiker rutin savunma ribaundunu geçer; anlattığı
+         ribaund HÜCUM ribaundu, mücadeleli top ya da seri kıran ribaunttur.
+         ⚠ İSTATİSTİK DEĞİŞMEZ — ribaunt kutuya zaten yazıldı, `rebounder`/`rebOff`
+         çekilişleri aynen yapıldı; kapı YALNIZ olayın diziye girip girmediğini belirler.
+         ⚠ Yalnız `pr` (sunum PRNG'si) tüketilir — F13-3 kuralı.
+         ÖLÇÜLEN KISIT: bu motorda ribaundların ~%34'ü HÜCUM ribaundudur (gerçek
+         basketbolda ~%25). "Hücum ribaundu daima anlatılsın" kuralı tek başına ribaund
+         satırı oranını %10,4'e çakılıyor; %8-11 bandında rutin savunma ribaunduna kalan
+         pay bu yüzden %25 değil ~%2'dir. İkisinden biri seçilmek zorundaydı — ikinci
+         şansın sessiz geçmemesi (F13-1'in çözdüğü asıl kusur) daha önemli.
+         Ölçüm: %10,6 (879/8276) · `anlatim-check` [A]. */
+      const _rebOnemli=(rebOff||(rebounder&&statN(rebounder,'ribaund')>=88));
+      const _rebGoster=(!made&&rebounder)?(_rebOnemli||prChance(0.02)):false;
+      if(!made&&rebounder&&_rebGoster){
         const rebIsUser=rebOff?userPos:!userPos;
         const havuz=_rebAnlat?(rebOff?REB_OFF_LINES:REB_DEF_LINES)
                              :(rebOff?REB_OFF_SHORT:REB_DEF_SHORT);
-        const rl=adKoy(pickLine(havuz,pr,narr.recent,rebOff?'rebO':'rebD'),
-          {R:_anlatimAdi(rebounder.isim),T:rebIsUser?MC.home.name:rname});
+        const rl=benzersiz(()=>{
+          const c=adKoy(pickLine(havuz,pr,narr.recent,rebOff?'rebO':'rebD'),
+            {R:_anlatimAdi(rebounder.isim),T:rebIsUser?MC.home.name:rname});
+          return dolguKota(c)?c:'';                     /* §B9: dolgu kotası dolduysa yeniden çek */
+        })||adKoy(pickLine(havuz,pr,narr.recent,rebOff?'rebO':'rebD'),
+            {R:_anlatimAdi(rebounder.isim),T:rebIsUser?MC.home.name:rname});
         /* §7.3: ribaund da saat referansı için doğal bir yer — kapı aday havuzu
            yalnız şutlara takılıyken %5'te kalıyordu (hedef %6-14). */
         /* FAZ 34 §6: ribaunt uzmanı 3. ribaundundan sonra anlatımda tanınır. */
@@ -4406,6 +4549,11 @@ function generateMatchEvents(rakip, opts){
         dizi.push(e);
       }
       if(dizi.length<2) return;                       /* tek olay: zaten kendi damgası */
+      /* FAZ 36 §B7: pencerenin ÜST sınırı tPrev-1'de KALMALIDIR. tPrev'e kadar açmak
+         denendi ve ÇAPRAZ ÇAKIŞMA üretti: bir önceki pozisyonun son olayı zaten tSon
+         (= yeni pozisyonun tPrev) damgasını taşıyor, yeni pozisyonun ilk olayı da aynı
+         saniyeye oturuyordu. Pozisyon penceresi olay sayısından kısaysa çakışma kalır ve
+         bu DOĞRUDUR — faul/serbest atış dizisinde saat işlemez (brifin kendi istisnası). */
       const ust=Math.max(tSon,tPrev-1);               /* pencerenin en yüksek saniyesi */
       const alan=Math.max(0,ust-tSon);
       const adim=Math.max(1,Math.floor(alan/(dizi.length-1)));

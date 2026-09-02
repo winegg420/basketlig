@@ -265,8 +265,13 @@ function startMatch(playoff){
       /* Kullanıcı isteği (37. oturum): parkenin üzerine biriken O/X şut izleri KALKTI —
          canlı sahada yalnız oyuncular ve top görünür. Şut verisi (`allShots`) toplanmaya
          devam eder; maç sonu kutu skoru ve analiz sayfası bu veriden beslenir. */
+      /* FAZ 36 §A1: İKİ BEAT. Ön parça ("Kaya üçlük için kalktı.") top ELDEN ÇIKARKEN,
+         sonuç parçası (ev.text + skor) top ÇEMBERE VARINCA basılır. Eskiden cümlenin
+         tamamı çember anında dökülüyordu; koreografi boyunca (üçlükte 7,2 sn) anlatım
+         susuyor, izleyici sahada olanı duymuyordu. Skor/kutu skor hâlâ SONUÇ anında
+         basılır — ön parça sonucu ele vermez. */
       mState._animMs=animateShotPossession(sh,
-        null,
+        ()=>{ if(ev.preText) addComment(ev.preText,ev.type,'i'+_evIx+':on'); },
         ()=>{ paint(); if(sh.made) sfx('score'); })||2900;
     } else {
       if(ev.shots&&!_h.marks){
@@ -1414,7 +1419,9 @@ function updateStats(){
 }
 
 function updateCoins(){
-  const f=fmtn(G.coins);
+  /* FAZ 36 §C1: kenar çubuğu ve market bakiyesi HTMLde sabit eski para birimi eki taşıyordu
+     (FAZ 25 USD geçişinde atlanmış). Simge/biçim tek kaynaktan gelir: fmtPara. */
+  const f=(typeof fmtPara==='function')?fmtPara(G.coins):fmtn(G.coins);
   document.getElementById('sbCoins').textContent=f;
   if(document.getElementById('marketCoins'))document.getElementById('marketCoins').textContent=f;
 }

@@ -263,24 +263,45 @@ async function main() {
   await page.evaluate(() => { try { stopMatch(); } catch (e) {} });
   await browser.close(); server.close();
 
-  // ── anlatım senkronu: yorum ile sahadaki karşılık arasındaki gecikme ──
+  // ── FAZ 36 §A1: ANLATIM SENKRONU — DOĞRU BÜYÜKLÜĞÜ ÖLÇ ─────────────────────────────
+  // Eski ölçüm 'olay başından gecikme' idi: movePlayersForEvent çağrısı ile ilk yorumun
+  // arası. Şut olaylarında bu, POZİSYON KOREOGRAFİSİNİN UZUNLUĞUDUR (sokma → geçiş →
+  // set → şut) ve 6-7 saniye çıkması normaldir; 'anlatım 7 sn geç' demek değildir.
+  // Senkronun gerçek ölçüsü, cümlenin ANLATTIĞI SAHNE BEAT'İNE olan uzaklığıdır:
+  //   • ön parça ('çekti')  ↔ topun elden çıktığı kare (release)
+  //   • sonuç parçası       ↔ topun çemberde olduğu kare (rim)
+  // Ayrıca ANLATIM SESSİZLİĞİ ölçülür: iki yorum arasındaki en uzun boşluk. Şikâyetin
+  // ('görüntü ile ses kopuk') ölçülebilir karşılığı budur — koreografi boyunca hiç
+  // cümle basılmıyorsa izleyici sahada olanı duymaz.
   const ev = out.ev || [];
   const syncRows = [];
+  const beatRows = [];
   for (let i = 0; i < ev.length; i++) {
     if (ev[i].k !== 'evt') continue;
     const ty = ev[i].ty;
-    // bu olayın yorumu ve sahadaki "gerçekleşme" beat'i
-    let cm = null, beat = null;
+    let cm = null, beat = null, rel = null;
+    const cms = [];
     for (let j = i + 1; j < ev.length && ev[j].k !== 'evt'; j++) {
-      if (!cm && ev[j].k === 'comment') cm = ev[j];
+      if (ev[j].k === 'comment') { cms.push(ev[j]); if (!cm) cm = ev[j]; }
       if (!beat && ev[j].k === 'rim') beat = ev[j];
+      if (!rel && ev[j].k === 'release') rel = ev[j];
     }
     if (cm) syncRows.push({ ty, lag: beat ? Math.round(cm.t - beat.t) : null, dly: Math.round(cm.t - ev[i].t), txt: cm.s });
+    if (rel && cms.length) {
+      /* ön parça: release'ten SONRAKİ ilk yorum */
+      const on = cms.find(c => c.t >= rel.t - 60);
+      if (on) beatRows.push({ ty, ad: 'ön parça ↔ şut anı', d: Math.abs(Math.round(on.t - rel.t)) });
+    }
+    if (beat && cms.length) {
+      const son = cms[cms.length - 1];
+      beatRows.push({ ty, ad: 'sonuç ↔ çember', d: Math.abs(Math.round(son.t - beat.t)) });
+    }
+    if (!rel && !beat && cm) beatRows.push({ ty, ad: 'olay ↔ yorum', d: Math.abs(Math.round(cm.t - ev[i].t)) });
   }
   const byType = {}, byStart = {};
   syncRows.forEach(r => { (byType[r.ty] = byType[r.ty] || []).push(r.lag); (byStart[r.ty] = byStart[r.ty] || []).push(r.dly); });
 
-  console.log('\n==== GERÇEKÇİLİK DENETİMİ (seed=' + SEED + ', ' + SECS + 'sn) ====');
+  console.log(String.fromCharCode(10)+'==== GERÇEKÇİLİK DENETİMİ (seed=' + SEED + ', ' + SECS + 'sn) ====');
   console.log('kare:', out.frames, '| top modları %:', JSON.stringify(out.modes));
   console.log('İHLALLER:');
   console.log('  oyuncu saha DIŞI     :', out.oobFrames, 'kare (%' + out.oobPct + '), maks', out.oobMaxPx, 'px');
@@ -289,27 +310,58 @@ async function main() {
   console.log('  insanüstü hız (>430)  :', out.superFast);
   console.log('  üst üste binme (<26px):', out.overlapFrames, 'kare | minNN', out.minNN);
   console.log('  top taşıyıcıdan kopuk :', out.orphanFrames, 'kare');
-  console.log('KENARDAN SOKMA        :', out.inbFrames, 'kare | oyuncu çizgi dışına maks', out.inbOutMax, 'px | tam dışarıda', out.inbOutOkFrames, 'kare');
+  console.log('KENARDAN SOKMA        :', out.inbFrames, 'kare | SOKAN çizgi dışına maks', out.inbOutMax, 'px | tam dışarıda', out.inbOutOkFrames, 'kare');
+  console.log('  (sokan HARİÇ herkes saha içinde: ihlal ' + out.oobFrames + ' kare)');
   console.log('  sahipsiz serbest top  :', out.lostBallFrames, '/', out.looseFrames, 'kare');
-  console.log('SENKRON (yorum − sahadaki beat, ms; + = yorum GEÇ, − = yorum ERKEN/spoiler):');
-  Object.keys(byType).forEach(k => {
-    const a = byType[k].filter(x => x != null);
-    const d = (byStart[k] || []).filter(x => x != null);
-    const dTxt = d.length ? ' | olay başından gecikme ort ' + Math.round(d.reduce((x, y) => x + y, 0) / d.length) + 'ms' : '';
-    if (a.length) console.log('  ' + k.padEnd(14), 'n=' + a.length, 'çember farkı ort', Math.round(a.reduce((x, y) => x + y, 0) / a.length), 'maks', Math.max(...a), dTxt);
-    else console.log('  ' + k.padEnd(14), 'n=' + byType[k].length, dTxt);
+
+  let dusen = 0;
+  console.log('SENKRON — yorum ile ANLATTIĞI SAHNE BEATİ arasındaki mutlak fark (hedef ort ≤800 ms · en kötü tip ≤1200 ms):');
+  const grup = {};
+  beatRows.forEach(r => { const k = r.ty + ' | ' + r.ad; (grup[k] = grup[k] || []).push(r.d); });
+  let enKotu = 0;
+  Object.keys(grup).sort().forEach(k => {
+    const a = grup[k];
+    const ort = Math.round(a.reduce((x, y) => x + y, 0) / a.length);
+    const mx = Math.max.apply(null, a);
+    if (a.length >= 3 && ort > enKotu) enKotu = ort;
+    /* Beat çıpalı satırlar (ön parça ↔ şut anı · sonuç ↔ çember) 800 ms ile yargılanır.
+       'olay ↔ yorum' satırlarında sahnede çıpalanacak ayrı bir beat YOKTUR: ribaunt
+       cümlesi topun ALINDIĞI an basılır, aradaki süre koşunun kendi süresidir (gerçek
+       basketbolda da öyledir). O sınıf 1200 ms ile yargılanır. */
+    const _cipali = k.indexOf('olay ↔ yorum') < 0;
+    /* ÖRNEKLEM KAPISI (FAZ 30 eki dersi): ribaunt koşusunun süresi doğal olarak 0,3-1,2 sn
+       arasında salınır; tek örnekle yargılamak davranışı değil ÇEKİLİŞİ ölçer. n<3 satır
+       bilgidir — pencereyi uzat (--secs=240). */
+    if (a.length < 3) { console.log('  ⋯ ' + k.padEnd(34) + ' n=' + String(a.length).padStart(3) + '  ort ' + String(ort).padStart(5) + ' ms (örneklem az — bilgi)'); return; }
+    const gec = ort <= (_cipali ? 800 : 1200);
+    if (!gec) dusen++;
+    console.log('  ' + (gec ? '✓' : '✗') + ' ' + k.padEnd(34) + ' n=' + String(a.length).padStart(3) + '  ort ' + String(ort).padStart(5) + ' ms · maks ' + mx + ' ms');
   });
-  if (args.includes('--snap')) {
-    console.log('ŞUT ANI SAHA DURUMU (rol: 0=PG 1=SG 2=SF 3=PF 4=C; x,y = konum, →tx,ty = hedef):');
-    (out.snap || []).forEach((s, i) => {
-      console.log(' #' + i, 'hücum ' + (s.offLeft ? 'SOLA' : 'SAĞA'), '| set', s.setIx, 'flip', s.flip, '| top', s.ball.x + ',' + s.ball.y, s.ball.m);
-      const fmt = (a) => a.slice().sort((p, q) => p.r - q.r).map(p => `r${p.r}:${p.x},${p.y}→${p.tx},${p.ty}(v${p.v}${p.o ? ' OOB' : ''}${p.rt ? ' RET' : ''})`).join('  ');
-      console.log('    HÜC:', fmt(s.off));
-      console.log('    SAV:', fmt(s.def));
-    });
+  if (!Object.keys(grup).length) console.log('  (örnek yok — süreyi artır: --secs=120)');
+  else { const g2 = enKotu <= 1200; if (!g2) dusen++; console.log('  ' + (g2 ? '✓' : '✗') + ' en kötü tip ortalaması ' + enKotu + ' ms (hedef ≤1200)'); }
+
+  /* ANLATIM SESSİZLİĞİ: ardışık iki yorum arası en uzun boşluk (izleme hızı 1×). */
+  const cmT = ev.filter(x => x.k === 'comment').map(x => x.t);
+  if (cmT.length > 2) {
+    let mx = 0, top = 0;
+    for (let i = 1; i < cmT.length; i++) { const d = cmT[i] - cmT[i - 1]; top += d; if (d > mx) mx = d; }
+    const ort = Math.round(top / (cmT.length - 1));
+    /* Gerçek yayında da 8-12 sn'lik sessizlikler olur; ölçünün amacı ORTALAMA sessizliğin
+       makul kalması ve tek bir pozisyonun anlatımsız geçmemesidir. */
+    const gec = mx <= 12000 && ort <= 5000;
+    if (!gec) dusen++;
+    console.log('  ' + (gec ? '✓' : '✗') + ' anlatım sessizliği: en uzun boşluk ' + Math.round(mx) + ' ms · ortalama ' + ort + ' ms (hedef en uzun ≤12000 · ortalama ≤5000)');
   }
+  console.log('BİLGİ — olay başından ilk yoruma (koreografi uzunluğu, yargılanmaz):');
+  Object.keys(byStart).forEach(k => {
+    const d = (byStart[k] || []).filter(x => x != null);
+    if (d.length) console.log('  ' + k.padEnd(14), 'n=' + d.length, 'ort ' + Math.round(d.reduce((x, y) => x + y, 0) / d.length) + 'ms');
+  });
   console.log('KONSOL HATASI:', errors.length);
   errors.slice(0, 6).forEach(e => console.log('  !', e));
   if (SHOTS) console.log('Ekran görüntüleri:', SHOTDIR);
+  if (errors.length) dusen++;
+  console.log(dusen ? ("✗ "+dusen+" senkron hedefi düştü") : "✓ tüm senkron hedefleri tuttu");
+  process.exit(dusen ? 1 : 0);
 }
 main().catch(e => { console.error(e); process.exit(1); });

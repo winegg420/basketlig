@@ -1,367 +1,280 @@
-canli-mac :: Bernardo Gonçalves
-canli-mac :: Bernardo Gonçalves (C) — Overall: 68
-canli-mac :: Bernardo Gonçalves (C) → PF
-canli-mac :: Bernardo Gonçalves (C·OVR 68)
-canli-mac :: Bilbao Athletic — Konya Kurtları
-canli-mac :: Casablanca Atmacaları
-canli-mac :: Curitiba Kartalları
-canli-mac :: Curitiba Kartalları — Casablanca Atmacaları
-canli-mac :: Konya Kurtları
-canli-mac :: Leicester Şimşekleri
-canli-mac :: Osaka Kartalları
-canli-mac :: Santiago Kurtları
-canli-mac :: Warsaw Kurtları
+canli-mac :: (Formal). The game begins with the tip-off. Ankara Eagles as the away side; Ludvigs Veinbergs at the circle, Ole Kühn sets up the first possession. The stands are packed.
+canli-mac :: Dakar Üniversite
+canli-mac :: Jakarta Atmacaları
+canli-mac :: Jakarta Atmacaları — Dakar Hawks
+canli-mac :: Kühn
+canli-mac :: Ole Kühn
+canli-mac :: Ole Kühn (PG) — Overall: 72
+canli-mac :: Ole Kühn (PG) → SG
+canli-mac :: Ole Kühn (PG·OVR 72)
+canli-mac :: Osaka Üniversite
+canli-mac :: Stockholm Atmacaları
+canli-mac :: Tehran Boğaları
 canli-mac :: Yerel Esnaf Desteği ·
-canli-mac :: İzmir Giants
-canli-mac :: 🇹🇷 Deniz Kılınç
+canli-mac :: 🇩🇪 Jürgen Diehl
+canli-mac :: 🇹🇷 Emrah Yüksel
 canli-mac :: 🇹🇷 Türkçe
-canli-mac :: 🇹🇷 Yasin Yalın
-canli-mac :: 🏛️ Curitiba Kartalları from
-canli-mac :: 🏛️ Warsaw Kurtları from
+canli-mac :: 🏛️ Dakar Üniversite from
+canli-mac :: 🏛️ Osaka Üniversite from
 canli-mac :: 📣 Sponsor income — Yerel Esnaf Desteği
-canli-mac :: 🤝 Bernardo Gonçalves – Óscar Pereira
 login :: 🇹🇷 Türkçe
-modal:ayarlar :: Bernardo Gonçalves
-modal:ayarlar :: Bernardo Gonçalves (C) — Overall: 68
-modal:ayarlar :: Bernardo Gonçalves (C) → PF
-modal:ayarlar :: Bernardo Gonçalves (C·OVR 68)
-modal:ayarlar :: Bilbao Athletic — Konya Kurtları
-modal:ayarlar :: Casablanca Atmacaları
-modal:ayarlar :: Curitiba Kartalları
-modal:ayarlar :: Curitiba Kartalları — Casablanca Atmacaları
-modal:ayarlar :: Konya Kurtları
-modal:ayarlar :: Leicester Şimşekleri
-modal:ayarlar :: Osaka Kartalları
-modal:ayarlar :: Santiago Kurtları
-modal:ayarlar :: Warsaw Kurtları
+modal:ayarlar :: Dakar Üniversite
+modal:ayarlar :: Jakarta Atmacaları
+modal:ayarlar :: Jakarta Atmacaları — Dakar Hawks
+modal:ayarlar :: Ole Kühn
+modal:ayarlar :: Ole Kühn (PG) — Overall: 72
+modal:ayarlar :: Ole Kühn (PG) → SG
+modal:ayarlar :: Ole Kühn (PG·OVR 72)
+modal:ayarlar :: Osaka Üniversite
+modal:ayarlar :: Stockholm Atmacaları
+modal:ayarlar :: Tehran Boğaları
 modal:ayarlar :: Yerel Esnaf Desteği ·
-modal:ayarlar :: İzmir Giants
-modal:ayarlar :: 🇹🇷 Deniz Kılınç
+modal:ayarlar :: 🇩🇪 Jürgen Diehl
+modal:ayarlar :: 🇹🇷 Emrah Yüksel
 modal:ayarlar :: 🇹🇷 Türkçe
-modal:ayarlar :: 🏛️ Curitiba Kartalları from
-modal:ayarlar :: 🏛️ Warsaw Kurtları from
+modal:ayarlar :: 🏛️ Dakar Üniversite from
+modal:ayarlar :: 🏛️ Osaka Üniversite from
 modal:ayarlar :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:ayarlar :: 🤝 Bernardo Gonçalves – Óscar Pereira
-modal:basarim :: Bernardo Gonçalves
-modal:basarim :: Bernardo Gonçalves (C) — Overall: 68
-modal:basarim :: Bernardo Gonçalves (C) → PF
-modal:basarim :: Bernardo Gonçalves (C·OVR 68)
-modal:basarim :: Bilbao Athletic — Konya Kurtları
-modal:basarim :: Casablanca Atmacaları
-modal:basarim :: Curitiba Kartalları
-modal:basarim :: Curitiba Kartalları — Casablanca Atmacaları
-modal:basarim :: Konya Kurtları
-modal:basarim :: Leicester Şimşekleri
-modal:basarim :: Osaka Kartalları
-modal:basarim :: Santiago Kurtları
-modal:basarim :: Warsaw Kurtları
+modal:basarim :: Dakar Üniversite
+modal:basarim :: Jakarta Atmacaları
+modal:basarim :: Jakarta Atmacaları — Dakar Hawks
+modal:basarim :: Ole Kühn
+modal:basarim :: Ole Kühn (PG) — Overall: 72
+modal:basarim :: Ole Kühn (PG) → SG
+modal:basarim :: Ole Kühn (PG·OVR 72)
+modal:basarim :: Osaka Üniversite
+modal:basarim :: Stockholm Atmacaları
+modal:basarim :: Tehran Boğaları
 modal:basarim :: Yerel Esnaf Desteği ·
-modal:basarim :: İzmir Giants
-modal:basarim :: 🇹🇷 Deniz Kılınç
+modal:basarim :: 🇩🇪 Jürgen Diehl
+modal:basarim :: 🇹🇷 Emrah Yüksel
 modal:basarim :: 🇹🇷 Türkçe
-modal:basarim :: 🏛️ Curitiba Kartalları from
-modal:basarim :: 🏛️ Warsaw Kurtları from
+modal:basarim :: 🏛️ Dakar Üniversite from
+modal:basarim :: 🏛️ Osaka Üniversite from
 modal:basarim :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:basarim :: 🤝 Bernardo Gonçalves – Óscar Pereira
-modal:draft :: Bernardo Gonçalves
-modal:draft :: Bernardo Gonçalves (C) — Overall: 68
-modal:draft :: Bernardo Gonçalves (C) → PF
-modal:draft :: Bernardo Gonçalves (C·OVR 68)
-modal:draft :: Bilbao Athletic — Konya Kurtları
-modal:draft :: Casablanca Atmacaları
-modal:draft :: Curitiba Kartalları
-modal:draft :: Curitiba Kartalları — Casablanca Atmacaları
-modal:draft :: Konya Kurtları
-modal:draft :: Leicester Şimşekleri
-modal:draft :: Osaka Kartalları
-modal:draft :: Santiago Kurtları
-modal:draft :: Warsaw Kurtları
+modal:draft :: Dakar Üniversite
+modal:draft :: Jakarta Atmacaları
+modal:draft :: Jakarta Atmacaları — Dakar Hawks
+modal:draft :: Ole Kühn
+modal:draft :: Ole Kühn (PG) — Overall: 72
+modal:draft :: Ole Kühn (PG) → SG
+modal:draft :: Ole Kühn (PG·OVR 72)
+modal:draft :: Osaka Üniversite
+modal:draft :: Stockholm Atmacaları
+modal:draft :: Tehran Boğaları
 modal:draft :: Yerel Esnaf Desteği ·
-modal:draft :: İzmir Giants
-modal:draft :: 🇹🇷 Deniz Kılınç
+modal:draft :: 🇩🇪 Jürgen Diehl
+modal:draft :: 🇹🇷 Emrah Yüksel
 modal:draft :: 🇹🇷 Türkçe
-modal:draft :: 🇹🇷 Yasin Yalın
-modal:draft :: 🏛️ Curitiba Kartalları from
-modal:draft :: 🏛️ Warsaw Kurtları from
+modal:draft :: 🏛️ Dakar Üniversite from
+modal:draft :: 🏛️ Osaka Üniversite from
 modal:draft :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:draft :: 🤝 Bernardo Gonçalves – Óscar Pereira
-modal:ilk5 :: Bernardo Gonçalves
-modal:ilk5 :: Bernardo Gonçalves (C) — Overall: 68
-modal:ilk5 :: Bernardo Gonçalves (C) → PF
-modal:ilk5 :: Bernardo Gonçalves (C·OVR 68)
-modal:ilk5 :: Bilbao Athletic — Konya Kurtları
-modal:ilk5 :: Casablanca Atmacaları
-modal:ilk5 :: Curitiba Kartalları
-modal:ilk5 :: Curitiba Kartalları — Casablanca Atmacaları
-modal:ilk5 :: Konya Kurtları
-modal:ilk5 :: Leicester Şimşekleri
-modal:ilk5 :: Osaka Kartalları
-modal:ilk5 :: Santiago Kurtları
-modal:ilk5 :: Warsaw Kurtları
+modal:ilk5 :: Dakar Üniversite
+modal:ilk5 :: Jakarta Atmacaları
+modal:ilk5 :: Jakarta Atmacaları — Dakar Hawks
+modal:ilk5 :: Ole Kühn
+modal:ilk5 :: Ole Kühn (PG) — Overall: 72
+modal:ilk5 :: Ole Kühn (PG) → SG
+modal:ilk5 :: Ole Kühn (PG·OVR 72)
+modal:ilk5 :: Osaka Üniversite
+modal:ilk5 :: Stockholm Atmacaları
+modal:ilk5 :: Tehran Boğaları
 modal:ilk5 :: Yerel Esnaf Desteği ·
-modal:ilk5 :: İzmir Giants
-modal:ilk5 :: 🇹🇷 Deniz Kılınç
+modal:ilk5 :: 🇩🇪 Jürgen Diehl
+modal:ilk5 :: 🇹🇷 Emrah Yüksel
 modal:ilk5 :: 🇹🇷 Türkçe
-modal:ilk5 :: 🏛️ Curitiba Kartalları from
-modal:ilk5 :: 🏛️ Warsaw Kurtları from
+modal:ilk5 :: 🏛️ Dakar Üniversite from
+modal:ilk5 :: 🏛️ Osaka Üniversite from
 modal:ilk5 :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:ilk5 :: 🤝 Bernardo Gonçalves – Óscar Pereira
-modal:oyuncu :: Bernardo Gonçalves
-modal:oyuncu :: Bernardo Gonçalves (C) — Overall: 68
-modal:oyuncu :: Bernardo Gonçalves (C) → PF
-modal:oyuncu :: Bernardo Gonçalves (C·OVR 68)
-modal:oyuncu :: Bilbao Athletic — Konya Kurtları
-modal:oyuncu :: Casablanca Atmacaları
-modal:oyuncu :: Curitiba Kartalları
-modal:oyuncu :: Curitiba Kartalları — Casablanca Atmacaları
-modal:oyuncu :: Konya Kurtları
-modal:oyuncu :: Leicester Şimşekleri
-modal:oyuncu :: Osaka Kartalları
-modal:oyuncu :: Santiago Kurtları
-modal:oyuncu :: Warsaw Kurtları
+modal:oyuncu :: Dakar Üniversite
+modal:oyuncu :: Jakarta Atmacaları
+modal:oyuncu :: Jakarta Atmacaları — Dakar Hawks
+modal:oyuncu :: Ole Kühn
+modal:oyuncu :: Ole Kühn (PG) — Overall: 72
+modal:oyuncu :: Ole Kühn (PG) → SG
+modal:oyuncu :: Ole Kühn (PG·OVR 72)
+modal:oyuncu :: Osaka Üniversite
+modal:oyuncu :: Stockholm Atmacaları
+modal:oyuncu :: Tehran Boğaları
 modal:oyuncu :: Yerel Esnaf Desteği ·
-modal:oyuncu :: İzmir Giants
-modal:oyuncu :: 🇹🇷 Deniz Kılınç
+modal:oyuncu :: 🇩🇪 Jürgen Diehl
+modal:oyuncu :: 🇹🇷 Emrah Yüksel
 modal:oyuncu :: 🇹🇷 Türkçe
-modal:oyuncu :: 🏛️ Curitiba Kartalları from
-modal:oyuncu :: 🏛️ Warsaw Kurtları from
+modal:oyuncu :: 🏛️ Dakar Üniversite from
+modal:oyuncu :: 🏛️ Osaka Üniversite from
 modal:oyuncu :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:oyuncu :: 🤝 Bernardo Gonçalves – Óscar Pereira
-modal:soyunma :: Bernardo Gonçalves
-modal:soyunma :: Bernardo Gonçalves (C) — Overall: 68
-modal:soyunma :: Bernardo Gonçalves (C) → PF
-modal:soyunma :: Bernardo Gonçalves (C·OVR 68)
-modal:soyunma :: Bilbao Athletic — Konya Kurtları
-modal:soyunma :: Casablanca Atmacaları
-modal:soyunma :: Curitiba Kartalları
-modal:soyunma :: Curitiba Kartalları — Casablanca Atmacaları
-modal:soyunma :: Konya Kurtları
-modal:soyunma :: Leicester Şimşekleri
-modal:soyunma :: Osaka Kartalları
-modal:soyunma :: Santiago Kurtları
-modal:soyunma :: Warsaw Kurtları
+modal:soyunma :: Dakar Üniversite
+modal:soyunma :: Jakarta Atmacaları
+modal:soyunma :: Jakarta Atmacaları — Dakar Hawks
+modal:soyunma :: Ole Kühn
+modal:soyunma :: Ole Kühn (PG) — Overall: 72
+modal:soyunma :: Ole Kühn (PG) → SG
+modal:soyunma :: Ole Kühn (PG·OVR 72)
+modal:soyunma :: Osaka Üniversite
+modal:soyunma :: Stockholm Atmacaları
+modal:soyunma :: Tehran Boğaları
 modal:soyunma :: Yerel Esnaf Desteği ·
-modal:soyunma :: İzmir Giants
-modal:soyunma :: 🇹🇷 Deniz Kılınç
+modal:soyunma :: 🇩🇪 Jürgen Diehl
+modal:soyunma :: 🇹🇷 Emrah Yüksel
 modal:soyunma :: 🇹🇷 Türkçe
-modal:soyunma :: 🏛️ Curitiba Kartalları from
-modal:soyunma :: 🏛️ Warsaw Kurtları from
+modal:soyunma :: 🏛️ Dakar Üniversite from
+modal:soyunma :: 🏛️ Osaka Üniversite from
 modal:soyunma :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:soyunma :: 🤝 Bernardo Gonçalves – Óscar Pereira
-modal:taktik :: Bernardo Gonçalves
-modal:taktik :: Bernardo Gonçalves (C) — Overall: 68
-modal:taktik :: Bernardo Gonçalves (C) → PF
-modal:taktik :: Bernardo Gonçalves (C·OVR 68)
-modal:taktik :: Bilbao Athletic — Konya Kurtları
-modal:taktik :: Casablanca Atmacaları
-modal:taktik :: Curitiba Kartalları
-modal:taktik :: Curitiba Kartalları — Casablanca Atmacaları
-modal:taktik :: Konya Kurtları
-modal:taktik :: Leicester Şimşekleri
-modal:taktik :: Osaka Kartalları
-modal:taktik :: Santiago Kurtları
-modal:taktik :: Warsaw Kurtları
+modal:taktik :: Dakar Üniversite
+modal:taktik :: Jakarta Atmacaları
+modal:taktik :: Jakarta Atmacaları — Dakar Hawks
+modal:taktik :: Ole Kühn
+modal:taktik :: Ole Kühn (PG) — Overall: 72
+modal:taktik :: Ole Kühn (PG) → SG
+modal:taktik :: Ole Kühn (PG·OVR 72)
+modal:taktik :: Osaka Üniversite
+modal:taktik :: Stockholm Atmacaları
+modal:taktik :: Tehran Boğaları
 modal:taktik :: Yerel Esnaf Desteği ·
-modal:taktik :: İzmir Giants
-modal:taktik :: 🇹🇷 Deniz Kılınç
+modal:taktik :: 🇩🇪 Jürgen Diehl
+modal:taktik :: 🇹🇷 Emrah Yüksel
 modal:taktik :: 🇹🇷 Türkçe
-modal:taktik :: 🏛️ Curitiba Kartalları from
-modal:taktik :: 🏛️ Warsaw Kurtları from
+modal:taktik :: 🏛️ Dakar Üniversite from
+modal:taktik :: 🏛️ Osaka Üniversite from
 modal:taktik :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:taktik :: 🤝 Bernardo Gonçalves – Óscar Pereira
-sayfa:altyapi :: Bernardo Gonçalves
-sayfa:altyapi :: Bilbao Athletic — Konya Kurtları
-sayfa:altyapi :: Casablanca Atmacaları
-sayfa:altyapi :: Curitiba Kartalları
-sayfa:altyapi :: Curitiba Kartalları — Casablanca Atmacaları
-sayfa:altyapi :: Konya Kurtları
-sayfa:altyapi :: Leicester Şimşekleri
-sayfa:altyapi :: Osaka Kartalları
-sayfa:altyapi :: Santiago Kurtları
-sayfa:altyapi :: Warsaw Kurtları
+sayfa:altyapi :: Dakar Üniversite
+sayfa:altyapi :: Jakarta Atmacaları
+sayfa:altyapi :: Jakarta Atmacaları — Dakar Hawks
+sayfa:altyapi :: Ole Kühn
+sayfa:altyapi :: Osaka Üniversite
+sayfa:altyapi :: Stockholm Atmacaları
+sayfa:altyapi :: Tehran Boğaları
 sayfa:altyapi :: Yerel Esnaf Desteği ·
-sayfa:altyapi :: İzmir Giants
-sayfa:altyapi :: 🇹🇷 Deniz Kılınç
+sayfa:altyapi :: 🇩🇪 Jürgen Diehl
+sayfa:altyapi :: 🇹🇷 Emrah Yüksel
 sayfa:altyapi :: 🇹🇷 Türkçe
-sayfa:altyapi :: 🏛️ Curitiba Kartalları from
-sayfa:altyapi :: 🏛️ Warsaw Kurtları from
-sayfa:altyapi :: 🤝 Bernardo Gonçalves – Óscar Pereira
-sayfa:analiz :: Bernardo Gonçalves
-sayfa:analiz :: Bernardo Gonçalves (C) — Overall: 68
-sayfa:analiz :: Bernardo Gonçalves (C) → PF
-sayfa:analiz :: Bernardo Gonçalves (C·OVR 68)
-sayfa:analiz :: Bilbao Athletic — Konya Kurtları
-sayfa:analiz :: Casablanca Atmacaları
-sayfa:analiz :: Curitiba Kartalları
-sayfa:analiz :: Curitiba Kartalları — Casablanca Atmacaları
-sayfa:analiz :: Konya Kurtları
-sayfa:analiz :: Leicester Şimşekleri
-sayfa:analiz :: Osaka Kartalları
-sayfa:analiz :: Santiago Kurtları
-sayfa:analiz :: Warsaw Kurtları
+sayfa:altyapi :: 🏛️ Dakar Üniversite from
+sayfa:altyapi :: 🏛️ Osaka Üniversite from
+sayfa:analiz :: Dakar Üniversite
+sayfa:analiz :: Jakarta Atmacaları
+sayfa:analiz :: Jakarta Atmacaları — Dakar Hawks
+sayfa:analiz :: Ole Kühn
+sayfa:analiz :: Ole Kühn (PG) — Overall: 72
+sayfa:analiz :: Ole Kühn (PG) → SG
+sayfa:analiz :: Ole Kühn (PG·OVR 72)
+sayfa:analiz :: Osaka Üniversite
+sayfa:analiz :: Stockholm Atmacaları
+sayfa:analiz :: Tehran Boğaları
 sayfa:analiz :: Yerel Esnaf Desteği ·
-sayfa:analiz :: İzmir Giants
-sayfa:analiz :: 🇹🇷 Deniz Kılınç
+sayfa:analiz :: 🇩🇪 Jürgen Diehl
+sayfa:analiz :: 🇹🇷 Emrah Yüksel
 sayfa:analiz :: 🇹🇷 Türkçe
-sayfa:analiz :: 🏛️ Curitiba Kartalları from
-sayfa:analiz :: 🏛️ Warsaw Kurtları from
+sayfa:analiz :: 🏛️ Dakar Üniversite from
+sayfa:analiz :: 🏛️ Osaka Üniversite from
 sayfa:analiz :: 📣 Sponsor income — Yerel Esnaf Desteği
-sayfa:analiz :: 🤝 Bernardo Gonçalves – Óscar Pereira
-sayfa:antrenman :: Bernardo Gonçalves
-sayfa:antrenman :: Bernardo Gonçalves (C) — Overall: 68
-sayfa:antrenman :: Bernardo Gonçalves (C) → PF
-sayfa:antrenman :: Bilbao Athletic — Konya Kurtları
-sayfa:antrenman :: Casablanca Atmacaları
-sayfa:antrenman :: Curitiba Kartalları
-sayfa:antrenman :: Curitiba Kartalları — Casablanca Atmacaları
-sayfa:antrenman :: Konya Kurtları
-sayfa:antrenman :: Leicester Şimşekleri
-sayfa:antrenman :: Osaka Kartalları
-sayfa:antrenman :: Santiago Kurtları
-sayfa:antrenman :: Warsaw Kurtları
+sayfa:antrenman :: Dakar Üniversite
+sayfa:antrenman :: Jakarta Atmacaları
+sayfa:antrenman :: Jakarta Atmacaları — Dakar Hawks
+sayfa:antrenman :: Ole Kühn
+sayfa:antrenman :: Ole Kühn (PG) — Overall: 72
+sayfa:antrenman :: Ole Kühn (PG) → SG
+sayfa:antrenman :: Osaka Üniversite
+sayfa:antrenman :: Stockholm Atmacaları
+sayfa:antrenman :: Tehran Boğaları
 sayfa:antrenman :: Yerel Esnaf Desteği ·
-sayfa:antrenman :: İzmir Giants
-sayfa:antrenman :: 🇹🇷 Deniz Kılınç
+sayfa:antrenman :: 🇩🇪 Jürgen Diehl
+sayfa:antrenman :: 🇹🇷 Emrah Yüksel
 sayfa:antrenman :: 🇹🇷 Türkçe
-sayfa:antrenman :: 🏛️ Curitiba Kartalları from
-sayfa:antrenman :: 🏛️ Warsaw Kurtları from
-sayfa:antrenman :: 🤝 Bernardo Gonçalves – Óscar Pereira
-sayfa:arena :: Bernardo Gonçalves
-sayfa:arena :: Bernardo Gonçalves (C) — Overall: 68
-sayfa:arena :: Bernardo Gonçalves (C) → PF
-sayfa:arena :: Bilbao Athletic — Konya Kurtları
-sayfa:arena :: Casablanca Atmacaları
-sayfa:arena :: Curitiba Kartalları
-sayfa:arena :: Curitiba Kartalları — Casablanca Atmacaları
-sayfa:arena :: Konya Kurtları
-sayfa:arena :: Leicester Şimşekleri
-sayfa:arena :: Osaka Kartalları
-sayfa:arena :: Santiago Kurtları
-sayfa:arena :: Warsaw Kurtları
+sayfa:antrenman :: 🏛️ Dakar Üniversite from
+sayfa:antrenman :: 🏛️ Osaka Üniversite from
+sayfa:arena :: Dakar Üniversite
+sayfa:arena :: Jakarta Atmacaları
+sayfa:arena :: Jakarta Atmacaları — Dakar Hawks
+sayfa:arena :: Ole Kühn
+sayfa:arena :: Ole Kühn (PG) — Overall: 72
+sayfa:arena :: Ole Kühn (PG) → SG
+sayfa:arena :: Osaka Üniversite
+sayfa:arena :: Stockholm Atmacaları
+sayfa:arena :: Tehran Boğaları
 sayfa:arena :: Yerel Esnaf Desteği ·
-sayfa:arena :: İzmir Giants
-sayfa:arena :: 🇹🇷 Deniz Kılınç
+sayfa:arena :: 🇩🇪 Jürgen Diehl
+sayfa:arena :: 🇹🇷 Emrah Yüksel
 sayfa:arena :: 🇹🇷 Türkçe
-sayfa:arena :: 🏛️ Curitiba Kartalları from
-sayfa:arena :: 🏛️ Warsaw Kurtları from
-sayfa:arena :: 🤝 Bernardo Gonçalves – Óscar Pereira
-sayfa:bilanco :: Bernardo Gonçalves
-sayfa:bilanco :: Bernardo Gonçalves (C) — Overall: 68
-sayfa:bilanco :: Bernardo Gonçalves (C) → PF
-sayfa:bilanco :: Bilbao Athletic — Konya Kurtları
-sayfa:bilanco :: Casablanca Atmacaları
-sayfa:bilanco :: Curitiba Kartalları
-sayfa:bilanco :: Curitiba Kartalları — Casablanca Atmacaları
-sayfa:bilanco :: Konya Kurtları
-sayfa:bilanco :: Leicester Şimşekleri
-sayfa:bilanco :: Osaka Kartalları
-sayfa:bilanco :: Santiago Kurtları
-sayfa:bilanco :: Warsaw Kurtları
+sayfa:arena :: 🏛️ Dakar Üniversite from
+sayfa:arena :: 🏛️ Osaka Üniversite from
+sayfa:bilanco :: Dakar Üniversite
+sayfa:bilanco :: Jakarta Atmacaları
+sayfa:bilanco :: Jakarta Atmacaları — Dakar Hawks
+sayfa:bilanco :: Ole Kühn
+sayfa:bilanco :: Ole Kühn (PG) — Overall: 72
+sayfa:bilanco :: Ole Kühn (PG) → SG
+sayfa:bilanco :: Osaka Üniversite
+sayfa:bilanco :: Stockholm Atmacaları
+sayfa:bilanco :: Tehran Boğaları
 sayfa:bilanco :: Yerel Esnaf Desteği ·
-sayfa:bilanco :: İzmir Giants
-sayfa:bilanco :: 🇹🇷 Deniz Kılınç
+sayfa:bilanco :: 🇩🇪 Jürgen Diehl
+sayfa:bilanco :: 🇹🇷 Emrah Yüksel
 sayfa:bilanco :: 🇹🇷 Türkçe
-sayfa:bilanco :: 🏛️ Curitiba Kartalları from
-sayfa:bilanco :: 🏛️ Warsaw Kurtları from
+sayfa:bilanco :: 🏛️ Dakar Üniversite from
+sayfa:bilanco :: 🏛️ Osaka Üniversite from
 sayfa:bilanco :: 📣 Sponsor income — Yerel Esnaf Desteği
-sayfa:bilanco :: 🤝 Bernardo Gonçalves – Óscar Pereira
-sayfa:dashboard :: Bernardo Gonçalves
-sayfa:dashboard :: Bilbao Athletic — Konya Kurtları
-sayfa:dashboard :: Casablanca Atmacaları
-sayfa:dashboard :: Curitiba Kartalları
-sayfa:dashboard :: Curitiba Kartalları — Casablanca Atmacaları
-sayfa:dashboard :: Konya Kurtları
-sayfa:dashboard :: Leicester Şimşekleri
-sayfa:dashboard :: Osaka Kartalları
-sayfa:dashboard :: Santiago Kurtları
-sayfa:dashboard :: Warsaw Kurtları
-sayfa:dashboard :: İzmir Giants
+sayfa:dashboard :: Dakar Üniversite
+sayfa:dashboard :: Jakarta Atmacaları
+sayfa:dashboard :: Jakarta Atmacaları — Dakar Hawks
+sayfa:dashboard :: Ole Kühn
+sayfa:dashboard :: Osaka Üniversite
+sayfa:dashboard :: Stockholm Atmacaları
+sayfa:dashboard :: Tehran Boğaları
 sayfa:dashboard :: 🇹🇷 Türkçe
-sayfa:dashboard :: 🤝 Bernardo Gonçalves – Óscar Pereira
-sayfa:kadro :: Bernardo Gonçalves
-sayfa:kadro :: Bilbao Athletic — Konya Kurtları
-sayfa:kadro :: Casablanca Atmacaları
-sayfa:kadro :: Curitiba Kartalları
-sayfa:kadro :: Curitiba Kartalları — Casablanca Atmacaları
-sayfa:kadro :: Konya Kurtları
-sayfa:kadro :: Leicester Şimşekleri
-sayfa:kadro :: Osaka Kartalları
-sayfa:kadro :: Santiago Kurtları
-sayfa:kadro :: Warsaw Kurtları
+sayfa:kadro :: Dakar Üniversite
+sayfa:kadro :: Jakarta Atmacaları
+sayfa:kadro :: Jakarta Atmacaları — Dakar Hawks
+sayfa:kadro :: Ole Kühn
+sayfa:kadro :: Osaka Üniversite
+sayfa:kadro :: Stockholm Atmacaları
+sayfa:kadro :: Tehran Boğaları
 sayfa:kadro :: Yerel Esnaf Desteği ·
-sayfa:kadro :: İzmir Giants
 sayfa:kadro :: 🇹🇷 Türkçe
-sayfa:kadro :: 🤝 Bernardo Gonçalves – Óscar Pereira
-sayfa:lig :: Bernardo Gonçalves
-sayfa:lig :: Bilbao Athletic — Konya Kurtları
-sayfa:lig :: Casablanca Atmacaları
-sayfa:lig :: Curitiba Kartalları
-sayfa:lig :: Curitiba Kartalları — Casablanca Atmacaları
-sayfa:lig :: Konya Kurtları
-sayfa:lig :: Leicester Şimşekleri
-sayfa:lig :: Osaka Kartalları
-sayfa:lig :: Santiago Kurtları
-sayfa:lig :: Warsaw Kurtları
+sayfa:lig :: Dakar Üniversite
+sayfa:lig :: Jakarta Atmacaları
+sayfa:lig :: Jakarta Atmacaları — Dakar Hawks
+sayfa:lig :: Ole Kühn
+sayfa:lig :: Osaka Üniversite
+sayfa:lig :: Stockholm Atmacaları
+sayfa:lig :: Tehran Boğaları
 sayfa:lig :: Yerel Esnaf Desteği ·
-sayfa:lig :: İzmir Giants
 sayfa:lig :: 🇹🇷 Türkçe
-sayfa:lig :: 🤝 Bernardo Gonçalves – Óscar Pereira
-sayfa:mac :: Bernardo Gonçalves
-sayfa:mac :: Bilbao Athletic — Konya Kurtları
-sayfa:mac :: Casablanca Atmacaları
-sayfa:mac :: Curitiba Kartalları
-sayfa:mac :: Curitiba Kartalları — Casablanca Atmacaları
-sayfa:mac :: Konya Kurtları
-sayfa:mac :: Leicester Şimşekleri
-sayfa:mac :: Osaka Kartalları
-sayfa:mac :: Santiago Kurtları
-sayfa:mac :: Warsaw Kurtları
+sayfa:mac :: Dakar Üniversite
+sayfa:mac :: Jakarta Atmacaları
+sayfa:mac :: Jakarta Atmacaları — Dakar Hawks
+sayfa:mac :: Ole Kühn
+sayfa:mac :: Osaka Üniversite
+sayfa:mac :: Stockholm Atmacaları
+sayfa:mac :: Tehran Boğaları
 sayfa:mac :: Yerel Esnaf Desteği ·
-sayfa:mac :: İzmir Giants
 sayfa:mac :: 🇹🇷 Türkçe
-sayfa:mac :: 🤝 Bernardo Gonçalves – Óscar Pereira
-sayfa:market :: Bernardo Gonçalves
-sayfa:market :: Bilbao Athletic — Konya Kurtları
-sayfa:market :: Casablanca Atmacaları
-sayfa:market :: Curitiba Kartalları
-sayfa:market :: Curitiba Kartalları — Casablanca Atmacaları
-sayfa:market :: Konya Kurtları
-sayfa:market :: Leicester Şimşekleri
-sayfa:market :: Osaka Kartalları
-sayfa:market :: Santiago Kurtları
-sayfa:market :: Warsaw Kurtları
+sayfa:market :: Dakar Üniversite
+sayfa:market :: Jakarta Atmacaları
+sayfa:market :: Jakarta Atmacaları — Dakar Hawks
+sayfa:market :: Ole Kühn
+sayfa:market :: Osaka Üniversite
+sayfa:market :: Stockholm Atmacaları
+sayfa:market :: Tehran Boğaları
 sayfa:market :: Yerel Esnaf Desteği ·
-sayfa:market :: İzmir Giants
-sayfa:market :: 🇹🇷 Deniz Kılınç
+sayfa:market :: 🇹🇷 Emrah Yüksel
 sayfa:market :: 🇹🇷 Türkçe
-sayfa:market :: 🏛️ Curitiba Kartalları from
-sayfa:market :: 🏛️ Warsaw Kurtları from
-sayfa:market :: 🤝 Bernardo Gonçalves – Óscar Pereira
-sayfa:takim :: Bernardo Gonçalves
-sayfa:takim :: Bilbao Athletic — Konya Kurtları
-sayfa:takim :: Casablanca Atmacaları
-sayfa:takim :: Curitiba Kartalları
-sayfa:takim :: Curitiba Kartalları — Casablanca Atmacaları
-sayfa:takim :: Konya Kurtları
-sayfa:takim :: Leicester Şimşekleri
-sayfa:takim :: Osaka Kartalları
-sayfa:takim :: Santiago Kurtları
-sayfa:takim :: Warsaw Kurtları
+sayfa:market :: 🏛️ Dakar Üniversite from
+sayfa:market :: 🏛️ Osaka Üniversite from
+sayfa:takim :: Dakar Üniversite
+sayfa:takim :: Jakarta Atmacaları
+sayfa:takim :: Jakarta Atmacaları — Dakar Hawks
+sayfa:takim :: Ole Kühn
+sayfa:takim :: Osaka Üniversite
+sayfa:takim :: Stockholm Atmacaları
+sayfa:takim :: Tehran Boğaları
 sayfa:takim :: Yerel Esnaf Desteği ·
-sayfa:takim :: İzmir Giants
 sayfa:takim :: 🇹🇷 Türkçe
-sayfa:takim :: 🤝 Bernardo Gonçalves – Óscar Pereira
 setup :: 🇹🇷 Türkçe
-tutorial :: Bernardo Gonçalves
-tutorial :: Bilbao Athletic — Konya Kurtları
-tutorial :: Casablanca Atmacaları
-tutorial :: Curitiba Kartalları
-tutorial :: Curitiba Kartalları — Casablanca Atmacaları
-tutorial :: Konya Kurtları
-tutorial :: Leicester Şimşekleri
-tutorial :: Osaka Kartalları
-tutorial :: Santiago Kurtları
-tutorial :: Warsaw Kurtları
-tutorial :: İzmir Giants
+tutorial :: Dakar Üniversite
+tutorial :: Jakarta Atmacaları
+tutorial :: Jakarta Atmacaları — Dakar Hawks
+tutorial :: Ole Kühn
+tutorial :: Osaka Üniversite
+tutorial :: Stockholm Atmacaları
+tutorial :: Tehran Boğaları
 tutorial :: 🇹🇷 Türkçe
-tutorial :: 🤝 Bernardo Gonçalves – Óscar Pereira

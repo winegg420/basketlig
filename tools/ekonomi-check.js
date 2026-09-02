@@ -54,6 +54,19 @@ baslik('A · para birimi tek kaynak');
   yaz(suclu.length === 0, 'js/ kaynağında "KR" para birimi dizgisi yok',
     suclu.slice(0, 6).join('\n      → '));
 
+  /* FAZ 36 §C1: ARAYÜZ METNİNDE de KR olmamalı. FAZ 25 USD geçişinde js/ temizlendi
+     ama charazay2.0.html icindeki sabit ekler (… KR, … KR/hf) kaldı: kenar çubuğu
+     120.000 KR gösterirken haber satırı dolar diyordu. HTML/CSS YORUMLARI hariç tutulur —
+     onlar arayüz değildir (FAZ 22 notlarının içinde KR geçiyor). */
+  {
+    const html = fs.readFileSync(path.join(ROOT, "charazay2.0.html"), "utf8")
+      .replace(/<!--[^]*?-->/g, " ")
+      .replace(new RegExp(String.fromCharCode(92)+"/"+String.fromCharCode(92)+"*[^]*?"+String.fromCharCode(92)+"*"+String.fromCharCode(92)+"/","g"), " ");
+    const hSuclu = [];
+    html.split(String.fromCharCode(10)).forEach((l, k) => { if (re.test(l)) hSuclu.push("charazay2.0.html:" + (k + 1) + " " + l.trim().slice(0, 90)); });
+    yaz(hSuclu.length === 0, "charazay2.0.html arayüz metninde KR yok", hSuclu.slice(0, 6).join("; "));
+  }
+
   /* Simge elle yazılmamalı: '$'+sayı ya da ' $' biçimli elle birleştirme aranır. */
   const elle = [];
   dosyalar.forEach(f => {

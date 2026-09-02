@@ -232,7 +232,7 @@ function analizEt(events) {
       homeRoster: ev, awayRoster: dep, homeName: 'Ev Kartalları', awayName: 'Deplasman Kurtları',
       seed: SEED0 + i,
     });
-    (m.events||[]).forEach(e=>{ if(e&&e.text) tumEvents.push({type:e.type,text:e.text,q:e.q,t:e.t,shot:e.shot}); });
+    (m.events||[]).forEach(e=>{ if(e&&e.text) tumEvents.push({type:e.type,text:e.text,preText:e.preText,q:e.q,t:e.t,shot:e.shot}); });
     const r = analizEt(m.events);
     ['sut', 'kacan', 'reb', 'foul', 'foulAdli', 'steal', 'stealCiftTarafli', 'rebsizTarafDegisimi',
       'ardisikAyniTakimSutu', 'seriIddia', 'seriYanlis', 'devreArasi', 'foulAtlama', 'enerjiSatiri', 'koseIddia', 'koseYanlis', 'olay']
@@ -254,10 +254,22 @@ function analizEt(events) {
   console.log(`\n[Ölçüm] ${T.mac} maç · ${T.olay} olay · ${T.sut} şut · ${T.kacan} kaçan · ${T.reb} ribaund olayı`);
 
   console.log('\n[A] Ribaund ve akış');
-  const fark = Math.abs(T.kacan - T.reb) / T.mac;
-  ok('kaçan şut ≈ ribaund olayı (maç başına fark ≤ 2)', fark <= 2,
-    `maç başına kaçan ${(T.kacan / T.mac).toFixed(1)} · ribaund ${(T.reb / T.mac).toFixed(1)} · fark ${fark.toFixed(1)}`);
-  ok('ribaundsuz taraf değişimi yok', T.rebsizTarafDegisimi === 0, `${T.rebsizTarafDegisimi} vaka`);
+  /* ── FAZ 36 §B1: RUTİN SAVUNMA RİBAUNDU ANLATILMAZ ─────────────────────────────────
+     F13-1'in kapısı 'her kaçan şutun ribaundu anlatılsın' diyordu (kaçan ≈ ribaund olayı,
+     ribaundsuz taraf değişimi = 0). O kural kopukluğu çözdü ama tersine düştü: canlıda
+     256 satırın 69'u (%27) ribaund/top değişimiydi ve anlatım istatistik akışı gibi
+     okunuyordu. Gerçek spiker rutin savunma ribaundunu GEÇER.
+     Kapı niyeti değişti, ölçüsü de: (a) ribaund satırlarının payı %8-11 bandında olsun,
+     (b) HÜCUM ribaundu (ikinci şans) hiçbir zaman sessiz geçmesin — bu, aşağıdaki
+     'açıklamasız ardışık aynı-takım şutu' kapısının tam olarak ölçtüğü şeydir.
+     ⚠ İstatistik DEĞİŞMEZ: ribaunt kutuya yazılmaya devam eder, kapı yalnız ANLATIM
+     satırının basılıp basılmadığını yargılar. */
+  const rebOran = 100 * T.reb / Math.max(1, T.olay);
+  ok('ribaund satırı oranı %8-11 (rutin savunma ribaundu sessiz)', rebOran >= 8 && rebOran <= 11,
+    `%${rebOran.toFixed(1)} (${T.reb}/${T.olay}) · maç başına kaçan ${(T.kacan / T.mac).toFixed(1)} · ribaund satırı ${(T.reb / T.mac).toFixed(1)}`);
+  ok('hücum ribaundu daima anlatılıyor (ikinci şansa sessiz geçiş yok)',
+    T.ardisikAyniTakimSutu === 0,
+    `sessiz ikinci şans ${T.ardisikAyniTakimSutu} · sessiz geçen savunma ribaundu ${T.rebsizTarafDegisimi} (tasarım gereği)`);
   ok('açıklamasız ardışık aynı-takım şutu yok', T.ardisikAyniTakimSutu === 0, `${T.ardisikAyniTakimSutu} vaka`);
 
   console.log('\n[B] Sayısal tutarlılık');

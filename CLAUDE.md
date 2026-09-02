@@ -71,7 +71,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/faz11-check.js` | **FAZ 11 kabul kriterleri** — dizilim geometrisi, kare kaybında yetişme, kesme noktası çakışması, `startMatch` sessiz kilitlenmesi. |
 | `tools/anlatim-check.js` | **FAZ 13 anlatım denetçisi** — maçı TARAYICISIZ üretip olay listesini denetler (ribaund/şut eşitliği, seri iddiası, faul adı ve sayacı, çalma iki taraflılığı, kalıp çeşitliliği, devre arası, saha değişimi, köşe bölgesi). `--freeze` ile sekme donması + maç içi panel kalıcılığı tarayıcıda sınanır. **Anlatım değişince çalıştır.** |
 | `tools/mobile-check.js` | **FAZ 12 mobil denetçisi** (390×844) — dokunma sayısı (gerçekten tıklayarak), maç sayfası düzeni, bilgi yoğunluğu, 44 px dokunma hedefi, market yoğunluğu. Mobil düzen değişince çalıştır. |
-| `tools/sim-node.js` | **Tarayıcısız maç simülasyonu** — 14 modülü düz Node'da (vm) yükler, `simulateMatch()` sözleşmesini ve determinizmi sınar. Motor sözleşmesi değişince çalıştır. **Regresyon tabanı (FAZ 34 sonrası): `--n=1000 --seed=42` → 88.5 - 80.2 · olay/maç 248.** ⚠ `--n=100` TEK TOHUMDA GÜRÜLTÜ BASKINDIR (deplasman ortalaması tohuma göre 78,5-87,1 arası salınır) — taban artık n=1000 ile okunur. |
+| `tools/sim-node.js` | **Tarayıcısız maç simülasyonu** — 14 modülü düz Node'da (vm) yükler, `simulateMatch()` sözleşmesini ve determinizmi sınar. Motor sözleşmesi değişince çalıştır. **Regresyon tabanı (FAZ 36 sonrası): `--n=1000 --seed=42` → 88.5 - 80.2 · olay/maç 203.** (FAZ 34: olay/maç 248 — FAZ 36 §B1 rutin savunma ribaundunu anlatımdan çıkardı, SKOR DEĞİŞMEDİ.) ⚠ `--n=100` TEK TOHUMDA GÜRÜLTÜ BASKINDIR (deplasman ortalaması tohuma göre 78,5-87,1 arası salınır) — taban artık n=1000 ile okunur. |
 | `tools/schema-check.js` | **`db/schema.sql` denetçisi** — sözdizimi (varsa gerçek PostgreSQL ayrıştırıcısı), lig kuralları, RLS, "kod tabanında bağlantı yok". |
 | `db/schema.sql` | **Çok oyunculu veri modeli** (Postgres/Supabase). Yalnız dosya — hiçbir bağlantı kurulmuyor. |
 | `tools/gen-brand-images.js` | og:image (1200×630) + PWA ikonlarını üretir (Playwright). Marka görselini değiştirince tekrar çalıştır. |
@@ -691,3 +691,68 @@ Tam sürüm için doldurulacak boşluklar ve mantık hataları `RAPOR-EKSIKLER.m
   (taban × 1,6 + 25 px, mutlak 60 px alt sınırıyla), (3) hiçbir jeton askıda değil
   (sonlu koordinat + atanmış hedef). Salınan bir büyüklüğü gömülü eşikle yargılama —
   aynı koşudaki tabanla kıyasla.
+
+- **"ANLATIM 7 SN GEÇ" DİYEN ÖLÇÜ SENKRONU DEĞİL KOREOGRAFİYİ ÖLÇÜYORDU (FAZ 36 §A1):**
+  `realism-check`in "olay başından gecikme" sütunu `movePlayersForEvent` çağrısı ile ilk
+  yorum arasını veriyordu; şut olaylarında bu POZİSYONUN UZUNLUĞUDUR (sokma → geçiş → set
+  → şut) ve 6-7 sn olması doğrudur. Sonuç cümlesi çember karesine zaten 0-1 ms ile bağlıydı.
+  Gerçek kusur: koreografi boyunca anlatım SUSUYOR, sonra tek pakette dökülüyordu. Çözüm
+  İKİ BEAT — ön parça (`ev.preText`, `SUT_ON_LINES`) top elden çıkarken (`animateShotPossession`
+  `onShoot`), sonuç parçası (`ev.text` + skor + ses) çemberde (`onResult`). Ön parça SONUCU
+  ELE VERMEZ. Kapı da doğru büyüklüğü ölçer: yorum ↔ ANLATTIĞI SAHNE BEAT'İ (ön parça ↔
+  release · sonuç ↔ rim), artı ANLATIM SESSİZLİĞİ (en uzun/ortalama boşluk). Ölçülen:
+  iki beat de **0 ms**, ortalama sessizlik 4785 → 3622 ms. Şut olayına yeni bir yol
+  eklersen `preText`i de taşı (ölçüm araçlarının taşıma listesi dahil — FAZ 26 dersi).
+- **SAVUNMACI YÜRÜMEZ (FAZ 36 §A2):** F16-A'nın "hedefine varan jeton kademesini düşürür"
+  kuralı markajdaki savunmacıyı da kapsıyordu ve zamanın %47'si YÜRÜ kademesindeydi
+  (hedef %20-45) — sahayı "ağır çekim" gösteren asıl etken buydu. `S.defTrack` açıkken
+  `p._mark`lı jeton bu kuraldan MUAF, topsuz savunmacının tabanı YURU → JOG. Ölçülen
+  %46,8 → %40,2. ⚠ Geçiş SAVUNMASINI SPRINT yapmak denendi ve GERİ ALINDI: sprint payı
+  %13 → %22,7'ye çıkıp bandı (%5-20) deldi.
+- **`_defBehind` PAYI ÇAĞIRANDAN GELİR (FAZ 36 §A3):** tek bir pay iki farklı işi birden
+  yapamaz. Payı 30 → 46 px yapmak topsuz savunmacı için doğrudur (ball-you-man %81 → %88)
+  ama TOPU TUTANIN savunmacısını da geriye iter: onun hedefi zaten adam-pota doğrultusunda
+  `gap` (27 px) mesafesinde kuruludur, projeksiyon onu 46 px'e çeker ve markaj 1,80 →
+  1,86 m olur. Top savunmacısında **pay = aralık**. Yanında: post muafiyeti 64 → 34 px,
+  ölü bölge 8/20 → 6/14 px, `TRANS_OFF` hedefleri ön sahaya (orta üçte bir %21,6 → %14,3).
+- **RUTİN SAVUNMA RİBAUNDU ANLATILMAZ (FAZ 36 §B1):** F13-1'in "her kaçan şutun ribaundu
+  anlatılsın" kuralı kopukluğu çözdü ama tersine düştü — 256 satırın 69'u (%27) ribaund/top
+  değişimiydi ve anlatım istatistik akışı gibi okunuyordu. Kapı `_rebGoster`: hücum ribaundu
+  ve ribaunt uzmanı (≥88) DAİMA, rutin savunma ribaundu `prChance` ile. `ftRebound` da aynı
+  kapıdan geçer. **İSTATİSTİK DEĞİŞMEZ** — `rebounder`/`rebOff` çekilişleri aynen yapılır,
+  kutu skor birebir aynı kalır (kanıt: 10 maçın skor+ribaunt+asist dizisi HEAD ile özdeş).
+  ÖLÇÜLEN KISIT: bu motorda ribaundların ~%34'ü hücum ribaundudur (gerçekte ~%25), bu
+  yüzden "hücum ribaundu daima" kuralı oranı %10,4'e çakar ve %8-11 bandında rutin savunma
+  ribaunduna kalan pay %25 değil ~%2'dir. `anlatim-check` [A] kapıları bu niyete göre
+  yeniden yazıldı (kaçan ≈ ribaund kapısı KALDIRILDI).
+- **YABANCI TERİM KAPISI LİSTE DEĞİL SINIF OLMALI (FAZ 36 §B5):** eski kapı sabit bir
+  kelime listesiydi ve FAZ 26'da eklenen "floater"ı hiç görmedi (canlıda 6/maç). Yeni ölçüt:
+  Türkçede bulunmayan harf/öbek (`q w x · ck sh th ph ch oo ee ea ou oa` · sonda
+  `ng/ll/ss/ff/tt`) taşıyan **küçük harfli** sözcük + açık liste. İki koruma zorunlu:
+  (a) yalnız küçük harfle başlayan sözcük taranır — özel ad büyük harflidir (FAZ 29 §1);
+  (b) Türkçe alfabe DIŞI harf taşıyan sözcük (Sławek, Pačuta, Kauliņš) ÖZEL ADDIR ve
+  atlanır — bu olmadan sözcük parçalanıp "awek" gibi hayalet kök 340 yanlış pozitif üretir.
+- **PARÇACIKLI SOYAD BÖLÜNMEZ (FAZ 36 §B6):** "Guillaume Van Hooren" → anlatımda "Hooren"
+  çıkıyordu. `_soyadTam` son kelimeden geriye doğru `_AD_PARCACIK` (van · von · de · del ·
+  della · di · da · das · dos · du · der · den · le · la · el · ter · ten · bin · ibn ·
+  mac · mc) yürür. Ek çekimi de tam soyad üzerinden yapılır ("Van Hooren'e", "De Vries'te").
+  Jeton etiketi (`_tokShort`) kısa kalır — ayrım bilinçli, sahada yer yok.
+- **OLAY DAMGASI PENCERESİ `tPrev-1`DE KALIR (FAZ 36 §B7):** pencereyi `tPrev`e kadar açmak
+  denendi ve ÇAPRAZ ÇAKIŞMA üretti — bir önceki pozisyonun son olayı zaten `tSon` (= yeni
+  pozisyonun `tPrev`) damgasını taşır. Motor akışında çakışma 0. Ekranda aynı damgayı
+  paylaşan satırlar TEK OLAYIN alt parçalarıdır (serbest atış düdük/sonuç, şut ön
+  parça/sonuç) ve saat o an durmuştur.
+- **VİRGÜLDEN SONRA KÜÇÜK HARF, AMA ÖZEL AD KORUNUR (FAZ 36 §B8):** asist öneki
+  ("… topu kenara aktardı, ") ile şut cümlesi birleşince ikinci parça büyük harfle
+  başlıyordu. `_birlestir(on,govde,korunan)` virgülle biten önekte gövdeyi küçültür;
+  korunacak özel adlar ÇAĞIRANDAN gelir (metinden "büyük harfli sözcük" diye tahmin etmek
+  her cins sözcüğü de korur ve kapı işlemez). `trKucuk` zorunlu (İ→i, I→ı).
+- **`pickLine` ŞABLON TEKRARINI ENGELLER, CÜMLE TEKRARINI ENGELLEMEZ (FAZ 36 §B3):** aynı
+  şablon + aynı oyuncu birleşince ortaya çıkan birebir cümle tek maçta 2 kez görülüyordu.
+  `narr.said` (maç düzeyinde üretilmiş METİN kümesi) + `benzersiz()` sarmalayıcısı 4 deneme
+  yapar. Ayrıca kısa/ritüel havuzlar (ör. şut ön parçası) YETERİNCE BÜYÜK olmalı: 8 satır,
+  maç başına ~120 şutta 29 tekrar demekti; 20 satıra çıkarılınca 0,1'e indi.
+- **ARAYÜZDE PARA ETİKETİ HTML'DE DE ARANIR (FAZ 36 §C1):** FAZ 25 USD geçişinde `js/`
+  temizlenmişti ama `charazay2.0.html`deki sabit " KR" ekleri kaldı; kenar çubuğu
+  "120.000 KR" gösterirken haber satırı dolar diyordu. `ekonomi-check` A bölümü artık
+  HTML'i de tarar (yorumlar hariç). Tek kaynak `fmtPara`/`fmtMaas`.

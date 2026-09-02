@@ -13,7 +13,7 @@
 
    Kayıt yalnızca yayın sunucusunda yapılır (js/main.js → registerServiceWorker); yerelde
    ve test araçlarında devre dışıdır, bu yüzden ölçümler önbellekten etkilenmez. */
-const SCRIPT_V = '67';
+const SCRIPT_V = '68';
 const CACHE = 'charazay-v' + SCRIPT_V;
 
 const JS_FILES = ['i18n', 'i18n-dict', 'i18n-commentary', 'names', 'state', 'economy', 'persistence',

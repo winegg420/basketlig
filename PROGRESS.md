@@ -5160,3 +5160,117 @@ medyanı aynı koşudaki normal akış tabanından kötü değil mi (taban × 1,
 
 FAZ 26'daki F25-2 dersinin üçüncü tekrarı: salınan bir büyüklüğü gömülü eşikle yargılayan
 kapı, kusuru kendisi üretir.
+
+---
+
+## FAZ 36 — Canlı maç: hareket gerçekçiliği ve anlatım kalitesi (2026-09-02)
+
+**Şikâyet:** "Maç esnasında gerçek basketbol ile alakasız hareketler oluyor. Canlı anlatım
+inanılmaz amatörce."
+
+### A · Hareket ve senkron
+
+| Ölçü | Öncesi | Sonrası | Hedef |
+|---|---|---|---|
+| kademe: YÜRÜ payı | %46,8 | **%40,2** | %20-45 |
+| kademe: SPRINT payı | %13,1 | %13,4 | %5-20 |
+| topu tutana en yakın savunmacı | 1,80 m | **1,75 m** | 1,5-1,8 m |
+| savunmacı adamı ile pota arasında | %81,2 | **%88,9** | ≥%85 (brif %90) |
+| orta üçte birdeki hücumcu (süzülmemiş) | %21,6 | **%14,3** | <%20 |
+| ön parça ↔ şut anı | 412-614 ms | **0 ms** | ≤800 ms |
+| sonuç ↔ çember | 0 ms | **0 ms** | ≤800 ms |
+| anlatım sessizliği (ortalama boşluk) | 4785 ms | **3622 ms** | ≤5000 ms |
+
+**A1 — "anlatım 7 sn geç" ÖLÇÜM HATASIYDI.** `realism-check`in "olay başından gecikme"
+sütunu, `movePlayersForEvent` çağrısı ile ilk yorum arasını ölçüyordu; şut olaylarında bu
+POZİSYON KOREOGRAFİSİNİN UZUNLUĞUDUR (sokma → geçiş → set → şut) ve 6-7 sn olması normaldir.
+Sonuç cümlesi HEAD'de de topun çemberde olduğu kareye 0-1 ms ile bağlıydı. Gerçek kusur
+başkaydı: **koreografi boyunca anlatım tamamen susuyor, sonra tek pakette dökülüyordu.**
+Çözüm iki beat: ön parça (`ev.preText`) top elden çıkarken, sonuç parçası (`ev.text` + skor)
+çemberde. Kapı da doğru büyüklüğü ölçecek şekilde yeniden yazıldı (yorum ↔ ANLATTIĞI SAHNE
+BEAT'İ) ve n<3 satır bilgi sayılır (FAZ 30 eki: örneklem güdümlü kapı).
+
+**A2 — savunmacı yürümez.** F16-A'nın "hedefine varan jeton kademesini düşürür" kuralı
+markajdaki savunmacıyı da kapsıyordu; zamanın %47'si YÜRÜ kademesindeydi. Savunmada olan
+jeton bu kuraldan muaf, topsuz savunmacının tabanı YURU → JOG.
+⚠ Geçiş savunmasını SPRINT yapmak denendi ve GERİ ALINDI: sprint payı %22,7'ye çıktı
+(hedef %5-20). Geri dönüş koşusu zaten KOŞ kademesinde yeterli.
+
+**A3 — `_defBehind` payı ÇAĞIRANDAN gelir.** Tek bir 38-46 px pay topsuz savunmacı için
+doğru (ball-you-man %81 → %88) ama TOPU TUTANIN savunmacısını da geriye itiyordu
+(1,80 → 1,86 m); hedefi zaten 27 px'te kurulu olduğu için projeksiyon onu bozuyordu.
+Top savunmacısında pay = aralık. Post muafiyeti 64 → 34 px, ölü bölge 8/20 → 6/14 px.
+`TRANS_OFF` hedefleri ön sahaya taşındı (orta üçte bir %21,6 → %14,3).
+
+**A4 — kenardan sokma zaten kurallıydı.** `realism-check`in "tam dışarıda 80 kare" satırı
+İHLAL DEĞİL, SOKAN oyuncunun doğru biçimde çizgi dışında durduğu kare sayısıdır; "oyuncu
+saha DIŞI" ihlali HEAD'de de 0 idi. Rapor satırı yanlış okunabildiği için etiketi düzeltildi.
+Sokucunun çizgi dışı adımı 26 px'te (0,88 m) bırakıldı — 0,5 m'ye indirmek jetonun yarısını
+çizgi üstünde bırakır, yani daha az kurallı olur.
+
+### B · Anlatım
+
+| Ölçü | Öncesi | Sonrası | Hedef |
+|---|---|---|---|
+| ribaund satırı oranı | %25,3 (2502/9899) | **%10,6** (879/8276) | %8-11 |
+| ortalama satır kelime sayısı | 8,98 | **6,70** | <9 |
+| maç içinde birebir tekrarlanan satır | 4/maç (brif) · ölçülen 29,7 | **0,60/maç** | 0 |
+| "Hakem X'i gördü" | 103/620 | **0** | 0 |
+| künye biçimli faul | %42,9 | **%39,2** | ≤%50 |
+| "floater" geçişi | 6/maç | **0** | 0 |
+| virgülden sonra hatalı büyük harf | 2/4931 | **0/4029** | 0 |
+| "topu yukarı taşıdı" | 2,40/maç | **0,05/maç** | ≤1 |
+| "güvene aldı" | 0,00/maç | **0,00/maç** | ≤1 |
+
+**İSTATİSTİK DEĞİŞMEDİ — kanıt:** 10 maçın skor + ribaunt + asist kutusu HEAD ile BİREBİR
+aynı (`80/94/22/24/17/25 …`). `band.js` hash **3225bf641b79dea7** (değişmedi),
+`measure.js` değişmezliği geçti, `sim-node --n=1000 --seed=42` → **88,5 - 80,2** (taban).
+Değişen tek şey `olay/maç`: **248 → 203** (bilinçli, §B1).
+
+**B1 ölçülen kısıt:** bu motorda ribaundların ~%34'ü HÜCUM ribaundudur (gerçekte ~%25).
+"Hücum ribaundu daima anlatılsın" kuralı tek başına oranı %10,4'e çakıyor; brifin istediği
+%8-11 bandında rutin savunma ribaunduna kalan pay %25 değil **~%2**. İkisinden biri
+seçilmek zorundaydı — ikinci şansın sessiz geçmemesi (F13-1'in çözdüğü asıl kusur) tercih
+edildi. FAZ 13'ün iki kapısı (kaçan ≈ ribaund · ribaundsuz taraf değişimi = 0) bu niyete
+göre yeniden yazıldı.
+
+**B5 kapı artık SINIF:** yabancı terim taraması sabit kelime listesinden Türkçede
+bulunmayan harf/öbek taramasına çevrildi (`q w x · ck sh th ph ch oo ee ea ou oa` ·
+sonda `ng/ll/ss/ff/tt`) + açık liste. Yalnız KÜÇÜK harfli sözcükler taranır (özel ad
+büyük harflidir) ve Türkçe alfabe dışı harf taşıyan sözcük (Sławek, Pačuta) ÖZEL ADDIR —
+bu kural olmadan "Sławek" parçalanıp "awek" hayalet kökü 340 yanlış pozitif üretti.
+
+**B6 parçacıklı soyad:** `_AD_PARCACIK` (van · von · de · del · della · di · da · das ·
+dos · du · der · den · le · la · el · ter · ten · bin · ibn · mac · mc). "Van Hooren'e",
+"De Vries'te", "Dos Santos'a", "Van der Berg'in" doğrulandı. Jeton etiketi (`_tokShort`)
+kısa kalır — ayrım bilinçli.
+
+**B7 damga:** motor olay akışında çakışma **0** (8276 olay). Pencereyi `tPrev`e kadar
+açmak denendi ve GERİ ALINDI — önceki pozisyonun son olayıyla ÇAPRAZ çakışma üretiyor.
+Kalan aynı damgalı satırlar tek bir olayın alt parçalarıdır (serbest atış düdük/sonuç,
+şut ön parça/sonuç) ve saat o an durmuştur.
+
+### C · Arayüz
+Kenar çubuğu / market / bilanço "KR" etiketleri kaldırıldı, `fmtPara` tek kaynak.
+`ekonomi-check` A bölümüne HTML taraması eklendi (yorumlar hariç).
+
+### Testler
+`sim-node --n=1000 --seed=42` 88,5-80,2 · hata 0 · G değişmedi ·
+`band.js` 3225bf641b79dea7 · `measure.js` ✅ · `hareket-check` ✓ · `spacing-check` ✓ ·
+`realism-check` ✓ · `sut-check` 14/14 · `anlatim-check` 31/31 (`--freeze` 43/43) ·
+`sunum-check` ✓ · `ekonomi-check` 37/37 · `lig-check` ✓ · `milliyet-check` ✓ ·
+`isim-check` ✓ · `turkek-check` ✓ · `bicim-check` 32/32 · `schema-check` 21/21 ·
+`analiz-check` ✓ · `arena-check` ✓ · `faz10-check` 27/27 · `faz11-check` 15/15 ·
+`mobile-check` 18/18 · `m20-check` ✓ · `i18n-scan` A/B/C/D = 0 · çakışan 0 ·
+`visual-check` masaüstü+mobil 0 konsol hatası · `surum-check` ✓. Sürüm **67 → 68**.
+
+### Yapamadığım / farklı yaptığım
+- **A1'in "≤800 ms" kapısı eski metrikle karşılanamazdı** çünkü o metrik senkronu değil
+  koreografi süresini ölçüyordu. Kapı doğru büyüklüğe çevrildi; sonuç 0 ms.
+- **ball-you-man %88,9** — brifin %90 hedefine 1,1 puan kaldı. Kalan pay takip
+  gecikmesidir; aralığı daha da daraltmak FAZ 15/34'te ölçülerek geri alınmıştı.
+- **Rutin savunma ribaundu %25 değil ~%2 anlatılıyor** (yukarıdaki ölçülen kısıt).
+- **Kenardan sokmada sokucunun 0,5 m'ye çekilmesi yapılmadı** — gerçekçiliği düşürürdü;
+  diğer 9 oyuncunun saha içinde kalması zaten garantiliydi (ihlal 0).
+- **B7'de "her satır farklı damga" tam olarak sağlanamaz**: tek olayın iki parçası ve
+  serbest atış dizisi saat durmuşken aynı saniyeyi paylaşır (brifin kendi istisnası).
