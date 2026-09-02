@@ -16,6 +16,7 @@
  *   node tools/anlatim-check.js --freeze     → + sekme donması / kurtarma testi (Playwright)
  */
 const fs = require('fs');
+const _KAPI2 = require('./_lib/anlatim-kapilari.js');
 const path = require('path');
 const vm = require('vm');
 const KAPI = require('./_lib/anlatim-kapilari.js');   /* FAZ 25 §8 okuyucuları */
@@ -125,7 +126,7 @@ function analizEt(events) {
 
   events.forEach((e, i) => {
     const t = e.type || '';
-    const tx = metin(e);
+    const tx = _KAPI2.metinTam(e);   /* FAZ 37 §3: kurulum + sonuç tek birim */
     r.olay++;
     /* kalıp: isim ve sayılar çıkarılır */
     /* FAZ 17: isim silme kalıbı ASCII+TR harflerine bakıyordu; havuzda č/ć/š/ž/ū/ė
@@ -232,7 +233,7 @@ function analizEt(events) {
       homeRoster: ev, awayRoster: dep, homeName: 'Ev Kartalları', awayName: 'Deplasman Kurtları',
       seed: SEED0 + i,
     });
-    (m.events||[]).forEach(e=>{ if(e&&e.text) tumEvents.push({type:e.type,text:e.text,preText:e.preText,q:e.q,t:e.t,shot:e.shot}); });
+    (m.events||[]).forEach(e=>{ if(e&&e.text) tumEvents.push({type:e.type,text:e.text,preText:e.preText,chain:e.chain,q:e.q,t:e.t,shot:e.shot}); });
     const r = analizEt(m.events);
     ['sut', 'kacan', 'reb', 'foul', 'foulAdli', 'steal', 'stealCiftTarafli', 'rebsizTarafDegisimi',
       'ardisikAyniTakimSutu', 'seriIddia', 'seriYanlis', 'devreArasi', 'foulAtlama', 'enerjiSatiri', 'koseIddia', 'koseYanlis', 'olay']
@@ -490,8 +491,20 @@ function analizEt(events) {
      `%${(K.saatOran * 100).toFixed(1)} (${K.saat}/${K.olay})`);
   ok('4Ç son 3 dk ton satırı ≥3/maç', K.tonMac >= 3,
      `${K.tonMac.toFixed(1)}/maç (${K.ton} satır)`);
-  ok('zincir oranı %50-60', K.zincirOran >= 0.50 && K.zincirOran <= 0.60,
-     `%${(K.zincirOran * 100).toFixed(1)} (${K.zincir}/${K.sut} şut)`);
+  /* ── FAZ 37 §3/§12.4: ZİNCİR ORANI KAPISI YERİNİ AD KAPISINA BIRAKTI ──────────────
+     FAZ 25 §7.4a zincir oranını %50-60 bandında istiyordu çünkü kısa parçalı ritim o
+     zaman İSTEĞE BAĞLI bir daldı. FAZ 37 ile ritim YAPISAL oldu: her şut kurulum +
+     sonuç olarak iki beate bölünüyor, yani oran tanımı gereği %100. Ölçülecek şey
+     değişti: kurulum beati şutörün adını HER ZAMAN taşımalı (§4.4), yoksa sonuç beati
+     öznesiz kalır ve kimin attığı kaybolur. */
+  {
+    const sutlar = tumEvents.filter(e => e.shot);
+    const AD_RE2 = /\p{Lu}[\p{L}’']+/u;
+    const adsiz = sutlar.filter(e => !e.preText || !AD_RE2.test(String(e.preText)));
+    ok("her şut olayında ön parça şutörün adını taşıyor", adsiz.length === 0,
+       (sutlar.length - adsiz.length) + "/" + sutlar.length + (adsiz.length ? " · ör. " + String(adsiz[0].preText).slice(0, 70) : ""));
+  }
+
   ok('ortalama olay kelime sayısı <9', K.kelimeOrt < 9, K.kelimeOrt.toFixed(2));
   ok('yabancı terim geçmiyor', Object.keys(K.yabanci).length === 0,
      Object.keys(K.yabanci).length ? JSON.stringify(K.yabanci) : 'spacing/box-out/drive/roll/AND-1 yok');

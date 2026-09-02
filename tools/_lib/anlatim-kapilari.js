@@ -8,6 +8,17 @@
  */
 
 const metin = e => String((e && e.text) || '').replace(/<[^>]*>/g, '');
+/* ── FAZ 37 §3: ANLATIM BİRİMİ İKİ BEATTİR ─────────────────────────────────────────
+   Şut anlatımı kurulum (preText, top elden çıkarken) + sonuç (text, top çemberde)
+   olarak bölünüyor ve ikisi ekranda AYNI BALONDA birleşiyor (chain:true). Cümle düzeyi
+   kapılar (fail var mı · yüklem var mı · bölge-dil çelişmesi · kalıp çeşitliliği) bu
+   BİRLEŞİK metni okumalı; yalnız text okuyan kapı cümlenin ikinci yarısını tek başına
+   yargılar ve "failsiz" der — oysa fail ilk yarıda söylenmiştir. */
+const metinTam = e => {
+  if (!e) return "";
+  const on = (e.chain && e.preText) ? String(e.preText).replace(/<[^>]*>/g, "") + " " : "";
+  return on + metin(e);
+};
 
 /* ── Türkçe ek uyumu taraması ────────────────────────────────────────────────────────
    Şablonlarda ek SABİT yazılıyken "Ömer Polat'ye", "Bursa Yıldırım'de",
@@ -222,28 +233,36 @@ function olcumler(events, macSayisi) {
     servis: [], kara: [], cumle: 0, fiilsiz: [], fiilsizN: 0,
   };
   events.forEach(e => {
-    const tx = metin(e);
+    const tx = metinTam(e);          /* FAZ 37 §3: birleşik anlatım birimi */
+    const txSatir = metin(e);        /* ekrandaki tek satır (kelime sayımı) */
     if (!tx) return;
     r.olay++;
-    r.kelime += tx.replace(/\([^)]*\)/g, '').trim().split(/\s+/).filter(Boolean).length;
-    /* FAZ 36 §A1: şut olayı EKRANA İKİ SATIR basar — top elden çıkarken ön parça
-       (e.preText), çemberde sonuç parçası (e.text). Kelime ortalaması ekranda görünen
-       SATIR başına ölçülür; ön parçayı saymazsak metrik ekranı değil veri modelini ölçer.
-       ⚠ Oran kapıları (saat/ton/künye) OLAY başına kalır — bantları ön parçasız
-       kalibre edildi, paydayı büyütmek davranış değişmeden oranı düşürürdü. */
+    /* ── FAZ 37 §3: BİRİM İKİ BEAT, SATIR İKİ TANE ────────────────────────────────────
+       `tx` artık BİRLEŞİK anlatım birimidir (kurulum + sonuç) — cümle düzeyi kapılar
+       (fail · yüklem · yabancı terim · kara liste) onu okur, çünkü ekranda ikisi AYNI
+       BALONDA birleşir. Kelime ortalaması ise EKRANDAKİ SATIR başına ölçülür; şut olayı
+       iki satır basar, o yüzden `satir` iki kez artar ve kelimeler ayrı ayrı eklenir.
+       ⚠ Oran kapıları (saat/ton/künye) OLAY başına kalır — bantları ön parçasız kalibre
+       edildi, paydayı büyütmek davranış değişmeden oranı düşürürdü. */
     r.satir++;
+    r.kelime += txSatir.replace(/\([^)]*\)/g, '').trim().split(/\s+/).filter(Boolean).length;
     if (e.preText) {
       const px = String(e.preText).replace(/<[^>]+>/g, '').trim();
       if (px) {
         r.satir++;
-        r.kelime += px.trim().split(/s+/).filter(Boolean).length;
-        ekHatalari(px).forEach(h => { if (r.ekHata.length < 12) r.ekHata.push(h); });
-        yabanciTerimler(px).forEach(y => { r.yabanci[y] = (r.yabanci[y] || 0) + 1; });
-        if (SERVIS_RE.test(px) && r.servis.length < 8) r.servis.push(px.slice(0, 90));
-        KARA_LISTE.forEach(re => { if (re.test(px) && r.kara.length < 8) r.kara.push(px.slice(0, 90)); });
-        const _pc = cumleler(px); r.cumle += _pc.length;
-        const _pf = fiilsizCumleler(px); r.fiilsizN += _pf.length;
-        _pf.forEach(x => { if (r.fiilsiz.length < 8) r.fiilsiz.push(x); });
+        /* ⚠ Bu satır FAZ 36'da `split(/s+/)` yazılmıştı (ters bölü kaybı) — kelimeler
+           harf 's' üzerinden bölünüyor, ön parçanın kelime sayısı anlamsız çıkıyordu. */
+        r.kelime += px.split(/\s+/).filter(Boolean).length;
+        /* Ön parça `tx` içinde zaten taranıyor (chain); zincirsiz ön parça varsa ayrıca. */
+        if (!e.chain) {
+          ekHatalari(px).forEach(h => { if (r.ekHata.length < 12) r.ekHata.push(h); });
+          yabanciTerimler(px).forEach(y => { r.yabanci[y] = (r.yabanci[y] || 0) + 1; });
+          if (SERVIS_RE.test(px) && r.servis.length < 8) r.servis.push(px.slice(0, 90));
+          KARA_LISTE.forEach(re => { if (re.test(px) && r.kara.length < 8) r.kara.push(px.slice(0, 90)); });
+          const _pc = cumleler(px); r.cumle += _pc.length;
+          const _pf = fiilsizCumleler(px); r.fiilsizN += _pf.length;
+          _pf.forEach(x => { if (r.fiilsiz.length < 8) r.fiilsiz.push(x); });
+        }
       }
     }
 
@@ -392,5 +411,5 @@ function damgaCakismasi(events) {
   return cak;
 }
 
-module.exports = { olcumler, yabanciTerimler, ekHatalari, ekDenetle, failVar, metin, adlariBul, foulOku,
+module.exports = { olcumler, yabanciTerimler, metinTam, ekHatalari, ekDenetle, failVar, metin, adlariBul, foulOku,
                    sutIfadeSayisi, damgaCakismasi, fiilsizCumleler, cumleler };

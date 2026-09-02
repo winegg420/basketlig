@@ -249,7 +249,7 @@ function startMatch(playoff){
       if(mode==='pre'){ addComment(ev.ftPre||ev.text,ev.type,_pk); return; }   /* faul düdüğü — sonuç YOK */
       if(mode==='res'){ paintScore(); if(ev.ftRes) addComment(ev.ftRes,ev.type,_pk); return; }
       paintScore();
-      addComment(ev.text,ev.type,_pk);
+      addComment(ev.text,ev.type,_pk,!!ev.chain);
     };
     /* Önce oyuncuları yerleştir (top bu GERÇEK konumlara paslanacak), sonra topu canlandır.
        Dönen süre (sim-ms) koreografinin uzunluğu; izleme hızına bölünerek gerçek gecikmeye
@@ -384,6 +384,7 @@ function startMatch(playoff){
     mState._waitRes=0;
     matchStep();
   }
+  mState._bgPause=false;   /* FAZ 37 §9.3: önceki maçtan arta kalan duraklatma devretmesin */
   mState.step=stepGuarded;
   matchStep();
 }
@@ -444,14 +445,30 @@ if(typeof document!=='undefined'&&document.addEventListener){
       }
       if(!mState.running) return;
       if(document.hidden){
-        if(matchEventTimer){
+        /* ── FAZ 37 §9.3: BAYRAK ÖNCE, ZAMANLAYICI SONRA ────────────────────────────
+           M10 kuyruğu duraklatıyordu ama BEKÇİ (startMatchWatchdog) 2,5 sn sonra
+           "zamanlayıcı kayıp" deyip kuyruğu yeniden kuruyordu. Sonuç ölçüldü: sekme
+           arka plandayken sim saati 22 sn boyunca hiç ilerlemedi ama skor 48→63'e
+           çıktı — anlatım sahneyi tamamen geçti. Duraklatma artık AÇIK bir bayrakla
+           (mState._bgPause) ilan edilir ve bekçi o bayrağı görünce karışmaz.
+           Ayrıca zamanlayıcı o an null olsa bile (şut sonucu beklenirken 60 ms'lik
+           stepGuarded döngüsü) duraklatma yine de kurulur. */
+        if(!mState._bgPause){
           const gecen=Date.now()-(mState._stepAt||Date.now());
           mState._stepRemain=Math.max(60,(mState._stepDelay||600)-gecen);
-          clearTimeout(matchEventTimer); matchEventTimer=null;
+          if(matchEventTimer){ clearTimeout(matchEventTimer); matchEventTimer=null; }
+          mState._bgPause=true;
           _hiddenPause=true;
         }
-      } else if(_hiddenPause){
-        _hiddenPause=false;
+      } else if(_hiddenPause||mState._bgPause){
+        _hiddenPause=false; mState._bgPause=false;
+        /* Dönüşte sahne ile anlatım arasındaki boşluğu KAPAT: rAF damgasını şimdiye
+           eşitle (dev dt sıçraması olmasın) ve jetonları/topu güncel olayın hedeflerine
+           anında oturt. _simCatchUp tam bu işi yapar ve F11-1'de ölçülerek doğrulandı. */
+        try{
+          const S=mState._sim;
+          if(S){ S.last=0; S._sahipsizT=0; if(typeof _simCatchUp==='function') _simCatchUp(); }
+        }catch(e){}
         if(!mState.paused&&mState.step){
           const d=Math.max(60,mState._stepRemain||300);
           mState._stepAt=Date.now(); mState._stepDelay=d;
@@ -746,9 +763,10 @@ function continueMatchAfterBreak(){
    (`_markPainted()` çağrılmadığında) kurulmuyordu. Bayrak yerine OLAY KİMLİĞİ: hangi
    yoldan gelirse gelsin bir olay+mod bir kez basılır. Kullanıcı eylemleri (taktik, mola,
    değişiklik) bilerek tekrarlanabilir — onlar benzersiz anahtar geçer. */
-function addComment(txt,type='',key){
+function addComment(txt,type='',key,zincir){
+  /* _k fonksiyon kapsamında olmalı: zincir birleştirme (§3) da aynı anahtarı okur. */
+  const _k=(key!=null)?key:('t:'+String(txt).slice(0,60));
   try{
-    const _k=(key!=null)?key:('t:'+String(txt).slice(0,60));
     if(!mState._logged) mState._logged=new Set();
     if(mState._logged.has(_k)) return;
     mState._logged.add(_k);
@@ -771,6 +789,22 @@ function addComment(txt,type='',key){
   /* FAZ F: çeyrek/uzatma etiketi dile göre (TR: 1P/U1 · EN: Q1/OT1) */
   const _en=(typeof isEN==='function'&&isEN());
   const qLbl=q<=4?(_en?('Q'+q):(q+'P')):((_en?'OT':'U')+String(q-4));
+  /* ── FAZ 37 §3: ZİNCİR BEAT AYNI BALONA YAZILIR ────────────────────────────────────
+     Şut anlatımı iki beat'e bölündü (kurulum → sonuç). İkisi TEK CÜMLENİN İKİ YARISIDIR;
+     ayrı balonlara basılırsa akış "Kurulum. / sonuç." diye kopuk okunur. `chain` bayrağı
+     gelen satır, aynı olayın ön parçasının yazıldığı balonun SONUNA eklenir.
+     ⚠ Yalnız ön parçası GERÇEKTEN basılmış olayda birleşir (`_chainKey`); ön parça
+     atlanmışsa (kare kaybı, resume) satır kendi balonunu açar ve anlatım kaybolmaz. */
+  if(zincir&&mState._chainKey&&mState._chainEl&&mState._chainKey===('i'+String(_k).split(':')[0].slice(1))){
+    try{
+      const el=mState._chainEl;
+      if(el&&el.parentNode){
+        el.innerHTML=el.innerHTML+' '+txt;
+        mState._chainKey=null; mState._chainEl=null;
+        return;
+      }
+    }catch(e){}
+  }
   const item=document.createElement('div');
   let cls='ci';
   if(type==='score3'||type==='score2'||type==='free') cls+=' ci-score';
@@ -781,6 +815,13 @@ function addComment(txt,type='',key){
   item.className=cls;
   item.innerHTML=`<span class="ci-time">${qLbl} ${dm}:${ds.toString().padStart(2,'0')}</span> ${txt}`;
   div.insertBefore(item,div.firstChild);
+  /* §3: bu satır bir ön parçaysa, zincir sonucunun ekleneceği balonu damgala. */
+  try{
+    if(typeof _k==='string'&&_k.indexOf(':on')>0){
+      mState._chainKey='i'+_k.split(':')[0].slice(1);
+      mState._chainEl=item;
+    }
+  }catch(e){}
 }
 
 // ===== ANTRENMAN SİSTEMİ =====
@@ -1948,6 +1989,9 @@ function startMatchWatchdog(){
   _matchWatchdog=setInterval(()=>{
     try{
       if(typeof mState==='undefined'||!mState||!Array.isArray(mState.events)||!mState.events.length) return;
+      /* FAZ 37 §9.3: arka planda BİLEREK duraklatıldıysa bekçi kuyruğu diriltmez —
+         yoksa sahne donmuşken skor akmaya devam eder (ölçüldü: 22 sn'de 48→63). */
+      if(mState._bgPause||(typeof document!=='undefined'&&document.hidden)){ syncMatchButtons(); return; }
       if(mState.running&&!mState.paused&&!matchEventTimer&&typeof mState.step==='function'
          &&mState.idx<mState.events.length){
         const bosluk=Date.now()-(mState._stepAt||0);

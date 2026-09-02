@@ -184,8 +184,8 @@ const MAC_MS=Number((process.argv.find(a=>a.startsWith('--mac='))||'--mac=60000'
      oyuncu adları çevrilmez, "Türkçe kalmış" sayılmamalı. */
   const TRH=/[çğıöşüÇĞİÖŞÜ]/;
   const TRW=new RegExp('(^|[^A-Za-z])('+['ve','ile','icin','için','mac','maç','sayi','sayı',
-    'faul','ribaund','asist','blok','cember','çember','pota','top','sut','şut','kacirdi','kaçırdı',
-    'attı','atti','aldi','aldı','verdi','geldi','girdi','yok','var','bu','bir','iki','uc','üç',
+    'faul','ribaund','asist','cember','çember','pota','topu','topa','topla','sut','şut','kacirdi','kaçırdı',
+    'attı','atti','aldi','aldı','verdi','geldi','girdi','yok','bu','bir','iki','üç',
     'cizgi','çizgi','tutti','tuttu','kosuyor','koşuyor','oyuncu','takim','takım','ceyrek','çeyrek',
     'devre','sonra','once','önce','hucum','hücum','savunma','yine','bizde','sizde','altı','alti'
   ].join('|')+')([^A-Za-z]|$)','i');

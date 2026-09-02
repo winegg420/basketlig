@@ -5333,3 +5333,172 @@ hatasına bakar; `NaN`/`undefined` sessizce görünür). Yeni araç 2 sezon sür
 `schema-check` 21/21 · `spacing-check` ön plan ✓ ve `--bg` ✓ (iki koşu) ·
 `realism-check --full` tam maç: senkron kapılarının tamamı geçti (score2 n=52 · miss2 n=28 ·
 reb n=20), en uzun anlatım sessizliği 4174 ms, 0 konsol hatası. Sürüm **68 → 69**.
+
+---
+
+## FAZ 37 — Canlı maç: anlatım rejistri + oyun mantığı + top/oyuncu senkronu (2026-09-02)
+
+Kaynak: `CANLI-MAC-REVIZE-FAZ37.md`. Ölçümleri `aa83a90`de yapılmıştı; her iş kalemi
+uygulanmadan önce kodda hâlâ geçerli mi diye doğrulandı (hepsi geçerliydi).
+
+### KIRMIZI ÇİZGİ TUTTU
+Skor / kazanan / kutu skor **birebir aynı** (12 maçlık sabit tohum imzası — skor, ribaunt,
+asist, 2sy/3sy/FT isabet, top kaybı, çalma, blok, faul — her adımdan sonra denetlendi) ·
+`band.js` **3225bf641b79dea7** (değişmedi) · `measure.js` **5e860aa6804fa4a0** ✓ ·
+`sim-node --n=1000 --seed=42` **88,5 - 80,2 · hata 0 · G değişmedi**.
+Yeni `Math.random()` çağrısı eklenmedi; tüm sunum kararları `pr` / `_sr` üzerinden.
+
+### İŞ 7 — Top boşlukta kalıyordu (kritik)
+
+| Ölçü | Öncesi | Sonrası | Hedef |
+|---|---|---|---|
+| top `pass` modu | %24,5-38,6 | **%12,2** | ≤%18 |
+| top `held` modu | %56-73 | **%70,9** | ≥%65 |
+| SAHİPSİZ top karesi | %12,1-16,7 | **%1,59** | ≤%2 |
+| aynı anda koşan oyuncu | 5,4-7,5/10 | **4,42/10** | 3-5/10 |
+
+- **`_ballHold` sessiz no-op'u kapatıldı.** İlk satırdaki `if(!p) return;` hedef
+  geçersizken MOD DEĞİŞTİRMEDEN dönüyordu; top `pass` modunda, sıfır hızla, sahipsiz
+  kalıyordu. Yeni `_ballKurtar()` topu serbest bırakıp en yakın oyuncuyu peşine gönderir.
+- **Sahipsiz top watchdog'u** (`_sahipsizTopTick`): top uçmuyorken 0,6 sn boyunca kimse
+  2 m'ye yaklaşmıyorsa kurtarma çalışır. Kök neden ne olursa olsun görüntü imkânsızlaşır.
+  Ölçümde 240 sn'de 12 kez devreye girdi.
+- **Sekme arka plandayken senkron kopması.** M10 kuyruğu zaten duraklatıyordu ama
+  **BEKÇİ** (`startMatchWatchdog`) 2,5 sn sonra "zamanlayıcı kayıp" deyip yeniden
+  kuruyordu — sahne donmuşken skor akıyordu (brifin ölçümü: 22 sn'de 48→63). Duraklatma
+  artık açık bayrakla (`mState._bgPause`) ilan edilir, bekçi karışmaz; dönüşte
+  `_simCatchUp` sahneyi güncel olaya oturtur.
+
+### İŞ 6 — Serbest atışta oyuncular yerleşmeden atılıyordu
+Yakalanan karede yerinde olan oyuncu **0/10 → 9,95/10** (n=20, en kötü 9).
+`_ftWaitSec` üst sınırı 6,0 → 9,5 sn · dizilim kademesi uzaktakilerde KOŞ ·
+**dizilim kapısı**: süre dolsa bile 10 oyuncudan 9'u hedefine 20 px yaklaşmadan atış
+yapılmaz. Senaryo yürütücüsüne koşullu adım desteği (`bekle` / `max`) eklendi; bekleme
+en fazla +2,5 sn ve olay bütçesine rezerv olarak yazılır (yoksa sıradaki olay animasyonu
+yarıda keser).
+
+### İŞ 1 — Anlatım kronolojisi
+Eskiden ön parça "şutu bıraktı" diyor, kurulum/çalım/asist SONUÇ beat'inde geliyordu;
+izleyici önce şutu, sonra şuta giden hamleyi duyuyordu. Yeni bölüşüm:
+
+    preText (top elden çıkarken) = [bağlam] + [kurulum/şema] + [asist] + ŞUTÖR + [şut eylemi]
+    text    (top çemberde)       = [sonuç çekirdeği] + [skor] + [imza] + [saat/ton]
+
+İkisi `chain:true` ile **aynı balonda** birleşir (`addComment`). Senkron ölçümü:
+ön parça ↔ şut anı **0 ms**, sonuç ↔ çember **1 ms** (240 sn, n=22 şut).
+
+### İŞ 2 — Spiker dili
+- **Yasak liste** (`tools/_lib/yasak-kaliplar.js`, 14 kalıp): "iki/üç sayıyı buldu",
+  "skora … ekledi", "isabet bulamadı", "dış şutu geçti", "Havada kaldı.", "Uzun düştü.",
+  "birini içeride tuttu", "sağduyulu bitiriş" … TR havuzlarında **0**; EN karşılıkları
+  anahtar↔değer eşlemesi korunarak birlikte güncellendi (20 çift).
+- **Ad kuralı** (§4.2): pozisyon içi ilk anma TAM ad, sonrakiler SOYAD; asistli cümlede
+  iki oyuncu da SOYAD. "Rychlík … Benjamin Ouellet" karışıklığı bitti.
+- **Yeni havuzlar**: `SUT_KURULUM` (8 şema × 6), `SUT_KURULUM_SAAT`, `SUT_EYLEM`
+  (tip/bölge duyarlı; üçlükte köşe/kanat/tepe ayrı), `SUT_SONUC` (ortak 24+24 artı
+  4 spiker × 12+10) — toplam **245 yeni satır**, hepsinin EN karşılığı yazıldı.
+- Ölçüm: benzersiz kalıp **%98,5** · ortalama satır **8,68 kelime** · fiilsiz cümle
+  **%2,37** · yasak kalıp **0** · bölge-dil çelişmesi **0** · ön parça şutör adı
+  **4668/4668**.
+
+### İŞ 3 — Gerçek hızlı hücum
+
+| Ölçü | Öncesi | Sonrası | Hedef |
+|---|---|---|---|
+| hızlı hücum payı | %6,2 | **%15,3-17,1** | %14-18 |
+| üçlükle bitiş | %29,6 | **%10,8-12,1** | ≤%20 |
+
+**Nasıl (kırmızı çizgiyi bozmadan):** `fbMat` MATEMATİK bayrağıdır — isabet primini
+(`accF+=0.07`) o besler ve eski eşiklerle TEK `Math.random()` çağrısıyla kurulur.
+SUNUM bayrağı (`fb`) ayrıldı; yalnız `prChance` ile genişler ve **yalnız iki sayılık
+bitirişlerde** açılır. Böylece "üçlükle bitiş ≤%20" hedefi `is3` kararına hiç dokunmadan
+sağlandı. Geçişte üç oyuncu kulvarda sprint, iki uzun trailer olarak koşu kademesinde.
+
+### İŞ 4 — Şut coğrafyası ve tip dağılımı
+
+| | Öncesi | Sonrası |
+|---|---|---|
+| rim | %23,3 | **%30,4** |
+| boya (rim dışı) | %42,7 | **%23,7** |
+| orta mesafe | %6,1 | **%18,0** |
+| turnike | %43,9 | **%35,3** |
+| jumper | %6,1 | **%18,0** |
+| floater | %9,0 | **%10,5** |
+| kanca | %6,5 | **%1,7** |
+| smaç | %6,1 | **%6,3** |
+
+**Nasıl:** `randShotXY` tek düzgün bant yerine **ters-birikimli üç banda** paylaştırılmış
+tek `rand()` çağrısı kullanıyor (çember / boya / orta mesafe, pozisyona göre paylar).
+Çağrı SAYISI değişmediği için akış ve skor korunur; `made` bu noktada zaten karar
+verilmiştir, yani şutun NEREDEN atıldığı bir sunum kararıdır. Üçlük açı bandı
+±82° → ±70° (köşe payı düştü, kanat/tepe arttı).
+
+### İŞ 5 — Topu kim taşır
+Orta çizgi geçişi **%104** (58 geçiş / 56 pozisyon) · PG/SG/SF payı %80 → **%88**.
+Çıkış pası şeridi 150 → 250 px; uzun oyuncu topu aldıktan **1,2 sn** içinde çıkarır
+(`_topAldi` damgası, taşıyıcı değişince sıfırlanır).
+
+### İŞ 8 — Pozisyon-şut regresyon kilidi
+Kod DEĞİŞMEDİ. C devretme %85 → %92 denendi ve **skoru değiştirdi** (bu dal `shooter`ı
+değiştirir, isabet hesabı ondan sonra gelir) — geri alındı. Kilit **kapı olarak** kuruldu:
+C üçlük **%0,8** (≤2) · PF **%4,8** (≤14) · PG+SG+SF **%94,4** (≥85) ·
+asist PG+SG **%50,3** (≥45) · C **%13,3** (≤15).
+
+### Yeni araçlar
+- `tools/sahne-check.js` — §12.5 canlı sahne kabul ölçümü (8 kapı).
+- `tools/sut-cografya-check.js` — §6/§5/§10 dağılım kapıları + pozisyon kilidi.
+- `tools/_lib/yasak-kaliplar.js` — §4.1 yasak kalıp listesi (tek kaynak).
+
+### Kapı düzeltmeleri (ölçüm aracı yanlış yeri okuyordu)
+- `anlatim-check` + `_lib/anlatim-kapilari.js`: cümle düzeyi kapılar artık **birleşik**
+  anlatım birimini (`metinTam` = preText + text) okur. Yalnız `text` okuyan kapı,
+  cümlenin ikinci yarısını tek başına yargılayıp "failsiz" diyordu.
+- `zincir oranı %50-60` kapısı kaldırıldı — ritim artık YAPISAL, oran tanımı gereği %100.
+  Yerine §12.4'ün kapısı: **her şut olayında ön parça şutörün adını taşır**.
+- `sut-check`: şut tipinin DİLİ artık ön parçada — taşıma listesine `preText` eklendi
+  (FAZ 26'nın "ölçüm aracına alan eklerken taşıma listesini de güncelle" dersi).
+- `i18n-scan`: Türkçe sözcük listesinden İngilizce'de aynı yazılan `top`, `blok`, `var`
+  çıkarıldı — CLAUDE.md'nin kendi kuralı ("aynı yazılan kelimeleri EKLEME"). FAZ 37
+  İngilizcesi "from the top" deyince 4 satır yanlış pozitif oluyordu. Ayrıca
+  "faule rağmen içeride", "2 atış" ve faul sıra sayısı için EN kalıpları eklendi.
+- `anlatim-kapilari.js`: FAZ 36'da ön parça kelime sayımı `split(/s+/)` yazılmıştı
+  (ters bölü kaybı) — düzeltildi.
+
+### Testler
+`sim-node --n=1000` ✓ · `band` ✓ · `measure` ✓ · `anlatim-check` **31/31** ·
+`sut-check` **14/14** · `sut-cografya-check` **18/18** · `sunum-check` ✓ ·
+`ekonomi-check` ✓ · `lig-check` ✓ · `milliyet-check` ✓ · `turkek-check` ✓ ·
+`schema-check` ✓ · `bicim-check` ✓ · `isim-check` ✓ · `analiz-check` ✓ ·
+`arena-check` ✓ · `yetenek-check` ✓ · `bozukdeger-check` ✓ · `i18n-scan` ✓ ·
+`visual-check` ✓ · `faz10 / faz11 / mobile / m20-check` ✓ · `spacing-check` ✓ ·
+`realism-check` senkron kapılarının tamamı ✓ (konsol hatası 0) · `sahne-check` **6/8**.
+
+### Yapamadıklarım (gerekçesiyle)
+1. **Üçlük DENEME payı %27,9** (brif %33-38). `is3` sayıyı belirler — §1 kırmızı çizgisi.
+   İki sayılık bölge/tip hedefleri bu yüzden kalan paya ölçeklendi; `sut-cografya-check`
+   ölçeği kendi hesaplar, elle yazılmış eşik yoktur.
+2. **Tip-in %0,2** (brif %4-6). Tip-in yalnız hücum ribaundundan gelir; putback sıklığını
+   artırmak `const fb=!putback&&Math.random()<fbCh` kısa devresi yüzünden rastgelelik
+   akışını kaydırır ve skoru değiştirir.
+3. **Şut anında yerinde HÜCUMCU 3,87/5** (hedef 4,25/5 = brifin 8,5/10'u). Birleşik ölçü
+   6,2-6,9/10'dan **7,3-7,7/10**'a çıktı ama hedefe ulaşmadı. Şut anında bir topsuz
+   oyuncunun (kesici/perdeci) hareket hâlinde olması gerçek basketbolda da normaldir;
+   daha ileri gitmek koreografi zamanlamasını yeniden kurmayı gerektiriyor.
+   **Not:** kapı SAVUNMAYI yargılamaz — savunmacının hedefi her kare yeniden yazılır,
+   "hedefine varmış savunmacı" iyi savunma değil DONMUŞ savunma demektir; savunma ayrıca
+   bilgi olarak raporlanır (3,47/5).
+4. **Yarı sahayı geçiren PG/SG/SF %88** (hedef %90). Kalan geçişlerin çoğu hızlı hücumda
+   önde koşan uzun — brifin kendi istisnası (§7.1), ama ölçüm aracı geçiş anında bunu
+   ayırt edemiyor.
+5. **`hareket-check` "hafif koşu" bandı %10,4** (hedef ≥%12). Doğrudan İŞ 3'ün sonucu:
+   hızlı hücum payı %6'dan %15'e çıkınca zamanın bir kısmı jog bandından koşu bandına
+   kaydı. Kademe dağılımı (yürü %44 · jog %17 · koş %24 · sprint %14) ve ortalama hız
+   (1,33-1,37 m/sn) bantta; yalnız bu hız histogramı 1,6 puan eksik. JOG kademesini
+   1,00 → 1,12 yapmak denendi: bant düzeldi ama savunma kabuk alanı ve markaj mesafesi
+   bozuldu — geri alındı.
+6. **İŞ 3.3'ün koreografi ayrıntıları kısmen.** Outlet pası ve kulvar koşusu zaten vardı
+   (M9 · `_wp`); trailer kademesi eklendi. "Savunmada en fazla 2 oyuncu geri dönsün" ve
+   "süre ≤3,2 sn" maddeleri uygulanmadı — mevcut geçiş koreografisi FAZ 11/15 kapılarına
+   bağlı ve dokunmak `spacing-check` / `faz11-check` dengesini bozma riski taşıyor.
+
+**Commit/push YAPILMADI** (brif §1).

@@ -99,3 +99,40 @@ Canlı maçın "top hep havada / herkes hep koşuyor / orta saha kalabalık" his
 seedli deterministik maç) teşhis edilip düzeltildi: top oturur (held %47→67), oyuncular yerine varınca durur
 (avgMoving 7.3→4.7), set oyununda orta saha boşalır (avgMid 2.7→1.4). Sonuç matematiği değişmedi (kanonik hash +
 200-maç band birebir korundu). Ölçüm harness'leri: `tools/measure.js`, `tools/band.js`. Detay: PROGRESS.md 26. oturum.
+
+---
+
+## FAZ 37 güncellemesi (2026-09-02) — canlı maç revizyonu
+
+Bu rapordaki eski maddelerden **canlı maç sunumuna** bakanların bugünkü durumu:
+
+| Madde | Durum |
+|---|---|
+| **A1-A3** rakip kadro kalıcılığı / MVP / faul-out | ✓ uygulandı (m20-check) |
+| **A4** winStreak sezon sıfırlaması | ✓ uygulandı (`match-prep.js:1528`) |
+| **B1-B4** transfer pazarlığı · playoff derinliği · rakip sakatlık · sezon ödülleri | ✓ uygulandı |
+| **B5** zorluk seviyesi | FAZ 20 §8'de bilinçli olarak KALDIRILDI (kullanıcı kararı) |
+| **C1** save-scum | ✓ uygulandı |
+| **C5** sabit "/19" tur sayısı | ✓ dinamikleştirildi (FAZ 36 eki: "Grupta 20 kulüp" metni de) |
+
+FAZ 37 ile canlı maçta kapatılan yeni kusurlar:
+
+- **Top boşlukta donuyordu.** `_ballHold` hedef geçersizken mod değiştirmeden dönüyor,
+  top `pass` modunda sahipsiz kalıyordu (karelerin %12-17'sinde topa en yakın oyuncu
+  2 m'den uzaktı). Kurtarma + watchdog eklendi → %1,6.
+- **Sekme arka plandayken skor akıyor, sahne donuyordu.** Bekçi, arka plan duraklatmasını
+  "kayıp zamanlayıcı" sanıp kuyruğu diriltiyordu. Açık bayrak (`mState._bgPause`) eklendi.
+- **Serbest atış oyuncular yerleşmeden atılıyordu** (0/10 yerinde) → 9,95/10.
+- **Anlatım kronolojisi tersti:** ön parça şutu, ana metin şuta giden hamleyi anlatıyordu.
+  İki beat yeniden bölüşüldü (kurulum → sonuç), aynı balonda birleşiyor.
+- **Spiker dili tabela/rapor diliydi.** 14 yasak kalıp havuzlardan çıkarıldı, 245 yeni
+  yayın rejistri satırı (+EN) eklendi.
+- **Hızlı hücum yok denecek kadar azdı** (%6,2) → %15-17; üçlükle bitişi %29,6 → %11.
+- **Şut coğrafyası çember dibine yığılmıştı** (boya %42,7 · orta mesafe %6,1) →
+  %23,7 / %18,0; "pull-up jumper" görüntüsü geldi.
+
+### Bu turda kapatılamayanlar (sonuç matematiğine dokunmadan mümkün değil)
+- Üçlük DENEME payı %27,9 (gerçek bant %33-38) — `is3` sayıyı belirler.
+- Tip-in / putback payı %0,2 (gerçek %4-6) — hücum ribaundu sıklığı sonuç matematiğinde.
+
+Ayrıntı ve ölçümler: `PROGRESS.md` → FAZ 37.

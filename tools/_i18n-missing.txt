@@ -1,292 +1,282 @@
-canli-mac :: Antwerp Kurtları
-canli-mac :: Detroit Şahinleri
-canli-mac :: Guangzhou Aslanları
-canli-mac :: Minsk Gençlik
-canli-mac :: Minsk Gençlik — Minsk Spor
-canli-mac :: Nairobi Doğanları
-canli-mac :: Rotterdam Doğanları
-canli-mac :: Tirana Doğanları
+canli-mac :: Copenhagen Şimşekleri
+canli-mac :: Groningen Yıldızları
+canli-mac :: Odesa Şimşekleri
+canli-mac :: Vancouver Gençlik
+canli-mac :: Vienna Şahinleri
+canli-mac :: Vienna Şahinleri — Groningen Yıldızları
 canli-mac :: Yerel Esnaf Desteği ·
-canli-mac :: 🇦🇱 Ilir Çela
-canli-mac :: 🇹🇷 Kemal Çevik
-canli-mac :: 🇹🇷 Mert Uludağ
+canli-mac :: 🇩🇪 Björn Frei
+canli-mac :: 🇸🇪 Egon Nyström
+canli-mac :: 🇹🇷 Eren Yiğit
+canli-mac :: 🇹🇷 Gürkan Baştürk
 canli-mac :: 🇹🇷 Türkçe
-canli-mac :: 🏛️ Antwerp Kurtları from
-canli-mac :: 🏛️ Detroit Şahinleri from
-canli-mac :: 🏛️ Minsk Gençlik from
+canli-mac :: 🇹🇷 Yiğit Arslan
+canli-mac :: 🏛️ Copenhagen Şimşekleri from
+canli-mac :: 🏛️ Odesa Şimşekleri from
+canli-mac :: 🏛️ Vancouver Gençlik from
 canli-mac :: 📣 Sponsor income — Yerel Esnaf Desteği
 login :: 🇹🇷 Türkçe
-modal:ayarlar :: Antwerp Kurtları
-modal:ayarlar :: Detroit Şahinleri
-modal:ayarlar :: Guangzhou Aslanları
-modal:ayarlar :: Minsk Gençlik
-modal:ayarlar :: Minsk Gençlik — Minsk Spor
-modal:ayarlar :: Nairobi Doğanları
-modal:ayarlar :: Rotterdam Doğanları
-modal:ayarlar :: Tirana Doğanları
+modal:ayarlar :: Copenhagen Şimşekleri
+modal:ayarlar :: Groningen Yıldızları
+modal:ayarlar :: Odesa Şimşekleri
+modal:ayarlar :: Vancouver Gençlik
+modal:ayarlar :: Vienna Şahinleri
+modal:ayarlar :: Vienna Şahinleri — Groningen Yıldızları
 modal:ayarlar :: Yerel Esnaf Desteği ·
-modal:ayarlar :: 🇦🇱 Ilir Çela
-modal:ayarlar :: 🇹🇷 Kemal Çevik
-modal:ayarlar :: 🇹🇷 Mert Uludağ
+modal:ayarlar :: 🇩🇪 Björn Frei
+modal:ayarlar :: 🇸🇪 Egon Nyström
+modal:ayarlar :: 🇹🇷 Eren Yiğit
+modal:ayarlar :: 🇹🇷 Gürkan Baştürk
 modal:ayarlar :: 🇹🇷 Türkçe
-modal:ayarlar :: 🏛️ Antwerp Kurtları from
-modal:ayarlar :: 🏛️ Detroit Şahinleri from
-modal:ayarlar :: 🏛️ Minsk Gençlik from
+modal:ayarlar :: 🇹🇷 Yiğit Arslan
+modal:ayarlar :: 🏛️ Copenhagen Şimşekleri from
+modal:ayarlar :: 🏛️ Odesa Şimşekleri from
+modal:ayarlar :: 🏛️ Vancouver Gençlik from
 modal:ayarlar :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:basarim :: Antwerp Kurtları
-modal:basarim :: Detroit Şahinleri
-modal:basarim :: Guangzhou Aslanları
-modal:basarim :: Minsk Gençlik
-modal:basarim :: Minsk Gençlik — Minsk Spor
-modal:basarim :: Nairobi Doğanları
-modal:basarim :: Rotterdam Doğanları
-modal:basarim :: Tirana Doğanları
+modal:basarim :: Copenhagen Şimşekleri
+modal:basarim :: Groningen Yıldızları
+modal:basarim :: Odesa Şimşekleri
+modal:basarim :: Vancouver Gençlik
+modal:basarim :: Vienna Şahinleri
+modal:basarim :: Vienna Şahinleri — Groningen Yıldızları
 modal:basarim :: Yerel Esnaf Desteği ·
-modal:basarim :: 🇦🇱 Ilir Çela
-modal:basarim :: 🇹🇷 Kemal Çevik
-modal:basarim :: 🇹🇷 Mert Uludağ
+modal:basarim :: 🇩🇪 Björn Frei
+modal:basarim :: 🇸🇪 Egon Nyström
+modal:basarim :: 🇹🇷 Eren Yiğit
+modal:basarim :: 🇹🇷 Gürkan Baştürk
 modal:basarim :: 🇹🇷 Türkçe
-modal:basarim :: 🏛️ Antwerp Kurtları from
-modal:basarim :: 🏛️ Detroit Şahinleri from
-modal:basarim :: 🏛️ Minsk Gençlik from
+modal:basarim :: 🇹🇷 Yiğit Arslan
+modal:basarim :: 🏛️ Copenhagen Şimşekleri from
+modal:basarim :: 🏛️ Odesa Şimşekleri from
+modal:basarim :: 🏛️ Vancouver Gençlik from
 modal:basarim :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:draft :: Antwerp Kurtları
-modal:draft :: Detroit Şahinleri
-modal:draft :: Guangzhou Aslanları
-modal:draft :: Minsk Gençlik
-modal:draft :: Minsk Gençlik — Minsk Spor
-modal:draft :: Nairobi Doğanları
-modal:draft :: Rotterdam Doğanları
-modal:draft :: Tirana Doğanları
+modal:draft :: Copenhagen Şimşekleri
+modal:draft :: Groningen Yıldızları
+modal:draft :: Odesa Şimşekleri
+modal:draft :: Vancouver Gençlik
+modal:draft :: Vienna Şahinleri
+modal:draft :: Vienna Şahinleri — Groningen Yıldızları
 modal:draft :: Yerel Esnaf Desteği ·
-modal:draft :: 🇦🇱 Ilir Çela
-modal:draft :: 🇹🇷 Kemal Çevik
-modal:draft :: 🇹🇷 Mert Uludağ
+modal:draft :: 🇩🇪 Björn Frei
+modal:draft :: 🇸🇪 Egon Nyström
+modal:draft :: 🇹🇷 Eren Yiğit
+modal:draft :: 🇹🇷 Gürkan Baştürk
 modal:draft :: 🇹🇷 Türkçe
-modal:draft :: 🏛️ Antwerp Kurtları from
-modal:draft :: 🏛️ Detroit Şahinleri from
-modal:draft :: 🏛️ Minsk Gençlik from
+modal:draft :: 🇹🇷 Yiğit Arslan
+modal:draft :: 🏛️ Copenhagen Şimşekleri from
+modal:draft :: 🏛️ Odesa Şimşekleri from
+modal:draft :: 🏛️ Vancouver Gençlik from
 modal:draft :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:ilk5 :: Antwerp Kurtları
-modal:ilk5 :: Detroit Şahinleri
-modal:ilk5 :: Guangzhou Aslanları
-modal:ilk5 :: Minsk Gençlik
-modal:ilk5 :: Minsk Gençlik — Minsk Spor
-modal:ilk5 :: Nairobi Doğanları
-modal:ilk5 :: Rotterdam Doğanları
-modal:ilk5 :: Tirana Doğanları
+modal:ilk5 :: Copenhagen Şimşekleri
+modal:ilk5 :: Groningen Yıldızları
+modal:ilk5 :: Odesa Şimşekleri
+modal:ilk5 :: Vancouver Gençlik
+modal:ilk5 :: Vienna Şahinleri
+modal:ilk5 :: Vienna Şahinleri — Groningen Yıldızları
 modal:ilk5 :: Yerel Esnaf Desteği ·
-modal:ilk5 :: 🇦🇱 Ilir Çela
-modal:ilk5 :: 🇹🇷 Kemal Çevik
-modal:ilk5 :: 🇹🇷 Mert Uludağ
+modal:ilk5 :: 🇩🇪 Björn Frei
+modal:ilk5 :: 🇸🇪 Egon Nyström
+modal:ilk5 :: 🇹🇷 Eren Yiğit
+modal:ilk5 :: 🇹🇷 Gürkan Baştürk
 modal:ilk5 :: 🇹🇷 Türkçe
-modal:ilk5 :: 🏛️ Antwerp Kurtları from
-modal:ilk5 :: 🏛️ Detroit Şahinleri from
-modal:ilk5 :: 🏛️ Minsk Gençlik from
+modal:ilk5 :: 🇹🇷 Yiğit Arslan
+modal:ilk5 :: 🏛️ Copenhagen Şimşekleri from
+modal:ilk5 :: 🏛️ Odesa Şimşekleri from
+modal:ilk5 :: 🏛️ Vancouver Gençlik from
 modal:ilk5 :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:oyuncu :: Antwerp Kurtları
-modal:oyuncu :: Detroit Şahinleri
-modal:oyuncu :: Guangzhou Aslanları
-modal:oyuncu :: Minsk Gençlik
-modal:oyuncu :: Minsk Gençlik — Minsk Spor
-modal:oyuncu :: Nairobi Doğanları
-modal:oyuncu :: Rotterdam Doğanları
-modal:oyuncu :: Tirana Doğanları
+modal:oyuncu :: Copenhagen Şimşekleri
+modal:oyuncu :: Groningen Yıldızları
+modal:oyuncu :: Odesa Şimşekleri
+modal:oyuncu :: Vancouver Gençlik
+modal:oyuncu :: Vienna Şahinleri
+modal:oyuncu :: Vienna Şahinleri — Groningen Yıldızları
 modal:oyuncu :: Yerel Esnaf Desteği ·
-modal:oyuncu :: 🇦🇱 Ilir Çela
-modal:oyuncu :: 🇹🇷 Kemal Çevik
-modal:oyuncu :: 🇹🇷 Mert Uludağ
+modal:oyuncu :: 🇩🇪 Björn Frei
+modal:oyuncu :: 🇸🇪 Egon Nyström
+modal:oyuncu :: 🇹🇷 Eren Yiğit
+modal:oyuncu :: 🇹🇷 Gürkan Baştürk
 modal:oyuncu :: 🇹🇷 Türkçe
-modal:oyuncu :: 🏛️ Antwerp Kurtları from
-modal:oyuncu :: 🏛️ Detroit Şahinleri from
-modal:oyuncu :: 🏛️ Minsk Gençlik from
+modal:oyuncu :: 🇹🇷 Yiğit Arslan
+modal:oyuncu :: 🏛️ Copenhagen Şimşekleri from
+modal:oyuncu :: 🏛️ Odesa Şimşekleri from
+modal:oyuncu :: 🏛️ Vancouver Gençlik from
 modal:oyuncu :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:soyunma :: Antwerp Kurtları
-modal:soyunma :: Detroit Şahinleri
-modal:soyunma :: Guangzhou Aslanları
-modal:soyunma :: Minsk Gençlik
-modal:soyunma :: Minsk Gençlik — Minsk Spor
-modal:soyunma :: Nairobi Doğanları
-modal:soyunma :: Rotterdam Doğanları
-modal:soyunma :: Tirana Doğanları
+modal:soyunma :: Copenhagen Şimşekleri
+modal:soyunma :: Groningen Yıldızları
+modal:soyunma :: Odesa Şimşekleri
+modal:soyunma :: Vancouver Gençlik
+modal:soyunma :: Vienna Şahinleri
+modal:soyunma :: Vienna Şahinleri — Groningen Yıldızları
 modal:soyunma :: Yerel Esnaf Desteği ·
-modal:soyunma :: 🇦🇱 Ilir Çela
-modal:soyunma :: 🇹🇷 Kemal Çevik
-modal:soyunma :: 🇹🇷 Mert Uludağ
+modal:soyunma :: 🇩🇪 Björn Frei
+modal:soyunma :: 🇸🇪 Egon Nyström
+modal:soyunma :: 🇹🇷 Eren Yiğit
+modal:soyunma :: 🇹🇷 Gürkan Baştürk
 modal:soyunma :: 🇹🇷 Türkçe
-modal:soyunma :: 🏛️ Antwerp Kurtları from
-modal:soyunma :: 🏛️ Detroit Şahinleri from
-modal:soyunma :: 🏛️ Minsk Gençlik from
+modal:soyunma :: 🇹🇷 Yiğit Arslan
+modal:soyunma :: 🏛️ Copenhagen Şimşekleri from
+modal:soyunma :: 🏛️ Odesa Şimşekleri from
+modal:soyunma :: 🏛️ Vancouver Gençlik from
 modal:soyunma :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:taktik :: Antwerp Kurtları
-modal:taktik :: Detroit Şahinleri
-modal:taktik :: Guangzhou Aslanları
-modal:taktik :: Minsk Gençlik
-modal:taktik :: Minsk Gençlik — Minsk Spor
-modal:taktik :: Nairobi Doğanları
-modal:taktik :: Rotterdam Doğanları
-modal:taktik :: Tirana Doğanları
+modal:taktik :: Copenhagen Şimşekleri
+modal:taktik :: Groningen Yıldızları
+modal:taktik :: Odesa Şimşekleri
+modal:taktik :: Vancouver Gençlik
+modal:taktik :: Vienna Şahinleri
+modal:taktik :: Vienna Şahinleri — Groningen Yıldızları
 modal:taktik :: Yerel Esnaf Desteği ·
-modal:taktik :: 🇦🇱 Ilir Çela
-modal:taktik :: 🇹🇷 Kemal Çevik
-modal:taktik :: 🇹🇷 Mert Uludağ
+modal:taktik :: 🇩🇪 Björn Frei
+modal:taktik :: 🇸🇪 Egon Nyström
+modal:taktik :: 🇹🇷 Eren Yiğit
+modal:taktik :: 🇹🇷 Gürkan Baştürk
 modal:taktik :: 🇹🇷 Türkçe
-modal:taktik :: 🏛️ Antwerp Kurtları from
-modal:taktik :: 🏛️ Detroit Şahinleri from
-modal:taktik :: 🏛️ Minsk Gençlik from
+modal:taktik :: 🇹🇷 Yiğit Arslan
+modal:taktik :: 🏛️ Copenhagen Şimşekleri from
+modal:taktik :: 🏛️ Odesa Şimşekleri from
+modal:taktik :: 🏛️ Vancouver Gençlik from
 modal:taktik :: 📣 Sponsor income — Yerel Esnaf Desteği
-sayfa:altyapi :: Antwerp Kurtları
-sayfa:altyapi :: Detroit Şahinleri
-sayfa:altyapi :: Guangzhou Aslanları
-sayfa:altyapi :: Minsk Gençlik
-sayfa:altyapi :: Minsk Gençlik — Minsk Spor
-sayfa:altyapi :: Nairobi Doğanları
-sayfa:altyapi :: Rotterdam Doğanları
-sayfa:altyapi :: Tirana Doğanları
+sayfa:altyapi :: Copenhagen Şimşekleri
+sayfa:altyapi :: Groningen Yıldızları
+sayfa:altyapi :: Odesa Şimşekleri
+sayfa:altyapi :: Vancouver Gençlik
+sayfa:altyapi :: Vienna Şahinleri
+sayfa:altyapi :: Vienna Şahinleri — Groningen Yıldızları
 sayfa:altyapi :: Yerel Esnaf Desteği ·
-sayfa:altyapi :: 🇦🇱 Ilir Çela
-sayfa:altyapi :: 🇹🇷 Kemal Çevik
-sayfa:altyapi :: 🇹🇷 Mert Uludağ
+sayfa:altyapi :: 🇩🇪 Björn Frei
+sayfa:altyapi :: 🇸🇪 Egon Nyström
+sayfa:altyapi :: 🇹🇷 Eren Yiğit
+sayfa:altyapi :: 🇹🇷 Gürkan Baştürk
 sayfa:altyapi :: 🇹🇷 Türkçe
-sayfa:altyapi :: 🏛️ Antwerp Kurtları from
-sayfa:altyapi :: 🏛️ Detroit Şahinleri from
-sayfa:altyapi :: 🏛️ Minsk Gençlik from
-sayfa:analiz :: Antwerp Kurtları
-sayfa:analiz :: Detroit Şahinleri
-sayfa:analiz :: Guangzhou Aslanları
-sayfa:analiz :: Minsk Gençlik
-sayfa:analiz :: Minsk Gençlik — Minsk Spor
-sayfa:analiz :: Nairobi Doğanları
-sayfa:analiz :: Rotterdam Doğanları
-sayfa:analiz :: Tirana Doğanları
+sayfa:altyapi :: 🇹🇷 Yiğit Arslan
+sayfa:altyapi :: 🏛️ Copenhagen Şimşekleri from
+sayfa:altyapi :: 🏛️ Odesa Şimşekleri from
+sayfa:altyapi :: 🏛️ Vancouver Gençlik from
+sayfa:analiz :: Copenhagen Şimşekleri
+sayfa:analiz :: Groningen Yıldızları
+sayfa:analiz :: Odesa Şimşekleri
+sayfa:analiz :: Vancouver Gençlik
+sayfa:analiz :: Vienna Şahinleri
+sayfa:analiz :: Vienna Şahinleri — Groningen Yıldızları
 sayfa:analiz :: Yerel Esnaf Desteği ·
-sayfa:analiz :: 🇦🇱 Ilir Çela
-sayfa:analiz :: 🇹🇷 Kemal Çevik
-sayfa:analiz :: 🇹🇷 Mert Uludağ
+sayfa:analiz :: 🇩🇪 Björn Frei
+sayfa:analiz :: 🇸🇪 Egon Nyström
+sayfa:analiz :: 🇹🇷 Eren Yiğit
+sayfa:analiz :: 🇹🇷 Gürkan Baştürk
 sayfa:analiz :: 🇹🇷 Türkçe
-sayfa:analiz :: 🏛️ Antwerp Kurtları from
-sayfa:analiz :: 🏛️ Detroit Şahinleri from
-sayfa:analiz :: 🏛️ Minsk Gençlik from
+sayfa:analiz :: 🇹🇷 Yiğit Arslan
+sayfa:analiz :: 🏛️ Copenhagen Şimşekleri from
+sayfa:analiz :: 🏛️ Odesa Şimşekleri from
+sayfa:analiz :: 🏛️ Vancouver Gençlik from
 sayfa:analiz :: 📣 Sponsor income — Yerel Esnaf Desteği
-sayfa:antrenman :: Antwerp Kurtları
-sayfa:antrenman :: Detroit Şahinleri
-sayfa:antrenman :: Guangzhou Aslanları
-sayfa:antrenman :: Minsk Gençlik
-sayfa:antrenman :: Minsk Gençlik — Minsk Spor
-sayfa:antrenman :: Nairobi Doğanları
-sayfa:antrenman :: Rotterdam Doğanları
-sayfa:antrenman :: Tirana Doğanları
+sayfa:antrenman :: Copenhagen Şimşekleri
+sayfa:antrenman :: Groningen Yıldızları
+sayfa:antrenman :: Odesa Şimşekleri
+sayfa:antrenman :: Vancouver Gençlik
+sayfa:antrenman :: Vienna Şahinleri
+sayfa:antrenman :: Vienna Şahinleri — Groningen Yıldızları
 sayfa:antrenman :: Yerel Esnaf Desteği ·
-sayfa:antrenman :: 🇦🇱 Ilir Çela
-sayfa:antrenman :: 🇹🇷 Kemal Çevik
-sayfa:antrenman :: 🇹🇷 Mert Uludağ
+sayfa:antrenman :: 🇩🇪 Björn Frei
+sayfa:antrenman :: 🇸🇪 Egon Nyström
+sayfa:antrenman :: 🇹🇷 Eren Yiğit
+sayfa:antrenman :: 🇹🇷 Gürkan Baştürk
 sayfa:antrenman :: 🇹🇷 Türkçe
-sayfa:antrenman :: 🏛️ Antwerp Kurtları from
-sayfa:antrenman :: 🏛️ Detroit Şahinleri from
-sayfa:antrenman :: 🏛️ Minsk Gençlik from
-sayfa:arena :: Antwerp Kurtları
-sayfa:arena :: Detroit Şahinleri
-sayfa:arena :: Guangzhou Aslanları
-sayfa:arena :: Minsk Gençlik
-sayfa:arena :: Minsk Gençlik — Minsk Spor
-sayfa:arena :: Nairobi Doğanları
-sayfa:arena :: Rotterdam Doğanları
-sayfa:arena :: Tirana Doğanları
+sayfa:antrenman :: 🇹🇷 Yiğit Arslan
+sayfa:antrenman :: 🏛️ Copenhagen Şimşekleri from
+sayfa:antrenman :: 🏛️ Odesa Şimşekleri from
+sayfa:antrenman :: 🏛️ Vancouver Gençlik from
+sayfa:arena :: Copenhagen Şimşekleri
+sayfa:arena :: Groningen Yıldızları
+sayfa:arena :: Odesa Şimşekleri
+sayfa:arena :: Vancouver Gençlik
+sayfa:arena :: Vienna Şahinleri
+sayfa:arena :: Vienna Şahinleri — Groningen Yıldızları
 sayfa:arena :: Yerel Esnaf Desteği ·
-sayfa:arena :: 🇦🇱 Ilir Çela
-sayfa:arena :: 🇹🇷 Kemal Çevik
-sayfa:arena :: 🇹🇷 Mert Uludağ
+sayfa:arena :: 🇩🇪 Björn Frei
+sayfa:arena :: 🇸🇪 Egon Nyström
+sayfa:arena :: 🇹🇷 Eren Yiğit
+sayfa:arena :: 🇹🇷 Gürkan Baştürk
 sayfa:arena :: 🇹🇷 Türkçe
-sayfa:arena :: 🏛️ Antwerp Kurtları from
-sayfa:arena :: 🏛️ Detroit Şahinleri from
-sayfa:arena :: 🏛️ Minsk Gençlik from
-sayfa:bilanco :: Antwerp Kurtları
-sayfa:bilanco :: Detroit Şahinleri
-sayfa:bilanco :: Guangzhou Aslanları
-sayfa:bilanco :: Minsk Gençlik
-sayfa:bilanco :: Minsk Gençlik — Minsk Spor
-sayfa:bilanco :: Nairobi Doğanları
-sayfa:bilanco :: Rotterdam Doğanları
-sayfa:bilanco :: Tirana Doğanları
+sayfa:arena :: 🇹🇷 Yiğit Arslan
+sayfa:arena :: 🏛️ Copenhagen Şimşekleri from
+sayfa:arena :: 🏛️ Odesa Şimşekleri from
+sayfa:arena :: 🏛️ Vancouver Gençlik from
+sayfa:bilanco :: Copenhagen Şimşekleri
+sayfa:bilanco :: Groningen Yıldızları
+sayfa:bilanco :: Odesa Şimşekleri
+sayfa:bilanco :: Vancouver Gençlik
+sayfa:bilanco :: Vienna Şahinleri
+sayfa:bilanco :: Vienna Şahinleri — Groningen Yıldızları
 sayfa:bilanco :: Yerel Esnaf Desteği ·
-sayfa:bilanco :: 🇦🇱 Ilir Çela
-sayfa:bilanco :: 🇹🇷 Kemal Çevik
-sayfa:bilanco :: 🇹🇷 Mert Uludağ
+sayfa:bilanco :: 🇩🇪 Björn Frei
+sayfa:bilanco :: 🇸🇪 Egon Nyström
+sayfa:bilanco :: 🇹🇷 Eren Yiğit
+sayfa:bilanco :: 🇹🇷 Gürkan Baştürk
 sayfa:bilanco :: 🇹🇷 Türkçe
-sayfa:bilanco :: 🏛️ Antwerp Kurtları from
-sayfa:bilanco :: 🏛️ Detroit Şahinleri from
-sayfa:bilanco :: 🏛️ Minsk Gençlik from
+sayfa:bilanco :: 🇹🇷 Yiğit Arslan
+sayfa:bilanco :: 🏛️ Copenhagen Şimşekleri from
+sayfa:bilanco :: 🏛️ Odesa Şimşekleri from
+sayfa:bilanco :: 🏛️ Vancouver Gençlik from
 sayfa:bilanco :: 📣 Sponsor income — Yerel Esnaf Desteği
-sayfa:dashboard :: Antwerp Kurtları
-sayfa:dashboard :: Detroit Şahinleri
-sayfa:dashboard :: Guangzhou Aslanları
-sayfa:dashboard :: Minsk Gençlik
-sayfa:dashboard :: Minsk Gençlik — Minsk Spor
-sayfa:dashboard :: Nairobi Doğanları
-sayfa:dashboard :: Rotterdam Doğanları
-sayfa:dashboard :: Tirana Doğanları
+sayfa:dashboard :: Copenhagen Şimşekleri
+sayfa:dashboard :: Groningen Yıldızları
+sayfa:dashboard :: Odesa Şimşekleri
+sayfa:dashboard :: Vancouver Gençlik
+sayfa:dashboard :: Vienna Şahinleri
+sayfa:dashboard :: Vienna Şahinleri — Groningen Yıldızları
 sayfa:dashboard :: 🇹🇷 Türkçe
-sayfa:kadro :: Antwerp Kurtları
-sayfa:kadro :: Detroit Şahinleri
-sayfa:kadro :: Guangzhou Aslanları
-sayfa:kadro :: Minsk Gençlik
-sayfa:kadro :: Minsk Gençlik — Minsk Spor
-sayfa:kadro :: Nairobi Doğanları
-sayfa:kadro :: Rotterdam Doğanları
-sayfa:kadro :: Tirana Doğanları
+sayfa:kadro :: Copenhagen Şimşekleri
+sayfa:kadro :: Groningen Yıldızları
+sayfa:kadro :: Odesa Şimşekleri
+sayfa:kadro :: Vancouver Gençlik
+sayfa:kadro :: Vienna Şahinleri
+sayfa:kadro :: Vienna Şahinleri — Groningen Yıldızları
 sayfa:kadro :: Yerel Esnaf Desteği ·
 sayfa:kadro :: 🇹🇷 Türkçe
-sayfa:lig :: Antwerp Kurtları
-sayfa:lig :: Detroit Şahinleri
-sayfa:lig :: Guangzhou Aslanları
-sayfa:lig :: Minsk Gençlik
-sayfa:lig :: Minsk Gençlik — Minsk Spor
-sayfa:lig :: Nairobi Doğanları
-sayfa:lig :: Rotterdam Doğanları
-sayfa:lig :: Tirana Doğanları
+sayfa:lig :: Copenhagen Şimşekleri
+sayfa:lig :: Groningen Yıldızları
+sayfa:lig :: Odesa Şimşekleri
+sayfa:lig :: Vancouver Gençlik
+sayfa:lig :: Vienna Şahinleri
+sayfa:lig :: Vienna Şahinleri — Groningen Yıldızları
 sayfa:lig :: Yerel Esnaf Desteği ·
 sayfa:lig :: 🇹🇷 Türkçe
-sayfa:mac :: Antwerp Kurtları
-sayfa:mac :: Detroit Şahinleri
-sayfa:mac :: Guangzhou Aslanları
-sayfa:mac :: Minsk Gençlik
-sayfa:mac :: Minsk Gençlik — Minsk Spor
-sayfa:mac :: Nairobi Doğanları
-sayfa:mac :: Rotterdam Doğanları
-sayfa:mac :: Tirana Doğanları
+sayfa:mac :: Copenhagen Şimşekleri
+sayfa:mac :: Groningen Yıldızları
+sayfa:mac :: Odesa Şimşekleri
+sayfa:mac :: Vancouver Gençlik
+sayfa:mac :: Vienna Şahinleri
+sayfa:mac :: Vienna Şahinleri — Groningen Yıldızları
 sayfa:mac :: Yerel Esnaf Desteği ·
 sayfa:mac :: 🇹🇷 Türkçe
-sayfa:market :: Antwerp Kurtları
-sayfa:market :: Detroit Şahinleri
-sayfa:market :: Guangzhou Aslanları
-sayfa:market :: Minsk Gençlik
-sayfa:market :: Minsk Gençlik — Minsk Spor
-sayfa:market :: Nairobi Doğanları
-sayfa:market :: Rotterdam Doğanları
-sayfa:market :: Tirana Doğanları
+sayfa:market :: Copenhagen Şimşekleri
+sayfa:market :: Groningen Yıldızları
+sayfa:market :: Odesa Şimşekleri
+sayfa:market :: Vancouver Gençlik
+sayfa:market :: Vienna Şahinleri
+sayfa:market :: Vienna Şahinleri — Groningen Yıldızları
 sayfa:market :: Yerel Esnaf Desteği ·
-sayfa:market :: 🇹🇷 Kemal Çevik
+sayfa:market :: 🇩🇪 Björn Frei
+sayfa:market :: 🇸🇪 Egon Nyström
+sayfa:market :: 🇹🇷 Eren Yiğit
+sayfa:market :: 🇹🇷 Gürkan Baştürk
 sayfa:market :: 🇹🇷 Türkçe
-sayfa:market :: 🏛️ Antwerp Kurtları from
-sayfa:market :: 🏛️ Detroit Şahinleri from
-sayfa:market :: 🏛️ Minsk Gençlik from
-sayfa:takim :: Antwerp Kurtları
-sayfa:takim :: Detroit Şahinleri
-sayfa:takim :: Guangzhou Aslanları
-sayfa:takim :: Minsk Gençlik
-sayfa:takim :: Minsk Gençlik — Minsk Spor
-sayfa:takim :: Nairobi Doğanları
-sayfa:takim :: Rotterdam Doğanları
-sayfa:takim :: Tirana Doğanları
+sayfa:market :: 🇹🇷 Yiğit Arslan
+sayfa:market :: 🏛️ Copenhagen Şimşekleri from
+sayfa:market :: 🏛️ Odesa Şimşekleri from
+sayfa:market :: 🏛️ Vancouver Gençlik from
+sayfa:takim :: Copenhagen Şimşekleri
+sayfa:takim :: Groningen Yıldızları
+sayfa:takim :: Odesa Şimşekleri
+sayfa:takim :: Vancouver Gençlik
+sayfa:takim :: Vienna Şahinleri
+sayfa:takim :: Vienna Şahinleri — Groningen Yıldızları
 sayfa:takim :: Yerel Esnaf Desteği ·
 sayfa:takim :: 🇹🇷 Türkçe
 setup :: 🇹🇷 Türkçe
-tutorial :: Antwerp Kurtları
-tutorial :: Detroit Şahinleri
-tutorial :: Guangzhou Aslanları
-tutorial :: Minsk Gençlik
-tutorial :: Minsk Gençlik — Minsk Spor
-tutorial :: Nairobi Doğanları
-tutorial :: Rotterdam Doğanları
-tutorial :: Tirana Doğanları
+tutorial :: Copenhagen Şimşekleri
+tutorial :: Groningen Yıldızları
+tutorial :: Odesa Şimşekleri
+tutorial :: Vancouver Gençlik
+tutorial :: Vienna Şahinleri
+tutorial :: Vienna Şahinleri — Groningen Yıldızları
 tutorial :: 🇹🇷 Türkçe

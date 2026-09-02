@@ -114,7 +114,7 @@ function kayit(kod, ad, gecti, detay) {
   for (let i = 0; i < N; i++) {
     const r = api.simulateMatch({ homeRoster: home, awayRoster: away, homeTactics: {}, awayTactics: {}, seed: SEED0 + i });
     (r.events || []).forEach(ev => {
-      if (ev && ev.shot && ev.shot.kind !== 'ft') sutlar.push({ s: ev.shot, text: String(ev.text || '') });
+      if (ev && ev.shot && ev.shot.kind !== 'ft') sutlar.push({ s: ev.shot, text: (ev.preText ? String(ev.preText) + ' ' : '') + String(ev.text || '') });
     });
   }
   console.log(`  ${N} maç · ${sutlar.length} saha şutu\n`);
