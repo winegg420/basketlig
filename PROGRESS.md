@@ -5928,3 +5928,188 @@ Canlı anlatımda Türkçe payı **%4,5 → %2,2**.
    kullanım katsayısı 0,62-0,80 tarandı, beşini birden tutan kombinasyon yok.
 3. **`sahne-check` 7/8** — serbest atışta yerinde oyuncu 8,86/10 (hedef ≥9). Brifin
    kabul eşiği ≥6/8 olduğu için kapı geçiyor.
+
+---
+
+## FAZ 38 eki-3 — uzatma ve yakın maç oranı (2026-09-02)
+
+Kullanıcı isteği: "uzatma ve yakın maç oranını düzelt". İki kapı da FAZ 38 eki-2'de açık
+kalmıştı ve ikisi de aynı büyüklüğü — maçların ne kadar yakın bittiğini — ölçüyor.
+
+### 1. TEŞHİS: MAÇ SAF RASTGELE YÜRÜYÜŞTÜ
+
+Ayarlamaya başlamadan önce dağılımın nereden geldiğini ölçtüm (denk kadro, 600 maç):
+
+| Ölçüt | Ölçülen | Anlamı |
+|---|---|---|
+| takım skoru std | 10,01 | — |
+| fark std | 14,47 | — |
+| **bağımsız olsaydı fark std** | **14,16** | ölçülen ≈ bağımsız |
+| **iki takımın skor korelasyonu** | **−0,058** | gerçek ligde POZİTİF (tempo ortak) |
+| 1Ç sonu fark std | 6,97 | |
+| 2Ç sonu | 9,90 | 6,97 × √2 = 9,86 |
+| 3Ç sonu | 12,53 | 6,97 × √3 = 12,07 |
+| 4Ç sonu | 14,47 | 6,97 × √4 = 13,94 |
+
+Fark std'si **tam √t ile büyüyor**. Yani maç, dört bağımsız çeyreğin toplamıydı: geri
+besleme yok. Gerçek basketbolda büyüme √t'nin ALTINDADIR — önde olan gevşer, rotasyonunu
+derinleştirir, saat eritir; geride kalan sıkışır, baskıya çıkar, riskli ama verimli şut
+arar. Bu geri besleme olmadan yakın maç ve uzatma oranı **aritmetik olarak** hedefin
+altında kalır (beraberlik tavanı ≈ 1/(σ√2π)).
+
+### 2. SKOR ETKİSİ (score effects)
+
+`runPossession` içinde, isabet kararından hemen önce:
+
+```
+_lead = hücumdaki takımın farkı
+_evre = 4Ç:1 · 3Ç:0,8 · 2Ç:0,5 · 1Ç:0,2     (1Ç'de kimse gevşemez)
+accF -= 0.034 * _evre * clamp(_lead/16, -1, +1)
+```
+
+16+ farkla önde olan takım son bölümde 3,4 puan isabet kaybeder, geride kalan aynısını
+kazanır. **Etki simetriktir**, dolayısıyla lig ortalama FG%'si ve skor bandı DEĞİŞMEZ —
+değişen yalnız dağılımın kuyruğu.
+
+### 3. ASIL KUSUR: `pozTuru` UZATMADA YANLIŞ SAATİ OKUYORDU
+
+Skor etkisi tek başına yetmedi; uzatma maçları **9,3 farkla** bitiyordu (5 dakikalık bir
+periyot için imkânsız — listede 13, 15, 16 farklar vardı). Ölçtüm: uzatmada iki takım
+toplam **39,3 sayı** buluyor (gerçek ~20) ama **şut sayısı 15,6 ile DOĞRU**. Fazlalığın
+tamamı serbest atıştı.
+
+Motoru işaretleyince kök neden çıktı: `pozTuru()` maliyet **0** döndürüyordu.
+
+`pozTuru` tanımlandığı bloktaki `let t`yi kapatıyor; uzatma döngüsü ise KENDİ `let t`
+bildirimini **ayrı bir blokta** kuruyor. Sonuç: uzatmada `pozTuru`, normal sürenin
+**bitmiş** saatini (t = 0) okuyordu. Bütün kapanış kuralları uzatma boyunca sürekli açık
+kalıyor, `_mal = t` maliyeti sıfırlıyor ve art arda sıfır saniyelik pozisyonlar
+üretiliyordu (üç ardışık pozisyon aynı saniyeyi paylaşıyordu — `anlatim-check` bunu 30
+çakışma olarak görüyordu).
+
+Saat artık **parametre**: `pozTuru(tK)`, çağrılar `pozTuru(_tPrev)` / `pozTuru(_tPrev2)`.
+Normal sürede çağrı zaten o anki `t` ile yapıldığı için oradaki davranış değişmez.
+
+Ayrıca **taktik faul bölüm başına 2 ile sınırlandı**. Sınırsızken 32 saniyelik pencerede
+pozisyon 3-7 sn sürdüğü için altı kez üst üste faul yapılıyor ve bölüm serbest atış
+yağmuruna dönüyordu.
+
+| Uzatma ölçütü | Önce | Sonra | Gerçek |
+|---|---|---|---|
+| uzatmada iki takım toplam sayı | 39,3 | **24,8** | ~20 |
+| uzatmada şut | 15,6 | 15,6 | ~16 |
+| uzatma sonu \|fark\| | 9,3 | **5,1** | ~5 |
+
+### 4. SONUÇ
+
+| Ölçüt | FAZ 38 eki-2 | Şimdi | Hedef |
+|---|---|---|---|
+| uzatmaya giden maç (denk kadro, 400 maç) | %3,3 ✗ | **%4,8** ✓ | %4 – 8 |
+| 5 ve altı farkla biten | %22,5 ✗ | **%32,5** ✓ | >%25 |
+| 20+ farkla biten | %7,5 | %11,9 ✓ | <%25 |
+| ortalama sayı farkı | 10,2 | 10,2 ✓ | 9 – 13 |
+| fark std (denk kadro) | 14,5 | **11,6** | gerçek denk takımlarda ~11-12 |
+| çeyrek std büyümesi | tam √t | **√t'nin altında** | gerçek: √t altı |
+
+`kutu-check` **18/18** · `yetenek-check` **30/30** · `anlatim-check` **31/31** ·
+`sut-cografya-check` **18/18**.
+
+### 5. ÖLÇÜM ARACI DÜZELTMELERİ
+
+**a) `yetenek-check` dağılım kapıları tek kadro çiftinde ölçüyordu.** "Maçların
+%25'inden fazlası 5 ve altı farkla biter" bir **LİG** istatistiğidir; tek çiftte
+ölçülürse o çiftin güç farkını ölçer. Ölçüldü — aynı motorda üç ayrı çift: %23,8 · %28,5
+· %34,5. Üstelik skor etkisi eklendikten sonra sabit güç farkı olan çiftte kütle denge
+farkının çevresinde yığılıyor (20+ %7,5'e inerken ≤5 de düşüyor). Kapı artık 6 kadroluk
+bir havuzda, bir lig gibi çeşitli eşleşmelerde ölçüyor. Aynı düzeltme `kutu-check`in
+uzatma kapısında zaten yapılmıştı.
+
+**b) `anlatim-check` damga muafiyeti sabit saniye yazıyordu.** Ölçüt "pencere ≤ 2 sn"
+idi; bu, genel kuralın elle yazılmış tek bir özel hâliydi. Doğru ölçüt **pencere ↔ olay
+sayısı** karşılaştırmasıdır: `_damgaDagit` penceresi [tSon, tPrev−1] olduğu için
+çakışmasız yerleştirilebilecek olay sayısı en fazla `dtPos−1`dir.
+
+**c) `yetenek-check` örneklemi 160 → 320 maç.** Ribaunt payı kapısı bir **uç değer**
+istatistiğidir (bir maçtaki en büyük bireysel pay); havuz 6 kadroya yayılınca kadro
+başına düşen çekiliş azaldı ve kapı %48'e düştü. Örneklem büyütülünce %52.
+
+### 5b. KATSAYI HAREKET KAPISIYLA BİRLİKTE SEÇİLDİ
+
+Skor etkisi ilk kurguda 0,046 idi ve üç hedef kapıyı da tutuyordu, ama `hareket-check`
+içindeki "ortalama oyuncu hızı (maç saati)" satırı dört ardışık koşuda 1,20-1,28
+arasında kaldı (hedef ≥1,30; önceki hâl 1,27 / 1,38).
+
+Yalıtım ölçümü: katsayı 0 yapılınca 1,31 — sebep doğrudan skor etkisiydi. İki aday
+mekanizma ELENDİ: son şut kuralını 4 sn öne almak (1,22) ve son dakika hızlanmasını
+yumuşatmak (1,28) hiçbir şey değiştirmedi. Etki, pozisyon süresi kurallarından değil,
+maç sonuçlarının kendisinden dolaylı olarak geliyor.
+
+Katsayı **0,034** yapılınca üçü birden tuttu: uzatma **%4,8** · ≤5 farkla biten
+**%32,5** · ortalama hız **1,32-1,36 m/sn**.
+
+**Ders:** bir kapıyı yeşile döndüren değişikliğin BAŞKA bir kapıyı düşürüp
+düşürmediği, o kapı bambaşka bir şeyi (sahne hızını) ölçüyor olsa bile sınanmalıdır.
+Skor etkisi bir isabet ayarıdır; jetonların hızıyla ilgisi yokmuş gibi görünür.
+
+### 5c. YENİ OLAYIN SAHNE SÖZLEŞMESİ DE VAR (teknik faul dizilimi)
+
+Eklediğim teknik / sportmenlik dışı faul olayı serbest atış üretiyor ama olaya
+`shots` dizisini koymamıştım. Sahne katmanı serbest atış dalına
+`ev.shots[0].kind === "ft"` şartıyla giriyor; dizi olmayınca `_setFtFormation` hiç
+çağrılmıyor ve on jeton olduğu yerde kalıyordu. Ölçüldü: `sahne-check` "serbest
+atışta yerinde oyuncu" **8,86 → 8,14** (en kötü kare 1/10). Dizi eklendi; koordinat
+kayması DETERMİNİSTİK (rand kullanılmaz), yoksa nadir olay maçın rastgele akışını
+tüketirdi. `measure.js` hash'i değişmedi — düzeltme tamamen sunum katmanında.
+
+**Ders:** yeni bir olay türü eklerken yalnız kutu skor ve anlatım sözleşmesi değil,
+**sahne sözleşmesi** de doldurulmalı. Sahne olayı tipiyle değil, taşıdığı alanlarla
+tanıyor.
+
+### 5d. ÖRNEKLEM BÜYÜTÜLEMİYORSA ÖLÇÜT ÖRNEKLEME UYARLANIR (F25-3)
+
+`sunum-check` F25-3'ün alt ölçütü "25 m+ ilk pas oranı < %5" idi. Toplanan 59-69
+sokmada çözünürlük 1/59 = **1,7 puan**: kapı 2 olayda geçiyor (1/69 = %1,5 ✓), 3 olayda
+düşüyor (3/59 = %5,08 ✗) — davranış aynı.
+
+İlk çözüm tabanı 110'a çıkarmaktı ve **ölçerek yanlış çıktı**: aracın 900 saniyelik
+pencere üst sınırı 65 sokmada tıkanıyor, kapı "ÖRNEKLEM YETERSİZ" veriyor — yani
+ölçülemez hâle geliyor. Bu araçta örneklem BÜYÜTÜLEMİYOR.
+
+Doğru çözüm ölçütü örnekleme uyarlamak: soru "3 gördüm mü" değil, "gözlenen oran
+%5'in ANLAMLI biçimde üstünde mi". Tek yönlü %95 binom payı (1,64 σ) eklendi —
+n=65'te 5 olaya, n=200'de 3'e karşılık gelir, yani **örneklem büyüdükçe kapı
+kendiliğinden sıkılaşır**. Taban 15 → 40.
+
+Bu, aynı oturumda dördüncü örneklem kusuru (uzatma 120→400 · blok 60→240 ·
+dağılım 40→320 · sokma: ölçüt uyarlandı) ve ilk kez örneklemi büyütmenin MÜMKÜN
+OLMADIĞI vaka.
+
+### 6. DENENDİ VE GERİ ALINDI
+
+**Rotasyon yedek payı (%38,0, hedef ≤%35).** İki ayrı yön denendi: (a) yedek nöbetini
+uzatmak (dinlenme 6→4, cooldown 11→13) — pay değişmedi (%38,2), en skorer payı bandın
+dışına çıktı; (b) nöbeti kısaltmak (3 / 7) — **dört kapı birden düştü** (%36,6 · görünen
+9,8 · en skorer %27,5 · değişiklik 22,6). Ölçüm şunu söylüyor: pay rotasyon SIKLIĞINDAN
+değil, ilk beşin **pozisyon dengeli** seçilmesinden geliyor — 6. adam çoğu zaman
+ilk beşteki bir oyuncudan daha iyi skorer. Rotasyon knoblarıyla çözülmüyor; çözüm
+`matchLineup`'ın seçim ölçütüne dokunmayı gerektirir, ayrı bir iş. En iyi hâl 4/5
+(FAZ 38 eki-2'de 3/5 idi).
+
+### 6b. AÇIK KALAN: SERBEST ATIŞ DİZİLİMİ (sahne-check 7/8)
+
+`sahne-check` "serbest atışta yerinde oyuncu" bu oturumda hiç 9,0 eşiğine ulaşmadı:
+8,86 (eki-2) · 8,81 · 8,14 · **8,43** (shots düzeltmesinden sonra). Yani kapı bu turdan
+ÖNCE de düşüyordu; benim eklediğim teknik faul olayı onu 8,86'dan 8,14'e indirmişti,
+`shots` dizisi eklenince 8,43'e döndü. Brifin kabul eşiği ≥6/8 olduğu için
+`sahne-check` 7/8 ile geçiyor. Kalan açığın muhtemel kaynağı bölüm sonunda (taktik
+faulün 32/10 saniyelik penceresinde) doğan serbest atışlar: diziliş kuruluyor ama çeyrek
+bitişi koreografiyi kesiyor. Ayrı bir iş.
+
+### 7. YENİDEN TEMELLENDİRME (dördüncü kez, bilinçli)
+
+- `band.js`: `6791635808a9ef5d` → **`46a19413380a8f07`**
+- `measure.js`: `060c5f1763cd3699` → **`df5e0c6fa1630b6c`** (kanonik maç 85-75 → 84-81)
+- Sürüm **73 → 74**.
+
+`sim-node --n=1000 --seed=42`: 81,0 - 76,8 · olay/maç 231 · hata 0 · deterministik ·
+`G` değişmedi.

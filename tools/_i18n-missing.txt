@@ -1,342 +1,328 @@
-canli-mac :: (Analytical). The game begins with the tip-off. Ankara Eagles as the away side; İlker Yaşar at the circle, Ung Gu sets up the first possession. The stands are packed.
-canli-mac :: Brussels Şimşekleri
-canli-mac :: Budapest Kartalları
-canli-mac :: Durban Aslanları
-canli-mac :: Phoenix Atmacaları
-canli-mac :: Phoenix Atmacaları — Valencia Ejderleri
-canli-mac :: Rotterdam Şahinleri
-canli-mac :: Split Aslanları
-canli-mac :: Tucumán Yıldızları
-canli-mac :: Yaşar
+canli-mac :: Accra Kurtları
+canli-mac :: Accra Kurtları — Curitiba Spor
+canli-mac :: Brno Kurtları
+canli-mac :: Brno Kurtları — Boston Eagles
+canli-mac :: Brussels Yıldızları
+canli-mac :: Gdańsk Union — Brussels Yıldızları
+canli-mac :: Helsinki Gençlik
+canli-mac :: Madrid Şahinleri
+canli-mac :: Tokyo Boğaları
+canli-mac :: Tokyo Boğaları — Helsinki Gençlik
+canli-mac :: Vilnius Şahinleri
 canli-mac :: Yerel Esnaf Desteği ·
-canli-mac :: Öcal
-canli-mac :: İlker Yaşar
-canli-mac :: İlker Yaşar (C) — Overall: 74
-canli-mac :: İlker Yaşar (C) → PF
-canli-mac :: İlker Yaşar (C·OVR 74)
-canli-mac :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
-canli-mac :: 🇹🇷 Tunahan Genç
+canli-mac :: 🇪🇪 Imre Mölder
+canli-mac :: 🇹🇷 Cihan Tatlı
 canli-mac :: 🇹🇷 Türkçe
-canli-mac :: 🏛️ Brussels Şimşekleri from
-canli-mac :: 🏛️ Budapest Kartalları from
-canli-mac :: 🏛️ Split Aslanları from
+canli-mac :: 🏛️ Brussels Yıldızları from
+canli-mac :: 🏛️ Madrid Şahinleri from
+canli-mac :: 🏛️ Tokyo Boğaları from
 canli-mac :: 📣 Sponsor income — Yerel Esnaf Desteği
 login :: 🇹🇷 Türkçe
-modal:ayarlar :: Brussels Şimşekleri
-modal:ayarlar :: Budapest Kartalları
-modal:ayarlar :: Durban Aslanları
-modal:ayarlar :: Phoenix Atmacaları
-modal:ayarlar :: Phoenix Atmacaları — Valencia Ejderleri
-modal:ayarlar :: Rotterdam Şahinleri
-modal:ayarlar :: Split Aslanları
-modal:ayarlar :: Tucumán Yıldızları
+modal:ayarlar :: Accra Kurtları
+modal:ayarlar :: Accra Kurtları — Curitiba Spor
+modal:ayarlar :: Brno Kurtları
+modal:ayarlar :: Brno Kurtları — Boston Eagles
+modal:ayarlar :: Brussels Yıldızları
+modal:ayarlar :: Gdańsk Union — Brussels Yıldızları
+modal:ayarlar :: Helsinki Gençlik
+modal:ayarlar :: Madrid Şahinleri
+modal:ayarlar :: Tokyo Boğaları
+modal:ayarlar :: Tokyo Boğaları — Helsinki Gençlik
+modal:ayarlar :: Vilnius Şahinleri
 modal:ayarlar :: Yerel Esnaf Desteği ·
-modal:ayarlar :: İlker Yaşar
-modal:ayarlar :: İlker Yaşar (C) — Overall: 74
-modal:ayarlar :: İlker Yaşar (C) → PF
-modal:ayarlar :: İlker Yaşar (C·OVR 74)
-modal:ayarlar :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
-modal:ayarlar :: 🇹🇷 Tunahan Genç
+modal:ayarlar :: 🇪🇪 Imre Mölder
 modal:ayarlar :: 🇹🇷 Türkçe
-modal:ayarlar :: 🏛️ Brussels Şimşekleri from
-modal:ayarlar :: 🏛️ Budapest Kartalları from
-modal:ayarlar :: 🏛️ Split Aslanları from
+modal:ayarlar :: 🏛️ Brussels Yıldızları from
+modal:ayarlar :: 🏛️ Madrid Şahinleri from
+modal:ayarlar :: 🏛️ Tokyo Boğaları from
 modal:ayarlar :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:basarim :: Brussels Şimşekleri
-modal:basarim :: Budapest Kartalları
-modal:basarim :: Durban Aslanları
-modal:basarim :: Phoenix Atmacaları
-modal:basarim :: Phoenix Atmacaları — Valencia Ejderleri
-modal:basarim :: Rotterdam Şahinleri
-modal:basarim :: Split Aslanları
-modal:basarim :: Tucumán Yıldızları
+modal:basarim :: Accra Kurtları
+modal:basarim :: Accra Kurtları — Curitiba Spor
+modal:basarim :: Brno Kurtları
+modal:basarim :: Brno Kurtları — Boston Eagles
+modal:basarim :: Brussels Yıldızları
+modal:basarim :: Gdańsk Union — Brussels Yıldızları
+modal:basarim :: Helsinki Gençlik
+modal:basarim :: Madrid Şahinleri
+modal:basarim :: Tokyo Boğaları
+modal:basarim :: Tokyo Boğaları — Helsinki Gençlik
+modal:basarim :: Vilnius Şahinleri
 modal:basarim :: Yerel Esnaf Desteği ·
-modal:basarim :: İlker Yaşar
-modal:basarim :: İlker Yaşar (C) — Overall: 74
-modal:basarim :: İlker Yaşar (C) → PF
-modal:basarim :: İlker Yaşar (C·OVR 74)
-modal:basarim :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
-modal:basarim :: 🇹🇷 Tunahan Genç
+modal:basarim :: 🇪🇪 Imre Mölder
 modal:basarim :: 🇹🇷 Türkçe
-modal:basarim :: 🏛️ Brussels Şimşekleri from
-modal:basarim :: 🏛️ Budapest Kartalları from
-modal:basarim :: 🏛️ Split Aslanları from
+modal:basarim :: 🏛️ Brussels Yıldızları from
+modal:basarim :: 🏛️ Madrid Şahinleri from
+modal:basarim :: 🏛️ Tokyo Boğaları from
 modal:basarim :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:draft :: Brussels Şimşekleri
-modal:draft :: Budapest Kartalları
-modal:draft :: Durban Aslanları
-modal:draft :: Phoenix Atmacaları
-modal:draft :: Phoenix Atmacaları — Valencia Ejderleri
-modal:draft :: Rotterdam Şahinleri
-modal:draft :: Split Aslanları
-modal:draft :: Tucumán Yıldızları
+modal:draft :: Accra Kurtları
+modal:draft :: Accra Kurtları — Curitiba Spor
+modal:draft :: Brno Kurtları
+modal:draft :: Brno Kurtları — Boston Eagles
+modal:draft :: Brussels Yıldızları
+modal:draft :: Gdańsk Union — Brussels Yıldızları
+modal:draft :: Helsinki Gençlik
+modal:draft :: Madrid Şahinleri
+modal:draft :: Tokyo Boğaları
+modal:draft :: Tokyo Boğaları — Helsinki Gençlik
+modal:draft :: Vilnius Şahinleri
 modal:draft :: Yerel Esnaf Desteği ·
-modal:draft :: İlker Yaşar
-modal:draft :: İlker Yaşar (C) — Overall: 74
-modal:draft :: İlker Yaşar (C) → PF
-modal:draft :: İlker Yaşar (C·OVR 74)
-modal:draft :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
-modal:draft :: 🇹🇷 Tunahan Genç
+modal:draft :: 🇪🇪 Imre Mölder
+modal:draft :: 🇹🇷 Cihan Tatlı
 modal:draft :: 🇹🇷 Türkçe
-modal:draft :: 🏛️ Brussels Şimşekleri from
-modal:draft :: 🏛️ Budapest Kartalları from
-modal:draft :: 🏛️ Split Aslanları from
+modal:draft :: 🏛️ Brussels Yıldızları from
+modal:draft :: 🏛️ Madrid Şahinleri from
+modal:draft :: 🏛️ Tokyo Boğaları from
 modal:draft :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:ilk5 :: Brussels Şimşekleri
-modal:ilk5 :: Budapest Kartalları
-modal:ilk5 :: Durban Aslanları
-modal:ilk5 :: Phoenix Atmacaları
-modal:ilk5 :: Phoenix Atmacaları — Valencia Ejderleri
-modal:ilk5 :: Rotterdam Şahinleri
-modal:ilk5 :: Split Aslanları
-modal:ilk5 :: Tucumán Yıldızları
+modal:ilk5 :: Accra Kurtları
+modal:ilk5 :: Accra Kurtları — Curitiba Spor
+modal:ilk5 :: Brno Kurtları
+modal:ilk5 :: Brno Kurtları — Boston Eagles
+modal:ilk5 :: Brussels Yıldızları
+modal:ilk5 :: Gdańsk Union — Brussels Yıldızları
+modal:ilk5 :: Helsinki Gençlik
+modal:ilk5 :: Madrid Şahinleri
+modal:ilk5 :: Tokyo Boğaları
+modal:ilk5 :: Tokyo Boğaları — Helsinki Gençlik
+modal:ilk5 :: Vilnius Şahinleri
 modal:ilk5 :: Yerel Esnaf Desteği ·
-modal:ilk5 :: İlker Yaşar
-modal:ilk5 :: İlker Yaşar (C) — Overall: 74
-modal:ilk5 :: İlker Yaşar (C) → PF
-modal:ilk5 :: İlker Yaşar (C·OVR 74)
-modal:ilk5 :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
-modal:ilk5 :: 🇹🇷 Tunahan Genç
+modal:ilk5 :: 🇪🇪 Imre Mölder
 modal:ilk5 :: 🇹🇷 Türkçe
-modal:ilk5 :: 🏛️ Brussels Şimşekleri from
-modal:ilk5 :: 🏛️ Budapest Kartalları from
-modal:ilk5 :: 🏛️ Split Aslanları from
+modal:ilk5 :: 🏛️ Brussels Yıldızları from
+modal:ilk5 :: 🏛️ Madrid Şahinleri from
+modal:ilk5 :: 🏛️ Tokyo Boğaları from
 modal:ilk5 :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:oyuncu :: Brussels Şimşekleri
-modal:oyuncu :: Budapest Kartalları
-modal:oyuncu :: Durban Aslanları
-modal:oyuncu :: Phoenix Atmacaları
-modal:oyuncu :: Phoenix Atmacaları — Valencia Ejderleri
-modal:oyuncu :: Rotterdam Şahinleri
-modal:oyuncu :: Split Aslanları
-modal:oyuncu :: Tucumán Yıldızları
+modal:oyuncu :: Accra Kurtları
+modal:oyuncu :: Accra Kurtları — Curitiba Spor
+modal:oyuncu :: Brno Kurtları
+modal:oyuncu :: Brno Kurtları — Boston Eagles
+modal:oyuncu :: Brussels Yıldızları
+modal:oyuncu :: Gdańsk Union — Brussels Yıldızları
+modal:oyuncu :: Helsinki Gençlik
+modal:oyuncu :: Madrid Şahinleri
+modal:oyuncu :: Tokyo Boğaları
+modal:oyuncu :: Tokyo Boğaları — Helsinki Gençlik
+modal:oyuncu :: Vilnius Şahinleri
 modal:oyuncu :: Yerel Esnaf Desteği ·
-modal:oyuncu :: İlker Yaşar
-modal:oyuncu :: İlker Yaşar (C) — Overall: 74
-modal:oyuncu :: İlker Yaşar (C) → PF
-modal:oyuncu :: İlker Yaşar (C·OVR 74)
-modal:oyuncu :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
-modal:oyuncu :: 🇹🇷 Tunahan Genç
+modal:oyuncu :: 🇪🇪 Imre Mölder
 modal:oyuncu :: 🇹🇷 Türkçe
-modal:oyuncu :: 🏛️ Brussels Şimşekleri from
-modal:oyuncu :: 🏛️ Budapest Kartalları from
-modal:oyuncu :: 🏛️ Split Aslanları from
+modal:oyuncu :: 🏛️ Brussels Yıldızları from
+modal:oyuncu :: 🏛️ Madrid Şahinleri from
+modal:oyuncu :: 🏛️ Tokyo Boğaları from
 modal:oyuncu :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:soyunma :: Brussels Şimşekleri
-modal:soyunma :: Budapest Kartalları
-modal:soyunma :: Durban Aslanları
-modal:soyunma :: Phoenix Atmacaları
-modal:soyunma :: Phoenix Atmacaları — Valencia Ejderleri
-modal:soyunma :: Rotterdam Şahinleri
-modal:soyunma :: Split Aslanları
-modal:soyunma :: Tucumán Yıldızları
+modal:soyunma :: Accra Kurtları
+modal:soyunma :: Accra Kurtları — Curitiba Spor
+modal:soyunma :: Brno Kurtları
+modal:soyunma :: Brno Kurtları — Boston Eagles
+modal:soyunma :: Brussels Yıldızları
+modal:soyunma :: Gdańsk Union — Brussels Yıldızları
+modal:soyunma :: Helsinki Gençlik
+modal:soyunma :: Madrid Şahinleri
+modal:soyunma :: Tokyo Boğaları
+modal:soyunma :: Tokyo Boğaları — Helsinki Gençlik
+modal:soyunma :: Vilnius Şahinleri
 modal:soyunma :: Yerel Esnaf Desteği ·
-modal:soyunma :: İlker Yaşar
-modal:soyunma :: İlker Yaşar (C) — Overall: 74
-modal:soyunma :: İlker Yaşar (C) → PF
-modal:soyunma :: İlker Yaşar (C·OVR 74)
-modal:soyunma :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
-modal:soyunma :: 🇹🇷 Tunahan Genç
+modal:soyunma :: 🇪🇪 Imre Mölder
 modal:soyunma :: 🇹🇷 Türkçe
-modal:soyunma :: 🏛️ Brussels Şimşekleri from
-modal:soyunma :: 🏛️ Budapest Kartalları from
-modal:soyunma :: 🏛️ Split Aslanları from
+modal:soyunma :: 🏛️ Brussels Yıldızları from
+modal:soyunma :: 🏛️ Madrid Şahinleri from
+modal:soyunma :: 🏛️ Tokyo Boğaları from
 modal:soyunma :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:taktik :: Brussels Şimşekleri
-modal:taktik :: Budapest Kartalları
-modal:taktik :: Durban Aslanları
-modal:taktik :: Phoenix Atmacaları
-modal:taktik :: Phoenix Atmacaları — Valencia Ejderleri
-modal:taktik :: Rotterdam Şahinleri
-modal:taktik :: Split Aslanları
-modal:taktik :: Tucumán Yıldızları
+modal:taktik :: Accra Kurtları
+modal:taktik :: Accra Kurtları — Curitiba Spor
+modal:taktik :: Brno Kurtları
+modal:taktik :: Brno Kurtları — Boston Eagles
+modal:taktik :: Brussels Yıldızları
+modal:taktik :: Gdańsk Union — Brussels Yıldızları
+modal:taktik :: Helsinki Gençlik
+modal:taktik :: Madrid Şahinleri
+modal:taktik :: Tokyo Boğaları
+modal:taktik :: Tokyo Boğaları — Helsinki Gençlik
+modal:taktik :: Vilnius Şahinleri
 modal:taktik :: Yerel Esnaf Desteği ·
-modal:taktik :: İlker Yaşar
-modal:taktik :: İlker Yaşar (C) — Overall: 74
-modal:taktik :: İlker Yaşar (C) → PF
-modal:taktik :: İlker Yaşar (C·OVR 74)
-modal:taktik :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
-modal:taktik :: 🇹🇷 Tunahan Genç
+modal:taktik :: 🇪🇪 Imre Mölder
 modal:taktik :: 🇹🇷 Türkçe
-modal:taktik :: 🏛️ Brussels Şimşekleri from
-modal:taktik :: 🏛️ Budapest Kartalları from
-modal:taktik :: 🏛️ Split Aslanları from
+modal:taktik :: 🏛️ Brussels Yıldızları from
+modal:taktik :: 🏛️ Madrid Şahinleri from
+modal:taktik :: 🏛️ Tokyo Boğaları from
 modal:taktik :: 📣 Sponsor income — Yerel Esnaf Desteği
-sayfa:altyapi :: Brussels Şimşekleri
-sayfa:altyapi :: Budapest Kartalları
-sayfa:altyapi :: Durban Aslanları
-sayfa:altyapi :: Phoenix Atmacaları
-sayfa:altyapi :: Phoenix Atmacaları — Valencia Ejderleri
-sayfa:altyapi :: Rotterdam Şahinleri
-sayfa:altyapi :: Split Aslanları
-sayfa:altyapi :: Tucumán Yıldızları
+sayfa:altyapi :: Accra Kurtları
+sayfa:altyapi :: Accra Kurtları — Curitiba Spor
+sayfa:altyapi :: Brno Kurtları
+sayfa:altyapi :: Brno Kurtları — Boston Eagles
+sayfa:altyapi :: Brussels Yıldızları
+sayfa:altyapi :: Gdańsk Union — Brussels Yıldızları
+sayfa:altyapi :: Helsinki Gençlik
+sayfa:altyapi :: Madrid Şahinleri
+sayfa:altyapi :: Tokyo Boğaları
+sayfa:altyapi :: Tokyo Boğaları — Helsinki Gençlik
+sayfa:altyapi :: Vilnius Şahinleri
 sayfa:altyapi :: Yerel Esnaf Desteği ·
-sayfa:altyapi :: İlker Yaşar
-sayfa:altyapi :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
-sayfa:altyapi :: 🇹🇷 Tunahan Genç
+sayfa:altyapi :: 🇪🇪 Imre Mölder
 sayfa:altyapi :: 🇹🇷 Türkçe
-sayfa:altyapi :: 🏛️ Brussels Şimşekleri from
-sayfa:altyapi :: 🏛️ Budapest Kartalları from
-sayfa:altyapi :: 🏛️ Split Aslanları from
-sayfa:analiz :: Brussels Şimşekleri
-sayfa:analiz :: Budapest Kartalları
-sayfa:analiz :: Durban Aslanları
-sayfa:analiz :: Phoenix Atmacaları
-sayfa:analiz :: Phoenix Atmacaları — Valencia Ejderleri
-sayfa:analiz :: Rotterdam Şahinleri
-sayfa:analiz :: Split Aslanları
-sayfa:analiz :: Tucumán Yıldızları
+sayfa:altyapi :: 🏛️ Brussels Yıldızları from
+sayfa:altyapi :: 🏛️ Madrid Şahinleri from
+sayfa:altyapi :: 🏛️ Tokyo Boğaları from
+sayfa:analiz :: Accra Kurtları
+sayfa:analiz :: Accra Kurtları — Curitiba Spor
+sayfa:analiz :: Brno Kurtları
+sayfa:analiz :: Brno Kurtları — Boston Eagles
+sayfa:analiz :: Brussels Yıldızları
+sayfa:analiz :: Gdańsk Union — Brussels Yıldızları
+sayfa:analiz :: Helsinki Gençlik
+sayfa:analiz :: Madrid Şahinleri
+sayfa:analiz :: Tokyo Boğaları
+sayfa:analiz :: Tokyo Boğaları — Helsinki Gençlik
+sayfa:analiz :: Vilnius Şahinleri
 sayfa:analiz :: Yerel Esnaf Desteği ·
-sayfa:analiz :: İlker Yaşar
-sayfa:analiz :: İlker Yaşar (C) — Overall: 74
-sayfa:analiz :: İlker Yaşar (C) → PF
-sayfa:analiz :: İlker Yaşar (C·OVR 74)
-sayfa:analiz :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
-sayfa:analiz :: 🇹🇷 Tunahan Genç
+sayfa:analiz :: 🇪🇪 Imre Mölder
 sayfa:analiz :: 🇹🇷 Türkçe
-sayfa:analiz :: 🏛️ Brussels Şimşekleri from
-sayfa:analiz :: 🏛️ Budapest Kartalları from
-sayfa:analiz :: 🏛️ Split Aslanları from
+sayfa:analiz :: 🏛️ Brussels Yıldızları from
+sayfa:analiz :: 🏛️ Madrid Şahinleri from
+sayfa:analiz :: 🏛️ Tokyo Boğaları from
 sayfa:analiz :: 📣 Sponsor income — Yerel Esnaf Desteği
-sayfa:antrenman :: Brussels Şimşekleri
-sayfa:antrenman :: Budapest Kartalları
-sayfa:antrenman :: Durban Aslanları
-sayfa:antrenman :: Phoenix Atmacaları
-sayfa:antrenman :: Phoenix Atmacaları — Valencia Ejderleri
-sayfa:antrenman :: Rotterdam Şahinleri
-sayfa:antrenman :: Split Aslanları
-sayfa:antrenman :: Tucumán Yıldızları
+sayfa:antrenman :: Accra Kurtları
+sayfa:antrenman :: Accra Kurtları — Curitiba Spor
+sayfa:antrenman :: Brno Kurtları
+sayfa:antrenman :: Brno Kurtları — Boston Eagles
+sayfa:antrenman :: Brussels Yıldızları
+sayfa:antrenman :: Gdańsk Union — Brussels Yıldızları
+sayfa:antrenman :: Helsinki Gençlik
+sayfa:antrenman :: Madrid Şahinleri
+sayfa:antrenman :: Tokyo Boğaları
+sayfa:antrenman :: Tokyo Boğaları — Helsinki Gençlik
+sayfa:antrenman :: Vilnius Şahinleri
 sayfa:antrenman :: Yerel Esnaf Desteği ·
-sayfa:antrenman :: İlker Yaşar
-sayfa:antrenman :: İlker Yaşar (C) — Overall: 74
-sayfa:antrenman :: İlker Yaşar (C) → PF
-sayfa:antrenman :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
-sayfa:antrenman :: 🇹🇷 Tunahan Genç
+sayfa:antrenman :: 🇪🇪 Imre Mölder
 sayfa:antrenman :: 🇹🇷 Türkçe
-sayfa:antrenman :: 🏛️ Brussels Şimşekleri from
-sayfa:antrenman :: 🏛️ Budapest Kartalları from
-sayfa:antrenman :: 🏛️ Split Aslanları from
-sayfa:arena :: Brussels Şimşekleri
-sayfa:arena :: Budapest Kartalları
-sayfa:arena :: Durban Aslanları
-sayfa:arena :: Phoenix Atmacaları
-sayfa:arena :: Phoenix Atmacaları — Valencia Ejderleri
-sayfa:arena :: Rotterdam Şahinleri
-sayfa:arena :: Split Aslanları
-sayfa:arena :: Tucumán Yıldızları
+sayfa:antrenman :: 🏛️ Brussels Yıldızları from
+sayfa:antrenman :: 🏛️ Madrid Şahinleri from
+sayfa:antrenman :: 🏛️ Tokyo Boğaları from
+sayfa:arena :: Accra Kurtları
+sayfa:arena :: Accra Kurtları — Curitiba Spor
+sayfa:arena :: Brno Kurtları
+sayfa:arena :: Brno Kurtları — Boston Eagles
+sayfa:arena :: Brussels Yıldızları
+sayfa:arena :: Gdańsk Union — Brussels Yıldızları
+sayfa:arena :: Helsinki Gençlik
+sayfa:arena :: Madrid Şahinleri
+sayfa:arena :: Tokyo Boğaları
+sayfa:arena :: Tokyo Boğaları — Helsinki Gençlik
+sayfa:arena :: Vilnius Şahinleri
 sayfa:arena :: Yerel Esnaf Desteği ·
-sayfa:arena :: İlker Yaşar
-sayfa:arena :: İlker Yaşar (C) — Overall: 74
-sayfa:arena :: İlker Yaşar (C) → PF
-sayfa:arena :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
-sayfa:arena :: 🇹🇷 Tunahan Genç
+sayfa:arena :: 🇪🇪 Imre Mölder
 sayfa:arena :: 🇹🇷 Türkçe
-sayfa:arena :: 🏛️ Brussels Şimşekleri from
-sayfa:arena :: 🏛️ Budapest Kartalları from
-sayfa:arena :: 🏛️ Split Aslanları from
-sayfa:bilanco :: Brussels Şimşekleri
-sayfa:bilanco :: Budapest Kartalları
-sayfa:bilanco :: Durban Aslanları
-sayfa:bilanco :: Phoenix Atmacaları
-sayfa:bilanco :: Phoenix Atmacaları — Valencia Ejderleri
-sayfa:bilanco :: Rotterdam Şahinleri
-sayfa:bilanco :: Split Aslanları
-sayfa:bilanco :: Tucumán Yıldızları
+sayfa:arena :: 🏛️ Brussels Yıldızları from
+sayfa:arena :: 🏛️ Madrid Şahinleri from
+sayfa:arena :: 🏛️ Tokyo Boğaları from
+sayfa:bilanco :: Accra Kurtları
+sayfa:bilanco :: Accra Kurtları — Curitiba Spor
+sayfa:bilanco :: Brno Kurtları
+sayfa:bilanco :: Brno Kurtları — Boston Eagles
+sayfa:bilanco :: Brussels Yıldızları
+sayfa:bilanco :: Gdańsk Union — Brussels Yıldızları
+sayfa:bilanco :: Helsinki Gençlik
+sayfa:bilanco :: Madrid Şahinleri
+sayfa:bilanco :: Tokyo Boğaları
+sayfa:bilanco :: Tokyo Boğaları — Helsinki Gençlik
+sayfa:bilanco :: Vilnius Şahinleri
 sayfa:bilanco :: Yerel Esnaf Desteği ·
-sayfa:bilanco :: İlker Yaşar
-sayfa:bilanco :: İlker Yaşar (C) — Overall: 74
-sayfa:bilanco :: İlker Yaşar (C) → PF
-sayfa:bilanco :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
-sayfa:bilanco :: 🇹🇷 Tunahan Genç
+sayfa:bilanco :: 🇪🇪 Imre Mölder
 sayfa:bilanco :: 🇹🇷 Türkçe
-sayfa:bilanco :: 🏛️ Brussels Şimşekleri from
-sayfa:bilanco :: 🏛️ Budapest Kartalları from
-sayfa:bilanco :: 🏛️ Split Aslanları from
+sayfa:bilanco :: 🏛️ Brussels Yıldızları from
+sayfa:bilanco :: 🏛️ Madrid Şahinleri from
+sayfa:bilanco :: 🏛️ Tokyo Boğaları from
 sayfa:bilanco :: 📣 Sponsor income — Yerel Esnaf Desteği
-sayfa:dashboard :: Brussels Şimşekleri
-sayfa:dashboard :: Budapest Kartalları
-sayfa:dashboard :: Durban Aslanları
-sayfa:dashboard :: Phoenix Atmacaları
-sayfa:dashboard :: Phoenix Atmacaları — Valencia Ejderleri
-sayfa:dashboard :: Rotterdam Şahinleri
-sayfa:dashboard :: Split Aslanları
-sayfa:dashboard :: Tucumán Yıldızları
-sayfa:dashboard :: İlker Yaşar
-sayfa:dashboard :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
+sayfa:dashboard :: Accra Kurtları
+sayfa:dashboard :: Accra Kurtları — Curitiba Spor
+sayfa:dashboard :: Brno Kurtları
+sayfa:dashboard :: Brno Kurtları — Boston Eagles
+sayfa:dashboard :: Brussels Yıldızları
+sayfa:dashboard :: Gdańsk Union — Brussels Yıldızları
+sayfa:dashboard :: Helsinki Gençlik
+sayfa:dashboard :: Madrid Şahinleri
+sayfa:dashboard :: Tokyo Boğaları
+sayfa:dashboard :: Tokyo Boğaları — Helsinki Gençlik
+sayfa:dashboard :: Vilnius Şahinleri
 sayfa:dashboard :: 🇹🇷 Türkçe
-sayfa:kadro :: Brussels Şimşekleri
-sayfa:kadro :: Budapest Kartalları
-sayfa:kadro :: Durban Aslanları
-sayfa:kadro :: Phoenix Atmacaları
-sayfa:kadro :: Phoenix Atmacaları — Valencia Ejderleri
-sayfa:kadro :: Rotterdam Şahinleri
-sayfa:kadro :: Split Aslanları
-sayfa:kadro :: Tucumán Yıldızları
+sayfa:kadro :: Accra Kurtları
+sayfa:kadro :: Accra Kurtları — Curitiba Spor
+sayfa:kadro :: Brno Kurtları
+sayfa:kadro :: Brno Kurtları — Boston Eagles
+sayfa:kadro :: Brussels Yıldızları
+sayfa:kadro :: Gdańsk Union — Brussels Yıldızları
+sayfa:kadro :: Helsinki Gençlik
+sayfa:kadro :: Madrid Şahinleri
+sayfa:kadro :: Tokyo Boğaları
+sayfa:kadro :: Tokyo Boğaları — Helsinki Gençlik
+sayfa:kadro :: Vilnius Şahinleri
 sayfa:kadro :: Yerel Esnaf Desteği ·
-sayfa:kadro :: İlker Yaşar
-sayfa:kadro :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
 sayfa:kadro :: 🇹🇷 Türkçe
-sayfa:lig :: Brussels Şimşekleri
-sayfa:lig :: Budapest Kartalları
-sayfa:lig :: Durban Aslanları
-sayfa:lig :: Phoenix Atmacaları
-sayfa:lig :: Phoenix Atmacaları — Valencia Ejderleri
-sayfa:lig :: Rotterdam Şahinleri
-sayfa:lig :: Split Aslanları
-sayfa:lig :: Tucumán Yıldızları
+sayfa:lig :: Accra Kurtları
+sayfa:lig :: Accra Kurtları — Curitiba Spor
+sayfa:lig :: Brno Kurtları
+sayfa:lig :: Brno Kurtları — Boston Eagles
+sayfa:lig :: Brussels Yıldızları
+sayfa:lig :: Gdańsk Union — Brussels Yıldızları
+sayfa:lig :: Helsinki Gençlik
+sayfa:lig :: Madrid Şahinleri
+sayfa:lig :: Tokyo Boğaları
+sayfa:lig :: Tokyo Boğaları — Helsinki Gençlik
+sayfa:lig :: Vilnius Şahinleri
 sayfa:lig :: Yerel Esnaf Desteği ·
-sayfa:lig :: İlker Yaşar
-sayfa:lig :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
 sayfa:lig :: 🇹🇷 Türkçe
-sayfa:mac :: Brussels Şimşekleri
-sayfa:mac :: Budapest Kartalları
-sayfa:mac :: Durban Aslanları
-sayfa:mac :: Phoenix Atmacaları
-sayfa:mac :: Phoenix Atmacaları — Valencia Ejderleri
-sayfa:mac :: Rotterdam Şahinleri
-sayfa:mac :: Split Aslanları
-sayfa:mac :: Tucumán Yıldızları
+sayfa:mac :: Accra Kurtları
+sayfa:mac :: Accra Kurtları — Curitiba Spor
+sayfa:mac :: Brno Kurtları
+sayfa:mac :: Brno Kurtları — Boston Eagles
+sayfa:mac :: Brussels Yıldızları
+sayfa:mac :: Gdańsk Union — Brussels Yıldızları
+sayfa:mac :: Helsinki Gençlik
+sayfa:mac :: Madrid Şahinleri
+sayfa:mac :: Tokyo Boğaları
+sayfa:mac :: Tokyo Boğaları — Helsinki Gençlik
+sayfa:mac :: Vilnius Şahinleri
 sayfa:mac :: Yerel Esnaf Desteği ·
-sayfa:mac :: İlker Yaşar
-sayfa:mac :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
 sayfa:mac :: 🇹🇷 Türkçe
-sayfa:market :: Brussels Şimşekleri
-sayfa:market :: Budapest Kartalları
-sayfa:market :: Durban Aslanları
-sayfa:market :: Phoenix Atmacaları
-sayfa:market :: Phoenix Atmacaları — Valencia Ejderleri
-sayfa:market :: Rotterdam Şahinleri
-sayfa:market :: Split Aslanları
-sayfa:market :: Tucumán Yıldızları
+sayfa:market :: Accra Kurtları
+sayfa:market :: Accra Kurtları — Curitiba Spor
+sayfa:market :: Brno Kurtları
+sayfa:market :: Brno Kurtları — Boston Eagles
+sayfa:market :: Brussels Yıldızları
+sayfa:market :: Gdańsk Union — Brussels Yıldızları
+sayfa:market :: Helsinki Gençlik
+sayfa:market :: Madrid Şahinleri
+sayfa:market :: Tokyo Boğaları
+sayfa:market :: Tokyo Boğaları — Helsinki Gençlik
+sayfa:market :: Vilnius Şahinleri
 sayfa:market :: Yerel Esnaf Desteği ·
-sayfa:market :: İlker Yaşar
-sayfa:market :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
-sayfa:market :: 🇹🇷 Tunahan Genç
+sayfa:market :: 🇪🇪 Imre Mölder
 sayfa:market :: 🇹🇷 Türkçe
-sayfa:market :: 🏛️ Brussels Şimşekleri from
-sayfa:market :: 🏛️ Budapest Kartalları from
-sayfa:market :: 🏛️ Split Aslanları from
-sayfa:takim :: Brussels Şimşekleri
-sayfa:takim :: Budapest Kartalları
-sayfa:takim :: Durban Aslanları
-sayfa:takim :: Phoenix Atmacaları
-sayfa:takim :: Phoenix Atmacaları — Valencia Ejderleri
-sayfa:takim :: Rotterdam Şahinleri
-sayfa:takim :: Split Aslanları
-sayfa:takim :: Tucumán Yıldızları
+sayfa:market :: 🏛️ Brussels Yıldızları from
+sayfa:market :: 🏛️ Madrid Şahinleri from
+sayfa:market :: 🏛️ Tokyo Boğaları from
+sayfa:takim :: Accra Kurtları
+sayfa:takim :: Accra Kurtları — Curitiba Spor
+sayfa:takim :: Brno Kurtları
+sayfa:takim :: Brno Kurtları — Boston Eagles
+sayfa:takim :: Brussels Yıldızları
+sayfa:takim :: Gdańsk Union — Brussels Yıldızları
+sayfa:takim :: Helsinki Gençlik
+sayfa:takim :: Madrid Şahinleri
+sayfa:takim :: Tokyo Boğaları
+sayfa:takim :: Tokyo Boğaları — Helsinki Gençlik
+sayfa:takim :: Vilnius Şahinleri
 sayfa:takim :: Yerel Esnaf Desteği ·
-sayfa:takim :: İlker Yaşar
-sayfa:takim :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
 sayfa:takim :: 🇹🇷 Türkçe
 setup :: 🇹🇷 Türkçe
-tutorial :: Brussels Şimşekleri
-tutorial :: Budapest Kartalları
-tutorial :: Durban Aslanları
-tutorial :: Phoenix Atmacaları
-tutorial :: Phoenix Atmacaları — Valencia Ejderleri
-tutorial :: Rotterdam Şahinleri
-tutorial :: Split Aslanları
-tutorial :: Tucumán Yıldızları
-tutorial :: İlker Yaşar
-tutorial :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
+tutorial :: Accra Kurtları
+tutorial :: Accra Kurtları — Curitiba Spor
+tutorial :: Brno Kurtları
+tutorial :: Brno Kurtları — Boston Eagles
+tutorial :: Brussels Yıldızları
+tutorial :: Gdańsk Union — Brussels Yıldızları
+tutorial :: Helsinki Gençlik
+tutorial :: Madrid Şahinleri
+tutorial :: Tokyo Boğaları
+tutorial :: Tokyo Boğaları — Helsinki Gençlik
+tutorial :: Vilnius Şahinleri
 tutorial :: 🇹🇷 Türkçe

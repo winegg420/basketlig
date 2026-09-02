@@ -100,7 +100,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/portre-uret-yerel.py` | **FAZ 17C yerel portre üretimi** (SD-Turbo, CPU). Kova kotaları, bant dengesi, kaldığı yerden devam, dilim başına commit+push. Boru hattı `tools/portre_boru.py`. |
 | `tools/portre_boru.py` | Portre işleme boru hattı (kadraj, fon eşitleme, eleme kapıları). Üretim kaynağı değişse de bu modül aynı kalır. |
 | `tools/i18n-scan.js` | **EN modunda çeviri denetimi** — tüm sayfa/modal/canlı maçı gezip çevrilmemiş metin düğümlerini raporlar. Dil değişikliğinden sonra çalıştır. |
-| `tools/measure.js` / `tools/band.js` | Canlı sunum ölçümü + **sonuç değişmezliği** (kanonik tohum imzası / 200 maç skor hash'i). Sunum değişikliklerinden sonra ikisi de aynı hash'i vermeli. `band.js` referans hash: **`6791635808a9ef5d`** (FAZ 38 eki-2 sonrası) · `measure.js` bazı **`060c5f1763cd3699`** (varsayılan tohum 987654321; eski değerler: `c89ce408ca435845` FAZ 38, `3225bf641b79dea7` FAZ 34-37, `99bb9ceb67917bd0` FAZ 19-33, `89b5436137c1da14` FAZ 17-18, `fb393bdab878e699` FAZ 13-16, `ec630b3a512bb3b2` FAZ 13 öncesi). *FAZ 38'de hash BİLEREK değişti: kutu skor gerçekçiliği (isabet tabanları, üçlük payı, pozisyon süresi, rotasyon) sonuç matematiğini doğrudan değiştirdi — kullanıcı kararıyla FAZ 37'nin "dokunma" yasağı kaldırıldı. Ölçüm `kutu-check` (18 satır) ve `tempo-check` ile korunuyor.* *FAZ 34'te hash bilerek değişti: özel yetenek sistemi oyuncu statlarını (dolayısıyla maç sonuçlarını) doğrudan değiştirdi; lig ortalamaları korundu (`yetenek-check` B bölümü ölçüyor).* *FAZ 19'da hash bilerek değişti: lig dengesi düzeltmesi (`cpuMatchScore` kırpması 35→20, `pseudoTeamStrength` bandı 42→20) maç skorlarını doğrudan değiştirdi; ortalama fark 21,4→10,5 (`lig-check` C bölümü ölçüyor).* *FAZ 17'de hash bilerek değişti: isim havuzu ülke başına 256'dan 21.000 kombinasyona çıkınca `ensureUniquePlayerNames` içindeki ad çakışması yeniden-çekilişleri neredeyse sıfıra indi ve rastgelelik akışı kaydı. Milliyet seçiminin kendisi akışı KAYDIRMAZ — `genPlayer` ülke sabitlense bile `ch(ULKELER)` çekilişini yapar, sonucu sonra ezer.* *32. oturum: `if(SEED)` koruması + varsayılan 0 yüzünden tohum hiç kurulmuyordu, araç her çalıştırmada farklı hash veriyordu — düzeltildi.* |
+| `tools/measure.js` / `tools/band.js` | Canlı sunum ölçümü + **sonuç değişmezliği** (kanonik tohum imzası / 200 maç skor hash'i). Sunum değişikliklerinden sonra ikisi de aynı hash'i vermeli. `band.js` referans hash: **`46a19413380a8f07`** (FAZ 38 eki-3 sonrası) · `measure.js` bazı **`df5e0c6fa1630b6c`** (varsayılan tohum 987654321; eski değerler: `060c5f1763cd3699` FAZ 38 eki-2, `c89ce408ca435845` FAZ 38, `3225bf641b79dea7` FAZ 34-37, `99bb9ceb67917bd0` FAZ 19-33, `89b5436137c1da14` FAZ 17-18, `fb393bdab878e699` FAZ 13-16, `ec630b3a512bb3b2` FAZ 13 öncesi). *FAZ 38'de hash BİLEREK değişti: kutu skor gerçekçiliği (isabet tabanları, üçlük payı, pozisyon süresi, rotasyon) sonuç matematiğini doğrudan değiştirdi — kullanıcı kararıyla FAZ 37'nin "dokunma" yasağı kaldırıldı. Ölçüm `kutu-check` (18 satır) ve `tempo-check` ile korunuyor.* *FAZ 34'te hash bilerek değişti: özel yetenek sistemi oyuncu statlarını (dolayısıyla maç sonuçlarını) doğrudan değiştirdi; lig ortalamaları korundu (`yetenek-check` B bölümü ölçüyor).* *FAZ 19'da hash bilerek değişti: lig dengesi düzeltmesi (`cpuMatchScore` kırpması 35→20, `pseudoTeamStrength` bandı 42→20) maç skorlarını doğrudan değiştirdi; ortalama fark 21,4→10,5 (`lig-check` C bölümü ölçüyor).* *FAZ 17'de hash bilerek değişti: isim havuzu ülke başına 256'dan 21.000 kombinasyona çıkınca `ensureUniquePlayerNames` içindeki ad çakışması yeniden-çekilişleri neredeyse sıfıra indi ve rastgelelik akışı kaydı. Milliyet seçiminin kendisi akışı KAYDIRMAZ — `genPlayer` ülke sabitlense bile `ch(ULKELER)` çekilişini yapar, sonucu sonra ezer.* *32. oturum: `if(SEED)` koruması + varsayılan 0 yüzünden tohum hiç kurulmuyordu, araç her çalıştırmada farklı hash veriyordu — düzeltildi.* |
 | `*.bat`, `OYUNU-AC.txt` | Windows başlatıcılar / kullanıcı yardım notu. |
 | `PROGRESS.md` | **Oturum günlüğü** — yapılanlar, kararlar, nedenleri. Her oturumda güncelle. |
 | `RAPOR-EKSIKLER.md` | Tam sürüm için eksik/hata denetim raporu (öncelik sıralı). |
@@ -578,10 +578,62 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   ancak havuz YERİNDE çevrilirse eşleşirler; kaydedilmeyince EN oyuncu satırların
   tamamını Türkçe görüyordu. Kaydedilince canlı anlatımda Türkçe payı %4,5 → %2,2.
 
-## Bilinen eksikler
+- **KAPANIŞ KURALLARI UZATMADA YANLIŞ SAATİ OKUYORDU (FAZ 38 eki-3, en pahalı kusur):**
+  `pozTuru` tanımlandığı bloktaki `let t`yi kapatır; uzatma döngüsü ise KENDİ `let t`
+  bildirimini AYRI bir blokta kurar. Sonuç: uzatmada `pozTuru` normal sürenin **bitmiş**
+  saatini (t = 0) okuyor, bütün kapanış kuralları (son şut, geride kalanın hızlanması,
+  taktik faul) uzatma boyunca sürekli açık kalıyor ve `_mal = t` maliyeti sıfırlıyordu.
+  Ölçüldü: uzatmada iki takım **39,3** sayı buluyor (gerçek ~20) ama şut sayısı 15,6 ile
+  DOĞRU — fazlalığın tamamı serbest atıştı; üç ardışık pozisyon aynı saniyeyi paylaşıyordu.
+  Saat artık parametre: `pozTuru(tK)`. **Bir fonksiyon dış kapsamdaki bir döngü
+  değişkenini okuyorsa, o döngünün TEK olduğundan emin ol** — bu motorda normal süre ve
+  uzatma iki ayrı `let t` kurar.
+- **MAÇ SAF RASTGELE YÜRÜYÜŞ OLMAMALI — SKOR ETKİSİ (FAZ 38 eki-3):** çeyrek sonu fark
+  std'si 6,97 → 9,90 → 12,53 → 14,47 ile **tam √t** büyüyordu ve iki takımın skor
+  korelasyonu −0,06 idi (bağımsız). Gerçek basketbolda büyüme √t'nin altındadır: önde
+  olan gevşer, geride kalan sıkışır. Bu geri besleme olmadan yakın maç ve uzatma oranı
+  ARİTMETİK olarak hedefin altında kalır (beraberlik tavanı ≈ 1/(σ√2π)). `runPossession`
+  isabet kararından hemen önce `accF -= 0.046 · evre · clamp(fark/16,−1,1)` uygular;
+  etki SİMETRİK olduğu için lig FG%'si ve skor bandı değişmez, yalnız kuyruk değişir.
+- **TAKTİK FAUL BÖLÜM BAŞINA EN FAZLA 2 (FAZ 38 eki-3):** sınırsız bırakılınca 32
+  saniyelik pencerede pozisyon 3-7 sn sürdüğü için altı kez üst üste faul yapılıyor ve
+  bölüm serbest atış yağmuruna dönüyordu. FAZ 38 ekindeki "pencereyi daralt" dersinin
+  ikinci yarısı: pencereyi daraltmak yetmez, TEKRARI da sınırla.
+- **DAĞILIM KAPILARI TEK KADRO ÇİFTİNDE ÖLÇÜLEMEZ (FAZ 38 eki-3):** "maçların %25'inden
+  fazlası 5 ve altı farkla biter" bir LİG istatistiğidir; tek çiftte ölçülürse o çiftin
+  güç farkını ölçer, motoru değil. Ölçüldü — aynı motorda üç ayrı çift: %23,8 · %28,5 ·
+  %34,5. Üstelik skor etkisi eklendikten sonra sabit güç farkı olan çiftte kütle denge
+  farkının çevresinde YIĞILIR (20+ düşerken ≤5 de düşer). `yetenek-check` artık 6
+  kadroluk havuzda çeşitli eşleşmelerle ölçüyor; `kutu-check` uzatmayı zaten denk kadroda
+  ölçüyordu.
+- **UÇ DEĞER KAPISININ ÖRNEKLEMİ HAVUZ BAŞINA DÜŞER (FAZ 38 eki-3):** "bir maçtaki en
+  büyük bireysel ribaunt payı" bir MAKSİMUMDUR; kadro havuzu 2'den 6'ya çıkınca kadro
+  başına düşen çekiliş üçte bire indi ve kapı %52'den %48'e düştü — davranış değişmeden.
+  Örneklem 160 → 320 maç.
+- **ROTASYON YEDEK PAYI ROTASYON SIKLIĞIYLA ÇÖZÜLMÜYOR (FAZ 38 eki-3, denendi):** iki
+  yön de ölçüldü — nöbeti uzatmak (dinlenme 6→4, cooldown 11→13) payı değiştirmedi
+  (%38,2) ve en skorer payını bandın dışına çıkardı; kısaltmak (3 / 7) **dört kapıyı
+  birden** düşürdü. Pay, ilk beşin **pozisyon dengeli** seçilmesinden geliyor: 6. adam
+  çoğu zaman ilk beşteki bir oyuncudan daha iyi skorer. Çözüm `matchLineup`'ın seçim
+  ölçütündedir, rotasyon knoblarında değil.
 
-Tam sürüm için doldurulacak boşluklar ve mantık hataları `RAPOR-EKSIKLER.md`'de öncelik sırasıyla listelidir (rakip kadro kalıcılığı, MVP/rakip faul, winStreak reset, transfer pazarlığı, playoff derinliği vb.).
-
+- **YENİ OLAY TÜRÜNÜN SAHNE SÖZLEŞMESİ DE VARDIR (FAZ 38 eki-3):** sahne katmanı olayı
+  TİPİYLE değil TAŞIDIĞI ALANLARLA tanır — serbest atış dalına yalnız
+  `ev.shots[0].kind==="ft"` ise girer. Eklediğim teknik faul olayında bu dizi yoktu;
+  `_setFtFormation` hiç çağrılmadı ve on jeton olduğu yerde kaldı (ölçüldü:
+  `sahne-check` serbest atış dizilişi 8,86 → 8,14, en kötü kare 1/10). Yeni olay
+  eklerken kutu skor ve anlatım sözleşmesinin yanında sahne sözleşmesini de doldur;
+  koordinatları DETERMİNİSTİK ver (rand nadir olayda bile akışı tüketir).
+- **ÖRNEKLEM BÜYÜTÜLEMİYORSA ÖLÇÜT ÖRNEKLEME UYARLANIR (FAZ 38 eki-3):**
+  `sunum-check` F25-3'ün "25 m+ ilk pas < %5" ölçütü toplanan 59-69 sokmada
+  ölçülemez — çözünürlük 1,7 puan, kapı 2 olayda geçip 3 olayda düşüyor (1/69 ✓ ·
+  3/59 ✗, davranış AYNI). Tabanı 110 yapmak DENENDİ ve ölçerek yanlış çıktı: aracın
+  900 sn'lik pencere üst sınırı 65 sokmada tıkanıyor, kapı "ÖRNEKLEM YETERSİZ"
+  veriyor. Bu araçta örneklem büyütülemiyor; çözüm ölçütü örnekleme uyarlamaktır —
+  soru "3 gördüm mü" değil "oran %5'in ANLAMLI üstünde mi" (tek yönlü %95 binom
+  payı, 1,64 σ). n=65'te 5 olaya, n=200'de 3'e karşılık gelir; örneklem büyüdükçe
+  kapı kendiliğinden sıkılaşır. Bu oturumda dördüncü örneklem kusuru (uzatma 120→400 ·
+  blok 60→240 · dağılım 40→320 · sokma: ölçüt uyarlandı).
 - **Sözlük girişi TAM DÜĞÜM, kalıp PARÇA çevirir (FAZ 31 dersi — 16 satır sessizce Türkçe kaldı):**
   FAZ 25'te serbest atış sonuç kuyruklarının ('ikisini de attı.', 'hepsi içeride.',
   'yarısı geldi.' …) EN karşılıkları `Object.assign(I18N_TR_EN,…)` ile eklenmişti. Ama

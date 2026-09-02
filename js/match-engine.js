@@ -65,7 +65,7 @@ function randShotXY(isLeft,is3,made,poz){
      yalnız dağılımın şekli değişir — sonuç matematiği (isabet zaten önce
      kararlaştırılmıştır) etkilenmez. */
   let a;
-  if(is3){ const _u3=rand(-1000,1000)/1000; a=Math.sign(_u3)*68*Math.pow(Math.abs(_u3),0.87)*Math.PI/180; }
+  if(is3){ const _u3=rand(-1000,1000)/1000; a=Math.sign(_u3)*68*Math.pow(Math.abs(_u3),0.89)*Math.PI/180; }
   else a=rand(-82,82)*Math.PI/180;
   let x=rim[0]+dir*Math.cos(a)*r;
   let y=rim[1]+Math.sin(a)*r;
@@ -4444,7 +4444,17 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
                        {S:_anlatimAdi(fp.isim)});
         events.push({type:spor?'sportmenlikDisi':'teknik',
           ...ftSplit(on,ftLine(nMade,nAtis,_anlatimAdi(atan.isim))+' ('+homeScore+' - '+awayScore+')'),
-          q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+          /* ⚠ SAHNE DİZİLİMİ `shots[0].kind==='ft'` ŞARTINA BAĞLIDIR.
+             Bu dizi olmadan movePlayersForEvent serbest atış dalına hiç girmiyor,
+             `_setFtFormation` çağrılmıyor ve on jeton olduğu yerde kalıyordu —
+             ölçüldü: `sahne-check` "serbest atışta yerinde oyuncu" 8,86 → 8,14
+             (en kötü kare 1/10). Kayma DETERMİNİSTİKTİR (rand kullanılmaz), yoksa
+             nadir olay maçın rastgele akışını tüketirdi. */
+          sid:atan.id!=null?atan.id:undefined,
+          shots:(function(){ const lx=offLeftAtQ(!failUser,q,userIsHome)?210:730;
+            const arr=[]; for(let z=0;z<nAtis;z++) arr.push({x:lx+(z?7:-7),y:242+z*20,
+              made:z<nMade,isHome:!failUser,kind:'ft',q}); return arr; })(),
+          q,t,home:homeScore,away:awayScore,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
         return;
       }
       /* MAÇ İÇİ SAKATLIK — oyuncu sahayı terk eder, yerine yedek girer.
@@ -4755,6 +4765,20 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
       let accF=acc*((userPos===userIsHome)?1.03:0.97);
       if(userPos&&botState.dampen>0) accF*=0.93;   /* FAZ C: rakip molası kullanıcının serisini keser */
       if(fbMat&&!is3) accF+=0.07;   /* §5: prim MATEMATİK bayrağına bağlı — sunum genişlemesi isabeti değiştirmez */
+      /* ── SKOR ETKİSİ (score effects) ─────────────────────────────────────────
+         Ölçüldü: bu motorda maç SAF RASTGELE YÜRÜYÜŞ. Çeyrek sonu farkının std'si
+         6,97 → 9,90 → 12,53 → 14,47, yani tam √t ile büyüyor; iki takımın skor
+         korelasyonu −0,06 (bağımsız). Gerçek basketbolda büyüme √t'nin ALTINDADIR:
+         önde olan takım gevşer, rotasyonunu derinleştirir ve saat eritir; geride
+         kalan sıkışır, baskıya çıkar, riskli ama verimli şut arar. Bu geri besleme
+         olmadan yakın maç ve uzatma oranı aritmetik olarak hedefin altında kalır —
+         σ'yı düşürmenin başka yolu yok (bkz. beraberlik tavanı ≈ 1/(σ√2π)).
+         Etki simetriktir: önde olanın kaybettiğini geride kalan kazanır, dolayısıyla
+         LİG ORTALAMA FG%'si ve skor bandı DEĞİŞMEZ — değişen yalnız dağılımın
+         kuyruğu. Maç ilerledikçe güçlenir (1Ç'de kimse gevşemez). */
+      const _lead=userPos?(homeScore-awayScore):(awayScore-homeScore);
+      const _evre=(q>=4?1:q===3?0.8:q===2?0.5:0.2);
+      accF-=0.034*_evre*Math.max(-1,Math.min(1,_lead/16));
       const made=Math.random()<Math.max(0.14,Math.min(0.72,accF));
       /* Putback: pota dibinden ikinci şans — şut noktası çembere yapışık. */
       let xy;
@@ -5067,7 +5091,7 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
         if(_rebAnlat&&rebOff&&rebounder.id!=null&&Math.random()<0.55) shooterHint=rebounder;
       }
 
-    } else if(roll<0.748){
+    } else if(roll<0.7455){
       /* Şut faulü — çizgide 2 serbest atış. M18: pay %10 → %6 (serbest atış enflasyonu). */
       let nMade=0;
       if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++;     /* M20: iki taraf da aynı yoldan */
@@ -5263,7 +5287,17 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
      çekilişi burada yapılır; `runPossession` bunları parametre olarak alır.
      Kullanıcı tempo/odak seçimi ve Erken Hücum seti (pb.fbMul) eskisi gibi etkilidir. */
   let qAktif=1;                     /* pozTuru son dakika kuralı için çeyreği okur */
-  function pozTuru(){
+  let _tfSay=0, _tfBolum=0;        /* taktik faul sayacı — bölüm başına en fazla 2 */
+  /* ⚠ SAAT PARAMETREDİR, KAPANIŞ DEĞİŞKENİ DEĞİL (FAZ 38 eki-3, ölçülerek bulundu).
+     pozTuru bu blokta tanımlı `t` değişkenini kapatıyordu; uzatma döngüsü ise KENDİ
+     `let t` bildirimini AYRI bir blokta kuruyor. Sonuç: uzatmada pozTuru normal
+     sürenin BİTMİŞ saatini (t = 0) okuyordu. Bütün kapanış kuralları (son şut,
+     geride kalanın hızlanması, taktik faul) uzatma boyunca SÜREKLİ açık kalıyor,
+     `_mal = t` maliyeti 0 yapıyor ve art arda sıfır saniyelik pozisyonlar
+     üretiliyordu — ölçüldü: uzatmada iki takım 39,3 sayı buluyor (gerçek ~20) ve
+     üç ardışık pozisyon aynı saniyeyi paylaşıyordu. Normal sürede çağrı zaten
+     `_tPrev` (= o anki t) ile yapıldığı için oradaki davranış DEĞİŞMEZ. */
+  function pozTuru(tK){
     const userPos=(posNext===null)?(Math.random()<0.5):posNext;
     const fromTrans=fastNext;
     /* FAZ 38 §İŞ 2: TEK hızlı hücum bayrağı — FAZ 37'nin sunum genişlemesi buraya
@@ -5290,10 +5324,19 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
        (b) penceresi bilerek DAR: FAZ 38 eki §1'de ölçüldüğü gibi taktik faul
        pozisyon başına ~+0,4 fark verir; 125 saniyelik pencerede onlarca kez
        tekrarlanınca yakın maçları AÇIYORDU. 10 saniyede en fazla bir kez olur. */
-    const _sonDk=(qAktif>=4&&((t<=32&&Math.abs(_fark)>=4&&Math.abs(_fark)<=9)
-                            ||(t<=10&&Math.abs(_fark)>=1&&Math.abs(_fark)<=3)));
+    /* ⚠ BÖLÜM BAŞINA EN FAZLA 2 TAKTİK FAUL. Sınırsız bırakılınca 32 saniyelik
+       pencerede pozisyon 3-7 sn sürdüğü için altı kez üst üste faul yapılıyor ve
+       bölüm serbest atış yağmuruna dönüyordu. Ölçüldü: uzatmada iki takım toplam
+       39,3 sayı buluyordu (gerçek 5 dk ~20) — şut sayısı 15,6 ile DOĞRUYDU, fazlalık
+       tamamen serbest atıştı. Sonuç: uzatma maçları 9,3 farkla bitiyor, yani
+       uzatmaya giden yakın maçlar AÇILARAK bitiyordu. Gerçek koç bir-iki kez faul
+       yapar, sonra savunur. */
+    if(_tfBolum!==qAktif){ _tfBolum=qAktif; _tfSay=0; }
+    const _sonDk=(_tfSay<2&&qAktif>=4&&((tK<=32&&Math.abs(_fark)>=4&&Math.abs(_fark)<=9)
+                            ||(tK<=10&&Math.abs(_fark)>=1&&Math.abs(_fark)<=3)));
     if(_sonDk&&_geride!==null&&_geride!==userPos){
       /* Hücumdaki taraf ÖNDE — geride kalan savunmada, faul yapar. */
+      _tfSay++;
       return {userPos,fromTrans,fb:false,ihlal24:false,taktikFaul:true,maliyet:rand(3,7)};
     }
     const ihlal24=(!putbackVar&&!fb&&!fromTrans&&Math.random()<0.016);
@@ -5313,7 +5356,7 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
        pozisyon SAYISINI artırır — beraberlik olasılığı buradan gelir. Taktik
        faulle fark açma kusuru (FAZ 38 eki §1) tam da bunun yerine konmuş yanlış
        vekildi: o, farkı sistemli biçimde BÜYÜTÜYORDU. */
-    if(qAktif>=4&&t<=70){
+    if(qAktif>=4&&tK<=70){
       const _fk=userPos?(homeScore-awayScore):(awayScore-homeScore);   /* hücumdaki tarafın farkı */
       if(Math.abs(_fk)<=6){
         if(_fk<0){ lo=5; hi=11; }          /* geride: erken şut, saat yakma yok */
@@ -5328,9 +5371,9 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
        davranış) rakip bir pozisyon daha oynar ve fark yeniden açılır — bu yüzden
        farkı 1-3'e çeken her düzeltme uzatma oranını YÜKSELTMİYORDU (ölçüldü: 1-3
        bandı %15,8 → %16,8, uzatma %3,0'de sabit). */
-    if(qAktif>=4&&t<=24){
+    if(qAktif>=4&&tK<=24){
       const _fs=userPos?(homeScore-awayScore):(awayScore-homeScore);
-      if(_fs<=-1&&_fs>=-3) _mal=t;   /* şut saatinin tamamı: son şuta oyna */
+      if(_fs<=-1&&_fs>=-3) _mal=tK;   /* şut saatinin tamamı: son şuta oyna */
     }
     return {userPos,fromTrans,fb,ihlal24:false,maliyet:_mal};
   }
@@ -5340,7 +5383,7 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
       plays++;
       qAktif=q;
       const _tPrev=t;
-      const _poz=pozTuru();
+      const _poz=pozTuru(_tPrev);
       t=Math.max(0,t-_poz.maliyet);
       const _dt=Math.max(1,_tPrev-t);                 /* M1: bu pozisyonun maç saati maliyeti */
       const _bh=homeScore,_ba=awayScore;
@@ -5404,7 +5447,7 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
       qAktif=qq;
       const _tPrev2=t;
       /* İŞ 2: uzatmada da pozisyon türü maliyeti belirler (aynı iki tepeli dağılım). */
-      const _poz2=pozTuru();
+      const _poz2=pozTuru(_tPrev2);
       t=Math.max(0,t-_poz2.maliyet);
       const _dt2=Math.max(1,_tPrev2-t);
       const _bh2=homeScore,_ba2=awayScore;

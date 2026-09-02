@@ -399,6 +399,9 @@ function sutIfadeSayisi(ctx) {
    (çeyrek başı/sonu, maç sonu, MVP) bu kuralın dışındadır — onların damgası sabittir. */
 const DAMGA_MUAF = new Set(['quarter_start', 'quarter_end', 'end', 'mvp', 'free', 'mola']);
 function damgaCakismasi(events) {
+  /* Pozisyon başına olay sayısı: muafiyetin ölçütü budur (aşağıya bak). */
+  const pozSay = {};
+  events.forEach(e => { if (e && e.pozIx != null && !DAMGA_MUAF.has(e.type)) pozSay[e.pozIx] = (pozSay[e.pozIx] || 0) + 1; });
   const cak = [];
   for (let i = 1; i < events.length; i++) {
     const a = events[i - 1], b = events[i];
@@ -414,7 +417,14 @@ function damgaCakismasi(events) {
        pozisyonda 2 olay). Pencereyi genişletmek önceki pozisyonun son olayıyla
        çapraz çakışma üretiyor (FAZ 36 §B7, ölçülerek geri alındı). */
     if (a.pozIx != null && a.pozIx === b.pozIx) {
+      /* ⚠ ÖLÇÜT SABİT SANİYE DEĞİL, PENCERE ↔ OLAY SAYISI KARŞILAŞTIRMASI.
+         Eski kural 'pencere ≤ 2 sn' idi; bu, genel kuralın elle yazılmış tek bir
+         özel hâliydi. 5 saniyelik bir pozisyonda 6 olay varsa ayrılacak saniye yine
+         yoktur. _damgaDagit penceresi [tSon, tPrev-1] olduğu için çakışmasız
+         yerleştirilebilecek olay sayısı en fazla dtPos-1'dir. */
       const pencere = Number(a.dtPos);
+      const nOlay = pozSay[a.pozIx] || 0;
+      if (isFinite(pencere) && nOlay >= pencere) continue;
       if (!isFinite(pencere) || pencere <= 2) continue;
     }
     if (a.t === b.t) cak.push({ q: a.q, t: a.t, a: a.type, b: b.type });

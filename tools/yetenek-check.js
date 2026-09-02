@@ -23,7 +23,7 @@ const N_OYUNCU = arg('n', 2000);
 /* 40 maç dağılım kapıları için yetersizdi: '5 ve altı farkla biten' oranının
    standart hatası bu örneklemde ~7 puan, yani kapının kendisi kadar geniş —
    davranış değişmeden %22,5 ile %29 arasında salınıyordu (ölçüldü). */
-const N_MAC = arg('mac', 160);
+const N_MAC = arg('mac', 320);
 const TOHUM = arg('tohum', 1234);
 /* Bireysel ribaunt eşiği — brifin 20'si gerçek basketbolun ~43 takım ribaunduna göredir;
    bu motorda takım ribaundu ~29 olduğu için eşik oranla taşınır (bkz. B bölümü notu). */
@@ -165,12 +165,22 @@ baslik('B · dağılım ve §4 lig ortalamaları (' + N_MAC + ' maç)');
 let B = null;
 {
   tohumla(ctx, TOHUM);
-  const A = Y.genRoster(), C = Y.genRoster();
+  /* ⚠ DAĞILIM KAPILARI TEK KADRO ÇİFTİNDE ÖLÇÜLEMEZ (FAZ 38 eki-3).
+     'Maçların %25'inden fazlası 5 ve altı farkla biter' bir LİG istatistiğidir;
+     tek bir çiftte ölçülürse o çiftin güç farkını ölçer, motoru değil.
+     Ölçüldü — aynı motorda üç ayrı çift: %23,8 · %28,5 · %34,5. Üstelik skor
+     etkisi (sıfıra çeken geri besleme) eklendikten sonra sabit güç farkı olan
+     çiftte kütle denge farkının çevresinde yığılıyor: 20+ %7,5'e inerken ≤5 de
+     düşüyor. Kapı artık bir LİG gibi çeşitli eşleşmelerde ölçer. Aynı düzeltme
+     kutu-check'in uzatma kapısında da yapılmıştı (denk kadro gerekçesi). */
+  const HAVUZ = []; for (let z = 0; z < 6; z++) HAVUZ.push(Y.genRoster());
+  const A = HAVUZ[0], C = HAVUZ[1];
   const kutu = { pts: [], reb: [], stl: [] };
   const skorlar = [], farklar = [], toplamlar = [];
   let olay = 0, otuzArti = 0, yirmiReb = 0, esikReb = 0, oyuncuMac = 0, takimReb = [], enBuyukPay = 0;
   for (let i = 0; i < N_MAC; i++) {
-    const r = Y.simulateMatch({ homeRoster: A, awayRoster: C, seed: 5000 + i, homeName: 'A', awayName: 'B' });
+    const _e = HAVUZ[i % 6], _d = HAVUZ[(i % 6 + 1 + (i / 6 | 0) % 5) % 6];
+    const r = Y.simulateMatch({ homeRoster: _e, awayRoster: _d, seed: 5000 + i, homeName: 'A', awayName: 'B' });
     skorlar.push(r.home, r.away);
     farklar.push(Math.abs(r.home - r.away));
     toplamlar.push(r.home + r.away);

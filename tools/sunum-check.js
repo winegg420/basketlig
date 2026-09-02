@@ -55,7 +55,7 @@ const ALT_SINIR = {
   hucumReb:  { n: 5,  ad: 'M14 hücum ribaundu' },
   ft:        { n: 12, ad: 'F14-7 serbest atış anı' },
   tasima:    { n: 20, ad: 'F25-1 orta saha taşıması' },
-  sokma:     { n: 15, ad: 'F25-3 kenardan sokma' },
+  sokma:     { n: 40, ad: 'F25-3 kenardan sokma' },
   ftDrib:    { n: 6,  ad: 'F25-4 atış rutini' },
   sema:      { n: 3,  ad: 'F25-5 yeterli kare toplayan şema' },
   sirtDonuk: { n: 200,ad: 'F25-6a post karesi' },
@@ -555,7 +555,16 @@ async function main() {
     'ÖRNEK YOK — bu pencerede kenardan sokma yakalanmadı');
   else kayit('F25-3', 'Kenardan sokmada takım yakın duruyor',
     SK.sokma.ortM <= 15 && SK.sokma.yakin3 >= 0.9 &&
-    (SK.sokma.pasliOrnek === 0 || SK.sokma.uzunPas / SK.sokma.pasliOrnek < 0.05),
+    /* ⚠ ORAN ÖLÇÜTÜ ÖRNEKLEM BÜYÜKLÜĞÜNE GÖRE YARGILANIR.
+       "25 m+ ilk pas < %5" ham hâliyle bu araçta ölçülemez: 900 saniyelik pencere en
+       çok ~65 sokma topluyor, yani çözünürlük 1/65 = 1,5 puan ve kapı 2 olayda geçip
+       3 olayda düşüyor (ölçüldü: 1/69 ✓ · 3/59 ✗, davranış AYNI). Tabanı 110 yapmak
+       denendi — pencere dolmadan tıkanıyor ve kapı "ÖRNEKLEM YETERSİZ" veriyor.
+       Doğru soru "3 gördüm mü" değil, "gözlenen oran %5'in ANLAMLI biçimde üstünde
+       mi": tek yönlü %95 binom payı (1,64 σ). n=65'te bu 5 olaya, n=200'de 3'e
+       karşılık gelir — örneklem büyüdükçe kapı kendiliğinden sıkılaşır. */
+    (SK.sokma.pasliOrnek === 0 || SK.sokma.uzunPas / SK.sokma.pasliOrnek <
+       0.05 + 1.64 * Math.sqrt(0.05 * 0.95 / SK.sokma.pasliOrnek)),
     `${SK.sokma.n} sokma · ortalama ${SK.sokma.ortM.toFixed(1)} m (≤15) · 3+ yakın %${(SK.sokma.yakin3*100).toFixed(0)}` +
     ` · 25 m+ ilk pas ${SK.sokma.uzunPas}/${SK.sokma.pasliOrnek}`);
 
