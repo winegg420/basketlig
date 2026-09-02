@@ -147,7 +147,7 @@ function analizEt(events) {
       if (KACAN.has(t)) r.kacan++;
       /* ardışık aynı takım şutu: arada ribaund/top kaybı/faul yoksa açıklamasızdır */
       if (sonSutTaraf !== null && tf === sonSutTaraf) {
-        const arada = events.slice(sonSutIx + 1, i).some(x => /^(reb|steal|turnover|foul|free|sub|timeout|quarter_start|quarter_end)$/.test(x.type || ''));
+        const arada = events.slice(sonSutIx + 1, i).some(x => /^(reb|steal|turnover|foul|free|sub|timeout|quarter_start|quarter_end|ihlal24|hucumFaulu|ihlal|tac|mola)$/.test(x.type || ''));
         if (!arada) { r.ardisikAyniTakimSutu++; if(process.argv.includes('--why')) console.log('ARDISIK:', events.slice(Math.max(0,sonSutIx),i+1).map(x=>x.type+'|q'+x.q+'|'+String(x.text||'').replace(/<[^>]*>/g,'').slice(0,70)).join('  ||  ')); }
       }
       /* ribaundsuz taraf değişimi: kaçan şuttan sonra karşı taraf şut atıyorsa arada reb olmalı */
@@ -233,7 +233,7 @@ function analizEt(events) {
       homeRoster: ev, awayRoster: dep, homeName: 'Ev Kartalları', awayName: 'Deplasman Kurtları',
       seed: SEED0 + i,
     });
-    (m.events||[]).forEach(e=>{ if(e&&e.text) tumEvents.push({type:e.type,text:e.text,preText:e.preText,chain:e.chain,q:e.q,t:e.t,shot:e.shot}); });
+    (m.events||[]).forEach(e=>{ if(e&&e.text) tumEvents.push({type:e.type,text:e.text,preText:e.preText,chain:e.chain,ftPre:e.ftPre,ftRes:e.ftRes,q:e.q,t:e.t,shot:e.shot,pozIx:e.pozIx,dtPos:e.dtPos}); });
     const r = analizEt(m.events);
     ['sut', 'kacan', 'reb', 'foul', 'foulAdli', 'steal', 'stealCiftTarafli', 'rebsizTarafDegisimi',
       'ardisikAyniTakimSutu', 'seriIddia', 'seriYanlis', 'devreArasi', 'foulAtlama', 'enerjiSatiri', 'koseIddia', 'koseYanlis', 'olay']

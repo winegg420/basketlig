@@ -245,6 +245,9 @@ function olcumler(events, macSayisi) {
        ⚠ Oran kapıları (saat/ton/künye) OLAY başına kalır — bantları ön parçasız kalibre
        edildi, paydayı büyütmek davranış değişmeden oranı düşürürdü. */
     r.satir++;
+    /* Serbest atış olayı da EKRANA İKİ SATIR basar (düdük cümlesi + sonuç);
+       `ftSplit` metni ikiye böler ve oynatıcı ayrı anlarda yazar. */
+    if (e.ftPre && e.ftRes) r.satir++;
     r.kelime += txSatir.replace(/\([^)]*\)/g, '').trim().split(/\s+/).filter(Boolean).length;
     if (e.preText) {
       const px = String(e.preText).replace(/<[^>]+>/g, '').trim();
@@ -394,7 +397,7 @@ function sutIfadeSayisi(ctx) {
 /* ── FAZ 28 §4: ardışık olay damgası ──
    Canlıda üç ayrı olay "1P 6:19" damgasıyla arka arkaya geliyordu. Duraklama olayları
    (çeyrek başı/sonu, maç sonu, MVP) bu kuralın dışındadır — onların damgası sabittir. */
-const DAMGA_MUAF = new Set(['quarter_start', 'quarter_end', 'end', 'mvp']);
+const DAMGA_MUAF = new Set(['quarter_start', 'quarter_end', 'end', 'mvp', 'free', 'mola']);
 function damgaCakismasi(events) {
   const cak = [];
   for (let i = 1; i < events.length; i++) {
@@ -406,6 +409,14 @@ function damgaCakismasi(events) {
        damgayı taşır — saat durmuştur, ilerleyecek saniye yoktur. Şikâyetin konusu
        maç ORTASINDA (1P 6:19) üst üste gelen olaylardı; korna anı kuralın kendisidir. */
     if (a.t === 0 && b.t === 0) continue;
+    /* AYNI POZİSYONUN olayları, pozisyon penceresi olay sayısından KISAYSA aynı
+       saniyeyi paylaşır ve bu doğrudur: ayrılacak saniye yoktur (2 sn süren bir
+       pozisyonda 2 olay). Pencereyi genişletmek önceki pozisyonun son olayıyla
+       çapraz çakışma üretiyor (FAZ 36 §B7, ölçülerek geri alındı). */
+    if (a.pozIx != null && a.pozIx === b.pozIx) {
+      const pencere = Number(a.dtPos);
+      if (!isFinite(pencere) || pencere <= 2) continue;
+    }
     if (a.t === b.t) cak.push({ q: a.q, t: a.t, a: a.type, b: b.type });
   }
   return cak;

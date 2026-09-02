@@ -1373,3 +1373,92 @@ I18N_PHRASES.unshift(
   [/(commits his|his) dördüncü( foul)/g, '$1 fourth$2'],
   [/(commits his|his) beşinci( foul)/g, '$1 fifth$2']
 );
+
+
+/* ══ FAZ 38: yeni kural olayları · rotasyon · serbest atış · sonuç çekirdekleri ══
+   İŞ 4 (şut saati ihlali · hücum faulü · adım/çift sürme · taç), İŞ 3 (değişiklik),
+   İŞ 6 (serbest atış ve sonuç dili) satırlarının EN karşılıkları. */
+Object.assign(I18N_TR_EN,{
+  /* FAZ 38 İŞ 4 (tamamlayıcı): teknik · sportmenlik dışı · maç içi sakatlık. */
+  'Hakem teknik faul verdi; %S itirazı fazla uzattı.':'A technical foul is called; %S argued too long.',
+  '%S kararı kabul etmedi, hakem teknik faulü çaldı.':'%S would not accept the call and the referee whistles a technical.',
+  'Teknik faul geldi — %S kenara doğru bağırdı.':'A technical foul — %S shouted towards the bench.',
+  '%S sinirlerine hâkim olamadı; hakem teknik faul çaldı.':'%S lost his temper; the referee calls a technical foul.',
+  'Sportmenlik dışı faul — %S topa değil oyuncuya gitti.':'An unsportsmanlike foul — %S went for the man, not the ball.',
+  'Hakem sportmenlik dışı faul çaldı; %S hücumu sertçe kesti.':'The referee calls an unsportsmanlike foul; %S cut the break down hard.',
+  '%S kaçan rakibini kolundan tuttu — sportmenlik dışı faul.':'%S grabbed his man by the arm on the break — unsportsmanlike foul.',
+  '%S ayak bileğine bastı, acıyla yere oturdu.':'%S came down on an ankle and sat down in pain.',
+  '%S dizini tutuyor; sağlık ekibi sahaya girdi.':'%S is holding his knee; the medical staff are on the floor.',
+  '%S düşerken omzuna yüklendi, kalkmakta zorlandı.':'%S landed on his shoulder and struggled to get up.',
+  '%S bacağını tutarak kenara doğru yürüdü.':'%S walked off holding his leg.',
+  '⏱ Şut saati doldu — %T bitiremedi.':'⏱ Shot clock expired — %T could not finish.',
+  '⏱ Şut saati ihlali — %T şut bulamadı.':'⏱ Shot-clock violation — %T found no shot.',
+  '⏱ Yirmi dört saniye doldu, %S bırakamadı.':'⏱ Twenty-four seconds gone, %S could not let it go.',
+  '⏱ Saat sıfırlandı, şut gelmedi.':'⏱ The clock hit zero with no shot.',
+  '⏱ İhlal — %T pozisyonu bitiremedi.':'⏱ Violation — %T could not finish the possession.',
+  '⏱ Süre bitti, top kalkmadı bile.':'⏱ Time was up, the ball never even went up.',
+  '%S hücum faulü yaptı, top %R{e} geçti.':'%S commits an offensive foul, the ball goes to %R.',
+  'Hakem hücum faulü verdi: %S savunmacıyı devirdi.':'An offensive foul is called: %S ran his defender over.',
+  '%S dirsek attı, hücum faulü. Top %R{de}.':'%S throws an elbow, offensive foul. The ball is with %R.',
+  '%S perdeye yürürken faul yaptı — hücum faulü.':'%S fouls while walking into the screen — offensive foul.',
+  'Şarj faulü — %S savunmacıya çarptı.':'A charge — %S ran straight into the defender.',
+  '%S ittirdi, hakem hücum faulünü gördü.':'%S pushes off and the referee calls the offensive foul.',
+  '%S adım attı — düdük çaldı, topu %R kullanacak.':'%S travels — the whistle goes, %R will take the ball.',
+  '%S çift sürme yaptı; hücum bitti, top %R{de}.':'%S double dribbles; the possession is over, the ball is with %R.',
+  '%S çift sürme yaptı.':'%S double dribbles.',
+  'Adım ihlali — %S pivot ayağını kaydırdı.':'A travel — %S moved his pivot foot.',
+  '%S topu ayağına değdirdi — ihlal, top %R{e} geçiyor.':'%S kicks the ball — violation, possession goes to %R.',
+  'Üç saniye ihlali — %S boyadan çıkmadı.':'A three-second violation — %S stayed in the paint.',
+  '%S topu çizgi dışına kaçırdı — %R sokacak.':'%S loses the ball out of bounds — %R will inbound.',
+  'Top yan çizgiden dışarı çıktı, son dokunan %S.':'The ball goes out over the sideline, last touched by %S.',
+  '%S topu kontrol edemedi, taç %R{de}.':'%S cannot control it, the ball is with %R.',
+  'Top dip çizgiyi geçti — %S{in} elinden çıktı.':'The ball crosses the baseline — it came off %S.',
+  '%S pasında top dışarı gitti.':'%S sends the pass out of bounds.',
+  'Top çizgi dışına çıktı, %R sokacak.':'The ball goes out of bounds, %R will inbound.',
+  '🔄 %T değişiklik: %O kenara geliyor, yerine %I girdi.':'🔄 %T substitution: %O comes off, %I is on in his place.',
+  '🔄 %O %W kenara geliyor, yerine %I girdi.':'🔄 %O comes off %W, %I is on in his place.',
+  '🔄 %T kenardan müdahale: %O çıkıyor, %I giriyor.':'🔄 %T go to the bench: %O off, %I on.',
+  '🔄 Rotasyon %T{de}: %O kenara geliyor, %I sahaya.':'🔄 Rotation for %T: %O comes off, %I goes on.',
+  '🔄 %O soluklanmaya gidiyor, yerine %I girdi.':'🔄 %O heads off for a breather, %I is on in his place.',
+  '🔄 %T beşliyi tazeliyor: %O çıktı, %I girdi.':'🔄 %T freshen the five: %O off, %I on.',
+  'sadece birini attı.':'he made only one.',
+  'birini içeri gönderdi, diğeri demirden döndü.':'he sent one in, the other came off the iron.',
+  'ilkini kaçırdı, ikincisini attı.':'he missed the first and made the second.',
+  'çizgide yarım kaldı.':'he split them at the line.',
+  'iki takım da durdu — sayı geldi.':'both teams stopped — the points come.',
+  'tam doğru zamanda içeri düştü.':'it drops at exactly the right moment.',
+  'skoru değiştirdi, içeride.':'that changes the score, it is in.',
+  'sayıyı getirdi, tribün ayakta.':'he brings the points, the crowd is on its feet.',
+  'yay çok yüksek kaldı, girmedi.':'the arc was far too high, it did not go.',
+  'demirden sekti, girmedi.':'it kicks off the iron, no good.',
+  'file hiç dalgalanmadı, kaçtı.':'the net never moved, it misses.',
+  'top potadan uzaklaştı, isabet yok.':'the ball drifts away from the basket, no good.',
+  'şans yaver gitmedi, girmedi.':'luck was not on his side, it did not go.',
+  'salon sustu — girmedi.':'the arena falls silent — it misses.',
+  'sabırlı hücumun karşılığını aldı, sayı.':'patient offence gets its reward, the points come.',
+  'temiz iş çıkardı, sayı geldi.':'clean work, the points come.',
+  'işi bitirdi, içeride.':'job done, it is in.',
+  'gözünü bile kırpmadı, file.':'he did not even blink, net.',
+  'kolay gösterdi, içeri düştü.':'he made it look easy and it drops.',
+  'yine yaptı, sayı geldi.':'he has done it again, the points come.',
+  'bunu ezbere biliyor, girdi.':'he knows this by heart, in it goes.',
+  'bu kez tutturamadı.':'he cannot get it to drop this time.',
+  'çember huysuzlandı, girmedi.':'the rim turned stubborn, it did not go.',
+  'kaçırdı, canı sıkıldı — girmedi.':'he misses and he is annoyed — no good.',
+  'girmedi, olmadı bu sefer.':'it did not go, not this time.',
+});
+
+I18N_PHRASES.unshift(
+  [/(S+) iki atışta./g, '$1 has two at the line.'],
+  [/(S+) faul kazandı./g, '$1 draws the foul.'],
+  [/(S+) çizgide./g, '$1 is at the line.'],
+  [/(his|commits his) ilk( foul)/g, '$1 first$2'],
+  [/['’]s ilk foul/g, "'s first foul"]
+);
+
+I18N_PHRASES.push([/Hakem düdüğü çaldı —/g, 'The whistle goes —']);
+/* FAZ 38 İŞ 4: maç içi sakatlıkta değişiklik kuyruğu (ad taşıdığı için kalıp). */
+I18N_PHRASES.unshift(
+  [/ Yerine (.+?) girdi\./g, ' $1 comes in for him.'],
+  [/ Yedek kalmadı, eksik oynanıyor\./g, ' No bench left; they play a man short.']
+);

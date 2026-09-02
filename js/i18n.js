@@ -280,6 +280,15 @@ function localizeCatalogs(){
   /* TAKTIK_ADI/TAKTIK_GIRIS nesne dizileridir — alan bazında çevrilir. */
   try{ mapArr(typeof TAKTIK_ADI!=='undefined'?TAKTIK_ADI:null,['ad','e']); }catch(e){}
   try{ mapArr(typeof TAKTIK_GIRIS!=='undefined'?TAKTIK_GIRIS:null,['t']); }catch(e){}
+  /* FAZ 38 İŞ 4: yeni kural olayları. Sözlük girişleri %S yer tutucusuyla yazılır,
+     dolayısıyla havuzun burada YERİNDE çevrilmesi zorunludur (B-1 dersi). */
+  try{ mapStrArr(typeof IHLAL24_LINES!=='undefined'?IHLAL24_LINES:null); }catch(e){}
+  try{ mapStrArr(typeof HUCUM_FAULU_LINES!=='undefined'?HUCUM_FAULU_LINES:null); }catch(e){}
+  try{ mapStrArr(typeof ADIM_LINES!=='undefined'?ADIM_LINES:null); }catch(e){}
+  try{ mapStrArr(typeof TAC_LINES!=='undefined'?TAC_LINES:null); }catch(e){}
+  try{ mapStrArr(typeof TEKNIK_LINES!=='undefined'?TEKNIK_LINES:null); }catch(e){}
+  try{ mapStrArr(typeof SPORTMEN_LINES!=='undefined'?SPORTMEN_LINES:null); }catch(e){}
+  try{ mapStrArr(typeof SAKAT_MAC_LINES!=='undefined'?SAKAT_MAC_LINES:null); }catch(e){}
 }
 
 /* ══ CANLI DOM ÇEVİRİSİ ═══════════════════════════════════════════════════════════════

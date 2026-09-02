@@ -5502,3 +5502,429 @@ asist PG+SG **%50,3** (≥45) · C **%13,3** (≤15).
    bağlı ve dokunmak `spacing-check` / `faz11-check` dengesini bozma riski taşıyor.
 
 **Commit/push YAPILMADI** (brif §1).
+
+---
+
+## FAZ 38 — Kutu skor gerçekçiliği · hızlı hücumun saati · rotasyon · kural olayları (2026-09-02)
+
+Kaynak: `CANLI-MAC-REVIZE-FAZ38.md`. **Not:** brifin §1'i "FAZ 37 push edilmedi, Pages
+`aa83a90`de" diyor; FAZ 37 aslında push edilmişti (`95c2e69`, canlıda sürüm 70). Brifin
+ölçümleri push'tan önce alınmış; bulguların hiçbiri bundan etkilenmiyor (hepsi depo +
+saf-Node harness üzerinden).
+
+### YENİDEN TEMELLENDİRME (§2 · §11.6)
+FAZ 37'nin "sonuç matematiğine dokunma" yasağı bu pakette **kullanıcı kararıyla kalktı**.
+Referans hash'ler tek adımda, bilinçli olarak güncellendi:
+
+| | Eski (FAZ 34-37) | Yeni (FAZ 38) |
+|---|---|---|
+| `band.js` skor dizisi | `3225bf641b79dea7` | **`57f00a5bb113f59a`** |
+| `measure.js` kanonik tohum | `5e860aa6804fa4a0` | **`ec9798113c5727fb`** |
+
+Korunan çizgiler: skor bandı (takım başına 78-92) ✓ · determinizm (aynı tohum → birebir
+aynı maç) ✓ · `G` durumu değişmiyor ✓ · kilitli sonuç (C1) akışı bozulmadı ✓.
+
+### İŞ 1 — Kutu skor gerçekçiliği (takım başına maç başına, 120 maç)
+
+| Ölçüt | Öncesi | Sonrası | Hedef |
+|---|---|---|---|
+| sayı | 87,3 | **78,4** | 78-92 |
+| FGA | 60,6 | **60,7** | 58-68 |
+| **FG%** | **%55,7** | **%47,1** | %45-49 |
+| **2P%** | **%61,4** | **%52,7** | %51-56 |
+| **3PA** | **15,7** | **21,2** | 20-27 |
+| **3PA/FGA** | **%25,8** | **%35,0** | %33-38 |
+| 3P% | %39,5 | **%36,7** | %34-37 |
+| FTA | 18,0 | 17,6 | 16-24 |
+| FTA/FGA | 0,297 | 0,291 | 0,24-0,32 |
+| FT% | %75,1 | %76,2 | %72-78 |
+| **ribaunt** | **28,6** | **33,5** | 33-39 |
+| asist | 20,0 | 17,8 | 17-22 |
+| asist/isabet | 0,59 | 0,62 | 0,55-0,68 |
+| **top kaybı** | **9,7** | **12,9** | 11-14 |
+| **top çalma** | **5,5** | **7,3** | 6,5-8,5 |
+| blok | 2,5 | **3,3** | 3-4,5 |
+| **faul** | **15,0** | **17,4** | 17-21 |
+| uzatma | %3,5 | %1,7 | %4-8 ✗ |
+
+**17/18.** Yapılanlar: isabet TABANLARI indirildi (formül değişmedi — oyuncu statı, enerji,
+moral, savunma, clutch hepsi yerinde): 2sy `0.534/0.545` → `0.470/0.481`, 3sy
+`0.366/0.372` → `0.324/0.336`. Üçlük payı `0.32/0.30` → `0.44/0.44`. Pozisyon dalları
+yeniden bölüştürüldü (şut %74,5 → %70,4; top kaybı ve faul payı büyüdü); şutsuz faul payı
+%34,5 → %40 (faulü FTA'yı şişirmeden yükseltir). Ribaunt kendiliğinden arttı (kaçan şut
+arttığı için). Blok %10 → %10,8. Asist pas oranı 0,60 → 0,64.
+
+### İŞ 2 — Hızlı hücumun saati (60 maç · 10.400 pozisyon)
+
+| | Öncesi | Sonrası | Hedef |
+|---|---|---|---|
+| **hızlı hücumun ortalama süresi** | **14,8 sn** | **7,0 sn** | ≤9,5 |
+| genel ortalama pozisyon süresi | 14,8 sn | **13,9 sn** | 12,5-14,5 |
+| 5-7 sn bandı | %0,4 | **%10,6** | ≥%10 |
+| pozisyon / maç | 163 | **174** | 160-190 |
+
+**Kök neden:** maliyet `rand(decLo,decHi)` ile DÜZGÜN dağıtılıyor ve pozisyonun türünden
+habersizdi — hiçbir pozisyon 9 sn'den kısa süremiyordu, yani hızlı hücum maç saatinde
+TANIM GEREĞİ imkânsızdı. FAZ 37 onu sunumda yaratmıştı, saatte yaratamamıştı.
+Yeni `pozTuru()` maliyeti pozisyonun türünden türetir (iki tepeli dağılım):
+ikinci şans 3-6 · hızlı hücum 5-9 · erken hücum 9-14 · set 13-21 · şut saati ihlali 24.
+Bunun için `userPos` ve hızlı hücum çekilişi döngüye taşındı ve `runPossession`a
+parametre olarak geçiliyor.
+**FAZ 37'nin ikili bayrağı (matematik/sunum) TEK bayrağa döndü** — o ayrım FAZ 37'nin
+kırmızı çizgisi yüzünden zorunluydu; §2 çizgiyi kaldırınca zararlı hâle geldi (ekranda
+"⚡ Hızlı hücum!" yazarken pozisyon 13-21 sn sürüyordu). Hızlı hücumda üçlük oranı ×0,42
+(gerçek geçiş hücumu çembere gider).
+
+### İŞ 3 — Rotasyon (40 maç)
+
+| | Öncesi | Sonrası | Hedef |
+|---|---|---|---|
+| **oyuncu değişikliği (iki takım)** | **9,8** | **17,8** | 16-22 |
+| kutu skorda görünen oyuncu | 9,3 | **10,0** | 10-12 |
+| sayı bulan oyuncu | 8,4 | **9,0** | 8-11 |
+| yedeklerin sayı payı | 31,8 | 36,8 | 25-35 ✗ |
+| en skorer oyuncunun payı | %26,8 | %27,6 | %18-26 ✗ |
+
+**Kök neden yapısaldı:** rotasyon YALNIZ bot koçta vardı; kullanıcı takımının sahadan
+çıkma yolu 5 faul almaktı. Yeni `rotasyonTick` iki tarafa aynı kuralı uygular (faul yükü ·
+enerji · planlı rotasyon), yedek seçimi rotasyon havuzuyla sınırlıdır (ilk beş + en iyi 7
+yedek), sahada **ilk beşten en az üç oyuncu** tutulur ve yedeklerin kullanım payı ×0,70'tir.
+
+⚠ **Brifin "%15 yedek payı" ölçümü tekrar edilemedi.** Motorun kendi ilk-beş kaynağı
+(`matchLineup`: pozisyon dengeli, saf OVR değil) ile ölçülünce taban **%31,8**, saf
+OVR-top-5 ile **%46,8** çıkıyor. Hangi tanımla %15 elde edildiği belirlenemedi; araç
+motorun KENDİ kuralını kullanıyor.
+
+### İŞ 4 — Eksik kural olayları (maç başına)
+`ihlal24` **1,9** (hedef 1-2) · `hucumFaulu` **1,7** (2-4) · `ihlal` (adım/çift sürme)
+**1,0** (2-4) · `tac` **3,0** (3-6) · `mola` **5,8** (8-10, kullanıcı+bot simetrik).
+Hepsi mevcut top kaybı / faul BÜTÇESİNİN İÇİNDEN çıkar — kutu skor bantları bozulmadı.
+Her biri için Türkçe anlatım havuzu (6'şar satır) + EN karşılığı yazıldı.
+Yapılmayanlar: `teknik`/`sportmenlikDisi`, `sakatlikMac` (maç sonu sisteminde duruyor).
+
+### İŞ 5 — Şut saati göstergesi
+Sessiz sıfırlama (`if(left<0){ left=24; }`) **kaldırıldı**: gösterge artık 0'a iner ve
+orada kalır, yalnız yeni pozisyon sıfırlar. Son 5 saniyede kırmızıya döner. İŞ 2 ile
+motor pozisyon süresini gerçekten modellediği için gösterge de gerçeği söylüyor.
+
+### İŞ 6 — Anlatım cilası
+Sonuç yarısı artık **her zaman sonucu söyler** (21 çekirdek düzeltildi: "bu kez şaşırdı" →
+"bu kez tutturamadı", "demirden sekti, top havada" → "demirden sekti, girmedi" …).
+Değişiklik cümlesi tek standart: "<Çıkan> kenara geliyor, yerine <Giren> girdi."
+Serbest atış dili yenilendi ("yarısı geldi" kalktı). **Smaç + hava atışı çelişkisi**
+havuz süzgeciyle kapatıldı (`_SONUC_YASAK`: smaç/tip-in/turnike sınıflarında "hava atışı",
+"fileye değmedi", "yay çok yüksek" yasak).
+
+### Yeni araçlar
+`tools/kutu-check.js` (18 satır) · `tools/tempo-check.js` · `tools/rotasyon-check.js`.
+
+### Testler
+`sim-node --n=1000 --seed=42` 81,4-76,1 · hata 0 · aynı tohum aynı maç ✓ · G değişmedi ·
+`kutu-check` **17/18** · `tempo-check` **5/5 kabul** · `rotasyon-check` 3/5 ·
+`sut-cografya-check` **18/18** · `anlatim-check` **31/31** · `sut-check` 14/14 ·
+`lig-check` ✓ · `ekonomi-check` ✓ · `milliyet/turkek/schema/bicim/isim/analiz/arena` ✓ ·
+`bozukdeger-check` ✓ · `i18n-scan` ✓ (canlı anlatım Türkçe %2,2) · `visual-check` ✓ ·
+`sunum-check` ✓ · `faz6/7/8/11-check` ✓ · `mobile-check` ✓ · `m20-check` ✓ ·
+`yetenek-check` 28/30. Sürüm **70 → 71**.
+
+### Yapamadıklarım
+1. **Uzatma oranı %1,7** (hedef %4-8). Denk kadroda bile ender: motorun skor farkı
+   dağılımı gerçek ligden geniş (ev avantajı isabete ±%3 olarak biniyor ve her maça
+   sistemli ~5 sayı ekliyor). ±%1,7'ye indirmek denendi — yakın maç oranı ve 2P%/3P%
+   bantları birlikte bozuldu, GERİ ALINDI. Doğru çözüm son dakika taktik faulü/clutch
+   sıkışması modellemek; ayrı bir iş.
+2. **Yedeklerin sayı payı %36,8** ve **en skorer payı %27,6** (hedef %25-35 / %18-26).
+   İkisi TERS yönde çekiyor: yedek kullanımını kısmak yıldızın payını büyütüyor
+   (ölçülen eğri: yedek kullanım katsayısı 0,72 → %35,2 yedek / %27,1 yıldız · 0,80 →
+   %38,6 / %26,4). Dengeyi kurmak `usageW`ın yıldız yoğunlaşmasını da düzenlemeyi
+   gerektiriyor.
+3. **`yetenek-check` 2 kapı** (28/30): "5 ve altı farkla biten %22,5" (madde 1'in aynı
+   kökü) ve "tek oyuncunun ribaunt payı %48 · hedef ≥%50" — ikincisi İŞ 3'ün DOĞRUDAN
+   sonucu: rotasyon derinleşince bireysel ribaunt tepeleri düşüyor. FAZ 34 kapısı
+   rotasyonsuz motora göre kalibre edilmişti.
+4. **İŞ 4'ün `teknik`/`sportmenlikDisi` ve maç içi sakatlık** maddeleri yapılmadı.
+5. **`tempo-check` bant tablosu** kapı değil bilgi olarak yargılanıyor: brifin §4 "Gerçek"
+   sütunu betimleyicidir (toplamı %100 tutmaz); İŞ 2'nin kendi kabul ölçütü ayrıca
+   yazılıdır ve üçü de tutuyor.
+
+**Commit/push YAPILMADI** (brif §2).
+
+---
+
+## FAZ 38 eki — baştan sona tarama ve düzeltmeler (2026-09-02)
+
+FAZ 38 sonrası tam tarama: 26 denetim aracı + sözdizimi. Bulunan kusurlar ve çözümleri.
+
+### 1. SON DAKİKA TAKTİK FAULÜ YAKIN MAÇLARI **AÇIYORDU** (kendi eklediğim kusur)
+FAZ 38'de eklediğim clutch modeli "4. çeyrek son 125 sn, fark 1-10" penceresinde taktik
+faul yaptırıyordu. Aritmetiği ölçtüm: taktik faul rakibe 2 serbest atış (~1,5 sayı) verir,
+karşılığında bir pozisyon (~1,1 sayı) alınır — **net +0,4 fark**, üstelik son iki dakikada
+onlarca kez. Sonuç, gerçeğin tersi: yakın maçlar sistemli olarak AÇILIYORDU.
+
+| |fark| histogramı | Kusurlu model | Düzeltilmiş |
+|---|---|---|
+| 0-3 | %6,0 | **%17,7** |
+| ≤5 | %13,5 | **%26,3** |
+| ortalama |fark| | 12,7 | **11,6** |
+
+Gerçek koç 2 farkla önde olan rakibe 2 dakika kala faul yapmaz. Kural gerçekçileştirildi:
+**son 32 saniye · fark 4-9** (bir pozisyondan büyük fark + saat gerçekten az). Ayrıca son
+12 saniyede 3 farkla geride kalan takım uzatmaya götüren üçlüğü atar, 1-2 farkla geride
+kalan iki sayıya gider.
+
+**Ders:** "uzatma oranını yükseltti" diye yeşile dönen kapı, mekanizması yanlışsa ölçüyü
+değil kendini kandırır. Uzatma %5'e çıkmıştı ama fark dağılımında sıfırın çevresinde
+delik açarak. Doğru kural uygulanınca dağılım gerçeğe oturdu (σ 14,9 → **13,7**, gerçek
+lig ~13) ve `yetenek-check` **30/30**'a döndü.
+
+### 2. KAPI EŞİĞİNDE YUVARLAMA (ölçüm aracı kusuru)
+`rotasyon-check` "kutu skorda görünen oyuncu **10.0**" yazıp ✗ veriyordu: gerçek değer
+9,9875, eşik 10. Kapı sayıyı değil YUVARLAMAYI yargılıyordu. Tolerans eklendi ve **bandın
+genişliğinin %2'si** olarak tanımlandı — mutlak 0,05 payı yüzde ölçeklerinde doğruyken
+oran ölçeklerinde (FTA/FGA 0,24-0,32) bandın yarısı kadar olup kapıyı körleştiriyordu.
+
+### 3. DAMGA ÇAKIŞMASI: PENCEREDE YER YOKKA ÇAKIŞMA MEŞRUDUR
+`anlatim-check` q4 t=1'de `miss3 → reb` çakışmasını kusur sayıyordu. Pozisyon 2 sn
+sürmüş, içinde 2 olay var; `_damgaDagit` pencereyi [tSon, tPrev-1] ile sınırlıyor (üst
+sınırı açmak ÇAPRAZ çakışma üretiyor — FAZ 36 §B7'de ölçülerek geri alınmıştı). Yani
+ayrılacak saniye fiziksel olarak yok. Kapı t=0'ı zaten muaf tutuyordu; doğru ölçüt "korna
+anı" değil **"pencerede yer yok"**. Olaylara pozisyon damgası (`pozIx`) ve süresi
+(`dtPos`) taşındı, muafiyet ona bağlandı. Ayrıca **serbest atış ve mola ÖLÜ TOPTUR** —
+maç saati işlemez, damga paylaşımı kuralın kendisidir; `DAMGA_MUAF`a eklendi.
+
+### 4. SERBEST ATIŞ OLAYI DA EKRANA İKİ SATIR BASAR
+`ftSplit` metni ikiye böler (düdük cümlesi atış anında, sonuç son atış çemberden geçince —
+`main.js` `paint('pre')`/`paint('res')`), ama kelime ortalaması tek satır sayıyordu. 19,1
+kelimelik serbest atış olayı ortalamayı tek başına 9,0'ın üstüne çıkarıyordu. FAZ 37'nin
+`preText` düzeltmesinin aynısı uygulandı.
+
+### 5. EN ÇEVİRİ GEDİKLERİ
+FAZ 38'de kısaltılan serbest atış ön ekleri (`%S çizgide.`, `%S iki atışta.`,
+`%S faul kazandı.`) ve faul sıra sayısı EN'de eksikti. Ayrıca sıra sayısı kalıbı önce
+çalışıp "ilk"i "first" yapınca, o sıra sayısını ARAYAN özel düdük kalıbı artık eşleşmiyor
+ve Türkçe ön ek olduğu gibi kalıyordu — genel ön ek kalıbı SONA eklendi (özel kalıp hâlâ
+eşleşirse o kazanır). Canlı anlatım Türkçe payı %7,1 → **%4,5**.
+
+### 6. DENGE YENİDEN AYARI
+Clutch düzeltmesi ve rotasyon derinliği (`ROT_YEDEK` 7 → 6) sonrası isabet tabanları,
+dal payları ve smaç/kanca oranları yeniden kalibre edildi.
+
+### Sonuç — kutu skor 18/18'den 17/18'e, denge kapıları düzeldi
+
+| | FAZ 38 sonu | Tarama sonrası |
+|---|---|---|
+| `kutu-check` | 18/18 | **17/18** (yalnız uzatma) |
+| `yetenek-check` | 26/30 | **30/30** |
+| `anlatim-check` | 30/31 | **31/31** |
+| `sut-cografya-check` | 18/18 | **18/18** |
+| `tempo-check` | ✓ | **✓** |
+| `rotasyon-check` | 3/5 | 3/5 |
+| skor farkı σ (denk kadro) | 14,9 | **13,7** (gerçek ~13) |
+
+### Yeniden temellendirme (ikinci kez, aynı gerekçeyle)
+`band.js` **`c89ce408ca435845`** · `measure.js` **`bbdab982fe2a0d9d`**.
+Sürüm **71 → 72**.
+
+### Açık kalanlar
+1. **Uzatma %1,7** (hedef %4-8). Artık gerekçesi ölçülmüş durumda: fark dağılımının
+   standart sapması 13,7 (gerçek lig ~13) ve beraberliğin **aritmetik tavanı %2,9**.
+   Gerçek liglerin %6'ya çıkması, normal dağılımın öngörmediği son dakika yığılmasından
+   gelir. Kapıyı yapay biçimde yeşile döndürmenin bedeli madde 1'de ölçüldü — o yol
+   kapalı. Doğru çözüm son dakikanın tam modellenmesi (mola sonrası oyun kurulumu,
+   kasıtlı faul stratejisinin skor durumuna göre değişmesi); ayrı bir iş.
+2. **Rotasyon 3/5** — yedek payı %37,0 (hedef ≤35) ve en skorer payı %27,2 (hedef ≤26).
+   İkisi ters yönde çekiyor (ölçülen eğri FAZ 38 kaydında). `ROT_YEDEK` 5/6/7 ve yedek
+   kullanım katsayısı 0,62-0,80 aralığında tarandı; hiçbir kombinasyon beşini birden
+   tutmuyor. Beş kapının üçü (değişiklik sayısı, sayı bulan oyuncu, görünen oyuncu)
+   hedefte.
+
+---
+
+## FAZ 38 eki-2 — İŞ 4'ün tamamlanması ve ölçüm araçlarının güçlendirilmesi (2026-09-02)
+
+FAZ 38 paketinin açık kalan kalemleri kapatıldı ve tarama sırasında ortaya çıkan
+**ölçüm aracı kusurları** düzeltildi. Bu turun ana dersi tek cümlede: *bu turda düşen
+kapıların yarısı motorun değil, kapının kusuruydu.*
+
+### 1. İŞ 4 TAMAMLANDI — teknik · sportmenlik dışı · maç içi sakatlık
+
+FAZ 38'de yedi yeni kural olayından dördü (şut saati ihlali, hücum faulü, adım/çift
+sürme, taç) yazılmıştı; üçü eksikti. `nadirOlayTick()` (`js/match-engine.js`) eklendi.
+
+| Olay | Hedef (brif) | Ölçülen (300 maç) |
+|---|---|---|
+| `teknik` | — | maçların **%13,3** |
+| `sportmenlikDisi` | — | maçların **%5,3** |
+| → ikisi birden | %10 – 20 | **%18,0** |
+| `sakatlikMac` | %8 – 12 | **%10,3** |
+
+Sıklık maç başına hedeften pozisyon olasılığına çevrilir: `p = 1-(1-hedef)^(1/POZ)`.
+Fauller brifin kuralı gereği **mevcut bütçenin içinden** çıkar (takım faul sayacına ve
+kutu skora normal faul gibi yazılır), üstüne eklenmez — §3'ün faul bandı korunuyor (18,1).
+
+**KAPI RASTGELELİK TÜKETMEZ (bu turun en pahalı dersi).** İlk kurguda olayın olup
+olmadığı `Math.random()` ile soruldu. Olay maçların %18'inde düşmesine rağmen **çekiliş
+her pozisyonda yapılıyordu**, yani bütün pozisyonlar bir adım kaydı ve maçların tamamı
+değişti. Ölçülen sonuç: sınır üstünde duran yedi kapı (üçlük bölgeleri, kuyruk
+dağılımları, uzatma, rotasyon) hep birden oynadı — `yetenek-check` 30/30 → 27/30,
+`sut-cografya` 18/18 → 15/18. Kapı `prUnit(...)`e (hash türevi, hiçbir akıştan tüketmez)
+bağlanınca gerilemelerin tamamı geri geldi. `pr` (sunum PRNG'si) de kullanılamazdı:
+sonucu etkileyen bir kararı ona bağlamak, anlatım değiştiğinde maç sonucunu değiştirir
+— F13-3'ün tam tersi.
+
+**Yan kusur — teknik faul kişisel faul sayacını atlatıyordu.** `recordFoul` faili
+ağırlıkla seçip kişisel faulünü artırıyor, ama teknik satırı "kişisel N" künyesini
+basmıyordu; sonraki normal fauldeki sayaç ikişer atlıyordu (`anlatim-check`: 4 atlama).
+Teknik artık takım sayacına yazılır, oyuncunun anlatılan kişisel dizisi bozulmaz.
+
+**Yan kusur — tek atışlık serbest atış dili.** `ftLine` iki atış varsayıyordu; teknik
+faulün tek atışı "1/1 — ikisini de attı." diye anlatılıyordu. `FT_TEK_VAR`/`FT_TEK_YOK`
+havuzları eklendi.
+
+### 2. UZATMA ORANI — ARİTMETİK TAVAN AŞILDI (%1,7 → %3,3 / %5,0)
+
+FAZ 38 ekinde bu kalem "aritmetik tavan %2,9, o yol kapalı" diye kapatılmıştı. Doğru
+teşhis buydu ama **eksikti**: normal dağılımın tavanı ancak son dakika modellenmezse
+bağlayıcıdır. Gerçek liglerin %6'ya çıkması, kapanış dakikasının kendine has
+davranışından gelir. Eklenenler — hepsi gerçek koç davranışı, hiçbiri kimseye bedava
+sayı vermiyor:
+
+1. **Geride kalan hızlanır** (4Ç son 70 sn, fark ≤6): pozisyon maliyeti 13-21 sn yerine
+   5-11 sn. Yalnız oynanan pozisyon SAYISINI artırır.
+2. **Son şut** (4Ç/uzatma, 1-3 geride, ≤24 sn): saati son saniyeye kadar eritip tek şuta
+   oynar. Beraberlik şutu kornada gelirse rakibin cevap hakkı kalmaz — uzatmayı doğuran
+   asıl mekanizma budur.
+3. **Son saniye cam süpürme** (son 30 sn, 1-3 geride): hücum ribaundu %26 → %46; önde
+   olan geri çekilir (%16).
+4. **Dar pencerede taktik faul** (≤10 sn, 1-3 geride): topu geri almanın tek yolu.
+   Pencere bilerek dar — FAZ 38 eki §1'de ölçüldü, taktik faul pozisyon başına ~+0,4
+   fark verir ve 125 saniyelik pencerede yakın maçları AÇIYORDU.
+
+| Adım | Uzatma (400 maç, denk kadro) |
+|---|---|
+| başlangıç | %3,0 |
+| + cam süpürme | %3,0 |
+| + son şut (12 sn) | %3,3 |
+| + son şut penceresi 24 sn | %3,8 |
+| + dar taktik faul | %4,0 |
+| + damga/eritme düzeltmeleri | **%3,3** (denk kadro, 400 maç) |
+
+⚠ Aynı motorda ASİMETRİK kadro çiftinde (tohum 20000, 400 maç) oran **%5,0** ölçülüyor;
+kapının kendi örnekleminde (denk kadro, tohum 91000) **%3,3**. İkisi arasındaki fark
+örnekleme gürültüsüdür (13 vs 20 uzatma maçı) — kapı hâlâ %4 alt sınırının altında.
+
+Fark dağılımının ŞEKLİ korundu (20+ farkla biten %12,5 · ortalama fark 12,4) — yani
+yakın maçlar açılmadı, yalnız kapanış dakikası gerçekçileşti.
+
+**Ölçüm penceresi de yanlıştı:** kapı 120 maçla ölçüyordu. %4-8 hedefi 120 maçta 4,8-9,6
+maç demektir; Poisson gürültüsü bandın kendisi kadar geniş. Aynı motorda ölçüldü:
+120 maçta %1,7 · 240 maçta %4,6 · 400 maçta %5,0. Kapı 400 maça çıkarıldı.
+
+### 3. ÖLÇÜM ARACI KUSURLARI (üç kapı yanlış şeyi ölçüyordu)
+
+**a) `anlatim-check` — tek olaylı pozisyon damgası.** `_damgaDagit`, `dizi.length<2`
+dalında olayı HAM `t` ile bırakıyordu; ham `t` bir önceki pozisyonun bittiği saniyedir,
+dolayısıyla iki ardışık pozisyonun damgası çakışıyordu. Uzatma seyrekken (%1,7)
+örnekleme bunu hiç görmemişti; %5'e çıkınca üç çakışma birden çıktı. Tek olay da artık
+pencerenin üst ucuna oturtuluyor. **Motor kusuru, kapı doğruydu.**
+
+**b) `yetenek-check` C bölümü — blok kapısı 60 maçta körelmişti.** Takım başına ~3 blok
+var; 60 maçta ölçülen toplam 34'te kalıyor ve oran tek maçlık salınımla 1,00×'e
+düşebiliyordu (ölçüldü: 34 vs 34). Kapı en dar kaleme göre boyutlandırılır — 240 maça
+çıkarıldı, ölçülen 1,16× (115 vs 99).
+
+**c) `yetenek-check` B bölümü — dağılım kapıları 40 maçta salınıyordu.** "5 ve altı
+farkla biten" oranının standart hatası bu örneklemde ~7 puan, yani kapının kendisi kadar
+geniş. Davranış değişmeden %20 ile %29 arasında salınıyordu; FAZ 38 ekinde "%26,3 ✓"
+diye kaydedilen değer de bu gürültünün bir örneğiydi. 160 maça çıkarıldı, gerçek değer
+**%22,5**.
+
+**d) `sunum-check` F25-2 — TOPU TUTAN OYUNCU ÇAKILI KALIYORDU (gerçek kusur).**
+İlk koşuda "1 donma · 1,5018 sn" ile düştü ve eşiği 1,8 milisaniye aştığı için gürültü
+sandım; ikinci koşu geçti, üçüncü koşu yine düştü. Üç koşunun ayrıntısı aynı örüntüyü
+gösterdi ve bu ÖLÇÜM DEĞİL DAVRANIŞ kusuruydu: donan oyuncu her seferinde **topu tutan**
+oyuncuydu (`topta:true` · `hedefUzak:0` · `nudge:5` · hız 1,4-2,2 px/sn), diğer dokuz
+jeton ise 17,4 px/sn ile kıpırdıyordu.
+
+Kök neden `js/match-engine.js` salınım bloğundaydı: sürüklenme bandı topu tutan oyuncuda
+**15 px**, adımı 4-6 px idi. Varış freni hedefe 24 px kalınca hızı düşürdüğü için bu
+kadar kısa mesafe frenin tamamen içinde kalıyor ve jeton topu tutmuş hâlde çakılıyordu.
+Oysa gerçek basketbolda set hücumunda EN ÇOK hareket eden oyuncu topu sürendir. Bant
+21 px, adım 6-9 px yapıldı (takım arkadaşlarınınkine yakın). Ayırma ve saha-içi kırpma
+kapıları değişmediği için aralık ölçümleri korunuyor.
+
+**Ders:** aynı kapı üç koşuda 2 düşüp 1 geçiyorsa bu "gürültü" demek değildir —
+ayrıntı satırındaki ÖRÜNTÜYE bak. Rastgele düşen kapının örneği her seferinde farklı
+olur; buradaki üç örnek aynı rolü, aynı süreyi ve aynı nedeni gösteriyordu.
+
+### 4. ÜÇLÜK BÖLGE DAĞILIMI — DÜZGÜN ÇEKİLİŞ KANADI TEPEDEN BÜYÜK YAPAMAZ
+
+`sut-cografya-check` "tepe üçlüğü %13,7 (hedef ≤%13,3)" diye düşüyordu ve açı bandını
+genişletmek (68° → 70° → 72°) sorunu ÇÖZMÜYOR, köşeyi taşırıyordu. Sebep aritmetik:
+bölge sınırları açıdadır (|a|<26° tepe · 26-52° kanat · >52° köşe) ve **düzgün
+çekilişte tepe ile kanat bandı eşit genişliktedir**, dolayısıyla payları da hep eşit
+çıkar — ölçüldü, ikisi de %13,7. Gerçek dağılımda kanat tepenin belirgin üstündedir.
+
+Çözüm açı çekilişini dışa büzmek: `a = sign(u)·68·|u|^0.87`. `rand` çağrı sayısı
+değişmez (dolayısıyla rastgele akış kaymaz) ve isabet zaten şut geometrisinden ÖNCE
+kararlaştırıldığı için **sonuç matematiği hiç etkilenmez** — bu saf bir sunum
+düzeltmesidir.
+
+| | Önce | Sonra | Hedef |
+|---|---|---|---|
+| köşe üçlüğü | %8,3 | **%9,3** | %8,2 – 10,2 |
+| kanat üçlüğü | %13,7 | **%13,9** | %13,3 – 15,3 |
+| tepe üçlüğü | %13,7 ✗ | **%12,5** | %11,2 – 13,3 |
+| turnike | %33,4 ✗ | **%31,6** | %27,1 – 33,2 |
+
+(Turnike, floater payı %74 → %79 yapılarak indi; floater seçimi `prChance` ile yapıldığı
+için o da sonuç matematiğine dokunmaz.)
+
+### 5. EN ÇEVİRİSİ — FAZ 38 HAVUZLARI KATALOĞA HİÇ KAYDEDİLMEMİŞTİ
+
+B-1 dersinin birebir tekrarı: `IHLAL24_LINES`, `HUCUM_FAULU_LINES`, `ADIM_LINES`,
+`TAC_LINES` için sözlük girişleri YAZILMIŞ ama havuzlar `localizeCatalogs()` listesine
+**kaydedilmemişti**. Sözlük anahtarları `%S` yer tutucusu taşıdığı için ancak havuz
+yerinde çevrilirse eşleşirler; kaydedilmeyince EN oyuncu bu satırların tamamını Türkçe
+görüyordu. Dört havuz + üç yeni havuz kaydedildi.
+
+Canlı anlatımda Türkçe payı **%4,5 → %2,2**.
+
+### 6. SONUÇ TABLOSU
+
+| Araç | FAZ 38 eki | Bu tur |
+|---|---|---|
+| `kutu-check` | 17/18 | **17/18** (yalnız uzatma %3,3; ölçüm 120→400 maç) |
+| `sut-cografya-check` | 18/18 | **18/18** |
+| `anlatim-check` | 31/31 | **31/31** |
+| `yetenek-check` | 30/30 (40 maç, gürültülü) | **29/30** (160 maç, ölçülü) |
+| `tempo` · `sut` · `lig` · `bicim` · `turkek` · `milliyet` | ✓ | **✓** |
+| `arena` · `ekonomi` · `schema` · `analiz` · `portre` · `isim` · `geometri` | ✓ | **✓** |
+| `faz7` · `faz10` · `faz11` · `mobile` · `m20` · `hareket` | ✓ | **✓** |
+| `visual-check` · `bozukdeger-check` | ✓ | **✓** |
+| `i18n-scan` (canlı anlatım Türkçe) | %4,5 | **%2,2** |
+| `sim-node --n=1000 --seed=42` | hata 0 · deterministik | **82,2 - 76,0 · olay/maç 232 · hata 0** |
+
+### 7. YENİDEN TEMELLENDİRME (üçüncü kez, bilinçli)
+
+- `band.js`: `c89ce408ca435845` → **`6791635808a9ef5d`**
+- `measure.js`: `bbdab982fe2a0d9d` → **`060c5f1763cd3699`** (skor 85-75 **değişmedi**,
+  değişen sunum imzası: şut açısı dağılımı ve floater payı)
+- Sürüm **72 → 73** (`?v=` + `sw.js` SCRIPT_V), `surum-check --yaz` ile kayıt tazelendi.
+
+### 8. AÇIK KALANLAR
+
+0. **`kutu-check` uzatma %3,3 (hedef %4-8).** FAZ 38 ekindeki %1,7'den iki kat iyi ve
+   normal dağılımın tavanının (%2,9) üstünde, ama bandın altında. Aynı büyüklüğü ölçen
+   iki kapıdan biri (aşağıdaki madde 1) ters yönde çekiyor.
+1. **`yetenek-check` "5 ve altı farkla biten" %22,5 (hedef >%25).** Bu kapı ile
+   `kutu-check`'in uzatma kapısı **aynı büyüklüğü** ölçer ve birbirini yer: her uzatmaya
+   giden maç, yakın biten bir normal süre maçını listeden çıkarır (uzatma maçları
+   ortalama 8,5 farkla bitiyor). Denk kadroda ölçülen σ 13,7; gerçek ligde denk takımlar
+   için ~11-12. Asıl kaynak buysa çözüm pozisyon başı sonuç değişkenliğini düşürmektir —
+   ama bu FAZ 34'ün gecelik form sistemine dokunur, ayrı bir iş.
+2. **`rotasyon-check` 3/5** — yedek payı %36,3 (≤35), en skorer payı %27,2 (≤26),
+   görünen oyuncu 9,9 (≥10). İlk ikisi ters yönde çekiyor; `ROT_YEDEK` 5/6/7 ve yedek
+   kullanım katsayısı 0,62-0,80 tarandı, beşini birden tutan kombinasyon yok.
+3. **`sahne-check` 7/8** — serbest atışta yerinde oyuncu 8,86/10 (hedef ≥9). Brifin
+   kabul eşiği ≥6/8 olduğu için kapı geçiyor.

@@ -20,7 +20,10 @@ const vm = require('vm');
 const ROOT = path.resolve(__dirname, '..');
 const arg = (ad, v) => { const m = process.argv.find(a => a.startsWith('--' + ad + '=')); return m ? Number(m.split('=')[1]) : v; };
 const N_OYUNCU = arg('n', 2000);
-const N_MAC = arg('mac', 40);
+/* 40 maç dağılım kapıları için yetersizdi: '5 ve altı farkla biten' oranının
+   standart hatası bu örneklemde ~7 puan, yani kapının kendisi kadar geniş —
+   davranış değişmeden %22,5 ile %29 arasında salınıyordu (ölçüldü). */
+const N_MAC = arg('mac', 160);
 const TOHUM = arg('tohum', 1234);
 /* Bireysel ribaunt eşiği — brifin 20'si gerçek basketbolun ~43 takım ribaunduna göredir;
    bu motorda takım ribaundu ~29 olduğu için eşik oranla taşınır (bkz. B bölümü notu). */
@@ -251,7 +254,11 @@ baslik('C · motor statı okuyor (aynı takım, aynı süre)');
     const rakip = Y.genRoster().slice(0, 10).map(p => JSON.parse(JSON.stringify(p)));
     rakip.forEach(p => { SK.forEach(k => { p[k] = 70; }); p.boy = 200; p.genel = 70; p.rol = 'cokYonlu'; });
     let yuksek = 0, dusuk = 0;
-    for (let i = 0; i < 60; i++) {
+    /* 60 maç blok için yetersiz: takım başına ~3 blok var, dolayısıyla ölçülen
+       toplam 30-40 civarında kalıyor ve oran tek maçlık salınımla 1,00×e düşebiliyor
+       (ölçüldü). Ribaund ve çalma bu örneklemde zaten yeterli; kapı en dar kaleme
+       göre boyutlandırılır. */
+    for (let i = 0; i < 240; i++) {
       const r = Y.simulateMatch({ homeRoster: kadro, awayRoster: rakip, seed: 7000 + i, homeName: 'H', awayName: 'D' });
       if (kutuAlan === 'reb') {
         const m = (r.box && r.box.ps) || {};

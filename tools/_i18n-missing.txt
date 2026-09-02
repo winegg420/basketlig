@@ -1,282 +1,342 @@
-canli-mac :: Copenhagen Şimşekleri
-canli-mac :: Groningen Yıldızları
-canli-mac :: Odesa Şimşekleri
-canli-mac :: Vancouver Gençlik
-canli-mac :: Vienna Şahinleri
-canli-mac :: Vienna Şahinleri — Groningen Yıldızları
+canli-mac :: (Analytical). The game begins with the tip-off. Ankara Eagles as the away side; İlker Yaşar at the circle, Ung Gu sets up the first possession. The stands are packed.
+canli-mac :: Brussels Şimşekleri
+canli-mac :: Budapest Kartalları
+canli-mac :: Durban Aslanları
+canli-mac :: Phoenix Atmacaları
+canli-mac :: Phoenix Atmacaları — Valencia Ejderleri
+canli-mac :: Rotterdam Şahinleri
+canli-mac :: Split Aslanları
+canli-mac :: Tucumán Yıldızları
+canli-mac :: Yaşar
 canli-mac :: Yerel Esnaf Desteği ·
-canli-mac :: 🇩🇪 Björn Frei
-canli-mac :: 🇸🇪 Egon Nyström
-canli-mac :: 🇹🇷 Eren Yiğit
-canli-mac :: 🇹🇷 Gürkan Baştürk
+canli-mac :: Öcal
+canli-mac :: İlker Yaşar
+canli-mac :: İlker Yaşar (C) — Overall: 74
+canli-mac :: İlker Yaşar (C) → PF
+canli-mac :: İlker Yaşar (C·OVR 74)
+canli-mac :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
+canli-mac :: 🇹🇷 Tunahan Genç
 canli-mac :: 🇹🇷 Türkçe
-canli-mac :: 🇹🇷 Yiğit Arslan
-canli-mac :: 🏛️ Copenhagen Şimşekleri from
-canli-mac :: 🏛️ Odesa Şimşekleri from
-canli-mac :: 🏛️ Vancouver Gençlik from
+canli-mac :: 🏛️ Brussels Şimşekleri from
+canli-mac :: 🏛️ Budapest Kartalları from
+canli-mac :: 🏛️ Split Aslanları from
 canli-mac :: 📣 Sponsor income — Yerel Esnaf Desteği
 login :: 🇹🇷 Türkçe
-modal:ayarlar :: Copenhagen Şimşekleri
-modal:ayarlar :: Groningen Yıldızları
-modal:ayarlar :: Odesa Şimşekleri
-modal:ayarlar :: Vancouver Gençlik
-modal:ayarlar :: Vienna Şahinleri
-modal:ayarlar :: Vienna Şahinleri — Groningen Yıldızları
+modal:ayarlar :: Brussels Şimşekleri
+modal:ayarlar :: Budapest Kartalları
+modal:ayarlar :: Durban Aslanları
+modal:ayarlar :: Phoenix Atmacaları
+modal:ayarlar :: Phoenix Atmacaları — Valencia Ejderleri
+modal:ayarlar :: Rotterdam Şahinleri
+modal:ayarlar :: Split Aslanları
+modal:ayarlar :: Tucumán Yıldızları
 modal:ayarlar :: Yerel Esnaf Desteği ·
-modal:ayarlar :: 🇩🇪 Björn Frei
-modal:ayarlar :: 🇸🇪 Egon Nyström
-modal:ayarlar :: 🇹🇷 Eren Yiğit
-modal:ayarlar :: 🇹🇷 Gürkan Baştürk
+modal:ayarlar :: İlker Yaşar
+modal:ayarlar :: İlker Yaşar (C) — Overall: 74
+modal:ayarlar :: İlker Yaşar (C) → PF
+modal:ayarlar :: İlker Yaşar (C·OVR 74)
+modal:ayarlar :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
+modal:ayarlar :: 🇹🇷 Tunahan Genç
 modal:ayarlar :: 🇹🇷 Türkçe
-modal:ayarlar :: 🇹🇷 Yiğit Arslan
-modal:ayarlar :: 🏛️ Copenhagen Şimşekleri from
-modal:ayarlar :: 🏛️ Odesa Şimşekleri from
-modal:ayarlar :: 🏛️ Vancouver Gençlik from
+modal:ayarlar :: 🏛️ Brussels Şimşekleri from
+modal:ayarlar :: 🏛️ Budapest Kartalları from
+modal:ayarlar :: 🏛️ Split Aslanları from
 modal:ayarlar :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:basarim :: Copenhagen Şimşekleri
-modal:basarim :: Groningen Yıldızları
-modal:basarim :: Odesa Şimşekleri
-modal:basarim :: Vancouver Gençlik
-modal:basarim :: Vienna Şahinleri
-modal:basarim :: Vienna Şahinleri — Groningen Yıldızları
+modal:basarim :: Brussels Şimşekleri
+modal:basarim :: Budapest Kartalları
+modal:basarim :: Durban Aslanları
+modal:basarim :: Phoenix Atmacaları
+modal:basarim :: Phoenix Atmacaları — Valencia Ejderleri
+modal:basarim :: Rotterdam Şahinleri
+modal:basarim :: Split Aslanları
+modal:basarim :: Tucumán Yıldızları
 modal:basarim :: Yerel Esnaf Desteği ·
-modal:basarim :: 🇩🇪 Björn Frei
-modal:basarim :: 🇸🇪 Egon Nyström
-modal:basarim :: 🇹🇷 Eren Yiğit
-modal:basarim :: 🇹🇷 Gürkan Baştürk
+modal:basarim :: İlker Yaşar
+modal:basarim :: İlker Yaşar (C) — Overall: 74
+modal:basarim :: İlker Yaşar (C) → PF
+modal:basarim :: İlker Yaşar (C·OVR 74)
+modal:basarim :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
+modal:basarim :: 🇹🇷 Tunahan Genç
 modal:basarim :: 🇹🇷 Türkçe
-modal:basarim :: 🇹🇷 Yiğit Arslan
-modal:basarim :: 🏛️ Copenhagen Şimşekleri from
-modal:basarim :: 🏛️ Odesa Şimşekleri from
-modal:basarim :: 🏛️ Vancouver Gençlik from
+modal:basarim :: 🏛️ Brussels Şimşekleri from
+modal:basarim :: 🏛️ Budapest Kartalları from
+modal:basarim :: 🏛️ Split Aslanları from
 modal:basarim :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:draft :: Copenhagen Şimşekleri
-modal:draft :: Groningen Yıldızları
-modal:draft :: Odesa Şimşekleri
-modal:draft :: Vancouver Gençlik
-modal:draft :: Vienna Şahinleri
-modal:draft :: Vienna Şahinleri — Groningen Yıldızları
+modal:draft :: Brussels Şimşekleri
+modal:draft :: Budapest Kartalları
+modal:draft :: Durban Aslanları
+modal:draft :: Phoenix Atmacaları
+modal:draft :: Phoenix Atmacaları — Valencia Ejderleri
+modal:draft :: Rotterdam Şahinleri
+modal:draft :: Split Aslanları
+modal:draft :: Tucumán Yıldızları
 modal:draft :: Yerel Esnaf Desteği ·
-modal:draft :: 🇩🇪 Björn Frei
-modal:draft :: 🇸🇪 Egon Nyström
-modal:draft :: 🇹🇷 Eren Yiğit
-modal:draft :: 🇹🇷 Gürkan Baştürk
+modal:draft :: İlker Yaşar
+modal:draft :: İlker Yaşar (C) — Overall: 74
+modal:draft :: İlker Yaşar (C) → PF
+modal:draft :: İlker Yaşar (C·OVR 74)
+modal:draft :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
+modal:draft :: 🇹🇷 Tunahan Genç
 modal:draft :: 🇹🇷 Türkçe
-modal:draft :: 🇹🇷 Yiğit Arslan
-modal:draft :: 🏛️ Copenhagen Şimşekleri from
-modal:draft :: 🏛️ Odesa Şimşekleri from
-modal:draft :: 🏛️ Vancouver Gençlik from
+modal:draft :: 🏛️ Brussels Şimşekleri from
+modal:draft :: 🏛️ Budapest Kartalları from
+modal:draft :: 🏛️ Split Aslanları from
 modal:draft :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:ilk5 :: Copenhagen Şimşekleri
-modal:ilk5 :: Groningen Yıldızları
-modal:ilk5 :: Odesa Şimşekleri
-modal:ilk5 :: Vancouver Gençlik
-modal:ilk5 :: Vienna Şahinleri
-modal:ilk5 :: Vienna Şahinleri — Groningen Yıldızları
+modal:ilk5 :: Brussels Şimşekleri
+modal:ilk5 :: Budapest Kartalları
+modal:ilk5 :: Durban Aslanları
+modal:ilk5 :: Phoenix Atmacaları
+modal:ilk5 :: Phoenix Atmacaları — Valencia Ejderleri
+modal:ilk5 :: Rotterdam Şahinleri
+modal:ilk5 :: Split Aslanları
+modal:ilk5 :: Tucumán Yıldızları
 modal:ilk5 :: Yerel Esnaf Desteği ·
-modal:ilk5 :: 🇩🇪 Björn Frei
-modal:ilk5 :: 🇸🇪 Egon Nyström
-modal:ilk5 :: 🇹🇷 Eren Yiğit
-modal:ilk5 :: 🇹🇷 Gürkan Baştürk
+modal:ilk5 :: İlker Yaşar
+modal:ilk5 :: İlker Yaşar (C) — Overall: 74
+modal:ilk5 :: İlker Yaşar (C) → PF
+modal:ilk5 :: İlker Yaşar (C·OVR 74)
+modal:ilk5 :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
+modal:ilk5 :: 🇹🇷 Tunahan Genç
 modal:ilk5 :: 🇹🇷 Türkçe
-modal:ilk5 :: 🇹🇷 Yiğit Arslan
-modal:ilk5 :: 🏛️ Copenhagen Şimşekleri from
-modal:ilk5 :: 🏛️ Odesa Şimşekleri from
-modal:ilk5 :: 🏛️ Vancouver Gençlik from
+modal:ilk5 :: 🏛️ Brussels Şimşekleri from
+modal:ilk5 :: 🏛️ Budapest Kartalları from
+modal:ilk5 :: 🏛️ Split Aslanları from
 modal:ilk5 :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:oyuncu :: Copenhagen Şimşekleri
-modal:oyuncu :: Groningen Yıldızları
-modal:oyuncu :: Odesa Şimşekleri
-modal:oyuncu :: Vancouver Gençlik
-modal:oyuncu :: Vienna Şahinleri
-modal:oyuncu :: Vienna Şahinleri — Groningen Yıldızları
+modal:oyuncu :: Brussels Şimşekleri
+modal:oyuncu :: Budapest Kartalları
+modal:oyuncu :: Durban Aslanları
+modal:oyuncu :: Phoenix Atmacaları
+modal:oyuncu :: Phoenix Atmacaları — Valencia Ejderleri
+modal:oyuncu :: Rotterdam Şahinleri
+modal:oyuncu :: Split Aslanları
+modal:oyuncu :: Tucumán Yıldızları
 modal:oyuncu :: Yerel Esnaf Desteği ·
-modal:oyuncu :: 🇩🇪 Björn Frei
-modal:oyuncu :: 🇸🇪 Egon Nyström
-modal:oyuncu :: 🇹🇷 Eren Yiğit
-modal:oyuncu :: 🇹🇷 Gürkan Baştürk
+modal:oyuncu :: İlker Yaşar
+modal:oyuncu :: İlker Yaşar (C) — Overall: 74
+modal:oyuncu :: İlker Yaşar (C) → PF
+modal:oyuncu :: İlker Yaşar (C·OVR 74)
+modal:oyuncu :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
+modal:oyuncu :: 🇹🇷 Tunahan Genç
 modal:oyuncu :: 🇹🇷 Türkçe
-modal:oyuncu :: 🇹🇷 Yiğit Arslan
-modal:oyuncu :: 🏛️ Copenhagen Şimşekleri from
-modal:oyuncu :: 🏛️ Odesa Şimşekleri from
-modal:oyuncu :: 🏛️ Vancouver Gençlik from
+modal:oyuncu :: 🏛️ Brussels Şimşekleri from
+modal:oyuncu :: 🏛️ Budapest Kartalları from
+modal:oyuncu :: 🏛️ Split Aslanları from
 modal:oyuncu :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:soyunma :: Copenhagen Şimşekleri
-modal:soyunma :: Groningen Yıldızları
-modal:soyunma :: Odesa Şimşekleri
-modal:soyunma :: Vancouver Gençlik
-modal:soyunma :: Vienna Şahinleri
-modal:soyunma :: Vienna Şahinleri — Groningen Yıldızları
+modal:soyunma :: Brussels Şimşekleri
+modal:soyunma :: Budapest Kartalları
+modal:soyunma :: Durban Aslanları
+modal:soyunma :: Phoenix Atmacaları
+modal:soyunma :: Phoenix Atmacaları — Valencia Ejderleri
+modal:soyunma :: Rotterdam Şahinleri
+modal:soyunma :: Split Aslanları
+modal:soyunma :: Tucumán Yıldızları
 modal:soyunma :: Yerel Esnaf Desteği ·
-modal:soyunma :: 🇩🇪 Björn Frei
-modal:soyunma :: 🇸🇪 Egon Nyström
-modal:soyunma :: 🇹🇷 Eren Yiğit
-modal:soyunma :: 🇹🇷 Gürkan Baştürk
+modal:soyunma :: İlker Yaşar
+modal:soyunma :: İlker Yaşar (C) — Overall: 74
+modal:soyunma :: İlker Yaşar (C) → PF
+modal:soyunma :: İlker Yaşar (C·OVR 74)
+modal:soyunma :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
+modal:soyunma :: 🇹🇷 Tunahan Genç
 modal:soyunma :: 🇹🇷 Türkçe
-modal:soyunma :: 🇹🇷 Yiğit Arslan
-modal:soyunma :: 🏛️ Copenhagen Şimşekleri from
-modal:soyunma :: 🏛️ Odesa Şimşekleri from
-modal:soyunma :: 🏛️ Vancouver Gençlik from
+modal:soyunma :: 🏛️ Brussels Şimşekleri from
+modal:soyunma :: 🏛️ Budapest Kartalları from
+modal:soyunma :: 🏛️ Split Aslanları from
 modal:soyunma :: 📣 Sponsor income — Yerel Esnaf Desteği
-modal:taktik :: Copenhagen Şimşekleri
-modal:taktik :: Groningen Yıldızları
-modal:taktik :: Odesa Şimşekleri
-modal:taktik :: Vancouver Gençlik
-modal:taktik :: Vienna Şahinleri
-modal:taktik :: Vienna Şahinleri — Groningen Yıldızları
+modal:taktik :: Brussels Şimşekleri
+modal:taktik :: Budapest Kartalları
+modal:taktik :: Durban Aslanları
+modal:taktik :: Phoenix Atmacaları
+modal:taktik :: Phoenix Atmacaları — Valencia Ejderleri
+modal:taktik :: Rotterdam Şahinleri
+modal:taktik :: Split Aslanları
+modal:taktik :: Tucumán Yıldızları
 modal:taktik :: Yerel Esnaf Desteği ·
-modal:taktik :: 🇩🇪 Björn Frei
-modal:taktik :: 🇸🇪 Egon Nyström
-modal:taktik :: 🇹🇷 Eren Yiğit
-modal:taktik :: 🇹🇷 Gürkan Baştürk
+modal:taktik :: İlker Yaşar
+modal:taktik :: İlker Yaşar (C) — Overall: 74
+modal:taktik :: İlker Yaşar (C) → PF
+modal:taktik :: İlker Yaşar (C·OVR 74)
+modal:taktik :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
+modal:taktik :: 🇹🇷 Tunahan Genç
 modal:taktik :: 🇹🇷 Türkçe
-modal:taktik :: 🇹🇷 Yiğit Arslan
-modal:taktik :: 🏛️ Copenhagen Şimşekleri from
-modal:taktik :: 🏛️ Odesa Şimşekleri from
-modal:taktik :: 🏛️ Vancouver Gençlik from
+modal:taktik :: 🏛️ Brussels Şimşekleri from
+modal:taktik :: 🏛️ Budapest Kartalları from
+modal:taktik :: 🏛️ Split Aslanları from
 modal:taktik :: 📣 Sponsor income — Yerel Esnaf Desteği
-sayfa:altyapi :: Copenhagen Şimşekleri
-sayfa:altyapi :: Groningen Yıldızları
-sayfa:altyapi :: Odesa Şimşekleri
-sayfa:altyapi :: Vancouver Gençlik
-sayfa:altyapi :: Vienna Şahinleri
-sayfa:altyapi :: Vienna Şahinleri — Groningen Yıldızları
+sayfa:altyapi :: Brussels Şimşekleri
+sayfa:altyapi :: Budapest Kartalları
+sayfa:altyapi :: Durban Aslanları
+sayfa:altyapi :: Phoenix Atmacaları
+sayfa:altyapi :: Phoenix Atmacaları — Valencia Ejderleri
+sayfa:altyapi :: Rotterdam Şahinleri
+sayfa:altyapi :: Split Aslanları
+sayfa:altyapi :: Tucumán Yıldızları
 sayfa:altyapi :: Yerel Esnaf Desteği ·
-sayfa:altyapi :: 🇩🇪 Björn Frei
-sayfa:altyapi :: 🇸🇪 Egon Nyström
-sayfa:altyapi :: 🇹🇷 Eren Yiğit
-sayfa:altyapi :: 🇹🇷 Gürkan Baştürk
+sayfa:altyapi :: İlker Yaşar
+sayfa:altyapi :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
+sayfa:altyapi :: 🇹🇷 Tunahan Genç
 sayfa:altyapi :: 🇹🇷 Türkçe
-sayfa:altyapi :: 🇹🇷 Yiğit Arslan
-sayfa:altyapi :: 🏛️ Copenhagen Şimşekleri from
-sayfa:altyapi :: 🏛️ Odesa Şimşekleri from
-sayfa:altyapi :: 🏛️ Vancouver Gençlik from
-sayfa:analiz :: Copenhagen Şimşekleri
-sayfa:analiz :: Groningen Yıldızları
-sayfa:analiz :: Odesa Şimşekleri
-sayfa:analiz :: Vancouver Gençlik
-sayfa:analiz :: Vienna Şahinleri
-sayfa:analiz :: Vienna Şahinleri — Groningen Yıldızları
+sayfa:altyapi :: 🏛️ Brussels Şimşekleri from
+sayfa:altyapi :: 🏛️ Budapest Kartalları from
+sayfa:altyapi :: 🏛️ Split Aslanları from
+sayfa:analiz :: Brussels Şimşekleri
+sayfa:analiz :: Budapest Kartalları
+sayfa:analiz :: Durban Aslanları
+sayfa:analiz :: Phoenix Atmacaları
+sayfa:analiz :: Phoenix Atmacaları — Valencia Ejderleri
+sayfa:analiz :: Rotterdam Şahinleri
+sayfa:analiz :: Split Aslanları
+sayfa:analiz :: Tucumán Yıldızları
 sayfa:analiz :: Yerel Esnaf Desteği ·
-sayfa:analiz :: 🇩🇪 Björn Frei
-sayfa:analiz :: 🇸🇪 Egon Nyström
-sayfa:analiz :: 🇹🇷 Eren Yiğit
-sayfa:analiz :: 🇹🇷 Gürkan Baştürk
+sayfa:analiz :: İlker Yaşar
+sayfa:analiz :: İlker Yaşar (C) — Overall: 74
+sayfa:analiz :: İlker Yaşar (C) → PF
+sayfa:analiz :: İlker Yaşar (C·OVR 74)
+sayfa:analiz :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
+sayfa:analiz :: 🇹🇷 Tunahan Genç
 sayfa:analiz :: 🇹🇷 Türkçe
-sayfa:analiz :: 🇹🇷 Yiğit Arslan
-sayfa:analiz :: 🏛️ Copenhagen Şimşekleri from
-sayfa:analiz :: 🏛️ Odesa Şimşekleri from
-sayfa:analiz :: 🏛️ Vancouver Gençlik from
+sayfa:analiz :: 🏛️ Brussels Şimşekleri from
+sayfa:analiz :: 🏛️ Budapest Kartalları from
+sayfa:analiz :: 🏛️ Split Aslanları from
 sayfa:analiz :: 📣 Sponsor income — Yerel Esnaf Desteği
-sayfa:antrenman :: Copenhagen Şimşekleri
-sayfa:antrenman :: Groningen Yıldızları
-sayfa:antrenman :: Odesa Şimşekleri
-sayfa:antrenman :: Vancouver Gençlik
-sayfa:antrenman :: Vienna Şahinleri
-sayfa:antrenman :: Vienna Şahinleri — Groningen Yıldızları
+sayfa:antrenman :: Brussels Şimşekleri
+sayfa:antrenman :: Budapest Kartalları
+sayfa:antrenman :: Durban Aslanları
+sayfa:antrenman :: Phoenix Atmacaları
+sayfa:antrenman :: Phoenix Atmacaları — Valencia Ejderleri
+sayfa:antrenman :: Rotterdam Şahinleri
+sayfa:antrenman :: Split Aslanları
+sayfa:antrenman :: Tucumán Yıldızları
 sayfa:antrenman :: Yerel Esnaf Desteği ·
-sayfa:antrenman :: 🇩🇪 Björn Frei
-sayfa:antrenman :: 🇸🇪 Egon Nyström
-sayfa:antrenman :: 🇹🇷 Eren Yiğit
-sayfa:antrenman :: 🇹🇷 Gürkan Baştürk
+sayfa:antrenman :: İlker Yaşar
+sayfa:antrenman :: İlker Yaşar (C) — Overall: 74
+sayfa:antrenman :: İlker Yaşar (C) → PF
+sayfa:antrenman :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
+sayfa:antrenman :: 🇹🇷 Tunahan Genç
 sayfa:antrenman :: 🇹🇷 Türkçe
-sayfa:antrenman :: 🇹🇷 Yiğit Arslan
-sayfa:antrenman :: 🏛️ Copenhagen Şimşekleri from
-sayfa:antrenman :: 🏛️ Odesa Şimşekleri from
-sayfa:antrenman :: 🏛️ Vancouver Gençlik from
-sayfa:arena :: Copenhagen Şimşekleri
-sayfa:arena :: Groningen Yıldızları
-sayfa:arena :: Odesa Şimşekleri
-sayfa:arena :: Vancouver Gençlik
-sayfa:arena :: Vienna Şahinleri
-sayfa:arena :: Vienna Şahinleri — Groningen Yıldızları
+sayfa:antrenman :: 🏛️ Brussels Şimşekleri from
+sayfa:antrenman :: 🏛️ Budapest Kartalları from
+sayfa:antrenman :: 🏛️ Split Aslanları from
+sayfa:arena :: Brussels Şimşekleri
+sayfa:arena :: Budapest Kartalları
+sayfa:arena :: Durban Aslanları
+sayfa:arena :: Phoenix Atmacaları
+sayfa:arena :: Phoenix Atmacaları — Valencia Ejderleri
+sayfa:arena :: Rotterdam Şahinleri
+sayfa:arena :: Split Aslanları
+sayfa:arena :: Tucumán Yıldızları
 sayfa:arena :: Yerel Esnaf Desteği ·
-sayfa:arena :: 🇩🇪 Björn Frei
-sayfa:arena :: 🇸🇪 Egon Nyström
-sayfa:arena :: 🇹🇷 Eren Yiğit
-sayfa:arena :: 🇹🇷 Gürkan Baştürk
+sayfa:arena :: İlker Yaşar
+sayfa:arena :: İlker Yaşar (C) — Overall: 74
+sayfa:arena :: İlker Yaşar (C) → PF
+sayfa:arena :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
+sayfa:arena :: 🇹🇷 Tunahan Genç
 sayfa:arena :: 🇹🇷 Türkçe
-sayfa:arena :: 🇹🇷 Yiğit Arslan
-sayfa:arena :: 🏛️ Copenhagen Şimşekleri from
-sayfa:arena :: 🏛️ Odesa Şimşekleri from
-sayfa:arena :: 🏛️ Vancouver Gençlik from
-sayfa:bilanco :: Copenhagen Şimşekleri
-sayfa:bilanco :: Groningen Yıldızları
-sayfa:bilanco :: Odesa Şimşekleri
-sayfa:bilanco :: Vancouver Gençlik
-sayfa:bilanco :: Vienna Şahinleri
-sayfa:bilanco :: Vienna Şahinleri — Groningen Yıldızları
+sayfa:arena :: 🏛️ Brussels Şimşekleri from
+sayfa:arena :: 🏛️ Budapest Kartalları from
+sayfa:arena :: 🏛️ Split Aslanları from
+sayfa:bilanco :: Brussels Şimşekleri
+sayfa:bilanco :: Budapest Kartalları
+sayfa:bilanco :: Durban Aslanları
+sayfa:bilanco :: Phoenix Atmacaları
+sayfa:bilanco :: Phoenix Atmacaları — Valencia Ejderleri
+sayfa:bilanco :: Rotterdam Şahinleri
+sayfa:bilanco :: Split Aslanları
+sayfa:bilanco :: Tucumán Yıldızları
 sayfa:bilanco :: Yerel Esnaf Desteği ·
-sayfa:bilanco :: 🇩🇪 Björn Frei
-sayfa:bilanco :: 🇸🇪 Egon Nyström
-sayfa:bilanco :: 🇹🇷 Eren Yiğit
-sayfa:bilanco :: 🇹🇷 Gürkan Baştürk
+sayfa:bilanco :: İlker Yaşar
+sayfa:bilanco :: İlker Yaşar (C) — Overall: 74
+sayfa:bilanco :: İlker Yaşar (C) → PF
+sayfa:bilanco :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
+sayfa:bilanco :: 🇹🇷 Tunahan Genç
 sayfa:bilanco :: 🇹🇷 Türkçe
-sayfa:bilanco :: 🇹🇷 Yiğit Arslan
-sayfa:bilanco :: 🏛️ Copenhagen Şimşekleri from
-sayfa:bilanco :: 🏛️ Odesa Şimşekleri from
-sayfa:bilanco :: 🏛️ Vancouver Gençlik from
+sayfa:bilanco :: 🏛️ Brussels Şimşekleri from
+sayfa:bilanco :: 🏛️ Budapest Kartalları from
+sayfa:bilanco :: 🏛️ Split Aslanları from
 sayfa:bilanco :: 📣 Sponsor income — Yerel Esnaf Desteği
-sayfa:dashboard :: Copenhagen Şimşekleri
-sayfa:dashboard :: Groningen Yıldızları
-sayfa:dashboard :: Odesa Şimşekleri
-sayfa:dashboard :: Vancouver Gençlik
-sayfa:dashboard :: Vienna Şahinleri
-sayfa:dashboard :: Vienna Şahinleri — Groningen Yıldızları
+sayfa:dashboard :: Brussels Şimşekleri
+sayfa:dashboard :: Budapest Kartalları
+sayfa:dashboard :: Durban Aslanları
+sayfa:dashboard :: Phoenix Atmacaları
+sayfa:dashboard :: Phoenix Atmacaları — Valencia Ejderleri
+sayfa:dashboard :: Rotterdam Şahinleri
+sayfa:dashboard :: Split Aslanları
+sayfa:dashboard :: Tucumán Yıldızları
+sayfa:dashboard :: İlker Yaşar
+sayfa:dashboard :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
 sayfa:dashboard :: 🇹🇷 Türkçe
-sayfa:kadro :: Copenhagen Şimşekleri
-sayfa:kadro :: Groningen Yıldızları
-sayfa:kadro :: Odesa Şimşekleri
-sayfa:kadro :: Vancouver Gençlik
-sayfa:kadro :: Vienna Şahinleri
-sayfa:kadro :: Vienna Şahinleri — Groningen Yıldızları
+sayfa:kadro :: Brussels Şimşekleri
+sayfa:kadro :: Budapest Kartalları
+sayfa:kadro :: Durban Aslanları
+sayfa:kadro :: Phoenix Atmacaları
+sayfa:kadro :: Phoenix Atmacaları — Valencia Ejderleri
+sayfa:kadro :: Rotterdam Şahinleri
+sayfa:kadro :: Split Aslanları
+sayfa:kadro :: Tucumán Yıldızları
 sayfa:kadro :: Yerel Esnaf Desteği ·
+sayfa:kadro :: İlker Yaşar
+sayfa:kadro :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
 sayfa:kadro :: 🇹🇷 Türkçe
-sayfa:lig :: Copenhagen Şimşekleri
-sayfa:lig :: Groningen Yıldızları
-sayfa:lig :: Odesa Şimşekleri
-sayfa:lig :: Vancouver Gençlik
-sayfa:lig :: Vienna Şahinleri
-sayfa:lig :: Vienna Şahinleri — Groningen Yıldızları
+sayfa:lig :: Brussels Şimşekleri
+sayfa:lig :: Budapest Kartalları
+sayfa:lig :: Durban Aslanları
+sayfa:lig :: Phoenix Atmacaları
+sayfa:lig :: Phoenix Atmacaları — Valencia Ejderleri
+sayfa:lig :: Rotterdam Şahinleri
+sayfa:lig :: Split Aslanları
+sayfa:lig :: Tucumán Yıldızları
 sayfa:lig :: Yerel Esnaf Desteği ·
+sayfa:lig :: İlker Yaşar
+sayfa:lig :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
 sayfa:lig :: 🇹🇷 Türkçe
-sayfa:mac :: Copenhagen Şimşekleri
-sayfa:mac :: Groningen Yıldızları
-sayfa:mac :: Odesa Şimşekleri
-sayfa:mac :: Vancouver Gençlik
-sayfa:mac :: Vienna Şahinleri
-sayfa:mac :: Vienna Şahinleri — Groningen Yıldızları
+sayfa:mac :: Brussels Şimşekleri
+sayfa:mac :: Budapest Kartalları
+sayfa:mac :: Durban Aslanları
+sayfa:mac :: Phoenix Atmacaları
+sayfa:mac :: Phoenix Atmacaları — Valencia Ejderleri
+sayfa:mac :: Rotterdam Şahinleri
+sayfa:mac :: Split Aslanları
+sayfa:mac :: Tucumán Yıldızları
 sayfa:mac :: Yerel Esnaf Desteği ·
+sayfa:mac :: İlker Yaşar
+sayfa:mac :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
 sayfa:mac :: 🇹🇷 Türkçe
-sayfa:market :: Copenhagen Şimşekleri
-sayfa:market :: Groningen Yıldızları
-sayfa:market :: Odesa Şimşekleri
-sayfa:market :: Vancouver Gençlik
-sayfa:market :: Vienna Şahinleri
-sayfa:market :: Vienna Şahinleri — Groningen Yıldızları
+sayfa:market :: Brussels Şimşekleri
+sayfa:market :: Budapest Kartalları
+sayfa:market :: Durban Aslanları
+sayfa:market :: Phoenix Atmacaları
+sayfa:market :: Phoenix Atmacaları — Valencia Ejderleri
+sayfa:market :: Rotterdam Şahinleri
+sayfa:market :: Split Aslanları
+sayfa:market :: Tucumán Yıldızları
 sayfa:market :: Yerel Esnaf Desteği ·
-sayfa:market :: 🇩🇪 Björn Frei
-sayfa:market :: 🇸🇪 Egon Nyström
-sayfa:market :: 🇹🇷 Eren Yiğit
-sayfa:market :: 🇹🇷 Gürkan Baştürk
+sayfa:market :: İlker Yaşar
+sayfa:market :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
+sayfa:market :: 🇹🇷 Tunahan Genç
 sayfa:market :: 🇹🇷 Türkçe
-sayfa:market :: 🇹🇷 Yiğit Arslan
-sayfa:market :: 🏛️ Copenhagen Şimşekleri from
-sayfa:market :: 🏛️ Odesa Şimşekleri from
-sayfa:market :: 🏛️ Vancouver Gençlik from
-sayfa:takim :: Copenhagen Şimşekleri
-sayfa:takim :: Groningen Yıldızları
-sayfa:takim :: Odesa Şimşekleri
-sayfa:takim :: Vancouver Gençlik
-sayfa:takim :: Vienna Şahinleri
-sayfa:takim :: Vienna Şahinleri — Groningen Yıldızları
+sayfa:market :: 🏛️ Brussels Şimşekleri from
+sayfa:market :: 🏛️ Budapest Kartalları from
+sayfa:market :: 🏛️ Split Aslanları from
+sayfa:takim :: Brussels Şimşekleri
+sayfa:takim :: Budapest Kartalları
+sayfa:takim :: Durban Aslanları
+sayfa:takim :: Phoenix Atmacaları
+sayfa:takim :: Phoenix Atmacaları — Valencia Ejderleri
+sayfa:takim :: Rotterdam Şahinleri
+sayfa:takim :: Split Aslanları
+sayfa:takim :: Tucumán Yıldızları
 sayfa:takim :: Yerel Esnaf Desteği ·
+sayfa:takim :: İlker Yaşar
+sayfa:takim :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
 sayfa:takim :: 🇹🇷 Türkçe
 setup :: 🇹🇷 Türkçe
-tutorial :: Copenhagen Şimşekleri
-tutorial :: Groningen Yıldızları
-tutorial :: Odesa Şimşekleri
-tutorial :: Vancouver Gençlik
-tutorial :: Vienna Şahinleri
-tutorial :: Vienna Şahinleri — Groningen Yıldızları
+tutorial :: Brussels Şimşekleri
+tutorial :: Budapest Kartalları
+tutorial :: Durban Aslanları
+tutorial :: Phoenix Atmacaları
+tutorial :: Phoenix Atmacaları — Valencia Ejderleri
+tutorial :: Rotterdam Şahinleri
+tutorial :: Split Aslanları
+tutorial :: Tucumán Yıldızları
+tutorial :: İlker Yaşar
+tutorial :: ⚡ Preston Crawford – İlker Yaşar (C role clash)
 tutorial :: 🇹🇷 Türkçe

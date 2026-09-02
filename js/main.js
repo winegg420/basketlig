@@ -519,8 +519,14 @@ function startClockTween(targetT,durMs,ev){
          sıfırlanmıyor, used limiti aşınca gösterge boşalıyordu. Aşım halinde saat
          sıfırdan devam eder (pozisyon yeni başlamış sayılır) — gösterge kaybolmaz. */
       let left=limit-used;
-      if(left<0){ mState._scAnchor=now; mState._scLimit=24; left=24; }
+      /* İŞ 5: sessiz sıfırlama KALDIRILDI. Saat 0'a inerse orada kalır — pozisyonun
+         gerçekten şut saatine dayandığı anlamına gelir ve motorun ihlal olayı (24 sn)
+         aynı anda gelir. Sayaç bir daha kendi kendine 24'e dönmez; yalnız yeni pozisyon
+         (setShotClock) sıfırlar. */
+      if(left<0) left=0;
       scEl.textContent=mState.running?('ŞUT '+Math.max(0,Math.ceil(left))):'';
+      /* Son 5 saniye görsel gerilim: gösterge kırmızıya döner. */
+      try{ scEl.style.color=(left<=5)?'#f87171':''; }catch(e){}
     }
     if(k>=1) stopClockTween();
   };

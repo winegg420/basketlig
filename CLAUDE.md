@@ -72,6 +72,9 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/anlatim-check.js` | **FAZ 13 anlatım denetçisi** — maçı TARAYICISIZ üretip olay listesini denetler (ribaund/şut eşitliği, seri iddiası, faul adı ve sayacı, çalma iki taraflılığı, kalıp çeşitliliği, devre arası, saha değişimi, köşe bölgesi). `--freeze` ile sekme donması + maç içi panel kalıcılığı tarayıcıda sınanır. **Anlatım değişince çalıştır.** |
 | `tools/mobile-check.js` | **FAZ 12 mobil denetçisi** (390×844) — dokunma sayısı (gerçekten tıklayarak), maç sayfası düzeni, bilgi yoğunluğu, 44 px dokunma hedefi, market yoğunluğu. Mobil düzen değişince çalıştır. |
 | `tools/sim-node.js` | **Tarayıcısız maç simülasyonu** — 14 modülü düz Node'da (vm) yükler, `simulateMatch()` sözleşmesini ve determinizmi sınar. Motor sözleşmesi değişince çalıştır. **Regresyon tabanı (FAZ 36 sonrası): `--n=1000 --seed=42` → 88.5 - 80.2 · olay/maç 203.** (FAZ 34: olay/maç 248 — FAZ 36 §B1 rutin savunma ribaundunu anlatımdan çıkardı, SKOR DEĞİŞMEDİ.) ⚠ `--n=100` TEK TOHUMDA GÜRÜLTÜ BASKINDIR (deplasman ortalaması tohuma göre 78,5-87,1 arası salınır) — taban artık n=1000 ile okunur. |
+| `tools/kutu-check.js` | **Kutu skor gerçekçiliği (FAZ 38)** — 18 satır (FG%, 2P%, 3PA/FGA, ribaunt, top kaybı, çalma, blok, faul, uzatma) gerçek FIBA/BSL bantlarıyla. 60-120 maç, tarayıcısız. Sonuç matematiğine dokunan her değişiklikten sonra çalıştır. |
+| `tools/tempo-check.js` | **Pozisyon süresi / tempo (FAZ 38)** — `dtPos` dağılımı iki tepeli mi (geçiş 5-9 sn · set 13-21 sn), hızlı hücumun ortalama süresi, pozisyon/maç. Bant tablosu BİLGİDİR; kapı §İŞ2 kabul ölçütleridir. |
+| `tools/rotasyon-check.js` | **Rotasyon (FAZ 38)** — yedeklerin sayı payı, kutu skorda görünen oyuncu, en skorerin payı, değişiklik sayısı. İlk beş TAHMİN EDİLMEZ, motorun `matchLineup` kuralıyla (pozisyon dengeli) hesaplanır. |
 | `tools/bozukdeger-check.js` | **Bozuk değer tarayıcısı** — 2 sezon sürülüp TR+EN, 11 sayfa + 4 modal gezilir ve GÖRÜNÜR metinde `NaN`/`undefined`/`null`/`Infinity`/`[object Object]` aranır. `visual-check` yalnız KONSOL hatasına bakar; bozuk değer sessizdir — bu kapı onu yakalar. Sayı/biçim üreten her değişiklikten sonra çalıştır. |
 | `tools/schema-check.js` | **`db/schema.sql` denetçisi** — sözdizimi (varsa gerçek PostgreSQL ayrıştırıcısı), lig kuralları, RLS, "kod tabanında bağlantı yok". |
 | `db/schema.sql` | **Çok oyunculu veri modeli** (Postgres/Supabase). Yalnız dosya — hiçbir bağlantı kurulmuyor. |
@@ -97,7 +100,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/portre-uret-yerel.py` | **FAZ 17C yerel portre üretimi** (SD-Turbo, CPU). Kova kotaları, bant dengesi, kaldığı yerden devam, dilim başına commit+push. Boru hattı `tools/portre_boru.py`. |
 | `tools/portre_boru.py` | Portre işleme boru hattı (kadraj, fon eşitleme, eleme kapıları). Üretim kaynağı değişse de bu modül aynı kalır. |
 | `tools/i18n-scan.js` | **EN modunda çeviri denetimi** — tüm sayfa/modal/canlı maçı gezip çevrilmemiş metin düğümlerini raporlar. Dil değişikliğinden sonra çalıştır. |
-| `tools/measure.js` / `tools/band.js` | Canlı sunum ölçümü + **sonuç değişmezliği** (kanonik tohum imzası / 200 maç skor hash'i). Sunum değişikliklerinden sonra ikisi de aynı hash'i vermeli. `band.js` referans hash: **`3225bf641b79dea7`** (FAZ 34 sonrası) (varsayılan tohum 987654321; **FAZ 34 sonrası** — eski değerler: `99bb9ceb67917bd0` FAZ 19-33, `89b5436137c1da14` FAZ 17-18, `fb393bdab878e699` FAZ 13-16, `ec630b3a512bb3b2` FAZ 13 öncesi). *FAZ 34'te hash bilerek değişti: özel yetenek sistemi oyuncu statlarını (dolayısıyla maç sonuçlarını) doğrudan değiştirdi; lig ortalamaları korundu (`yetenek-check` B bölümü ölçüyor).* *FAZ 19'da hash bilerek değişti: lig dengesi düzeltmesi (`cpuMatchScore` kırpması 35→20, `pseudoTeamStrength` bandı 42→20) maç skorlarını doğrudan değiştirdi; ortalama fark 21,4→10,5 (`lig-check` C bölümü ölçüyor).* *FAZ 17'de hash bilerek değişti: isim havuzu ülke başına 256'dan 21.000 kombinasyona çıkınca `ensureUniquePlayerNames` içindeki ad çakışması yeniden-çekilişleri neredeyse sıfıra indi ve rastgelelik akışı kaydı. Milliyet seçiminin kendisi akışı KAYDIRMAZ — `genPlayer` ülke sabitlense bile `ch(ULKELER)` çekilişini yapar, sonucu sonra ezer.* *32. oturum: `if(SEED)` koruması + varsayılan 0 yüzünden tohum hiç kurulmuyordu, araç her çalıştırmada farklı hash veriyordu — düzeltildi.* |
+| `tools/measure.js` / `tools/band.js` | Canlı sunum ölçümü + **sonuç değişmezliği** (kanonik tohum imzası / 200 maç skor hash'i). Sunum değişikliklerinden sonra ikisi de aynı hash'i vermeli. `band.js` referans hash: **`6791635808a9ef5d`** (FAZ 38 eki-2 sonrası) · `measure.js` bazı **`060c5f1763cd3699`** (varsayılan tohum 987654321; eski değerler: `c89ce408ca435845` FAZ 38, `3225bf641b79dea7` FAZ 34-37, `99bb9ceb67917bd0` FAZ 19-33, `89b5436137c1da14` FAZ 17-18, `fb393bdab878e699` FAZ 13-16, `ec630b3a512bb3b2` FAZ 13 öncesi). *FAZ 38'de hash BİLEREK değişti: kutu skor gerçekçiliği (isabet tabanları, üçlük payı, pozisyon süresi, rotasyon) sonuç matematiğini doğrudan değiştirdi — kullanıcı kararıyla FAZ 37'nin "dokunma" yasağı kaldırıldı. Ölçüm `kutu-check` (18 satır) ve `tempo-check` ile korunuyor.* *FAZ 34'te hash bilerek değişti: özel yetenek sistemi oyuncu statlarını (dolayısıyla maç sonuçlarını) doğrudan değiştirdi; lig ortalamaları korundu (`yetenek-check` B bölümü ölçüyor).* *FAZ 19'da hash bilerek değişti: lig dengesi düzeltmesi (`cpuMatchScore` kırpması 35→20, `pseudoTeamStrength` bandı 42→20) maç skorlarını doğrudan değiştirdi; ortalama fark 21,4→10,5 (`lig-check` C bölümü ölçüyor).* *FAZ 17'de hash bilerek değişti: isim havuzu ülke başına 256'dan 21.000 kombinasyona çıkınca `ensureUniquePlayerNames` içindeki ad çakışması yeniden-çekilişleri neredeyse sıfıra indi ve rastgelelik akışı kaydı. Milliyet seçiminin kendisi akışı KAYDIRMAZ — `genPlayer` ülke sabitlense bile `ch(ULKELER)` çekilişini yapar, sonucu sonra ezer.* *32. oturum: `if(SEED)` koruması + varsayılan 0 yüzünden tohum hiç kurulmuyordu, araç her çalıştırmada farklı hash veriyordu — düzeltildi.* |
 | `*.bat`, `OYUNU-AC.txt` | Windows başlatıcılar / kullanıcı yardım notu. |
 | `PROGRESS.md` | **Oturum günlüğü** — yapılanlar, kararlar, nedenleri. Her oturumda güncelle. |
 | `RAPOR-EKSIKLER.md` | Tam sürüm için eksik/hata denetim raporu (öncelik sıralı). |
@@ -518,6 +521,63 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   değiştirir (seviye/maaş/skor/geçmiş/atama korunur) ve `personelAdiSabit()` deterministiktir —
   `rand()` kullanılırsa koçun adı her açılışta değişir.
 
+- **NADİR OLAYIN KAPISI RASTGELELİK TÜKETMEMELİ (FAZ 38 eki-2, bu turun en pahalı dersi):**
+  teknik/sakatlık gibi maçların ~%18'inde düşen bir olayın kapısı `Math.random()` ile
+  sorulursa çekiliş HER pozisyonda yapılır; olay hiç düşmese bile bütün pozisyonlar bir
+  adım kayar ve maçların tamamı değişir. Ölçüldü: sınır üstünde duran yedi kapı (üçlük
+  bölgeleri, kuyruk dağılımları, uzatma, rotasyon) hep birden oynadı —
+  `yetenek-check` 30/30 → 27/30, `sut-cografya` 18/18 → 15/18. Kapı `prUnit(...)`e
+  (hash türevi, hiçbir akıştan tüketmez) bağlanınca gerilemelerin tamamı geri geldi.
+  `pr` (sunum PRNG'si) de kullanılamaz: sonucu etkileyen bir kararı ona bağlamak,
+  anlatım değiştiğinde maç sonucunu değiştirir — F13-3'ün tam tersi. Kural: **nadir ve
+  sonucu etkileyen olayların kapısı `prUnit`/`prChance(tohum,p)` ile kurulur; rastgelelik
+  yalnız olay GERÇEKTEN düştüğünde tüketilir.**
+- **DÜZGÜN ÇEKİLİŞ EŞİT GENİŞLİKTEKİ İKİ BANDI EŞİT DOLDURUR (FAZ 38 eki-2):** üçlük
+  bölge sınırları açıdadır (|a|<26° tepe · 26-52° kanat · >52° köşe) ve iki bant eşit
+  genişlikte olduğu için `rand(-R,R)` ile payları HEP eşit çıkar (ölçüldü: ikisi de
+  %13,7) — gerçekte kanat tepenin belirgin üstündedir. Bandı genişletmek çözmez, köşeyi
+  taşırır. Çözüm dağılımın ŞEKLİNİ değiştirmektir: `a = sign(u)·R·|u|^0.87`. `rand`
+  çağrı sayısı değişmediği için akış kaymaz; isabet şut geometrisinden ÖNCE
+  kararlaştırıldığı için sonuç matematiği de etkilenmez. Bir oran hedefe oturmuyorsa
+  önce dağılımın o hedefi ÜRETEBİLİR olup olmadığını sor.
+- **UZATMA ORANININ "ARİTMETİK TAVANI" SON DAKİKA MODELLENMEZSE BAĞLAYICIDIR
+  (FAZ 38 eki-2, kendi teşhisimin düzeltmesi):** FAZ 38 ekinde uzatma %1,7 için
+  "σ=13,7 iken beraberliğin tavanı %2,9, o yol kapalı" denmişti. Teşhis doğru ama
+  eksikti — normal dağılımın tavanı yalnız kapanış dakikası orta oyunla aynı kurallarla
+  oynanırken geçerlidir. Dört gerçek koç davranışı eklenince (geride kalan hızlanır ·
+  1-3 geride son şuta oynar · son 30 sn cam süpürme · ≤10 sn dar taktik faul) oran
+  **%5,0**'e çıktı ve fark dağılımının şekli korundu (20+ %12,5). Bir kapı "aritmetik
+  olarak imkânsız" görünüyorsa, modelin o aritmetiği doğuran varsayımını sorgula.
+- **TEK OLAYLI POZİSYONUN DAMGASI DA PENCEREYE ÇEKİLİR (FAZ 38 eki-2):** `_damgaDagit`
+  `dizi.length<2` dalında olayı HAM `t` ile bırakıyordu; ham `t` bir önceki pozisyonun
+  bittiği saniyedir, dolayısıyla iki ardışık pozisyonun damgası çakışıyordu. Uzatma
+  seyrekken (%1,7) örnekleme bunu hiç görmedi; %5'e çıkınca üç çakışma birden çıktı.
+  **Nadir bir kod yolunun sıklığını artırmak, o yoldaki eski kusurları görünür kılar.**
+- **TOPU TUTAN OYUNCU SET HÜCUMUNDA EN AZ KIPIRDAYAN OLAMAZ (FAZ 38 eki-2, F25-2'nin
+  son kalıntısı):** canlı salınımın sürüklenme bandı topçuda 15 px, adımı 4-6 px idi;
+  varış freni (hedefe 24 px kalınca) bu mesafeyi tamamen yutuyor ve jeton topu tutmuş
+  hâlde 1,5 sn çakılı kalıyordu. Ölçüldü: üç ayrı koşuda çıkan tek donmanın hepsinde
+  `topta:true · hedefUzak:0 · nudge:5 · hız 1,4-2,2 px/sn` — yani salınım çalışıyor,
+  mesafe frenin içinde kalıyordu. Bant 21 px / adım 6-9 px. Gerçek basketbolda set
+  hücumunda en çok hareket eden oyuncu topu sürendir.
+- **ÜÇ KOŞUDA İKİ DÜŞÜP BİR GEÇEN KAPI "GÜRÜLTÜ" DEĞİLDİR (FAZ 38 eki-2):** F25-2'nin
+  ilk düşüşünü eşiği 1,8 ms aştığı için örnekleme sandım. Ayırt edici ölçüt sıklık
+  değil, ayrıntı satırındaki ÖRÜNTÜDÜR: rastgele düşen bir kapının örneği her seferinde
+  farklı çıkar; buradaki üç örnek aynı rolü, aynı süreyi ve aynı nedeni gösteriyordu.
+- **KAPI EN DAR KALEME GÖRE BOYUTLANDIRILIR (FAZ 38 eki-2):** `yetenek-check` C bölümü
+  ribaund (480 örnek) ve çalma (103) ile birlikte **bloğu** (34) da ölçüyordu; 60 maçta
+  blok oranı tek maçlık salınımla 1,00×'e düşüp kapıyı düşürüyordu. 240 maça çıkarılınca
+  1,16×. Aynı bölümdeki B kapıları ("5 ve altı farkla biten") 40 maçta ~7 puan standart
+  hataya sahipti — davranış değişmeden %20-%29 arasında salınıyordu ve FAZ 38 ekindeki
+  "%26,3 ✓" kaydı bu gürültünün bir örneğiydi. Bir kapının örneklemi, bandının
+  genişliğine göre değil **ölçtüğü en seyrek olaya** göre seçilir.
+- **YENİ ANLATIM HAVUZUNU `localizeCatalogs()`'A KAYDET — SÖZLÜK GİRİŞİ TEK BAŞINA
+  YETMEZ (FAZ 38 eki-2, B-1'in üçüncü tekrarı):** FAZ 38'in dört kural olayı havuzu
+  (`IHLAL24_LINES`, `HUCUM_FAULU_LINES`, `ADIM_LINES`, `TAC_LINES`) sözlüğe YAZILMIŞ ama
+  katalog listesine kaydedilmemişti. Sözlük anahtarları `%S` yer tutucusu taşıdığı için
+  ancak havuz YERİNDE çevrilirse eşleşirler; kaydedilmeyince EN oyuncu satırların
+  tamamını Türkçe görüyordu. Kaydedilince canlı anlatımda Türkçe payı %4,5 → %2,2.
+
 ## Bilinen eksikler
 
 Tam sürüm için doldurulacak boşluklar ve mantık hataları `RAPOR-EKSIKLER.md`'de öncelik sırasıyla listelidir (rakip kadro kalıcılığı, MVP/rakip faul, winStreak reset, transfer pazarlığı, playoff derinliği vb.).
@@ -775,3 +835,34 @@ Tam sürüm için doldurulacak boşluklar ve mantık hataları `RAPOR-EKSIKLER.m
   22,9'a iner. Pasif menajerin kadrosu uzun vadede zayıflar. Denge değişikliği yapmadan
   önce ufku ve koşu sayısını yaz — n=6'lık bir düşüşü "gerileme" sanmak yanlış yerde hata
   aratır.
+
+- **KAPIYI YEŞİLE DÖNDÜREN MEKANİZMA YANLIŞSA KAPI KENDİNİ KANDIRIR (FAZ 38 eki, ölçüldü):**
+  uzatma oranını yükseltmek için eklenen "son 125 sn · fark 1-10'da taktik faul" kuralı
+  kapıyı %2,5'ten %5,0'e çıkardı — ama YANLIŞ yoldan. Aritmetik basit: taktik faul rakibe
+  2 serbest atış (~1,5 sayı) verir, karşılığında bir pozisyon (~1,1 sayı) alınır → **net
+  +0,4 fark**, üstelik son iki dakikada onlarca kez. Ölçüldü: |fark| 0-3 bandı %6,0'a
+  düştü (normal dağılımın öngördüğü ~%11'in yarısı), yani YAKIN MAÇLAR AÇILIYORDU. Uzatma
+  artışı, dağılımda sıfırın çevresinde delik açmanın yan ürünüydü. Gerçek koç 2 farkla
+  önde olan rakibe 2 dakika kala faul yapmaz; kural **son 32 sn · fark 4-9** olunca
+  dağılım gerçeğe oturdu (0-3 bandı %17,7 · σ 14,9 → 13,7 · gerçek lig ~13) ve
+  `yetenek-check` 26/30 → **30/30** döndü. Bir kapıyı yeşile döndüren değişikliğin
+  MEKANİZMASINI ölç; yalnız kapının rengine bakma.
+- **UZATMA ORANI FARK DAĞILIMININ ARİTMETİK SONUCUDUR (FAZ 38 eki):** beraberlik
+  olasılığının tavanı ≈ 1/(σ√2π). σ=13,7 iken tavan **%2,9**; hedef bandı (%4-8) normal
+  dağılımla erişilemez — gerçek ligler oraya son dakika yığılmasıyla çıkar. `kutu-check`
+  bu teşhisi her koşuda basar, kapı düştüğünde "neden" sorusu okuyucuya bırakılmaz.
+- **ÖLÜ TOP OLAYLARI DAMGA PAYLAŞIR (FAZ 38 eki):** serbest atış ve mola sırasında maç
+  saati İŞLEMEZ; `free`/`mola` olaylarının komşusuyla aynı saniyeyi taşıması kuralın
+  kendisidir, ihlal değil (`DAMGA_MUAF`). Ayrıca pozisyon penceresi olay sayısından
+  kısaysa (2 sn'lik ikinci şans pozisyonunda 2 olay) ayrılacak saniye fiziksel olarak
+  yoktur — muafiyet `pozIx` + `dtPos` ile ölçülür, "korna anı" (t=0) varsayımıyla değil.
+- **KAPI TOLERANSI BANT GENİŞLİĞİNE GÖRE VERİLİR (FAZ 38 eki):** `rotasyon-check` ekranda
+  "10.0" yazıp ✗ veriyordu (gerçek değer 9,9875, eşik 10) — kapı sayıyı değil YUVARLAMAYI
+  yargılıyordu. Mutlak 0,05'lik pay ise yüzde ölçeklerinde doğruyken oran ölçeklerinde
+  (FTA/FGA 0,24-0,32) bandın yarısı kadar olup kapıyı körleştiriyor. Pay artık bandın
+  **%2'si**.
+- **BİR OLAY EKRANA İKİ SATIR BASABİLİR (FAZ 38 eki, FAZ 37 dersinin tekrarı):** şut
+  olayı (preText + text) gibi SERBEST ATIŞ olayı da ikiye bölünür (`ftSplit` → düdük
+  cümlesi atış anında, sonuç son atış çemberden geçince). Kelime ortalaması EKRANDAKİ
+  SATIR başına ölçülür; tek satır sayılınca 19 kelimelik serbest atış olayı ortalamayı
+  tek başına bandın dışına çıkarıyordu.
