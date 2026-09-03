@@ -805,7 +805,22 @@ function addComment(txt,type='',key,zincir){
     try{
       const el=mState._chainEl;
       if(el&&el.parentNode){
-        el.innerHTML=el.innerHTML+' '+txt;
+        /* ── FAZ 40 §B2: BİRLEŞME NOKTASINDA NOKTALAMA ────────────────────────────────
+           Ön parça kendi başına tam bir cümledir ve nokta ile biter; sonuç parçası ise
+           küçük harfle başlayan bir devam cümlesidir. Ayrı ayrı ikisi de doğru, BİRLEŞİNCE
+           bozuk: "…ve bıraktı. dengesi kaydı, olmadı." Ölçüldü: 85 balonun 44'ü (%51,8).
+           `anlatim-check` bunu göremez — o iki parçayı AYRI tarar; kapı `balon-check`tir.
+           Çözüm ön parçanın SONUNDADIR (havuzlara dokunulmaz, sonuç matematiği etkilenmez):
+             nokta   → " —"  (cümle devam ediyor: "…ve bıraktı — dengesi kaydı, olmadı.")
+             ünlem/? → korunur, sonuç parçasının ilk harfi Türkçe kuralıyla BÜYÜTÜLÜR
+                       (i→İ; `trBuyukIlk` olmadan "ıska" → "Iska" olurdu). */
+        let govde=el.innerHTML, ek=String(txt);
+        const _kucukBas=/^[a-zçğıöşü]/.test(ek);
+        if(_kucukBas){
+          if(/\.\s*$/.test(govde))      govde=govde.replace(/\s*\.\s*$/,' —');
+          else if(/[!?]\s*$/.test(govde)) ek=(typeof trBuyukIlk==='function')?trBuyukIlk(ek):(ek.charAt(0).toUpperCase()+ek.slice(1));
+        }
+        el.innerHTML=govde+' '+ek;
         mState._chainKey=null; mState._chainEl=null;
         return;
       }

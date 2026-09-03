@@ -47,3 +47,9 @@ tools/models/
 
 # --- FAZ 39: gercek mac verisi (ham NBA PBP / tracking) — turetilen JSON commit edilir, ham veri EDILMEZ ---
 tools/gercek-veri/_ham/
+
+# --- FAZ 40 iz kaydı (tools/iz-kaydet.js) ---
+# HAM izler büyüktür (1,5-2,2 MB/koşu) ve yeniden üretilebilir; depoda GRAFİKLER ve
+# özet JSON kalır — sürüm karşılaştırması onlarla yapılır.
+olcum/iz-*.json
+!olcum/iz-*-ozet.json

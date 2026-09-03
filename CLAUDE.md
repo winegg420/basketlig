@@ -66,6 +66,10 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/m20-check.js` | **Rakip kadro kalıcılığı denetçisi** — kimlik · derinlik · sezon istatistiği · yorgunluk · isabet yolu · sakatlık. Bot kulüp/rakip mekaniği değişince çalıştır. |
 | `tools/faz10-check.js` | **FAZ 10 kabul kriterleri** — fikstür saati kapısı (`?test=1`), analitik olayları, og/twitter etiketleri, PWA (manifest + `sw.js` sürümü), öğretici dili, paylaşım akışı. Yayın altyapısı değişince çalıştır. |
 | `tools/hareket-check.js` | **Saha hareketi (FAZ 15)** — jeton hızı (bant dağılımı), konveks kabuk alanı, ikili mesafe. Hız **maç saatinde** yargılanır; sahne maç saatini ~2× sıkıştırdığı için sahne px/sn'si gerçek m/sn ile doğrudan kıyaslanamaz. Hız/dizilim değişince çalıştır. |
+| `tools/iz-kaydet.js` | **Canlı sahne iz kaydedicisi (FAZ 40)** — topun ve 10 jetonun konumu her karede kaydedilir; hız **100 ms pencerede** hesaplanır (kare-kare DEĞİL — 60 fps.te 1 px titreşim 1,8 m/sn sahte hız üretir). **Sahne↔maç saati oranını AYNI KOŞUDA ölçer ve her hızı iki ölçekte birden basar** (F15 tuzağı). Işınlanma, donma payı, yol eğriliği. `--yeniden=<etiket>` ile tarayıcısız yeniden çözümleme. Hareket/koreografi değişince çalıştır. |
+| `tools/iz-ciz.js` | İz kaydından yörünge + hız profili PNG.si üretir (`olcum/iz-<etiket>-*.png`). Her sürümde üretilip saklanır. |
+| `tools/balon-check.js` | **Anlatım balonu denetçisi (FAZ 40)** — RENDER EDİLMİŞ balonu okur. `anlatim-check` ön parça ile sonuç parçasını AYRI taradığı için birleşme kusurlarını (nokta + küçük harf, çift noktalama) GÖREMEZ. Anlatım birleştirme mantığı değişince çalıştır. |
+| `tools/sahne-kapsam-check.js` | **Sahne kapsamı (FAZ 40 · B5+B6)** — motorun ürettiği her olay türünün `movePlayersForEvent` karşılığı var mı (tür adıyla YA DA `shots[].kind===ft` alanıyla), ve koreografi süresinin ALT SINIR sözleşmesi (`delay=max(simMs,dtMs)`) duruyor mu. Tarayıcısız. Yeni olay türü eklerken çalıştır. |
 | `tools/geometri-check.js` | **Saha çizgisi geometrisi (FAZ 14)** — 3 sayı yayı, köşe düzlükleri, boya, çember/pano ölçüleri, kesişme ve "sahada karşılığı olmayan çizim". **Nitelik okumaz**, `getPointAtLength`/`getBBox` ile ÇİZİLEN eğriyi ölçer. Saha SVG'si değişince çalıştır. |
 | `tools/spacing-check.js` | **Saha dizilimi ölçümü (FAZ 11)** — set hücumunda aralık, yayılım, boya kullanımı, markaj mesafesi, ball-you-man. Tohumlu. `--bg` sekmeyi arka plana alıp ölçer (F11-1 gerileme testi). **Dizilim/koreografi değişince çalıştır.** |
 | `tools/faz11-check.js` | **FAZ 11 kabul kriterleri** — dizilim geometrisi, kare kaybında yetişme, kesme noktası çakışması, `startMatch` sessiz kilitlenmesi. |
@@ -975,3 +979,154 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   ardından gelen serbest atış boş sahada patlar (`sahne-check` en kötü karesi 3/10 →
   0/10 ölçüldü) — koreografi sahada BİTMELİ. Taraf bilgisi `kazananIsUser` alanından
   okunur; yeni bir top kaybı olayı eklersen o alanı da doldur.
+
+- **SAHNE SAATİ ≠ MAÇ SAATİ — ORANI HER KOŞUDA ÖLÇ, VARSAYMA (FAZ 40, F15 dersinin
+  ikinci tekrarı):** sahne maç saatini hızlandırarak oynatır (ölçülen **1 duvar sn =
+  1,45 maç sn**), yani ekranda görülen hız gerçek basketbolun 1,45 katıdır. FAZ 40 brifi
+  yine SAHNE hızlarını doğrudan gerçek basketbolla kıyasladı ve "merdivenin tamamı iki
+  kat yukarıda" dedi; maç ölçeğine indirilince SPRINT (6,72) ve KOŞ (5,60) zaten
+  doğruydu, ortalama (2,07) bandın (1,8-2,6) içindeydi, bozuk olan yalnız ORTA
+  basamaklardı. Brifin önerisi uygulansaydı ortalama bandın ALTINA düşerdi.
+  `tools/iz-kaydet.js` oranı AYNI KOŞUDA ölçer ve her hızı iki ölçekte birden basar —
+  bir hız rakamını yargılamadan önce onu çalıştır.
+- **BU MOTORDA HIZ MERDİVENİNİ ÖLÇEKLEMEK GERÇEKÇİLİĞİ DEĞİŞTİREMEZ (FAZ 40, ölçüldü):**
+  pozisyonun DUVAR saatindeki uzunluğunu koreografi belirler (`js/main.js`:
+  `delay = max(simMs, dtMs)` ve bu motorda **simMs bağlayıcıdır**), koreografiyi de
+  oyuncunun varış süresi belirler. Oyuncuyu yavaşlatınca koreografi uzar, maç saati
+  aynı oranda yavaşlar ve **görünen hız / sahneKat sabit kalır** — kazanç sıfır, maliyet
+  maçın %30 uzun izlenmesi. Ölçülen: `_KORE_KAT` 1,00 → sahneKat 1,388 · 1,20 → 1,193 ·
+  1,35 → 1,052. Değiştirilebilir olan ortalama değil **DAĞILIMDIR**: donma payı, uç
+  değerler ve ivme profili. FAZ 40'ta merdiven bu yüzden GERİ ALINDI.
+- **IŞINLANMANIN KÖK NEDENİ GENELLİKLE SÜREDİR, ATAMA DEĞİL (FAZ 40 §A1):** topun tepe
+  hızı 68,1 m/sn (245 km/sa) ve pozisyon başına 15,5 ışınlanma vardı; kaynak doğrudan
+  konum ataması DEĞİL, koreografi adımlarının `_ballPass`e mesafeyi bilmeden verdiği
+  SABİT süreydi (0,32-0,45 sn). Tavan (`_TOP_MAXV=580 px/sn`) **süreyi uzatır**, konumu
+  kırpmaz. Ayrıca `held` dalında sürme noktası hız yönünden türüyor ve `sp>10` eşiği
+  geçilince bir karede sıçrıyordu — top artık hedefine sınırlı hızla taşınır.
+  `_ballStep` sonundaki güvenlik ağı (`S._klempN`) yeni açılacak dalları da korur.
+  Ölçülen: 202 → **0** ışınlanma, tepe 68,1 → 20,1 m/sn, gerçek pas platoları 273 → 766.
+- **BİR HIZ TAVANI EKLERKEN ONA BAĞLI ZAMAN AŞIMI KAPILARINI DA GÖZDEN GEÇİR (FAZ 40):**
+  pas süreleri doğru değere uzayınca `_sahipsizTopTick` uçan pası "sahipsiz" sayıp
+  `_ballKurtar` ile ORTA HAVADA iptal etmeye başladı (kurtarma 5 → 19). Asıl hasar üç
+  adım uzaktaydı: kurtarma `b.onDone`'ı siliyor → son serbest atışın geri çağrısı
+  çalışmıyor → `S._ftAktif` temizlenmiyor → sonraki bütün SAHA şutları serbest atış
+  sanılıyor (dizilim ölçüsü 9,47 → 8,89, en kötü kare 8 → 0). Watchdog artık geçerli
+  hedefi olan `pass` modunu muaf tutar — `sahne-check`in kendi ölçütü zaten "uçan top
+  sahipsiz sayılmaz: şut, çemberden düşüş VE PAS" diyordu, watchdog ondan katıydı.
+- **YAŞAM SÜRESİ OLAYLA SINIRLI BAYRAĞI OLAYIN BAŞINDA SIFIRLA (FAZ 40):** `S._ftAktif`
+  yalnız son atışın `onDone` geri çağrısında kapanıyordu; geri çağrı çalışmazsa maçın
+  sonuna kadar açık kalıyordu (HEAD'de de vardı). `movePlayersForEvent` girişinde
+  sıfırlanır, `_setFtFormation` gerçek serbest atışta yeniden açar.
+- **İKİ PARÇAYI AYRI TARAYAN KAPI, BİRLEŞME KUSURUNU GÖREMEZ (FAZ 40 §B2):** şut
+  anlatımı ön parça (`preText`) + sonuç parçası (`text`) olarak üretilir ve ekranda
+  `addComment` ile TEK BALONDA birleşir. `anlatim-check` ikisini AYRI tarar; birleşme
+  noktasında doğan "nokta + küçük harf" kusurunu göremedi ve harness yeşilken ekrandaki
+  balonların **%51,8'i** bozuktu ("… ve bıraktı. dengesi kaydı, olmadı."). Çözüm ön
+  parçanın SONUNDADIR (havuzlara dokunulmaz): nokta → " —", ünlem/soru → sonuç parçası
+  `trBuyukIlk` ile büyütülür. `spikerImza` da "Ad. Ad!" yerine "Ad. Ad…" kullanır —
+  sonuç parçasını BÜYÜTMEK küçük harfle başlayan `I18N_PHRASES` kalıplarını kırar.
+  Kapı: **`tools/balon-check.js`** (render edilmiş balonu okur). ⚠ Rakamdan sonraki
+  nokta SIRA EKİDİR ("2. çeyrek", "4. takım faulü") — geriye bakış olmadan kapı kendi
+  yanlış pozitifini üretir.
+- **DONMAYI GENLİK ÇÖZER, KADEME DEĞİL (FAZ 40 §A2.3):** ölçüm (100 ms pencere, maç
+  ölçeği) `held` modunda hücum %31,9 · **topu tutan %32,4** · **savunma %42,1** donma
+  verdi. İki kök neden: (a) salınım genliği eşiğin ALTINDAYDI — bant 15-22 px, adım
+  4-7 px ve varış freni salınım penceresinde 22 px/sn (0,54 m/sn maç) tavanlıydı, yani
+  salınım çalışsa bile ölçüt eşiğinin (0,5) hemen altında kalıyordu; (b) **savunma hiç
+  salınmıyordu** — salınım yalnız `S.offP` üzerinde çalışır ve savunma takibi ondan
+  SONRA `p.tx`'i yeniden yazar. Savunma duruşu kayması bu yüzden `p.tx`'e değil yalnız
+  o karenin hedefine (`_tx`) uygulanır.
+- **SAVUNMACIYI ADAMINDAN UZAKLAŞTIRAN "CANLILIK" SAVUNMAYI KÖTÜLEŞTİRİR (FAZ 40):**
+  simetrik duruş salınımı markaj mesafesini 1,74 → 1,80-1,88 m'ye açıp `spacing-check`
+  kapısını düşürdü. Kayma **tek yönlü ve adama doğru** olmalı (eksen adam→pota, işaret
+  eksi): hareket görünür, markaj sıkılaşır, ball-you-man sıralaması korunur. Topu
+  TUTANIN savunmacısı tamamen muaftır — onun aralığı ölçülerek ayarlanmıştır (FAZ 36 §A3).
+- **GERÇEKÇİ İVME MARKAJI GEVŞETİR (FAZ 40):** `_ivmeSinirla` (hızlanma `_ACC_MAX=330`,
+  yavaşlama `_DEC_MAX=470` px/sn²) hız grafiğindeki dik duvarları bitirir ve yol
+  eğriliğini TEK BAŞINA çözer (keskin dönüş 2,38 → 1,25/poz, tam sahayı düz geçen jeton
+  3 → 0 — FAZ 40 §A3 için ayrıca kod yazılmadı). Ama savunmacı adamının hareketine TEPKİ
+  verir; genel tavanla sınırlanınca geride kalır ve markaj 1,74 → 1,92 m'ye açılır.
+  Markajdaki savunmacıya **×1,6** ivme tavanı verilir — savunma kayması kısa ve
+  patlayıcı bir harekettir.
+- **SAHAYA GERİ ALMA IŞINLANMADIR (FAZ 40 §A2):** topu sokan oyuncu çizginin 26 px
+  dışındadır; `_oob` izni kalkınca `_inX`/`_inY` kırpması onu TEK KAREDE içeri çekiyordu
+  (26 px / 16 ms = 55 m/sn). Ölçümdeki en hızlı jetonların HEPSİ x≈44 ya da x≈899'dan
+  başlıyordu — yani koşu değil snap. Kırpma kademelidir: sınır mutlak kalır, yalnız
+  anlık değil.
+- **B GRUBU MADDELERİ ÖNCE ÖLÇÜLDÜ, ÜÇÜ ZATEN ÇÖZÜLMÜŞTÜ (FAZ 40):** uzatma %17,5 → ölçülen
+  **%4,75**; yedek sayı payı %19,1 → ölçülen **%36,8**; yeni olay türlerinin sahne dalı
+  → **dalsız olay/maç 0,00**. "Pozisyon sayısı fazla" (178) premisi ise GEÇERSİZDİR:
+  o rakam HAM `pozIx` sayacıdır, gerçek bantla kıyaslanabilir birleştirilmiş değer
+  **155,1** ve gerçek bant **161,8-167,9** — motor gerçekten AZ pozisyon oynuyor.
+  Bir brif maddesini uygulamadan önce ölç; brifler eski ölçümlerle yazılır.
+
+- **DONMA "YAVAŞ GİDİYOR" DEĞİL "HİÇ YOLA ÇIKMIYOR" OLABİLİR — AYIRT EDİCİ ÖLÇÜM
+  HEDEFE UZAKLIKTIR (FAZ 40 eki):** salınım penceresi açıkken hedefe uzaklığa göre
+  ortalama hız 0-1 px'te **0,11 m/sn**, 9-16 px'te **0,92**, 17+ px'te **0,99** ölçüldü.
+  Yani jeton YOLDAYKEN hedef bandındaydı; sorun yola hiç çıkmamasıydı. Donuk karelerin
+  yarısı 0-1 px kovasındaydı ve o karelerin **%89'unda sürüklenme ofseti TAM 0** idi:
+  sürüklenmenin iki ucu da (radyal VE dik eksende) ya saha dışına kırpılıyor ya bir takım
+  arkadaşını 2,10 m'nin içine sokuyor, `_hi=_lo=0` çıkıyor ve hedef dizilim noktasının
+  TAM merkezine yazılıp jeton orada çakılıyordu. Bir "donma" ölçüsünü hızla değil,
+  önce HEDEFE UZAKLIK dağılımıyla teşhis et.
+- **KAPALI UÇTA DOĞRUSAL DEĞİL DAİRESEL HAREKET (FAZ 40 eki):** sıkışan jetona dar
+  DOĞRUSAL bant vermek denendi ve ölçülerek elendi — adım banttan büyük olunca her adımda
+  yön çevriliyor ve yol keskin zikzaka dönüyor (>90° dönüş 0,83 → **1,83**/pozisyon),
+  adımı küçültünce hareket yeniden eşiğin altına düşüyor. Çözüm merkez çevresinde küçük
+  bir YAY'dır (`_boks` bayrağı + hareket döngüsünde dairesel ofset, r=11 px · ω=3,4):
+  süreklidir, keskin dönüş üretmez, ortalama konum yine merkezdir. Genel kural:
+  **adım bandın yarısını aşmamalı** (`_adim ≤ (hi-lo)×0,45`).
+- **TEK YÖNLÜ SÜRÜKLENME ORTALAMA KONUMU KAYDIRIR (FAZ 40 eki):** bir uç kapalı diğeri
+  açıksa sürüklenme 0 ile açık uç arasında salınır ve ortalama, bandın YARISI kadar açık
+  uca kayar. Boyada kalabalık olduğu için açık uç genellikle dıştır: `spacing-check`
+  "potaya ortalama uzaklık" 6,84 → 7,08 m (kapı ≤7,00). Kapalı uç TAM banttan sınanmıştı;
+  **%45 mesafede yeniden sınanınca** çoğu zaman açıktır ve bant simetrikleşir. Salınım
+  yazan herkes "ortalama konum korunuyor mu" sorusunu ölçerek yanıtlamalı.
+- **SALINIM KAPSAMI SET FAZI DEĞİL CANLI TOPTUR (FAZ 40 eki):** `S.canliSet` yalnız
+  `phase==='set'`te açılır; geçişte kulvarına varmış oyuncular hiç kıpırdamıyordu
+  (donmanın %27,2'si). Savunmacıya İKİ mekanizma da ulaşmıyordu: salınım yalnız `S.offP`
+  üzerinde döner, duruş kayması ise `p._mark` ister ve geçişte `S.defTrack=false` olduğu
+  için markaj kurulmaz. Kapsam artık `held`/`pass` (canlı top) iken açıktır ve geçişte
+  İKİ TAKIMI kapsar; serbest atış (`_ftAktif`) ve kenardan sokma (`S.inb`) HARİÇ — o
+  dizilimler ölçülerek ayarlandı (F14-7). ⚠ `p._setTx` yalnız set fazında yazılır,
+  geçişte BAYATTIR; set dışında merkez olarak kullanılırsa oyuncu bir önceki hücumun
+  dizilim noktasına sürüklenir.
+- **SÜREKLİ HAREKET İLE "ŞUT ANINDA YERİNDE" KAPISI DOĞRUDAN TAKAS HÂLİNDEDİR
+  (FAZ 40 eki):** `sahne-check` jetonun ANLIK salınım hedefine uzaklığını ölçer; sürekli
+  kıpırdayan jeton tanımı gereği "hedefinde" değildir. Ölçülen takas: bant 25/adım 12-16
+  → donma %19,5 · kapı 3,36-3,73; bant 22/adım 10-13 → donma %20,0 · kapı **4,03**
+  (HEAD 4,11). Dizilim KALİTESİ ayrı ölçülmeli: şut anında jetonun **dizilim noktasına**
+  (`p._setTx`) uzaklığı medyan 17 px (0,58 m) ve `spacing-check`in gerçek geometri
+  kapıları (ikili mesafe, yayılım, boya) HEAD'den iyi.
+- **AYNI ÇALIŞMA AĞACINDA ARKA PLANDA `git stash` ÇALIŞTIRMA (FAZ 40 eki):** HEAD
+  karşılaştırmasını arka plan görevine almak (`git stash` → ölç → `git stash pop`)
+  ön planda başlatılan ölçümleri SESSİZCE HEAD'e yönlendirir. Ölçüldü: görev
+  çalışırken koşan `balon-check` "%47,1 düştü" dedi (düzeltme yerindeydi) ve
+  `faz11-check` "15/15" verdi — ikisi de HEAD'in sonucuydu. Zulalama yapan bir görev
+  varken başka hiçbir ölçüm çalıştırılamaz.
+
+- **SUNUM BAYRAĞI MAÇ MATEMATİĞİNİ BESLİYORSA BU BİR KUSURDUR (FAZ 40 denetimi):**
+  `shooterHint` bir sonraki şutu KİMİN atacağını belirler (kutu skor · şut bölgesi · şut
+  tipi) ama kapısı `_rebAnlat` — FAZ 13'ten kalan ve bugün YALNIZ anlatım havuzunu seçen
+  %22'lik bir çekiliş. Yani üsluba ait bir oran sessizce maç sonucunu belirliyor: birini
+  değiştiren ötekini de değiştirir ve `band.js` hash'i kayar. Etkin putback oranı da
+  yorumun dediği %55 DEĞİL, 0,22 × 0,55 = **%12,1**. Ölçülebilir sonucu:
+  `sut-cografya-check` "tip: tip-in" %0,96 (gerçek %2,05-3,05) — tip-in TANIMI GEREĞİ
+  putback'tir, payının tavanı putback sıklığıdır ve şut TİPİ tarafında (sunum) yapılacak
+  hiçbir ayar onu bandına getiremez. Davranış korundu; ayrıştırmak rastgelelik akışının
+  sırasına bağlı olduğu için hash'i kaydırır.
+- **HEAD KARŞILAŞTIRMASI İÇİN ZULA DEĞİL AYRI WORKTREE KULLAN (FAZ 40 denetimi):**
+  `git worktree add --detach DIZIN HEAD` ayrı bir dizinde HEAD kopyası açar; çalışma
+  ağacına HİÇ dokunmaz, dolayısıyla paralel koşan ölçümler yanlış dala kaymaz.
+  `node_modules` sembolik bağla paylaşılır, iş bitince `git worktree remove --force`.
+  Zulalama yöntemi aynı ağaçta çalıştığı için ön planda koşan her ölçümü sessizce
+  HEAD'e yönlendiriyordu (ölçüldü: `balon-check` düzeltme yerindeyken "%47,1 düştü" dedi).
+- **PROSE'U ÇİFT TIRNAKLI SHELL ARGÜMANINDAN GEÇİRME (FAZ 40 denetimi — pahalıya mal oldu):**
+  bash çift tırnak içinde ters tik'i KOMUT YERİNE GEÇİRİR. CLAUDE.md'ye eklenecek metin
+  `node -e "..."` içine gömülünce, metinde geçen ters tikli kabuk komutları GERÇEKTEN
+  çalıştı ve bunlardan biri bütün çalışmayı zulaya aldı (`git status` temiz göründü,
+  tracked dosyaların tamamı FAZ 39'a döndü). Belge/metin eklerken Write aracıyla dosyaya
+  yaz, sonra `cat dosya >> hedef` ile ekle — ara adımda tırnak yok.
+- **`tools/_i18n-missing.txt` HER KOŞUDA DEĞİŞİR (FAZ 40 denetimi):** `i18n-scan` bu
+  raporu yeniden yazar ve içeriği RASTGELE takım adlarından oluşur (hepsi özel isim,
+  kusur değil). 400+ satırlık sahte diff üretir — commit'e alma, geri al.
