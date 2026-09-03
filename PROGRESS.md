@@ -6857,3 +6857,31 @@ Bu turda yapılan tek kod değişikliği YORUM olduğu için maç matematiği de
    gerekçeleriyle yazıldı.
 3. `_rebAnlat`in maç matematiğinden ayrıştırılması: davranışı KORUYARAK ayrıştırmak
    mümkün değil (rastgelelik akışı sırasına bağlı); ayrıştırma hash'i kaydırır.
+
+### FAZ 40 KAPANIŞ — doğrulama ve yayın (3 Eylül 2026)
+
+Önceki oturum kodu ve belgeyi bitirmiş ama **commit etmemişti**. Bu oturumda yarım kalan
+tek iş buydu: kapılar yeniden koşuldu, damga tutarlılığı onarıldı, commit + push yapıldı.
+
+**Onarılan tek kusur:** `surum-check` düştü — sürüm 76'ya çıkarılıp `--yaz` ile
+kaydedildikten SONRA `js/match-engine.js`e `_rebAnlat` uyarı yorumu eklenmiş, içerik
+hash'i (`f636a311…` → `01ef4e74…`) kaydın önüne geçmişti. Sürüm 76 **hiç yayınlanmadığı**
+için (commit edilmemişti) sürümü 77'ye çıkarmak gerekmedi; kayıt `--yaz` ile tazelendi.
+Ders: `--yaz`, yayın dosyalarına dokunan HER değişiklikten SONRA çalıştırılır — sürümü
+artırdıktan hemen sonra değil.
+
+**Koşulan kapılar (hepsi geçti):** `node --check` (main.js · match-engine.js) ·
+`surum-check` · `sim-node --n=500 --seed=42` → **91.1 - 85.4 · 248**, determinizm EVET,
+`G` dokunulmadı · `band.js` **76351f00455b3a5e** · `measure.js` **0132d9fff6e778d0** ·
+`visual-check` masaüstü + mobil **0 konsol hatası** · `bozukdeger-check` (2 sezon, TR+EN,
+11 sayfa + 4 modal) · `balon-check` 83 balon, üç noktalama kapısı da 0/83 ·
+`sahne-kapsam-check` 14.660 olay / 60 maç GEÇTİ. Hash'ler belgelenen değerlerle birebir —
+FAZ 40 maç matematiğine dokunmadı, doğrulandı.
+
+**Yayın:** `e50f8d9` master'a push edildi (21 dosya, +1.884/−47). Ham iz JSON'ları
+`.gitignore` ile dışarıda kaldı; depoya yalnız 6 PNG + 3 `-ozet.json` girdi.
+
+**Açık kalan maddeler DEĞİŞMEDİ** — üçü de kullanıcı kararı bekliyor: (1) FAZ 39
+kalibrasyon açıkları (kutu/tempo/rotasyon/tip-in tablosu; kapatmak skor bandını ve iki
+hash'i yeniden temellendirir), (2) donma %19-21 (hedef %12) ve "tam sahayı düz geçen
+jeton" `_wp` kulvar ara noktası, (3) `_rebAnlat`in maç matematiğinden ayrıştırılması.
