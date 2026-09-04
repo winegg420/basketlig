@@ -364,6 +364,8 @@ function startMatch(playoff){
     if(ev.t!==undefined) startClockTween(ev.t,delay,ev);
     /* M11: hız değişince kalan süre yeniden ölçeklenebilsin diye zamanlayıcı damgalanır. */
     mState._stepAt=Date.now(); mState._stepDelay=delay; mState._stepRate=rate;
+    /* FAZ 42-B §C: sahne saati ↔ duvar saati damgası (rAF açlığı bu orandan okunur) */
+    try{ const _S=mState._sim; mState._simAtStep=_S?_S.time:null; mState._wallAtStep=performance.now(); }catch(e){}
     /* M3 (tamamlayıcı): şutlu olayda sonuç cümlesi top çembere varınca basılır. Kare
        düşmesi / arka plan yüzünden koreografi tahmini süreden GEÇ biterse, sıradaki
        olaya geçmeden önce sonucun basılmasını bekle (sınırlı süre). Böylece cümle ne
@@ -374,6 +376,47 @@ function startMatch(playoff){
   /* Sonuç cümlesi hâlâ bekliyorsa kısa aralıklarla yeniden dene; süre aşımında ilerle
      (kilitlenme yok). setMatchRate ve visibilitychange de bu sarmalayıcıyı kullanır. */
   function stepGuarded(){
+    /* ── FAZ 42-B §C: SAHNE ÇİZİLMİYORSA OLAY KUYRUĞU BEKLER ─────────────────────────
+       Sekme arka plana alınınca tarayıcı rAF'ı durdurur ama setTimeout'u sürdürür;
+       `visibilitychange` ise her durumda ateşlenmiyor (ölçüldü: başka sekme öne
+       alındığında `document.hidden` false kaldı, 30 sn'de sahne 1 sn ilerlerken skor
+       5 sayı ilerledi). Görünürlük API'sine güvenmek yerine sahnenin son rAF damgasına
+       bakılır: 1,2 sn'dir kare çizilmediyse kuyruk duraklar (`_bgPause`), sahne yeniden
+       çizilmeye başlayınca `_simCatchUp` ile olaya eşitlenir ve kuyruk sürer. Mola
+       duraklaması (`paused`) ve bitmiş maç bu yola girmez. */
+    /* Ölçüt SAHNE SAATİNİN İLERLEMESİDİR: son olaydan bu yana duvar saati 1,2 sn+ geçmiş
+       ama sahne saati bunun %35'inden az ilerlemişse (normalde 1:1 × izleme hızı) sahne
+       çizilmiyordur. İlk sürüm son rAF damgasına bakıyordu; arka planda kare ~1,5 sn'de
+       bir yine geldiği için eşik olay anında çoğu kez taze görünüyordu (ölçüldü: 30 sn'de
+       sahne 1 sn ilerlerken idx 3→7, _bgPause hiç kurulmadı). */
+    try{
+      const _S=(typeof mState!=='undefined'&&mState)?mState._sim:null;
+      if(_S&&mState.running&&!mState.paused&&mState._wallAtStep!=null&&mState._simAtStep!=null&&typeof performance!=='undefined'){
+        const _now=performance.now();
+        const _rate=Math.max(0.5,Math.min(4,mState.rate||1));
+        if(mState._bgPause){
+          /* duraklamadayız: son 400 ms'lik pencerede sahne akmaya başladı mı? */
+          const _pw=(_now-(mState._bgWallAt||_now))/1000, _ps=_S.time-(mState._bgSimAt||_S.time);
+          if(_pw<0.3||_ps<0.5*_pw*_rate){
+            mState._bgSimAt=_S.time; mState._bgWallAt=_now;
+            matchEventTimer=setTimeout(stepGuarded,400);
+            return;
+          }
+          mState._bgPause=false; _hiddenPause=false;
+          _S.last=0; _S._sahipsizT=0;
+          try{ if(typeof _simCatchUp==='function') _simCatchUp(); }catch(e){}
+          dbg('bgPause','sahne yeniden çiziliyor — kuyruk sürüyor');
+        } else {
+          const _wallD=(_now-mState._wallAtStep)/1000, _simD=_S.time-mState._simAtStep;
+          if(_wallD>1.2&&_simD<0.35*_wallD*_rate){
+            mState._bgPause=true; mState._bgSimAt=_S.time; mState._bgWallAt=_now;
+            dbg('bgPause','sahne çizilmiyor — olay kuyruğu bekliyor');
+            matchEventTimer=setTimeout(stepGuarded,400);
+            return;
+          }
+        }
+      }
+    }catch(e){}
     try{
       const S=(typeof mState!=='undefined'&&mState)?mState._sim:null;
       if(mState._waitRes&&S&&typeof S.pendingPaint==='function'&&Date.now()<mState._waitRes){
@@ -2012,6 +2055,29 @@ function startMatchWatchdog(){
       /* FAZ 37 §9.3: arka planda BİLEREK duraklatıldıysa bekçi kuyruğu diriltmez —
          yoksa sahne donmuşken skor akmaya devam eder (ölçüldü: 22 sn'de 48→63). */
       if(mState._bgPause||(typeof document!=='undefined'&&document.hidden)){ syncMatchButtons(); return; }
+      /* FAZ 42-B §C3: BOĞULMA BEKÇİDE DE YAKALANIR. Olay sınırındaki denetim, gizlenmeden önce
+         kurulmuş zamanlayıcının ilk olayını kaçırıyordu (ölçüldü: idx 3→4). Bekçi 2 sn'de bir
+         sahne/duvar oranına bakar; sahne son penceresinde duvarın %35'inden az ilerlediyse
+         zamanlayıcıyı söküp kuyruğu duraklatır — stepGuarded 400 ms'lik yoklamayla sürdürür. */
+      try{
+        const _S=mState._sim;
+        if(_S&&mState.running&&!mState.paused&&typeof performance!=='undefined'){
+          const _now=performance.now();
+          if(mState._wdWall!=null){
+            const _wd=(_now-mState._wdWall)/1000, _sd=_S.time-mState._wdSim;
+            const _rate=Math.max(0.5,Math.min(4,mState.rate||1));
+            if(_wd>=1.5&&_sd<0.35*_wd*_rate&&!mState._bgPause){
+              mState._bgPause=true; mState._bgSimAt=_S.time; mState._bgWallAt=_now;
+              if(matchEventTimer){ clearTimeout(matchEventTimer); matchEventTimer=null; }
+              dbg('bgPause','bekçi: sahne çizilmiyor — olay kuyruğu bekliyor');
+              matchEventTimer=setTimeout(mState.step,400);
+              mState._wdWall=_now; mState._wdSim=_S.time;
+              syncMatchButtons(); return;
+            }
+          }
+          mState._wdWall=_now; mState._wdSim=_S.time;
+        }
+      }catch(e){}
       if(mState.running&&!mState.paused&&!matchEventTimer&&typeof mState.step==='function'
          &&mState.idx<mState.events.length){
         const bosluk=Date.now()-(mState._stepAt||0);

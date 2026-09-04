@@ -1,0 +1,160 @@
+{
+  "kare": 28757,
+  "sure": 480,
+  "sahneKat": 1.587,
+  "poz": 86,
+  "top": {
+    "enYuksek": 21,
+    "enYuksekSicrama": 26.6,
+    "isinlanma": 2,
+    "isinlanmaPozBasi": 0.02,
+    "isinModlar": {
+      "held": 1,
+      "pass": 1
+    },
+    "pasOlay": 142,
+    "pasPlatoKare": 3154,
+    "ort": 5.5
+  },
+  "oyuncu": {
+    "ort": 3.16,
+    "ortMac": 1.99,
+    "p50": 2.23,
+    "p90": 7.72,
+    "p99": 10.07,
+    "p50m": 1.4,
+    "p90m": 4.87,
+    "p99m": 6.35,
+    "enYuksek": 13.62,
+    "enYuksekMac": 8.58,
+    "ust75mac": 0,
+    "ust65mac": 0.6,
+    "alt05mac": 16.7,
+    "ust8": 9,
+    "alt05": 12.4,
+    "alt05macCanli": 13.6,
+    "canliOrnek": 250570,
+    "ortMacCanli": 2.02,
+    "ornek": 287540,
+    "donKova": [
+      "HUC/set/yerinde/u0/held %10.3",
+      "SAV/set/yerinde/u1/held %6.9",
+      "HUC/top/set/yerinde/u0/held %6.5",
+      "SAV/set/yerinde/u2/held %5.6",
+      "SAV/set/uzak/u2/held %4.1",
+      "SAV/gecis/yerinde/u0/held %3.8",
+      "HUC/set/yerinde/u2/shot %3.1",
+      "HUC/set/yerinde/u0/pass %3.0",
+      "HUC/gecis/yerinde/u0/loose %2.8",
+      "SAV/gecis/yerinde/u0/loose %2.7"
+    ]
+  },
+  "egrilik": {
+    "olcum": 9788,
+    "ortAci": 15.5,
+    "keskin90": 127,
+    "keskinPozBasi": 1.48,
+    "ters150": 487,
+    "ters150Sn": 0.101,
+    "ters150Medyan": 0.03,
+    "duzCapraz": 4,
+    "duzListe": [
+      {
+        "t": 446.85,
+        "tip": "miss2",
+        "tipSon": "miss2",
+        "poz": "PF",
+        "huc": 1,
+        "y0": 213,
+        "y1": 441
+      },
+      {
+        "t": 243.392,
+        "tip": "score2",
+        "tipSon": "score2",
+        "poz": "SF",
+        "huc": 1,
+        "y0": 426,
+        "y1": 458
+      },
+      {
+        "t": 323.18,
+        "tip": "steal",
+        "tipSon": "miss3",
+        "poz": "PF",
+        "huc": 0,
+        "y0": 213,
+        "y1": 43
+      },
+      {
+        "t": 251.371,
+        "tip": "score2",
+        "tipSon": "score3",
+        "poz": "C",
+        "huc": 1,
+        "y0": 276,
+        "y1": 86
+      }
+    ],
+    "isinListe": [
+      {
+        "t": 183.519,
+        "mod": "held",
+        "tip": "steal",
+        "v": 25.2
+      },
+      {
+        "t": 383.17,
+        "mod": "pass",
+        "tip": "ihlal24",
+        "v": 26.6
+      }
+    ]
+  },
+  "ek42": {
+    "yeniBicim": true,
+    "sahaDisi": {
+      "kareOran": 0.11,
+      "kare": 31,
+      "maxPx": 26,
+      "baglam": "steal:12 · score3:11 · score2:6"
+    },
+    "sahipsiz": {
+      "kareOran": 3.38,
+      "kare": 973,
+      "tip": "mola:356 · steal:265 · free:110 · miss3:104",
+      "mod": "loose:778 · idle:177 · held:18",
+      "takip": {
+        "takipVar": 684,
+        "takipYok": 289
+      }
+    },
+    "hucumYakin": {
+      "kareOran": 2.07,
+      "setKare": 8793,
+      "baglam": "score2:157 · score3:23 · miss3:2"
+    },
+    "arkaSaha": {
+      "kareOran": 4.33,
+      "kare": 381,
+      "ortOyuncu": 1.3,
+      "baglam": "foul:214 · score2:92 · ihlal24:65 · miss2:10",
+      "kim": "SF/u0:163 · SG/u0:110 · SF/u1:50 · C/u1:40 · SG/u1:35"
+    },
+    "gizliKare": 0,
+    "anlatim": {
+      "satir": 88,
+      "tr": 88,
+      "en": 0,
+      "enOrnek": [],
+      "sonucSatir": 55,
+      "oznesiz": 0,
+      "oznesizOrnek": [],
+      "noktalama": 0,
+      "noktalamaOrnek": []
+    }
+  },
+  "dil": "tr",
+  "konsolHata": 0,
+  "startErr": null
+}

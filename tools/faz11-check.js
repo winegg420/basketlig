@@ -191,7 +191,11 @@ async function hazirla(page, base) {
       topSahipli: !!(mState._sim.ball && mState._sim.ball.carrier)
     }));
     await bos.close();
-    ok('arka planda olaylar akmaya devam etti', sonrasi.ev > oncesi.ev, `olay ${oncesi.ev} → ${sonrasi.ev}`);
+    /* FAZ 42-B §C: eski kapı olayların arka planda AKMASINI istiyordu — sahne donmuşken skorun
+       ilerlemesi kullanıcının gördüğü kusurdu. Artık beklenen: gizliyken kuyruk DURUR, dönüşte sürer. */
+    /* Bu harness --disable-renderer-backgrounding ile açılır: rAF arka planda da akar, sahne boğulmaz ve
+       kuyruk haklı olarak sürer. Sahne BOĞULUNCA kuyruğun durması ayrı bir aracın konusudur: arka-plan-check. */
+    ok('arka planda (rAF kısıtlanmadan) olaylar akmaya devam etti', sonrasi.ev > oncesi.ev, `olay ${oncesi.ev} → ${sonrasi.ev}`);
     ok('arka plandan dönüşte yetişme çalıştı (_simCatchUp)',
       sonrasi.snapN > oncesi.snapN, `_snapN ${oncesi.snapN} → ${sonrasi.snapN}`);
     /* Tolerans: taban × 1,6 + 25 px. Taban ölçüde küçükse (sahne sakin) mutlak 60 px

@@ -1130,3 +1130,46 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
 - **`tools/_i18n-missing.txt` HER KOŞUDA DEĞİŞİR (FAZ 40 denetimi):** `i18n-scan` bu
   raporu yeniden yazar ve içeriği RASTGELE takım adlarından oluşur (hepsi özel isim,
   kusur değil). 400+ satırlık sahte diff üretir — commit'e alma, geri al.
+
+- **DÖNÜŞ SINIRININ DOĞRU BÜYÜKLÜĞÜ AÇISAL HIZ DEĞİL DÖNÜŞ YARIÇAPIDIR (FAZ 42-B §A3, iki
+  sürüm ölçülerek elendi):** "180°/sn, hızla ters orantılı" kuralı sprintte 4,9 m'lik dönüş
+  yarıçapı verir; jeton hedefinin çevresinde YÖRÜNGEYE girer ve varamaz (ölçüldü: ortalama
+  hız 2,79 · saha dışı %17,8 · arka saha %93). Gerçek oyuncu jog'da ~1 m, sprintte ~2,5 m
+  yarıçapla döner (`_donusSinirla`: r = clamp(hız×0,30, 26-74 px)); hedef dönüş çemberinin
+  içindeyse yarıçap hedefe göre küçülür; **120°+ dönüşte istenen hız SIFIRDIR** ("dur-dön") —
+  %35'te bırakılınca jeton hedeften uzaklaşmaya devam ediyordu (sahipsiz top %7,2).
+  Markajdaki savunmacı ve serbest top takipçisi ×1,6 çevik. Bir hareket sabitini "fizik böyle"
+  diye yazmadan önce jetonun HEDEFE VARIP VARMADIĞINI ölç — hız ortalaması tek başına yanıltır.
+- **SALINIMI KAPATMAK DONMAYI DEĞİL TERSLEMEYİ ARTIRIR (FAZ 42-B §A2, ölçüldü):** FAZ 41'in
+  elips yayı `_SALINIM_ACIK=false` ile kapatılınca donma %10,5 → %23,9 ve 150° tersleme
+  0,074 → 0,221/sn — varış frenindeki yerinde kıpırdanma, kapalı eğri olmayınca titremeye
+  dönüyor. Elips yayı titreme DEĞİL, 5,5 m gerçek yol kat eden kapalı eğridir. Anahtar
+  ölçüm için durur; kapatma.
+- **SEKME ARKA PLANDA: `document.hidden` GÜVENİLMEZ, SAHNE SAATİNE BAK (FAZ 42-B §C):**
+  başka sekme öne alınınca `document.hidden` false kalıyor ve `visibilitychange` hiç
+  ateşlenmiyor (headless'ta ve canlı gözlemde), rAF ise boğuluyor (30 sn'de sahne 1 sn).
+  Koruma sahne saatinin duvar saatine ORANINA bağlıdır (`stepGuarded` olay sınırında + bekçi
+  2 sn'de bir; %35 altı = boğulma; 400 ms yoklama; dönüşte `_simCatchUp`). "Son rAF damgası
+  1,2 sn eski mi" eşiği YETMEDİ — boğulmuş sekmede kare ~1,5 sn'de bir yine gelir.
+  Kapı `tools/arka-plan-check.js`; `faz11-check` B2 harness'ı `--disable-renderer-backgrounding`
+  ile açıldığı için orada olayların akması DOĞRUDUR, o kapıyı bu kusur için kullanma.
+- **"SET KURULDU" = SON HÜCUMCU DA ÖN SAHADA (FAZ 42-B §D):** `canliSet` topçu varınca ilan
+  ediliyordu; sokucu (`_oob`) muaf tutulunca sayı sonrası 20 m geride dururken set başlıyordu.
+  `_hepsiOnde` (orta çizgi ±12 px, sokucu MUAF DEĞİL) + `_simTick`te geç açılış. Geride kalan
+  hücumcu set noktasına KOŞ ile gider; düdük dallarındaki "herkes yürür" yalnız öndekilere.
+- **TOP ELDEYKEN OYUNCUYLA GİDER (FAZ 42-B §B):** `held` modunda mutlak hız tavanı, sprint
+  yapan jetonun eline yaklaşan topu jeton hızı + tavan ile 25-27 m/sn'ye çıkarıyordu.
+  Top oyuncunun kare içi yer değiştirmesini (`p._px/_py`) aynen alır; yalnız ele göre ofset
+  `_TOP_YAKLAS` ile kapanır. Işınlanma 3 → 0.
+- **KAYNAK DOSYA KARIŞIK SATIR SONLU (CRLF + LF bölgeler):** FAZ 39/40'ta eklenen bazı
+  bloklar LF. Yama çapası önce verildiği gibi, bulunamazsa LF'e çevrilerek aranmalı
+  (`rep` yardımcısı); `node -e "..."` içine metin gömme — ters tik kabukta komut olur
+  (FAZ 40 dersinin tekrarı, bu turda D2 yorumunu bozdu).
+- **HEADLESS ÖLÇÜMDE DİLİ KİLİTLE (FAZ 42-B §E1):** `navigator.language=en-US` → i18n ilk
+  açılışta İngilizce; "TR/EN karışımı" bulgusu test artefaktıydı. `iz-kaydet` dili oyun
+  betiklerinden ÖNCE `localStorage charazay_lang=tr` ile sabitler; yeni araç yazarken aynısını yap.
+- **F: TEMPO İLE SKOR BANDI AYNI ANDA TUTMAZ (FAZ 42-B §F):** gerçek tempo (+%6 pozisyon) ve
+  gerçek top kaybı oranı birlikte kullanıcı ortalamasını ~97'ye taşır (bant 78-95). Top
+  kaybı/çalma/faul/rotasyon/tip-in banda çekildi, tempo bilerek bırakıldı; kullanıcı 94,3.
+  `band.js` **838518b5c925e68c** · `measure.js` **5fafc6b99867e038** · `sim-node --n=1000
+  --seed=42` **93.4 - 87.5 · 270**. Putback kapısı artık `_rebAnlat`ten bağımsız (%27).

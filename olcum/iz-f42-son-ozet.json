@@ -1,0 +1,201 @@
+{
+  "kare": 28758,
+  "sure": 480,
+  "sahneKat": 1.442,
+  "poz": 90,
+  "top": {
+    "enYuksek": 20.1,
+    "enYuksekSicrama": 29.8,
+    "isinlanma": 3,
+    "isinlanmaPozBasi": 0.03,
+    "isinModlar": {
+      "pass": 3
+    },
+    "pasOlay": 156,
+    "pasPlatoKare": 4097,
+    "ort": 5.72
+  },
+  "oyuncu": {
+    "ort": 3.41,
+    "ortMac": 2.36,
+    "p50": 2.54,
+    "p90": 7.95,
+    "p99": 10.15,
+    "p50m": 1.76,
+    "p90m": 5.52,
+    "p99m": 7.04,
+    "enYuksek": 14.66,
+    "enYuksekMac": 10.17,
+    "ust75mac": 0.1,
+    "ust65mac": 2.1,
+    "alt05mac": 16.9,
+    "ust8": 9.8,
+    "alt05": 14.2,
+    "alt05macCanli": 12.6,
+    "canliOrnek": 233460,
+    "ortMacCanli": 2.38,
+    "ornek": 287550,
+    "donKova": [
+      "HUC/gecis/yerinde/u0/loose %7.8",
+      "HUC/gecis/yerinde/u0/held %7.7",
+      "HUC/top/gecis/yerinde/u0/held %6.3",
+      "HUC/set/yerinde/u0/held %5.9",
+      "SAV/gecis/yerinde/u0/loose %3.7",
+      "HUC/gecis/yerinde/u0/pass %3.7",
+      "SAV/gecis/yerinde/u1/loose %3.2",
+      "SAV/set/yerinde/u1/held %3.1",
+      "SAV/gecis/uzak/u2/held %2.7",
+      "SAV/set/uzak/u2/held %2.7"
+    ]
+  },
+  "egrilik": {
+    "olcum": 10809,
+    "ortAci": 14.3,
+    "keskin90": 138,
+    "keskinPozBasi": 1.53,
+    "ters150": 358,
+    "ters150Sn": 0.075,
+    "ters150Medyan": 0.03,
+    "duzCapraz": 8,
+    "duzListe": [
+      {
+        "t": 227.445,
+        "tip": "score3",
+        "tipSon": "miss3",
+        "poz": "PF",
+        "huc": 1,
+        "y0": 86,
+        "y1": 54
+      },
+      {
+        "t": 103.774,
+        "tip": "score2",
+        "tipSon": "score2",
+        "poz": "SG",
+        "huc": 1,
+        "y0": 400,
+        "y1": 336
+      },
+      {
+        "t": 151.646,
+        "tip": "miss2",
+        "tipSon": "miss2",
+        "poz": "SF",
+        "huc": 0,
+        "y0": 42,
+        "y1": 135
+      },
+      {
+        "t": 291.274,
+        "tip": "score2",
+        "tipSon": "miss2",
+        "poz": "SF",
+        "huc": 0,
+        "y0": 458,
+        "y1": 377
+      },
+      {
+        "t": 19.996,
+        "tip": "score2",
+        "tipSon": "score2",
+        "poz": "PF",
+        "huc": 0,
+        "y0": 321,
+        "y1": 443
+      },
+      {
+        "t": 227.445,
+        "tip": "score3",
+        "tipSon": "miss3",
+        "poz": "SF",
+        "huc": 0,
+        "y0": 42,
+        "y1": 86
+      },
+      {
+        "t": 63.88,
+        "tip": "score2",
+        "tipSon": "miss2",
+        "poz": "PF",
+        "huc": 1,
+        "y0": 83,
+        "y1": 50
+      },
+      {
+        "t": 434.893,
+        "tip": "mola",
+        "tipSon": "score2",
+        "poz": "C",
+        "huc": 1,
+        "y0": 176,
+        "y1": 227
+      }
+    ],
+    "isinListe": [
+      {
+        "t": 3.972,
+        "mod": "pass",
+        "tip": "foul",
+        "v": 29.8
+      },
+      {
+        "t": 20.38,
+        "mod": "pass",
+        "tip": "score2",
+        "v": 26.6
+      },
+      {
+        "t": 393.145,
+        "mod": "pass",
+        "tip": "free",
+        "v": 26.8
+      }
+    ]
+  },
+  "ek42": {
+    "yeniBicim": true,
+    "sahaDisi": {
+      "kareOran": 0,
+      "kare": 0,
+      "maxPx": 0,
+      "baglam": ""
+    },
+    "sahipsiz": {
+      "kareOran": 3.35,
+      "kare": 962,
+      "tip": "mola:344 · reb:186 · miss3:168 · score2:134",
+      "mod": "loose:821 · idle:140 · held:1",
+      "takip": {
+        "takipVar": 701,
+        "takipYok": 261
+      }
+    },
+    "hucumYakin": {
+      "kareOran": 6.23,
+      "setKare": 6083,
+      "baglam": "miss2:139 · miss3:129 · score2:60"
+    },
+    "arkaSaha": {
+      "kareOran": 2.45,
+      "kare": 149,
+      "ortOyuncu": 1,
+      "baglam": "score3:149",
+      "kim": "C/u2:149"
+    },
+    "gizliKare": 0,
+    "anlatim": {
+      "satir": 92,
+      "tr": 92,
+      "en": 0,
+      "enOrnek": [],
+      "sonucSatir": 54,
+      "oznesiz": 0,
+      "oznesizOrnek": [],
+      "noktalama": 0,
+      "noktalamaOrnek": []
+    }
+  },
+  "dil": "tr",
+  "konsolHata": 0,
+  "startErr": null
+}

@@ -31,6 +31,8 @@ const SECS = num('secs', 80);
 const RATE = num('rate', 1);
 const ETIKET = str("etiket", str("yeniden","temel"));
 
+/* FAZ 42-B: Math.max.apply 480 sn kayıtta (270 bin örnek) yığını taşırıyordu. */
+const enB = (a) => { let m = -Infinity; for (let i = 0; i < a.length; i++) if (a[i] > m) m = a[i]; return m === -Infinity ? 0 : m; };
 const PX_M = 29.5429;            /* motorun kendi ölçeği: 29,5429 px = 1 m */
 const PENCERE_MS = 100;          /* hız penceresi */
 
@@ -67,7 +69,7 @@ async function main() {
   const yen = str('yeniden', null);
   if (yen) {
     const d = JSON.parse(fs.readFileSync(path.join(OUT, `iz-${yen}.json`), 'utf8'));
-    const R = analiz(d.kare); R.konsolHata = 0; R.startErr = null;
+    const R = analiz(d.kare, d.balon, d.adlar); R.dil = (d.meta && d.meta.dil) || '?'; R.konsolHata = 0; R.startErr = null;
     fs.writeFileSync(path.join(OUT, `iz-${yen}-ozet.json`), JSON.stringify(R, null, 2));
     bas(R, path.join(OUT, `iz-${yen}.json`));
     return;
@@ -80,6 +82,10 @@ async function main() {
   page.on('console', m => { if (m.type() === 'error') hatalar.push(m.text()); });
   page.on('pageerror', e => hatalar.push(e.message));
   await page.addInitScript('(' + TOHUM.toString() + ')(' + SEED + ');');
+  /* FAZ 42-B: DİL TÜRKÇE'YE SABİTLENİR. Headless Chrome `navigator.language` olarak en-US
+     bildirir ve i18n ilk açılışta buna göre İngilizceye düşer — anlatım ölçümü (E1/E2/E3)
+     bu durumda test artefaktı ölçer. Kilit oyun betiklerinden ÖNCE kurulur. */
+  await page.addInitScript("try{localStorage.setItem('charazay_lang','tr');}catch(e){}");
   await page.goto(`http://127.0.0.1:${port}/charazay2.0.html`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#loginPage', { state: 'visible', timeout: 15000 });
   await page.click('#loginPage button.btn-p');
@@ -113,6 +119,12 @@ async function main() {
                karelerde duran jeton NORMALDIR (dizilim olculerek ayarlandi, F14-7). */
             ft: S._ftAktif ? 1 : 0,
             inb: S.inb ? 1 : 0,
+            /* FAZ 42-B: sekme gizli mi (C) · hücum yönü sol pota mı (D) · perde aktif mi (D, perde
+               anı ikili mesafe ölçütünden muaf) · aktif takip var mı (B) */
+            hid: (typeof document !== 'undefined' && document.hidden) ? 1 : 0,
+            os: S.offSide ? 1 : 0,
+            perde: (S._perde && S._perde.evre < 3 && (S.time - S._perde.t) < 1.6) ? 1 : 0,
+            ch: S.chase ? 1 : 0,
             p: (S.players || []).map(p => [
               +p.x.toFixed(1), +p.y.toFixed(1),
               (S.offP || []).indexOf(p) >= 0 ? 1 : 0,
@@ -123,7 +135,8 @@ async function main() {
               ((p._lock || 0) > S.time) ? 1 : 0,                /* 7: koreografi kilidi */
               ((p._swayT || 0) > S.time) ? 1 : 0,               /* 8: salınım penceresi */
               +(p._nudgeOfs != null ? p._nudgeOfs : -99).toFixed(0), /* 9: sürüklenme ofseti */
-              (p._nudgeN | 0)                                  /* 10: salınım atama sayacı */
+              (p._nudgeN | 0),                                 /* 10: salınım atama sayacı */
+              (p._oob || p._oobDonus) ? 1 : 0                  /* 11: çizgi dışı izni + dönüş (A4 muafiyeti) */
             ])
           });
         }
@@ -136,14 +149,31 @@ async function main() {
   await page.evaluate((r) => { try { startMatch(); setMatchRate(r); } catch (e) { window.__startErr = String(e); } }, RATE);
   await bekle(SECS * 1000);
 
-  const veri = await page.evaluate(() => ({ kare: window.__IZ.kare, startErr: window.__startErr || null }));
+  const veri = await page.evaluate(() => ({
+    kare: window.__IZ.kare, startErr: window.__startErr || null,
+    /* FAZ 42-B: RENDER EDİLMİŞ anlatım balonları (E1/E2/E3). Balonlar listenin BAŞINA
+       eklenir; kronolojik sıra için ters çevrilir. */
+    balon: (() => { try {
+      const el = Array.from(document.querySelectorAll('#commentary .ci'));
+      return el.reverse().map(e => ({ cls: e.className, txt: (e.textContent || '').replace(/\s+/g, ' ').trim() }));
+    } catch (e) { return []; } })(),
+    adlar: (() => { try {
+      const a = [];
+      (G.players || []).forEach(p => a.push(p.isim));
+      const S = mState && mState._sim; (S && S.players || []).forEach(p => { if (p.pl && p.pl.isim) a.push(p.pl.isim); });
+      a.push(G.team && G.team.isim, mState && mState.rakipName);
+      return a.filter(Boolean);
+    } catch (e) { return []; } })(),
+    dil: (typeof getLang === 'function') ? getLang() : '?'
+  }));
   await page.evaluate(() => { try { stopMatch(); } catch (e) {} });
   await browser.close(); srv.close();
 
   const izDosya = path.join(OUT, `iz-${ETIKET}.json`);
-  fs.writeFileSync(izDosya, JSON.stringify({ meta: { etiket: ETIKET, seed: SEED, secs: SECS, rate: RATE, pxM: PX_M }, kare: veri.kare }));
+  fs.writeFileSync(izDosya, JSON.stringify({ meta: { etiket: ETIKET, seed: SEED, secs: SECS, rate: RATE, pxM: PX_M, dil: veri.dil }, kare: veri.kare, balon: veri.balon, adlar: veri.adlar }));
 
-  const R = analiz(veri.kare);
+  const R = analiz(veri.kare, veri.balon, veri.adlar);
+  R.dil = veri.dil;
   R.konsolHata = hatalar.length;
   R.startErr = veri.startErr;
   fs.writeFileSync(path.join(OUT, `iz-${ETIKET}-ozet.json`), JSON.stringify(R, null, 2));
@@ -152,8 +182,9 @@ async function main() {
 }
 
 /* ── ANALİZ ────────────────────────────────────────────────────────────────────────── */
-function analiz(K) {
+function analiz(K, BAL, ADLAR) {
   if (K.length < 10) return { hata: 'kare yok', kare: K.length };
+  BAL = BAL || []; ADLAR = ADLAR || [];
 
   /* -- FAZ 41 yardimcilari ---------------------------------------------------------- */
   const medyan = (arr) => { if (!arr.length) return 0; const q = arr.slice().sort((a, b) => a - b);
@@ -193,7 +224,7 @@ function analiz(K) {
       if (dt < 0.05 || dt > 0.4) continue;
       const a = al(K[i], idx), b = al(K[j], idx);
       if (!a || !b) continue;
-      out.push({ i, t: K[i].t, v: Math.hypot(b[0] - a[0], b[1] - a[1]) / dt / PX_M, idx: K[i].idx });
+      out.push({ i, t: K[i].t, v: Math.hypot(b[0] - a[0], b[1] - a[1]) / dt / PX_M, idx: K[i].idx, idxJ: idx });
     }
     return out;
   };
@@ -207,6 +238,16 @@ function analiz(K) {
   /* FAZ 41: CANLI TOP orneklemi — olu top kareleri disarida. Donma olcutu bunun
      uzerinden okunur; brifin "olu topta duran jeton normaldir" sarti budur. */
   const canliOy = tumOy.filter(x => !oluTop(K[x.i]));
+  const donKova = {};
+  for (const x of canliOy) {
+    if (x.v / sahneKat >= 0.5) continue;
+    const k = K[x.i]; const q = k.p && k.p[x.idxJ];
+    if (!q) continue;
+    const ad = (q[2] ? "HUC" : "SAV") + (q[4] ? "/top" : "") + (k.cs ? "/set" : "/gecis") + (q[6] != null ? (q[6] < 20 ? "/yerinde" : "/uzak") : "") + (q[5] != null ? "/u" + q[5] : "") + "/" + (k.b ? k.b[2] : "?");
+    donKova[ad] = (donKova[ad] || 0) + 1;
+  }
+  const donToplam = Object.keys(donKova).reduce((a, k) => a + donKova[k], 0) || 1;
+  const donKovaListe = Object.keys(donKova).sort((a, b) => donKova[b] - donKova[a]).slice(0, 10).map(k => k + " %" + (100 * donKova[k] / donToplam).toFixed(1));
 
   /* Kare-kare top sıçraması (ışınlanma tespiti — pencere yumuşatması ışınlanmayı gizler,
      bu yüzden ışınlanma AYRI ölçülür: tek karede kat edilen mesafe / kare süresi). */
@@ -218,6 +259,7 @@ function analiz(K) {
     sicrama.push({ v: d / dt, t: K[i].t, mod: K[i].b[2], idx: K[i].idx });
   }
   const isin = sicrama.filter(x => x.v > 25);
+  const isinListe = isin.map(x => ({ t: x.t, mod: x.mod, tip: (K.find(k => k.t === x.t) || {}).tip, v: +x.v.toFixed(1) }));
 
   /* Pozisyon sayısı: idx'in değiştiği kare sayısı değil, benzersiz olay sayısı. */
   const pozSet = new Set(K.map(k => k.idx));
@@ -291,7 +333,7 @@ function analiz(K) {
   const tersMedyan = ters.length ? medyan(ters.map(x => x.adim)) : 0;
 
   /* Tam sahayı tek düz çizgide geçen jeton: 700 px+ yer değiştirme, yol/kirişte sapma < %5 */
-  let duzCapraz = 0;
+  let duzCapraz = 0; const duzListe = [];
   for (let i = 0; i < 10; i++) {
     let a = 0;
     while (a < K.length - 2) {
@@ -304,7 +346,7 @@ function analiz(K) {
       const p0 = K[a].p[i], p1 = K[b].p[i];
       if (p0 && p1) {
         const kiris = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
-        if (kiris > 700 && yol > 0 && (yol - kiris) / kiris < 0.05) duzCapraz++;
+        if (kiris > 700 && yol > 0 && (yol - kiris) / kiris < 0.05) { duzCapraz++; duzListe.push({ t: K[a].t, tip: K[a].tip, tipSon: K[b].tip, poz: p0[3], huc: p0[2], y0: Math.round(p0[1]), y1: Math.round(p1[1]) }); }
       }
       a = b > a ? b : a + 1;
     }
@@ -317,13 +359,95 @@ function analiz(K) {
   const oyV = tumOy.map(x => x.v);
   const topV = topHiz.map(x => x.v);
 
+  /* ── FAZ 42-B: A4 · B · D · E ölçütleri ──────────────────────────────────────────────
+     Kayıt eski biçimdeyse (alan yok) ilgili ölçüt null döner — kapı KURULMAZ. */
+  const X0 = 56.4, X1 = 883.6, Y0 = 28.43, Y1 = 471.57, ORTA = 470;
+  const yeniBicim = !!(K[0].p && K[0].p[0] && K[0].p[0].length >= 12);
+  const sayac = (o, k) => { o[k] = (o[k] || 0) + 1; };
+  const enBuyukler = (o, n) => Object.keys(o).sort((a, b) => o[b] - o[a]).slice(0, n).map(k => k + ':' + o[k]).join(' · ');
+  /* A4 — saha çizgisi dışına taşan oyuncu (`_oob` izni olan sokucu muaf) */
+  let disKare = 0, disMax = 0; const disTip = {};
+  /* B — sahipsiz top: taşıyıcı yok, top uçmuyor (shot/rim/pass değil), en yakın oyuncu > 2 m */
+  let sahipsizKare = 0; const sahTip = {}, sahMod = {}, sahChase = { takipVar: 0, takipYok: 0 };
+  /* D — hücumcular arası en küçük ikili mesafe (< 2 m) ve set hücumunda arka sahada kalan hücumcu */
+  let setKare = 0, yakinKare = 0, arkaKare = 0, arkaOyuncuToplam = 0; const yakinTip = {}, arkaTip = {}, arkaPoz = {};
+  let hidKare = 0; let _onSahaBas = -1, _onSahaOnce = false;
+  for (const k of K) {
+    if (k.hid === 1) hidKare++;
+    const P = k.p || [];
+    let dis = false, dmax = 0;
+    for (const q of P) {
+      if (!q || (yeniBicim && q[11] === 1)) continue;
+      const ox = Math.max(0, X0 - q[0], q[0] - X1), oy = Math.max(0, Y0 - q[1], q[1] - Y1);
+      const o = Math.max(ox, oy);
+      if (o > 0.5) { dis = true; if (o > dmax) dmax = o; }
+    }
+    if (dis) { disKare++; if (dmax > disMax) disMax = dmax; sayac(disTip, k.tip); }
+    const mod = k.b && k.b[2];
+    const tasiyan = P.some(q => q && q[4] === 1);
+    if (!tasiyan && mod !== 'shot' && mod !== 'rim' && mod !== 'pass') {
+      let ed = 1e9; for (const q of P) { if (q) { const d = Math.hypot(q[0] - k.b[0], q[1] - k.b[1]); if (d < ed) ed = d; } }
+      if (ed > 2 * PX_M) { sahipsizKare++; sayac(sahTip, k.tip); sayac(sahMod, mod); if (k.ch === 1) sahChase.takipVar++; else sahChase.takipYok++; }
+    }
+    const _topOnSaha = k.b && (k.os === 1 ? k.b[0] < ORTA : k.b[0] > ORTA);
+    if (_topOnSaha && !_onSahaOnce) _onSahaBas = k.t; _onSahaOnce = !!_topOnSaha;
+    const _setKuruldu = _topOnSaha && (k.t - _onSahaBas) >= 1.0;
+    /* CANLI SET: sokucu (_oob) sahadayken top elde olsa da ÖLÜ TOPTUR (foul/ihlal dalları S.inb kurmaz, sokucuyu doğrudan görevlendirir). */
+    const _sokucuVar = yeniBicim && P.some(q => q && q[11] === 1);
+    if (k.cs === 1 && (mod === "held" || mod === "pass") && k.ft !== 1 && k.inb !== 1 && !_sokucuVar && _setKuruldu) {
+      setKare++;
+      const off = P.filter(q => q && q[2] === 1 && !(yeniBicim && q[11] === 1));
+      let mn = 1e9;
+      for (let i = 0; i < off.length; i++) for (let j = i + 1; j < off.length; j++) mn = Math.min(mn, Math.hypot(off[i][0] - off[j][0], off[i][1] - off[j][1]));
+      if (mn < 2 * PX_M && k.perde !== 1) { yakinKare++; sayac(yakinTip, k.tip); }
+      if (k.os != null) {
+        /* orta çizgiye ±12 px (0,4 m) — çizginin üstündeki oyuncu 'geride' sayılmaz; kodla aynı tolerans */
+        const arka = off.filter(q => k.os === 1 ? q[0] > ORTA + 12 : q[0] < ORTA - 12).length;
+        if (arka > 0) { arkaKare++; arkaOyuncuToplam += arka; sayac(arkaTip, k.tip); off.filter(q => k.os === 1 ? q[0] > ORTA + 12 : q[0] < ORTA - 12).forEach(q => sayac(arkaPoz, q[3] + (q[5] != null ? "/u" + q[5] : ""))); }
+      }
+    }
+  }
+  /* E — anlatım (render edilmiş balon) */
+  const TRH = /[çğıöşüÇĞİÖŞÜ]/;
+  /* İngilizce sözcük — kesme işaretli Türkçe ek (Collins'in, Olympia'da) EŞLEŞMEZ (ölçüldü: yanlış pozitif) */
+  const ENW = /(^|[\s,.;:!?—-])(the|and|with|from|for|of|in|on|at|by|off|shot|rebound|foul|steal|points?|three|misses?|makes?|hits?|scores?|goes|gets|takes|pass|drives?|turnover|timeout|quarter|end|start)(?=[\s,.;:!?—-]|$)/i;
+  const govde = (t) => t.replace(/^\s*(\d+P|Q\d+|U\d+|OT\d+)\s+\d+:\d\d\s*/, '');
+  let trSatir = 0, enSatir = 0; const enOrnek = [];
+  let sonucSatir = 0, oznesiz = 0; const oznesizOrnek = [];
+  let noktalama = 0; const noktalamaOrnek = [];
+  const kucukAdlar = new Set(); ADLAR.forEach(a => String(a).split(/\s+/).forEach(w => { if (/^[a-zçğıöşü]/.test(w)) kucukAdlar.add(w.replace(/[.,!?]+$/, '')); }));
+  for (const b of BAL) {
+    const g = govde(b.txt || '');
+    if (!g) continue;
+    if (ENW.test(g) && !TRH.test(g)) { enSatir++; if (enOrnek.length < 4) enOrnek.push(g.slice(0, 70)); } else trSatir++;
+    const cls = b.cls || '';
+    if (/ci-score|ci-foul/.test(cls) && !/ci-tactic|ci-hl/.test(cls)) {
+      sonucSatir++;
+      /* Öznesiz: gövde küçük harfle başlıyor ve içinde büyük harfle başlayan (ad) sözcük yok. */
+      const ozneVar = /(^|[\s—(])[A-ZÇĞİÖŞÜ][a-zçğıöşüA-ZÇĞİÖŞÜ'’.-]+/.test(g);
+      if (/^[a-zçğıöşü]/.test(g) && !ozneVar) { oznesiz++; if (oznesizOrnek.length < 4) oznesizOrnek.push(g.slice(0, 70)); }
+    }
+    /* Noktalama: nokta + boşluk + küçük harf; rakam sonrası nokta (sıra eki) ve küçük harfli özel ad muaf. */
+    const re = /(^|[^0-9])\.\s+([a-zçğıöşü][^\s.,;!?]*)/g; let m;
+    while ((m = re.exec(g))) { if (!kucukAdlar.has(m[2])) { noktalama++; if (noktalamaOrnek.length < 4) noktalamaOrnek.push(g.slice(Math.max(0, m.index - 20), m.index + 30)); break; } }
+  }
+  const ek42 = {
+    yeniBicim,
+    sahaDisi: yeniBicim ? { kareOran: +(100 * disKare / K.length).toFixed(2), kare: disKare, maxPx: +disMax.toFixed(1), baglam: enBuyukler(disTip, 3) } : null,
+    sahipsiz: { kareOran: +(100 * sahipsizKare / K.length).toFixed(2), kare: sahipsizKare, tip: enBuyukler(sahTip, 4), mod: enBuyukler(sahMod, 3), takip: sahChase },
+    hucumYakin: setKare ? { kareOran: +(100 * yakinKare / setKare).toFixed(2), setKare, baglam: enBuyukler(yakinTip, 3) } : null,
+    arkaSaha: (setKare && K[0].os != null) ? { kareOran: +(100 * arkaKare / setKare).toFixed(2), kare: arkaKare, ortOyuncu: arkaKare ? +(arkaOyuncuToplam / arkaKare).toFixed(2) : 0, baglam: enBuyukler(arkaTip, 4), kim: enBuyukler(arkaPoz, 5) } : null,
+    gizliKare: hidKare,
+    anlatim: BAL.length ? { satir: BAL.length, tr: trSatir, en: enSatir, enOrnek, sonucSatir, oznesiz, oznesizOrnek, noktalama, noktalamaOrnek } : null
+  };
+
   return {
     kare: K.length, sure: +(K[K.length - 1].t - K[0].t).toFixed(1),
     sahneKat: +sahneKat.toFixed(3),
     poz: pozN,
     top: {
-      enYuksek: +Math.max.apply(null, topV.concat([0])).toFixed(1),
-      enYuksekSicrama: +Math.max.apply(null, sicrama.map(x => x.v).concat([0])).toFixed(1),
+      enYuksek: +enB(topV.concat([0])).toFixed(1),
+      enYuksekSicrama: +enB(sicrama.map(x => x.v).concat([0])).toFixed(1),
       isinlanma: isin.length,
       isinlanmaPozBasi: +(isin.length / pozN).toFixed(2),
       isinModlar: (() => { const o = {}; isin.forEach(x => o[x.mod] = (o[x.mod] || 0) + 1); return o; })(),
@@ -336,8 +460,8 @@ function analiz(K) {
       ortMac: +(ort(oyV) / sahneKat).toFixed(2),
       p50: +pct(oyV, 0.50).toFixed(2), p90: +pct(oyV, 0.90).toFixed(2), p99: +pct(oyV, 0.99).toFixed(2),
       p50m: +(pct(oyV, 0.50) / sahneKat).toFixed(2), p90m: +(pct(oyV, 0.90) / sahneKat).toFixed(2), p99m: +(pct(oyV, 0.99) / sahneKat).toFixed(2),
-      enYuksek: +Math.max.apply(null, oyV.concat([0])).toFixed(2),
-      enYuksekMac: +(Math.max.apply(null, oyV.concat([0])) / sahneKat).toFixed(2),
+      enYuksek: +enB(oyV.concat([0])).toFixed(2),
+      enYuksekMac: +(enB(oyV.concat([0])) / sahneKat).toFixed(2),
       /* Eşikler MAÇ ölçeğindedir; sahne hızı sahneKat ile bölünerek karşılaştırılır. */
       ust75mac: +yuzde(tumOy, x => x.v / sahneKat > 7.5).toFixed(1),
       ust65mac: +yuzde(tumOy, x => x.v / sahneKat > 6.5).toFixed(1),
@@ -348,7 +472,8 @@ function analiz(K) {
       alt05macCanli: +yuzde(canliOy, x => x.v / sahneKat < 0.5).toFixed(1),
       canliOrnek: canliOy.length,
       ortMacCanli: +(ort(canliOy.map(x => x.v)) / sahneKat).toFixed(2),
-      ornek: oyV.length
+      ornek: oyV.length,
+      donKova: donKovaListe
     },
     egrilik: {
       olcum: aci.length,
@@ -359,8 +484,11 @@ function analiz(K) {
       ters150: ters.length,
       ters150Sn: +tersSn.toFixed(3),
       ters150Medyan: +tersMedyan.toFixed(2),
-      duzCapraz
-    }
+      duzCapraz,
+      duzListe,
+      isinListe
+    },
+    ek42
   };
 }
 
@@ -386,6 +514,7 @@ function bas(R, dosya) {
   L.push(`  > 6,5 m/sn (maç) oranı        ${String(R.oyuncu.ust65mac + '%').padStart(11)}    ≤ 5%`);
   L.push(`  < 0,5 m/sn — OLU TOP HARIC   ${String(R.oyuncu.alt05macCanli + '%').padStart(18)}    <= 12%      [n=${R.oyuncu.canliOrnek}]`);
   L.push(`  canli top ortalama hizi   maç ${String(R.oyuncu.ortMacCanli + ' m/sn').padStart(11)}    1,8 - 2,6`);
+  if (R.oyuncu.donKova && R.oyuncu.donKova.length) L.push('     donma kovaları: ' + R.oyuncu.donKova.join(' · '));
   L.push(`  < 0,5 m/sn (maç) oranı        ${String(R.oyuncu.alt05mac + '%').padStart(11)}    ≤ 12%       [sahne ${R.oyuncu.alt05}%]`);
   L.push('');
   L.push('  ── YOL EĞRİLİĞİ ──');
@@ -394,7 +523,27 @@ function bas(R, dosya) {
   L.push(`  terslemelerin medyan adımı    ${String(R.egrilik.ters150Medyan + ' m').padStart(14)}    >= 0,5 m`);
   L.push(`  > 90° keskin dönüş             ${String(R.egrilik.keskin90 + ' (' + R.egrilik.keskinPozBasi + '/poz)').padStart(16)}    ≤ 2/poz`);
   L.push(`  tam sahayı düz geçen jeton     ${String(R.egrilik.duzCapraz).padStart(16)}    0`);
+  if (R.egrilik.duzListe && R.egrilik.duzListe.length) L.push('     düz geçenler: ' + R.egrilik.duzListe.map(x => x.t + 's ' + (x.huc ? 'HUC' : 'SAV') + '/' + x.poz + ' ' + x.tip + '→' + x.tipSon + ' y' + x.y0 + '→' + x.y1).join(' | '));
+  if (R.egrilik.isinListe && R.egrilik.isinListe.length) L.push('     ışınlanmalar: ' + R.egrilik.isinListe.map(x => x.t + 's ' + x.mod + '/' + x.tip + ' ' + x.v + ' m/sn').join(' | '));
   L.push('');
+  if (R.ek42) {
+    const E = R.ek42;
+    L.push('  ── FAZ 42-B: A4 · B · D · E ──');
+    if (E.sahaDisi) L.push(`  saha dışı oyuncu (_oob hariç)  ${String(E.sahaDisi.kareOran + '% kare').padStart(16)}    0    [maks ${E.sahaDisi.maxPx} px · ${E.sahaDisi.baglam || '-'}]`);
+    else L.push('  saha dışı oyuncu               (eski kayıt — _oob alanı yok, ölçülemedi)');
+    L.push(`  sahipsiz top karesi            ${String(E.sahipsiz.kareOran + '%').padStart(16)}    ≤ 2%   [tip: ${E.sahipsiz.tip || '-'} · mod: ${E.sahipsiz.mod || '-'} · takip var/yok ${E.sahipsiz.takip.takipVar}/${E.sahipsiz.takip.takipYok}]`);
+    if (E.hucumYakin) L.push(`  hücumcu ikili < 2 m (set, perde hariç) ${String(E.hucumYakin.kareOran + '%').padStart(8)}    ≤ 5%   [set karesi ${E.hucumYakin.setKare} · ${E.hucumYakin.baglam || '-'}]`);
+    if (E.arkaSaha) L.push(`  set hücumunda arka sahada hücumcu ${String(E.arkaSaha.kareOran + '% kare').padStart(13)}    0      [ort ${E.arkaSaha.ortOyuncu} oyuncu · ${E.arkaSaha.baglam} · kim: ${E.arkaSaha.kim}]`);
+    else L.push('  set hücumunda arka sahada hücumcu (eski kayıt — os alanı yok, ölçülemedi)');
+    L.push(`  gizli sekme karesi             ${String(E.gizliKare).padStart(16)}    (C — 0 beklenir, kayıt ön planda)`);
+    if (E.anlatim) {
+      const A = E.anlatim;
+      L.push(`  anlatım dili (oyun: ${R.dil || '?'})        TR ${A.tr} · EN ${A.en}    EN = 0` + (A.en ? '   ör: ' + A.enOrnek.join(' | ') : ''));
+      L.push(`  öznesiz sonuç satırı           ${String(A.oznesiz + ' / ' + A.sonucSatir).padStart(16)}    0` + (A.oznesiz ? '   ör: ' + A.oznesizOrnek.join(' | ') : ''));
+      L.push(`  nokta + küçük harf (balon)     ${String(A.noktalama + ' / ' + A.satir).padStart(16)}    0` + (A.noktalama ? '   ör: ' + A.noktalamaOrnek.join(' | ') : ''));
+    } else L.push('  anlatım                        (balon kaydı yok)');
+    L.push('');
+  }
   L.push(`  konsol hatası: ${R.konsolHata}` + (R.startErr ? ' · startMatch: ' + R.startErr : ''));
   L.push(`  iz: ${path.relative(ROOT, dosya)}`);
   console.log(L.join('\n'));

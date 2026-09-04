@@ -7172,3 +7172,277 @@ bağlı). "Şut anında yerinde HÜCUMCU" 4,32/5 (HEAD 4,03-4,11 · kapı 4,25) 
 
 JS değişti → HTML 15 `?v=` ve `sw.js SCRIPT_V` **77 → 78**, `surum-check --yaz` ile kayıt
 tazelendi (FAZ 20 dersi). Commit/push YAPILMADI.
+
+---
+
+## 42-B. oturum — FAZ 42-B: CANLI MAÇ KAPSAMLI REVİZYON (2026-09-04)
+
+Brif, b24b662 (FAZ 40) ölçümüne dayanıyordu; aradan FAZ 41 ve FAZ 42 geçmişti. Yöntem gereği
+her madde önce YENİDEN ÖLÇÜLDÜ (480 sn · 86 pozisyon · 28.757 kare · maç ölçeği; sahne→maç
+oranı aynı koşuda 1,586), sonra dokunuldu. Hakem `tools/iz-kaydet.js`; brifin A4 · B · D · E
+ölçütleri bu araca eklendi (TR dil kilidi, `_oob`/gizli sekme/perde damgaları, render edilmiş
+balon yakalama). Kayıtlar `olcum/iz-f42-*.json`, grafikler `olcum/iz-f42-{temel,a3c,d3}-*.png`.
+
+### ÖNCE / SONRA (brifin §4 tablosu · maç ölçeği · 480 sn)
+
+| Ölçüt | Brif (b24b662) | Temel (FAZ 42) | SON (d3) | Hedef |
+|---|---|---|---|---|
+| oyuncu > 7,5 m/sn | %11,0 | **%0,0** (zaten düzelmiş) | %0,0 | ≤ %1 ✓ |
+| oyuncu ortalama hızı | 3,11 | **1,95** (zaten düzelmiş) | 2,40 | 1,8–2,6 ✓ |
+| donma (< 0,5 m/sn, ölü top hariç) | %18,2 | %13,6 | **%10,5** | ≤ %12 ✓ |
+| yön terslemesi > 150° | 8,21/poz (7 cm) | 0,088/sn | **0,074/sn** | ≤ 0,15/sn ✓ |
+| > 90° keskin dönüş | 20,82/poz | 1,64/poz | **1,16/poz** | ≤ 2 ✓ |
+| tam sahayı düz geçen jeton | 55 | 8 | 11 (6-8 koşular arası) | 0 ✗ — bkz. A3 |
+| top ışınlanması (> 25 m/sn) | 1 | 3 | **0-1** (bd: 0 · d3: 1) | 0 ~ |
+| sahipsiz top karesi | %7,2 | %3,04 | %4,0 · **mola hariç %1,6** | ≤ %2 ✓ (mola = ölü top) |
+| saha çizgisi dışına taşan oyuncu | %1,09 | %0,24 | **%0** | 0 ✓ |
+| set hücumunda arka sahada hücumcu (D) | — | %2,7 | **%0** | 0 ✓ |
+| hücumcu ikili < 2 m (D) | — | %2,4 | %5,3-6,0 | ≤ %5 ~ (koşular arası 2,1-6,0) |
+| TR/EN karışımı (E1) | 93/162 | **TR 88 · EN 0** | TR 88 · EN 0 | 0 ✓ |
+| öznesiz sonuç satırı (E2) | 1 (canlı) | 0/55 | 0/55 | 0 ✓ |
+| nokta + küçük harf (E3) | — | 0/88 | 0/88 | 0 ✓ |
+| sekme arka plandayken kuyruk (C) | akıyor | akıyor (3→7) | **duruyor (3→4)** | ✓ |
+
+Motor her adımda doğrulandı: `sim-node --n=500 --seed=42` **91.1 - 85.4 · 248** · determinizm
+EVET · `band.js` **76351f00455b3a5e** · `measure.js` **0132d9fff6e778d0** (F öncesi).
+
+### A1 — HIZ MERDİVENİ: ZATEN DÜZELTİLMİŞ (FAZ 41), DOKUNULMADI
+
+Temel ölçüm maç ölçeğinde: > 7,5 m/sn **%0,0**, ortalama **1,95**, en yüksek 8,65. Brifin
+"merdiven iki kat yukarıda" teşhisi SAHNE hızlarını gerçekle kıyaslıyordu (CLAUDE.md F15/FAZ 40
+dersi); FAZ 41 aynı öneriyi uygulayıp ölçmüş ve bandın altına düştüğü için geri almıştı.
+İvme sınırı (`_ACC_MAX`/`_DEC_MAX`) FAZ 40'tan beri var. Hız profili grafiğinde dik duvar yok.
+
+### A2 — DONMA: TİTREMESİZ, GERÇEK TOPSUZ HAREKETLE %13,6 → %10,5
+
+Donma kovaları ölçüldü (yeni teşhis satırı): en büyük üçü **set hücumunda noktasına varmış
+topsuz hücumcu (YÜRÜ) %14,7 · onun savunmacısı %8,0 · topu tutan %7,4**. Brifin listesinden
+dört gerçek hareket eklendi (mevcut kesme/perde adımları sıklaştırıldı, yeni mekanizma yok):
+
+1. **Kes-doldur**: kesici noktasını boşaltır, en yakın çevre oyuncusu boşalan noktaya kayar,
+   kesici pozisyon sonunda doldurucunun noktasına açılır — dizilim noktaları kümesi değişmez,
+   sahipleri döner (kesme sıklığı %35 → %60; ikili oyunda da zayıf taraftan %55).
+2. **Topçunun sürüş hamlesi**: set kurulunca yay boyunca TEK yöne 1,55-2,1 m sürer.
+3. **Spacing düzeltmesi**: senaryosu olmayan çevre oyuncusu en yakın takım arkadaşından
+   UZAĞA 1,5-2,2 m açılır (yalnız aralığı büyüten yönde).
+4. **Şut çıkarken**: potaya en yakın iki topsuz hücumcu ribaunt pozisyonuna, kalanlar geri
+   dönüşe bir adım (ribaunt noktası takım arkadaşı hedefinden ≥ 2,1 m).
+
+Ölçüm: A2 %14,0 · A2b %13,6 (en büyük kova %14,7 → %10,3). Eşiğin altına inmesi A3'ün dönüş
+sınırıyla geldi (%10,9) — dönüş sınırı hedefe varan jetonun yön-çevirme titremesini de bitirdi.
+
+**Salınım anahtarı testi (brifin YASAK'ı):** FAZ 41'in elips yayı + FAZ 40'ın savunma duruş
+kayması `_SALINIM_ACIK=false` ile KAPATILIP ÖLÇÜLDÜ: donma %10,5 → **%23,9**, 150° tersleme
+0,074 → **0,221/sn** (varış frenindeki yerinde kıpırdanma kapalı eğri olmayınca terslemeye
+dönüyor), keskin dönüş 1,16 → 0,73. Brifin 3. kuralı gereği geri alındı. Elips yayı
+titreme DEĞİL — 5,5 m gerçek yol kat eden kapalı eğri; terslemelerin medyan adımı iki
+durumda da 0,03 m (o ölçütün aritmetik sınırı FAZ 41'de yazıldı).
+
+### A3 — DÖNÜŞ HIZI SINIRI (steering): ÜÇ SÜRÜM, İKİSİ ÖLÇÜLEREK ELENDİ
+
+`_donusSinirla`: istenen yön mevcut hız yönünden en fazla ω·dt sapar; kalan açı sonraki
+karelerde kapanır → yollar yay çizer. Kulvar ara noktası (`_kulvarWp`) orta sahadan kulvarın
+%80'ine alındı ve Δy eşiği 60 → 40 px.
+
+* **a3 (elendi):** ω = 180°/sn × (120/hız) — sprintte dönüş yarıçapı 4,9 m; jeton hedefinin
+  çevresinde YÖRÜNGEYE girip varamıyor: ortalama hız 2,79 · saha dışı %17,8 · arka saha %93.
+* **a3b (elendi):** yarıçap 1-2,5 m (hız × 0,30, 26-74 px), hedef çemberin içindeyse sıkı
+  dönüş; 180° dönüşte istenen hız %35'e iniyordu → jeton hedeften uzaklaşmaya devam ediyordu:
+  sahipsiz %7,2 · arka saha %32.
+* **a3c (kalan):** 120°+ dönüşte istenen hız SIFIR ("dur-dön"; fren tavanı 7,6 m/sn² ile 0,3 sn),
+  markajdaki savunmacı ve serbest top takipçisi ×1,6 çevik. Ölçüm: ortalama hız 2,39 ·
+  donma **%10,9** · tersleme 0,076 · keskin dönüş **1,13/poz** · saha dışı %0,16.
+
+**"Tam sahayı düz geçen jeton = 0" ölçütüne ULAŞILAMADI (6-11/480 sn).** Kalanların tamamı
+kulvar koşusu ya da dirsek açısı ölçütün altında kalan uzun koşu: ölçüt yol/kiriş ≥ %5 ister,
+bu 700 px kirişte ≥ 111 px (3,7 m) yanal sapma demektir. Gerçek kulvar sprinti düzdür;
+3,7 m'lik yapay viraj FAZ 41'de de reddedilmişti. Dirsek %80'e alınınca gerçek köşegenler
+(Δy ≥ 2 m) ölçütü geçer; kalanlar Δy < 2 m'lik düz koşulardır.
+
+### A4 — SAHA DIŞI: %0,24 → %0
+
+Kök neden: `_oob` izni kalkınca sokucu hâlâ çizginin 26 px dışındaydı; kademeli kırpma
+onu 5-6 karede içeri alırken "saha dışı" sayılıyordu. `_oobKapat(p)`: oyuncu dışarıdaysa
+`_oobDonus` bayrağı kalır, sınır adımı çizgiyi geçince düşürür; 9 doğrudan `_oob=false`
+ataması tek yardımcıya bağlandı. Ölçüm araçları `_oob||_oobDonus` okur.
+
+### B — SAHİPSİZ TOP: %3,0 → mola hariç %1,6 · ışınlanma 3 → 0-1
+
+Bağlam sayacı (yeni): **mola** (top hakemde, kulübe toplanması — ölü top), **çalma** (top
+thief'e 5 m/sn fırlatılıyordu), **kaçan üçlük/ribaund** (karambol 4-7 m/sn ile 2-3 m uzağa),
+**serbest atış** (son atış girince sokucu ancak SONRAKİ olayda seçiliyordu).
+1. Karambol hızı 120-205 → 85-150 px/sn (top çemberden 1,3-2,3 m uzağa düşer); çalınan top
+   110 px/sn.
+2. Serbest atışın son atışı girince `_setupInbound` hemen çağrılır (saha şutundaki gibi).
+3. **Işınlanmanın kök nedeni:** `held` modunda top MUTLAK hızla kırpılıyordu; sprint yapan
+   jetonun eline yaklaşan top jeton hızı + 19,6 m/sn tavanla 25-27 m/sn'ye çıkıyordu. Elde
+   tutulan top artık oyuncunun kare içi yer değiştirmesini aynen alır (`p._px/_py`), yalnız ele
+   göre kalan ofset `_TOP_YAKLAS=260 px/sn` ile kapanır.
+Mola kareleri ÖLÜ TOPTUR (top hakemde) ve ölçütte ayrıca raporlanır; sahne katmanında hakem
+jetonu yok, top sokma noktasında bekler.
+
+### C — SEKME ARKA PLANDAYKEN KUYRUK DURUYOR (kök neden kanıtlandı)
+
+`tools/arka-plan-check.js` (yeni): maç başlar, başka sekme öne alınır, 30 sn beklenir.
+**`document.hidden` arka planda da FALSE kalıyor** (headless'ta ve brifin canlı gözleminde),
+yani `visibilitychange` koruması hiç ateşlenmiyor; rAF ise boğuluyor (30 sn'de sahne 1 sn
+ilerledi, kuyruk 4 olay / 5 sayı aktı). Koruma artık görünürlük API'sine değil SAHNE
+SAATİNİN DUVAR SAATİNE ORANINA bağlı: (a) `stepGuarded` olay sınırında son olaydan bu yana
+sahne duvarın %35'inden az ilerlediyse `_bgPause` kurar ve 400 ms'lik yoklamayla sahne
+akana kadar bekler, dönüşte `_simCatchUp`; (b) bekçi (2 sn) aynı oranı olay beklemeden
+denetler. İlk sürüm (son rAF damgası, 1,2 sn) yetersiz çıktı: boğulmuş sekmede kare ~1,5
+sn'de bir yine geliyor. Ölçüm: gizliyken **idx 3 → 4** (gizlenmeden önce kurulmuş tek olay
+sızar), dönüşte kuyruk sürüyor, sapma 67 px, konsol 0 — **6/6**. `faz11-check` B2 harness'ı
+`--disable-renderer-backgrounding` ile açıldığı için orada olayların akması DOĞRUDUR;
+kapı özgün anlamında bırakıldı (15/15).
+
+### D — YUMAK / ARKA SAHADA KALAN HÜCUMCU
+
+İki yeni ölçüt (`iz-kaydet`): hücumcular arası en küçük ikili mesafe (< 2 m, perde anı
+hariç) ve set hücumunda arka sahada hücumcu. "Set" tanımı ölçülerek daraltıldı: canlı top
+(held/pass) · ön sahada ≥ 1 sn · sokucu (`_oob`) sahada değil.
+Kök nedenler: (1) set noktası JOG ile atanınca geride kalan kanat/uzun orta sahayı YÜRÜYEREK
+geçiyordu → arka sahadaki oyuncu KOŞ; düdük dallarındaki "herkes yürür" kuralı öndekilere
+sınırlandı (geride kalan JOG); (2) `canliSet` topçu varınca ilan ediliyordu → **set, son
+hücumcu da ön sahaya girince kurulmuş sayılır** (`_hepsiOnde`, `_simTick`); (3) `_hepsiOnde`
+sokucuyu muaf tutuyordu — sayı sonrası dip çizgideki sokucu 20 m geride dururken set ilan
+ediliyordu (iz: 228 kare, 60-150 px geride, koşarken). Sonuç **%0**.
+İkili mesafe < 2 m: %2,1-6,0 arasında salınıyor (aynı kodda koşular arası); şut anı ribaunt
+noktaları takım arkadaşı hedefinden ≥ 2,1 m seçilir. Son iki koşu %5,3 / %6,0 — eşikte.
+
+### E — ANLATIM
+
+**E1 = TEST ARTEFAKTI.** Headless Chrome `navigator.language=en-US` bildirir, i18n ilk
+açılışta İngilizceye düşer. `iz-kaydet` artık dili oyun betiklerinden ÖNCE Türkçeye kilitler
+(`localStorage charazay_lang=tr`); kilitli kayıtta **TR 88 · EN 0**. i18n sızıntısı YOK.
+E2 öznesiz sonuç satırı **0/55**, E3 nokta + küçük harf **0/88** (render edilmiş balon,
+rakam sonrası nokta ve küçük harfli özel ad muaf). E4 yasak kalıp listesi ve ad kuralı
+dokunulmadı (`anlatim-check` 31/31).
+
+### F — MOTOR KALİBRASYONU (kullanıcı izniyle; maç matematiği DEĞİŞTİ)
+
+Hedefler `tools/_lib/gercek-bantlar.json`. Uygulanan knoblar (`runPossession`):
+pozisyon sonucu dağılımı **şut 74,0 → 76,8 · şutsuz faul 4,2 → 4,3 · top kaybı 20,3 → 17,4** ·
+top kaybı türünde çalma payı 61,5 → 54,5 · şut faulü çarpanları ×0,9 · rotasyon
+`_restEvery` 20-26 → 10-13, `_her` 24 → 11, `restCd` 11 → 4 · **putback kapısı `_rebAnlat`
+(anlatım çekilişi) ile bağıydı — ayrıştırıldı** (etkin oran %12 → %27; CLAUDE.md FAZ 40
+denetiminde kusur olarak yazılıydı).
+
+| Kalem | Önce | Sonra | Bant |
+|---|---|---|---|
+| top kaybı / poz | 0,170 | **0,150** | 0,130–0,153 ✓ |
+| top çalma / poz | 0,098 | **0,076** | 0,069–0,086 ✓ |
+| faul / poz | 0,218 | **0,198** | 0,184–0,213 ✓ |
+| FGA / poz | 0,883 | 0,907 | 0,879–0,917 ✓ |
+| oyuncu değişikliği (iki takım) | 20,3 | **38,6** | 34,8–44,1 ✓ |
+| tip-in payı | %0,96 | **%2,44** | 2,05–3,05 ✓ |
+| uzatma (denk kadro) | 4,75 | 5,5 / 7,0 (iki koşu) | 4,77–6,45 ~ (120 maçta ±2,3 puan gürültü) |
+| ribaunt / poz | 0,482 | 0,492 | 0,423–0,460 ✗ |
+| kutu skorda görünen oyuncu | 10,01 | 9,16 | 10,15–11,15 ✗ |
+| en skorer oyuncunun payı | %27,1 | %27,8 | 22,8–26,8 ✗ |
+| pozisyon / maç · ort. süre | 155,1 · 15,56 | 156,7 · 15,44 | 161,8–167,9 · 14,3–14,8 ✗ (bilerek) |
+
+**Skor bandı (78-95) tutuyor:** `band.js` kullanıcı **94,3** · rakip 85,9 (min 59 · max 119);
+`sim-node --n=1000 --seed=42` **93.4 - 87.5 · olay/maç 270**; determinizm EVET.
+
+**HASH'LER TEK ADIMDA YENİLENDİ:** `band.js` 76351f00455b3a5e → **838518b5c925e68c** ·
+`measure.js` 0132d9fff6e778d0 → **5fafc6b99867e038**. Sebep: pozisyon sonucu dağılımı ve
+putback çekilişi rastgelelik akışını değiştirdi (F için kullanıcı izni vardı). Kilitli sonuç
+(C1) mekanizması dokunulmadı.
+
+**Uygulanmayanlar ve gerekçeleri:**
+* **Tempo bantları (`pozTuru` lo/hi):** gerçek tempo +%6 pozisyon demektir; top kaybı
+  düşüşüyle birleşince kullanıcı ortalaması 91 → ~97 olur ve 78-95 bandı kırılır. Kullanıcı
+  ortalaması şimdi 94,3 — tavana 0,7 puan var. Tempo ile skor bandı aynı anda tutturulamaz
+  (CLAUDE.md FAZ 39 §3.2 "süre ölçeklemesi verimi düzeltmez" dersi); bant tercihi korundu.
+* **Ribaunt/poz:** her kaçan şut bir oyuncuya ribaunt yazıyor; gerçek veride kaçanların ~%8'i
+  takım ribaundu/taç. Bunun yolu yeni bir olay sözleşmesi (kaçan şut → taç → sokma) ve
+  anlatım/sahne karşılığıdır — brif yeni olay türü yasaklıyor, ertelendi. Şut payı artınca
+  0,482 → 0,492.
+* **Görünen oyuncu / en skorer payı:** değişiklik sayısı banda girdi ama `benchNext` kuyruğun
+  başını alıp dinlenmesi biten ilk beşi öncelikle geri döndürdüğü için aynı 2-3 yedek dönüyor
+  (görünen oyuncu 10,0 → 9,2). Derinlik "en az süre almış yedeği seç" kuralı ister — ayrı iş.
+
+### REGRESYON TURU (F sonrası tam süit) — dört kapı düştü, ölçülerek onarıldı
+
+F sonrası `sahne-check` "şut anında yerinde hücumcu" **2,11**/5 (kapı 4,25), "aynı anda koşan"
+5,42/10, `spacing-check` "topu tutana en yakın savunmacı" **2,11 m** (kapı <1,8), "en yakın
+ikili" 3,48, `sunum-check` F14-7 düştü. Sırayla, her adım ölçülerek:
+
+* **r1** — A2b'nin şut anı ribaunt/geri dönüş adımı KAPATILDI (şuttan 0,42 sn önce hedef
+  değiştirmek koreografiyi eziyordu — FAZ 26 dersi; `_rebScramble` zaten şuttan sonra yapıyor).
+  Markajdaki savunmacı dönüş sınırından ve dur-dön freninden MUAF (tepki hareketi).
+  Serbest atış dizilişi muaf → F14-7 geri geldi (`sunum-check` tümü ✓).
+* **r2** — kesicinin ikinci hamlesi tKey−0,35 → tSet+1,55 (şutla çakışıyordu); spacing
+  düzeltmesi tek oyuncuya; ikili oyunda kes-doldur kapalı; sürüş hamlesi 1,3-1,7 m.
+  → aynı anda koşan 4,88 ✓ · en yakın ikili 3,55 ✓ · ball-you-man %87 ✓.
+* **r3 (test, geri alındı)** — sürüş hamlesi kapatıldı: markaj 2,19 (değişmedi) → suçlu değil.
+* **İkiye bölme** — dönüş sınırı geçici kapalı: markaj **1,79** ✓, yerinde 3,91 → A3 markajı
+  ~0,3 m açıyor, "yerinde" onsuz da düşük. A2 hamleleri kapalı: yerinde 3,49 → A2 değil.
+  Kulvar dirseği %50: 3,59 → değil.
+* **r4** — topu SÜREN dönüş sınırından muaf (crossover zaten keskindir) → markaj **1,81**
+  (eşikte; araç ±0,04, FAZ 41'de HEAD 1,76-1,85). Topsuz hamleler yalnız şuta ≥3,2 sn olan
+  pozisyonlarda.
+* **Kesin teşhis (ayrı worktree, HEAD + yalnız F):** "şut anında yerinde" **4,11** (kapı 4,25),
+  PG/SG/SF **%86** (kapı 90). Yani F tek başına iki sahne kapısını düşürüyor — sabit tohumlu
+  ölçüm maçının akışı değişti (şut payı, putback ×2,2, rotasyon). A–E'nin ek payı ~0,5
+  (A3 ~0,3: kavis/keskin dönüş kazanımıyla doğrudan takas — CLAUDE.md FAZ 40 eki dersi).
+
+### SON DURUM (F + r1-r4 · `iz-f42-son` · 480 sn · 90 pozisyon)
+
+ortalama hız **2,36** ✓ · > 7,5 m/sn %0,1 ✓ · donma (ölü top hariç) **%12,6** (~; r1-r4
+hareket azalttı, d3'te %10,5 idi) · tersleme **0,075/sn** ✓ · keskin dönüş **1,53/poz** ✓ ·
+düz geçen 8 ✗ · saha dışı **%0** ✓ · sahipsiz %3,35 → **mola hariç %2,16** (~) · arka saha
+%2,45 (tek bölüm, sayı sonrası C) · ikili < 2 m %6,2 (~, koşular arası 2,1-6,2) · TR 92 / EN 0 ✓
+· öznesiz 0/54 ✓ · noktalama 0/92 ✓ · konsol 0. "Işınlanma" 3 olayın üçü de `pass` modunda
+25-30 m/sn (sahne): pas tavanı 19,6 m/sn olan uçuşta kare zamanlama titreşimi; 40+ m/sn'lik
+gerçek sıçrama YOK (`realism-check` ışınlanma 0 · kopuk top 0).
+
+### KAPILAR (son hâl)
+
+**GEÇEN:** `visual-check` (masaüstü + mobil, 0 konsol hatası) · `sunum-check` tümü ·
+`anlatim-check` 31/31 · `balon-check` 0/88 · `realism-check` (saha dışı 0 · ışınlanma 0 ·
+kopuk 0 · senkron 0 ms) · `arka-plan-check` 6/6 · `faz11-check` 15/15 · `spacing-check`
+9/10 (markaj 1,81 eşikte) · `sahne-check` 5/8 · `kutu-check` 15/17 · `rotasyon-check` 2/4 ·
+`sut-cografya-check` tümü · `surum-check` (79).
+**DÜŞEN / EŞİKTE:** sahne-check "şut anında yerinde hücumcu" 3,6 (kapı 4,25 — F tek başına
+4,11), "yarı sahayı geçiren PG/SG/SF" %82-87 (F tek başına %86; n≈35, gürültülü) · spacing
+markaj 1,81 (<1,8) · kutu ribaunt/poz 0,49 · rotasyon görünen oyuncu 9,2 / en skorer %27,8 ·
+tempo (bilerek).
+
+### ULAŞILAMAYANLAR (açıkça)
+
+1. **Tam sahayı düz geçen jeton = 0** — 4-11/480 sn kaldı; kalanlar kulvar koşusu (Δy < 2 m).
+   Ölçüt 3,7 m'lik yanal viraj ister; gerçek kulvar sprinti düzdür.
+2. **Terslemelerin medyan adımı ≥ 0,5 m** — aritmetik olarak ulaşılamaz (FAZ 41).
+3. **Sahipsiz top ≤ %2 (mola dahil)** — mola ölü toptur (top hakemde); mola hariç %1,5-2,2.
+4. **Hücumcu ikili < 2 m ≤ %5** — koşular arası %2,1-6,2 salınıyor; F'nin putback artışı
+   çemberde yığılmayı büyüttü.
+5. **F: ribaunt/poz, görünen oyuncu, en skorer payı, tempo** — gerekçeleri F bölümünde.
+6. **sahne-check "şut anında yerinde" 4,25** — F tek başına 4,11'e düşürüyor; A3 ile takas.
+
+### ARAÇLAR
+
+Yeni: `tools/arka-plan-check.js` (C). Genişletilen: `tools/iz-kaydet.js` (TR kilidi ·
+`_oob`/`_oobDonus`/gizli sekme/perde/offSide damgaları · balon yakalama · A4/B/D/E ölçütleri
+· donma kovaları · düz geçiş/ışınlanma bağlamı · 270 bin örnekte `Math.max.apply` yığın
+taşması düzeltildi). `faz11-check` B2 kapısı özgün anlamında. Grafikler:
+`olcum/iz-f42-{temel,a3c,d3,final,son}-{yorunge,hiz}.png`.
+
+### SÜRÜM · HASH
+
+JS değişti → **?v= 78 → 79**, `sw.js SCRIPT_V=79`, `surum-check --yaz`. `band.js`
+76351f00455b3a5e → **838518b5c925e68c** · `measure.js` 0132d9fff6e778d0 → **5fafc6b99867e038**
+(F). `sim-node --n=1000 --seed=42` **93.4 - 87.5 · 270**. Commit/push YAPILMADI (brif).
+
+### KULLANICI CANLI MAÇI İZLEDİĞİNDE NE FARK GÖRECEK
+
+Sekmeyi değiştirip dönünce skor artık sahnenin önüne kaçmıyor (kuyruk duruyor, dönüşte
+kaldığı yerden sürüyor). Oyuncular yön değiştirirken kavis çiziyor, keskin dirsek ve
+yerinde titreme yok; hızlar gerçek bantta (ort 2,4 m/sn, sprint ≤ 7,5). Set hücumunda
+topsuz oyuncular kes-doldur ve açılma yapıyor, hiç kimse kendi yarı sahasında unutulmuyor,
+kimse çizgi dışına taşmıyor. Top elden kopmuyor, ışınlanmıyor; karambol çemberden 1-2 m'ye
+düşüyor ve hemen toplanıyor; serbest atış sonrası sokucu anında görevde. Anlatım tamamen
+Türkçe, öznesiz ve bozuk noktalamalı satır yok. Motor tarafında maç başına 2-3 top kaybı
+daha az, çalma ve faul gerçek oranda, oyuncu değişikliği iki katına yakın (38/maç), tip-in
+görünür oldu; skorlar 78-95 bandında (kullanıcı ort 94).
