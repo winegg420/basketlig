@@ -251,7 +251,14 @@ async function hazirla(page, base) {
       cikti.bildirimArtti = document.querySelectorAll('#notifWrap > *').length > oncekiBildirim;
       return cikti;
     });
-    ok('durdurulan maçta buton "sonuçlandır" diyor', /sonuçlandır|Finish/i.test(kilit.durdurEtiket), kilit.durdurEtiket);
+    /* FAZ 42: kapının NİYETİ "durdurulan maç sessizce kilitlenmesin, buton ne yapacağını
+       söylesin"dir — belirli bir SÖZCÜK değil. Durdurulan maç sürdürülebilir olduğu için
+       doğru etiket "Devam et"tir; startMatch zaten canResumeMatch dalına düşüp maçı
+       sürdürüyordu, yani eski etiket yaptığı işi söylemiyordu (kullanıcı raporu). Kilitli
+       sonuç etiketi ise yalnız sürdürülemeyen maçta (sayfa yenilendikten sonra) doğrudur. */
+    ok('durdurulan maçta buton ne yapacağını söylüyor (devam / kilitli sonuç)',
+      /devam|continue|kilitli sonuc|kilitli sonuç|locked result|sonuçlandır|finish/i.test(kilit.durdurEtiket),
+      kilit.durdurEtiket);
     ok('ana panel butonu "devam ediyor"da takılı kalmıyor',
       !/Devam Ediyor|in progress/i.test(kilit.dashEtiket) && kilit.dashPasif === false, kilit.dashEtiket);
     ok('takılı running bayrağı kurtarılıyor (oyun kilitlenmiyor)', kilit.kurtarildi === true);

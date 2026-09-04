@@ -245,6 +245,16 @@ function _setUrg(p,urg){
    hücumun kapladığı alan 57,5 → 39,5 m²'ye düşüyordu. 26 px (0,88 m) hem "her pozisyonda
    yer değiştirme" davranışını bitiriyor hem dizilimi bozmuyor. */
 const _YERINDE_ESIK=20;      /* px ≈ 0,68 m */
+/* ── FAZ 41 §2: TOPSUZ HAREKET ELİPSİNİN AÇISAL HIZI ──────────────────────────────────
+   Bir tur = 2π/_EX_W ≈ 2,7 sahne sn. Çevre ≈ 2π·√((a²+b²)/2) ≈ 163 px = 5,5 m gerçek
+   yol; çevresel hız 34-78 px/sn ≈ 0,8-1,8 m/sn (maç ölçeği) — gerçek basketbolun topsuz
+   oyuncu bandı. Kapalı eğri olduğu için >150° tersleme ÜRETMEZ (FAZ 41 §2 kök nedeni). */
+/* ⚠ ω VE DAR EKSEN BİRLİKTE SEÇİLİR (ölçülerek): elips üzerindeki hız ω·b (dar eksen) ile
+   ω·a (uzun eksen) arasında salınır. ω=2,3 · b=8 px iken ALT hız 18 px/sn = 0,41 m/sn
+   (maç) — yani jeton turunun dörtte birinde donma eşiğinin (0,5) ALTINDA kalıyordu ve
+   ölçüm onu "donuk" sayıyordu (kova: HUC set topsuz uzak0-19, %4,5). ω=2,7 · b≥12 px ile
+   alt hız 32 px/sn = 0,74 m/sn; üst hız ω·a = 92 px/sn ≈ 2,1 m/sn. */
+const _EX_W=3.8;             /* rad/sn — bir tur ≈ 1,65 sahne sn */
 function _hedefAta(p,tx,ty,urg){
   if(!p||p._oob) return;
   const d=Math.hypot(p.x-tx,p.y-ty);
@@ -668,10 +678,15 @@ function _simTick(dt){
       /* §7.1: uzun topu aldıktan 1,2 sn sonra her hâlükârda çıkarır — kendi yarı
          sahasında sürmeye devam edemez. Zaman damgası topu aldığı anda kurulur. */
       if(c._topAldi==null) c._topAldi=S.time;
-      const gecikti=(S.time-c._topAldi)>=1.2;
+      const gecikti=(S.time-c._topAldi)>=1.8;
       if(ortaya||gecikti){
         const hedef=_cikisHedefi(c,S.offP,_rim(S.offSide));
-        if(hedef){ S.cikisSonra=S.time+1.2; c._topAldi=null; _ballPass(hedef); }
+        /* FAZ 42: GERİYE PAS YOK. Çıkış pası hücumu ileri taşımak içindir; hedef
+           rakip potaya taşıyıcıdan daha yakın (ya da en fazla yarım metre geride)
+           değilse pas atılmaz — top taşıyıcıda kalır, bir sonraki karede yeniden bakılır. */
+        const _r=_rim(S.offSide);
+        const _ileri=hedef&&(Math.hypot(hedef.x-_r[0],hedef.y-_r[1])<=Math.hypot(c.x-_r[0],c.y-_r[1])+15);
+        if(hedef&&_ileri){ S.cikisSonra=S.time+1.2; c._topAldi=null; _ballPass(hedef); }
       }
     }
   }
@@ -739,7 +754,16 @@ function _simTick(dt){
          olan jeton zaten hareket hâlindedir. Bu yüzden salınım artık yalnız hedefine
          varmış (< _YERINDE_ESIK) jetona verilir ve aktif takipçiye hiç dokunulmaz. */
       if(S.chase&&S.chase.tok===p) continue;
-      if(Math.hypot(p.x-p.tx,p.y-p.ty)>_YERINDE_ESIK){ p._sonHedefRt=_rtNow(); continue; }
+      /* ⚠ FAZ 41 §2 — VARIŞ KAPISI ELİPS YARIÇAPINI HESABA KATMALI (ölçülerek bulundu):
+         kapı jetonun DİZİLİM NOKTASINA uzaklığını ölçer, elips ise jetonu o noktadan
+         bilerek `_exA`ya kadar (34 px) uzaklaştırır. Tolerans sabit 20 px kalınca jeton
+         kendi yayına çıkar çıkmaz "yolda" sayılıyor, pencere (`_exT`) yenilenmiyor ve
+         1,10 sn sonra sönüyordu: jeton yayın ortasında durup merkeze geri çekiliyor —
+         hem donma hem de 180° tersleme tam olarak buradan geliyordu (izde: terslemelerin
+         yarısı "hedefine 0-19 px, hız ~9 px/sn" kovasında). Tolerans yayın yarıçapı
+         kadar genişletilir; jeton yayının ÜSTÜNDEYKEN "yerinde" sayılır. */
+      const _varisTol=_YERINDE_ESIK+(((p._exT||0)>S.time)?(p._exA||0):0);
+      if(Math.hypot(p.x-p.tx,p.y-p.ty)>_varisTol){ p._sonHedefRt=_rtNow(); continue; }
       /* ⚠ `_setTx` YALNIZ set fazında yazılır; geçişte BAYATTIR (bir önceki hücumun
          dizilim noktasıdır). Set dışında merkez olarak kullanılırsa oyuncu sahanın öbür
          ucundaki eski noktasına doğru sürüklenir. Set dışında merkez GÜNCEL hedeftir. */
@@ -792,8 +816,10 @@ function _simTick(dt){
          sürekli ayak değiştirir. Bant ~1,0 m'ye, adım ve fren tavanı ona uygun büyütüldü.
          ⚠ Ortalama konum KORUNUR (salınım merkezin çevresindedir), bu yüzden FAZ 11
            aralık/yayılım ölçümleri kaymaz — `spacing-check` ile doğrulandı. */
-      const _tmax=kilitli?8:(topta?13:13), _tmin=kilitli?5:10;
-      const _band=kilitli?12:(topta?22:22);         /* px — sürüklenmenin sınırı (≈1,0 m) */
+      /* FAZ 41: `_tmax`/`_tmin` (sürüklenme adımı) KALDIRILDI — doğrusal sürüklenme yok.
+         `_band` duruyor: artık adım sınırı değil, yayın izin verilen YARI EKSENİNİ
+         türeten ham genliktir (aşağıda `_yariEks`). */
+      const _band=kilitli?12:22;                    /* px — yay genliğinin ham sınırı */
       const mx=kilitli?p.x:merkez[0], my=kilitli?p.y:merkez[1];
       /* ⚠ BANT SAHA İÇİNE OTURTULUR. Radyal eksenin DIŞA bakan ucu köşe slotlarında
          (SET_SPREAD x=56, y=38/462) saha sınırının dışına düşüyor ve `_inX`/`_inY`
@@ -870,23 +896,78 @@ function _simTick(dt){
          Çözüm doğrusal değil DAİRESELDİR (aşağıda, hareket döngüsünde): jeton merkezin
          çevresinde küçük bir yay çizer — sürekli hareket, keskin dönüş yok, ortalama
          konum yine merkez. Bayrak burada basılır. */
-      p._boks=(_hi===0&&_lo===0)?(S.time+0.60):0;
-      if(p._nudgeYon!==1&&p._nudgeYon!==-1) p._nudgeYon=(_sr()<0.5?-1:1);
-      if(p._nudgeOfs==null) p._nudgeOfs=0;
-      p._nudgeOfs=Math.max(_lo,Math.min(_hi,p._nudgeOfs));
-      /* Tek uç açıksa sürüklenme o uca doğrudur — kapalı uca vurup beklemez. */
-      if(_hi===0&&_lo<0) p._nudgeYon=-1;
-      else if(_lo===0&&_hi>0) p._nudgeYon=1;
+      /* ── FAZ 41 §2: DOĞRUSAL SÜRÜKLENME TİTREMEYE DÖNÜŞÜYORDU (ölçülerek bulundu) ──
+         İzden çıkarılan kova tablosu (127 tersleme, >150°, 0,1 sn adım): terslemelerin
+         **%80'i** salınım penceresi AÇIK · jeton hedefine 5-19 px yakın · kademe YÜRÜ/JOG
+         kovasındaydı ve terslemelerin MEDYAN ADIMI **3 cm**. Aritmetiği açık: sürüklenme
+         hedefi her 110 ms'de `_adim` (10-13 px) kayıyor — yani 100 px/sn TALEP ediyor —
+         ama varış freni salınım penceresinde üst hızı 56 px/sn'de tutuyor. Jeton hedefine
+         hiç yetişemez, hedef bant ucuna varıp yön çevirir, jeton merkez çevresinde
+         santimetre ölçeğinde titrer. "Donma" ölçütü düzelir, EKRANDAKİ GÖRÜNTÜ BOZULUR.
+         ⚠ Doğrusal ileri-geri bir sürüklenme bu kusuru YAPISAL olarak üretir: her uçta
+           180° dönüş vardır ve dönüş anında jeton frenin İÇİNDEDİR (yani yavaş) — adım
+           kaçınılmaz olarak küçük çıkar. Kapalı bir eğride 180° dönüş HİÇ YOKTUR.
+         Çözüm: jeton dizilim noktasının çevresinde KAPALI BİR YAY (elips) üzerinde döner.
+         Eksenler basketbolun kendi hareketidir: ÇEVRESEL eksende uzun (perimetre boyunca
+         açılma/kayma), RADYAL eksende kısa (potaya flaş / geri açılma). Bir tur ≈ 5,5 m
+         gerçek yol, ortalama konum yine dizilim noktasıdır (FAZ 11 aralık ölçüleri kaymaz),
+         keskin dönüş üretmez ve rastgelelik TÜKETMEZ (B-5: `S.time` + jeton fazı).
+         `_hi`/`_lo` artık sürüklenme sınırı değil, elipsin İZİN VERİLEN yarı eksenidir. */
+      const _yariEks=Math.max(_hi,-_lo);
+      /* Radyal yarı eksen ÇEVRESELİN yarısıdır: potaya uzaklığı korumak
+         `spacing-check`in "potaya ortalama uzaklık" kapısı için şarttır. */
+      /* ⚠ ALT SINIR ÖLÇÜLEREK SEÇİLDİ: a=10 px'te çevresel hız ω·a = 23 px/sn ≈ 0,5 m/sn
+         (maç) — yani tam donma eşiğinde kalıyor ve sıkışık jeton "kıpırdıyor ama donuk
+         sayılıyor" durumuna düşüyordu. a=16 px'te 37 px/sn ≈ 0,8 m/sn, eşiğin üstünde.
+         0,54 m'lik çevresel genlik hiçbir aralık ölçüsünü bozmaz. */
+      /* ⚠ BASIK ELİPS KESKİN DÖNÜŞ ÜRETİR (ölçüldü): a=34 · b=12 ile uzun eksen uçlarında
+         eğrilik yüksektir, hız orada tamamen dar eksene döner ve yön kısa bir yayda
+         neredeyse terslenir — `iz-kaydet` >90° keskin dönüş 1,31 → 2,07/poz (kapı ≤2).
+         Yay DAİREYE yaklaştırıldı: eğrilik her noktada aynı, hız neredeyse sabit
+         (54-65 px/sn ≈ 1,3-1,5 m/sn maç), keskin dönüş YOK. Çevresel eksen yine bir tık
+         uzundur — perimetre boyunca kayma potaya yaklaşıp uzaklaşmaktan baskın olsun. */
+      /* ⚠ TOPU TUTANIN YAYI DAHA KÜÇÜKTÜR (ölçüldü): topçu 0,88 m yarıçaplı yayda dönünce
+         savunmacısından uzaklaşıyor ve `spacing-check` "topu tutana en yakın savunmacı"
+         kapısı 1,74 → 1,90 m'ye açılıyordu (kapı <1,8). Topçunun kıpırdanması gerçek bir
+         ihtiyaçtır (FAZ 38 eki-2: "set hücumunda en az kıpırdayan oyuncu topçu olamaz"),
+         ama ölçüsü sürüş hareketi kadardır — 0,5 m yarıçap. */
+      /* ⚠⚠ YAY DAİREDİR VE YARIÇAPI KÜÇÜKTÜR — İKİSİ DE ÖLÇÜLEREK BULUNDU:
+         (a) ELİPS: dar eksende hız ω·b'ye düşer ve donma eşiğinin altına iner; DAİREDE
+             hız her noktada ω·r ile SABİTTİR, hiç dip yapmaz. Basık elips ayrıca uzun
+             eksen uçlarında yüksek eğrilik üretiyordu (>90° keskin dönüş 1,33 → 2,07/poz).
+         (b) YARIÇAP: 18-26 px (0,6-0,9 m) yarıçapta hücumcular savunmadan açılıyor ve
+             `spacing-check` "topu tutana en yakın savunmacı" 1,74 → 1,90 m'ye çıkıyordu
+             (kapı <1,8). Ayırt edici test: yay 14 px'e indirilince BÜTÜN dizilim
+             hedefleri tuttu. Yarıçap ~0,47 m'de kalır; hareket ω ile sağlanır.
+         ω=3,4 · r=13-17 px → hız 44-58 px/sn ≈ 1,0-1,3 m/sn (maç), bir tur ≈ 1,8 sn ve
+         3,0 m gerçek yol. Yani jeton sürekli yer değiştirir ama dizilimini terk etmez. */
+      /* ⚠⚠⚠ TOPU TUTAN YAYA GİRMEZ (ölçülerek bulundu, kök neden bu): topçu yayda
+         dönünce MARKAJCISI takipte geride kalır — savunma takibi ivme sınırlıdır ve
+         hedefi topçunun ANLIK konumudur. `spacing-check` "topu tutana en yakın
+         savunmacı" ölçüsü tam olarak bu mesafeyi okur ve yay büyüdükçe/hızlandıkça
+         açılıyordu: yarıçap 0,9 m → 1,90 m · 0,5 m → 1,89 m · 0,45 m (ω 3,4) → 1,83 m ·
+         0,40 m (ω 4,0) → 1,88 m; yay tamamen kapatılınca BÜTÜN kapılar tuttu.
+         Topçunun kıpırdanması ayrı ve mevcut bir yoldan gelir: top sürme (`_ballStep`
+         held dalı) jetonu zaten oynatır, üstelik FAZ 25 §2'nin radyal salınımı da
+         topçuda çalışmaya devam eder. */
+      const _exK=topta?0:1;
+      /* ⚠ YARIÇAP DAR TUTULUR: yay büyüdükçe topsuz hücumcu savunmasından açılıyor ve
+         `spacing-check` "topu tutana en yakın savunmacı" eşiğe (1,8 m) dayanıyor.
+         Aynı kodda üç koşu 1,78 / 1,83 / 1,85 verdi — araç ±0,04 m salınır, dolayısıyla
+         ortalamanın eşiğin BELİRGİN altında kalması gerekir. Hareket miktarı yarıçapla
+         değil ω ile sağlanır: r=12 px (0,41 m) · ω=3,8 → hız 46 px/sn ≈ 1,05 m/sn (maç),
+         bir tur 1,65 sn ve 2,6 m gerçek yol. */
+      const _yari=Math.max(10,Math.min(12,_yariEks*0.55))*_exK;
+      p._exA=_yari; p._exB=_yari;
+      /* `_ax/_ay` radyaldir (dizilim noktası → pota); elipsin UZUN ekseni buna DİKTİR. */
+      p._exRx=_ax; p._exRy=_ay;
       /* ⚠ ADIM BANTTAN BÜYÜK OLURSA HER ADIMDA YÖN ÇEVRİLİR ve yol keskin zikzak olur
          (ölçüldü: dar bant eklenince >90° dönüş 0,83 → 1,83/pozisyon). Adım bandın
          yarısını aşmaz; geniş bantta (±25) bu kısıt zaten bağlayıcı değildir. */
       /* ⚠ ADIM BANTTAN BÜYÜK OLURSA HER ADIMDA YÖN ÇEVRİLİR ve yol keskin zikzak olur. */
-      const _adim=Math.min(_tmin+(_tmax-_tmin)*_sr(),Math.max(4,(_hi-_lo)*0.45));
-      let _ofs=p._nudgeOfs+p._nudgeYon*_adim;
-      if(_ofs>_hi||_ofs<_lo){ p._nudgeYon=-p._nudgeYon; _ofs=p._nudgeOfs+p._nudgeYon*_adim; }
-      _ofs=Math.max(_lo,Math.min(_hi,_ofs));
-      p._nudgeOfs=_ofs;
-      const r=_ofs;
+      /* FAZ 41 §2: hedef KAYDIRILMAZ — dizilim noktasının kendisidir; kıpırdanma
+         hareket döngüsündeki elips ofsetiyle verilir (yukarıdaki gerekçe). */
+      const r=0;
       /* ⚠ `_hedefAta` KULLANILMAZ: nokta 26 px'ten yakınsa hedefi DEĞİŞTİRMEZ (F15-1,
          "her pozisyonda yer değiştirme" kuralı) ve salınım ≤9 px olduğu için hedef hep
          aynı kalıyordu — sayaç sıfırlanıyor ama jeton donuk duruyordu (ölçüm: 51 donma,
@@ -900,7 +981,11 @@ function _simTick(dt){
          bir mesafedir, kademe yalnız ÜST HIZI belirler — jeton yine yerinde kıpırdanır. */
       if(!kilitli) _setUrg(p,_URG.JOG);
       p._sonHedefT=S.time; p._sonHedefRt=_rtNow();
-      p._swayT=S.time+0.60;        /* salınım penceresi: fren tavanı bu süre boyunca gevşer */
+      /* FAZ 41 §2: elips penceresi — hareket döngüsü bu süre boyunca yay ofsetini uygular.
+         Pencere salınım penceresinden UZUNDUR (0,60 → 1,10 sn): elipsin bir turu ≈ 2,7 sn
+         ve pencere kapanınca jeton yayın ortasında durup yeni pencereyi beklerdi. */
+      p._exT=S.time+1.10;
+      p._swayT=S.time+0.60;        /* fren tavanı bu süre boyunca gevşer */
       p._nudgeN=(p._nudgeN||0)+1;   /* teşhis sayacı — sunum-check okur, davranışa dokunmaz */
     }
   }
@@ -984,7 +1069,18 @@ function _simTick(dt){
        Düz çizgi hedefiyle iki takım orta bantta iç içe koşuyordu; gerçek basketbolda
        kanat oyuncusu önce genişler ("run wide"), sonra ilerler. */
     let _tx=p.tx,_ty=p.ty;
-    if(p._wp){
+    /* ⚠ FAZ 41 §3: AKTİF TAKİPÇİNİN ARA NOKTASI YOK SAYILIR. `_wp` bu karenin hedefini
+       EZER; `_chase` ise her karede hedefi topun konumuna yazar. Kulvar ara noktası
+       FAZ 41'de set dizilimine de bağlanınca, serbest topa koşmakla görevlendirilen
+       jeton bayat ara noktasına gidiyor ve top sahipsiz kalıyordu (ölçüldü:
+       `sahne-check` "SAHİPSİZ top karesi" %1,8-2,1 → %4,17).
+       ⚠⚠ Ara noktayı `_chase` içinde SİLMEK denendi ve ölçülerek geri alındı: aynı
+       pozisyonda daha sonra çalışan dizilim kodu jetona yeni bir `_wp` yazabiliyor ve
+       takipçi yeniden kaçırılıyor; üstelik pas modunda ışınlanma geri geldi (2-4 olay,
+       tepe 27 m/sn — FAZ 40 §A1 kazanımının ihlali). Durumu DEĞİŞTİRMEK yerine burada
+       YOK SAYMAK hem takibi garanti eder hem de `_wp`yi olduğu gibi bırakır. */
+    /* Aktif takipçi ara noktadan MUAF (yukarıdaki §3 notu) — silmek yerine yok sayılır. */
+    if(p._wp&&!(S.chase&&S.chase.tok===p)){
       if(Math.hypot(p.x-p._wp[0],p.y-p._wp[1])<30) p._wp=null;
       else { _tx=p._wp[0]; _ty=p._wp[1]; }
     }
@@ -1042,27 +1138,82 @@ function _simTick(dt){
          UZAKLAŞTIRAN bir "canlılık" savunmayı kötüleştirir. Tek yönlü kayma jetonu
          yalnız 0-0,47 m adamına yaklaştırır: hareket görünür, markaj SIKILAŞIR,
          ball-you-man sıralaması (savunmacı adam ile pota arasında) korunur. */
-      const _r=-Math.abs(Math.sin(S.time*3.1+p.ph*1.9))*14;
-      _tx=_inX(p.tx+_ax/_al*_r); _ty=_inY(p.ty+_ay/_al*_r);
+      /* ⚠ FAZ 41: `Math.abs(sin)` SIVRI UÇLUDUR — sıfır geçişinde türev işaret değiştirir
+         ve jeton her yarım periyotta (≈1,0 sn) 180° dönüş yapar. İzde ölçüldü: savunmacı
+         kovaları terslemelerin üçte birini üretiyordu. `0,5−0,5·cos` aynı TEK YÖNLÜ
+         [0,−14] aralığını verir (kayma yine yalnız adama doğrudur, markaj sıkılığı
+         korunur) ama uçlarda türev sıfıra gider — dönüş yumuşaktır, tersleme üretmez. */
+      /* ⚠ FAZ 41 §2: TEK BOYUTLU KAYMANIN HIZI UÇLARDA SIFIRLANIR. Sinüs biçimli bir
+         doğru parçası salınımında hız = ω·genlik·|türev| ve türev uçlarda 0'a gider;
+         savunmacı turunun bir kısmında donma eşiğinin altında kalıyordu (izde en büyük
+         tek kova: "SAV set topsuz", donmanın %5,6'sı). Çözüm ekstra genlik değil, ikinci
+         bir BOYUTTUR: radyal kayma (adama doğru, TEK YÖNLÜ — markaj sıkılığı ve
+         ball-you-man sıralaması korunur) yanına dik eksende simetrik bir SAVUNMA KAYMASI
+         eklenir. İki bileşenin türevi 90° faz farklıdır, dolayısıyla bileşke hız HİÇ
+         sıfırlanmaz (alt sınır ω·9 ≈ 32 px/sn ≈ 0,74 m/sn maç).
+         Yanal genlik 10 px (0,34 m) küçüktür: adam-pota doğrultusundaki sıralamayı
+         bozmaz, ekranda savunmacının ayak değiştirmesi olarak görünür. */
+      const _w4=S.time*3.6+p.ph*1.9;
+      /* ⚠ RADYAL GENLİK 14'TE KALIR (18 denendi, ölçülerek geri alındı): kayma tek yönlü
+         ve ADAMA doğru olduğu için genliği büyütmek TOPSUZ savunmacıyı kendi adamına
+         yapıştırır ve yardım mesafesini açar — `spacing-check` "topu tutana en yakın
+         savunmacı" 1,74 → 1,89 m (kapı <1,8). Kapının ölçtüğü şey markaj değil, TOPUN
+         çevresindeki savunma yoğunluğudur; adamına doğru çekilen her yardımcı onu açar. */
+      const _r=-(0.5-0.5*Math.cos(_w4))*14;              /* radyal — yalnız adama doğru */
+      /* ⚠ YANAL EKSEN TOPA DİKTİR, adam-pota eksenine değil (ölçülerek bulundu).
+         Adam-pota eksenine dik kayma savunmacının TOPA uzaklığını değiştiriyor ve
+         `spacing-check` "topu tutana en yakın savunmacı" kapısını 1,74 → 1,91 m'ye
+         açıyordu (kapı <1,8) — yardımcı savunmacı toptan uzaklaşırsa savunma seyrelir.
+         Top merkezli çemberin TEĞETİ boyunca kayma ise topa uzaklığı DEĞİŞTİRMEZ:
+         savunmacı ayak değiştirir, savunma yoğunluğu korunur. Gerçek yardım savunması
+         da topa göre konumlanır ("ball-you-man"), adamına göre değil. */
+      const _bx=(S.ball?S.ball.x:p.tx)-p.tx, _by=(S.ball?S.ball.y:p.ty)-p.ty;
+      const _bl=Math.hypot(_bx,_by)||1;
+      const _yan=Math.sin(_w4)*9;
+      _tx=_inX(p.tx+_ax/_al*_r-_by/_bl*_yan);
+      _ty=_inY(p.ty+_ay/_al*_r+_bx/_bl*_yan);
       p._swayT=S.time+0.10;      /* varış freni tavanı gevşesin (aksi hâlde 10 px/sn'de kalır) */
     }
-    /* ── FAZ 40 §A2.5: SIKIŞMIŞ HÜCUMCU — DAİRESEL MİKRO HAREKET ────────────────────────
-       Salınım bloğu (§2) doğrusal sürüklenme yapamadığı jetona `_boks` bayrağı basar
-       (radyal ve dik eksende iki uç da saha dışına kırpılıyor ya da takım arkadaşını
-       2,10 m'nin içine sokuyor). O jeton eskiden dizilim noktasının tam merkezine
-       yazılıp park ediyordu. Burada merkezin çevresinde küçük bir YAY çizdirilir:
-       yarıçap 11 px (0,37 m) · ω 3,4 rad/sn → çevresel hız ≈ 37 px/sn ≈ 0,9 m/sn (maç),
-       yani hedef banttadır. Daire SÜREKLİDİR — doğrusal zikzağın ürettiği keskin dönüşü
-       (>90°) üretmez ve ortalama konum yine merkezdir (aralık ölçüleri kaymaz).
-       Deterministiktir (`S.time` + jeton fazı), rastgelelik TÜKETMEZ (B-5). */
-    if((p._boks||0)>S.time&&(p._lock||0)<=S.time&&
+    /* ── FAZ 41 §2: TOPSUZ OYUNCUNUN ANLAMLI HAREKETİ — ELİPS YAY ───────────────────────
+       FAZ 40'ın doğrusal mikro-sürüklenmesi ölçülerek elendi (bkz. salınım bloğu): hedef
+       110 ms'de 11 px kayıyor, fren tavanı 56 px/sn, jeton yetişemiyor ve santimetre
+       ölçeğinde titriyordu (terslemelerin medyan adımı 3 cm). Buradaki 11 px'lik daire de
+       aynı sınıftandı — yalnız "iki uç da kapalı" jetona veriliyordu ve 0,37 m genlikle
+       yine yerinde oynatmaydı.
+       Artık dizilim noktasına VARMIŞ her uygun jeton, noktasının çevresinde kapalı bir
+       ELİPS üzerinde döner. Eksenler basketbolun kendi hareketidir:
+         · ÇEVRESEL eksen (perimetreye teğet) UZUN  — boşluğa açılma / perimetre kayması
+         · RADYAL eksen (dizilim noktası ↔ pota) KISA — potaya flaş / geri açılma
+       Bir tur ≈ 5,5 m gerçek yol kat eder (yani "yerinde oynatma" değil), yay KAPALI
+       olduğu için 180° dönüş üretmez ve ortalama konum yine dizilim noktasıdır —
+       FAZ 11/FAZ 25 aralık ölçüleri bunu görmez. Deterministiktir (`S.time` + jeton
+       fazı), rastgelelik TÜKETMEZ (B-5).
+       ⚠ Yarı eksenler salınım bloğunda ÖLÇÜLEREK verilir (`p._exA`/`p._exB`): saha
+         dışına düşen ya da takım arkadaşını 2,10 m'nin içine sokan yön kısalır.
+       ⚠⚠ Kilitli jeton (koreografi bekleyişi) ve hedefine henüz varmamış jeton HARİÇ —
+         FAZ 26'nın "sahne katmanı koreografiyi ezmez" dersi. */
+    if((p._exT||0)>S.time&&(p._exA||0)>0&&(p._lock||0)<=S.time&&
        Math.hypot(p.x-p.tx,p.y-p.ty)<_YERINDE_ESIK){
-      const _w=S.time*3.4+p.ph*2.3;
-      _tx=_inX(p.tx+Math.cos(_w)*11); _ty=_inY(p.ty+Math.sin(_w)*11);
+      const _w=S.time*_EX_W+p.ph*2.3;
+      const _ux=-(p._exRy||0), _uy=(p._exRx||0);           /* çevresel (teğet) birim vektör */
+      const _ca=Math.cos(_w)*p._exA, _cb=Math.sin(_w)*p._exB;
+      _tx=_inX(p.tx+_ux*_ca+(p._exRx||0)*_cb);
+      _ty=_inY(p.ty+_uy*_ca+(p._exRy||0)*_cb);
+      /* Fren tavanı elipsin çevresel hızını KARŞILAMALI: karşılamazsa jeton hedefin
+         gerisinde kalır ve FAZ 40'ın titremesi geri gelir (kök neden tam olarak buydu).
+         ω·a = 2,3·34 ≈ 78 px/sn tepe; tavan 100 px/sn ≈ 2,3 m/sn (maç) — topsuz
+         oyuncunun perimetre kayması bu banttadır. */
       p._swayT=S.time+0.10;
     }
-    const gx=_tx+Math.sin(S.time*1.15+p.ph)*1.8*w;
-    const gy=_ty+Math.cos(S.time*0.87+p.ph*1.7)*1.8*w;
+    /* ── FAZ 41 §2: ±1,8 px "NEFES" SALINIMI KALDIRILDI ────────────────────────────────
+       Her topsuz jetona SÜREKLİ uygulanan, iki ayrı frekanslı (1,15 / 0,87 rad/sn)
+       6 cm'lik bir hedef titreşimiydi. Genliği hiçbir şey anlatmayacak kadar küçük ama
+       jetonun HIZ YÖNÜNÜ belirleyecek kadar büyüktü: yerine varmış bir oyuncunun tek
+       hareketi bu olduğu için yön yarım periyotta bir dönüyor ve iz kaydında 0,9 px'lik
+       (3 cm) adımlarla 180° tersleme olarak görünüyordu. Elips yayı (yukarıda) aynı işi
+       5,5 m'lik gerçek yolla yapar; nefes salınımı yalnız onun üzerine gürültü bindiriyor.
+       FAZ 41 brifinin "titreme/mikro-hareket YASAK" kuralının doğrudan uygulaması. */
+    const gx=_tx, gy=_ty;
     let dx=gx-p.x, dy=gy-p.y;
     const d=Math.hypot(dx,dy);
     if(d>0.01){
@@ -1085,7 +1236,10 @@ function _simTick(dt){
          büyütülse bile jeton frene takılıyordu. 46 px/sn ≈ 1,1 m/sn (maç): duran bir
          oyuncunun ayak değiştirme hızı. Pencere DIŞINDA fren eskisi gibi 10 px/sn'dir —
          koreografi, savunma takibi ve serbest atış yerleşimi etkilenmez. */
-      const _sway=((p._swayT||0)>S.time)?56:10;
+      /* FAZ 41 §2: elips penceresinde tavan 100 px/sn — yayın çevresel tepe hızı
+         (ω·a ≈ 78 px/sn) bunun ALTINDA kalmalı, yoksa jeton hedefin gerisinde kalır ve
+         FAZ 40'ın santimetre ölçekli titremesi geri gelir (ölçülen kök neden). */
+      const _sway=((p._exT||0)>S.time)?110:(((p._swayT||0)>S.time)?56:10);
       const want=d<24?Math.min(_tv,_sway):Math.min(_tv,d*2.1);
       const _vx0=p.vx, _vy0=p.vy;
       p.vx+=((dx/d)*want-p.vx)*_PL_ACC*dt;
@@ -1501,6 +1655,13 @@ function _defBehind(tx,ty,m,rim,pay){
 /** Bir jetonun hedefini kısa süre "kilitle" — savunma takibi/dizilim üzerine yazmasın. */
 function _lockTok(p,sec){ const S=mState._sim; if(p&&S) p._lock=S.time+(sec||0.6); }
 /** Serbest topun peşine düş: yetişince topu alır ve fn() çalışır (anlatım senkronu). */
+/* ⚠ FAZ 41 §3: TAKİBE ÇIKAN JETONUN ARA NOKTASI TEMİZLENİR. Hareket döngüsünde `_wp`
+   o karenin hedefini EZER (`_tx=p._wp[0]`); takipçinin hedefi ise her karede topun
+   konumudur. FAZ 41'de kulvar ara noktası set dizilimine de bağlanınca, serbest topa
+   koşmakla görevlendirilen jeton bayat ara noktasına gidiyor ve top sahipsiz kalıyordu —
+   ölçüldü: `sahne-check` "SAHİPSİZ top karesi" %1,8-2,1 → %4,17. Aynı sınıf kusur
+   FAZ 26'da da yaşandı ("sahne katmanı koreografiyi ezmez"): koreografi bir jetona
+   görev verdiğinde, sunum katmanının o jeton üzerindeki bütün süslemeleri düşer. */
 function _chase(tok,fn,maxSec){ const S=mState._sim; if(!S||!tok) return; S.chase={tok,fn:fn||null,t:0,max:maxSec||3.2,r:26}; }
 
 /* ── Dizilimler ───────────────────────────────────────────────────────────
@@ -1557,7 +1718,7 @@ const FT_OFF_S=[[152,177],[152,323],[306,140],[306,360]];
    ÇIKIŞ (outlet) PASI verir. Bu kural ribaund sonrası zaten vardı (M9, animateShotPossession);
    burada top kaybı / çalma / kenardan sokma yolları için ortak hâle getirilir. */
 const _TASIYICI_ROL=[0,1,2];          /* PG · SG · SF — topu karşı sahaya bunlar taşır */
-const _POTA_YAKIN_PX=118;             /* ≈ 4 m (29,5429 px/m) — bu mesafede uzun kendi bitirir */
+const _POTA_YAKIN_PX=148;             /* ≈ 5 m (29,5429 px/m) — boyanın tamamı: bu mesafede uzun kendi bitirir */
 /** Oyuncu topu karşı sahaya taşıyabilir mi? */
 function _tasiyabilir(p){ return !!p && _TASIYICI_ROL.indexOf(p.role)>=0; }
 /** Uzun oyuncu topu aldıysa çıkış pası verilecek en yakın guard'ı bulur.
@@ -1631,6 +1792,36 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
   const offIsUser=S.offIsUser!==false;
   const offR=_rolesOrder(offPlayers), defR=_rolesOrder(defPlayers);
 
+  /* ── FAZ 41 §3: SAHAYI KÖŞEGEN KESEN JETON — KULVAR ARA NOKTASI ────────────────────
+     Ölçüm (`iz-kaydet`): geçişte üç jeton 24-27 m'lik yolu KUSURSUZ DÜZ ÇİZGİDE kat
+     ediyordu (yoldan sapma %0,2-1,7) ve ikisi 19-20°'lik gerçek köşegendi — y ekseninde
+     325→73, yani sahanın tüm genişliğini çapraz geçiyor. Gerçek oyuncu sahayı böyle
+     kesmez: ÖNCE kendi kulvarına girer, SONRA kulvarda öne koşar.
+     Mekanizma yeni DEĞİL — `_wp` ara noktası FAZ 25'ten beri kanatlarda (rol 1-2)
+     kullanılıyordu; burada yalnız uygun HER jetona (uzunlar, trailer ve savunma dönüşü)
+     genişletiliyor. Ara nokta: bulunduğu x'in biraz ilerisi + HEDEFİN y'si → yol bir
+     "L" olur, kiriş üzerinde kalmaz.
+     Eşikler ölçülerek seçildi: yalnız gerçekten uzun koşularda (Δx > 380 px ≈ 12,9 m) ve
+     kulvar değiştiren jetonlarda (Δy > 60 px ≈ 2,0 m) devreye girer — kısa yer
+     değiştirmelere ve zaten kulvarında olan jetona dokunmaz. `_hedefAta`nın rastgeleliği
+     (jit) değişmediği için akış KAYMAZ; `_wp` yalnız SUNUM katmanındadır. */
+  /* ⚠ ARA NOKTANIN YERİ ÖLÇÜLEREK SEÇİLDİ — İKİ KISIT BİRDEN:
+     (a) "Düz geçti" ölçütü YOL/KİRİŞ oranıdır ve yanal sapmayla KAREsel büyür:
+         yol ≈ kiriş·(1+2e²/L²), yani %5'i aşmak için e ≥ 0,158·L gerekir. Kiriş 700 px
+         iken bu 111 px'tir — küçük bir "kenara adım" (58 px) ölçütü asla geçemez
+         (ölçüldü: sapma %1,2 → %1,6).
+     (b) Köşe AÇISI keskin olmamalı: önce yana 58 px, sonra sahanın öbür ucuna gitmek
+         ~90°'lik bir dirsek üretir ve `iz-kaydet` >90° keskin dönüş 1,33 → 2,07/poz'a
+         çıktı (kapı ≤2).
+     İkisini birden karşılayan yer: ORTA SAHA hizasında, jetonun KENDİ y'sinde. Yani
+     oyuncu kulvarında orta sahaya kadar koşar, sonra hedefine keser — gerçek geçiş
+     koşusu budur. e = |Δy|/2 olduğu için sapma kendiliğinden ölçütün üstüne çıkar ve
+     dirsek açısı atan(Δy/(L/2)) ≈ 35°'te kalır. */
+  const _kulvarWp=(p,c)=>{
+    const dx=c[0]-p.x, dy=c[1]-p.y;
+    if(Math.abs(dx)<380||Math.abs(dy)<60) return null;
+    return [_inX(p.x+dx*0.5),_inY(p.y)];
+  };
   if(phase==='trans'){
     /* Geçiş: hücum kulvarlarda öne koşar, savunma potaya döner. Markaj YOK.
        (Topu çizgi dışından sokan oyuncuya dizilim hedefi ATANMAZ.) */
@@ -1643,9 +1834,9 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
       /* §5.3: kulvarlarda üç oyuncu sprint (rol 0/1/2), iki uzun trailer olarak koşu kademesinde. */
       _hedefAta(p,_jit(c[0],10),_jit(c[1],8),_URG.SPRINT);
       /* kanatlar (rol 1-2) önce kendi hizasında KENARA açılır, sonra kulvarda öne koşar */
-      p._wp=(i===1||i===2)?[_inX(p.x+(offLeft?-58:58)),_inY(c[1])]:null;
+      p._wp=(i===1||i===2)?[_inX(p.x+(offLeft?-58:58)),_inY(c[1])]:_kulvarWp(p,c);
     });
-    defR.forEach((p,i)=>{ if(!p||p._oob) return; const c=_pt(TRANS_DEF[i],offLeft,false); _hedefAta(p,_jit(c[0],8),_jit(c[1],8),_URG.KOS); p._wp=null; });
+    defR.forEach((p,i)=>{ if(!p||p._oob) return; const c=_pt(TRANS_DEF[i],offLeft,false); _hedefAta(p,_jit(c[0],8),_jit(c[1],8),_URG.KOS); p._wp=_kulvarWp(p,c); });
     S.shooter=null;
     return null;
   }
@@ -1720,14 +1911,29 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
   S.canliSet=(phase==='set');
   offR.forEach((p,i)=>{
     if(!p||p._oob) return;                    /* topu sokan çizgi dışında kalır */
-    p._wp=null;                               /* set kurulunca geçiş ara noktası biter */
+    /* ── FAZ 41 §3: SET DİZİLİMİNE GEÇERKEN DE SAHA KÖŞEGEN KESİLİYORDU ────────────────
+       Kulvar ara noktası ilk sürümde yalnız `trans` dalındaydı; ölçümde kalan iki köşegen
+       (28° · 14°, y ekseninde 11 m ve 6 m) tam da BURADAN geliyordu — hücum/savunma
+       dizilime yerleşirken sahanın öbür ucundaki noktasına düz çizgide gidiyor.
+       Aynı eşikler geçerli (Δx > 380 px · Δy > 60 px): kısa yerleşimlere dokunmaz.
+       ⚠ ARA NOKTA KOREOGRAFİYİ EZMEMELİ (FAZ 26 dersi): `_wp` hareket döngüsünde O
+         KARENİN hedefini ezer, `_chase` ise her karede hedefi topun konumuna yazar.
+         Bu ikisi çakışınca serbest topa koşan jeton bayat ara noktasına gidiyor ve top
+         sahipsiz kalıyordu — `sahne-check` "SAHİPSİZ top karesi" %1,8-2,1 → %4,17.
+         Çözüm hareket döngüsündedir: aktif takipçinin `_wp`si YOK SAYILIR (silinmez —
+         silinirse aynı pozisyonda sonradan çalışan dizilim kodu yenisini yazar).
+       ⚠⚠ "Top ışınlanması geri geldi" diye bir kez GERİ ALINDI, sonra ölçümle düzeltildi:
+         HEAD'in kendisi de aynı koşullarda 1-3 ışınlanma üretiyor (kare sıçraması 37-58
+         m/sn); bu yapılandırma 1-2 olay ve ≤27 m/sn ile HEAD'DEN İYİDİR. PROGRESS'teki
+         "ışınlanma 0" tek koşuluk bir gözlemdi. Nadir olayı tek koşuyla yargılama. */
     const c=B[i];
+    p._wp=_kulvarWp(p,c);                     /* uzun/köşegen yerleşim kulvardan geçer */
     /* ⚠ `_sonHedefRt` BURADA basılmaz. `keepNear` dalı noktasına zaten yakın oyuncunun
        hedefini DEĞİŞTİRMEDEN bırakıyor (p.tx=p.x); damga atılınca canlı salınım 900 ms
        daha erteleniyor ve oyuncu ekranda 1,5 sn+ donuk kalıyordu. Salınım saatini yalnız
        gerçekten yeni hedef verilen an sıfırlar. */
     p._setTx=c[0]; p._setTy=c[1]; p._sonHedefT=S.time;
-    p._nudgeOfs=0;                            /* yeni dizilim → sürüklenme merkezden başlar */
+    p._exT=0;                                 /* yeni dizilim → yay penceresi kapanır */
     if(p===shooter){ _hedefAta(p,c[0],c[1],_URG.KOS); return; }
     /* Noktasına ZATEN yakınsa yeni hedef atanmaz (yerinde durur, mikro-salınım yapar).
        F11-2: eşik 40 px idi — iki oyuncu birbirine doğru 40'ar px sapabildiği için ölçülen
@@ -2083,8 +2289,11 @@ function movePlayersForEvent(ev,paint){
       S.inb=null;
       return _script([
         {at:0.95,fn:()=>{ _ballLoose(0,0,210); hc.pop=1; ac.pop=1; if(typeof sfx==='function') sfx('whistle'); }},
-        {at:1.42,fn:()=>{ _ballPass(recv,0.5); }}
-      ])+900;
+        {at:1.42,fn:()=>{ _ballPass(recv,0.5); }},
+        /* FAZ 42: hava atışı = geçişin başlangıcı. Kazanan takım öne akar, rakip
+           kendi potasına döner; topu alan oyuncu yerinde sektirerek beklemez. */
+        {at:1.90,fn:()=>{ try{ _startBreak(winOff); }catch(e){} }}
+      ])+260;
     }
 
     /* Çeyrek/maç sonu (ve MVP anonsu): oyuncular kendi yarı sahalarında toplanır. */
@@ -2443,7 +2652,14 @@ function animateShotPossession(sh,onShoot,onResult){
        hem şutu atacaksa pg guard'a çevriliyor, top yine uzunda kalıyor ve çıkış pası hiç
        kurulmuyordu (ölçüm: %71 → bu sıra düzeltilince ~%100). */
     let outletTok=null;
-    if(!sh.pb&&pg&&(pg.role===3||pg.role===4)){
+    /* FAZ 42: SF (rol 2) topu getirebilir ama bu ISTISNADIR — pozisyonların ~%70'inde
+       topu gerçek guard'a (1/2) çıkarır. Rol 3-4 (PF/C) zaten daima çıkarır. */
+    if(!sh.pb&&pg&&pg.role===2&&_sr()<0.70){
+      const g2=offR.find(p=>p!==pg&&p!==shooter&&(p.role===0||p.role===1))
+             ||offR.find(p=>p!==pg&&(p.role===0||p.role===1));
+      if(g2){ outletTok=pg; pg=g2; }
+    }
+    if(!outletTok&&!sh.pb&&pg&&(pg.role===3||pg.role===4)){
       const guard=offR.find(p=>p!==pg&&p!==shooter&&(p.role===0||p.role===1))
                 ||offR.find(p=>p!==pg&&(p.role===0||p.role===1))
                 ||offR.find(p=>p!==pg&&p!==shooter)
@@ -2472,7 +2688,10 @@ function animateShotPossession(sh,onShoot,onResult){
     const needInbound=!putback&&!!S.inb;
     const fromLive=!needInbound&&!putback;              /* çalma/ribaund sonrası canlı top */
     const afterTurnover=(S.prevType==='steal'||S.prevType==='reb');
-    const fastBreak=!putback&&!needInbound&&(!!sh.fb||(userAtt&&afterTurnover&&(tac.tempo==='hizli'||tac.odak==='hizli')));
+    const _rimDist=Math.hypot(sh.x-rim[0],sh.y-rim[1]);
+    const fastBreak=!putback&&!needInbound&&(!!sh.fb
+      ||(userAtt&&afterTurnover&&(tac.tempo==='hizli'||tac.odak==='hizli'))
+      ||(afterTurnover&&_rimDist<=170&&_sr()<0.55));
     const iso=userAtt&&tac.focusPlayerId&&shooter.pl&&shooter.pl.id===tac.focusPlayerId;
     const scheme=sh.scheme||null;
     /* §5/§8: sunum denetimi bu pozisyonun şemasını okur (yörünge farkı ölçümü).
@@ -2594,9 +2813,13 @@ function animateShotPossession(sh,onShoot,onResult){
     };
     /* Köprü adımı: şuttan hemen önce top şut noktasından hâlâ uzaksa kısa sıçrayışla taşınır. */
     const bridge=()=>{
-      const d=Math.hypot(b.x-sh.x,b.y-sh.y);
+      /* FAZ 42: hedef HAYALET NOKTA değil ŞUTÖRÜN KENDİSİ. Top uçarken şutör yürümeye
+         devam ettiği için `_ballPass` hedefi kare kare izler ve top gerçekten oyuncunun
+         eline varır; şutör noktasına geç kalsa bile ortada sahipsiz top kalmaz. */
+      const d=Math.hypot(b.x-shooter.x,b.y-shooter.y);
       /* M5/M6: süre mesafeyle ölçeklenir — sabit 0,22 sn uzun mesafede ışınlanma yaratıyordu. */
-      if(d>36) _ballPass({x:sh.x,y:sh.y,vx:0,vy:0,side:1,ghost:true},Math.max(0.14,Math.min(0.55,d/520)));
+      if(d>36) _ballPass(shooter,Math.max(0.14,Math.min(0.55,d/520)));
+      else if(b.carrier!==shooter) _ballHold(shooter);
     };
 
     /* F15-1: taban 90 px/sn yeni ölçekte yürüyen jetonu 2,5 kat hızlı sayıyordu. */
@@ -2685,7 +2908,7 @@ function animateShotPossession(sh,onShoot,onResult){
     const tSet=tOff+bringT;
     /* F11-2: topsuz dört oyuncu topu beklemeden dizilime açılır (hızlı hücumda kulvarlar korunur). */
     if(!fastBreak) steps.push({at:tOff+0.10,fn:()=>{ _setFormation(offLeft,offP,defP,null,{phase:'fill',ballTok:pg}); }});
-    steps.push({at:tSet,fn:()=>{ _setFormation(offLeft,offP,defP,sh,{phase:'set',keepNear:true,lateShooter:true}); }});
+    if(!fastBreak) steps.push({at:tSet,fn:()=>{ _setFormation(offLeft,offP,defP,sh,{phase:'set',keepNear:true,lateShooter:true}); }});
 
     let tFire;
     if(fastBreak){
@@ -2697,6 +2920,17 @@ function animateShotPossession(sh,onShoot,onResult){
          2,57 → 1,57). Süre artık ŞUTÖRÜN gerçek varış süresine bağlı; taban korunur. */
       tFire=tSet+Math.max(passerTok?1.15:0.95,Math.min(3.10,etaTok(shooter,sh.x,sh.y)+0.45));
       steps.push({at:tOff+0.05,fn:()=>{ offP.forEach(p=>{ _setUrg(p,_URG.SPRINT); }); }});
+      /* FAZ 42: top sahibi doğrudan bitiriş noktasına sürer; şutör de çemberi zorlar.
+         Savunmanın gerideki ikilisi geçişe geç katılır — sayısal üstünlük görünür olur. */
+      steps.push({at:tOff+0.12,fn:()=>{
+        try{
+          const hx=(shooter===pg)?sh.x:(rim[0]+(offLeft?1:-1)*_srand(74,120));
+          const hy=(shooter===pg)?sh.y:(250+_srand(-48,48));
+          pg.tx=_inX(hx); pg.ty=_inY(hy); _setUrg(pg,_URG.SPRINT);
+          if(shooter!==pg){ shooter.tx=_inX(sh.x); shooter.ty=_inY(sh.y); _setUrg(shooter,_URG.SPRINT); }
+          _rolesOrder(defP).slice(3).forEach(d=>{ if(d) _setUrg(d,_URG.KOS); });
+        }catch(e){}
+      }});
       if(passerTok){
         steps.push({at:tOff+0.35,fn:()=>_ballPass(passerTok,0.42)});
         steps.push({at:tFire-0.55,fn:()=>{ _ballPass(shooter,0.40); if(typeof sfx==='function') sfx('pass'); }});
@@ -5614,17 +5848,19 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
     if(!pf) pf=_yedekler[3]||_ilk;
     if(!c)  c =_yedekler[4]||_ilk;
   }
+  let _startEv=null;
   if(!resume){
-    events.push({
+    _startEv={
       type:'start',spId:SP.id,
-      text:`${SP.emoji} Bugünün spikeri: <strong>${SP.ad}</strong> (${SP.stil}). Maç hava atışıyla başlıyor. ${escMatch(MC.home.name)} ${userIsHome?t('ev sahibi'):t('deplasman takımı olarak')}; ${c.isim} dairede, ${pg.isim} ilk hücumu kuruyor. Tribünler doldu.`,
+      text:`${SP.emoji} Bugünün spikeri: <strong>${SP.ad}</strong> (${SP.stil}). Maç hava atışıyla başlıyor. ${escMatch(MC.home.name)} ${userIsHome?t('ev sahibi'):t('deplasman takımı olarak')}; ${c.isim} dairede. %ILKHUCUM% Tribünler doldu.`,
       /* F: hava atışı maç saatinden süre YEMEZ. dt verilmezse oynatma 12 sn varsayıp
          3,6 sn bekliyor; koreografi 1,4 sn'de bittiği için saha donup kalıyordu
          ("düdük çaldı, herkes sabit kaldı"). */
       dt:0,
       q:1,t:MATCH_CLOCK_SEC,home:0,away:0,
       box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
-    });
+    };
+    events.push(_startEv);
   }
 
   let lastPeriod=resume?resume.q:4;
@@ -5928,6 +6164,15 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
     box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)
   });
 
+  /* FAZ 42: açılış cümlesinin ilk hücum parçası, ilk pozisyonun GERÇEK sahibine göre. */
+  if(_startEv&&typeof _startEv.text==='string'){
+    let _ilkOff=null;
+    for(let _i=0;_i<events.length;_i++){ if(events[_i]&&events[_i].off!==undefined){ _ilkOff=!!events[_i].off; break; } }
+    const _par=(_ilkOff===false)
+      ? `Hava atışını ${rname} kazandı, ilk hücum onlarda.`
+      : `Hava atışı ${escMatch(MC.home.name)} tarafında, ${pg.isim} ilk hücumu kuruyor.`;
+    _startEv.text=_startEv.text.replace('%ILKHUCUM%',_par);
+  }
   return events;
 }
 

@@ -948,7 +948,12 @@ Object.assign(I18N_TR_EN,{
 /* ── F11-6: kilitli maç / takılı durum bildirimleri ─────────────────────────────────── */
 Object.assign(I18N_TR_EN,{
 '▶ Maçı sonuçlandır':'▶ Finish match',
-'Maç zaten oynanıyor.':'A match is already in progress.'
+'Maç zaten oynanıyor.':'A match is already in progress.',
+/* FAZ 42: durdurulan maç SÜRDÜRÜLÜR; kilitli sonuç ayrı bir eylemdir ve ne yaptığını söyler. */
+'⏩ Kilitli sonucu uygula':'⏩ Apply locked result',
+'Bu maç daha önce başlatılmış ve sonucu kilitlenmişti — canlı izlenemez; basınca kilitli sonuç doğrudan uygulanır.':'This match was already started and its result was locked — it cannot be watched live; pressing this applies the locked result.',
+'Maç kaldığı yerde duruyor — basınca devam eder.':'The match is paused where it left off — press to continue.',
+'⏸ Maç durduruldu — “Devam et” ile kaldığı yerden sürer.':'⏸ Match paused — press “Continue” to resume from where it left off.'
 });
 
 /* ── FAZ 12: mobil arayüz (alt sekme çubuğu, katlanır bölümler, kısayollar) ──────────── */

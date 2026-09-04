@@ -1,0 +1,51 @@
+{
+  "kare": 5391,
+  "sure": 90,
+  "sahneKat": 1.487,
+  "poz": 16,
+  "top": {
+    "enYuksek": 20,
+    "enYuksekSicrama": 27.2,
+    "isinlanma": 1,
+    "isinlanmaPozBasi": 0.06,
+    "isinModlar": {
+      "held": 1
+    },
+    "pasOlay": 33,
+    "pasPlatoKare": 711,
+    "ort": 5.05
+  },
+  "oyuncu": {
+    "ort": 2.53,
+    "ortMac": 1.7,
+    "p50": 1.82,
+    "p90": 5.26,
+    "p99": 7.59,
+    "p50m": 1.22,
+    "p90m": 3.54,
+    "p99m": 5.1,
+    "enYuksek": 10.44,
+    "enYuksekMac": 7.02,
+    "ust75mac": 0,
+    "ust65mac": 0,
+    "alt05mac": 20.6,
+    "ust8": 0.1,
+    "alt05": 14.3,
+    "alt05macCanli": 18.1,
+    "canliOrnek": 48110,
+    "ortMacCanli": 1.75,
+    "ornek": 53870
+  },
+  "egrilik": {
+    "olcum": 1684,
+    "ortAci": 8.5,
+    "keskin90": 9,
+    "keskinPozBasi": 0.56,
+    "ters150": 98,
+    "ters150Sn": 0.109,
+    "ters150Medyan": 0.04,
+    "duzCapraz": 0
+  },
+  "konsolHata": 0,
+  "startErr": null
+}

@@ -505,6 +505,9 @@ Object.assign(I18N_TR_EN,{'%S orta mesafeden kaçırdı.':'%S misses from mid-ra
 
 /* ── F3b: maç akışında ÜRETİLEN metinler (isim/skor gömülü) için kalıplar ─────────────── */
 I18N_PHRASES.unshift(
+  /* FAZ 42: açılış — hava atışını kim kazandıysa anlatım onu söyler. */
+  [/Hava atışını (.+?) kazandı, ilk hücum onlarda\./g,'$1 won the tip-off; they have the first possession.'],
+  [/Hava atışı (.+?) tarafında, (.+?) ilk hücumu kuruyor\./g,'The tip-off goes to $1; $2 sets up the first possession.'],
   /* çeyrek / maç akışı */
   [/(\d+)\. çeyrek başladı —/g,'Start of Q$1 —'],
   [/Uzatma (\d+) başladı — 5:00\. Skor/g,'Overtime $1 begins — 5:00. Score'],

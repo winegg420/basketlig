@@ -87,8 +87,8 @@ function syncPendingMatchButton(){
     const b=document.getElementById('startMatchBtn');
     if(!b||mState.running) return;
     if(pendingMatchIsNext()){
-      b.textContent='▶ Maçı sonuçlandır';
-      b.title='Sonuç maç başında kilitlendi; bu maç yeniden oynanamaz. Basınca kilitli sonuç uygulanır.';
+      b.textContent='⏩ Kilitli sonucu uygula';
+      b.title='Bu maç daha önce başlatılmış ve sonucu kilitlenmişti — canlı izlenemez; basınca kilitli sonuç doğrudan uygulanır.';
     } else {
       b.textContent='▶ Maçı Başlat';
       b.removeAttribute('title');
@@ -548,12 +548,10 @@ function stopMatch(){
   const badge=document.getElementById('liveBadge'); if(badge) badge.style.display='none';
   /* C1: durdurulan maç takılı kalmasın — sonuç maç başında kilitliydi; kullanıcı
      "Maçı sonuçlandır" ile hükmen bitirebilir (yeniden oynanamaz, farklı sonuç üretilmez). */
-  const btn=document.getElementById('startMatchBtn');
-  if(btn && G.pendingMatch && mState.sig && G.pendingMatch.sig===mState.sig){
-    btn.textContent='▶ Maçı sonuçlandır';
-    btn.title='Sonuç maç başında kilitlendi; bu maç yeniden oynanamaz. Basınca kilitli sonuç uygulanır.';
+  syncMatchButtons();
+  if(canResumeMatch()) showNotif('⏸ Maç durduruldu — “Devam et” ile kaldığı yerden sürer.');
+  else if(G.pendingMatch && mState.sig && G.pendingMatch.sig===mState.sig)
     showNotif('⏸ Maç durduruldu. Sonuç kilitli — “Maçı sonuçlandır” ile bitir (yeniden oynanamaz).',{critical:true});
-  }
 }
 
 /* ── Manuel koçluk / canlı müdahale (Madde 12) ── */
@@ -1963,6 +1961,7 @@ function resumeMatch(){
   }catch(e){}
   setMatchButtonsRunning(true);
   try{ startCrowdAmbience(); }catch(e){}
+  try{ const _S=mState._sim; if(_S){ _S.idle=0; _S.last=0; if(!_S.raf&&typeof _simStart==='function') _simStart(); } }catch(e){}
   try{ mState.step(); }catch(e){ dbg('resumeMatch',e); }
   return true;
 }
@@ -1982,12 +1981,12 @@ function syncMatchButtons(){
   try{
     const durum=matchPlaybackState();
     const etiket={running:'⏳ Maç Devam Ediyor',frozen:'▶ Devam et',
-                  pending:'▶ Maçı sonuçlandır',idle:'▶ Maçı Başlat'}[durum];
+                  pending:'⏩ Kilitli sonucu uygula',idle:'▶ Maçı Başlat'}[durum];
     const b=document.getElementById('startMatchBtn');
     if(b){
       b.disabled=(durum==='running');
       b.textContent=etiket;
-      if(durum==='pending') b.title='Sonuç maç başında kilitlendi; bu maç yeniden oynanamaz. Basınca kilitli sonuç uygulanır.';
+      if(durum==='pending') b.title='Bu maç daha önce başlatılmış ve sonucu kilitlenmişti — canlı izlenemez; basınca kilitli sonuç doğrudan uygulanır.';
       else if(durum==='frozen') b.title='Maç kaldığı yerde duruyor — basınca devam eder.';
       else if(durum==='running') b.title='Maç canlı oynanıyor.';
       else b.removeAttribute('title');

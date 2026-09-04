@@ -109,6 +109,10 @@ async function main() {
             b: [+b.x.toFixed(1), +b.y.toFixed(1), b.mode],
             /* Teşhis: donmanın SEBEBİNİ ayırt etmek için (set mi, kilit mi, kademe mi). */
             cs: S.canliSet ? 1 : 0,
+            /* FAZ 41: OLU TOP ayrimi — serbest atis dizilisi / kenardan sokma. Bu
+               karelerde duran jeton NORMALDIR (dizilim olculerek ayarlandi, F14-7). */
+            ft: S._ftAktif ? 1 : 0,
+            inb: S.inb ? 1 : 0,
             p: (S.players || []).map(p => [
               +p.x.toFixed(1), +p.y.toFixed(1),
               (S.offP || []).indexOf(p) >= 0 ? 1 : 0,
@@ -151,6 +155,16 @@ async function main() {
 function analiz(K) {
   if (K.length < 10) return { hata: 'kare yok', kare: K.length };
 
+  /* -- FAZ 41 yardimcilari ---------------------------------------------------------- */
+  const medyan = (arr) => { if (!arr.length) return 0; const q = arr.slice().sort((a, b) => a - b);
+    const m = q.length >> 1; return q.length % 2 ? q[m] : (q[m - 1] + q[m]) / 2; };
+  /* OLU TOP: jetonun durmasi MESRU olan kareler. Brif bu kareleri donma olcutunden
+     haric tutmayi sart kosuyor ve gerekcesi dogru — serbest atis ve kenardan sokma
+     dizilimleri OLCULEREK ayarlandi (F14-7), sut UCUSU sirasinda da oyuncular
+     ribaunt yerini almis bekler. Ceyrek arasi/mola karelerinde sahne hic akmaz. */
+  const oluTop = (k) => (k.ft === 1) || (k.inb === 1) ||
+    (k.b && (k.b[2] === 'shoot' || k.b[2] === 'rim' || k.b[2] === 'idle'));
+
   /* Sahne ↔ maç saati oranı: `_clkNow` GERİYE sayar (kalan saniye).
      ⚠ Kare-kare farkları TOPLANAMAZ — saat animasyonlu aktığı için küçük ileri-geri
      salınım yapar ve düşüşlerin toplamı NET düşüşün katı çıkar (ölçüldü: 10,5× vs 1,45×).
@@ -190,6 +204,9 @@ function analiz(K) {
   const oyHiz = [];
   for (let i = 0; i < 10; i++) oyHiz.push(pencere(i, oyAl));
   const tumOy = [].concat.apply([], oyHiz);
+  /* FAZ 41: CANLI TOP orneklemi — olu top kareleri disarida. Donma olcutu bunun
+     uzerinden okunur; brifin "olu topta duran jeton normaldir" sarti budur. */
+  const canliOy = tumOy.filter(x => !oluTop(K[x.i]));
 
   /* Kare-kare top sıçraması (ışınlanma tespiti — pencere yumuşatması ışınlanmayı gizler,
      bu yüzden ışınlanma AYRI ölçülür: tek karede kat edilen mesafe / kare süresi). */
@@ -238,6 +255,40 @@ function analiz(K) {
     }
   }
   const keskin = aci.filter(x => x.a > KESKIN);
+
+  /* -- FAZ 41: YON TERSLEMESI (>150 derece, 0,1 sn adimlarla) -------------------------
+     Brifin kabul olcutu. 0,25 sn / 90 derece olcusu (yukarida) YOL EGRILIGINI olcer; bu
+     olcu TITREMEYI olcer: yerinde salinan jeton her 0,1 sn'de yon cevirir ama yol kat
+     etmez. Bu yuzden asgari bacak uzunlugu sarti YOKTUR (koyulursa titreme elenip
+     gorunmez olur) ve terslemelerin MEDYAN BACAK UZUNLUGU ayrica raporlanir —
+     kucuk medyan = titreme. Olu top kareleri haric. */
+  const ters = [];
+  const TERS_ACI = 150, ADIM_SN = 0.1;
+  for (let i = 0; i < 10; i++) {
+    let a = 0;
+    while (a < K.length - 2) {
+      let b = a, c;
+      while (b + 1 < K.length && (K[b + 1].t - K[a].t) < ADIM_SN) b++;
+      c = b;
+      while (c + 1 < K.length && (K[c + 1].t - K[b].t) < ADIM_SN) c++;
+      if (c >= K.length || c === b || b === a) break;
+      const p0 = K[a].p[i], p1 = K[b].p[i], p2 = K[c].p[i];
+      if (p0 && p1 && p2 && !oluTop(K[b])) {
+        const v1 = [p1[0] - p0[0], p1[1] - p0[1]], v2 = [p2[0] - p1[0], p2[1] - p1[1]];
+        const l1 = Math.hypot(v1[0], v1[1]), l2 = Math.hypot(v2[0], v2[1]);
+        if (l1 > 0.5 && l2 > 0.5) {
+          const cos = Math.max(-1, Math.min(1, (v1[0] * v2[0] + v1[1] * v2[1]) / (l1 * l2)));
+          const ac = Math.acos(cos) * 180 / Math.PI;
+          if (ac > TERS_ACI) ters.push({ adim: Math.min(l1, l2) / PX_M, t: K[b].t });
+        }
+      }
+      a = b;
+    }
+  }
+  /* Saniye basina: olcum 10 jeton uzerinde yapildi, oran JETON BASINA saniyeye indirilir. */
+  const izlenenSn = (K[K.length - 1].t - K[0].t) || 1;
+  const tersSn = ters.length / izlenenSn / 10;
+  const tersMedyan = ters.length ? medyan(ters.map(x => x.adim)) : 0;
 
   /* Tam sahayı tek düz çizgide geçen jeton: 700 px+ yer değiştirme, yol/kirişte sapma < %5 */
   let duzCapraz = 0;
@@ -293,6 +344,10 @@ function analiz(K) {
       alt05mac: +yuzde(tumOy, x => x.v / sahneKat < 0.5).toFixed(1),
       ust8: +yuzde(tumOy, x => x.v > 8).toFixed(1),
       alt05: +yuzde(tumOy, x => x.v < 0.5).toFixed(1),
+      /* Olu top haric donma (FAZ 41 kabul olcutu) */
+      alt05macCanli: +yuzde(canliOy, x => x.v / sahneKat < 0.5).toFixed(1),
+      canliOrnek: canliOy.length,
+      ortMacCanli: +(ort(canliOy.map(x => x.v)) / sahneKat).toFixed(2),
       ornek: oyV.length
     },
     egrilik: {
@@ -300,6 +355,10 @@ function analiz(K) {
       ortAci: +ort(aci.map(x => x.a)).toFixed(1),
       keskin90: keskin.length,
       keskinPozBasi: +(keskin.length / pozN).toFixed(2),
+      /* FAZ 41: titreme olcutu */
+      ters150: ters.length,
+      ters150Sn: +tersSn.toFixed(3),
+      ters150Medyan: +tersMedyan.toFixed(2),
       duzCapraz
     }
   };
@@ -325,10 +384,14 @@ function bas(R, dosya) {
   L.push(`  en yüksek                 maç ${String(R.oyuncu.enYuksekMac + ' m/sn').padStart(11)}    ≤ 8,5       [sahne ${R.oyuncu.enYuksek}]`);
   L.push(`  > 7,5 m/sn (maç) oranı        ${String(R.oyuncu.ust75mac + '%').padStart(11)}    ≤ 1%`);
   L.push(`  > 6,5 m/sn (maç) oranı        ${String(R.oyuncu.ust65mac + '%').padStart(11)}    ≤ 5%`);
+  L.push(`  < 0,5 m/sn — OLU TOP HARIC   ${String(R.oyuncu.alt05macCanli + '%').padStart(18)}    <= 12%      [n=${R.oyuncu.canliOrnek}]`);
+  L.push(`  canli top ortalama hizi   maç ${String(R.oyuncu.ortMacCanli + ' m/sn').padStart(11)}    1,8 - 2,6`);
   L.push(`  < 0,5 m/sn (maç) oranı        ${String(R.oyuncu.alt05mac + '%').padStart(11)}    ≤ 12%       [sahne ${R.oyuncu.alt05}%]`);
   L.push('');
   L.push('  ── YOL EĞRİLİĞİ ──');
   L.push(`  ortalama dönüş açısı (0,25 sn) ${String(R.egrilik.ortAci + '°').padStart(16)}    (n=${R.egrilik.olcum})`);
+  L.push(`  > 150° yön terslemesi (0,1 sn) ${String(R.egrilik.ters150Sn + '/sn').padStart(13)}    <= 0,15/sn  [n=${R.egrilik.ters150}]`);
+  L.push(`  terslemelerin medyan adımı    ${String(R.egrilik.ters150Medyan + ' m').padStart(14)}    >= 0,5 m`);
   L.push(`  > 90° keskin dönüş             ${String(R.egrilik.keskin90 + ' (' + R.egrilik.keskinPozBasi + '/poz)').padStart(16)}    ≤ 2/poz`);
   L.push(`  tam sahayı düz geçen jeton     ${String(R.egrilik.duzCapraz).padStart(16)}    0`);
   L.push('');
