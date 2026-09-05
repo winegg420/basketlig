@@ -1351,6 +1351,9 @@ function _simTick(dt){
          yanında duran bir rakip (ribaunt bloğu) takipçiyi 30-35 px'te tutuyor, top hiç
          alınamıyordu (iz: takipçi 1,5 sn boyunca 30-44 px'te, rakip topun üstünde). Serbest
          topa 60 px'ten yakın takipçi için yarıçap 22 px: oyuncu topa uzanır, kalabalıktan geçer. */
+      /* FAZ 48: topu tutan ile rakip savunmacısı 20 px'e (0,68 m) kadar yaklaşabilir — gerçekte
+         ön sahada savunmacı mesafesinin %21'i 1 m altı, 40 px yarıçapla bu hiç olmuyordu */
+      if(S.ball&&S.ball.mode==='held'&&S.ball.carrier&&(a===S.ball.carrier||b===S.ball.carrier)&&a.team!==b.team) _R=Math.min(_R,20);
       if(S.chase&&S.chase.tok&&(a===S.chase.tok||b===S.chase.tok)&&S.ball&&S.ball.mode==='loose'){
         const ct=S.chase.tok;
         if(Math.hypot(ct.x-S.ball.x,ct.y-S.ball.y)<110) _R=Math.min(_R,22);   /* 60 → 110 (ölçüldü: 3 kişilik halka 61-74 px'te tutuyordu) */
@@ -2865,6 +2868,7 @@ function movePlayersForEvent(ev,paint){
     /* ── RİBAUND (anlatılan) ── önceki şutun devamı: top hâlâ serbestse
        anlatımdaki oyuncu topa KOŞAR ve alır; cümle tam o karede basılır. */
     if(type==='reb'){
+      const erken=!!S._erkenReb; S._erkenReb=false;   /* FAZ 48 d4: top erken takiple alındı ve hücum başladı mı? */
       let reb=null;
       if(ev.rebId!=null){
         const pool=(ev.rebIsUser!=null)?(ev.rebIsUser?S.home:S.away):S.players;
@@ -2887,6 +2891,7 @@ function movePlayersForEvent(ev,paint){
         return Math.round(eta*1000)+420;
       }
       if(P) _markPainted();
+      if(erken){ if(P) _markPainted(); return _script([{at:0.15,fn:()=>{ if(P) P(); }}])+380; }   /* FAZ 48 d4: top zaten alındı, hücum başladı — top geri UÇMAZ */
       return _script([{at:0.15,fn:()=>{ _ballHold(reb); reb.pop=0.9; if(P) P(); _startBreak(rebIsUser); }}])+380;
     }
 
@@ -3294,7 +3299,10 @@ function animateShotPossession(sh,onShoot,onResult){
            yoksa mücadeleyi burada bitir ki top yerde kalmasın. Top alınır alınmaz
            yeni hücum BAŞLAR (gerçek basketbol: ribaund = geçişin başlangıcı). */
         if(!(nx&&nx.type==='reb')) _chase(w,()=>{ _startBreak(winIsUser); },2.4);
-        else { _setUrg(w,_URG.SPRINT); w.tx=bb.x; w.ty=bb.y; _lockTok(w,1.2); }
+        /* FAZ 48 (iz: top çemberden düşünce 1,3 sn yerde bekliyordu — takip 'reb' olayıyla
+           başlıyordu, yanındaki oyuncu takipsiz olduğu için alamıyordu): adı geçen ribaundcu
+           hemen takibe girer ve hücum başlar; 'reb' olayı yalnız anlatır (`_erkenReb`). */
+        else _chase(w,()=>{ S._erkenReb=true; _startBreak(winIsUser); },3.0);   /* FAZ 48 d4: hücum hemen başlar, 'reb' olayı yalnız anlatır */
       }
     }
 

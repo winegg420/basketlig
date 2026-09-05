@@ -1,0 +1,18 @@
+HAREKET DAĞILIMI ↔ GERÇEK — iz-f48-son2.json · 28158 kare · sahne→maç 1.652 · gerçek: 10 maç / 811291 kare
+  ✓ oyuncu hızı (m/sn)     L1  0.189  (eşik 0.35)   ort 1.93 ↔ gerçek 1.72   n=281580
+  ✗ yayılım x (m)          L1  0.397  (eşik 0.35)   ort 3.18 ↔ gerçek 3.636   n=17551
+  ✗ yayılım y (m)          L1  0.365  (eşik 0.35)   ort 3.56 ↔ gerçek 3.754   n=17551
+  ✓ savunmacı mesafesi (m) L1  0.324  (eşik 0.35)   ort 4.02 ↔ gerçek 3.144   n=17551
+  ✗   ↳ ön sahada (m)      L1  0.355  (eşik 0.35)   ort 2.30 ↔ gerçek 2.003   n=11052
+  ✗   ↳ arka sahada (m)    L1  0.521  (eşik 0.35)   ort 6.94 ↔ gerçek 5.065   n=6499
+  ✗ pas / pozisyon         L1  0.632  (eşik 0.35)   ort 2.46 ↔ gerçek 3.136   n=56
+  ✗ topu tutma süresi (sn) L1  0.703  (eşik 0.35)   ort 2.95 ↔ gerçek 1.465   n=201
+  ✓ aynı anda koşan        L1  0.294  (eşik 0.35)   ort 3.77 ↔ gerçek 3.337   n=28158
+  ✓ kesme / 1,5 sn         L1  0.033  (eşik 0.35)   ort 0.80 ↔ gerçek 0.797   n=411
+  ✓ şut anında duran       L1  0.345  (eşik 0.35)   ort 2.05 ↔ gerçek 1.655   n=55
+  ✗ potaya uzaklık (m)     L1  0.381  (eşik 0.35)   ort 10.91 ↔ gerçek 10.937   n=17551
+  · arka sahada tutma payı    37.0% ↔ gerçek 37.3%   (bilgi)
+  · top elde oranı            62.4% ↔ gerçek 80.9%   (bilgi)
+  · yarı sahayı geçen         G 81% F 19% C 0% ↔ gerçek G 79% F 14% C 6%   (bilgi)
+  · çıkarılamadı: perdeSayisi, sutTipi
+✗ 7 dağılım eşiğin dışında

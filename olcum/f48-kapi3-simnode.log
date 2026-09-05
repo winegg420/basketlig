@@ -1,0 +1,14 @@
+SAF NODE MAÇ SİMÜLASYONU (tarayıcı YOK)
+============================================================
+✓ 14 modül düz Node'da yüklendi (main.js hariç — arayüz katmanı)
+✓ iki gerçek kadro üretildi (15 + 15 oyuncu)
+
+============================================================
+maç sayısı        : 500/500 (hata 0)
+ortalama skor     : 93.1 - 87.9  · olay/maç 268
+süre              : 6.1 sn
+aynı tohum aynı maç: EVET  (85-103 ↔ 85-103)
+farklı tohum farklı: EVET  (88-76)
+G durumu değişmedi : EVET
+============================================================
+✓ saf Node simülasyonu çalışıyor ve deterministik

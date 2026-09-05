@@ -68,6 +68,11 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/hareket-check.js` | **Saha hareketi (FAZ 15)** — jeton hızı (bant dağılımı), konveks kabuk alanı, ikili mesafe. Hız **maç saatinde** yargılanır; sahne maç saatini ~2× sıkıştırdığı için sahne px/sn'si gerçek m/sn ile doğrudan kıyaslanamaz. Hız/dizilim değişince çalıştır. |
 | `tools/iz-kaydet.js` | **Canlı sahne iz kaydedicisi (FAZ 40)** — topun ve 10 jetonun konumu her karede kaydedilir; hız **100 ms pencerede** hesaplanır (kare-kare DEĞİL — 60 fps.te 1 px titreşim 1,8 m/sn sahte hız üretir). **Sahne↔maç saati oranını AYNI KOŞUDA ölçer ve her hızı iki ölçekte birden basar** (F15 tuzağı). Işınlanma, donma payı, yol eğriliği. `--yeniden=<etiket>` ile tarayıcısız yeniden çözümleme. Hareket/koreografi değişince çalıştır. |
 | `tools/iz-ciz.js` | İz kaydından yörünge + hız profili PNG.si üretir (`olcum/iz-<etiket>-*.png`). Her sürümde üretilip saklanır. |
+| `tools/gercek-hareket/indir.js` | **FAZ 48 gerçek HAREKET verisi indirici** — SportVU 2015-16 (linouk23/NBA-Player-Movements 7z, 25 kare/sn) + sumitrodatta/nba-alt-awards play-by-play; sezona eşit aralıkla `--n` maç. Ham veri `tools/gercek-hareket/_ham/` (≈1 GB, `.gitignore`) — **DEPOYA KOYMA**. |
+| `tools/gercek-hareket/cikar.js` | **FAZ 48 hareket dağılımı çıkarıcı** — ham SportVU'dan `tools/_lib/gercek-hareket.json` üretir (10 maç · 811.291 kare · 2.122 pozisyon): oyuncu hızı, hücum yayılımı, topu tutana en yakın savunmacı (toplam + ön/arka saha), pas/pozisyon, tutma süresi, aynı anda koşan, kesme, şut anında duran, potaya uzaklık, top elde payı, arka sahada tutma payı, yarı sahayı geçen rol — DAĞILIM olarak (tek sayı değil). Tanımlar dosya başında; bir tanımı değiştiren veriyi yeniden çıkarmak zorunda. `cikarilamadi`: perde sayısı, şut tipi — kapı YOK. |
+| `tools/_lib/gercek-hareket.json` | **Hareket kapılarının TEK DOĞRULUK KAYNAĞI** (FAZ 48). Elle DÜZENLEME; `cikar.js` üretir. |
+| `tools/hareket-bant-check.js` | **Hareket dağılımı ↔ gerçek (FAZ 48)** — `node tools/hareket-bant-check.js olcum/iz-<etiket>.json`: iz kaydından SportVU ile AYNI tanımlarla dağılımlar çıkarır (maç ölçeği) ve histogram **L1 uzaklığı** basar; kapı L1 ≤ 0,35 (tek sabit). ⚠ n≈50 pozisyonluk ölçütlerde (pas/poz, şut anında duran) L1 ±0,1 gürültülüdür — aynı kodun beş kaydında 0,32-0,45 salındı; karar ortalamanın yönüyle verilir. Hareket/koreografi değişince `iz-kaydet` + bunu çalıştır. |
+| `tools/iz-poz-ciz.js` | **Pozisyon penceresi yörünge grafiği (FAZ 48 · 3. taş)** — `--t=a-b` (motor kaydı, 10-14 sn pencere) ve `--gercek=<SportVU json> --olay=<id>` (gerçek olay) panellerini yan yana çizer (`olcum/*-poz.png`). 470 sn'lik tam yörünge "saç yumağı"dır; hiçbir kapının yakalamadığı kusurlar (sahayı boydan boya kat eden değişim yayları, uzunların köşe noktası) bu grafikte görüldü. Sayılar yeşilken şikâyet varsa `kontak-goruntu` ile birlikte ÖNCE bunu çalıştır ve kendin oku. |
 | `tools/kontak-goruntu.js` | **Canlı sahayı GÖZLE izleme (FAZ 44)** — `node tools/kontak-goruntu.js <KÖK> <etiket> --secs=60 --adim=2`: sahayı 2 sn'de bir kaydeder, 15'lik kontak sayfaları (5×3, her karede olay·mod·taşıyıcı·SET/FT/INB etiketi) üretir (`olcum/goruntu/`). Sayılar yeşilken "basketbola benzemiyor" şikâyetinde ÖNCE bunu çalıştır ve kareleri kendin oku; `<KÖK>` olarak `git worktree` ile açılan HEAD kopyası verilirse aynı tohumda yan yana kıyas yapılır. |
 | `tools/dizilim-olc.js` | **Olay indeksine göre dizilim yayılımı (FAZ 44)** — 100 ms'de bir ağırlık merkezine ortalama uzaklık, en yakın çift, 22 px altı çakışan çift, saha dışı jeton; olay başına özet. Duvar saatine bağlı ekran anları koşular arasında kıyaslanamaz — bu araç AYNI OLAYDA kıyaslar. |
 | `tools/gecis-analiz.js` | **Pozisyon başına orta çizgi geçişi (FAZ 44)** — `iz-kaydet` kaydını okur; her pozisyonda topun orta çizgiyi hangi modda (held/pass/shot/hiç) geçtiğini listeler. `sahne-check`in "geçiş / pozisyon değişimi" kapısı çift sayar (HEAD %111); davranış yargısı için bunu kullan. |
@@ -1417,3 +1422,75 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   (içeri) yazdı; kontak sayfasında fark edilmedi çünkü 11 px'lik gri jeton kenarda "dışarıda
   gibi" duruyordu. Kural: dip çizgi `CRT_X0-16 / CRT_X1+16`, kenar `CRT_Y0-16 / CRT_Y1+16`.
   Hava atışını orta hakem çemberden atar (kurulumda orada durur, 3,5 sn sonra kenara çıkar).
+
+
+- **HAREKET HEDEFLERİ ARTIK GERÇEK VERİDEN — `tools/_lib/gercek-hareket.json` (FAZ 48):** SportVU
+  2015-16, 10 maç, 811 bin kare (`tools/gercek-hareket/indir.js` + `cikar.js`; ham veri
+  `_ham/` gitignore'da, 7zr.exe kamu malı). `tools/hareket-bant-check.js` iz kaydından AYNI
+  tanımlarla dağılım çıkarır ve histogram L1 uzaklığı basar (kapı ≤ 0,35, tek sabit). Elle
+  yazılmış hareket bandı KALMADI; yeni bir hareket kapısı yazarken eşiği buradan al, veriden
+  çıkarılamıyorsa kapı KURMA (`cikarilamadi`: perde sayısı, şut tipi).
+- **TAHMİNLE YAZILAN KAPI TERS YÖNDE OLABİLİR (FAZ 48, en önemli ders):** `sahne-check`in "şut
+  anında yerinde hücumcu ≥ 4,25/5" kapısı gerçekle çelişiyor — SportVU'da şut anında 4 takım
+  arkadaşından ortalama 1,66'sı duruyor, 2,3'ü hareketli. FAZ 46-47 bu kapıyı tutturmak için
+  şuttan önce dizilimi dondurdu ve gerçeklikten uzaklaştı. Bir kapı "tutturulamıyorsa" önce
+  eşiğin nereden geldiğini sor; ölçülmemişse eşik değil kapı yanlıştır.
+- **GERÇEK VERİDE "TUTAN"/"POZİSYON" TANIMI SONUCU 3× DEĞİŞTİRİR (FAZ 48):** topa ≤ 0,9 m ile
+  tutan sürme sırasında kopuyor (tutma 0,95 sn), takım değişimini anlık sayınca 727 poz/maç
+  çıkıyor (gerçek ~200) ve pas/poz 0,9 görünüyor. Doğru: ≤ 1,2 m + 0,5 sn köprü, pozisyon
+  değişimi için karşı takım ≥ 1 sn tutmalı → 212 poz/maç, 3,1 pas/poz. Motor tarafında da AYNI
+  tanım uygulanır; iki taraf farklı tanımla ölçülürse L1 tanım farkını ölçer.
+- **TÖREN OAM'A GEÇİNCE İLK KARE HEDEFİ HEMEN YAZILMALI (FAZ 48 · 1c):** eski dalın bekleme
+  tahmini (`_ftWaitSec`) ve `_ftHazir` kapısı `p.tx` okur; hedefler bir kare sonra yazılınca
+  serbest atış oyuncular kulvara varmadan patlıyordu (F14-7 9,8 → 6,7/10). `oamTorenKur`
+  hedefleri kurulumda yazar. Tek hedef yazıcı kuralı: tören boyunca `_hedefAta` sarmalayıcıda
+  kapalı (`S.oam.torenSahibi`); eski dalların hedef çağrıları duruyor ama etkisiz.
+- **YÖRÜNGE GRAFİĞİ SAYIDAN ÖNCE GELİR (FAZ 48 · 3. taş):** `tools/iz-poz-ciz.js` tek pozisyonu
+  ve gerçek SportVU olayını yan yana çizer. Gözle görülen ve hiçbir kapının yakalamadığı kusur:
+  zayıf taraf değişimi ve 5-dış şablonunda uzunların köşe noktası, oyuncuları sahayı boydan
+  boya kat eden uzun yaylara sokuyordu (gerçekte pozisyon yarı sahada kalır). Değişim yalnız
+  komşu noktalar (≤ 7 m), uzunlara köşe yok. 470 sn'lik tam yörünge resmi "saç yumağı"dır —
+  pozisyon penceresi (10-14 sn) çiz.
+- **L1 KAPISI n≈50 POZİSYONDA ±0,1 GÜRÜLTÜLÜDÜR (FAZ 48 · 2. taş, ölçüldü):** aynı kodun beş
+  kaydında "şut anında duran" L1 0,32-0,45, "pas/pozisyon" 0,42-0,60 arasında salındı (n=48-54).
+  Tek maddelik bir ayarın etkisi bu banttan küçükse kayıttan okunamaz; karar ORTALAMANIN yönü +
+  gerçek verinin yönü ile verilir, L1 yalnız 26 bin karelik ölçütlerde (hız, savunmacı, yayılım)
+  tek başına yeterlidir. Dört madde dört paralel kopyada (`basketlig-a..d`, `kopya.sh`) tek tek
+  ölçüldü; c ve d ölçülebilir etki vermedi ve kök neden başka yerdeydi (aşağıda).
+- **"SAVUNMACI UZAK" TEŞHİSİ ÖN/ARKA SAHA AYRILMADAN OKUNAMAZ (FAZ 48):** toplam 4,4 ↔ 3,1 m
+  farkının kaynağı ön saha DEĞİLDİ (2,2 ↔ 2,0 m); iki ayrı kusurdu: (1) ön sahada dağılım
+  gerçekte %21 1 m altı, motorda %0 — `_PL_R=40` çarpışma yarıçapı topu tutanla savunmacısını
+  1,35 m'de tutuyordu (çift için 20 px); (2) arka sahada 8,2 ↔ 5,1 m — eski geçiş kodu
+  (ribaund/sayı sonrası, sıradaki olay gelene dek OAM kapalı) savunmacıları kendi yarı sahasında
+  bekletiyor. `gercek-hareket.json` artık `savunmaciOn/savunmaciArka` + `arkaSaha.tutmaPayi`
+  taşır (motor %36 ↔ gerçek %37 — arka saha SÜRESİ doğruydu, mesafe yanlıştı).
+- **RİBAUND TAKİBİ 'reb' OLAYINI BEKLEMEZ (FAZ 48 d2, iz ile bulundu):** top çemberden düşünce
+  1,3 sn yerde bekliyordu — `_rebScramble` kazananı topun üstüne gönderiyor ama `_chase` ancak
+  'reb' olayında kuruluyordu; takipsiz jeton `_topAlinabilir`den geçmez. Şimdi kazanan hemen
+  takibe girer, çıkış pası olay gelene dek `S._erkenReb` ile bekletilir (anlatım senkronu
+  korunur). Kaçan şut sonrası serbest top 3,1/2,4 sn idi (miss2/miss3).
+- **ÖLÇÜM DAMGASI TICK SONRASI YAZILIR (FAZ 48):** `spacing-check` set fazını `S.defTrack`ten
+  okur; OAM eski tick'e girerken bayrağı kapatır (eski yazıcılar sussun diye) ve geri açmıyordu →
+  "SET fazına ait hiç kare yakalanamadı". Sarmalayıcı tick sonrası `defTrack=(faz==='set')` yazar.
+  Bir bayrağı ölçüm aracı okuyorsa, onu kapatırken aracın ne göreceğini de düşün.
+- **`animateShotPossession` İÇİNDEKİ YEREL FONKSİYONLAR OAM'DAN GÖRÜNMEZ (FAZ 48 d3, en pahalı
+  bulgu):** `_rebScramble` o fonksiyonun içinde tanımlı; `sahne-oam.js` onu çağırınca
+  ReferenceError fırlıyor ve `_ballShoot` geri çağrısındaki try/catch yutuyordu — FAZ 46'dan beri
+  OAM şutlarında ribaund mücadelesi HİÇ kurulmadı (kazanan topa gitmiyor, box-out yok), top 'reb'
+  olayına dek 2-3,5 sn yerde kaldı; "top elde %57-60" ve "sahipsiz top" bulgularının kökü buydu.
+  OAM kendi kopyasını taşır (`oamRebScramble`). Kural: OAM'a taşınan her eski çağrının GLOBAL
+  olduğunu `node --check` DEĞİL, çalışma zamanında bir sayaçla doğrula (sessiz catch bloklarında
+  ReferenceError görünmez); `iz-kaydet`in `ch` (takip var mı) alanı bunu 1 dakikada gösterdi.
+- **SOKMA PASI OLAYI BEKLEMEZ (FAZ 48 c4):** sayı/serbest atış sonrası eski kod pası bir sonraki
+  olayın betiğine bırakıyor, OAM o betiği yeniden kurduğu için sokucu çizgi dışında olay gelene
+  dek (1-5,5 sn, savunmacı 10,6 m) topu tutuyordu. `oamSokmaTick` çizgiye varıştan 0,7 sn sonra
+  pası atar, `oamYuruTick` oyun kurucuyu orta çizgiye JOG ile getirip orada süretir (gerçek
+  "topu yürütmek"), `oamBaskiTick` savunmacısını 1,3-3,7 m'de tutar; olay gelince OAM `gecis`ten
+  devam eder. Olay sistemi ile sahne arasındaki "ölü zaman" artık çizgi dışında değil, sahada
+  top sürerek geçer.
+- **ERKEN ALINAN TOPUN HÜCUMU DA ERKEN BAŞLAR (FAZ 48 d4):** d2/d3 ribaundcuyu 'reb' olayından
+  önce topa gönderince ilk sürüm çıkış pasını olaya kadar bekletti (`_erkenReb`) — uzun topu
+  alıp 3,9-5,8 sn dikildi (`sunum` M9 6/8, tutma süresi). Doğrusu: takip biter bitmez
+  `_startBreak`, 'reb' olayı gelince yalnız anlatım (`erken` bayrağı: top ribaundcuya geri
+  UÇURULMAZ, hücum ikinci kez kurulmaz). Bayrak olay sonunda sarmalayıcıda sıfırlanır — bir
+  olaya ait bayrak sonraki olaya sızarsa (faul → gerçek ribaund) yanlış dala girer.

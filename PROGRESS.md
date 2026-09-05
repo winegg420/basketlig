@@ -8177,3 +8177,307 @@ hedefleri (kulvarlar 20 m ötede) anlık ortalama sapmayı büyütür; kapı dav
    alt adımlarla, 32 adım) — yavaş makinede sahne gerçek zamanı tutar, yetişme yolu yalnız gerçek
    arka plan dönüşünde çalışır. Yeni araç `tools/isin-oyuncu.js` tek karelik jeton/top sıçramasını
    (>30 px) bağlamıyla listeler (100 ms pencere ortalaması kısa sıçramayı yutuyordu).
+
+
+
+---
+
+## 48. oturum — FAZ 48: ÖLÜ TOPLAR OAM'DA · GERÇEK HAREKET VERİSİ · KENDİ ÇIKTINA BAK (2026-09-05)
+
+Brif: (0) sürüm damgası, (1) ölü topları OAM'a al [1a hava atışı · 1b faul/ihlal sokması ·
+1c serbest atış/mola/periyot], (2) hedefleri gerçek SportVU dağılımlarından türet, (3) yörünge
+grafiklerini kendi gözünle incele. Kurallar: motor matematiğine dokunma, tek madde–ölç, hile yok.
+
+### 0. SÜRÜM DAMGASI
+Oturum başında `surum-check` GEÇİYORDU (çalışma ağacı temiz, sürüm 84 kayıtlı ve canlıda).
+Brifin "84'te kaldı, düşüyor" önermesi eski ölçümle yazılmış (FAZ 44'teki gibi). Bu turun sonunda
+85'e çıkarıldı + `--yaz`.
+
+### 1a. HAVA ATIŞI — FAZ 44'te çözülmüştü, bu turda yeniden ölçüldü (iz-f48-1c, 470 sn)
+Brifin "top 1,1 sn asılı, sıçrama yok" ölçümü FAZ 43 kodunun. Şimdi: top `idle` **0,14 sn** ·
+toss→kazanma **1,57 sn** · tepe **5,05 m** · toss anında çemberde **2** (EV/C · DEP/PG, 0,68 m) ·
+saha 5-5, en kalabalık yarı 5. FAZ 48'de ek: hava atışı hedefleri OAM töreninden (`oamTorenKur
+'start'`), orta hakem çemberde topu atar.
+
+### 1b. FAUL / İHLAL / TAÇ SONRASI SOKMA — FAZ 45-47'de OAM'a alınmıştı (`oamOluTop`)
+Brifin "sokucunun 15 m'sinde 2,1/10" ölçümü FAZ 43 kodunun. iz-f48-1c'de 33 sokma epizodu:
+yakın takım arkadaşı ort **3,58**, karşı yarıda **1,97/9**, ilk pas ≤ 14 m; ihlal 3:
+57,9 s foul (yakın 2) · 353,8 s quarter_start (karşı 5 — orta saha kenar sokması: iki takım da
+ön sahada, ölçüt burada fiziksel olarak tutmaz, raporlanıyor) · 444,8 s foul (yakın 2).
+Düzeltme: ön saha kenar sokmasında dizilim noktası 13 m'den uzak olan en yakın iki takım
+arkadaşı sokma noktasına 9 m'ye çekilir (`O._yakinSec`). Sonuç ikinci kayıtta.
+
+### 1c. SERBEST ATIŞ · MOLA · PERİYOT ARASI · HAVA ATIŞI → OAM TÖRENLERİ
+`oamTorenKur/oamTorenSpotlari/oamTorenTick`: `start`, `quarter_end/end/mvp`, `free` (eski
+daldan ÖNCE), `mola` (sonra) olaylarında OAM tören fazı açılır; noktalar OAM'da üretilir
+(hava atışı yerleşimi, periyot arası toplanma, serbest atış kulvarları `FT_OFF_S/FT_DEF_S` +
+atıcı çizgide, mola kulübe yarım dairesi → 1,3 sn sonra set). **Tek hedef yazıcı:** tören
+boyunca `_hedefAta` sarmalayıcıda kapalıdır (`S.oam.torenSahibi`), eski dalların hedef yazan
+çağrıları (`_setFtFormation`, `start` dalındaki `_hedefAta`lar, mola `huddle`, periyot sonu
+`_hedefAta`lar, molanın 1,30 sn'deki `_setFormation`) çalışsa da hedef yazmaz. Top koreografisi
+(toss/tap betiği, serbest atış dizisi, hakem topu) eski dalda kalır. Serbest atışta OAM son
+atış elden çıkınca bırakır (ribaund/sokma eski koda). Doğrulama: `grep` — OAM aktifken hedef
+yazan yollar: `oamHedef` (OAM), `_chase` (top takibi, tx=top), `oamOutletTick`; `_hedefAta`
+tören dışında OAM aktifken de OAM'ın kendi hedeflerinin altında kalır (her karede yeniden yazılır).
+`kontak` (toren-kontak-2.png): serbest atışta kulvarlar dolu, hakem topu veriyor, 9,86-10/10 yerinde.
+Grep kanıtı: `match-engine.js`te 33 `_hedefAta(`, 15 `_setFormation(`, 3 `_setFtFormation(`
+çağrısı duruyor (kod silinmedi, `OAM_ACIK=false` geri dönüş yolu için); `sahne-oam.js`
+satır 838 `_hedefAta` sarmalayıcısı tören boyunca hepsini etkisiz kılar, 796 `_simTick`
+sarmalayıcısı canlı topta `canliSet`/`defTrack` yazıcılarını kapatır, 816 `_ftToplayici`
+hakemle değiştirilir, 820 `movePlayersForEvent` tören/ölü top olaylarında OAM'ı kurar.
+
+
+### 2. GERÇEK HAREKET VERİSİ — `tools/_lib/gercek-hareket.json` (YENİ TEK DOĞRULUK KAYNAĞI)
+
+Kaynak: SportVU 2015-16 (github linouk23/NBA-Player-Movements, HF dcayton) — **10 maç**, sezona
+eşit aralıkla seçildi, 25 kare/sn, 811.291 tekil kare, 2.122 pozisyon; olay bağlamı için
+sumitrodatta/nba-alt-awards play-by-play. Ham veri `tools/gercek-hareket/_ham/` (1 GB,
+`.gitignore`), `indir.js` (+ 7zr.exe, kamu malı) ve `cikar.js` ile üretilir; commit'e yalnız
+türetilmiş dağılımlar girer.
+
+Tanımlar (`cikar.js` başlığında): tutan = topa ≤ 1,2 m ve top ≤ 2,4 m, aynı oyuncu 0,5 sn içinde
+yeniden alırsa aynı tutuş (sürme boşluğu) · pozisyon = karşı takım topu ≥ 1 sn tutunca (ilk
+sürüm anlık sapmalarla 727 poz/maç sayıyordu; şimdi 212/maç, gerçek ~200) · pas = takım içi
+el değişimi, uçuş ≤ 2 sn, ≥ 1,5 m · hız 0,2 sn penceresi · koşan = hız > 2 m/sn · kesme = topsuz
+hücumcu 1,5 sn'de potaya ≥ 3 m yaklaşır ve hız > 3 · şut anında duran = pbp şut olayına en
+yakın "atıcı topu tutuyor" karesinde hızı < 1 m/sn olan hücumcu (atıcı hariç) · yarı sahayı
+geçen = top orta çizgiyi geçerken tutanın pozisyonu (G/F/C, kadro etiketinden).
+
+| ölçüt (gerçek, 10 maç) | dağılım özeti |
+|---|---|
+| oyuncu hızı | ort **1,72 m/sn**; %28 < 0,5 · %15 0,5-1 · %14 1-1,5 · … · %1,3 > 5 |
+| hücum yayılımı (x/y std) | **3,64 / 3,75 m** |
+| topu tutana en yakın savunmacı | **3,14 m** (tepe 1-2,5 m; geçiş uzak) |
+| pas / pozisyon | **3,14** |
+| topu tutma süresi | **1,47 sn** (%64 < 0,5 sn) |
+| aynı anda koşan (>2 m/sn) | **3,34 / 10** |
+| kesme / 1,5 sn | 0,80 |
+| şut anında duran hücumcu (4'te) | **1,66** → şut anında 4 takım arkadaşından ~2,3'ü HAREKETLİ |
+| potaya ortalama uzaklık (top eldeyken, tüm saha) | 10,9 m |
+| top elde oranı | %80,9 |
+| yarı sahayı geçen | G %79 · F %14 · C %6 |
+| **çıkarılamadı** | perde sayısı (SportVU etiket taşımıyor), şut tipi (yörünge yok) — kapı YOK |
+
+Notlar: NBA sahası 28,65 × 15,24 m ↔ FIBA 28 × 15 (mesafe ölçütleri ~%2 küçük olmalı;
+uygulanmadı, belgelendi). Sayım ölçütleri pozisyon başına oran olduğu için 40/48 ölçeklemesi
+gerekmedi.
+
+**Tahminle yazılmış kapıların gerçekle çeliştiği yerler (bu tur ortaya çıktı):**
+- `sahne-check` "şut anında yerinde hücumcu ≥ 4,25/5": gerçekte şut anında 4 takım
+  arkadaşından ortalama 1,66'sı duruyor — kapı TERS yöndeydi. FAZ 46-47'de bu kapıyı
+  tutturmaya çalışmak (şuttan önce dizilim donması) gerçeklikten uzaklaştırdı; donma
+  0,6 sn'ye indirildi ve `oturdu` şartı gevşetildi (aşağıda).
+- `sahne-check` "top elde ≥ %65": gerçek %81 — kapı doğru yöndeydi ama düşük; motorun %60'ı
+  gerçekten az (serbest top %18, gerçek ≈ %6).
+- `spacing-check` "potaya ortalama uzaklık ≤ 7 m": gerçek tüm-saha ortalaması 10,9 m; set
+  fazına özgü gerçek değer çıkarılmadı (kapı ölçümü farklı pencere) — karşılaştırma
+  `hareket-bant-check` ile tüm-saha üzerinden yapılır.
+
+`tools/hareket-bant-check.js`: iz kaydından aynı tanımlarla dağılımlar (maç ölçeği: sahne
+hızı / sahne→maç oranı) ve histogram **L1 uzaklığı** (0 aynı, 2 ayrık); kapı L1 ≤ 0,35 (tek
+sabit, belgeli). Elle yazılmış hareket bandı kalmadı.
+
+**İlk karşılaştırma (iz-f48-1c, 1c kodu):**
+| ölçüt | motor | gerçek | L1 |
+|---|---|---|---|
+| oyuncu hızı | 1,83 | 1,72 | **0,16 ✓** |
+| yayılım x / y | 3,23 / 3,44 | 3,64 / 3,75 | 0,36 / 0,45 ✗ |
+| savunmacı mesafesi | 4,45 | 3,14 | 0,62 ✗ |
+| pas / pozisyon | 2,38 | 3,14 | 0,52 ✗ |
+| tutma süresi | 3,17 | 1,47 | 0,79 ✗ |
+| aynı anda koşan | 3,50 | 3,34 | **0,28 ✓** |
+| kesme | 0,75 | 0,80 | **0,07 ✓** |
+| şut anında duran | 2,02 | 1,66 | 0,45 ✗ |
+| potaya uzaklık | 11,1 | 10,9 | 0,39 ✗ |
+| top elde | %60 | %81 | bilgi |
+| geçen G/F/C | 93/7/0 | 79/14/6 | bilgi |
+
+
+**1a/1b ikinci kayıt (iz-f48-2, 470 sn, 1c törenleri + `_yakinSec` ile):** hava atışı idle
+**0,14 sn** · toss→kazanma 1,58 · tepe 5,06 m · çemberde 2 · saha 5-5 ✓. Sokma **33 epizot,
+ihlal 2** (ort. yakın takım arkadaşı 3,55 · karşı yarıda 2,12/9): 66,58 s foul (yakın 2 — aynı
+faulün ikinci sokması, 0,57 sn) · 354,63 s quarter_start (karşı 6 — periyot başı orta saha
+sokması, iki takım da ön sahaya geçiyor; ölçüt burada tutmaz). 444,8 s'deki ihlal kapandı
+(yakın 4). Tam liste (t · olay · sokucu · yakın/karşı · ilk pas): 5,96 foul PG 3/0 6 m · 14,42
+miss3 PF 4/1 9,8 · 28,63 score2 PG 4/2 7,2 · 35,35 free PF 3/2 12,8 · 55,86 foul SF 4/2 7,7 ·
+65,46 foul PF 4/1 4,8 · **66,58 foul PF 2/2 4,8 ✗** · 79,51 score2 PF 3/3 10,9 · 87,73 score2
+PG 4/2 6,6 · 101,46 miss3 C 3/3 7,0 · 124,58 miss3 PF 4/2 6,7 · 148,57 hucumFaulu SF 4/2 4,9 ·
+175,21 free SG 3/3 – · 188,46 score2 C 3/3 6,8 · 197,96 steal SF 4/1 – · 209,97 steal PF 4/1 – ·
+230,81 foul SG 3/2 5,6 · 246,61 score2 SG 4/2 1,7 · 253,99 score3 SF 4/2 1,6 · 262,31 score2 C
+3/3 10,6 · 270,59 miss2 PG 4/2 11,0 · 300,22 miss3 PF 4/2 5,9 · 316,58 ihlal SG 3/3 4,9 ·
+329,42 miss3 PF 4/2 8,6 · **354,63 quarter_start C 4/6 7,3 ✗** · 366,03 score2 SF 4/2 7,1 ·
+373,89 score2 PF 3/3 10,5 · 376,36 ihlal24 PF 4/0 4,8 · 393,35 miss2 PF 3/3 6,9 · 425,90 miss2
+PF 3/3 7,2 · 443,05 steal C 4/2 0,6 · 445,82 foul SF 4/0 4,8. Işınlanma **0/0** (26.175 kare).
+Geri pas 1/88 (%1,1) · rakibe pas 0 · sokma içeriden 2/27 (53,7 s ve 229,0 s: faul sokmasında
+sokucu (85,254)/(112,244) çizginin 1-2 m içinden — `oamOluTop` sokucuyu çizgi dışına
+koyuyor ama top ona ulaşmadan pas çıkıyor; 3. taşta ele alındı).
+
+### 3. YÖRÜNGE GRAFİĞİ — `olcum/iz-f48-2-poz.png` (3 motor penceresi + 1 gerçek SportVU olayı)
+**Grafikte ne gördüm:** Gerçek pozisyonda (SportVU 0021500033 · olay 40) on oyuncunun tamamı
+yarı sahanın 9 m'lik bir bölgesinde kalıyor, yollar kısa ve düz parçalardan oluşuyor, savunmacı
+halkaları hücumcu noktalarının hemen yanında; top (beyaz) 3-4 kısa pasla dolaşıyor. Motorda
+(93-106 sn, 300-314 sn) hücumcular potaya 6-12 m'lik geniş bir halkaya yayılıyor, topu tutanın
+çevresinde küçük ilmekler (salınım yayı) birikiyor ve savunmacı halkaları adamlarından 3-5 m
+açıkta duruyor — sayısal karşılığı "savunmacı mesafesi 4,37 ↔ 3,14 m" ve "yayılım 3,3 ↔ 3,7 m"
+(yayılım gerçekten az görünüyor ama gerçekte yayılım DERİNLİKTE değil KENARDA: gerçek oyuncular
+çizgiye kadar açılıyor, motorunkiler orta halkada kümeleniyor). 228-242 sn penceresi en
+öğretici olanı: bir faul sokması + hızlı hücum + geri dönüş; sekiz oyuncu sahayı boydan boya
+büyük YAYLARLA geçiyor — `_donusSinirla`nın dönüş yarıçapı sprintte 2,5 m olduğu için geçişte
+herkes aynı yumuşak kavisi çiziyor ve yollar birbirine paralel "ip demeti" görünümü veriyor.
+Gerçek veride geçiş yolları daha düz ve oyuncular farklı kulvarlara açılıyor. Bu pencereden
+çıkan iş: (c) geçişte topu tutanın savunmacısı adamını bırakıp potaya koşmasın (gerçek 3,1 m).
+
+### 2. TAŞ — AYARLAR TEK TEK (dört paralel kopya, her biri 470 sn kayıt; taban iz-f48-2)
+| madde | ne | pas/poz | tutma sn | şut duran | savunmacı | top elde | geri pas | karar |
+|---|---|---|---|---|---|---|---|---|
+| taban (f48-2) | — | 2,33 | 3,13 | 2,37 | 4,37 | %59,7 | %1,1 | |
+| a | tutma 0,28-0,58 sn · ara pas %45→%80 · pas kapısı gevşek | **2,77** | **2,81** | 2,17 | 4,63 | %58,1 | %0,9 | TUT (yön gerçek: 3,1 / 1,5) |
+| b | şut öncesi donma 1,4→0,6 sn · `oturdu` 3→2 oyuncu / 1,3→0,9 sn | 2,27 | 3,18 | **2,06** | 4,45 | %60,8 | %1,2 | TUT (gerçek 1,66 duruyor) |
+| c | geçişte top savunmacısı geri koşmaz | 2,29 | 3,22 | 2,13 | 4,32 | %61,6 | %1,2 | ETKİSİZ → kök neden ayrı (c2/c3) |
+| d | yerden alma h≤3→12 px | 2,28 | 3,23 | 2,21 | 4,34 | %61,5 | %1,2 | ETKİSİZ → kök neden ayrı (d2) |
+Gürültü: aynı kodda beş kayıt arasında şut duran L1 0,32-0,45, pas/poz 0,42-0,60 (n≈50) —
+tek maddenin etkisi bu bandın altında; karar ortalamanın yönüyle verildi. Işınlanma hepsinde 0.
+
+
+### 3. TAŞ — KÖK NEDENLER (ön/arka saha ayrımı + OAM faz damgası ile bulundu)
+Ayarların ölçülebilir etki vermediği iki ölçüt için ölçüm ayrıştırıldı (`gercek-hareket.json`e
+`savunmaciOn/savunmaciArka/arkaSaha.tutmaPayi` eklendi; `iz-kaydet` her kareye OAM fazını yazar):
+- **Savunmacı 4,4 ↔ 3,1 m** iki ayrı kusurdu: (1) ön sahada ortalama doğru (2,2 ↔ 2,0) ama
+  dağılım yanlış — gerçekte %21'i 1 m altı, motorda %0: `_PL_R=40` çarpışma yarıçapı topu tutanla
+  savunmacısını 1,35 m'de tutuyordu; topu tutan–rakip çifti için 20 px (0,68 m), OAM markaj
+  aralığı çemberin içinde 0,75 m / dışında 1,0 m / uzun çemberin dışındaysa 2 m (**c2**);
+  (2) arka sahada 8,2 ↔ 5,1 m: arka saha tutma SÜRESİ doğruydu (%36 ↔ %37) ama zamanın
+  yarısı sokucunun ÇİZGİ DIŞINDA topu tutmasıydı (19 segment, 27,7 sn, en uzunu 5,5 sn,
+  savunmacı 10,6 m) — eski kod sokma pasını sıradaki olayın betiğine bırakıyor, OAM o betiği
+  yeniden kurduğu için sokucu olay gelene dek bekliyordu. `oamSokmaTick` çizgiye varıştan 0,7 sn
+  sonra pası atar, `oamYuruTick` oyun kurucuyu orta çizgiye JOG ile getirip orada süretir,
+  `oamBaskiTick` (OAM kapalıyken) ve OAM `gecis`/`sokma` dalları savunmacısını 1,3-3,7 m'de
+  tutar (**c3/c4**). İlk denemede `S.inb` temizlenmediği için OAM sıradaki olayda "sokma
+  bekleniyor" sanıp sokucuyu topa koşturdu (tutma 4,2 sn, yayılım 5,2 m — iki kayıt çöpe);
+  eski betiğin temizlik adımı (`_oobKapat` + `S.inb=null`) eklendi.
+- **Top elde %60 ↔ %81**: kaçan şuttan sonra top çemberden düşünce 1,3-2,9 sn yerde bekliyordu
+  (miss2 3,1 sn · miss3 2,4 sn serbest), yanındaki oyuncu (0,6-1,2 m) takipsiz olduğu için
+  alamıyordu. İz teşhisi: `ch=0` (takip yok). Kök neden **`_rebScramble`in
+  `animateShotPossession` İÇİNDE yerel bir fonksiyon olması** — `sahne-oam.js`ten çağrı
+  ReferenceError fırlatıyor, `_ballShoot` geri çağrısı yutuyordu: FAZ 46'dan beri OAM
+  şutlarında ribaund mücadelesi HİÇ kurulmamıştı. OAM kendi kopyasını taşır (`oamRebScramble`)
+  ve kazanan 'reb' olayını beklemeden takibe girer (`S._erkenReb`: çıkış pası olay gelene dek
+  bekler, anlatım senkronu korunur) (**d2/d3**).
+- Çıkış pası yalnız uzunun ÖNÜNDEKİ guard'a (geride kalan guard'a atılan pas "geri pas"
+  sayılıyordu: 4/102'nin 3'ü ribaund çıkışıydı).
+
+**Deney g2 (a+b+c2+c3+c4+d2+d3, 470 sn) ↔ taban f48-2:**
+| ölçüt | taban | g2 | gerçek | L1 taban → g2 |
+|---|---|---|---|---|
+| savunmacı mesafesi | 4,37 | **3,91** | 3,14 | 0,674 → **0,264 ✓** |
+| ↳ ön saha | 2,22 | 2,22 | 2,00 | 0,774 → **0,272 ✓** |
+| ↳ arka saha | 8,25 | **6,74** | 5,07 | 0,749 → 0,481 |
+| yayılım x / y | 3,38 / 3,30 | 3,16 / 3,48 | 3,64 / 3,75 | 0,40 / 0,50 → 0,37 / **0,34 ✓** |
+| top elde | %59,7 | **%64,6** | %80,9 | serbest top %18,2 → %12,7 |
+| kaçan şut sonrası serbest top | 3,1 / 2,4 sn | **1,1 / 1,5 sn** | — | |
+| çizgi dışı bekleme (eski kod) | 27,7 sn · en uzun 5,5 | **17,0 sn · en uzun 1,8** | — | |
+| arka sahada tutma payı | %35,7 | %37,3 | %37,3 | |
+| pas / pozisyon | 2,33 | 2,59 | 3,14 | 0,48 → 0,39 |
+| tutma süresi | 3,13 | 3,12 | 1,47 | 0,80 → 0,82 |
+| şut anında duran | 2,37 | 2,18 | 1,66 | 0,45 → 0,51 (gürültü bandı 0,32-0,51) |
+| hız · koşan · kesme | ✓ | ✓ | | |
+| geri pas · rakibe pas · sokma içeriden · ışınlanma | 1,1% · 0 · 2/27 · 0 | **0,9% · 0 · 0/29 · 0** | | |
+
+### 3. TAŞ — SON GRAFİK (`olcum/iz-f48-son-poz.png`, aynı üç pencere + gerçek olay 40)
+**Grafikte ne gördüm (sonra):** Set fazında (300-314 sn, sağ pota) savunmacı halkaları artık
+hücumcu noktalarının hemen yanında, ilk grafikteki 3-5 m'lik boşluk kapandı; top (beyaz) üç kısa
+pasla dolaşıp şuta gidiyor. Geçiş penceresinde (228-242) sekiz oyuncunun sahayı boydan boya
+paralel yaylarla geçmesi DURUYOR — bu, dönüş yarıçapı (`_donusSinirla`) ve eski geçiş kulvarlarının
+(`TRANS_OFF`) ürünü; gerçek geçiş yolları daha düz ve kulvarlar daha ayrık. Hücumcuların çember
+dışında geniş halkada durması ve topu tutanın çevresindeki küçük ilmekler (salınım yayı) de
+duruyor; gerçek pozisyon 9 m'lik bir bölgeye sıkışık ve yollar kısa-düz parçalar. Sayısal
+karşılığı: yayılım y ✓ ama x 3,3 ↔ 3,6 (gerçekte kenara açılma, motorda halka), tutma süresi
+3,0 ↔ 1,5 sn (uzun sürme/tutma segmentleri), pas/pozisyon 2,7 ↔ 3,1. Bir sonraki tur bu üçünü
+hedeflemeli: geçiş yollarını düzleştirmek, set fazında hızlı çevre pası (swing) eklemek.
+
+
+**d4 (son düzeltme):** erken takip hücumu bekletiyordu — uzun topu alıp 'reb' olayını 3,9-5,8 sn
+bekliyor, çıkış pası gecikiyordu (`sunum` M9 6/8). Şimdi takip biter bitmez `_startBreak`; 'reb'
+olayı gelince yalnız anlatım (`erken` bayrağı: top ribaundcuya geri uçurulmaz, hücum ikinci kez
+kurulmaz; bayrak olay sonunda sıfırlanır).
+
+### SON KAYIT (iz-f48-son2 · 470 sn · sürüm 85 kodu) ↔ TABAN (iz-f48-2, FAZ 47c kodu + 1c)
+| ölçüt | taban | son | gerçek | L1 taban → son |
+|---|---|---|---|---|
+| oyuncu hızı | 1,78 | 1,93 | 1,72 | 0,17 → 0,19 ✓ |
+| yayılım x / y | 3,38 / 3,30 | 3,18 / 3,56 | 3,64 / 3,75 | 0,40 / 0,50 → 0,40 / 0,37 |
+| savunmacı mesafesi | 4,37 | **4,02** | 3,14 | 0,67 → **0,32 ✓** |
+| ↳ ön saha (dağılım) | %0 1 m altı | %18 1 m altı | %21 1 m altı | 0,77 → 0,36 |
+| ↳ arka saha | 8,25 | **6,94** | 5,07 | 0,75 → 0,52 |
+| pas / pozisyon | 2,33 | 2,46 | 3,14 | 0,48 → 0,63 (n=56, gürültü ±0,1) |
+| tutma süresi | 3,13 | 2,95 | 1,47 | 0,80 → 0,70 |
+| aynı anda koşan · kesme | ✓ · ✓ | ✓ · ✓ | | |
+| şut anında duran | 2,37 | **2,05** | 1,66 | 0,45 → **0,35 ✓** |
+| top elde | %59,7 | **%62,4-64,6** | %80,9 | serbest top %18 → %12-13 |
+| arka sahada tutma payı | %35,7 | %37,0 | %37,3 | |
+| geri pas · rakibe pas | %1,1 · 0 | **%0,9 · 0** | | |
+| sokma içeriden | 2/27 | **0/28** | | |
+| ışınlanma (470 sn) | 0 | 0 (iz-f48-son: 1 — 173 ms kare düşmesi sonrası tek kare, bkz. not) | | |
+| ışınlanma (4× CPU, 200 sn) | 0 | **0** | | |
+| hava atışı | ✓ | ✓ (idle 0,15 · tepe 5,06 m · çemberde 2 · 5-5) | | |
+| sokma epizodu (ihlal) | 33 (2) | 36 (3) | | |
+
+Sokma ihlalleri (son2): 58,44 s foul C yakın 2 (faulün ikinci sokması, 0,52 sn) · 230,57 s foul PF
+yakın 2 (aynı) · 350,48 s quarter_start karşı 7 (periyot başı orta saha sokması — iki takım da ön
+sahaya geçiyor; ölçüt burada fiziksel olarak tutmaz). Kalan 33 epizot ✓ (ortalama yakın 3,5 ·
+karşı yarıda 2,1/9 · ilk pas ≤ 14 m). Işınlanma notu: iz-f48-son'da 289,56 s'de tek olay — rAF
+173 ms takıldı (normal 17), takılan karenin hareketi bir sonraki karede toplu işlendi (SF 42 px,
+top 57 px = 243/330 px/sn, koşu hızı); fizik doğru, ekran o karede atladı. 4× CPU koşusunda 0.
+
+### REGRESYON (sürüm 85 kodu)
+`band.js` **c19928475859c7ff** (değişmedi) · `measure.js` **51fa02b6e0a8194b** ✅ · `sim-node
+--n=500 --seed=42` **93.1 - 87.9 · 268** (değişmedi) · `kural-check` ✓ · `sut-cografya` ✓ ·
+`anlatim-check` 31/31 · `balon-check` GEÇTİ · `realism-check` ✓ (iki beat 0 ms · sessizlik ort
+3,1 sn) · `visual-check` ✓ (0 hata) · `surum-check` ✓ (85).
+`sahne-check`: pass %14,9 ✓ · held **%66,0 ✓** (FAZ 47: %62 ✗) · sahipsiz %0,18 ✓ · serbest
+atışta yerinde 10/10 ✓ · PG/SG/SF %90 ✓ · **aynı anda koşan 5,22 ✗** (3-5; FAZ 47 4,79 —
+gerçek veride 3,3-3,8, `hareket-bant-check` koşan L1 0,29 ✓; kapının bandı dar) · **orta çizgi
+geçişi %76 ✗** (≥ %85; taban zincirde de %77 — pas ile geçen top ve orta sahadan çalma sayılıyor)
+· "şut anında yerinde hücumcu" kapısı KALDIRILDI (gerçekle çelişiyordu; bilgi 2,92/5).
+`sunum-check`: M12 · M14 · F14-7 (10/10) · F19-4 · F25-1..6b · F26-1..3 · F28-1 ✓ · **M9 6/8
+(%75, ≥ %80, ÖRNEKLEM YETERSİZ n=8)** d4 öncesi → d4 sonrası **M9 7/8 (%88) ✓**; ama **M12 (AND-1 ek
+serbest atışı) 5/5 → 3/5 ✗** (aynı tohum, 900 sn: 5 and-1, ek atış sahnesi 3 kez kuruldu). Mekanizması bu turda
+bulunamadı — d4 yalnız kaçan şuttan sonraki akışı değiştiriyor; and-1 yapılan şuttur. 470 sn'lik iki kayıtta (d4
+öncesi/sonrası) and-1 serbest atış sahneleri birebir aynı (2/2, idx 17 ve 75). d4 KORUNDU: her uzun ribaundunda
+4-6 sn'lik "topla dikilme" giderken 15 dakikada 2 and-1 sahnesi eksik kalıyor; ilk iş olarak sonraki tura yazıldı.
+ `sahne-check` (d4 sonrası): held **%67,5 ✓** · sahipsiz %0,06 ✓ · aynı anda koşan 5,20 ✗ · orta çizgi geçişi %70 ✗ ·
+PG/SG/SF **%87 ✗** (C 3/31 — uzunun aldığı ribaundda hücum hemen başlayınca uzun orta çizgiyi topla geçebiliyor;
+ `oamOutletTick` çıkışı 3 sn'ye kadar bekletiyor). `spacing-check` d4 sonrası aynı 6 kapı.
+`spacing-check` (set kareleri artık `defTrack` damgasıyla GÖRÜNÜYOR — FAZ 47'de yarış koşuluna
+bağlıydı, sayılar kıyaslanamaz): ikili mesafe 6,74 ✓ · orta üçte bir %12,5 ✓ · top savunmacısı
+1,54 m ✓ · savunmacı-adam 2,33 ✓ · >5 m %0 ✓ · en yakın ikili 3,41 ✗ (≥ 3,5) · yayılım %25,7 ✗
+(≥ 30) · boyada %55,9 ✗ (≥ 60) · ball-you-man %66,8 ✗ (≥ 85) · potaya uzaklık 10,1 m ✗ (≤ 7;
+OAM set fazı top orta çizgiyi geçince başlıyor, varış kareleri dahil) · süzülmemiş blok: 6,40 m ✓,
+boyada %73,8 ✓. Gerçek veriyle kıyas `hareket-bant-check` yayılımıdır (x 3,2 ↔ 3,6).
+
+### KULLANICI NE FARK EDECEK (sürüm 85)
+Topu tutan oyuncunun savunmacısı artık üstünde: çemberin içinde yarım-bir metre, dışında bir
+metre, sadece uzunlara çember dışında iki metre boşluk; savunma FAZ 47'deki "3-5 m açıkta durma"
+görüntüsünü bırakır. Sayıdan sonra sokucu çizgide sıradaki olayı beklemez — 0,7 sn içinde pası
+atar, oyun kurucu topu orta çizgiye yürütür ve orada sürerek bekler, savunmacısı 1-4 m'de takip
+eder. Kaçan şuttan sonra ribaundcu topa GİDER ve alır (top 2-3 sn yerde beklemiyor); alan uzun
+hemen öndeki guard'a çıkarır. Şuttan önce takım 1,4 sn donmak yerine 0,6 sn'de şuta gider; top
+biraz daha kısa tutulup daha sık paslanır. Işınlanma yok (4× yavaş CPU dahil). Değişmeyen ve
+bir sonraki turun işi: geçişte herkesin aynı yumuşak yaylarla koşması (dönüş yarıçapı + eski
+geçiş kulvarları), set hücumunda uzun tutma segmentleri (3,0 ↔ 1,5 sn) ve pas sayısı (2,5-2,7 ↔
+3,1), hücumun kenara açılmaması (yayılım x 3,2 ↔ 3,6).
+
+### ULAŞILAMAYAN / SONRAKİ TUR
+- Tutma süresi 2,9-3,1 ↔ 1,5 sn, pas/pozisyon 2,5-2,7 ↔ 3,1: OAM zinciri pg → (ara) → mid →
+  şutör sabit; gerçekte set hücumunda hızlı çevre pası (swing) ve el değiştirme çok. Set fazına
+  "topu 0,9 sn'den fazla tutan, zincir dışı boş çevre oyuncusuna swing atar" kuralı — ölçülerek.
+- Arka saha savunmacı 6,9 ↔ 5,1 m: kalan fark sokucu çizgideyken (0,7 sn + yürüyüş) ve eski
+  geçiş kulvarlarında; sayı sonrası sokmayı bütünüyle OAM'a taşımak (`_setupInbound` → OAM).
+- Geçiş yollarının yay biçimi (grafikte "ip demeti"): `_donusSinirla` yarıçapı + `TRANS_OFF`
+  kulvarları; gerçek geçiş yolları daha düz.
+- `sahne-check` "aynı anda koşan 3-5" ve "orta çizgi geçişi ≥ %85" kapıları gerçek veriden
+  türetilmedi (koşan için gerçek 3,3 ± dağılım `hareket-bant-check`te ✓); kapıların bandı
+  gerçek veriden yeniden yazılmalı, gevşetilmedi.
+- **M12 (and-1 ek serbest atışı) 3/5** — d4 ile düştü, mekanizma bulunamadı; sonraki turun İLK işi.
+- Uzunun ribaundu sonrası çıkış pası 3 sn'ye kadar bekleyebiliyor (öndeki guard şartı); uzun bu sürede topla orta çizgiyi geçebiliyor (PG/SG/SF %87).
+- Faul sokmasında aynı faulün İKİNCİ sokması (top hemen dışarı çıkınca 0,5 sn'lik epizot, yakın 2).

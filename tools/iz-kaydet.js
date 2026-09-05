@@ -128,6 +128,7 @@ async function main() {
             os: S.offSide ? 1 : 0,
             perde: (S._perde && S._perde.evre < 3 && (S.time - S._perde.t) < 1.6) ? 1 : 0,
             ch: S.chase ? 1 : 0,
+            oam: (S.oam && S.oam.aktif) ? S.oam.faz : '-',   /* FAZ 48: OAM fazı ('-' = eski kod) */
             p: (S.players || []).map(p => [
               +p.x.toFixed(1), +p.y.toFixed(1),
               (S.offP || []).indexOf(p) >= 0 ? 1 : 0,

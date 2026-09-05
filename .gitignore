@@ -53,3 +53,6 @@ tools/gercek-veri/_ham/
 # özet JSON kalır — sürüm karşılaştırması onlarla yapılır.
 olcum/iz-*.json
 !olcum/iz-*-ozet.json
+
+# FAZ 48: gercek SportVU ham verisi (lisans belirsiz) — DEPOYA KOYMA
+tools/gercek-hareket/_ham/

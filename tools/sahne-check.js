@@ -210,7 +210,10 @@ async function main() {
    HÜCUMUN set yuvalarına oturup oturmadığı. Savunma ayrıca raporlanır.
    (spacing-check de aynı gerekçeyle markaj ölçülerini geçiş karelerinde bilgi sayar.) */
 const sutHuc = R.sutAyri && R.sutAyri.length ? R.sutAyri.reduce((a, b) => a + b[0], 0) / R.sutAyri.length : null;
-ok('şut anında yerinde HÜCUMCU', sutHuc == null ? 'örnek yok' : sutHuc.toFixed(2) + '/5 (n=' + R.sut.length + ')', sutHuc != null && R.sut.length >= 8 && sutHuc >= 4.25, '≥ 4,25 / 5 (brifin 8,5/10 ölçüsü)');
+/* FAZ 48: "şut anında yerinde hücumcu ≥ 4,25/5" kapısı gerçek veriyle ÇELİŞİYOR (SportVU: şut anında
+   4 takım arkadaşından ortalama 1,66'sı duruyor, 2,3'ü hareketli) — kapı KALDIRILDI, bilgi satırı;
+   ölçüt `hareket-bant-check` sutDuran (L1 ≤ 0,35). Bilgi satırı aşağıda (sutAyri). */
+  void sutHuc;
   ok('serbest atışta yerinde oyuncu', ftOrt == null ? 'örnek yok' : ftOrt.toFixed(2) + '/10 (n=' + R.ft.length + ', en kötü ' + ftMin + ')', ftOrt != null && R.ft.length >= 6 && ftOrt >= 9.0 && ftMin >= 8, '≥ 9,0 / 10 · en kötü ≥ 8');
   ok('orta çizgi geçişi / pozisyon değişimi', gecisOran == null ? 'ölçülemedi' : gecisOran.toFixed(0) + '% (' + R.gecis + '/' + R.pozDegisim + ')', gecisOran != null && gecisOran >= 85, '≥ %85');
   ok('yarı sahayı geçiren PG/SG/SF', (100 * tasIyi / tasT).toFixed(0) + '% ' + JSON.stringify(R.tasiyici), (100 * tasIyi / tasT) >= 90, '≥ %90');
