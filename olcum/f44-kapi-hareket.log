@@ -1,0 +1,33 @@
+Maç izleniyor: 90 sn · izleme hızı 2× · örnekleme 25 Hz…
+
+========================================================================
+SAHA HAREKETİ — 1963 kare · 19570 hız örneği · 1104 set karesi · seed=987654321
+========================================================================
+  ✓ ortalama oyuncu hızı (maç saati)      1.93 m/sn   hedef 1,3 - 2,1 m/sn
+  ⋯ medyan oyuncu hızı (maç saati)        1.27 m/sn   (bilgi: sahne duran jetonu tam durdurur · gerçek 1,1 - 1,8 m/sn)
+  ⋯ zaman: durma/yürüme (<1,67)               %60.8   (bilgi: ölü top canlandırılmaz · gerçek %35 - 60)
+  ✓ zaman: hafif koşu (1,67-3,3)              %18.0   hedef %12 - 38
+  ✓ zaman: koşu (3,3-7)                       %21.1   hedef %8 - 25
+  ✓ zaman: sprint (>7)                         %0.1   hedef %0 - 6
+  ✓ en yüksek anlık hız (maç saati)       8.93 m/sn   hedef < 9,5 m/sn
+  ✓ hücum ortalama ikili mesafe              7.67 m   hedef 6,5 - 9,0 m
+  ✓ savunma ortalama ikili mesafe            5.96 m   hedef 5,0 - 7,0 m
+  ✓ hücum konveks kabuk alanı              51.76 m²   hedef 40 - 65 m²
+  ✓ savunma konveks kabuk alanı            30.84 m²   hedef 22 - 42 m²
+  ✓ en kötü kare — ikili mesafe (p5)         4.39 m   hedef > 4,0 m
+  ✓ yığılma — aynı takımdan 2 oyuncu < 2 m         %3.5   hedef < %8
+  ⋯ yığılma — herhangi 3 oyuncu < 2 m          %3.5   (bilgi: markaj çiftleri tasarım gereği 2 m altında · gerçek < %8)
+  ✓ kademe: YÜRÜ payı                         %26.2   hedef %20 - 45
+  ✓ kademe: KOŞ+SPRINT payı                   %49.4   hedef < %55
+  ✓ kademe: SPRINT payı                       %14.5   hedef %5 - 20
+
+  ZAMAN TABANI: 1 sahne saniyesi = 1.53 MAÇ saniyesi (sahne maç saatini sıkıştırır).
+  Yukarıdaki hız hedefleri bu tabana göre yargılandı (gerçek: ort 1,54-1,60 · sprint > 7).
+  SAHNE saniyesindeki ham değerler (yargılanmaz, karşılaştırma için):
+    ortalama 2.96 · medyan 1.94 · en yüksek 13.67 m/sahne-sn · bantlar %41 / %28 / %19 / %13
+
+  bilgi: p95 hız 8.75 m/sn · en hızlı jeton h:2 · ışınlanma/takas atlanan 0 · yetişme (F11-1) atlanan aralık 0
+  kademe dağılımı: yürü %26 · jog %24 · koş %35 · sprint %15
+  konsol hatası: 0
+========================================================================
+✓ tüm hareket hedefleri tuttu

@@ -68,6 +68,9 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/hareket-check.js` | **Saha hareketi (FAZ 15)** — jeton hızı (bant dağılımı), konveks kabuk alanı, ikili mesafe. Hız **maç saatinde** yargılanır; sahne maç saatini ~2× sıkıştırdığı için sahne px/sn'si gerçek m/sn ile doğrudan kıyaslanamaz. Hız/dizilim değişince çalıştır. |
 | `tools/iz-kaydet.js` | **Canlı sahne iz kaydedicisi (FAZ 40)** — topun ve 10 jetonun konumu her karede kaydedilir; hız **100 ms pencerede** hesaplanır (kare-kare DEĞİL — 60 fps.te 1 px titreşim 1,8 m/sn sahte hız üretir). **Sahne↔maç saati oranını AYNI KOŞUDA ölçer ve her hızı iki ölçekte birden basar** (F15 tuzağı). Işınlanma, donma payı, yol eğriliği. `--yeniden=<etiket>` ile tarayıcısız yeniden çözümleme. Hareket/koreografi değişince çalıştır. |
 | `tools/iz-ciz.js` | İz kaydından yörünge + hız profili PNG.si üretir (`olcum/iz-<etiket>-*.png`). Her sürümde üretilip saklanır. |
+| `tools/kontak-goruntu.js` | **Canlı sahayı GÖZLE izleme (FAZ 44)** — `node tools/kontak-goruntu.js <KÖK> <etiket> --secs=60 --adim=2`: sahayı 2 sn'de bir kaydeder, 15'lik kontak sayfaları (5×3, her karede olay·mod·taşıyıcı·SET/FT/INB etiketi) üretir (`olcum/goruntu/`). Sayılar yeşilken "basketbola benzemiyor" şikâyetinde ÖNCE bunu çalıştır ve kareleri kendin oku; `<KÖK>` olarak `git worktree` ile açılan HEAD kopyası verilirse aynı tohumda yan yana kıyas yapılır. |
+| `tools/dizilim-olc.js` | **Olay indeksine göre dizilim yayılımı (FAZ 44)** — 100 ms'de bir ağırlık merkezine ortalama uzaklık, en yakın çift, 22 px altı çakışan çift, saha dışı jeton; olay başına özet. Duvar saatine bağlı ekran anları koşular arasında kıyaslanamaz — bu araç AYNI OLAYDA kıyaslar. |
+| `tools/gecis-analiz.js` | **Pozisyon başına orta çizgi geçişi (FAZ 44)** — `iz-kaydet` kaydını okur; her pozisyonda topun orta çizgiyi hangi modda (held/pass/shot/hiç) geçtiğini listeler. `sahne-check`in "geçiş / pozisyon değişimi" kapısı çift sayar (HEAD %111); davranış yargısı için bunu kullan. |
 | `tools/balon-check.js` | **Anlatım balonu denetçisi (FAZ 40)** — RENDER EDİLMİŞ balonu okur. `anlatim-check` ön parça ile sonuç parçasını AYRI taradığı için birleşme kusurlarını (nokta + küçük harf, çift noktalama) GÖREMEZ. Anlatım birleştirme mantığı değişince çalıştır. |
 | `tools/sahne-kapsam-check.js` | **Sahne kapsamı (FAZ 40 · B5+B6)** — motorun ürettiği her olay türünün `movePlayersForEvent` karşılığı var mı (tür adıyla YA DA `shots[].kind===ft` alanıyla), ve koreografi süresinin ALT SINIR sözleşmesi (`delay=max(simMs,dtMs)`) duruyor mu. Tarayıcısız. Yeni olay türü eklerken çalıştır. |
 | `tools/geometri-check.js` | **Saha çizgisi geometrisi (FAZ 14)** — 3 sayı yayı, köşe düzlükleri, boya, çember/pano ölçüleri, kesişme ve "sahada karşılığı olmayan çizim". **Nitelik okumaz**, `getPointAtLength`/`getBBox` ile ÇİZİLEN eğriyi ölçer. Saha SVG'si değişince çalıştır. |
@@ -1241,3 +1244,55 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   hücum faulü 1,01 → 1,20 · şut saati 0,87 → 0,56 (hepsi bantta), top kaybı/poz 0,1435 ✓,
   çalma/poz 0,0682 → 0,07 (50 denendi, bandın altına düştü — 52). Aynı sayıda rastgele çekiliş
   yapıldığı için `band.js` skor dizisi çalma payından ETKİLENMEZ, `measure.js` (kutu skor) değişir.
+
+- **HAVA ATIŞINDA ÇEMBERDE PİVOT DURMALI — KURULUM SLOT 0'I KOYUYORDU (FAZ 44 §1, ölçüldü):**
+  `mkP` kurulumu çembere dizideki 1. oyuncuyu (genelde guard) koyuyor, `start` olayı pivotu
+  YÜRÜYEREK çağırıyordu; toss anında (0,95 sn) çemberin 1,8 m'sinde KİMSE yoktu ve top 0,47 sn
+  sonra pasa dönüyordu — "hava atışı diye bir hareket yok". Roller atandıktan sonra pivot ile
+  slot 0 ilk çizimden ÖNCE yer değiştirir (kurulum, ışınlanma değil); toss 0,15 sn'de, iki pivot
+  0,65'te sıçrar (`pop`), kazanan 0,95'te TEPEDE dokunur ve pas tepeden iner (`b.hFrom`);
+  kazanma 1,56 sn. `iz-kaydet` artık top yüksekliğini kaydeder (`b[3]`) ve FAZ 44 bölümünde
+  idle süresi · tepe · çemberde · yarı saha dengesi · kazanma süresini basar.
+- **SOKMA YERLEŞİMİ KONUMA DEĞİL HEDEFE BAKAR (FAZ 44 §2, kural tanımlıydı ama hiç
+  çalışmıyordu):** `_sokmaYerlesimi` sayı anında `p.x`e bakıyordu — o an herkes potanın
+  dibindedir (hepsi "yakın"), hedefleri 25 m ötedeki geçiş kulvarlarıdır. Ölçüldü: 8 sokmada
+  pas anında 15 m'de 1,0 takım arkadaşı, karşı yarıda 7,3/9. Şimdi `_startBreak(off, spot)`
+  → `S._sokmaBekle`; `_setFormation(trans)` ve arka saha ölü top sokmaları `_sokmaKisit` ile
+  PG'yi 5-6 m'ye, SG/PF/C'yi 4-11 m'ye çeker (SF kulvarında), savunma guardları orta çizgiyi
+  3 m geçmiş, uzunlar 2 m gerisinde bekler; `_inboundPass` → `_sokmaSerbest` o fazın
+  dizilimini yeniden verir. Ölçülen: 8/8 epizot, yakın 3,4 · karşı 2,25 · ilk pas 5-11 m.
+- **SAHNE ÇIKIŞ-PASI KAPISI SOKUCUYU MUAF TUTAR (FAZ 44 §2, ara ölçümde çıktı):** "uzun topu
+  1,2 sn içinde çıkarır" kapısı (`_simTick` 1a) çizgi dışındaki C/PF sokucuya da uygulanıyordu;
+  PG 5 m'ye gelince pas oraya gitti, olay gelince `_inboundPass` topu sokucuya GERİ uçurdu ve
+  ikinci kez soktu (6 sn arayla iki epizot). Kapı `!c._oob` ister — sokma pası koreografinindir.
+- **ÖLÜ TOP DALI BEKLEYEN SOKMAYI İPTAL ETMELİ — TEK SOKUCU (FAZ 44 §2):** sayıdan 0,9 sn
+  sonra gelen faulde `_setupInbound`ın sokucusu hâlâ `_oob`ydu; faul dalı ikinci sokucu atadı,
+  `_flushPending` eski takibin geri çağrısını çalıştırıp eskisini dip çizgiye yolladı, top zaman
+  aşımında ESKİ sokucuya gitti ve faul dalının pası HİÇ atılmadı (3-4 sn çizgi dışında bekleyip
+  topla içeri yürüyen sokucu). İhlal dalı `_oobKapat`ı zaten yapıyordu, faul dalı yapmıyordu.
+  Yeni bir ölü top dalı yazarken: `_oobKapat` hepsi · `S.inb=null` · `S._sokmaBekle=null` ·
+  `S.chase=null`, sonra dizilim, sonra `_inboundSetup`.
+- **BRİFİN "SÜRÜM 80'DE KALDI" MADDESİ ESKİ ÖLÇÜMDÜ (FAZ 44 §0):** `surum-check` oturum
+  başında GEÇİYORDU (FAZ 43 commit'i 79→80 yapmıştı, canlı 80 servis ediyordu). Bir brif
+  "kapı düşüyor" diyorsa önce kapıyı çalıştır; düşmüyorsa maddeyi "doğrulandı, iş yok" diye
+  kapat. Yayın dosyası değişen her turun SON adımı yine sürüm artışı + `--yaz`dır (bu tur 81).
+- **ÖLÜ TOP DALINDA ÖNCE TEMİZLİK, SONRA DİZİLİM (FAZ 44, serbest atış — HEAD'de de vardı):**
+  serbest atış dalı `_setFtFormation`tan SONRA `clearBallTimers()` çağırıyordu; `_flushPending`
+  bekleyen sokma takibinin geri çağrısını (`inb.tx=dip çizgi`, `noDrib`) çalıştırıp ATICININ
+  çizgi hedefini eziyordu — atıcı topu dip çizgide 3 sn tutuyor, atış 25 m'den uçuyordu
+  (free/loose 4,1 sn/470 sn). Sıra: `clearBallTimers` · `S.inb/_sokmaBekle/chase=null` ·
+  `_oobKapat` hepsi · dizilim · toplayıcı. `_ftToplayici` top serbestse TOPA en yakın oyuncuyu
+  seçer (top öbür potada kalmış olabilir). Ölçülen: 0,9 sn, 1 sn üstü epizot 0.
+- **`sahne-check` ORTA ÇİZGİ GEÇİŞİ ÇİFT SAYAR (FAZ 44):** kapı held L↔R geçişlerini pozisyon
+  değişimine böler; PG orta saha kulvarında topu alınca çizgi çevresinde ileri-geri geçiyor ve
+  HEAD'de %111 çıkıyordu. Tek geçişli gerçek sürme (PG topu 5 m'den alır) kapıyı %70-76'ya
+  indirir; pozisyon başına İLK geçiş iki sürümde de %71-73. Bu kapı davranış gerilemesinin
+  kanıtı DEĞİLDİR — `gecis-analiz` (scratch) gibi pozisyon başına ölç.
+- **KULLANICI "HER ŞEY BOZUK" DERSE ÖNCE HANGİ SÜRÜMÜ İZLEDİĞİNİ AYIR, SONRA SAHNEYİ KENDİN İZLE
+  (FAZ 44):** canlı site commit edilmemiş turun kodunu servis etmez; şikâyet çoğu zaman bir
+  önceki fazı anlatır. Sayılar yeşilken bile 60 sn'lik kontak sayfası (2 sn/kare) + HEAD ile
+  aynı tohumda yan yana görüntü + değişiklikleri tek tek kapatan ikiye bölme, kod okumaktan
+  hızlı teşhis verir. Bu turda üçü birden serbest atış kusurunu buldu, kapılar bulamamıştı.
+- **`taskkill //IM chrome.exe` KULLANMA (FAZ 44):** headless ölçümü durdurmak için tüm Chrome
+  süreçleri öldürüldü; kullanıcının tarayıcısı da kapanmış olabilir. Zinciri durdurmak için
+  komut satırı eşleşen (`kapilar|tools/`) süreçleri hedefle, tarayıcıyı Playwright kapatır.

@@ -1,0 +1,31 @@
+FAZ 11 KABUL KRİTERİ DENETİMİ
+================================================================
+
+[B1] Dizilim geometrisi (F11-2 / F11-3)
+  ✓ beş set dizilimi de okunabildi — SET_SPREAD, SET_HORNS, SET_POST, SET_MOTION, SET_5OUT
+  ✓ her dizilimde en yakın ikili ≥ 3,5 m — en dar: SET_HORNS 3.81 m
+  ✓ dizilimlerin ortalama yayılımı ≥ %30 — SPREAD %43 · HORNS %44 · POST %42 · MOTION %42 · 5OUT %46
+  ✓ dizilimlerin çoğunda boyada oyuncu var — 4/5 dizilim
+  ✓ hiçbir dizilim orta üçte bire taşmıyor — 0 dizilim taşıyor
+
+[B2] Kare kaybında yetişme (F11-1)
+  ✓ arka planda (rAF kısıtlanmadan) olaylar akmaya devam etti — olay 3 → 6
+  ✓ arka plandan dönüşte yetişme çalıştı (_simCatchUp) — _snapN 0 → 11
+  ✓ ön plana dönünce sahne anlatıma eşitlendi (jetonlar hedefinde) — dönüş medyanı 54 px ≤ eşik 285 px (normal akış tabanı 163 px)
+  ✓ hiçbir jeton askıda kalmadı (sonlu koordinat + atanmış hedef) — 10 örnek temiz
+  ✓ maç arka plandan sonra da canlı
+
+[B4] Kesme noktası seçimi (F11-2)
+  ✓ kesici dolu köşeye gitmiyor — seçilen nokta (157,241) · en yakın takım arkadaşı 5.27 m
+
+[B3] startMatch sessiz kilitlenmesi (F11-6)
+  ✓ durdurulan maçta buton ne yapacağını söylüyor (devam / kilitli sonuç) — ▶ Devam et
+  ✓ ana panel butonu "devam ediyor"da takılı kalmıyor — ▶ Maçı Başlat
+  ✓ takılı running bayrağı kurtarılıyor (oyun kilitlenmiyor)
+  ✓ konsol hatası yok
+
+[B5] Sonuç değişmezliği
+  ℹ  dizilim sunum katmanıdır; ayrıca çalıştır: node tools/band.js  (hash değişmemeli)
+
+================================================================
+SONUÇ: 15/15 kriter geçti

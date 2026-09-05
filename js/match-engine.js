@@ -485,7 +485,7 @@ function initMatchPlayers(lu,rakip,oppPlayers){
        Kullanıcı (home jetonları) userIsHome ise SOL potaya hücum eder → savunduğu yarı SAĞ. */
     const userAttacksLeft=(typeof mState!=='undefined'&&mState&&mState.userIsHome!==false);
     const ownHalfLeft=!userAttacksLeft;                     /* kullanıcının savunma yarısı solda mı */
-    const spotsNear=[[428,250],[392,146],[392,354],[338,196],[338,304]];
+    const spotsNear=[[451,250],[392,146],[392,354],[338,196],[338,304]];   /* FAZ 44 §1: [0] = çember (pivot) */
     const spotsFar=spotsNear.map(_mir);
     const hs=ownHalfLeft?spotsNear:spotsFar;
     const as=ownHalfLeft?spotsFar:spotsNear;
@@ -501,6 +501,11 @@ function initMatchPlayers(lu,rakip,oppPlayers){
       away.push(mkP(mk(String(i+1),on,awayCol),as[i][0],as[i][1],'a',i,(op&&typeof op==='object')?op:null));
     }
     _assignRoles(home); _assignRoles(away);
+    /* FAZ 44 §1: hava atışında ÇEMBERDE PİVOT durur — kurulum 1. slotu (genelde guard) koyuyor,
+       pivot 'start' olayında yürüyerek geliyor ve toss anında çemberde kimse kalmıyordu (ölçüldü:
+       t=0,6'da çemberde 0). Roller atandıktan sonra pivot ile 1. slot yer değiştirir (ilk çizimden
+       ÖNCE — ışınlanma değil, kurulum). */
+    [home,away].forEach(tk=>{ try{ const c=tk.find(p=>p.role===4)||tk[tk.length-1]; const s0=tk[0]; if(c&&s0&&c!==s0){ const x=s0.x,y=s0.y; s0.x=s0.tx=c.x; s0.y=s0.ty=c.y; c.x=c.tx=x; c.y=c.ty=y; } }catch(e){} });
     _scSeed(0x5CE4E5 ^ ((mState.events&&mState.events.length)||0));   /* B-5: sahne PRNG'si */
     mState._tokens={home:home.map(p=>p.g),away:away.map(p=>p.g)};
     mState._sim={
@@ -729,7 +734,10 @@ function _simTick(dt){
     /* ⚠ Koreografi kesilmez: bu kapı sahne katmanının KENDİ pasıdır, anlatımda karşılığı
        yoktur. Senaryolu şutörden topu alırsa anlatım ile sahne ayrışır ("mantıksız pas")
        ve şut noktası boşta kalır. Aktif takip sırasında da devreye girmez. */
-    if(c&&!_tasiyabilir(c)&&S.time>=(S.cikisSonra||0)&&c!==S.shooter&&!S.chase){
+    /* FAZ 44 §2 (ölçüldü): sokucu C/PF çizgi dışında topu 1,2 sn tutunca bu kapı 5 m'deki
+       oyun kurucuya "çıkış pası" atıyor, olay gelince `_inboundPass` topu sokucuya GERİ uçurup
+       ikinci kez sokturuyordu (iki epizot, 6 sn arayla). Sokma pası koreografinin işidir. */
+    if(c&&!c._oob&&!_tasiyabilir(c)&&S.time>=(S.cikisSonra||0)&&c!==S.shooter&&!S.chase){
       /* Orta saha şeridi: taşıyıcı kendi yarısından çıkmak üzere. */
       /* FAZ 37 §7.1: şerit 150 → 250 px (orta çizgiye 8,5 m kala). Uzun oyuncu topu
          orta sahaya VARMADAN çıkarır; eski dar şeritte pas ancak çizginin dibinde
@@ -1477,6 +1485,7 @@ function _ballPass(to,dur,bounce){
   const b=_ball(); if(!to) return;
   const d=Math.hypot(to.x-b.x,to.y-b.y);
   b.mode='pass'; b.carrier=null; b.from=[b.x,b.y]; b.target=to; b.noDrib=false;
+  b.hFrom=b.h;   /* FAZ 44 §1: yüksekten başlayan pas (hava atışı tap'i) 11 px'e düşmez, iner */
   /* Pas hızı ~16 m/sn (520 px/sn); uzun paslar 0.9 sn'ye kadar havada kalır. */
   /* FAZ 40 §A1: ÇAĞIRANIN VERDİĞİ SABİT SÜRE HIZ TAVANINI EZEMEZ. Koreografi adımları
      mesafeyi bilmeden süre veriyor; uzun pasta bu 2000 px/sn'ye çıkıyordu. Süre uzar. */
@@ -1603,7 +1612,7 @@ function _ballStep(dt){
         if(_d>_mx&&_d>0.001){ b.x+=_dx/_d*_mx; b.y+=_dy/_d*_mx; S._klempN=(S._klempN|0)+1; }
         else { b.x=_nx; b.y=_ny; } }
       /* göğüs pası: alçak yay | yerden pas: ortada zemine değip yükselir */
-      b.h=b.bounce?(t<0.55?16*(1-t/0.55):14*((t-0.55)/0.45)):(Math.sin(Math.PI*t)*b.arc+11);
+      b.h=b.bounce?(t<0.55?16*(1-t/0.55):14*((t-0.55)/0.45)):(Math.sin(Math.PI*t)*b.arc+11+((b.hFrom>30)?(b.hFrom-11)*(1-t):0));   /* FAZ 44 §1: hFrom */
       if(b.t>=1){ const to=b.target; b.bounce=false; _ballHold(to,!!(to&&to.ghost)); }
       break;
     }
@@ -1852,7 +1861,10 @@ function _ftToplayici(shooter,offP,defP,rim,made){
     const b=S.ball;
     if(!made){ const a=_sr()*6.283; _ballCarom(Math.cos(a)*70,Math.sin(a)*60,_srand(44,54)); }
     let col=null,cd=1e9;
-    (defP||[]).concat(offP||[]).forEach(p=>{ if(!p||p===shooter||p._oob) return; const d=Math.hypot(p.x-rim[0],p.y-rim[1]); if(d<cd){ cd=d; col=p; } });
+    /* FAZ 44: top serbestse TOPA en yakın oyuncu toplar (top öbür potada kalmış olabilir —
+       sayı sonrası teknik/serbest atış); değilse potaya en yakın. */
+    const ref=(b&&!b.carrier&&isFinite(b.x))?[b.x,b.y]:rim;
+    (defP||[]).concat(offP||[]).forEach(p=>{ if(!p||p===shooter||p._oob) return; const d=Math.hypot(p.x-ref[0],p.y-ref[1]); if(d<cd){ cd=d; col=p; } });
     if(!col) return;
     col._ftTx=col.tx; col._ftTy=col.ty;
     _chase(col,()=>{ try{
@@ -1986,6 +1998,7 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
   const S=mState._sim;
   opts=opts||{};
   const phase=opts.phase||'set';
+  S._faz=phase;   /* FAZ 44 §2: sokma serbest bırakılırken hangi dizilimin geçerli olduğu */
   const rim=_rim(offLeft);
   const tac=G.tactics||{};
   const offIsUser=S.offIsUser!==false;
@@ -2040,6 +2053,7 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
       p._wp=(i===1||i===2)?[_inX(p.x+(offLeft?-58:58)),_inY(c[1])]:_kulvarWp(p,c);
     });
     defR.forEach((p,i)=>{ if(!p||p._oob) return; const c=_pt(TRANS_DEF[i],offLeft,false); _hedefAta(p,_jit(c[0],8),_jit(c[1],8),_URG.KOS); p._wp=_kulvarWp(p,c); });
+    if(S._sokmaBekle) _sokmaKisit(S._sokmaBekle,offR,defR,offLeft);   /* FAZ 44 §2 */
     S.shooter=null;
     return null;
   }
@@ -2350,8 +2364,9 @@ function _inboundSpot(kind,offLeft,x,y){
     savunma potaya döner. (Eskiden bu, bir sonraki olayın işlenmesine kadar beklerdi;
     ribaund/çalma sonrası 1-2 saniye herkes eski yarı sahada donup kalıyor, sonra
     topluca koşuya kalkıyordu — "yumak" görüntüsünün ana sebebi buydu.) */
-function _startBreak(offIsUser){
+function _startBreak(offIsUser,sokma){
   const S=mState._sim; if(!S) return;
+  S._sokmaBekle=sokma||null;   /* FAZ 44 §2: sayı sonrası sokma bekleniyorsa geçiş dizilimi sınırlı */
   /* F13-10: yön çeyreğe bağlıdır — 2. yarıda potalar değişir. */
   const offLeft=offLeftAtQ(offIsUser,(mState.quarter||1));
   const offP=offIsUser?S.home:S.away;
@@ -2366,9 +2381,9 @@ function _startBreak(offIsUser){
     diğerleri geçişe açılır — böylece ölü zaman kalmaz. */
 function _setupInbound(offIsUser,y){
   const S=mState._sim; if(!S) return null;
-  _startBreak(offIsUser);
-  const offLeft=S.offSide;
+  const offLeft=offLeftAtQ(offIsUser,(mState.quarter||1));
   const spot=_inboundSpot('base',offLeft,null,y);
+  _startBreak(offIsUser,{x:spot.x,y:spot.y});   /* FAZ 44 §2: nokta geçiş diziliminden ÖNCE bilinir */
   /* FAZ 43 İŞ 1: sokucu sokma NOKTASINA değil TOPA (potaya) en yakın oyuncudur — top fileden
      düşerken zaten altında durur, yerden alır, iki adımda çizgi dışına çıkar. Eskiden dip
      çizgi noktasına en yakın seçiliyor ve top ona 3-5 m uçuyordu. */
@@ -2406,6 +2421,17 @@ function _inboundSetup(spot,offP,exclude,yakinNokta){
   /* F15-1: ETA jetonun GERÇEK hızından; eski taban (120 px/sn) yeni ölçekte fazla iyimser. */
   inb._inbEta=Math.min(2.4,bd/Math.max(40,inb.maxV||inb.baseV||_PL_MAXV)+0.28);
   _sokmaYerlesimi(spot,offP,inb);
+  /* FAZ 44 §2: geçiş fazındaki sokma (sayı anında seçilmemiş yedek yol) ve ARKA SAHADAN yapılan
+     her ölü top sokması (faul/taç/ihlal) kısıtı alır: takım arkadaşları topa gelir, savunma orta
+     çizgide bekler; pas atılınca `_sokmaSerbest` o fazın dizilimini yeniden verir. Ön sahadaki
+     sokmada dizilim zaten sokucunun yakınındadır — dokunulmaz (FAZ 11 dizilimi korunur). */
+  try{
+    const S=mState._sim;
+    if(S){
+      const arka=(S.offSide?(spot.x>COURT_MID):(spot.x<COURT_MID));
+      if(S._faz==='trans'||arka){ S._sokmaBekle={x:spot.x,y:spot.y}; _sokmaKisit(S._sokmaBekle,_rolesOrder(offP),_rolesOrder(S.defP||[]),S.offSide); }
+    }
+  }catch(e){}
   return inb;
 }
 /* ── §3: KENARDAN SOKMA YERLEŞİMİ ────────────────────────────────────────────────────
@@ -2422,11 +2448,54 @@ const _SOKMA_MAX_PX=413;      /* 14 m × 29,5429 px/m */
 const _SOKMA_HEDEF_PX=290;    /* ≈ 10 m — sokucunun yakınında kalır, ön sahaya koşmaz */
 const _UZUN_TAC_MAX=1;        /* maç başına uzun taç pası (hızlı hücum) tavanı */
 const _SOKMA_MIN_YAKIN=3;     /* sokucu dışında bu kadar oyuncu yakında durmalı */
+/* ── FAZ 44 §2: TOP OYUNA GİRENE KADAR GEÇİŞ DİZİLİMİ SINIRLI ─────────────────────────
+   Ölçüldü (470 sn iz, 8 sokma): pas anında sokucunun 15 m'sinde ortalama 1,0 takım
+   arkadaşı, karşı yarı sahada 9 oyuncunun 7,3'ü; 7/8 epizot ihlal. Kök neden:
+   `_setupInbound` SAYI ANINDA tam geçiş dizilimini veriyor (TRANS_OFF ön saha kulvarları /
+   TRANS_DEF pota önü), sokucu çizgiye 1-3 sn sonra varıyor ve herkes çoktan öbür uçta oluyor.
+   `_sokmaYerlesimi` o anki KONUMA baktığı için (sayı anında herkes potanın dibinde) hiç
+   devreye girmiyordu — kural tanımlıydı, uygulanmıyordu.
+   Şimdi (`S._sokmaBekle` açıkken): hücumun oyun kurucusu sokucunun 5-6 m'sinde topu almaya
+   gelir, SG/PF/C 4-11 m içinde kalır (yalnız SF kulvarında öne koşar); savunmanın guardları
+   orta çizgiyi yeni geçmiş (3 m), uzunlar orta çizginin sokma tarafında (2 m) bekler —
+   "kendi yarı sahasını yeni terk ediyor". `_inboundPass` pas atılınca kısıtı kaldırır ve
+   geçiş dizilimini yeniden verir: herkes kulvarına, top SÜRÜLEREK çıkar. */
+function _sokmaKisit(spot,offR,defR,offLeft){
+  try{
+    const S=mState._sim; if(!S||!spot) return;
+    const dir=offLeft?-1:1;                       /* sokma noktasından ön sahaya */
+    const ust=spot.y<250;
+    const offT=[
+      [spot.x+dir*165,(ust?spot.y+65:spot.y-65)],   /* 0 PG: 5-6 m, topu alır ve sürer */
+      [spot.x+dir*250,(ust?380:120)],                /* 1 SG: karşı kanat, ~10 m */
+      null,                                          /* 2 SF: kulvarında öne (TRANS_OFF) */
+      [spot.x+dir*120,(ust?330:170)],                /* 3 PF: dirsek hizası, ~5 m */
+      [spot.x+dir*290,(ust?spot.y+40:spot.y-40)]     /* 4 C: arkadan gelen, ~10 m */
+    ];
+    offR.forEach((p,i)=>{ if(!p||p._oob) return; const c=offT[i]; if(!c) return; p._wp=null; _hedefAta(p,_inX(c[0]),_inY(c[1]),_URG.KOS); });
+    S.defTrack=false;   /* savunma markaja değil orta çizgiye — pas atılınca dizilim yeniden verilir */
+    defR.forEach((p,i)=>{
+      if(!p||p._oob) return;
+      const x=(i<=1)?(COURT_MID+dir*90):(COURT_MID-dir*60);
+      p._wp=null; _hedefAta(p,_inX(x),_inY(TRANS_DEF[i][1]),_URG.KOS);
+    });
+  }catch(e){}
+}
+/** Sokma pası atıldı: kısıt kalkar, geçiş dizilimi yeniden verilir (yalnız geçiş fazındaysa). */
+function _sokmaSerbest(){
+  try{
+    const S=mState._sim; if(!S||!S._sokmaBekle) return;
+    S._sokmaBekle=null;
+    if(S.offP&&S.defP) _setFormation(S.offSide,S.offP,S.defP,null,{phase:(S._faz==='trans')?'trans':'set'});
+  }catch(e){}
+}
 function _sokmaYerlesimi(spot,offP,inb){
   try{
     if(!spot||!offP||!offP.length) return;
     const digerleri=offP.filter(p=>p&&p!==inb);
-    const uzak=(p)=>Math.hypot(p.x-spot.x,p.y-spot.y);
+    /* FAZ 44 §2: KONUMA değil HEDEFE bakılır — sayı/faul anında herkes potanın dibindedir (hepsi
+       "yakın"), hedefleri ise 25 m ötededir; kural bu yüzden hiç devreye girmiyordu. */
+    const uzak=(p)=>Math.hypot((p.tx!=null?p.tx:p.x)-spot.x,(p.ty!=null?p.ty:p.y)-spot.y);
     const yakin=digerleri.filter(p=>uzak(p)<=_SOKMA_MAX_PX);
     let eksik=_SOKMA_MIN_YAKIN-yakin.length;
     if(eksik<=0) return;
@@ -2506,7 +2575,7 @@ function _inboundPass(inb,to,dur){
     if(d0>60){
       /* Görünür toparlama: top sokucuya uçar, sokma pası bir sonraki tick'te atılır. */
       _ballPass(inb,Math.max(0.16,Math.min(0.75,d0/520)));
-      b0.onDone=()=>{ try{ b0.noDrib=true; _ballPass(to,dur||0.32); }catch(e){} };
+      b0.onDone=()=>{ try{ b0.noDrib=true; _ballPass(to,dur||0.32); _sokmaSerbest(); }catch(e){} };
       return;
     }
     b0.mode='held'; b0.carrier=inb; b0.noDrib=true;
@@ -2518,6 +2587,7 @@ function _inboundPass(inb,to,dur){
     inb._retTx=inb._retTy=null;
     _setUrg(inb,_URG.KOS);
   }
+  _sokmaSerbest();   /* FAZ 44 §2: top oyunda — herkes kulvarına */
 }
 
 /* ── Anlatım senkronu ────────────────────────────────────────────────────
@@ -2569,8 +2639,18 @@ function movePlayersForEvent(ev,paint){
       if(P){ P(); _markPainted(); }
       const hc=S.home.find(p=>p.role===4)||S.home[S.home.length-1];
       const ac=S.away.find(p=>p.role===4)||S.away[S.away.length-1];
-      _hedefAta(hc,451,250,_URG.YURU);
-      _hedefAta(ac,489,250,_URG.YURU);
+      /* FAZ 44 §1 (ölçüldü — 470 sn iz): top 0,93 sn ortada 'idle' bekliyor, toss anında
+         çemberin 1,8 m'sinde KİMSE yoktu (kurulum çembere 1. slotu koyuyordu; pivot buraya
+         YÜRÜYEREK geliyor, slot 0 uzaklaşıyordu) ve toss 0,47 sn sonra pasa dönüyordu —
+         yani "hava atışı diye bir hareket" yoktu. Şimdi: pivotlar kurulumdan çemberde
+         (kendi savundukları yarıda, karşılıklı); düdük + hakem atışı 0,15 sn'de (vh=140,
+         g=202 → tepe 48 px ≈ 4,9 m, 0,69 sn'de); iki pivot top tepeye yaklaşırken SIÇRAR
+         (pop); kazanan pivot tepede DOKUNUR (tap) — top oradan takım arkadaşına yay çizer
+         (pas yüksekliği tepeden iner, `hFrom`); kazanma düdükten ~1,6 sn sonra; geçiş
+         top elde olduktan sonra başlar. Sıçramayan 8 oyuncu kendi yarısında kalır. */
+      const userLeft0=(mState.userIsHome!==false);
+      _hedefAta(hc,userLeft0?489:451,250,_URG.YURU);
+      _hedefAta(ac,userLeft0?451:489,250,_URG.YURU);
       /* sıçramayan 8 oyuncu kendi yarı sahasında, orta bandın (x380-560) dışında */
       const userLeft=(mState.userIsHome!==false);   /* kullanıcı sola hücum ediyor → savunması sağda */
       const nearSpots=[[360,176],[360,324],[300,250],[212,250]];
@@ -2586,12 +2666,17 @@ function movePlayersForEvent(ev,paint){
       const recv=winP.find(p=>p!==winC&&p.role===0)||winP.find(p=>p!==winC)||winP[0];
       mState._lastOff=winOff;
       S.inb=null;
+      const T0=0.15;   /* düdük + toss — top 'idle' modunda en fazla bu kadar bekler */
       return _script([
-        {at:0.95,fn:()=>{ _ballLoose(0,0,140); hc.pop=1; ac.pop=1; if(typeof sfx==='function') sfx('whistle'); }},   /* FAZ 43: 210 → 140 (yerçekimi 202; tepe 48 px aynı) */
-        {at:1.42,fn:()=>{ _ballPass(recv,0.5); }},
-        /* FAZ 42: hava atışı = geçişin başlangıcı. Kazanan takım öne akar, rakip
-           kendi potasına döner; topu alan oyuncu yerinde sektirerek beklemez. */
-        {at:1.90,fn:()=>{ try{ _startBreak(winOff); }catch(e){} }}
+        {at:T0,fn:()=>{ const b=S.ball; b.carrier=null; b.x=COURT_MID; b.y=250; b.h=0; _ballLoose(0,0,140); if(typeof sfx==='function') sfx('whistle'); }},
+        {at:T0+0.50,fn:()=>{ hc.pop=1.3; ac.pop=1.3; }},                                   /* iki pivot sıçrar (top tepeye yaklaşırken) */
+        {at:T0+0.80,fn:()=>{                                                                /* kazanan tepede dokunur → takım arkadaşına */
+          winC.pop=1.5;
+          const b=S.ball; const d=Math.hypot(recv.x-b.x,recv.y-b.y);
+          _ballPass(recv,Math.max(0.78,d/380));
+          if(typeof sfx==='function') sfx('pass');
+        }},
+        {at:T0+1.80,fn:()=>{ try{ _startBreak(winOff); }catch(e){} }}                       /* top kazanıldı (≈T0+1,58): geçiş başlar */
       ])+260;
     }
 
@@ -2669,12 +2754,18 @@ function movePlayersForEvent(ev,paint){
         let sd=1e9; shooter=offP[0];
         offP.forEach(p=>{ const d=Math.hypot(p.x-line[0],p.y-line[1]); if(d<sd){sd=d;shooter=p;} });
       }
+      /* FAZ 44 (ölçüldü, HEAD'de de vardı): `clearBallTimers` dizilimden SONRA çağrılıyordu;
+         `_flushPending` sayı-sonrası sokma takibinin geri çağrısını (`inb.tx=dip çizgi`, noDrib)
+         çalıştırıp ATICININ çizgi hedefini eziyordu — atıcı topu dip çizgide 3 sn tutuyor, atış
+         25 m'den "loose" olarak uçuyordu (free/loose 1,7-2,1 sn epizotları). Önce temizlik, sonra
+         dizilim; bekleyen sokma iptal. */
+      clearBallTimers();
+      S.inb=null; S._sokmaBekle=null; S.chase=null;
       offP.concat(defP).forEach(p=>{ _oobKapat(p); });
       _setFtFormation(offLeft,offP,defP,shooter);
       S.shooter=shooter;
       S.defTrack=false;   /* ölü top — savunma markaj değil, çizgi dizilişinde */
       const rim=_rim(offLeft);
-      clearBallTimers();
       const tBase=_ftWaitSec(offP.concat(defP));   /* F14-7 */
       const shots=ev.shots.slice(0,3);   /* 3 atışlık fauller de tam canlandırılır */
       const steps=[];
@@ -2820,6 +2911,12 @@ function movePlayersForEvent(ev,paint){
       if(P){ P(); _markPainted(); }
       S.defTrack=false;   /* ölü top — düdükte savunma koşuşturmayı bırakır */
       const bl=S.ball;
+      /* FAZ 44 §2 (ölçüldü): sayıdan 0,9 sn sonra gelen faulde sayı-sonrası sokucu hâlâ `_oob`
+         ve `S.inb` bekliyordu; faul dalı ikinci bir sokucu atıyor, eski takibin geri çağrısı
+         eskisini dip çizgiye yolluyor, top zaman aşımında ESKİ sokucuya gidiyor ve faul dalının
+         pası hiç atılmıyordu (3-4 sn çizgi dışında bekleyip topla içeri yürüyen sokucu, 3 vaka).
+         İhlal dalı gibi: bekleyen sokma İPTAL, tek sokucu. */
+      S.players.forEach(p=>_oobKapat(p)); S.inb=null; S._sokmaBekle=null; S.chase=null;
       const spot=_inboundSpot('side',offLeft,bl.x,bl.y);
       const recv=_rolesOrder(offP)[0];
       _setFormation(offLeft,offP,defP,null,{phase:'set'});

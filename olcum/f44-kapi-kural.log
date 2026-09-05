@@ -1,0 +1,22 @@
+
+KURAL OLAYLARI — 240 maç · 480 takım-maç · tohum 20000 · pozisyon/takım 77.9
+==============================================================================
+KURAL OLAYI SIKLIĞI — gerçek bantlara karşı (FAZ 43 İŞ 3)
+eşikler: tools/_lib/gercek-bantlar.json — NBA — düzenli sezon 2022+2023+2024 · 3690 maç · ölçek 0.8333 · çıkarım 2026-09-02
+==============================================================================
+  ✓ taç (takım·maç)                       2.15   gerçek 2.26 [1.97 – 2.55]  n=90 ×0.8333
+  ✓ hücum faulü (takım·maç)               1.20   gerçek 1.36 [1.09 – 1.63]  n=90 ×0.8333
+  ✓ adım / çift sürme (takım·maç)       0.7167   gerçek 0.7240 [0.4942 – 0.9538]  n=90 ×0.8333
+  ✓ şut saati ihlali (takım·maç)        0.5646   gerçek 0.5640 [0.4298 – 0.6992]  n=90 ×0.8333
+  ✓ top kaybı / pozisyon                0.1435   gerçek 0.1415 [0.1304 – 0.1526]  n=90
+  ✓ faul / pozisyon                     0.1991   gerçek 0.1984 [0.1835 – 0.2133]  n=90
+  bilgi: çalma olayı (takım·maç)           6.55   gerçek 4.07 [3.54 – 4.59]  n=90 ×0.8333
+==============================================================================
+  bilgi: top kaybı 11.18/takım·maç · steal-tipi olay 6.55 · taç+hücum faulü+adım 4.07
+
+ŞUT SAATİ GÖSTERGESİ (D1) — olay dizisi üzerinde, maç saatiyle
+  0'da bekleyen maç saniyesi        0.0 sn/maç   (olay süresi 2413 sn/maç → %0.00)
+  0'a inen pozisyon                 0.00 /maç · ihlal düdüğü OLMADAN 0.00 /maç
+  en uzun kesintisiz 0              0.0 sn
+  ✓ gösterge 0'da takılmıyor (ihlalsiz ≤ 0,5/maç · en uzun ≤ 3 sn)
+✓ kural olayları gerçek bantlarda

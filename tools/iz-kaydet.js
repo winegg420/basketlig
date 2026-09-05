@@ -112,7 +112,7 @@ async function main() {
             q: mState.quarter || 1,
             tip: S.curType || '-',
             idx: mState.idx | 0,
-            b: [+b.x.toFixed(1), +b.y.toFixed(1), b.mode],
+            b: [+b.x.toFixed(1), +b.y.toFixed(1), b.mode, +(b.h || 0).toFixed(1)],   /* FAZ 44: [3] yükseklik (px) */
             /* Teşhis: donmanın SEBEBİNİ ayırt etmek için (set mi, kilit mi, kademe mi). */
             cs: S.canliSet ? 1 : 0,
             /* FAZ 41: OLU TOP ayrimi — serbest atis dizilisi / kenardan sokma. Bu
@@ -520,6 +520,99 @@ function analiz(K, BAL, ADLAR) {
     gecis: { n: gecisler.length, iyi: gecisIyi, iyiOran: gecisler.length ? +(100 * gecisIyi / gecisler.length).toFixed(0) : null, uzunlar: gecisUzun, dagilim: (() => { const o = {}; gecisler.forEach(g => o[g.poz] = (o[g.poz] || 0) + 1); return o; })() }
   };
 
+  /* ── FAZ 44: HAVA ATIŞI + SOKMA YERLEŞİMİ ───────────────────────────────────────────
+     Hava atışı: kayıt başından topun KAZANILMASINA (loose sonrası ilk 'held') kadar.
+       · top 'idle' süresi (≤ 0,3 sn) · tepe yüksekliği (b[3], 9,84 px/m; ≥ 2 m)
+       · toss anında çemberin 1,8 m'si içindeki oyuncu (= 2) · kazanılana kadar hiçbir yarı
+         sahada 8'den fazla oyuncu yok · düdük→kazanma 1,5–2,5 sn.
+     Sokma epizodu: top SAHA ÇİZGİSİ DIŞINDA ve bir oyuncunun elinde olduğu bitişik kareler.
+       Pas anında (epizodun son karesi): sokucunun 15 m'si içindeki TAKIM ARKADAŞI ≥ 3,
+       karşı yarı sahaya geçmiş oyuncu ≤ 4/10, ilk pas ≤ 14 m. Her epizot damgayla listelenir. */
+  const ek44 = (() => {
+    try {
+      const CX = 470, CY = 250, PXH = 9.84;   /* yükseklik ölçeği: çember h=30 px ↔ 3,05 m */
+      const t0 = K[0].t;
+      let iIdle = -1, iLoose = -1, iTap = -1, iWon = -1;
+      for (let i = 0; i < K.length && (K[i].t - t0) < 8; i++) {
+        const m = K[i].b[2];
+        if (iIdle < 0 && m !== 'idle') iIdle = i;
+        if (iLoose < 0 && m === 'loose') iLoose = i;
+        if (iLoose >= 0 && iTap < 0 && i > iLoose && m === 'pass') iTap = i;
+        if (iLoose >= 0 && iWon < 0 && i > iLoose && m === 'held') { iWon = i; break; }
+      }
+      const hVar = K[0].b.length >= 4;
+      const win = K.slice(0, (iWon >= 0 ? iWon : Math.min(K.length - 1, 360)) + 1);
+      let hMax = 0; if (hVar) for (const k of win) if (k.b[3] > hMax) hMax = k.b[3];
+      const tossK = iLoose >= 0 ? K[iLoose] : K[0];
+      const cember = (tossK.p || []).map((q, ix) => ({ ix, d: Math.hypot(q[0] - CX, q[1] - CY) / PX_M, poz: q[3] })).filter(o => o.d <= 1.8);
+      let maxYari = 0, maxYariT = null, tossDenge = null;
+      for (const k of win) {
+        let Ls = 0; for (const q of (k.p || [])) if (q[0] < ORTA) Ls++;
+        const Rs = (k.p || []).length - Ls, mx = Math.max(Ls, Rs);
+        if (mx > maxYari) { maxYari = mx; maxYariT = k.t; }
+        if (k === tossK) tossDenge = Ls + '-' + Rs;
+      }
+      const hava = {
+        idleSure: iIdle >= 0 ? +(K[iIdle].t - t0).toFixed(2) : null,
+        tossT: iLoose >= 0 ? +(K[iLoose].t - t0).toFixed(2) : null,
+        tapT: (iTap >= 0 && iLoose >= 0) ? +(K[iTap].t - K[iLoose].t).toFixed(2) : null,
+        kazanmaT: (iWon >= 0 && iLoose >= 0) ? +(K[iWon].t - K[iLoose].t).toFixed(2) : null,
+        hMax: hVar ? +(hMax / PXH).toFixed(2) : null,
+        cemberde: cember.length,
+        cemberListe: cember.map(c => (c.ix < 5 ? 'EV' : 'DEP') + '/' + c.poz + '@' + c.d.toFixed(2) + 'm'),
+        cemberIkiTakim: cember.some(c => c.ix < 5) && cember.some(c => c.ix >= 5),
+        tossDenge, maxYari, maxYariT
+      };
+      const havaIhlal = [];
+      if (hava.idleSure == null || hava.idleSure > 0.3) havaIhlal.push('idle ' + hava.idleSure + ' sn');
+      if (hava.hMax != null && hava.hMax < 2) havaIhlal.push('tepe ' + hava.hMax + ' m');
+      if (hava.cemberde !== 2 || !hava.cemberIkiTakim) havaIhlal.push('çemberde ' + hava.cemberde);
+      if (hava.maxYari > 8) havaIhlal.push('yarı saha ' + hava.maxYari);
+      if (hava.kazanmaT == null || hava.kazanmaT < 1.5 || hava.kazanmaT > 2.5) havaIhlal.push('kazanma ' + hava.kazanmaT + ' sn');
+      hava.ihlal = havaIhlal;
+
+      const disarida = (k) => (k.b[0] < X0 || k.b[0] > X1 || k.b[1] < Y0 || k.b[1] > Y1);
+      const olc = (k, ti) => {
+        const q = k.p[ti]; let yakin = 0, yakinHepsi = 0, karsi = 0; const farL = q[0] >= ORTA;
+        k.p.forEach((r, j) => {
+          if (j === ti) return;
+          const d = Math.hypot(r[0] - q[0], r[1] - q[1]);
+          if (d <= 15 * PX_M) { yakinHepsi++; if (r[2] === q[2]) yakin++; }
+          if (farL ? (r[0] < ORTA) : (r[0] > ORTA)) karsi++;
+        });
+        return { yakin, yakinHepsi, karsi };
+      };
+      const sokma = [];
+      { let bas = -1;
+        for (let i = 0; i <= K.length; i++) {
+          let s = false;
+          if (i < K.length) { const k = K[i]; s = k.b[2] === 'held' && _tasiyanIx(k) >= 0 && disarida(k); }
+          if (s && bas < 0) bas = i;
+          if (!s && bas >= 0) {
+            const son = K[i - 1], ti = _tasiyanIx(son), q = son.p[ti];
+            const o = olc(son, ti);
+            let minYakin = 99;
+            for (let j = bas; j < i; j++) { const tj = _tasiyanIx(K[j]); if (tj >= 0) { const oj = olc(K[j], tj); if (oj.yakin < minYakin) minYakin = oj.yakin; } }
+            const pas = paslar.find(p => p.t >= son.t && p.t <= son.t + 1.2);
+            sokma.push({ t: son.t, sure: +(son.t - K[bas].t + 0.016).toFixed(2), tip: son.tip, sokucu: (q[2] ? 'HUC' : 'SAV') + '/' + q[3],
+              yakin: o.yakin, minYakin, yakinHepsi: o.yakinHepsi, karsi: o.karsi, ilkPas: pas ? pas.uz : null, bitis: i < K.length ? K[i].b[2] : '-' });
+            bas = -1;
+          }
+        }
+      }
+      const sokmaKisa = sokma.filter(s => s.sure >= 0.25);   /* çizgiden içeri adım atarken 1-2 karelik dış kare epizot değildir */
+      const sIhlal = (s) => s.yakin < 3 || s.karsi > 4 || (s.ilkPas != null && s.ilkPas > 14);
+      return {
+        hava,
+        sokma: { n: sokmaKisa.length, ihlalN: sokmaKisa.filter(sIhlal).length,
+          ortYakin: sokmaKisa.length ? +(sokmaKisa.reduce((a, s) => a + s.yakin, 0) / sokmaKisa.length).toFixed(2) : null,
+          ortYakinHepsi: sokmaKisa.length ? +(sokmaKisa.reduce((a, s) => a + s.yakinHepsi, 0) / sokmaKisa.length).toFixed(2) : null,
+          ortKarsi: sokmaKisa.length ? +(sokmaKisa.reduce((a, s) => a + s.karsi, 0) / sokmaKisa.length).toFixed(2) : null,
+          liste: sokmaKisa.map(s => Object.assign({ ihlal: sIhlal(s) }, s)) }
+      };
+    } catch (e) { return { hata: String(e) }; }
+  })();
+
   const ek42 = {
     yeniBicim,
     sahaDisi: yeniBicim ? { kareOran: +(100 * disKare / K.length).toFixed(2), kare: disKare, maxPx: +disMax.toFixed(1), baglam: enBuyukler(disTip, 3) } : null,
@@ -578,7 +671,8 @@ function analiz(K, BAL, ADLAR) {
       isinListe
     },
     ek42,
-    ek43
+    ek43,
+    ek44
   };
 }
 
@@ -650,6 +744,21 @@ function bas(R, dosya) {
     if (F.gecis.uzunlar.length) L.push('     PF/C geçişleri: ' + F.gecis.uzunlar.map(g => `${g.t}s ${g.poz} tutma=${g.tutma}s ${g.tip}`).join(' | '));
     L.push('');
   }
+  if (R.ek44 && !R.ek44.hata) {
+    const H = R.ek44.hava, Sk = R.ek44.sokma;
+    const f = (v, ek) => (v == null ? '-' : v + (ek || ''));
+    L.push('  ── FAZ 44: HAVA ATIŞI · SOKMA YERLEŞİMİ ──');
+    L.push(`  hava atışı: top idle süresi    ${String(f(H.idleSure, ' sn')).padStart(16)}    ≤ 0,3 sn   [toss t=${f(H.tossT)}]`);
+    L.push(`     toss→tap / toss→kazanma     ${String(f(H.tapT) + ' / ' + f(H.kazanmaT, ' sn')).padStart(15)}    kazanma 1,5–2,5 sn`);
+    L.push(`     top tepe yüksekliği         ${String(f(H.hMax, ' m')).padStart(15)}    ≥ 2 m${H.hMax == null ? ' (kayıtta yükseklik yok)' : ''}`);
+    L.push(`     toss anında çemberde        ${String(H.cemberde).padStart(15)}    = 2 (iki takım)   [${H.cemberListe.join(' · ')}]`);
+    L.push(`     saha dengesi (toss / en çok) ${String(f(H.tossDenge) + ' / ' + H.maxYari).padStart(14)}    ≤ 8 tek yarıda   [en kalabalık t=${f(H.maxYariT)}]`);
+    L.push(`     ${H.ihlal.length ? '✗ İHLAL: ' + H.ihlal.join(' · ') : '✓ hava atışı kapıları'}`);
+    L.push(`  sokma epizodu (top çizgi dışı) ${String(Sk.n + ' · ihlal ' + Sk.ihlalN).padStart(16)}    her epizot: takım arkadaşı(15 m) ≥ 3 · karşı yarı ≤ 4 · ilk pas ≤ 14 m`);
+    L.push(`     ortalama: yakın takım arkadaşı ${f(Sk.ortYakin)} · yakın herkes ${f(Sk.ortYakinHepsi)}/9 · karşı yarıda ${f(Sk.ortKarsi)}/9`);
+    Sk.liste.forEach(s => L.push(`     ${s.ihlal ? '✗' : '✓'} t=${s.t}s ${s.tip} ${s.sokucu} süre=${s.sure}s yakın=${s.yakin}(min ${s.minYakin}, herkes ${s.yakinHepsi}) karşı=${s.karsi} ilkPas=${f(s.ilkPas, ' m')} → ${s.bitis}`));
+    L.push('');
+  } else if (R.ek44 && R.ek44.hata) L.push('  FAZ 44 çözümleme hatası: ' + R.ek44.hata);
   L.push(`  konsol hatası: ${R.konsolHata}` + (R.startErr ? ' · startMatch: ' + R.startErr : ''));
   L.push(`  iz: ${path.relative(ROOT, dosya)}`);
   console.log(L.join('\n'));

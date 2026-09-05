@@ -7688,3 +7688,214 @@ molada ve oyuncu değişikliğinde boşalıyor, 0'da takılmıyor. Maç sayfası
 boş değil: iki takımın ilk beşi hava atışı dizilişinde bekliyor. Motor tarafında maç başına
 ~2 taç, ~1,2 hücum faulü, 0,7 adım, 0,6 şut saati ihlali (takım başına) — düdükler gerçek
 sıklıkta; skorlar 78-95 bandında (kullanıcı ort 94,4).
+
+
+---
+
+## 44. oturum — FAZ 44: SÜRÜM DAMGASI + HAVA ATIŞI + OYUNA SOKMA (2026-09-05)
+
+Brif: `charazay2.0.html`/`js` değişince sürüm artışı (§0), hava atışında gerçek sıçrama (§1),
+topu sokarken takım arkadaşlarının 15 m içinde olması (§2), FAZ 43 kazanımları korunarak (§3).
+Yöntem brifin dediği gibi: tek madde → 470 sn iz kaydı (`iz-kaydet`, dil TR, 100 ms pencere,
+seed 987654321) → ölç → sonraki madde. Her kabul kapısı için ihlal listesi damgayla basılır.
+
+### §0 — SÜRÜM DAMGASI: BRİF ESKİ ÖLÇÜMLE YAZILMIŞTI
+
+Oturum başında `node tools/surum-check.js` **GEÇİYORDU**: FAZ 42-B v79'daydı, FAZ 43 commit'i
+(`3c7ea52`) `?v=80` + `SCRIPT_V=80` yapmış ve `.surum-hash.json`u tazelemişti; canlı site de
+v80 servis ediyordu (`live-check` ✓, HTML ve sw.js ikisi de 80). "FAZ 43 kullanıcıya hiç
+ulaşmadı" önermesi doğru değildi. Bu turda yayın dosyaları değiştiği için sürüm **81**'e
+çıkarıldı ve `--yaz` ile kayıt tazelendi (son adım).
+
+### ÖLÇÜM ARACI — `iz-kaydet` FAZ 44 bölümü
+
+Kayıt artık top yüksekliğini de taşır (`b[3]`, px; çember h=30 ↔ 3,05 m → 9,84 px/m).
+Yeni kapılar: **hava atışı** (kayıt başından topun kazanılmasına: idle süresi · toss→tap ·
+toss→kazanma · tepe · toss anında çemberin 1,8 m'sinde kaç oyuncu (iki takımdan) · kazanılana
+kadar en kalabalık yarı saha) ve **sokma epizotları** (top saha çizgisi DIŞINDA ve elde olan
+bitişik kareler; pas anında sokucunun 15 m'sindeki takım arkadaşı ≥ 3 · karşı yarı sahaya
+geçmiş oyuncu ≤ 4/10 · ilk pas ≤ 14 m — her epizot damga ve ✓/✗ ile). `--yeniden` ile eski
+kayıtlar yeniden çözümlenir; taban FAZ 43'ün `iz-f43-son.json` kaydından okundu.
+
+### TABAN (iz-f43-son, yeniden çözümleme)
+
+hava atışı: top idle **0,93 sn** · toss→kazanma **0,97 sn** · toss anında çemberde **0** ·
+saha 5-5. Sokma: **8 epizot, 7 ihlal** · yakın takım arkadaşı ort **1,0** · yakın herkes
+1,75/9 · karşı yarıda **7,25/9** · ilk pas 7-18 m (bir sokma 18 m).
+
+### §1 — HAVA ATIŞI
+
+Kök neden (kod okunarak + izle doğrulandı): `mkP` kurulumu çembere dizideki **1. slotu**
+(genelde guard) koyuyor; `start` olayı pivotları çembere **yürüyerek** çağırıyordu (120 px,
+YÜRÜ kademesi >1 sn). t=0'da çemberde 2 (yanlış oyuncular), t=0,6'da 0. Toss 0,95 sn'de,
+0,47 sn sonra `_ballPass` — sıçrama görünmüyordu, top "kendiliğinden" birine gidiyordu.
+
+Yapılan (`js/match-engine.js`): kurulumda roller atandıktan sonra pivot ile slot 0 ilk
+çizimden ÖNCE yer değiştirir (`spotsNear[0]` 428→451; ayna 489) · `start` dalı: düdük + toss
+**T0=0,15 sn** (`_ballLoose(0,0,140)`, g=202 → tepe 48 px ≈ 4,9 m, 0,69 sn'de) · iki pivot
+T0+0,50'de sıçrar (`pop` 1,3) · kazanan T0+0,80'de tepede dokunur (`pop` 1,5) ve top takım
+arkadaşına `_ballPass(recv, max(0,78, d/380))` ile yay çizer · `_startBreak` T0+1,80'de
+(top kazanıldıktan sonra). Pas fiziği: `_ballPass` `b.hFrom` kaydeder; `hFrom>30` ise pas
+yüksekliği 11 px'e düşmez, tepeden doğrusal iner (yalnız yüksekten başlayan pası etkiler).
+
+Ölçülen (470 sn, `iz-f44-hava`): idle **0,15 sn** ✓ · toss→tap 0,79 · toss→kazanma
+**1,56 sn** ✓ · tepe **5,06 m** ✓ · toss anında çemberde **2** (EV/C 0,68 m · DEP/PG 0,68 m —
+"PG" etiketi: deplasman kadrosunda rol 4'e düşen oyuncunun pozisyonu) ✓ · saha 5-5, en
+kalabalık yarı 5 ✓.
+
+### §2 — TOPU OYUNA SOKMA: ÜÇ KÖK NEDEN, ÜÇ ADIM
+
+**Adım 1 (dizilim kısıtı):** `_setupInbound` SAYI ANINDA tam geçiş dizilimini veriyordu
+(TRANS_OFF ön saha kulvarları / TRANS_DEF pota önü); sokucu çizgiye 1-3 sn sonra varıyor,
+herkes çoktan öbür uçta. `_sokmaYerlesimi` o anki KONUMA baktığı için (sayı anında herkes
+pota dibinde = "yakın") hiç devreye girmiyordu — kural tanımlıydı, uygulanmıyordu.
+Yapılan: `_startBreak(off, spot)` → `S._sokmaBekle`; `_setFormation(trans)` sonunda
+`_sokmaKisit`: PG sokucunun 5-6 m'sinde (spot + 165 px, merkeze doğru), SG karşı kanat ~10 m,
+PF dirsek ~5 m, C arkadan ~10 m, yalnız SF kulvarında öne; savunmanın guardları (rol 0-1)
+orta çizgiyi 3 m geçmiş, uzunlar orta çizginin sokma tarafında 2 m geride. `_inboundPass` →
+`_sokmaSerbest`: kısıt kalkar, o fazın dizilimi yeniden verilir (herkes kulvarına, top
+SÜRÜLEREK çıkar — FAZ 43 İŞ 2'nin PG 5-6 m kuralı korunur). `_sokmaYerlesimi` artık hedefe
+(`tx/ty`) bakar.
+Ölçüm (`iz-f44-sokma`): 15 epizot, 7 ✓ / 8 ✗ · yakın 2,67 · karşı 4,53. İki ihlal sınıfı:
+(a) ✓ epizottan ~6 sn sonra 1,22 sn'lik ikinci epizot (karşı 5-7), (b) 3-4 sn dışarıda
+tutup pas atmadan topla içeri yüren sokucu (yakın 0, karşı 8).
+
+**Adım 2 (sınıf a — iz kare kare okundu, 94-104 sn):** sokucu C çizgiye varır varmaz (olay
+gelmeden, idx 15) PG'ye 5,3 m pas atıyordu — `_simTick` 1a "uzun topu 1,2 sn içinde çıkarır"
+kapısı çizgi dışındaki C/PF sokucuya da uygulanıyor; PG artık 5 m'de olduğu için `_ileri`
+sağlanıyordu. Olay gelince (idx 16) `_inboundPass` `carrier!==inb` → topu C'ye GERİ uçurup
+1,2 sn sonra yeniden sokuyordu. Yapılan: kapı `!c._oob` ister.
+
+**Adım 3 (sınıf b — 78-86 sn):** sayı 78,3 → `_setupInbound` HSF sokucu, topu kovalıyor;
+0,9 sn sonra 'foul' olayı → `clearBallTimers`/`_flushPending` eski takibin geri çağrısını
+çalıştırıp HSF'yi dip çizgiye yolluyor (`inb.tx=spot`), faul dalı İKİNCİ sokucu atıyor
+(iki oyuncu `_oob`), top 2,4 sn yerde kalıp zaman aşımında ESKİ sokucuya gidiyor, faul
+dalının `bekle: carrier===inb` adımı hiç sağlanmıyor → pas yok, sokucu 3-4 sn çizgi dışında
+bekleyip topla içeri yürüyor (3 vaka: 69, 85, 266 sn). İhlal dalı (`tac/ihlal`) herkese
+`_oobKapat` yapıyordu, faul dalı yapmıyordu. Yapılan: faul dalı başında `_oobKapat` hepsi ·
+`S.inb=null` · `S._sokmaBekle=null` · `S.chase=null`. Ayrıca `_inboundSetup` ARKA SAHADAN
+yapılan her ölü top sokmasında da (faul/taç/ihlal/çeyrek başı) kısıtı uygular (ön sahada
+dizilim zaten yakındır, FAZ 11 dizilimine dokunulmaz); `_sokmaSerbest` set fazında `set`
+dizilimini yeniden verir; `_sokmaKisit` `defTrack`i kapatır.
+
+Ölçüm (`iz-f44-sokma2`): **8 epizot, 0 ihlal** · yakın takım arkadaşı **3,38** · yakın
+herkes 6,63/9 · karşı yarıda **2,25/9** · ilk pas **5,1-11,1 m** · epizot süresi 0,9-3,4 sn
+(sokucu çizgide olayı bekler; FIBA 5 sn içinde). Liste (t · tip · sokucu · yakın · karşı ·
+ilk pas): 94,0 score2 C 4/2/7,5 · 119,5 miss3 PF 3/3/6,1 · 193,6 free PF 3/3/11,1 ·
+207,5 score2 PF 3/3/6,1 · 391,2 quarter_start SG 3/0/5,1 · 404,0 score2 SF 4/2/5,8 ·
+434,0 miss2 PF 3/3/5,9 · 466,5 miss2 SF 4/2/6,2.
+
+### §3 — KORUNANLAR (f43-son → f44-sokma2, aynı seed, 470 sn)
+
+| ölçü | FAZ 43 son | FAZ 44 | not |
+|---|---|---|---|
+| top en yüksek hız (100 ms) | 22,7 | **21,0** m/sn | ≤ 22 ✓ |
+| >25 m/sn ışınlanma | 36 (jitter sınıfı, FAZ 43 notu) | **1** (held) | |
+| çember çıkışı anlık ele geçiş | 0 | 0 | ✓ |
+| çıkış→ele en kısa | 0,41 sn (1 vaka) | 0,39 sn (pasla, 1 vaka) | FAZ 43 "ulaşılamayanlar" sınıfı, değişmedi |
+| pas > 15,9 m | %3,4 | **%0,0** (0/107) | sokma pası en uzun 11,3 m |
+| pas > 20 m | 0 | 0 | |
+| PG/SG/SF ile yarı saha geçişi | %91 | %91 | |
+| sahipsiz 1 sn üstü epizot | 2 | 2 (serbest atış toplayıcısı) | aynı sınıf |
+| oyuncu ort. hız (maç) | 2,07 | 1,93 m/sn | bant 1,8-2,6 |
+| hava atışı dizilimi | çemberde 0 · 5-5 | çemberde 2 · 5-5 | |
+| saha dışı kare | %0 | %0 | |
+
+Motor: `sim-node --n=500 --seed=42` **93.1 - 87.9 · olay/maç 268**, aynı tohum aynı maç EVET;
+`band.js` **c19928475859c7ff** (değişmedi — sunum katmanı `pr`/`_sr` dışında rastgelelik
+tüketmiyor). Kutu skor hash'i `measure.js` kapı zincirinde.
+
+### KAPILAR
+
+### KULLANICI BİLDİRİMİ: "NE HAVA ATIŞI NE PASLAR NE DİZİLİM — HER ŞEY BOZUK"
+
+Bildirim geldiğinde bu turun kodu commit edilmemişti; canlı site FAZ 43 (v80) servis ediyordu
+ve orada hava atışı gerçekten yoktur, sokma pasları 18-26 m'dir (bu brifin konusu). Yine de
+sayılara güvenmeyip sahneyi kendim izledim: aynı tohumla HEAD (FAZ 43) ve yerel kod, ilk 60 sn
+2 sn'de bir kare (`olcum/goruntu/izle-kontak-1/2.png`), olay indeksine göre dizilim yayılımı
+ve çakışan jeton sayımı (`dizilim-olc`), tek tek kapatılan değişikliklerle ikiye bölme
+(varyant A-F). Bulgular: hava atışı ve sokma akışı yerelde doğru; set fazında topun çevresinde
+sıkışma HEAD'de de aynı (çakışan çift 0-1, yayılım benzer); **gerçek bir kusur ise serbest
+atışta çıktı** (aşağıda). `sunum-check`in ilk koşuda bildirdiği M12 düşüşü (AND-1 ek atışı
+0/3) harness'ta yeniden üretilemedi (2/2 vakada atıcı 850 ms'de çizgide topla) ve ikinci
+koşuda kapı geçti (1/2): kapı 4 sn'lik pencerede örnekliyor, sokma artık olay gelene kadar
+çizgide beklediği için AND-1 sahnesi pencerenin sonuna kayıyor.
+
+### SERBEST ATIŞ: ATICI TOPU DİP ÇİZGİDE TUTUYOR, ATIŞ 25 m'DEN (HEAD'de de vardı)
+
+İz (f44-sokma2, 40-48 sn): sayı sol potada → `_setupInbound` HSG'yi sokucu yapar; 0,8 sn
+sonra 'free' olayı (serbest atış SAĞ potada). Dal `_oobKapat` + `_setFtFormation` (atıcı →
+çizgi) yaptıktan SONRA `clearBallTimers()` çağırıyordu; `_flushPending` sokma takibinin geri
+çağrısını çalıştırıp `inb.tx = dip çizgi noktası`, `noDrib=true` yazıyor — atıcı HSG'nin çizgi
+hedefi eziliyordu. Sonuç: top sol potada 2,4 sn yerde, sonra atıcının eline dip çizgide
+(60,302) geliyor, 3 sn tutuluyor, atış 25 m'den "loose" olarak uçuyor. FAZ 43 kaydında da
+aynı epizot vardı (free/loose 3,6 sn, "1 sn üstü: 42,2 s 1,88 sn"). Yapılan: (1) serbest
+atış dalında `clearBallTimers` + `S.inb/_sokmaBekle/chase=null` DİZİLİMDEN ÖNCE;
+(2) `_ftToplayici` toplayıcıyı top serbestse TOPA en yakın oyuncudan seçer (top öbür potada
+kalmış olabilir), değilse potaya en yakın. Ölçülen (`iz-f44-ft`): free/loose **4,1 → 0,9 sn**,
+1 sn üstü sahipsiz epizot **2 → 0**, ışınlanma **0**, atıcı 44-46 sn'de çizgide (x≈702)
+topla; sokma 7/7 ✓ · hava atışı ✓ · pas > 15,9 m %0,9 (1 çıkış pası 17,1 m) · PG/SG/SF %91.
+
+### `sahne-check` ORTA ÇİZGİ GEÇİŞİ KAPISI: %111 → %70-76 — SAYIM BİÇİMİ
+
+Kapı "topla (held) L↔R geçiş sayısı / pozisyon değişimi" sayar ve HEAD'de **%111 (41/37)**
+verir: PG orta saha kulvarında (TRANS_OFF[0], orta çizginin 5,5 m önü) topu alıp çizginin
+çevresinde ileri-geri geçtiği için bir pozisyonda birden çok geçiş sayılıyordu. Güncel kodda
+PG topu 5-6 m'den alıp TEK geçişle sürüyor (brifin §2 isteği): kapı %70-76'ya iner. Pozisyon
+başına İLK geçişi ölçen `gecis-analiz` (470 sn, aynı tohum): held geçiş **FAZ 43 %71 ·
+FAZ 44 %73**, pasla %18 → %10, geçişsiz %11 → %17 (steal/ribaund ile ön sahada başlayan
+pozisyonlar — iki sürümde de var). Davranış gerilemedi; kapı çift sayımı kaybetti. Kapı
+yeniden yazılmadı (bu tur kapsam dışı) — düşen kapı olarak raporlanıyor.
+
+### KAPILAR (son hâl — serbest atış düzeltmesinden SONRA koşuldu)
+
+**GEÇEN:** `visual-check` (masaüstü + mobil, 0 konsol hatası) · `sunum-check` **tümü** (M12 ✓
+2/2 · F14-7 9,8/10 · F25-3 sokma 63 vaka ort 6,6 m, 3+ yakın %100, 25 m+ pas 0 · F25-4) ·
+`faz11-check` 15/15 · `spacing-check` tümü (markaj **1,67 m**, FAZ 43'te 1,79; ball-you-man
+%90,3) · `realism-check` (ışınlanma 0 · kopuk 0 · senkron tam) · `hareket-check` ·
+`arka-plan-check` · `anlatim-check` 31/31 · `kural-check` 7/7 · `band.js`
+**c19928475859c7ff** (değişmedi) · `measure.js` **51fa02b6e0a8194b** (FAZ 43 değeri; baz
+dosyası FAZ 38'de kalmıştı, `--save` ile tazelendi) · `sim-node --n=500 --seed=42` 93.1 - 87.9
+· 268, determinizm EVET · `surum-check` (81) · `iz-kaydet` FAZ 44 bölümü: hava atışı 5/5 kapı,
+sokma 7/7 epizot.
+
+**DÜŞEN (`sahne-check`, 150 sn, tohumsuz, 3 koşu):** "şut anında yerinde hücumcu" 4,06 ·
+4,00 (HEAD aynı koşulda **4,10** — FAZ 43 "ulaşılamayanlar" 3. madde, bu turdan bağımsız) ·
+"orta çizgi geçişi / pozisyon değişimi" %76 · %70 · %73 (HEAD %111 — çift sayım, yukarıda).
+"Aynı anda koşan" ilk koşuda 5,17 ile bandın dışına çıktı, sonraki iki koşuda 4,94 · 4,90
+(HEAD 4,74): kısıt oyuncuları iki kez koşturuyor (bekleme noktası → kulvar), bant sınırında.
+
+### ULAŞILAMAYANLAR (açıkça)
+
+1. `sahne-check` orta çizgi geçişi ≥ %85 — kapı çift sayım kaybetti (davranış %71 → %73);
+   kapı yeniden yazılmadı.
+2. `sahne-check` şut anında yerinde ≥ 4,25 — FAZ 43'ten beri düşüyor (HEAD 4,10).
+3. FAZ 43 İŞ 1 "alanın çıkış anında ≤ 2,5 m / ≥ 0,6 sn her vaka" — aynı sınıf (11,0 m ·
+   0,39 sn birer vaka), bu turda dokunulmadı.
+4. Set fazında topun çevresinde sıkışma (7 sn kareleri) — HEAD ile aynı, bu turun kapsamı
+   dışında; `dizilim-olc` ile olay başına ölçülebilir.
+
+### ARAÇLAR
+
+Yeni: `tools/kontak-goruntu.js` (sahayı gözle izleme — kontak sayfası), `tools/dizilim-olc.js`
+(olay başına dizilim yayılımı/çakışma), `tools/gecis-analiz.js` (pozisyon başına orta çizgi
+geçişi). `tools/iz-kaydet.js` FAZ 44 bölümü (hava atışı + sokma epizotları, `b[3]` yükseklik).
+Scratch'te kalan (commit edilmedi): `and1-teshis.js` (AND-1 kare kare), `iz-pencere.js`
+(iz penceresi dökümü), `bisect.sh` (değişiklikleri tek tek kapatan ikiye bölme).
+`git worktree add --detach ../basketlig-head HEAD` + `node_modules` junction: HEAD ile aynı
+tohumda yan yana ölçüm (FAZ 40 dersi; zula DEĞİL).
+
+### SÜRÜM · HASH
+
+`?v=81` · `sw.js SCRIPT_V='81'` · `tools/.surum-hash.json` `--yaz` ile tazelendi ·
+`band.js` c19928475859c7ff · `measure.js` 51fa02b6e0a8194b · `sim-node --n=500 --seed=42`
+93.1 - 87.9 · 268.
+
+### KULLANICI CANLI MAÇI İZLEDİĞİNDE NE FARK GÖRECEK
+
+Hava atışı: iki pivot çemberde, hakem atışı 5 m yükselir, ikisi sıçrar, kazanan tepede
+dokunur, top takım arkadaşına iner (1,6 sn). Sayı sonrası: sokucu topu yerden alıp çizgiye
+çıkar, oyun kurucu 5-6 m'sinde, iki-üç arkadaşı 10 m içinde bekler; savunma orta çizgide
+durur; pas 5-7 m, oyun kurucu topu SÜREREK çıkarır — 18-26 m'lik taç pası yok. Serbest atış:
+top öbür potada kalmışsa en yakın oyuncu alıp atıcıya verir; atıcı çizgide topla bekler,
+dip çizgiden 25 m'lik "atış" yok.

@@ -1,0 +1,58 @@
+CANLI MAÇ ANLATIMI DENETİMİ (FAZ 13)
+==================================================================
+
+[Ölçüm] 40 maç · 10887 olay · 5489 şut · 3165 kaçan · 1083 ribaund olayı
+
+[A] Ribaund ve akış
+  ✓ ribaund satırı oranı %8-11 (rutin savunma ribaundu sessiz) — %9.9 (1083/10887) · maç başına kaçan 79.1 · ribaund satırı 27.1
+  ✓ hücum ribaundu daima anlatılıyor (ikinci şansa sessiz geçiş yok) — sessiz ikinci şans 0 · sessiz geçen savunma ribaundu 1497 (tasarım gereği)
+  ✓ açıklamasız ardışık aynı-takım şutu yok — 0 vaka
+
+[B] Sayısal tutarlılık
+  ✓ N-0 seri iddiası skorla tutuyor — 93 iddia · 0 tutmayan
+  ✓ çeyrek süresi 600 sn aşılmıyor — 0 çeyrek aştı
+  ✓ "köşe üçlüğü" gerçekten köşeden — 664 iddia · 0 yanlış
+
+[C] Faul ve top kaybı anlatımı
+  ✓ faul satırlarının %100'ünde oyuncu adı + kişisel faul — 1140/1140 satır (%100)
+  ✓ faul sayacı atlamıyor — 0 atlama
+  ✓ top çalma iki taraflı anlatılıyor — 525/525
+
+[D] Zenginlik ve yön
+  ✓ benzersiz kalıp / olay ≥ %85 — %86.2
+  ✓ devre arası ayrı kalıp var — 40 satır / 40 maç
+  ✓ enerji/yorgunluk anlatılıyor — 72 satır
+  ✓ devre arasında saha değişiyor (Q1-2 yönü ≠ Q3-4) — 0 maçta değişmedi
+
+  ℹ F13-14 (sekme donması) testi için: node tools/anlatim-check.js --freeze
+
+── FAZ 25: dil ve üslup ──
+  ✓ Türkçe ek uyumu hatası yok — 10887 olay tarandı
+  ✓ failsiz anlatım satırı yok — oyun olaylarının hepsinde fail var
+  ✓ saat referansı %6-14 — %9.4 (1024/10887)
+  ✓ 4Ç son 3 dk ton satırı ≥3/maç — 6.4/maç (257 satır)
+  ✓ her şut olayında ön parça şutörün adını taşıyor — 5489/5489
+  ✓ ortalama olay kelime sayısı <9 — 8.50
+  ✓ yabancı terim geçmiyor — spacing/box-out/drive/roll/AND-1 yok
+  ✓ "hepsi içeride" ≤4/maç — 1.4/maç
+  ✓ künye biçimli faul satırı ≤%50 — %39.3 (148/377)
+  ✓ anlatım-saha çelişmesi yok — köşe/post/yakınlık iddiaları sahayla uyumlu
+
+── FAZ 28: deyim ve yüklem ──
+  ✓ anlatımda "servis" kelimesi geçmiyor (basketbol terimi değil) — 10887 olay tarandı
+  ✓ kara listedeki deyim hataları yok — "demire geldi" · "turnike dönmedi" · "smacı tutmadı" yok
+  ✓ fiilsiz anlatım cümlesi <%5 — %2.16 (433/20001 cümle) · ör. "Ev Kartalları ev sahibi; Attilio Grassi dairede." "7-0'lık seri." "Zamanlaması kusursuz."
+  ✓ her şut sınıfı için havuzda ≥8 ifade var — smac 17 · turnike 15 · floater 21 · kanca 14 · tipin 14
+
+── FAZ 29: anlatım çevirisi ──
+  ✓ her anlatım havuzu satırının EN karşılığı var — SUT_LINES · KISA_CEKIRDEK(_SUT) · AKIS_ON · SON_BOLUM · SAAT · SPIKER · ASSIST tarandı
+
+── FAZ 33: yabancı adlarda çekim eki ──
+  ✓ 20 yabancı adın 4 durumu doğru (80/80) — 80 kapı
+  ✓ 43 ülke × 5 ad — ünlü uyumu ihlali yok (860 ek) — 860 ek üretildi
+
+── FAZ 28: olay saati ──
+  ✓ ardışık iki olayın damgası aynı değil — 10887 olay tarandı (duraklama olayları hariç)
+
+==================================================================
+SONUÇ: 31/31 denetim geçti
