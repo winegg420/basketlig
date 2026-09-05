@@ -1,0 +1,33 @@
+
+==== GERÇEKÇİLİK DENETİMİ (seed=987654321, 40sn) ====
+kare: 2222 | top modları %: {"idle":0,"loose":8,"pass":12,"held":75,"shot":4,"rim":1}
+İHLALLER:
+  oyuncu saha DIŞI     : 3 kare (%0), maks 6 px
+  TOP saha DIŞI        : 1 kare, maks 7 px
+  ışınlanma (>30px/kare): 0
+  insanüstü hız (>430)  : 0
+  üst üste binme (<26px): 0 kare | minNN 26
+  top taşıyıcıdan kopuk : 0 kare
+KENARDAN SOKMA        : 333 kare | SOKAN çizgi dışına maks 13 px | tam dışarıda 0 kare
+  (sokan HARİÇ herkes saha içinde: ihlal 3 kare)
+  sahipsiz serbest top  : 0 / 170 kare
+SENKRON — yorum ile ANLATTIĞI SAHNE BEATİ arasındaki mutlak fark (hedef ort ≤800 ms · en kötü tip ≤1200 ms):
+  ⋯ foul | olay ↔ yorum                n=  1  ort     0 ms (örneklem az — bilgi)
+  ⋯ miss3 | sonuç ↔ çember             n=  1  ort     0 ms (örneklem az — bilgi)
+  ⋯ miss3 | ön parça ↔ şut anı         n=  1  ort     0 ms (örneklem az — bilgi)
+  ⋯ quarter_start | olay ↔ yorum       n=  1  ort     1 ms (örneklem az — bilgi)
+  ⋯ reb | olay ↔ yorum                 n=  1  ort   823 ms (örneklem az — bilgi)
+  ⋯ score3 | sonuç ↔ çember            n=  2  ort     0 ms (örneklem az — bilgi)
+  ⋯ score3 | ön parça ↔ şut anı        n=  2  ort     0 ms (örneklem az — bilgi)
+  ⋯ start | olay ↔ yorum               n=  1  ort     1 ms (örneklem az — bilgi)
+  ✓ en kötü tip ortalaması 0 ms (hedef ≤1200)
+  ✓ anlatım sessizliği: en uzun boşluk 10002 ms · ortalama 3684 ms (hedef en uzun ≤12000 · ortalama ≤5000)
+BİLGİ — olay başından ilk yoruma (koreografi uzunluğu, yargılanmaz):
+  start          n=1 ort 1ms
+  quarter_start  n=1 ort 1ms
+  foul           n=1 ort 0ms
+  score3         n=2 ort 5698ms
+  miss3          n=1 ort 8737ms
+  reb            n=1 ort 823ms
+KONSOL HATASI: 0
+✓ tüm senkron hedefleri tuttu

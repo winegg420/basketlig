@@ -1,0 +1,8 @@
+
+==== ÖLÇÜM (seed=987654321, 30sn) ====
+DİNAMİK: {"n":150,"pass":16,"held":66,"shot":5,"loose":11,"rim":2,"idle":0,"avgMoving":8.2,"avgMid":1.4,"xSpread":298,"avgNN":64,"overlap":0}
+STATİK : {"schemes":{"spotup":48,"transition":30,"pnr":22,"cut":26,"putback":4,"iso":12,"postup":5},"moveFilled":"65/147","iso":12,"spotup":48,"nShots":147,"reuse":0.24}
+SONUÇ  : skor 111-94 | kazanan home | olay 283 | hash 51fa02b6e0a8194b
+KONSOL HATASI: 0
+
+>>> DEĞİŞMEZLİK: ✅ GEÇTİ (hash eşleşti: 51fa02b6e0a8194b)

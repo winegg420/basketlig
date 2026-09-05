@@ -1,0 +1,35 @@
+PAS ANALİZİ — iz-f46-oam2.json · 80 pas · canlı top aynı takım 53
+  GERİ PAS (> 2 m potadan uzaklaşan, canlı top): 7  (13.2%)
+     bağlam: miss3/set:3 · score2/geçiş:1 · score3/set:1 · miss2/set:1 · reb/set:1
+     kim→kime: HUC/SF→HUC/PG:3 · HUC/PG→HUC/SF:1 · HUC/PF→HUC/SG:1 · HUC/C→HUC/PG:1 · HUC/SF→HUC/PF:1
+     19.316s miss3/set HUC/SF→HUC/PG 6.5 m, potadan +5.6 m, önce held
+     111.327s miss3/set HUC/PG→HUC/SF 6.9 m, potadan +3.4 m, önce held
+     214.021s miss3/set HUC/PF→HUC/SG 5.7 m, potadan +5.6 m, önce held
+     223.501s score2 HUC/C→HUC/PG 6.8 m, potadan +6.1 m, önce held
+     255.94s score3/set HUC/SF→HUC/PG 4.1 m, potadan +4.1 m, önce held
+     271.99s miss2/set HUC/SF→HUC/PG 6.8 m, potadan +4.3 m, önce held
+     277.1s reb/set HUC/SF→HUC/PF 7.2 m, potadan +2.1 m, önce held
+  RAKİBE PAS (> 3 m, veren ≠ alan takımı): 0
+  SOKMA (çizgi dışı izinli oyuncunun pası): 16 · saha İÇİNDEN: 1
+     ✗ 65.616s score2 HUC/PG→HUC/SF veren (838,259) İÇERİDE, 7.4 m
+  SAYI SONRASI POZİSYON: 19 · ilk pas çizgi dışından: 12 · içeriden: 3 · pas yok/geç: 4
+     ✓ 15.439s miss3 HUC/SF→HUC/SG veren (46,229) DIŞARIDA 7.9 m
+     ✓ 28.644s score2 HUC/SF→HUC/PG veren (897,293) DIŞARIDA 6.7 m
+     ✗ 35.033s free ilk 6 sn pas yok
+     ✓ 54.579s foul HUC/C→HUC/PG veren (90,483) DIŞARIDA 4.6 m
+     ✗ 65.616s foul HUC/PG→HUC/SF veren (838,259) İÇERİDE 7.4 m
+     ✓ 79.598s score2 HUC/C→HUC/SG veren (30,292) DIŞARIDA 10.1 m
+     ✓ 87.81s score2 HUC/PF→HUC/PG veren (896,279) DIŞARIDA 6.1 m
+     ✓ 100.974s miss3 HUC/PF→HUC/PG veren (31,291) DIŞARIDA 6.6 m
+     ✓ 121.895s miss3 HUC/SG→HUC/PG veren (46,226) DIŞARIDA 6.5 m
+     ✗ 170.429s free ilk 6 sn pas yok
+     ✓ 184.242s score2 HUC/PF→HUC/SG veren (30,226) DIŞARIDA 6.5 m
+     ✗ 192.092s steal ilk 6 sn pas yok
+     ✗ 204.236s steal ilk 6 sn pas yok
+     ✓ 226.065s foul HUC/C→HUC/SG veren (98,18) DIŞARIDA 5.3 m
+     ✓ 244.829s score2 HUC/PF→HUC/PF veren (42,202) DIŞARIDA 7.1 m
+     ✗ 252.254s score3 HUC/SG→HUC/SF veren (373,373) İÇERİDE 8.3 m
+     ✗ 260.532s score2 HUC/PF→HUC/PF veren (567,360) İÇERİDE 7.7 m
+     ✓ 268.709s miss2 HUC/PG→HUC/SG veren (909,210) DIŞARIDA 10.6 m
+     ✓ 295.846s miss3 HUC/PF→HUC/PF veren (44,295) DIŞARIDA 6.2 m
+DONE

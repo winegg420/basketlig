@@ -1,0 +1,35 @@
+Maç izleniyor: 240 sn · izleme hızı 3×…
+
+========================================================================
+SAHA DİZİLİMİ ÖLÇÜMÜ — 1812 kare (171 set fazı · %9) · seed=987654321
+========================================================================
+  ✓ set hücumunda ortalama ikili mesafe              7.64 m   hedef ≥ 5,8 m
+  ✓ en yakın ikili (top sahibi hariç)                4.09 m   hedef ≥ 3,5 m
+  ✓ hücumun yayılımı / yarı saha (kutu)               %31.0   hedef ≥ %30
+  ✗ orta üçte birdeki hücumcu oranı                   %20.9   hedef < %20
+  ✗ boyada ≥1 hücumcu olan kare oranı                 %59.1   hedef ≥ %60
+  ✓ topu tutana en yakın savunmacı                   1.62 m   hedef < 1,8 m
+  ✓ savunmacının adamına ortalama uzaklığı           2.38 m   hedef < 3 m
+  ✓ yerine oturmuş ama adamı > 5 m uzakta              %0.0   hedef %0
+  ✗ savunmacı adamı ile pota arasında                 %78.1   hedef ≥ %85
+  ✗ hücumun saldırdığı potaya ortalama uzaklığı       8.16 m   hedef ≤ 7 m
+
+  OTURMUŞ set kareleri (dizilim kurulduktan ≥1,2 sn sonra · 30 kare):
+    ikili ort 9.13 m · en yakın 5.11 m · alan %39.4 · boyada %93 · markaj 1.61 m · >5 m savunmacı %0.0
+
+  SÜZÜLMEMİŞ — top ön sahadayken geçen TÜM kareler (990 kare · geçiş dahil):
+    ✓ set hücumunda ortalama ikili mesafe              7.21 m   hedef ≥ 5,8 m
+    ✓ en yakın ikili (top sahibi hariç)                3.58 m   hedef ≥ 3,5 m
+    ✗ hücumun yayılımı / yarı saha (kutu)               %29.7   hedef ≥ %30
+    ✓ orta üçte birdeki hücumcu oranı                   %19.3   hedef < %20
+    ✓ boyada ≥1 hücumcu olan kare oranı                 %74.0   hedef ≥ %60
+    ⋯ topu tutana en yakın savunmacı                   2.26 m   (geçişte savunma toparlanıyor — bilgi)
+    ⋯ savunmacının adamına ortalama uzaklığı           3.27 m   (geçişte savunma toparlanıyor — bilgi)
+    ⋯ yerine oturmuş ama adamı > 5 m uzakta             %10.8   (geçişte savunma toparlanıyor — bilgi)
+    ⋯ savunmacı adamı ile pota arasında                 %66.8   (geçişte savunma toparlanıyor — bilgi)
+    ✓ hücumun saldırdığı potaya ortalama uzaklığı       6.59 m   hedef ≤ 7 m
+
+  bilgi: dışbükey zarf %19.7 · hücum x ortalaması 373 · saldırılan pota x 352 (saha 0-940)
+  konsol hatası: 0
+========================================================================
+✗ 5 hedef düştü

@@ -1,0 +1,51 @@
+PAS ANALİZİ — iz-f46-son.json · 133 pas · canlı top aynı takım 93
+  GERİ PAS (> 2 m potadan uzaklaşan, canlı top): 18  (19.4%)
+     bağlam: miss3/set:7 · score3/set:5 · miss2/set:3 · score2/geçiş:1 · reb/set:1 · score3/geçiş:1
+     kim→kime: HUC/PF→HUC/SG:4 · HUC/PG→HUC/SG:2 · HUC/PG→HUC/PF:2 · HUC/C→HUC/PG:2 · HUC/SF→HUC/PG:2 · HUC/C→HUC/SG:2 · HUC/PG→HUC/SF:1 · HUC/SG→HUC/C:1
+     26.258s score3/set HUC/PG→HUC/SG 6.3 m, potadan +6.3 m, önce held
+     28.077s score3/set HUC/PG→HUC/PF 6.6 m, potadan +4.2 m, önce held
+     114.099s miss3/set HUC/PG→HUC/SF 7.2 m, potadan +4.2 m, önce held
+     128.961s miss3/set HUC/PF→HUC/SG 8.2 m, potadan +5.4 m, önce held
+     142.681s miss2/set HUC/PG→HUC/PF 4.5 m, potadan +3.8 m, önce held
+     219.078s miss3/set HUC/PF→HUC/SG 8.5 m, potadan +5.7 m, önce held
+     228.911s score2 HUC/C→HUC/PG 5.6 m, potadan +4.8 m, önce held
+     263.255s score3/set HUC/SF→HUC/PG 6.7 m, potadan +5.3 m, önce held
+     280.287s miss2/set HUC/C→HUC/PG 6.2 m, potadan +3.7 m, önce held
+     301.721s score3/set HUC/C→HUC/SG 5.6 m, potadan +5.1 m, önce held
+     309.092s miss3/set HUC/C→HUC/SG 6.1 m, potadan +4.1 m, önce held
+     338.29s miss3/set HUC/PF→HUC/SG 4.1 m, potadan +4.1 m, önce held
+     403.758s miss2/set HUC/SG→HUC/C 9 m, potadan +4 m, önce held
+     439.243s reb/set HUC/PF→HUC/SF 6.9 m, potadan +3.6 m, önce held
+     441.028s score3 HUC/SF→HUC/PG 3.1 m, potadan +3.1 m, önce held
+     443.045s score3/set HUC/PF→HUC/SG 6.1 m, potadan +4.9 m, önce held
+     454.924s miss3/set HUC/PG→HUC/SG 3.4 m, potadan +2.7 m, önce held
+     456.759s miss3/set HUC/SF→HUC/SF 7.9 m, potadan +5.1 m, önce held
+  RAKİBE PAS (> 3 m, veren ≠ alan takımı): 0
+  SOKMA (çizgi dışı izinli oyuncunun pası): 26 · saha İÇİNDEN: 0
+  SAYI SONRASI POZİSYON: 26 · ilk pas çizgi dışından: 20 · içeriden: 2 · pas yok/geç: 4
+     ✓ 16.056s miss3 HUC/PF→HUC/SG veren (45,271) DIŞARIDA 5.7 m
+     ✗ 31.444s score2 HUC/PG→HUC/SF veren (340,347) İÇERİDE 7.4 m
+     ✗ 37.73s free ilk 6 sn pas yok
+     ✓ 57.284s foul HUC/C→HUC/SF veren (56,297) DIŞARIDA 8.3 m
+     ✓ 68.316s foul HUC/SG→HUC/PG veren (842,18) DIŞARIDA 5.3 m
+     ✓ 82.287s score2 HUC/C→HUC/SG veren (30,292) DIŞARIDA 10.9 m
+     ✓ 90.5s score2 HUC/PF→HUC/PG veren (897,278) DIŞARIDA 6.9 m
+     ✓ 103.67s miss3 HUC/PF→HUC/PG veren (30,291) DIŞARIDA 6.7 m
+     ✓ 124.831s miss3 HUC/SG→HUC/PG veren (42,288) DIŞARIDA 6.4 m
+     ✗ 173.249s free ilk 6 sn pas yok
+     ✓ 187.57s score2 HUC/PF→HUC/SG veren (30,277) DIŞARIDA 6.6 m
+     ✗ 195.82s steal ilk 6 sn pas yok
+     ✗ 209.209s steal ilk 6 sn pas yok
+     ✓ 233.517s foul HUC/C→HUC/PF veren (55,291) DIŞARIDA 8.7 m
+     ✗ 252.054s score2 HUC/SG→HUC/PF veren (588,342) İÇERİDE 6.5 m
+     ✓ 259.526s score3 HUC/SF→HUC/SG veren (896,285) DIŞARIDA 8.8 m
+     ✓ 268.001s score2 HUC/C→HUC/SG veren (31,188) DIŞARIDA 10.9 m
+     ✓ 277.036s miss2 HUC/PG→HUC/SG veren (896,204) DIŞARIDA 7.6 m
+     ✓ 305.102s miss3 HUC/C→HUC/PF veren (41,309) DIŞARIDA 6.6 m
+     ✓ 315.934s steal HUC/SF→HUC/PG veren (897,295) DIŞARIDA 5.4 m
+     ✓ 334.72s miss3 HUC/C→HUC/SG veren (46,275) DIŞARIDA 11.2 m
+     ✓ 371.664s score2 HUC/SF→HUC/PG veren (910,224) DIŞARIDA 7.1 m
+     ✓ 379.277s ihlal24 HUC/PF→HUC/PF veren (32,210) DIŞARIDA 10.6 m
+     ✓ 398.481s miss2 HUC/PF→HUC/PG veren (31,191) DIŞARIDA 7.1 m
+     ✓ 431.046s miss2 HUC/SF→HUC/PG veren (910,179) DIŞARIDA 7.1 m
+     ✓ 445.829s steal HUC/SF→HUC/PG veren (94,18) DIŞARIDA 8.3 m

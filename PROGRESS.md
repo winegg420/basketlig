@@ -7899,3 +7899,196 @@ dokunur, top takım arkadaşına iner (1,6 sn). Sayı sonrası: sokucu topu yerd
 durur; pas 5-7 m, oyun kurucu topu SÜREREK çıkarır — 18-26 m'lik taç pası yok. Serbest atış:
 top öbür potada kalmışsa en yakın oyuncu alıp atıcıya verir; atıcı çizgide topla bekler,
 dip çizgiden 25 m'lik "atış" yok.
+
+
+---
+
+## 45. oturum — FAZ 45: KULLANICI BİLDİRİMİ "GERİ PAS · ÇEMBER ALTINDAN SOKMA" (2026-09-05)
+
+Kullanıcı: "Geri pas atıyorlar; kenara çıkmadan çember altından oyuna top sokuyorlar; bu tarz
+bir sürü hata var." Önce ölçüldü (`tools/pas-analiz.js`, yeni), sonra düzeltildi.
+
+### ÖLÇÜM — FAZ 44'ÜN KAPISI KÖRDÜ
+
+`iz-kaydet` FAZ 44 bölümü sokmayı yalnız topun ÇİZGİ DIŞINDA olduğu epizotlarda sayıyordu;
+"sokucu hiç çıkmadıysa" görünmüyordu. `pas-analiz` her sayı-sonrası pozisyonun ilk pasını
+verenin konumuyla listeler:
+
+| kayıt | sayı sonrası pozisyon | ilk pas çizgi DIŞINDAN | İÇERİDEN (pota dibi) | geri pas (>2 m, canlı top) |
+|---|---|---|---|---|
+| FAZ 43 (`iz-f43-son`, canlıdaki kod) | 24 | **2** | **22** | 12/70 (%17) |
+| FAZ 44 (`iz-f44-ft`) | 24 | 5 | 18 | 7/67 (%10) |
+
+Kök neden: bütün sokma dallarındaki `bekle` yalnız "top sokucunun elinde mi" diye bakıyordu;
+sokucu topu potanın dibinde yerden alır almaz `_inboundPass` çalışıyor, çizgiye hiç
+çıkmıyordu. Geri paslar: hücum ribaundu sonrası uzunun çevreye açtığı pas (gerçekte var),
+çeyrek sonunda topun kenara taşınması (ölü top) ve geçişte 14 m sınırlayıcının yön bakmadan
+en yakın taşıyıcıyı seçmesi. Ayrıca çalma anı: sokma pası çalınınca kaybeden oyuncu topu
+14,4 m öteden doğrudan HIRSIZA "paslıyordu" (216,8 s).
+
+### YAPILAN (`js/match-engine.js`)
+
+1. `_sokmayaHazir(inb,spot)`: sokma pası ancak sokucu çizgi dışındaki noktasının 16 px'ine
+   varınca atılır — sayı sonrası, faul, ihlal ve çeyrek başı dallarında (`max` 2,4 sn).
+2. `_pasHedefSinirla`: hücum edilen potaya verenden daha yakın (≤ 0,7 m geride) taşıyıcı
+   önce; yoksa en yakın taşıyıcı.
+3. Çalma = elden alma (`_hirsizAl`): hırsız topu tutana koşar (≤ 1,6 sn, markaj biter),
+   1,1 m'ye gelince top elden çıkıp kısa mesafe ona doğru fırlar; top hırsıza PASLANMAZ,
+   uzaktaki hırsıza doğru 14 m yuvarlanmaz. Olay bütçesi yaklaşma süresi kadar uzatıldı.
+4. Sayı sonrası sokucu topu GERİ ÇAĞRILI takiple alır (`_cizgiye`): olay sınırında
+   `_flushPending` takibi siliyor, top yerde kalıyor, bekçi (`_ballKurtar`) EN YAKIN oyuncuyu
+   geri çağrısız yolluyordu — sokucu topu alınca hedefi topun yeri kalıyor, çizgiye hiç
+   çıkmıyordu (iz: hedefe uzaklık 18 → 0, hedef = pota dibi). Bekçi de bekleyen sokma varsa
+   topu sokucuya verip çizgiye yollar; rakibin topu alıp PG'ye 7-8 m "pas" verdiği vaka biter.
+5. Ölü top sokucusu (faul/ihlal) top serbestse TOPA en yakın oyuncudur (eskiden noktaya en
+   yakın, 250 px öteden koşuyordu); bekleme üst sınırı 3,2 sn.
+6. Top RAKİBİN elindeyken (kesilen serbest atış dizisi) hücumun PG'sine pas atılmaz: top
+   bırakılır, PG alır.
+7. **Bayat kulvar ara noktası (`_wp`)** — en sinsi kusur: geçiş dizilimi kanatlara `_wp`
+   yazar, hareket döngüsü `_wp`yi hedefin ÜSTÜNE uygular; sokucu `_oob` olduğu için dizilim
+   kodu ona dokunmuyor, eski `_wp` kalıyor ve topu alınca hedefi (103,498) dururken sahanın
+   öbür ucuna (x 128 → 706, 3 sn, topla) koşuyordu. Faul dalındaki 3-4 sn'lik "topla içeri
+   yürüme" vakalarının ve C/PF'nin topla orta çizgi geçişlerinin kaynağı buydu.
+   `_hedefAta` artık `_wp`yi düşürür (geçiş dizilimi `_wp`yi ondan SONRA yazar); sokucunun
+   doğrudan yazılan bütün hedeflerinde `_wp=null`.
+8. Gecikmeli pas (`_pasSonra`) top UÇARAK gelince silinmez (`_ballHold` yalnız gerçek el
+   değişiminde düşürür): serbest atış toplayıcısı topu tutup kalıyor, dizi bitmiyor, sonraki
+   pozisyonda rakip elindeki topu PG'ye "pasladı" görülüyordu (55,9 s).
+
+### ÖLÇÜM (470 sn, aynı tohum, `pas-analiz` + `iz-kaydet`)
+
+| ölçü | FAZ 43 (canlı) | FAZ 44 | FAZ 45 |
+|---|---|---|---|
+| sayı sonrası ilk pas çizgi DIŞINDAN | 2/24 | 5/24 | **17/21** (+3 çalınan sokma: pas yok ✓, 1 içeriden) |
+| çizgi dışı izinli oyuncunun SAHA İÇİNDEN pası | 25/33 | 21/26 | **0/23** |
+| rakibe pas (canlı top) | — | 1 | **0** |
+| geri pas > 2 m (canlı top) | 12/70 %17 | 7/67 %10 | 6/62 %9,7 (5'i set içi açma/çevirme) |
+| sokma epizodu (çizgi dışı) · ihlal | 8 · 7 | 8 · 0 | **25 · 2** (faul yakın=2 · çeyrek başı karşı=9) |
+| sahipsiz epizot toplam · 1 sn üstü | 2 üstü | 0,9 sn · 0 | **1,4 sn · 0** |
+| top tepe hız · ışınlanma | 22,7 · 36 | 21,0 · 1 | 20,1 · 2 (pass, jitter sınıfı) |
+| pas > 15,9 m | %3,4 | %0,9 | %2 (2/99) |
+| PG/SG/SF ile yarı saha geçişi | %91 | %91 | %89 |
+| hava atışı kapıları | — | 5/5 | 5/5 |
+| held orta çizgi geçişi / pozisyon (gecis-analiz) | %71 | %73 | %69 |
+
+
+---
+
+## 46. oturum — FAZ 46: CANLI SAHNE YENİDEN YAZIMI · OAM (2026-09-05)
+
+Kullanıcı: "Yeniden yaz. Planı çıkar, baştan sona uygula, commit push yap." Plan:
+`PLAN-CANLI-SAHNE.md`. Teşhis (kullanıcıya verilen cevap): sahne, motorun geometrisiz olay
+listesini oynayan bir KUKLA katmanıydı; altı ayrı mekanizma aynı jetonun hedefini yazıyor,
+paslar anlatımdaki oyuncuya topu ulaştırmak için atılıyor, boş adam görülmüyordu.
+
+### MİMARİ — `js/sahne-oam.js` (Oyun Akışı Makinesi)
+
+- **Tek beyin, tek hedef.** `animateShotPossession` → `oamSut`: pozisyon kurulur (şutör,
+  oyun kurucu, çıkış pası, asist veren, şema, hızlı hücum, ikinci şans, bekleyen sokma);
+  `_simTick` sarmalanır → `oamTick` her karede faz makinesini yürütür ve `oamHedefler` on
+  oyuncuya hedef yazar; eski tick hareket fiziğini (hız merdiveni, ivme/dönüş sınırı,
+  çarpışma, top) sürdürür. OAM aktifken eski hedef yazıcıları kapalı: `canliSet` salınımı
+  (sarmalayıcı eski tick'e false gösterir), `defTrack`, çıkış-pası kapısı (`cikisSonra=1e9`),
+  `_wp` (`oamHedef` her yazımda düşürür).
+- **Fazlar.** `sokma` (bekleyen sokucu topu alır, çizgi dışındaki noktasına yürür, alıcı
+  5-6 m'de, savunma orta çizgide; pas ancak sokucu noktasındayken) → `gecis` (topu tutan
+  kulvarına sürer, kanatlar sprint, uzunlar arkadan; uzun topu 0,15 sn içinde öndeki guard'a
+  çıkarır; savunma adam–pota hattında geri koşar) → `set` (şema + pas zinciri) → `sut`
+  (`oamAtes`: eski `fire` sözleşmesi — ön parça elden çıkarken, sonuç çemberde; blok; AND-1;
+  ribaunt bloğu; sayı sonrası sokma kurulumu; şut tipi yörüngesi).
+- **Set.** Beş nokta `SET_*` şablonundan; şutörün noktası motorun şut noktası (en yakın
+  şablon noktası takas edilir); zincirdeki pasçılar köşede durmaz. Şema: perde üç aşama
+  (`S._perde` kurulum · sıyırma · devrilme/roll-pop), kesme (şutör içerideyse o keser),
+  post (`_sirtDonuk`), açılma. Zayıf taraf değişimi (iki çevre oyuncusu yer değiştirir),
+  pas-ve-hareket (pasçı noktasını pota çevresinde ±25° kaydırır). Noktasındaki oyuncu
+  küçük dairede kıpırdar (donma yok).
+- **Pas kararı.** Zincir: oyun kurucu → (ara) → asist veren → şutör. Pas ancak alıcı
+  noktasında ve BOŞSA (en yakın savunmacı > 1,5 m; 0,7 sn sonra baskı altında da olur);
+  `oamPasOlur`: geri değil (potadan 2 m+ uzaklaşan; içeriden açma ve çevre çevirmesi
+  serbest), boya içinden geçmiyor (giriş pası hariç), 10 m'den uzun değil; olmuyorsa
+  `oamKopru` ara oyuncu. Bütçe dolunca (`kalan ≤ 0,9 sn`) pas şutöre zorlanır.
+- **Savunma.** Adam adama (rol sırası eşleşmesi): adam ile pota arasında, topa uzaklığa
+  göre yardım mesafesi (`_defGap`), top içerideyken zayıf taraf boyaya sarkar, topu tutana
+  38 px, şutta kapayan sıçrar; top arka sahadayken geri koşu (adam–pota hattı %45).
+- **Zaman.** Bütçe = sokma + geçiş (gerçek mesafe/hız) + set (şemaya göre 1,5-3,0 sn +
+  pas başına 0,35) + 1,4; set gerçekten başlayınca şut anı `max(tFire, tSet+setDur)`
+  (`oamSetBasla`). `_animRez=1800`.
+- **Determinizm.** Yalnız `_sr`/`_srand`. `band.js` hash değişmez.
+- `OAM_ACIK=false` eski yolu geri getirir; ölü top törenleri eski koreografide.
+
+### ARA ÖLÇÜMLER (aynı tohum)
+
+| ölçü | FAZ 45 (470 sn) | OAM v1 (240 sn) | OAM v2 (300 sn) |
+|---|---|---|---|
+| sayı sonrası ilk pas çizgi dışından / içeriden | 17 / 1 | 8 / 3* | 12 / 1* |
+| çizgi dışı izinli oyuncunun içeriden pası | 0/23 | 2/14* | 1/16* (eski faul dalı) |
+| rakibe pas | 0 | 0 | 0 |
+| geri pas > 2 m (canlı top) | 6/62 %9,7 | 5/48 %10,4 | 7/53 %13,2 (5'i set içi açma) |
+| PG/SG/SF ile yarı saha geçişi | %89 | %95 | %81 (5 PF: ribaund sonrası eski geçiş dizilimi, kapı 1,2 sn → 0,6) |
+| held orta çizgi geçişi / pozisyon | %69 | %77 | %83 |
+| oyuncu ort. hız (maç) | 1,97 | 1,69 | **1,83** (bant 1,8-2,6) |
+| sokma epizodu · ihlal | 25 · 2 | 14 · 0 | 22 · 0 |
+| ışınlanma (>25 m/sn kare) | 2 | 27 | 19 → pas hızı 19 → 13 m/sn (kare titreşimi) |
+| sahipsiz 1 sn üstü | 0 | 1 | 1 |
+
+\* `pas-analiz` serbest atış karesi ve 2 m altı el değişimini FAZ 46'da ayıkladı.
+Kalan "içeriden" vakalar eski faul dalının sokması (OAM kapsamı dışı) ve çalınan sokmalar.
+
+### SON ÖLÇÜM (470 sn, `iz-f46-son2`, aynı tohum) — FAZ 43 (canlıdaki eski kod) ile
+
+| ölçü | FAZ 43 | FAZ 46 OAM |
+|---|---|---|
+| sayı sonrası ilk pas çizgi DIŞINDAN / içeriden (pas-analiz) | 2 / 22 | **17 / 1** (+4 çalınan sokma, +4 hakem topu) |
+| çizgi dışı izinli oyuncunun saha içinden pası | 25/33 | **1/24** (eski faul dalı el değişimi) |
+| rakibe pas (canlı top) | — | **0** |
+| geri pas > 2 m (içeriden açma ve çevirme hariç) | %11,4 | **%1,1** |
+| PG/SG/SF ile yarı saha geçişi | %91 | %92 |
+| sokma epizodu (çizgi dışı) · ihlal | 8 · 7 | **32 · 1** |
+| yakın takım arkadaşı / karşı yarıda (sokma anı) | 1,0 / 7,3 | **3,5 / 2,0** |
+| ışınlanma (>25 m/sn kare) · top tepe hız | 36 · 22,7 | 4 · 20,4 |
+| sahipsiz 1 sn üstü epizot | 2 | 0 |
+| oyuncu ort. hız (maç) | 2,07 | 1,82 (bant 1,8-2,6) |
+| hava atışı kapıları | 0/5 | 5/5 |
+| konsol hatası | 0 | 0 |
+
+### KAPILAR (son kodla, üç zincir)
+
+**GEÇEN:** `visual-check` (masaüstü + mobil, 0 hata) · `sunum-check` zincir 1 **tümü**
+(M9 8/8 · M12 · F14-7 · F25-1..6b · F26 · F28-1); zincir 2'de yalnız M9 8/11 (%73, örneklem
+"yetersiz" işaretli) · `faz11-check` **15/15** · `arka-plan-check` **6/6** · `realism-check`
+(ışınlanma 0 · kopuk 0 · senkron tam) · `hareket-check` tümü · `balon-check` 0/89 ·
+`band.js` **c19928475859c7ff** (değişmedi) · `measure.js` **51fa02b6e0a8194b** ✅ ·
+`sahne-check`: pass modu %13,4 ✓ · sahipsiz %0,30 ✓ · aynı anda koşan **4,79** ✓ (5,76 →
+5,29 → 4,79) · serbest atışta yerinde 10/10 ✓ · orta çizgi geçişi **%87** ✓ · PG/SG/SF %91 ✓.
+
+**DÜŞEN (açıkça):**
+1. `sahne-check` "top elde" %62 (≥ 65): pas payı %9,8 → %13,4 — daha çok top hareketi;
+   bilinçli. Serbest top payı %17,6 (ribaunt/sayı sonrası yerden alma, eski mekanik).
+2. `sahne-check` "şut anında yerinde hücumcu" 3,47/5 (≥ 4,25): 2,82 → 3,26 → 3,47 (şuttan
+   1,4 sn önce donma + takım oturana kadar ≤1,3 sn bekleme). Kesici/perde devrilmesi/
+   pas-ve-hareket ile sürekli hareket arasındaki takas (FAZ 40 ekindeki sınıf).
+3. `spacing-check` (set kareleri): potaya ortalama uzaklık 8,3 m (≤ 7) · ball-you-man %80
+   (≥ 85) · orta üçte bir %21 (< 20) · boyada %59 (≥ 60) · süzülmemiş yayılım %29 (≥ 30).
+   Geçen: ikili mesafe 7,6 m · en yakın ikili 4,1 m · markaj 1,62 m · >5 m savunmacı %0.
+   Şablon %7 içeri çekildi ve boyaya bir uzun kondu; şutörün 7-8 m'lik gerçek şut noktası
+   ve köşe noktaları ortalamayı dışarıda tutuyor. Bir sonraki tur: şut noktasına göre şablon
+   seçimi (üçlükte 4-dış-1-iç, içeride 5-dış değil).
+4. `sunum-check` M9 zincir 2'de 8/11 (kaçanlarda SF 2 · C 1) — örneklem 16/40.
+5. `i18n-scan` D: 1 özel ad (🇱🇻 Gunārs Lejiņš) — sahte pozitif.
+6. Eski ölü top dalı (faul sonrası kenar sokması → set dizilimine yürüme "sütun"u) OAM
+   kapsamı dışında kaldı; sonraki tur.
+
+### SÜRÜM · YAYIN
+
+`?v=82` (16 script; `js/sahne-oam.js` eklendi) · `sw.js SCRIPT_V='82'` + JS_FILES ·
+`surum-check --yaz`. Belgeler: `PLAN-CANLI-SAHNE.md`, bu oturum, CLAUDE.md (kod haritası
+satırı + kurallar).
+
+### KULLANICI CANLI MAÇI İZLEDİĞİNDE NE FARK GÖRECEK
+
+Sayı sonrası sokucu topu yerden alıp çizginin dışına çıkar, oyun kurucu 5-6 m'de alır ve
+SÜRER; savunma orta çizgide bekleyip geri koşar. Set: beş nokta yayılmış (ikili 7,6 m),
+boyada bir uzun, savunmacılar adamı ile pota arasında, topu tutana 1,6 m; toplar boş ve
+öndeki oyuncuya gider (geri pas %1), perde/kesme/post/açılma görülür, pasçı pas verip
+hareket eder; şutör motorun noktasında boşa çıkıp atar, savunmacısı kapamaya sıçrar.
+Çalma elden almadır; rakibe pas yok. Serbest atışta atıcı çizgide topla bekler.

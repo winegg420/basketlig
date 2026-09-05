@@ -1,0 +1,92 @@
+
+==============================================================================
+İZ ÖLÇÜMÜ — f45-son · 28158 kare · 470 sn · 80 pozisyon · seed=987654321 · rate=1
+==============================================================================
+  sahne→maç sıkıştırma      1 duvar sn = 1.495 maç sn
+
+  ── TOP ──                            ölçülen           hedef
+  en yüksek hız (100 ms)                20.1 m/sn    ≤ 22
+  en yüksek kare sıçraması              27.8 m/sn    ≤ 25
+  ışınlanma (>25 m/sn) olayı         2 (0.03/poz)    0
+     ışınlanma modları           {"pass":2}
+  pas olayı / 8-20 m/sn platosu         99 / 2118    korunmalı
+
+  ── OYUNCU ── (MAÇ ölçeği = sahne / 1.495)
+  ortalama hız              maç   1.97 m/sn    1,8 – 2,6   [sahne 2.95]
+  medyan / p90 / p99        maç 1.41 / 4.78 / 6.43                [sahne 2.11 / 7.15 / 9.61]
+  en yüksek                 maç   9.68 m/sn    ≤ 8,5       [sahne 14.48]
+  > 7,5 m/sn (maç) oranı                 0%    ≤ 1%
+  > 6,5 m/sn (maç) oranı               0.9%    ≤ 5%
+  < 0,5 m/sn — OLU TOP HARIC                12.6%    <= 12%      [n=230130]
+  canli top ortalama hizi   maç   2.11 m/sn    1,8 - 2,6
+     donma kovaları: HUC/set/yerinde/u0/held %11.7 · SAV/set/yerinde/u1/held %6.2 · HUC/top/set/yerinde/u0/held %6.0 · SAV/set/yerinde/u2/held %5.4 · SAV/gecis/uzak/u2/held %4.3 · SAV/gecis/yerinde/u0/held %3.9 · SAV/set/uzak/u2/held %3.7 · HUC/set/yerinde/u0/shot %3.5 · SAV/set/uzak/u1/held %3.1 · HUC/set/uzak/u1/held %2.8
+  < 0,5 m/sn (maç) oranı              20.2%    ≤ 12%       [sahne 16.7%]
+
+  ── YOL EĞRİLİĞİ ──
+  ortalama dönüş açısı (0,25 sn)            15.6°    (n=9286)
+  > 150° yön terslemesi (0,1 sn)       0.08/sn    <= 0,15/sn  [n=374]
+  terslemelerin medyan adımı            0.03 m    >= 0,5 m
+  > 90° keskin dönüş                98 (1.23/poz)    ≤ 2/poz
+  tam sahayı düz geçen jeton                    5    0
+     düz geçenler: 339.134s HUC/PF miss3→miss3 y292→42 | 95.781s HUC/PF score2→score2 y264→443 | 379.027s SAV/PF miss3→miss3 y42→144 | 371.05s HUC/C miss3→miss3 y285→265 | 355.092s HUC/SF ihlal→ihlal y458→78
+     ışınlanmalar: 22.553s pass/miss3 27.6 m/sn | 183.231s pass/reb 27.8 m/sn
+
+  ── FAZ 42-B: A4 · B · D · E ──
+  saha dışı oyuncu (_oob hariç)           0% kare    0    [maks 0 px · -]
+  sahipsiz top karesi                       0.31%    ≤ 2%   [tip: miss2:39 · free:36 · score2:11 · mod: loose:61 · held:25 · takip var/yok 47/39]
+  hücumcu ikili < 2 m (set, perde hariç)    2.46%    ≤ 5%   [set karesi 9026 · score3:97 · miss3:60 · score2:50]
+  set hücumunda arka sahada hücumcu    0.84% kare    0      [ort 1 oyuncu · miss2:76 · kim: SF/u2:75 · SF/u1:1]
+  gizli sekme karesi                            0    (C — 0 beklenir, kayıt ön planda)
+  anlatım dili (oyun: tr)        TR 84 · EN 0    EN = 0
+  öznesiz sonuç satırı                     0 / 51    0
+  nokta + küçük harf (balon)               0 / 84    0
+
+  ── FAZ 43: İŞ 1 · İŞ 2 · İŞ 4 · İŞ 8 ──
+  çember çıkışı (shot/rim → yer)               49    [doğrudan held/pass: 0 · pasla ele: 1 · ele geçmeyen: 0]
+     çıkış→ele en kısa süre              0.39 sn    ≥ 0,6 sn (her vaka)
+     alanın çıkış anı mesafesi           11.79 m    ≤ 2,5 m (her vaka)
+     İHLAL: 128.298s shot→loose miss3 ele=1.55s 5.16m SAV/SG | 136.827s rim→loose reb ele=2.62s 5.83m HUC/PG | 168.308s rim→loose miss2 ele=1.72s 3.78m SAV/SG | 181.245s rim→loose miss2 ele=0.67s 3.21m SAV/PF | 253.337s rim→loose reb ele=1.17s 7.76m HUC/C | 315.865s shot→loose miss2 ele=2.39s 11.79m HUC/PF | 323.076s rim→loose miss2 ele=2.62s 5.49m HUC/C | 345.027s rim→loose reb ele=0.83s 5.46m HUC/SF | 384.602s rim→loose reb ele=0.7s 2.59m HUC/PG | 391.197s rim→loose miss2 ele=0.39s(PAS)  
+  pas > 15,9 m oranı                    2% (2/99)    ≤ 4%   [sokma pası 23 · en uzun sokma 12.3 m]
+  pas > 20 m                                    0    ≤ 1 / maç
+     uzun paslar: 44.253s 17.5m held SAV/PF free | 380.697s 17.8m held HUC/C miss3
+  sahipsiz epizot                     11 (1.4 sn)    1 sn üstü = 0   [free/loose:0.6s · miss2/held:0.4s · miss2/loose:0.2s · score2/loose:0.2s]
+  yarı sahayı topla geçen PG/SG/SF    89% (32/36)    ≥ 90%   {"PG":16,"SG":12,"PF":4,"SF":4}
+     PF/C geçişleri: 183.365s PF tutma=0s reb | 278.692s PF tutma=1.15s score2 | 339.702s PF tutma=1.15s miss3 | 396.087s PF tutma=0s quarter_start
+
+  ── FAZ 44: HAVA ATIŞI · SOKMA YERLEŞİMİ ──
+  hava atışı: top idle süresi             0.13 sn    ≤ 0,3 sn   [toss t=0.13]
+     toss→tap / toss→kazanma       0.8 / 1.57 sn    kazanma 1,5–2,5 sn
+     top tepe yüksekliği                  5.05 m    ≥ 2 m
+     toss anında çemberde                      2    = 2 (iki takım)   [EV/C@0.68m · DEP/PG@0.68m]
+     saha dengesi (toss / en çok)        5-5 / 5    ≤ 8 tek yarıda   [en kalabalık t=0.038]
+     ✓ hava atışı kapıları
+  sokma epizodu (top çizgi dışı)     25 · ihlal 2    her epizot: takım arkadaşı(15 m) ≥ 3 · karşı yarı ≤ 4 · ilk pas ≤ 14 m
+     ortalama: yakın takım arkadaşı 3.48 · yakın herkes 6.84/9 · karşı yarıda 2.32/9
+     ✓ t=5.511s foul HUC/PG süre=0.55s yakın=4(min 4, herkes 9) karşı=0 ilkPas=7.7 m → pass
+     ✓ t=16.862s miss3 HUC/PF süre=0.58s yakın=4(min 4, herkes 7) karşı=2 ilkPas=6 m → pass
+     ✓ t=36.424s score2 HUC/PG süre=0.63s yakın=4(min 4, herkes 8) karşı=2 ilkPas=5.6 m → pass
+     ✓ t=67.338s foul HUC/C süre=0.55s yakın=3(min 3, herkes 5) karşı=2 ilkPas=5.3 m → pass
+     ✓ t=80.859s foul HUC/SF süre=0.5s yakın=4(min 4, herkes 7) karşı=2 ilkPas=4.1 m → pass
+     ✓ t=95.198s score2 HUC/PG süre=3.04s yakın=3(min 3, herkes 6) karşı=3 ilkPas=7.1 m → pass
+     ✓ t=105.313s score2 HUC/PG süre=0.65s yakın=4(min 4, herkes 7) karşı=2 ilkPas=6.9 m → pass
+     ✓ t=121.353s miss3 HUC/PF süre=2.47s yakın=3(min 3, herkes 6) karşı=3 ilkPas=6.1 m → pass
+     ✓ t=148.345s miss3 HUC/PF süre=0.52s yakın=4(min 4, herkes 8) karşı=2 ilkPas=5.7 m → pass
+     ✓ t=171.947s hucumFaulu HUC/SG süre=0.72s yakın=3(min 3, herkes 8) karşı=0 ilkPas=12.3 m → pass
+     ✓ t=198.354s free HUC/SG süre=2.34s yakın=3(min 3, herkes 6) karşı=3 ilkPas=- → held
+     ✓ t=212.775s score2 HUC/C süre=2.67s yakın=3(min 3, herkes 6) karşı=3 ilkPas=6.1 m → pass
+     ✗ t=259.763s foul HUC/C süre=0.5s yakın=2(min 2, herkes 5) karşı=3 ilkPas=3.8 m → pass
+     ✓ t=277.207s score2 HUC/PF süre=0.55s yakın=4(min 4, herkes 7) karşı=2 ilkPas=6.1 m → pass
+     ✓ t=287.021s score3 HUC/SG süre=0.6s yakın=4(min 4, herkes 8) karşı=1 ilkPas=5.4 m → pass
+     ✓ t=298.221s score2 HUC/C süre=0.6s yakın=4(min 4, herkes 7) karşı=2 ilkPas=5.2 m → pass
+     ✓ t=308.688s miss2 HUC/C süre=0.58s yakın=4(min 4, herkes 7) karşı=2 ilkPas=5.7 m → pass
+     ✓ t=338.2s miss3 HUC/PF süre=0.55s yakın=4(min 4, herkes 7) karşı=2 ilkPas=6.6 m → pass
+     ✓ t=355.007s ihlal HUC/SF süre=0.6s yakın=3(min 3, herkes 5) karşı=2 ilkPas=5 m → pass
+     ✓ t=371.299s miss3 HUC/C süre=0.53s yakın=4(min 4, herkes 7) karşı=2 ilkPas=6.5 m → pass
+     ✗ t=396.838s quarter_start HUC/PF süre=0.77s yakın=3(min 2, herkes 8) karşı=9 ilkPas=4 m → pass
+     ✓ t=410.743s score2 HUC/PF süre=3.27s yakın=3(min 3, herkes 6) karşı=3 ilkPas=6.2 m → pass
+     ✓ t=422.644s ihlal24 HUC/C süre=0.52s yakın=4(min 4, herkes 9) karşı=0 ilkPas=10.5 m → pass
+     ✓ t=440.838s miss2 HUC/C süre=2.49s yakın=3(min 3, herkes 6) karşı=3 ilkPas=6.1 m → pass
+     ✓ t=470.032s free HUC/SF süre=2.92s yakın=3(min 3, herkes 6) karşı=3 ilkPas=- → -
+
+  konsol hatası: 0
+  iz: olcum\iz-f45-son.json

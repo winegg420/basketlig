@@ -136,7 +136,8 @@ async function main() {
               ((p._swayT || 0) > S.time) ? 1 : 0,               /* 8: salınım penceresi */
               +(p._nudgeOfs != null ? p._nudgeOfs : -99).toFixed(0), /* 9: sürüklenme ofseti */
               (p._nudgeN | 0),                                 /* 10: salınım atama sayacı */
-              (p._oob || p._oobDonus) ? 1 : 0                  /* 11: çizgi dışı izni + dönüş (A4 muafiyeti) */
+              (p._oob || p._oobDonus) ? 1 : 0,                 /* 11: çizgi dışı izni + dönüş (A4 muafiyeti) */
+              +(p.tx || 0).toFixed(0), +(p.ty || 0).toFixed(0)  /* 12-13 (FAZ 45): hedef — "nereye gidiyor" teşhisi */
             ])
           });
         }

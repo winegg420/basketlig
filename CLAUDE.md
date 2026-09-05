@@ -6,7 +6,7 @@ Bu dosya, bu depoda çalışan Claude Code oturumları için proje rehberidir. Y
 
 **Charazay 2.0**, Türkçe, tek dosyalık bir **basketbol menajerlik oyunu**dur. Oyuncu bir kulüp menajeri olarak takım kurar, kadro/taktik yönetir, canlı maç simülasyonu izler, transfer yapar, altyapı/arena/ekonomi yönetir ve lig + playoff sezonları oynar. Steam yayınına hazırlanıyor.
 
-- Ana oyun: **`charazay2.0.html`** (1484 satır — HTML gövdesi + CSS; JS artık `js/*.js` içinde, 15 `<script src>`).
+- Ana oyun: **`charazay2.0.html`** (HTML gövdesi + CSS; JS `js/*.js` içinde, 16 `<script src>` — FAZ 46'da `js/sahne-oam.js` eklendi).
 - Dil: arayüz ve tüm metinler **Türkçe**.
 
 ## Nasıl çalıştırılır?
@@ -71,6 +71,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/kontak-goruntu.js` | **Canlı sahayı GÖZLE izleme (FAZ 44)** — `node tools/kontak-goruntu.js <KÖK> <etiket> --secs=60 --adim=2`: sahayı 2 sn'de bir kaydeder, 15'lik kontak sayfaları (5×3, her karede olay·mod·taşıyıcı·SET/FT/INB etiketi) üretir (`olcum/goruntu/`). Sayılar yeşilken "basketbola benzemiyor" şikâyetinde ÖNCE bunu çalıştır ve kareleri kendin oku; `<KÖK>` olarak `git worktree` ile açılan HEAD kopyası verilirse aynı tohumda yan yana kıyas yapılır. |
 | `tools/dizilim-olc.js` | **Olay indeksine göre dizilim yayılımı (FAZ 44)** — 100 ms'de bir ağırlık merkezine ortalama uzaklık, en yakın çift, 22 px altı çakışan çift, saha dışı jeton; olay başına özet. Duvar saatine bağlı ekran anları koşular arasında kıyaslanamaz — bu araç AYNI OLAYDA kıyaslar. |
 | `tools/gecis-analiz.js` | **Pozisyon başına orta çizgi geçişi (FAZ 44)** — `iz-kaydet` kaydını okur; her pozisyonda topun orta çizgiyi hangi modda (held/pass/shot/hiç) geçtiğini listeler. `sahne-check`in "geçiş / pozisyon değişimi" kapısı çift sayar (HEAD %111); davranış yargısı için bunu kullan. |
+| `tools/pas-analiz.js` | **Pas yönü + sokma yeri (FAZ 45)** — `iz-kaydet` kaydından: canlı topta potadan uzaklaşan (geri) paslar bağlam ve kim→kime ile; rakibe giden pas; çizgi dışı izinli oyuncunun SAHA İÇİNDEN attığı pas; **her sayı-sonrası pozisyonun ilk pası** verenin konumuyla (dışarıda/içeride). FAZ 44'ün sokma kapısı yalnız çizgi dışındaki epizotları saydığı için "hiç çıkmayan sokucu"yu göremedi (22/24); payda olayın kendisidir. Sokma/geçiş/çalma koreografisi değişince çalıştır. |
 | `tools/balon-check.js` | **Anlatım balonu denetçisi (FAZ 40)** — RENDER EDİLMİŞ balonu okur. `anlatim-check` ön parça ile sonuç parçasını AYRI taradığı için birleşme kusurlarını (nokta + küçük harf, çift noktalama) GÖREMEZ. Anlatım birleştirme mantığı değişince çalıştır. |
 | `tools/sahne-kapsam-check.js` | **Sahne kapsamı (FAZ 40 · B5+B6)** — motorun ürettiği her olay türünün `movePlayersForEvent` karşılığı var mı (tür adıyla YA DA `shots[].kind===ft` alanıyla), ve koreografi süresinin ALT SINIR sözleşmesi (`delay=max(simMs,dtMs)`) duruyor mu. Tarayıcısız. Yeni olay türü eklerken çalıştır. |
 | `tools/geometri-check.js` | **Saha çizgisi geometrisi (FAZ 14)** — 3 sayı yayı, köşe düzlükleri, boya, çember/pano ölçüleri, kesişme ve "sahada karşılığı olmayan çizim". **Nitelik okumaz**, `getPointAtLength`/`getBBox` ile ÇİZİLEN eğriyi ölçer. Saha SVG'si değişince çalıştır. |
@@ -140,6 +141,7 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
 | `js/turkce-ek.js` | **Türkçe çekim eki** — `turkEk(ad,durum)` (ünlü uyumu + ünsüz benzeşmesi + kaynaştırma/zamir n'si), `turkEkUygula` (`%X{durum}` çözücü), `trKucuk`/`trBuyukIlk` (İ→i, I→ı). Saf fonksiyonlar; `match-engine.js`'ten ÖNCE yüklenir. |
 | `js/match-engine.js` | Maç motoru: `simulateMatch`/`buildMatchCtx` (sunucu sözleşmesi, `G`'siz) → `generateMatchEvents` → `runPossession` (tempo/odak/savunma stili/top yükleme/eşleştirme taktikleri), şut haritası/kutu skor render, `applyMatchResult`. **Canlı sunum v3** (27. oturum): rol tabanlı dizilim (`_assignRoles`, `SET_*`), üç fazlı pozisyon (sokma → `TRANS_*` geçiş → set), top durum makinesi (`_ballHold/_ballPass/_ballShoot/_ballLoose`), serbest top takibi (`_chase`), çizgi dışı sokma (`_inboundSetup`/`_clearOob`), anlatım senkronu (`movePlayersForEvent(ev,paint)`). |
 | `js/main.js` | `startMatch`/`stopMatch`/canlı oynatım, `toggleManualCoach`, antrenman + izci (`hireScout`) aksiyonları, transfer/gelen teklif (`showIncomingOfferModal`)/koç/arena aksiyonları, `showPage` (SPA, `analiz` dahil), `createTeam`, bildirim kuyruğu, `window.onload` bootstrap. |
+| `js/sahne-oam.js` | **Oyun Akışı Makinesi (FAZ 46)** — canlı topun tek beyni: `oamSut` (şutlu pozisyon kurulumu, `animateShotPossession` yerine), `oamTick` (faz makinesi: sokma → geçiş → set → şut; top hareketi kararları), `oamHedefler` (her karede her oyuncuya tek hedef: boşluk şablonu + şema + adam adama savunma), `oamAtes` (eski `fire` sözleşmesi: ön parça/sonuç senkronu, blok, AND-1, ribaunt bloğu, sayı sonrası sokma kurulumu). `match-engine.js`'ten SONRA, `main.js`'ten ÖNCE yüklenir; `animateShotPossession`/`_simTick`/`movePlayersForEvent` sarmalanır. |
 | — | **7. oturum sistemleri:** playoff serisi + sezon ödülleri + **başkan hedefi** (`match-prep.js`), transfer pazarlığı + **kişilikler** (`playerAcceptsOffer`), **izci ağı** + **draft** (`startDraft`, `match-prep.js`), **Analiz** sayfası. Detay `PROGRESS.md` 7. oturum. |
 
 ## Geliştirme kuralları
@@ -1296,3 +1298,78 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
 - **`taskkill //IM chrome.exe` KULLANMA (FAZ 44):** headless ölçümü durdurmak için tüm Chrome
   süreçleri öldürüldü; kullanıcının tarayıcısı da kapanmış olabilir. Zinciri durdurmak için
   komut satırı eşleşen (`kapilar|tools/`) süreçleri hedefle, tarayıcıyı Playwright kapatır.
+
+- **KAPI YALNIZ "OLAN"I SAYARSA "OLMAYAN"I GÖREMEZ (FAZ 45 — FAZ 44'ün kör noktası):** sokma
+  kapısı yalnız topun ÇİZGİ DIŞINDA olduğu epizotları ölçüyordu; 24 sayı-sonrası pozisyonun
+  17-22'sinde sokucu hiç çıkmıyor, pas potanın dibinden gidiyordu ve kapı 7/7 "geçti" diyordu.
+  Kullanıcı bunu tek bakışta gördü. Bir davranışı ölçerken paydayı OLAYIN KENDİSİNDEN al
+  (her sayı sonrası pozisyon), gözlenen alt kümeden değil. `tools/pas-analiz.js` böyle ölçer.
+- **OLAY SINIRINDA SİLİNEN TAKİBİ BEKÇİ GERİ ÇAĞRISIZ KURAR (FAZ 45, kök neden):**
+  `_flushPending` ölü/ölü olmayan ayrımıyla sokucunun takibini siliyor, top yerde kalıyor,
+  `_sahipsizTopTick` 0,6 sn sonra `_ballKurtar` ile EN YAKIN oyuncuyu `fn:null` ile yolluyor.
+  Sokucu topu alınca hedefi topun yeri (pota dibi) kalıyor ve çizgiye hiç çıkmıyor; bazen
+  topu RAKİP alıp hücumun PG'sine "pas" veriyordu. Bir olay dalı önceki olayın takibine
+  güveniyorsa, olay başında takibi KENDİ geri çağrısıyla yeniden kurmalı (`_chase(inb,_cizgiye)`);
+  `bekle` de yalnız "top elinde mi" değil "yerinde mi" diye bakmalı (`_sokmayaHazir`).
+- **ÇALMA ELDEN ALMADIR, TOP HIRSIZA PASLANMAZ (FAZ 45):** sokma pası çalınınca kaybeden
+  oyuncu topu 14,4 m öteden doğrudan hırsıza "paslıyordu"; canlı topta da top uzaktaki
+  hırsıza doğru yuvarlanıyordu. `_hirsizAl`: hırsız tutana koşar (≤ 1,6 sn, markaj biter),
+  1,1 m'de top elden çıkar ve kısa mesafe ona fırlar. Olay bütçesi yaklaşma süresi kadar uzar.
+- **GERİ PASIN ÇOĞU MEŞRU (FAZ 45 ölçümü):** > 2 m potadan uzaklaşan pasların çoğu hücum
+  ribaundu sonrası uzunun çevreye açması ve set çevirme pasıdır; ölü topta çeyrek sonu
+  taşıması da "pas" görünür. Yön kuralı yalnız GEÇİŞ pas seçicisine kondu (`_pasHedefSinirla`
+  önde olan taşıyıcıyı tercih eder). Set içi geri pası yasaklamak basketbolu bozar.
+- **BAYAT ARA NOKTA (`_wp`) HEDEFİ EZER — `_oob` OYUNCUYA DİZİLİM DOKUNMAZ (FAZ 45, en sinsi
+  kusur):** geçiş dizilimi kanatlara `_wp` yazar, hareket döngüsü `_wp`yi hedefin üstüne uygular
+  (`_tx=p._wp[0]`). Sokucu `_oob` olduğu için `_setFormation`/`_hedefAta` onu atlar; eski `_wp`
+  kalır ve topu alınca hedefi dip/yan çizgideyken sahanın ÖBÜR UCUNA topla koşar (iz: hedef
+  (103,498), gidiş x 128 → 706, 3 sn). Faul dalındaki "3-4 sn topla içeri yürüme" ve C/PF'nin
+  topla orta çizgi geçişlerinin kaynağı buydu. `_hedefAta` artık `_wp=null` yapar (geçiş
+  dizilimi `_wp`yi ondan SONRA yazar); `p.tx` doğrudan yazan her yer `_wp=null` da yazmalı.
+  Teşhis: `iz-kaydet` artık `p[12..13]` = hedef kaydeder; "hedefe uzaklık artıyor" = ara nokta.
+- **`_ballHold` GECİKMELİ PASI YALNIZ GERÇEK EL DEĞİŞİMİNDE DÜŞÜRÜR (FAZ 45):** FAZ 43'ün
+  "el değiştirince `_pasSonra` düşer" kuralı, topun UÇARAK gelmesini (önceki taşıyıcı yok) de
+  el değişimi sayıyordu; serbest atış toplayıcısına top pasla gelince şutöre gecikmeli pas
+  siliniyor, toplayıcı topu tutup kalıyor, dizi bitmiyor ve sonraki pozisyonda "rakip PG'ye
+  pasladı" görülüyordu. Koşul `b.carrier&&b.carrier!==p`.
+- **`_flushPending` "TOP YERDE → VERİLMEZ" KURALININ BEDELİ: BEKÇİ (FAZ 45):** ölü top dalları
+  topu kendi toplatır ama SAYI SONRASI pozisyon dalı önceki olayın takibine güveniyordu; takip
+  silinince 0,6 sn sonra `_ballKurtar` EN YAKIN oyuncuyu (bazen rakibi) geri çağrısız yolluyordu.
+  Bekleyen sokma (`S.inb`) varken bekçi topu SOKUCUYA verir ve çizgiye yollar; pozisyon dalı da
+  olay başında takibi kendi geri çağrısıyla yeniden kurar.
+
+- **CANLI TOP OAM'DADIR — `js/sahne-oam.js` (FAZ 46, kullanıcı kararı "yeniden yaz"):**
+  şutlu pozisyon (`animateShotPossession`) artık Oyun Akışı Makinesi'ne gider: sokma → geçiş
+  → set → şut fazları; her karede her oyuncuya TEK hedef (`oamHedefler`); topu tutan oyuncu
+  BOŞ ve ÖNDEKİ takım arkadaşına pas atar (`oamPasOlur`: geri değil · boya içinden geçmiyor ·
+  10 m'den uzun değil; olmazsa `oamKopru`), pas-ve-hareket, zayıf taraf değişimi, perde üç
+  aşama (`S._perde`), post (`_sirtDonuk`), kesme; savunma adam adama (adam–pota hattı, topa
+  uzaklığa göre yardım, topu tutana 38 px, şutta kapama). Şutu kimin/nereden/ne sonuçla
+  attığı MOTORUNDUR; OAM oyunu o şutöre o noktada kurar. Eski `_simTick` hareket fiziğini
+  sürdürür; OAM aktifken `canliSet` salınımı, `defTrack`, çıkış-pası kapısı ve `_wp` kapalıdır
+  (`_simTick` sarmalayıcısı `canliSet`i eski tick'e false, ölçüm araçlarına true gösterir).
+  Ölü top törenleri (hava atışı · serbest atış · faul/ihlal sokması · mola · periyot) eski
+  koreografidedir. `OAM_ACIK=false` eski yolu geri getirir. Yeni bir olay dalı yazarken:
+  `movePlayersForEvent` sarmalayıcısı OAM'ı her olayda kapatır — şut olayı sonra `oamSut`
+  ile yeniden açar.
+- **OAM BÜTÇESİ SET BAŞLANGICINA GÖRE YENİDEN KURULUR (FAZ 46):** `oamSut` tahmini süre
+  döndürür (sokma + geçiş + set + 1,4 sn); set gerçekten başlayınca `oamSetBasla` şut anını
+  `max(tFire, tSet+setDur)` yapar. Bütçe dolunca (`kalan ≤ 0,9`) pas şutöre zorlanır, şut
+  yerinde olmasa da atılır; `_animRez=1800` `_waitRes` penceresini uzatır. Bütçeyi kısmak
+  "zorla pas + anında şut" üretir — ilk OAM ölçümünde köşeden köşeye pas ve 0,3 sn'lik şut
+  bunun sonucuydu.
+- **PAS HIZI TAVANDA OLMASIN (FAZ 46):** `_ballPass` süresi `d/520` iken paslar 17-19 m/sn ile
+  tavana (`_TOP_MAXV` 19,6) yapışıyor ve tek karelik örnekleme titreşimi 25 m/sn "ışınlanma"
+  sayımını 27'ye çıkarıyordu. OAM pası `d/430`, en az 0,34 sn (≈ 15 m/sn göğüs pası).
+- **OAM'DA ŞUTTAN ÖNCE DİZİLİM DONAR (FAZ 46, `sahne-check` "şut anında yerinde" 2,82 → ölçüldü):**
+  noktasındaki oyuncunun hedefi küçük dairede döndüğü ve pas-ve-hareket noktayı kaydırdığı için
+  şut anında jetonlar hedeflerinin 24 px dışındaydı. Şuttan 0,7 sn önce ya da top şutördeyken
+  `O.donuk`: kıpırdanma ve yer değiştirme yok; şut, ≥3/4 takım arkadaşı noktasına oturunca
+  (en çok +0,8 sn) atılır. "Aynı anda koşan" için topsuz hücumcu ve markajdaki savunmacı
+  70-90 px'ten yakınken JOG.
+- **`_simCatchUp` + OAM (F11-1, FAZ 46):** dönüşte eski kod jetonları `p.tx`'e ışınlar, aynı
+  karede OAM yeni hedef yazar ve jetonlar yeniden yola çıkar (dönüş medyanı 349 px). `_simTick`
+  sarmalayıcısı `S._snapN` değişince jetonları OAM'ın yeni hedefine de oturtur.
+- **ÖLÇÜM: `pas-analiz` SOKMAYI OLAYIN KENDİSİNDEN SAYAR (FAZ 45-46):** serbest atış
+  karesindeki hakem/toplayıcı pasları ve 2 m altı el değişimleri sokma değildir; "sayı
+  sonrası ilk pas" listesinde `free` olayı (hakem topu) ayıklanır.

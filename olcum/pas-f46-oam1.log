@@ -1,0 +1,29 @@
+PAS ANALİZİ — iz-f46-oam1.json · 70 pas · canlı top aynı takım 48
+  GERİ PAS (> 2 m potadan uzaklaşan, canlı top): 5  (10.4%)
+     bağlam: miss3/set:3 · score3/geçiş:1 · score2/geçiş:1
+     kim→kime: HUC/C→HUC/PG:2 · HUC/PF→HUC/PG:1 · HUC/SG→HUC/SG:1 · HUC/C→HUC/SG:1
+     17.414s miss3/set HUC/C→HUC/PG 6.5 m, potadan +5.8 m, önce held
+     22.789s score3 HUC/PF→HUC/PG 3.9 m, potadan +3.9 m, önce held
+     110.265s miss3/set HUC/SG→HUC/SG 8.2 m, potadan +5.2 m, önce held
+     125.139s miss3/set HUC/C→HUC/SG 5 m, potadan +4.9 m, önce held
+     220.997s score2 HUC/C→HUC/PG 4.9 m, potadan +4.7 m, önce held
+  RAKİBE PAS (> 3 m, veren ≠ alan takımı): 0
+  SOKMA (çizgi dışı izinli oyuncunun pası): 14 · saha İÇİNDEN: 2
+     ✗ 52.994s score2 HUC/PF→HUC/C veren (98,256) İÇERİDE, 5.8 m
+     ✗ 224.955s score2 HUC/C→HUC/SG veren (81,270) İÇERİDE, 1.2 m
+  SAYI SONRASI POZİSYON: 14 · ilk pas çizgi dışından: 8 · içeriden: 3 · pas yok/geç: 3
+     ✓ 14.519s miss3 HUC/PF→HUC/SG veren (44,223) DIŞARIDA 7.8 m
+     ✓ 27.467s score2 HUC/PG→HUC/PG veren (897,312) DIŞARIDA 6.4 m
+     ✗ 33.617s free HUC/PF→HUC/SG veren (116,252) İÇERİDE 4.8 m
+     ✗ 52.994s foul HUC/PF→HUC/C veren (98,256) İÇERİDE 5.8 m
+     ✓ 63.889s foul HUC/SF→HUC/PG veren (838,18) DIŞARIDA 5 m
+     ✓ 77.445s score2 HUC/C→HUC/SG veren (31,288) DIŞARIDA 9.8 m
+     ✓ 85.627s score2 HUC/PF→HUC/PG veren (910,303) DIŞARIDA 6.4 m
+     ✓ 98.634s miss3 HUC/C→HUC/PG veren (30,184) DIŞARIDA 6 m
+     ✓ 120.927s miss3 HUC/PF→HUC/PG veren (44,211) DIŞARIDA 6.2 m
+     ✗ 169.914s free ilk 6 sn pas yok
+     ✓ 184.233s score2 HUC/C→HUC/SG veren (30,307) DIŞARIDA 6 m
+     ✗ 191.941s steal ilk 6 sn pas yok
+     ✗ 202.759s steal ilk 6 sn pas yok
+     ✗ 224.955s foul HUC/C→HUC/SG veren (81,270) İÇERİDE 1.2 m
+DONE
