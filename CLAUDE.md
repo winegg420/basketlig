@@ -77,6 +77,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/mobile-check.js` | **FAZ 12 mobil denetçisi** (390×844) — dokunma sayısı (gerçekten tıklayarak), maç sayfası düzeni, bilgi yoğunluğu, 44 px dokunma hedefi, market yoğunluğu. Mobil düzen değişince çalıştır. |
 | `tools/sim-node.js` | **Tarayıcısız maç simülasyonu** — 14 modülü düz Node'da (vm) yükler, `simulateMatch()` sözleşmesini ve determinizmi sınar. Motor sözleşmesi değişince çalıştır. **Regresyon tabanı (FAZ 39 sonrası): `--n=1000 --seed=42` → 91.3 - 85.4 · olay/maç 248.** (FAZ 36-38: 88.5 - 80.2 · 203.) (FAZ 34: olay/maç 248 — FAZ 36 §B1 rutin savunma ribaundunu anlatımdan çıkardı, SKOR DEĞİŞMEDİ.) ⚠ `--n=100` TEK TOHUMDA GÜRÜLTÜ BASKINDIR (deplasman ortalaması tohuma göre 78,5-87,1 arası salınır) — taban artık n=1000 ile okunur. |
 | `tools/kutu-check.js` | **Kutu skor gerçekçiliği (FAZ 38)** — 18 satır (FG%, 2P%, 3PA/FGA, ribaunt, top kaybı, çalma, blok, faul, uzatma) gerçek FIBA/BSL bantlarıyla. 60-120 maç, tarayıcısız. Sonuç matematiğine dokunan her değişiklikten sonra çalıştır. |
+| `tools/kural-check.js` | **Kural olayı sıklığı + şut saati göstergesi (FAZ 43 İŞ 3 · D1)** — taç · hücum faulü · adım · şut saati ihlali takım·maç başına `kuralOlaylari` bantlarıyla (bütçe kanıtı olarak top kaybı/faul pozisyon başına aynı koşuda); gösterge kararı (`sutSaatiKarar`) olay dizisi üzerinde sürülür: 0'da bekleme sn/maç, ihlalsiz 0'a inen pozisyon, en uzun 0. Top kaybı türü payları ya da olay damgası değişince çalıştır. |
 | `tools/tempo-check.js` | **Pozisyon süresi / tempo (FAZ 38)** — `dtPos` dağılımı iki tepeli mi (geçiş 5-9 sn · set 13-21 sn), hızlı hücumun ortalama süresi, pozisyon/maç. Bant tablosu BİLGİDİR; kapı §İŞ2 kabul ölçütleridir. |
 | `tools/rotasyon-check.js` | **Rotasyon (FAZ 38)** — yedeklerin sayı payı, kutu skorda görünen oyuncu, en skorerin payı, değişiklik sayısı. İlk beş TAHMİN EDİLMEZ, motorun `matchLineup` kuralıyla (pozisyon dengeli) hesaplanır. |
 | `tools/bozukdeger-check.js` | **Bozuk değer tarayıcısı** — 2 sezon sürülüp TR+EN, 11 sayfa + 4 modal gezilir ve GÖRÜNÜR metinde `NaN`/`undefined`/`null`/`Infinity`/`[object Object]` aranır. `visual-check` yalnız KONSOL hatasına bakar; bozuk değer sessizdir — bu kapı onu yakalar. Sayı/biçim üreten her değişiklikten sonra çalıştır. |
@@ -1173,3 +1174,70 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   kaybı/çalma/faul/rotasyon/tip-in banda çekildi, tempo bilerek bırakıldı; kullanıcı 94,3.
   `band.js` **838518b5c925e68c** · `measure.js` **5fafc6b99867e038** · `sim-node --n=1000
   --seed=42` **93.4 - 87.5 · 270**. Putback kapısı artık `_rebAnlat`ten bağımsız (%27).
+- **FAZ 43 İŞ 3 (motor, kullanıcı izniyle):** kural olayı payları gerçek bantlara çekildi; hash TEK ADIMDA
+  yenilendi — `band.js` 838518b5c925e68c → **c19928475859c7ff** · `measure.js` 5fafc6b99867e038 →
+  **51fa02b6e0a8194b** · `sim-node --n=1000 --seed=42` **93.7 - 88.1 · 269** (kullanıcı ort 94,4 · rakip 87,3).
+  Şut saati göstergesi `sutSaatiKarar` tek kaynağından okunur; `node tools/kural-check.js` hem sıklığı hem göstergeyi sınar.
+
+- **TOP DÜŞEY FİZİĞİ MAÇ ÖLÇEĞİNDEDİR (FAZ 43 İŞ 1, ölçülerek bulundu):** yerçekimi 460 px/sn²
+  idi; yükseklik ölçeği 9,8 px/m (çember h=30 ↔ 3,05 m) ve sahne maç saatini ~1,45× sıkıştırdığı
+  için gerçek yerçekimi sahnede 9,8 × 9,8 × 1,45² ≈ **202 px/sn²** eder — eski değer 2,3 kat
+  fazlaydı; top çemberden yere 0,36 sn'de "çakılıyor", ribaunt mücadelesi görünmeden bitiyordu.
+  `_TOP_G` tek kaynaktır; `_ballLoose`'a verilen her dikey hız bu yerçekimine göre ölçeklidir
+  (hava atışı 210 → 140, blok 95 → 63, karambol 105 → 44-54: tepe 0,6 m). Yerçekimini
+  değiştiren, bütün `vh` değerlerini √(g_yeni/g_eski) ile çarpmalı — tepe yüksekliği korunur.
+- **`rim` MODUNDAN ÇIKIŞ YALNIZ `loose`A, YAKALAMA TEK KAPIDAN (FAZ 43 İŞ 1):** `_topAlinabilir()`
+  — top serbest, oyuncu 0,7 m (21 px) içinde, top ele inmiş (h ≤ 20 ve düşüyor) ya da yerde;
+  sayı sonrası yerden alma (`_yerdenAl`: en az bir sekme + h ≤ 3). Kaçan şut `_ballCarom` ile
+  çemberde 0,14 sn sallanır, sonra serbest kalır. `_ballHold(p)` d>30 dalı ("top oyuncuya uçar")
+  yalnız GERİ DÖNÜŞ yoludur; yeni bir yol yazarken takip (`_chase`) kur, topu oyuncuya gönderme.
+- **OLAY SINIRINDA TAKİP KESİLMEZ, AMA YALNIZ ŞUT/RİBAUND OLAYINA DEVREDİLİR (FAZ 43 İŞ 1):**
+  `clearBallTimers` → `_flushPending` eskiden takibi silip topu takipçiye `_ballHold` ile
+  veriyordu (52 çıkışın 20'si "kimse dokunmadan uçan top"). Top serbestse takip korunur
+  (`_koru`) ve `clearBallTimers` onu SİLMEZ. ⚠ Yalnız gelen olay şut pozisyonu ya da 'reb'
+  ise (`mState._gelen`): serbest atış/faul gibi ölü top olayına devredilen takip topu yanlış
+  takımın sokucusuna aldırdı ve "serbest atış" 730 px öteden, orta sahada 'rim' ile bitti.
+  Ölü top dalları topu KENDİ toplatır (`_oluTopSokucuyaVer`, `_ftTopVer`/`_ftToplayici`).
+- **ŞUT OLAYI BÜTÇESİ TOP ÇEMBERE VARMADAN BİTEBİLİR (FAZ 43 İŞ 1):** `animateShotPossession`
+  `(tFire+0,85)` döndürür; koşullu bekleyen adımlar (`bekle`) koreografiyi uzatınca sıradaki
+  olay top havadayken geliyor, `_flushPending` şut geri çağrısını ERKEN çalıştırıyordu
+  (sokucu top çembere varmadan seçiliyor). Rezerv bütçeye DEĞİL `main.js`in `_waitRes`
+  penceresine eklenir (`mState._animRez`) — pencere yalnız şut gerçekten geç bittiğinde işler.
+- **DÜŞÜK HIZDA PİVOT SERBESTTİR, BÜYÜK DÖNÜŞ HIZ KESER (FAZ 43 İŞ 1, izole simülasyonla
+  doğrulandı):** `_donusSinirla` 40 px/sn'lik salınım hızındaki jetona 90° dönüşü 2,5 m
+  yarıçaplı yay olarak veriyordu (cos(d/2)=0,71 ile sprinte çıkıyordu); köşedeki ribauntçu
+  önce 6 m BATIYA koşup 8 m'lik yolu 2,3 sn'de kat etti. Kural: sp < 90 px/sn ve |d| > 57°
+  → anında dön; üstünde istenen hız `cos(d)`, 77°+ dönüşte sıfır ("bas, dön, çık").
+  Kayıttaki yörüngeyi 20 satırlık izole simülasyonla YENİDEN ÜRETMEK, kök nedeni motorun
+  içinde aramaktan hızlıydı — hareket kusurunda önce bunu dene.
+- **YAKALAMA YARIÇAPI ÇARPIŞMA YARIÇAPINDAN KÜÇÜKSE TOP ALINAMAZ (FAZ 43 İŞ 1):** yakalama
+  21 px, çarpışma 40 px — topun yanındaki rakip (ribaunt bloğu) takipçiyi 30-44 px'te tutuyor,
+  top 2 sn yerde kalıyordu. Serbest topa 110 px'ten yakın takipçi için çarpışma yarıçapı 22 px:
+  oyuncu topa uzanır. Aynı türden: `_setupInbound` sokucuyu sokma NOKTASINA değil basket
+  yiyen POTAYA en yakın oyuncudan seçer (top havadayken de doğru).
+- **ANLATIMDAKİ RİBAUNTÇU GEOMETRİYİ BİLMEZ (FAZ 43 İŞ 1):** motor ribauntçuyu ağırlıkla seçer,
+  köşedeki kanat 7 m'den çağrılabilir; gerçek ivmeyle (5,3 m/sn²) top inene (1,3 sn) 4,5 m
+  yol alır. Sahne üç şeyle uyum sağlar: adı geçen oyuncu şut ÇIKARKEN potaya iner, savunma
+  uzunu şuttan 0,6 sn önce ribaunt bloğuna girer, top 3 m+ uzaktaki adı geçen ribauntçuya
+  DOĞRU uzun seker. "Alanın çıkış anında ≤ 2,5 m" ölçütü hücum ribaundunu perimetre oyuncusu
+  aldığında fiziksel olarak tutmaz — bu vakalar zaman damgasıyla raporlanır, hile yapılmaz.
+- **SOKMA PASI 14 m, ALICI 10 m'YE ÇEKİLİR, UZUN TAÇ MAÇTA 1 (FAZ 43 İŞ 2):** eski "hedefin
+  8 m'sinde savunmacı yok" istisnası sayı sonrası HER pozisyonda açılıyordu (rakip kendi
+  potasına dönerken alıcının yanında kimse yok); 150 pasın 13'ü 15,9 m üstü, en uzunu 26,3 m.
+  Şimdi: hedef rakip potaya HER savunmacıdan yakınsa ve `S._uzunTacN < 1` ise uzun; oyun
+  kurucu topu sokucunun 5-6 m yakınından alıp SÜRER. Çıkış/hızlı hücum pası `_pasHedefSinirla`
+  ile 14 m'ye kelepçeli. Ölçülen 11,9 % → 3,3 %, 20 m üstü 6 → 1.
+- **ŞUT SAATİ KARARI TEK KAYNAKTIR (FAZ 43 D1):** `sutSaatiKarar(ev,off,onceki)` (`match-engine.js`)
+  — `main.js` göstergesi ve `tools/kural-check.js` aynı fonksiyonu okur. Ölçüldü (HEAD):
+  gösterge maç başına 72 sn 0'da bekliyor, 13,8 pozisyonda ihlalsiz 0'a iniyordu. Üç kök
+  neden: (a) damga taşımayan olaylar (sub/mola/teknik) pozisyon penceresinin İÇİNE düşüyor →
+  ölü top, gösterge boş ve durum değişmez; (b) 'reb' olayı pencerenin SONUNA düşer, tween'i
+  15-20 maç sn sürer → gösterge DONAR (`dondur`); (c) çapa pozisyonun gerçek başı değil önceki
+  damga → `min(önceki damga, t + dtPos)`. Yeni pozisyon (`pozIx`) aynı takımda 14, takım
+  değiştiyse 24; top kaybında çapa olayın SONU. Sonuç 0,0 sn/maç.
+- **KURAL OLAYLARI TOP KAYBI BÜTÇESİNİN İÇİNDEN ÇIKAR (FAZ 43 İŞ 3, motor):** tür payları
+  çalma 54,5 → 52 · kötü pas 17,5 → 10 · ölü top ihlali 28 → 38 (taç %52 · hücum faulü %31 ·
+  adım %17); şut saati ihlali kapısı 0,016 → 0,0103. `kural-check` 240 maçta: taç 1,19 → 2,15 ·
+  hücum faulü 1,01 → 1,20 · şut saati 0,87 → 0,56 (hepsi bantta), top kaybı/poz 0,1435 ✓,
+  çalma/poz 0,0682 → 0,07 (50 denendi, bandın altına düştü — 52). Aynı sayıda rastgele çekiliş
+  yapıldığı için `band.js` skor dizisi çalma payından ETKİLENMEZ, `measure.js` (kutu skor) değişir.

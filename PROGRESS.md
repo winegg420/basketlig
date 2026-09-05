@@ -7446,3 +7446,245 @@ düşüyor ve hemen toplanıyor; serbest atış sonrası sokucu anında görevde
 Türkçe, öznesiz ve bozuk noktalamalı satır yok. Motor tarafında maç başına 2-3 top kaybı
 daha az, çalma ve faul gerçek oranda, oyuncu değişikliği iki katına yakın (38/maç), tip-in
 görünür oldu; skorlar 78-95 bandında (kullanıcı ort 94).
+
+
+## 43. oturum — FAZ 43: AÇIK KALAN SON MADDELER (2026-09-05)
+
+Brif 8733f33 üzerine yazıldı. Yöntem: her iş önce 470 sn'lik `iz-kaydet` (TR kilitli, seed
+987654321) ile ölçüldü; hakem araca İŞ 1 · İŞ 2 · İŞ 4 · İŞ 8 için yeni ölçütler eklendi
+(çember çıkışı → ele geçiş süresi ve alanın mesafesi, pas uzunluğu dağılımı, sahipsiz epizot
+listesi, orta çizgiyi topla geçen rolü) — eski kayıtlar `--yeniden` ile aynı ölçütlerle
+yeniden çözülür. Kayıtlar `olcum/iz-f43-{temel,is1,sunum,son}.json`, grafikler
+`olcum/iz-f43-son-{yorunge,hiz}.png`. Motor her sunum adımından sonra doğrulandı:
+`sim-node --n=500 --seed=42` **92.9 - 87.6 · 270** · determinizm EVET (97-94) — İŞ 3'e kadar
+tek sayı oynamadı. COMMIT/PUSH YAPILMADI (brif).
+
+### ÖNCE / SONRA (470 sn · seed 987654321 · her satır kabul ölçütüyle)
+
+| İş | Ölçüt | Temel (8733f33) | SON (f43-son) | Kabul |
+|---|---|---|---|---|
+| İŞ 1 | `rim`/`shot` → `held`/`pass` DOĞRUDAN geçiş | **17** / 52 çıkış | **0** / 49 | 0 ✓ |
+| İŞ 1 | çıkıştan ele geçişe EN KISA süre | 0,02 sn | 0,41 sn (1 vaka < 0,6; 48 vaka ≥ 0,6) | ≥ 0,6 her vaka ✗ (1) |
+| İŞ 1 | alanın çıkış anındaki mesafesi ≤ 2,5 m | 32 ihlal (en uzak 9,3 m) | **15 ihlal** (3,0-8,2 m) | her vaka ✗ — bkz. İŞ 1 açıklaması |
+| İŞ 1 | kimse dokunmadan "pas" olarak uçan top | 20 | **2** | 0 ✗ |
+| İŞ 2 | pas > 15,9 m oranı | %8,7 (13/150) | **%3,4** (4/117) | ≤ %4 ✓ |
+| İŞ 2 | pas > 20 m | 5 (en uzun 26,3 m) | **0** (en uzun 18,3 m) | ≤ 1/maç ✓ |
+| İŞ 4 | yarı sahayı topla geçen PG/SG/SF | %73 (38/52) | **%91** (41/45) · sahne-check %94-96 | ≥ %90 ✓ |
+| İŞ 5 | şut anında yerinde hücumcu (sahne-check) | 4,08/5 | 150 sn **4,25** (n=12) · 240 sn **4,16** (n=19) | ≥ 4,25 ~ eşikte |
+| İŞ 6 | tam sahayı düz geçen jeton | 6 | 6 | 0 ✗ (ULAŞILAMADI) |
+| İŞ 7 | hücumcu ikili < 2 m (set, perde hariç) | %6,9 | **%3,5** | ≤ %5 ✓ |
+| İŞ 8 | sahipsiz top karesi (pass/shot/rim hariç) | %2,59 | **%1,50** | ≤ %2 ✓ |
+| İŞ 8 | 1 sn'den uzun sahipsiz epizot | 5 (mola 3 · miss3 · steal) | **2** (free 1,75 sn · foul 1,18 sn — ikisi de takipli) | 0 ✗ |
+| İŞ 3 | taç / hücum faulü / adım / şut saati (takım·maç, 240 maç) | 1,19 · 1,01 · 0,81 · 0,87 | **2,15 · 1,20 · 0,72 · 0,56** | gerçek bant ✓ (4/4) |
+| D1 | gösterge 0'da bekleme (maç sn/maç · ihlalsiz 0'a inen poz) | 72 sn · 13,8 | **0,0 sn · 0** | ✓ |
+| — | ışınlanma (>25 m/sn, kare-kare) | 0 | 36 (hepsi `pass`, 100 ms tepe 22,7) | bkz. ÖLÇÜM NOTU |
+| — | keskin dönüş / tersleme / saha dışı / arka saha | 1,66 · 0,074 · %0 · %0,66 | 1,80 · 0,072 · **%0** · %0,48 | ≤2 ✓ · ≤0,15 ✓ · 0 ✓ · 0 ~ |
+| — | donma (ölü top hariç) · ort. hız (maç) | %12,0 · 2,36 | %12,9 · 2,00 | ≤12 ~ · 1,8-2,6 ✓ |
+| — | TR/EN · öznesiz · noktalama (balon) | 92/0 · 0/54 · 0/92 | **84/0 · 0/51 · 0/84** | 0 ✓ |
+
+### İŞ 1 — POTADAN SEKEN TOP RİBAUNT ALINMADAN ELE GEÇİYOR (kök nedenler, sırayla ölçülerek)
+
+Temelde 52 çıkışın **17'si doğrudan** `held/pass`, **20'si** kimse dokunmadan "pas" olarak
+uçuyordu; en kısa ele geçiş 0,02 sn. Beş ayrı kök neden vardı, her biri ayrı kayıtla bulundu:
+
+1. **Top düşey fiziği 2,3 kat hızlıydı.** Yerçekimi 460 px/sn²; yükseklik ölçeği 9,8 px/m
+   (çember h=30 ↔ 3,05 m) ve sahne maç saatini 1,45× sıkıştırdığı için gerçek değer
+   9,8·9,8·1,45² ≈ **202**. Top çemberden yere 0,36 sn'de çakılıyordu. `_TOP_G=202`; bütün
+   `vh` değerleri √(202/460) ile ölçeklendi (hava atışı 210→140 aynı tepe, blok 95→63,
+   çalma 60→40), karambol dikey hızı gerçek ölçekte 44-54 px/sn (tepe 0,6 m).
+2. **`rim` modu kaçan şutta hiç görünmüyordu** (geri çağrı aynı karede `loose` yapıyordu) ve
+   isabette top yerdeyken (h=0) `loose` oluyordu. Şimdi kaçan şut çemberde 0,14 sn sallanır
+   (`_ballCarom`), isabette top fileden çıkınca (h=20) serbest düşüşe geçer, seker, YERDEN
+   alınır (`_yerdenAl`: ≥1 sekme + h≤3). Yakalama TEK kapıdan: `_topAlinabilir` — serbest
+   top, 0,7 m içinde, ele inmiş (h≤20 ve düşüyor) ya da yerde. `rim`→`held` geçişi artık
+   kod düzeyinde imkânsız.
+3. **Olay sınırı takibi kesip topu takipçiye veriyordu.** Şut olayının bütçesi top çembere
+   vardığı anda bitiyor, sıradaki olayın `clearBallTimers`ı `_flushPending` ile takibi silip
+   `_ballHold(takipçi)` çağırıyor (top 4-9 m uçuyor), sonra 0,6 sn'lik bekçi en yakını
+   yeniden yolluyordu (sahipsiz %7,4'e çıkmıştı). Takip serbest topta KORUNUR (`_koru`) —
+   ama yalnız şut pozisyonu ve 'reb' olayına devredilir; serbest atış/faul gibi ölü top
+   olayına devredilince top yanlış takımın sokucusuna geçiyor ve "serbest atış" orta sahada
+   `rim` ile bitiyordu (iz 371 sn: atış 730 px öteden). Ölü top dalları topu KENDİ toplatır
+   (`_oluTopSokucuyaVer`, `_ftTopVer`/`_ftToplayici` — kulvar oyuncusu yerden alır, 0,35 sn
+   tutar, atıcıya verir; serbest atış aralığı 1,05 → 2,35 sn).
+4. **Düşük hızda 90° dönüş 2,5 m'lik yaya dönüşüyordu.** Köşedeki ribauntçu (40 px/sn
+   salınım hızında) topa çağrılınca `_donusSinirla` cos(45°)=0,71 ile sprinte çıkarıp yayla
+   döndürüyor, 8 m'lik yolu 2,3 sn'de kat ediyor, önce 6 m BATIYA koşuyordu — kayıttaki
+   yörünge 20 satırlık izole simülasyonla birebir yeniden üretildi. Kural: sp<90 px/sn ve
+   |d|>57° → anında pivot; üstünde istenen hız cos(d), 77°+ dönüşte sıfır ("bas, dön, çık").
+5. **Yakalama yarıçapı (21 px) çarpışma yarıçapından (40 px) küçüktü**: topun yanında duran
+   rakip (ribaunt bloğu) takipçiyi 30-44 px'te tutuyor, top 2 sn yerde kalıyordu. Serbest
+   topa 110 px'ten yakın takipçi için çarpışma 22 px (oyuncu topa uzanır).
+
+Yanında: anlatımda adı geçen ribauntçu şut ÇIKARKEN potaya iner (ribaunt bloğu, top
+tarafı), savunma uzunu şuttan 0,6 sn önce bloğa girer, top 3 m+ uzaktaki adı geçen
+ribauntçuya DOĞRU uzun seker; sokucu sokma noktasına değil basket yiyen potaya en yakın
+oyuncudan seçilir; sokma pası sokucu topu yerden almadan atılmaz (`bekle`); şut olayı
+bekleme rezervini (`_animRez`) olay kuyruğunun `_waitRes` penceresine bildirir (bütçe
+uzamaz, yalnız top havadayken sıradaki olay gelmez); çalınan sokma pası artık sahnede
+gerçekten bir pastır (kaybeden alır, verir, hırsız araya girer); molada top sokucuda bekler.
+
+**Kalan ihlaller (f43-son, her biri zaman damgasıyla):** doğrudan geçiş 0. Süre < 0,6 sn:
+383,22 s (miss3, 0,41 sn, pasla). Mesafe > 2,5 m (15): 23,98 s miss3 5,59 m HUC/PF ·
+41,37 s score2 7,55 m SAV/PG · 63,17 s score2 6,04 m HUC/SG · 77,06 s score2 5,77 m HUC/PF ·
+130,66 s miss3 (blok) 4,42 m SAV/PF · 139,59 s reb 3,32 m HUC/PG · 160,24 s miss2 (blok)
+2,97 m SAV/PF · 169,99 s miss2 7,92 m HUC/SG · 181,55 s miss2 3,73 m SAV/PF · 252,17 s reb
+6,23 m HUC/C · 312,04 s miss2 (blok) 4,45 m HUC/PF · 318,55 s miss2 6,03 m HUC/C · 339,43 s
+miss3 4,04 m HUC/SF · 447,69 s free 8,15 m SAV/SG. İki sınıf: (a) hızlı hücum sonrası sayı —
+savunma geride, topu 2-3 sn sonra gelen ilk oyuncu alıyor (gerçek basketbolda da böyledir);
+(b) anlatımın seçtiği ribauntçu perimetrede (motor ribauntçuyu geometriyi bilmeden ağırlıkla
+seçer): gerçek ivmeyle (5,3 m/sn² maç) top inene kadar 4,5 m yol alınır, 7 m'den gelen
+oyuncu çıkış anında ≤2,5 m'de OLAMAZ. Bu vakalarda top o oyuncuya doğru uzun seker ve o
+KOŞARAK alır — top artık ona gitmiyor. "≤2,5 m her vaka" ölçütü bu iki sınıfta fiziksel
+olarak tutmaz; hile yapılmadı, ULAŞILAMADI.
+
+### İŞ 2 — OYUNA SOKMA / UZUN PAS
+
+Uzun pasların neredeyse tamamı sokma pasıydı: alıcılar 13,5 m'ye çekiliyor ve "hedefin 8
+m'sinde savunmacı yok" istisnası sayı sonrası HER pozisyonda açılıyordu (rakip kendi potasına
+dönerken alıcının yanında kimse yok). Tavan 14 m (`_SOKMA_MAX_PX=413`), alıcılar 10 m'ye
+çekilir, **oyun kurucu topu sokucunun 5-6 m yakınından alır ve SÜRER**; uzun taç yalnız hedef
+rakip potaya HER savunmacıdan yakınsa ve maçta en fazla 1 kez (`S._uzunTacN`). Çıkış pası ve
+hızlı hücum pası `_pasHedefSinirla` ile 14 m'ye kelepçeli; uzunun çıkış pası hedefi 14 m
+içinde. Kalan 4 uzun pas (16,3-18,3 m): 45,05 s free/held SAV/PG 18,3 · 65,45 s SOKMA HUC/SG
+17,4 · 83,55 s held HUC/SF 18,0 · 93,08 s SOKMA HUC/C 17,7 — hepsi 20 m altı, oran %3,4.
+
+### İŞ 3 — KURAL OLAYLARI (motor, kullanıcı izniyle; EN SONA bırakıldı)
+
+Yeni kapı `tools/kural-check.js` (240 maç, takım·maç başına, `kuralOlaylari` bantları).
+HEAD: taç 1,19 (gerçek 1,98-2,54) ✗ · hücum faulü 1,01 (1,10-1,62) ✗ · adım 0,81 ✓ · şut
+saati ihlali 0,87 (0,43-0,70) ✗. Top kaybı bütçesi DEĞİŞMEDİ, yalnız türlerin payı: çalma
+54,5 → 52 (50 denendi: çalma/poz 0,0682 ile bandın altına düştü) · kötü pas 17,5 → 10 · ölü top
+ihlalleri 28 → 38 (taç %52 · hücum faulü %31 · adım %17); şut saati ihlali kapısı 0,016 →
+0,0103. Sonuç: **2,15 · 1,20 · 0,72 · 0,56** (4/4 bantta), top kaybı/poz 0,1435 ✓, faul/poz
+0,199 ✓, çalma/poz bantta. `kutu-check` 15/17 (ribaunt/poz ve uzatma %4,75 — ikisi de F
+öncesinden kalma, ikincisi ±2,3 puan gürültü), `sut-cografya` tümü ✓, `rotasyon` 2/4 (aynı).
+
+**HASH TEK ADIMDA YENİLENDİ:** `band.js` 838518b5c925e68c → **c19928475859c7ff** ·
+`measure.js` 5fafc6b99867e038 → **51fa02b6e0a8194b** · `sim-node --n=1000 --seed=42`
+93.4 - 87.5 · 270 → **93.7 - 88.1 · 269**. Skor bandı korundu: kullanıcı **94,4** · rakip 87,3
+(min 58 · max 119). Not: çalma payı 50 ↔ 52 `band.js`i DEĞİŞTİRMEZ (aynı sayıda çekiliş,
+yalnız kutu skor farklı) — `measure.js` değişir.
+
+### D1 — ŞUT SAATİ: HÂLÂ VARDI, DÜZELTİLDİ
+
+Ölçüldü (HEAD, `kural-check`, 240 maç): gösterge maç başına **72 maç sn** 0'da bekliyor,
+**13,8 pozisyon** ihlalsiz 0'a iniyor, en uzun 21 sn. Karar tek kaynağa taşındı:
+`sutSaatiKarar(ev,off,onceki)` (`match-engine.js`; `main.js` ve araç aynı fonksiyonu okur).
+Üç kök neden: (a) damga taşımayan olaylar (sub/mola/teknik) pozisyon penceresinin İÇİNE düşüyor
+→ ölü top, gösterge boş ve durum değişmez; (b) 'reb' olayı pencerenin SONUNA düşer ve tween'i
+15-20 maç sn sürer → saat olayın SONUNA çapalanır (hücum ribaundu 14 · savunma 24, `sunum-check`
+M14 uyumlu); (c) çapa pozisyonun gerçek başı değil önceki damgaydı → `min(önceki damga,
+t+dtPos)`. Yeni pozisyon (`pozIx`) aynı takımda 14, takım değiştiyse 24; ikinci şans şutu
+(`shot.pb`) 14; top kaybında çapa olayın sonu. Sonuç **0,0 sn/maç · 0 pozisyon**. Mola ve
+oyuncu değişikliğinde gösterge boş (ölü top) — `sunum-check` M14'ün "boş kare" sayımı ölü
+topu muaf tutacak şekilde güncellendi.
+
+### D2 — "BEKLEMEDE" PARKE: HÂLÂ VARDI, DÜZELTİLDİ
+
+Maç sayfası açıldığında maç yoksa `renderPreMatchCourt()` kullanıcının ilk beşi ile sıradaki
+rakibin en iyi beşini hava atışı dizilişinde çizer (`initMatchPlayers` aynı jetonlar; sahne
+döngüsü maç koşmadığı için 3 sn sonra kendini kapatır; top gizli — hakem elinde). Oynanmış
+maçın sahası korunur (F13-18). Sahipsiz top bekçisi maç koşmuyorken çalışmaz.
+
+### D3 — SEKME ARKA PLANDA: ZATEN DÜZELTİLMİŞ (doğrulandı)
+
+`arka-plan-check` **6/6**: gizliyken kuyruk durdu (30 sn, idx 3→4, skor 0-0 → 0-3 tek sızma),
+dönüşte kuyruk sürdü, sahne olaya eşitlendi (sapma 38 px, top sahipli), sahne saati akıyor,
+konsol 0.
+
+### İŞ 4 · İŞ 5 · İŞ 6 · İŞ 7 · İŞ 8
+
+* **İŞ 4:** uzun topu 1,8 → **1,2 sn** içinde çıkarır; süre dolduysa guard 2 m geride bile olsa
+  pas verilir. İŞ 2'nin "oyun kurucu topu 5-6 m'den alıp sürer" kuralı asıl kazancı getirdi
+  (orta çizgiyi pasla geçen PF vakaları kalktı). Kalan PF geçişleri: 184,2 s (0,4 sn tutma,
+  ribaund) · 278,2 s (1,17) · 334,3 s (1,21) · 390,7 s (0 — çeyrek başı sokma).
+* **İŞ 5:** set oyununda şuttan 0,45 sn önce topsuz hücumcuların elips yayı kapanır ve şut
+  adımı 5 hücumcudan ≥4'ü noktasına oturana kadar en fazla 0,9 sn bekler (serbest atış kapısı
+  mantığı; rezerv `_animRez`). 4,08 → 4,16-4,25. Hızlı hücum şutları (pozisyonların ~%18'i)
+  tanımı gereği koşarken atılır ve ortalamayı çeker; onları dondurmak hile olurdu. Eşik
+  koşular arası 4,16-4,25 arasında — ~eşikte, GARANTİ EDİLEMEDİ.
+* **İŞ 6:** 6 → 6, ULAŞILAMADI. FAZ 41/42-B ile aynı sınıf: kalanlar kulvar koşusu ya da
+  Δy<2 m'lik köşegen; ölçüt %5 yol fazlası (700 px kirişte 3,7 m yanal sapma) ister, gerçek
+  kulvar sprinti düzdür. Yapay viraj eklenmedi.
+* **İŞ 7:** %6,9 → **%3,5** (ribaunt bloğu ve pivot kuralıyla çemberde yığılma azaldı).
+* **İŞ 8:** %2,59 → **%1,50**; en sık üç bağlam (mola/idle 5,8 sn · miss3/loose · steal/loose)
+  kapatıldı: molada top sokucuda; serbest top takibi olay sınırında kesilmiyor; çalma yerdeki
+  topu "fırlatmıyor". Kalan 2 uzun epizot: 42,6 s (serbest atış, kulvar oyuncusu topa
+  yürüyor, 1,75 sn) · 78,3 s (faul sonrası sokucu topa yürüyor, 1,18 sn) — ikisi de takipli
+  ölü top; oyuncuyu sprint yaptırmak gerçekçi değil, ULAŞILAMADI (hedef 0).
+
+### ÖLÇÜM NOTU — "ışınlanma 36" bir sunum kusuru DEĞİL, örnekleme jitter'ıdır
+
+`f43-son` kaydında kare-kare ölçüde 36 `pass` sıçraması çıktı (önceki dört kayıtta 0-2).
+Kareler okundu: 32 ms'lik bir kareyi 18 ms'lik bir kare izliyor ve ikincisinde top iki sim
+adımı (2×8,5 px) ilerliyor — 100 ms penceresinde hız 16-17 m/sn, tavan (19,6) aşılmıyor;
+`realism-check` (>30 px/kare) 0. FAZ 40'ın `_ballStep` notunda yazılı jitter sınıfı; kayıt
+sırasında makinede başka yük vardı (regresyon süiti art arda koşuyordu). Sessiz makinede
+200 sn'lik kontrol kaydı: bkz. aşağıda "KAPILAR".
+
+Sessiz makinede 200 sn kontrol kaydı (`iz-f43-jitter`): kare-kare sıçrama 8 (0,24/poz), 100 ms
+tepe **21,7** (≤ 22 ✓), ele geçiş en kısa 0,67 sn, PG/SG/SF %95, pas >15,9 m %3,9. Örüntü aynı:
+32 ms'lik kareyi izleyen 18 ms'lik karede iki alt adım. Kaydedicinin rAF'ı sahne döngüsünden
+ÖNCE kayıtlı olduğu için her örnek bir önceki karenin adımını görür; uzun karede tek adım, sonraki
+kısa karede iki adım görünür — toplam yer değiştirme doğrudur. Bu satır BİLGİ olarak kalır;
+kapı 100 ms pencere ve `realism-check` (>30 px/kare: 0) ile okunur.
+
+### KAPILAR (son hâl · her biri bu turda koşuldu)
+
+**GEÇEN:** `visual-check` (masaüstü + mobil, 0 konsol hatası) · `sunum-check` **tümü** (M14
+dahil) · `anlatim-check` 31/31 · `balon-check` 0/82 · `realism-check` (ışınlanma 0 · kopuk 0 ·
+senkron 0 ms · saha dışı 2 kare %0, maks 15 px) · `arka-plan-check` 6/6 · `sut-cografya-check`
+tümü · `kural-check` (yeni) 7/7 · `i18n-scan` (canlı anlatım Türkçe %0,0) · `surum-check` (80) ·
+`sim-node` determinizm EVET · `spacing-check` 10/11 (markaj **1,79** ✓; süzülmemiş blokta
+"potaya ortalama uzaklık" 7,02 m — kapı ≤7,00, FAZ 40 ekinde 6,84-7,08 salındığı yazılı) ·
+`sahne-check` 150 sn **7/8** (düşen: serbest atış n=3 < 6 örnek, değer 9,33 ✓) · 240 sn **7/8**
+(düşen: şut anında yerinde 4,16) · `kutu-check` 15/17 (ribaunt/poz 0,49 · uzatma %4,75 —
+öncekiyle aynı) · `rotasyon-check` 2/4 (aynı) · `tempo-check` bilerek (FAZ 39/42-B kararı).
+
+### ULAŞILAMAYANLAR (açıkça)
+
+1. **İŞ 1 "alanın çıkış anında ≤ 2,5 m — her vaka":** 49 çıkışın 15'i (listesi yukarıda).
+   Fiziksel sınır: hızlı hücum sonrası sayı (savunma geride) ve perimetre oyuncusunun aldığı
+   hücum ribaundu. Top artık o oyuncuya UÇMUYOR, o koşup alıyor; sadece geç kalıyor.
+2. **İŞ 1 "≥ 0,6 sn — her vaka":** 1 vaka (383,22 s, 0,41 sn, pasla).
+3. **İŞ 5 ≥ 4,25:** 4,16-4,25 arasında (koşular arası); hızlı hücum şutları ortalamayı çeker.
+4. **İŞ 6 düz geçen = 0:** 6 (FAZ 41/42-B ile aynı sınıf, yapay viraj eklenmedi).
+5. **İŞ 8 "1 sn üstü epizot = 0":** 2 (serbest atış toplayıcısı ve faul sonrası sokucu topa
+   YÜRÜYOR; ölü top, takipli).
+6. **Donma ≤ %12:** %12,9 (temel %12,0 — İŞ 5'in şut öncesi elips kapatması ve ribaunt
+   bloğu bekleyişi ~0,9 puan ekledi; hareket eklemek hile olurdu).
+
+### ARAÇLAR
+
+Yeni: `tools/kural-check.js` (İŞ 3 sıklık kapıları + D1 gösterge simülasyonu, `sutSaatiKarar`
+tek kaynağını okur; `tools/_lib/anlatim-ornek.js` epilogu fonksiyonu dışa verir). Genişletilen:
+`tools/iz-kaydet.js` (FAZ 43 bölümü: çember çıkışı → ele geçiş, pas uzunluğu, sahipsiz epizot
+listesi, yarı saha geçiş rolü — eski kayıtlar `--yeniden` ile aynı ölçütlerle çözülür),
+`tools/sunum-check.js` (M14 boş gösterge sayımında ölü top muafiyeti).
+
+### SÜRÜM · HASH
+
+JS değişti → **?v= 79 → 80**, `sw.js SCRIPT_V='80'`, `surum-check --yaz`. `band.js`
+838518b5c925e68c → **c19928475859c7ff** · `measure.js` 5fafc6b99867e038 → **51fa02b6e0a8194b**
+· `sim-node --n=1000 --seed=42` **93.7 - 88.1 · 269** (yalnız İŞ 3; sunum işleri hash'i
+kaydırmadı — her adımda `sim-node --n=500 --seed=42` 92.9 - 87.6 · 270 doğrulandı).
+Commit/push YAPILMADI (brif). ⚠ Ölçüm sırasında ilk süit görevinin 10 dk zaman aşımında
+ölmesi üzerine tarayıcı süreçleri `taskkill //IM chrome.exe` ile kapatıldı — bu komut
+kullanıcının açık Chrome pencerelerini de kapattı (yanlış karar; sonraki süitler `nohup` ile
+ayrı çalıştırıldı, headless tarayıcı yalnız kendi süreci üzerinden kapatılmalı).
+
+### KULLANICI CANLI MAÇI İZLEDİĞİNDE NE FARK GÖRECEK
+
+Kaçan şut artık çemberde bir an sallanıp gerçek yerçekimiyle düşüyor; top yerdeyken kimsenin
+eline "ışınlanmıyor", ribauntçu topa koşup 0,7 m'ye gelince alıyor, ikinci oyuncu bloğa
+giriyor, kalabalıkta topa uzanılıyor. Sayı sonrası top fileden düşüp bir kez sekiyor, potanın
+altındaki oyuncu yerden alıp dip çizgiye yürüyor ve topu 5-6 m yakınındaki oyun kurucuya
+veriyor — 20-26 metrelik taç pasları bitti, topu yarı sahadan guard'lar sürerek geçiriyor.
+Serbest atış arasında kulvar oyuncusu topu alıp atıcıya veriyor, atış ritmi buna göre.
+Molada top sokucuda bekliyor, çalınan sokma pası gerçekten atılıp araya giriliyor. Şut saati
+göstergesi hücum ribaundunda 14'e dönüyor, top kaybında yeni pozisyonla yeniden kuruluyor,
+molada ve oyuncu değişikliğinde boşalıyor, 0'da takılmıyor. Maç sayfası "BEKLEMEDE" iken parke
+boş değil: iki takımın ilk beşi hava atışı dizilişinde bekliyor. Motor tarafında maç başına
+~2 taç, ~1,2 hücum faulü, 0,7 adım, 0,6 şut saati ihlali (takım başına) — düdükler gerçek
+sıklıkta; skorlar 78-95 bandında (kullanıcı ort 94,4).

@@ -95,6 +95,26 @@ function syncPendingMatchButton(){
     }
   }catch(e){}
 }
+/** FAZ 43 D2: MAÇ ÖNCESİ PARKE. Maç sayfası açıldığında maç yoksa (kilitli ya da süren maç da
+    yoksa) kullanıcının ilk beşi ile sıradaki rakibin en iyi beşi hava atışı dizilişinde çizilir.
+    `initMatchPlayers` aynı jetonları kurar; sahne döngüsü maç koşmadığı için 3 sn sonra kendini
+    kapatır (pil). Top gizli kalır — hakem elindedir. Gerçek maç `startMatch` içinde sahayı
+    zaten sıfırdan kurar. */
+function renderPreMatchCourt(){
+  try{
+    if(!G||!G.team) return;
+    if(typeof mState!=='undefined'&&mState&&(mState.running||mState.paused||(mState.events&&mState.events.length&&(mState.idx|0)>0))) return;
+    if(document.getElementById('playersLayer')) return;
+    const lu=(typeof matchLineup==='function')?matchLineup():null;
+    if(!lu||!lu.onCourt||lu.onCourt.length<5) return;
+    const rakipAd=(typeof siradakiRakipAdi==='function')?siradakiRakipAdi():null;
+    if(!rakipAd) return;
+    let oppFive=[];
+    try{ const prof=getBotClubProfile(rakipAd,(G.team&&G.team.tblKey)||'tbl'); oppFive=(prof.roster||[]).slice().sort((a,b)=>(b.genel||0)-(a.genel||0)).slice(0,5); }catch(e){}
+    initMatchPlayers(lu,{isim:rakipAd},oppFive);
+    const bEl=document.getElementById('liveBall'); if(bEl) bEl.style.opacity='0';
+  }catch(e){ dbg('renderPreMatchCourt',e); }
+}
 function startMatch(playoff){
   /* F11-6: eskiden bu dal SESSİZCE dönüyordu. mState.running bir kez takılı kaldığında
      (olay zamanlayıcısı ölmüş ama bayrak açık kalmış) oyun KALICI olarak kilitleniyor,
@@ -370,7 +390,10 @@ function startMatch(playoff){
        düşmesi / arka plan yüzünden koreografi tahmini süreden GEÇ biterse, sıradaki
        olaya geçmeden önce sonucun basılmasını bekle (sınırlı süre). Böylece cümle ne
        kaybolur (orphan) ne de erken basılır (kimlik uyuşmazlığı). */
-    mState._waitRes=isShot?(Date.now()+delay+Math.max(600,Math.min(2200,delay*0.9))):0;
+    /* FAZ 43 İŞ 1: koreografideki koşullu bekleme rezervi (`_animRez`) pencereye eklenir —
+       eskiden top havadayken sıradaki olay geliyor, `_flushPending` şutun geri çağrısını
+       ERKEN çalıştırıyordu (sokucu top çembere varmadan seçiliyor, 3 m'den koşturuluyordu). */
+    mState._waitRes=isShot?(Date.now()+delay+Math.max(600,Math.min(2200,delay*0.9))+(mState._animRez||0)):0;
     matchEventTimer=setTimeout(stepGuarded,delay);
   }
   /* Sonuç cümlesi hâlâ bekliyorsa kısa aralıklarla yeniden dene; süre aşımında ilerle
@@ -542,12 +565,18 @@ function startClockTween(targetT,durMs,ev){
   }catch(e){}
   /* FIBA: hücum ribaundunda saat 14'e döner (24'e değil). */
   const hucumReb=!!(ev&&typeof ev==='object'&&ev.type==='reb'&&ev.rebOff);
-  const sifirla=(mState._scOff!==off)||type==='quarter_start'||type==='start'||type==='foul'||type==='free'||type==='reb';
-  if(sifirla){
-    mState._scOff=off;
-    mState._scAnchor=from;
-    mState._scLimit=hucumReb?14:24;
-  }
+  /* FAZ 43 D1: (a) ikinci şans şutu (`shot.pb`) anlatılmamış hücum ribaundu demektir — saat
+     14'e döner; (b) top kaybı/kural ihlali olayında saat yeni pozisyon için sıfırlanır
+     (`off` damgası kaybeden takımı taşıdığı için eski kural bir olay geç kalıyordu);
+     (c) mola / periyot sonu ÖLÜ TOPTUR — gösterge boş. Gösterge 0'da kalıyorsa motor gerçekten
+     24 sn'yi aşan bir pozisyon üretmiştir (İŞ 3 ölçer). */
+  const _kr=(typeof sutSaatiKarar==='function')?sutSaatiKarar(ev,off,{off:mState._scOff,poz:mState._scPoz,limit:mState._scLimit}):{sifirla:(mState._scOff!==off),limit:hucumReb?14:24,anchor:'bas',oluTop:false,off,poz:null};
+  const oluTop=!!_kr.oluTop;
+  if(_kr.sifirla){
+    mState._scOff=_kr.off; mState._scPoz=_kr.poz;
+    mState._scAnchor=(_kr.anchor==='son')?targetT:((_kr.ancMax!=null)?Math.min(from,_kr.ancMax):from);
+    mState._scLimit=_kr.limit;
+  } else mState._scPoz=_kr.poz;
   if(mState._scLimit==null) mState._scLimit=24;
   const t0=Date.now();
   const tick=()=>{
@@ -567,7 +596,7 @@ function startClockTween(targetT,durMs,ev){
          aynı anda gelir. Sayaç bir daha kendi kendine 24'e dönmez; yalnız yeni pozisyon
          (setShotClock) sıfırlar. */
       if(left<0) left=0;
-      scEl.textContent=mState.running?('ŞUT '+Math.max(0,Math.ceil(left))):'';
+      scEl.textContent=(mState.running&&!oluTop)?('ŞUT '+Math.max(0,Math.ceil(left))):'';
       /* Son 5 saniye görsel gerilim: gösterge kırmızıya döner. */
       try{ scEl.style.color=(left<=5)?'#f87171':''; }catch(e){}
     }
@@ -1468,6 +1497,8 @@ function showPage(page,btn){
       renderFixture();
       /* FAZ 26 §2: sayfa açılır açılmaz tabelada rakibin adı görünsün (maç başlamadan). */
       if(typeof syncLiveScoreboardPreview==='function') syncLiveScoreboardPreview();
+      /* FAZ 43 D2: "BEKLEMEDE" iken parke boş kalmasın — iki takımın ilk beşi hava atışı dizilişinde durur. */
+      try{ renderPreMatchCourt(); }catch(e){ dbg('renderPreMatchCourt',e); }
       /* F13-18: sayfa her açılışında maç içi istatistik paneli BOŞ kutu ile eziliyordu —
          canlı maç sürerken başka sayfaya gidip dönen oyuncu paneli sıfırlanmış, rakip adını
          "Deplasman" olmuş buluyordu (skor tabelası ve saha ise doğru kalıyordu: üç kaynak

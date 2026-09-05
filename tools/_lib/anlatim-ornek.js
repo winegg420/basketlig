@@ -49,7 +49,7 @@ function ortamKur() {
   ctx.window = ctx; ctx.globalThis = ctx; ctx.self = ctx; ctx.document = sahteDom(); ctx.addEventListener = () => {};
   vm.createContext(ctx);
   const kaynak = FILES.map(f => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
-  vm.runInContext(kaynak + '\n;globalThis.__api={simulateMatch,genRoster};', ctx, { filename: 'charazay-bundle.js' });
+  vm.runInContext(kaynak + '\n;globalThis.__api={simulateMatch,genRoster,sutSaatiKarar:(typeof sutSaatiKarar==="function")?sutSaatiKarar:null};', ctx, { filename: 'charazay-bundle.js' });
   return ctx;
 }
 

@@ -180,7 +180,13 @@ async function main() {
         /* ⚠ YALNIZ MAÇ CANLIYKEN örneklenir. Pencere örneklem için birden çok maça
            uzadığından maçlar ARASINDAKİ boşlukta gösterge doğal olarak boş kalıyor ve
            "gösterge boşalmıyor" kapısı 672 sahte boş kare sayıyordu (ölçüldü). */
-        if (el && mState.running) P.scOrnek.push({ t, limit: mState._scLimit || null, metin: el.textContent || '' });
+        /* FAZ 43 D1: mola / oyuncu değişikliği / periyot sonu ÖLÜ TOPTUR — gösterge bilerek boş
+           (`sutSaatiKarar(...).oluTop`); o kareler "boş gösterge" sayılmaz. */
+        if (el && mState.running) {
+          let olu = false;
+          try { const cev = mState.events[Math.max(0, (mState.idx | 0) - 1)]; olu = !!(typeof sutSaatiKarar === 'function' && sutSaatiKarar(cev, true, {}).oluTop); } catch (e) {}
+          if (!olu) P.scOrnek.push({ t, limit: mState._scLimit || null, metin: el.textContent || '' });
+        }
       } catch (e) {}
       // 3) yeni işlenen olayları damgala
       try {

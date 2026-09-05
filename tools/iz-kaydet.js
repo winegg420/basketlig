@@ -431,6 +431,95 @@ function analiz(K, BAL, ADLAR) {
     const re = /(^|[^0-9])\.\s+([a-zçğıöşü][^\s.,;!?]*)/g; let m;
     while ((m = re.exec(g))) { if (!kucukAdlar.has(m[2])) { noktalama++; if (noktalamaOrnek.length < 4) noktalamaOrnek.push(g.slice(Math.max(0, m.index - 20), m.index + 30)); break; } }
   }
+  /* ── FAZ 43: İŞ 1 · İŞ 2 · İŞ 4 · İŞ 8 ölçütleri ─────────────────────────────────────
+     Kayıt biçimi değişmedi; hepsi mevcut alanlardan türer (`--yeniden` ile eski kayıt da çözülür). */
+  const _ucus = (m) => (m === 'shot' || m === 'rim');
+  const _tasiyanIx = (k) => { const P = k.p || []; for (let i = 0; i < P.length; i++) if (P[i] && P[i][4] === 1) return i; return -1; };
+  /* İŞ 1 — çember çıkışı: top {shot,rim} modundan {loose,held,pass} moduna geçtiği kare.
+     Ele geçiş = ilk 'held' karesi (taşıyıcı işaretli) YA DA topun bir hedefe 'pass' olarak
+     gönderildiği ilk kare — ikincisi "kimse dokunmadan uçan top" kusurudur ve ayrıca sayılır. */
+  const cikis = [];
+  for (let i = 1; i < K.length; i++) {
+    const m0 = K[i - 1].b[2], m1 = K[i].b[2];
+    if (!_ucus(m0) || _ucus(m1)) continue;
+    const tC = K[i - 1].t, bx = K[i - 1].b[0], by = K[i - 1].b[1];
+    let j = i, ele = -1, eleMod = null;
+    for (; j < K.length && (K[j].t - tC) < 6; j++) {
+      const m = K[j].b[2];
+      if (m === 'held' && _tasiyanIx(K[j]) >= 0) { ele = j; eleMod = 'held'; break; }
+      if (m === 'pass') { ele = j; eleMod = 'pass'; break; }
+      if (_ucus(m)) break;   /* yeni şut başladı (ele geçmeden) */
+    }
+    let alanIx = -1, mesafe = null, alan = null;
+    if (ele >= 0) {
+      if (eleMod === 'held') alanIx = _tasiyanIx(K[ele]);
+      else { /* pas: hedef, pasın bittiği karedeki taşıyıcı */
+        let e = ele; while (e < K.length && K[e].b[2] === 'pass') e++;
+        if (e < K.length) alanIx = _tasiyanIx(K[e]);
+      }
+      if (alanIx >= 0 && K[i - 1].p && K[i - 1].p[alanIx]) {
+        const q = K[i - 1].p[alanIx];
+        mesafe = Math.hypot(q[0] - bx, q[1] - by) / PX_M;
+        alan = (q[2] ? 'HUC' : 'SAV') + '/' + q[3];
+      }
+    }
+    cikis.push({ t: tC, from: m0, to: m1, tip: K[i - 1].tip, ele: ele >= 0 ? +(K[ele].t - tC).toFixed(2) : null, eleMod, mesafe: mesafe != null ? +mesafe.toFixed(2) : null, alan, dogrudan: (m1 === 'held' || m1 === 'pass') });
+  }
+  const cikisIhlal = cikis.filter(c => c.dogrudan || (c.ele != null && c.ele < 0.6) || (c.mesafe != null && c.mesafe > 2.5) || c.eleMod === 'pass');
+  /* İŞ 2 — pas uzunluğu: 'pass' moduna giriş karesi ile çıkış karesi arasındaki mesafe */
+  const paslar = [];
+  for (let i = 1; i < K.length; i++) {
+    if (K[i].b[2] !== 'pass' || K[i - 1].b[2] === 'pass') continue;
+    let j = i; while (j + 1 < K.length && K[j + 1].b[2] === 'pass') j++;
+    const uz = Math.hypot(K[j].b[0] - K[i - 1].b[0], K[j].b[1] - K[i - 1].b[1]) / PX_M;
+    const ver = _tasiyanIx(K[i - 1]);
+    const vq = ver >= 0 && K[i - 1].p ? K[i - 1].p[ver] : null;
+    const sokma = !!(K[i - 1].inb === 1 || (vq && yeniBicim && vq[11] === 1));
+    paslar.push({ t: K[i].t, uz: +uz.toFixed(1), sokma, tip: K[i].tip, veren: vq ? (vq[2] ? 'HUC' : 'SAV') + '/' + vq[3] : '?', onceMod: K[i - 1].b[2] });
+  }
+  const pas159 = paslar.filter(p => p.uz > 15.9), pas20 = paslar.filter(p => p.uz > 20);
+  /* İŞ 8 — sahipsiz epizotlar (pass/shot/rim hariç; taşıyıcı yok; en yakın > 2 m) */
+  const epizot = [];
+  { let bas = -1;
+    for (let i = 0; i <= K.length; i++) {
+      let s = false;
+      if (i < K.length) {
+        const k = K[i], P = k.p || [], mod = k.b[2];
+        if (!P.some(q => q && q[4] === 1) && mod !== 'shot' && mod !== 'rim' && mod !== 'pass') {
+          let ed = 1e9; for (const q of P) if (q) { const d = Math.hypot(q[0] - k.b[0], q[1] - k.b[1]); if (d < ed) ed = d; }
+          s = ed > 2 * PX_M;
+        }
+      }
+      if (s && bas < 0) bas = i;
+      if (!s && bas >= 0) { const a = K[bas], z = K[i - 1]; epizot.push({ t: a.t, sure: +(z.t - a.t + 0.016).toFixed(2), tip: a.tip, mod: a.b[2], ch: a.ch | 0, idx: a.idx }); bas = -1; }
+    }
+  }
+  const epizotUzun = epizot.filter(e => e.sure > 1.0);
+  const epizotBaglam = {}; epizot.forEach(e => { const kk = e.tip + '/' + e.mod; epizotBaglam[kk] = (epizotBaglam[kk] || 0) + e.sure; });
+  /* İŞ 4 — orta çizgiyi TOPLA geçen oyuncu ve rolü; PF/C geçişinde topu kaç sn'dir tuttuğu */
+  const gecisler = [];
+  { let sonYari = null, sonTas = -1, tasBas = 0;
+    for (let i = 0; i < K.length; i++) {
+      const k = K[i], ti = _tasiyanIx(k);
+      if (ti < 0) { sonTas = -1; continue; }
+      if (ti !== sonTas) { sonTas = ti; tasBas = k.t; }
+      const q = k.p[ti], yari = q[0] < ORTA ? 'L' : 'R';
+      if (sonYari && yari !== sonYari && k.b[2] === 'held') gecisler.push({ t: k.t, poz: q[3], huc: q[2], tutma: +(k.t - tasBas).toFixed(2), tip: k.tip });
+      sonYari = yari;
+    }
+  }
+  const gecisUzun = gecisler.filter(g => g.poz === 'PF' || g.poz === 'C');
+  const gecisIyi = gecisler.length - gecisUzun.length;
+  const ek43 = {
+    cikis: { n: cikis.length, dogrudan: cikis.filter(c => c.dogrudan).length, pasIle: cikis.filter(c => c.eleMod === 'pass').length, eleYok: cikis.filter(c => c.ele == null).length,
+      eleMin: cikis.filter(c => c.ele != null).length ? Math.min.apply(null, cikis.filter(c => c.ele != null).map(c => c.ele)) : null,
+      mesafeMax: cikis.filter(c => c.mesafe != null).length ? Math.max.apply(null, cikis.filter(c => c.mesafe != null).map(c => c.mesafe)) : null,
+      ihlal: cikisIhlal, liste: cikis },
+    pas: { n: paslar.length, ust159: pas159.length, ust159Oran: paslar.length ? +(100 * pas159.length / paslar.length).toFixed(1) : 0, ust20: pas20.length, uzunlar: pas159, sokmaN: paslar.filter(p => p.sokma).length, sokmaMax: paslar.filter(p => p.sokma).length ? Math.max.apply(null, paslar.filter(p => p.sokma).map(p => p.uz)) : 0 },
+    epizot: { n: epizot.length, uzun: epizotUzun, toplamSn: +epizot.reduce((a, e) => a + e.sure, 0).toFixed(1), baglam: Object.keys(epizotBaglam).sort((a, b) => epizotBaglam[b] - epizotBaglam[a]).slice(0, 5).map(k => k + ':' + epizotBaglam[k].toFixed(1) + 's') },
+    gecis: { n: gecisler.length, iyi: gecisIyi, iyiOran: gecisler.length ? +(100 * gecisIyi / gecisler.length).toFixed(0) : null, uzunlar: gecisUzun, dagilim: (() => { const o = {}; gecisler.forEach(g => o[g.poz] = (o[g.poz] || 0) + 1); return o; })() }
+  };
+
   const ek42 = {
     yeniBicim,
     sahaDisi: yeniBicim ? { kareOran: +(100 * disKare / K.length).toFixed(2), kare: disKare, maxPx: +disMax.toFixed(1), baglam: enBuyukler(disTip, 3) } : null,
@@ -488,7 +577,8 @@ function analiz(K, BAL, ADLAR) {
       duzListe,
       isinListe
     },
-    ek42
+    ek42,
+    ek43
   };
 }
 
@@ -542,6 +632,22 @@ function bas(R, dosya) {
       L.push(`  öznesiz sonuç satırı           ${String(A.oznesiz + ' / ' + A.sonucSatir).padStart(16)}    0` + (A.oznesiz ? '   ör: ' + A.oznesizOrnek.join(' | ') : ''));
       L.push(`  nokta + küçük harf (balon)     ${String(A.noktalama + ' / ' + A.satir).padStart(16)}    0` + (A.noktalama ? '   ör: ' + A.noktalamaOrnek.join(' | ') : ''));
     } else L.push('  anlatım                        (balon kaydı yok)');
+    L.push('');
+  }
+  if (R.ek43) {
+    const F = R.ek43;
+    L.push('  ── FAZ 43: İŞ 1 · İŞ 2 · İŞ 4 · İŞ 8 ──');
+    L.push(`  çember çıkışı (shot/rim → yer)  ${String(F.cikis.n).padStart(15)}    [doğrudan held/pass: ${F.cikis.dogrudan} · pasla ele: ${F.cikis.pasIle} · ele geçmeyen: ${F.cikis.eleYok}]`);
+    L.push(`     çıkış→ele en kısa süre      ${String((F.cikis.eleMin != null ? F.cikis.eleMin : '-') + ' sn').padStart(15)}    ≥ 0,6 sn (her vaka)`);
+    L.push(`     alanın çıkış anı mesafesi   ${String((F.cikis.mesafeMax != null ? F.cikis.mesafeMax : '-') + ' m').padStart(15)}    ≤ 2,5 m (her vaka)`);
+    if (F.cikis.ihlal.length) L.push('     İHLAL: ' + F.cikis.ihlal.map(c => `${c.t}s ${c.from}→${c.to}${c.dogrudan ? '(DOĞRUDAN)' : ''} ${c.tip} ele=${c.ele != null ? c.ele + 's' : '-'}${c.eleMod === 'pass' ? '(PAS)' : ''} ${c.mesafe != null ? c.mesafe + 'm' : ''} ${c.alan || ''}`).join(' | '));
+    L.push(`  pas > 15,9 m oranı             ${String(F.pas.ust159Oran + '% (' + F.pas.ust159 + '/' + F.pas.n + ')').padStart(16)}    ≤ 4%   [sokma pası ${F.pas.sokmaN} · en uzun sokma ${F.pas.sokmaMax} m]`);
+    L.push(`  pas > 20 m                     ${String(F.pas.ust20).padStart(16)}    ≤ 1 / maç`);
+    if (F.pas.uzunlar.length) L.push('     uzun paslar: ' + F.pas.uzunlar.map(p => `${p.t}s ${p.uz}m ${p.sokma ? 'SOKMA' : p.onceMod} ${p.veren} ${p.tip}`).join(' | '));
+    L.push(`  sahipsiz epizot                ${String(F.epizot.n + ' (' + F.epizot.toplamSn + ' sn)').padStart(16)}    1 sn üstü = 0   [${F.epizot.baglam.join(' · ')}]`);
+    if (F.epizot.uzun.length) L.push('     1 sn ÜSTÜ: ' + F.epizot.uzun.map(e => `${e.t}s ${e.sure}sn ${e.tip}/${e.mod}${e.ch ? '/takip' : ''}`).join(' | '));
+    L.push(`  yarı sahayı topla geçen PG/SG/SF ${String((F.gecis.iyiOran != null ? F.gecis.iyiOran : '-') + '% (' + F.gecis.iyi + '/' + F.gecis.n + ')').padStart(14)}    ≥ 90%   ${JSON.stringify(F.gecis.dagilim)}`);
+    if (F.gecis.uzunlar.length) L.push('     PF/C geçişleri: ' + F.gecis.uzunlar.map(g => `${g.t}s ${g.poz} tutma=${g.tutma}s ${g.tip}`).join(' | '));
     L.push('');
   }
   L.push(`  konsol hatası: ${R.konsolHata}` + (R.startErr ? ' · startMatch: ' + R.startErr : ''));

@@ -1,0 +1,580 @@
+{
+  "kare": 11162,
+  "sure": 200,
+  "sahneKat": 1.46,
+  "poz": 34,
+  "top": {
+    "enYuksek": 21.7,
+    "enYuksekSicrama": 35.7,
+    "isinlanma": 8,
+    "isinlanmaPozBasi": 0.24,
+    "isinModlar": {
+      "pass": 8
+    },
+    "pasOlay": 51,
+    "pasPlatoKare": 1129,
+    "ort": 4.95
+  },
+  "oyuncu": {
+    "ort": 2.94,
+    "ortMac": 2.01,
+    "p50": 2.09,
+    "p90": 7.21,
+    "p99": 9.77,
+    "p50m": 1.43,
+    "p90m": 4.94,
+    "p99m": 6.69,
+    "enYuksek": 13.43,
+    "enYuksekMac": 9.2,
+    "ust75mac": 0,
+    "ust65mac": 1.2,
+    "alt05mac": 19.9,
+    "ust8": 7.5,
+    "alt05": 16.8,
+    "alt05macCanli": 12.9,
+    "canliOrnek": 87330,
+    "ortMacCanli": 2.07,
+    "ornek": 111590,
+    "donKova": [
+      "HUC/set/yerinde/u0/held %7.9",
+      "HUC/gecis/yerinde/u0/held %5.5",
+      "SAV/set/yerinde/u2/held %5.4",
+      "SAV/set/uzak/u2/held %4.7",
+      "HUC/top/set/yerinde/u0/held %4.2",
+      "SAV/set/yerinde/u1/held %4.2",
+      "HUC/top/gecis/yerinde/u0/held %3.9",
+      "HUC/gecis/yerinde/u0/loose %3.2",
+      "SAV/gecis/uzak/u2/held %3.1",
+      "SAV/set/uzak/u1/held %3.0"
+    ]
+  },
+  "egrilik": {
+    "olcum": 3890,
+    "ortAci": 16,
+    "keskin90": 63,
+    "keskinPozBasi": 1.85,
+    "ters150": 140,
+    "ters150Sn": 0.07,
+    "ters150Medyan": 0.03,
+    "duzCapraz": 4,
+    "duzListe": [
+      {
+        "t": 103.818,
+        "tip": "score2",
+        "tipSon": "score2",
+        "poz": "PF",
+        "huc": 0,
+        "y0": 403,
+        "y1": 127
+      },
+      {
+        "t": 147.718,
+        "tip": "score2",
+        "tipSon": "miss3",
+        "poz": "PF",
+        "huc": 1,
+        "y0": 246,
+        "y1": 65
+      },
+      {
+        "t": 39.957,
+        "tip": "score2",
+        "tipSon": "free",
+        "poz": "PG",
+        "huc": 1,
+        "y0": 55,
+        "y1": 156
+      },
+      {
+        "t": 103.818,
+        "tip": "score2",
+        "tipSon": "score2",
+        "poz": "PF",
+        "huc": 1,
+        "y0": 294,
+        "y1": 72
+      }
+    ],
+    "isinListe": [
+      {
+        "t": 55.011,
+        "mod": "pass",
+        "tip": "score2",
+        "v": 29.1
+      },
+      {
+        "t": 84.305,
+        "mod": "pass",
+        "tip": "score2",
+        "v": 26.2
+      },
+      {
+        "t": 128.039,
+        "mod": "pass",
+        "tip": "miss3",
+        "v": 31.9
+      },
+      {
+        "t": 143.329,
+        "mod": "pass",
+        "tip": "score2",
+        "v": 27.3
+      },
+      {
+        "t": 152.993,
+        "mod": "pass",
+        "tip": "miss3",
+        "v": 35.7
+      },
+      {
+        "t": 157.133,
+        "mod": "pass",
+        "tip": "miss2",
+        "v": 31.1
+      },
+      {
+        "t": 158.268,
+        "mod": "pass",
+        "tip": "miss2",
+        "v": 30.6
+      },
+      {
+        "t": 171.037,
+        "mod": "pass",
+        "tip": "hucumFaulu",
+        "v": 25.9
+      }
+    ]
+  },
+  "ek42": {
+    "yeniBicim": true,
+    "sahaDisi": {
+      "kareOran": 0,
+      "kare": 0,
+      "maxPx": 0,
+      "baglam": ""
+    },
+    "sahipsiz": {
+      "kareOran": 2.58,
+      "kare": 288,
+      "tip": "free:122 · foul:111 · miss3:34 · -:15",
+      "mod": "loose:273 · idle:15",
+      "takip": {
+        "takipVar": 273,
+        "takipYok": 15
+      }
+    },
+    "hucumYakin": {
+      "kareOran": 2.72,
+      "setKare": 3083,
+      "baglam": "miss2:43 · score2:27 · foul:12"
+    },
+    "arkaSaha": {
+      "kareOran": 3.24,
+      "kare": 100,
+      "ortOyuncu": 1,
+      "baglam": "miss3:75 · score2:24 · hucumFaulu:1",
+      "kim": "SG/u1:76 · SF/u1:15 · SF/u0:9"
+    },
+    "gizliKare": 0,
+    "anlatim": {
+      "satir": 36,
+      "tr": 36,
+      "en": 0,
+      "enOrnek": [],
+      "sonucSatir": 24,
+      "oznesiz": 0,
+      "oznesizOrnek": [],
+      "noktalama": 0,
+      "noktalamaOrnek": []
+    }
+  },
+  "ek43": {
+    "cikis": {
+      "n": 21,
+      "dogrudan": 0,
+      "pasIle": 2,
+      "eleYok": 0,
+      "eleMin": 0.67,
+      "mesafeMax": 8.75,
+      "ihlal": [
+        {
+          "t": 23.591,
+          "from": "rim",
+          "to": "loose",
+          "tip": "miss3",
+          "ele": 1.95,
+          "eleMod": "held",
+          "mesafe": 2.53,
+          "alan": "HUC/PF",
+          "dogrudan": false
+        },
+        {
+          "t": 40.506,
+          "from": "rim",
+          "to": "loose",
+          "tip": "score2",
+          "ele": 3.46,
+          "eleMod": "pass",
+          "mesafe": 8.75,
+          "alan": "SAV/PG",
+          "dogrudan": false
+        },
+        {
+          "t": 63.127,
+          "from": "rim",
+          "to": "loose",
+          "tip": "score2",
+          "ele": 2.72,
+          "eleMod": "held",
+          "mesafe": 5.77,
+          "alan": "HUC/PF",
+          "dogrudan": false
+        },
+        {
+          "t": 76.663,
+          "from": "rim",
+          "to": "loose",
+          "tip": "score2",
+          "ele": 2.32,
+          "eleMod": "held",
+          "mesafe": 5.94,
+          "alan": "HUC/SG",
+          "dogrudan": false
+        },
+        {
+          "t": 129.807,
+          "from": "shot",
+          "to": "loose",
+          "tip": "miss3",
+          "ele": 2.42,
+          "eleMod": "pass",
+          "mesafe": 3.51,
+          "alan": "SAV/SG",
+          "dogrudan": false
+        },
+        {
+          "t": 168.667,
+          "from": "rim",
+          "to": "loose",
+          "tip": "miss2",
+          "ele": 1.34,
+          "eleMod": "held",
+          "mesafe": 2.96,
+          "alan": "SAV/SG",
+          "dogrudan": false
+        }
+      ],
+      "liste": [
+        {
+          "t": 14.717,
+          "from": "rim",
+          "to": "loose",
+          "tip": "score3",
+          "ele": 0.82,
+          "eleMod": "held",
+          "mesafe": 1.36,
+          "alan": "HUC/C",
+          "dogrudan": false
+        },
+        {
+          "t": 23.591,
+          "from": "rim",
+          "to": "loose",
+          "tip": "miss3",
+          "ele": 1.95,
+          "eleMod": "held",
+          "mesafe": 2.53,
+          "alan": "HUC/PF",
+          "dogrudan": false
+        },
+        {
+          "t": 32.727,
+          "from": "rim",
+          "to": "loose",
+          "tip": "score3",
+          "ele": 0.82,
+          "eleMod": "held",
+          "mesafe": 1.23,
+          "alan": "HUC/PG",
+          "dogrudan": false
+        },
+        {
+          "t": 40.506,
+          "from": "rim",
+          "to": "loose",
+          "tip": "score2",
+          "ele": 3.46,
+          "eleMod": "pass",
+          "mesafe": 8.75,
+          "alan": "SAV/PG",
+          "dogrudan": false
+        },
+        {
+          "t": 49.148,
+          "from": "rim",
+          "to": "loose",
+          "tip": "free",
+          "ele": 0.84,
+          "eleMod": "held",
+          "mesafe": 2.22,
+          "alan": "SAV/PG",
+          "dogrudan": false
+        },
+        {
+          "t": 51.75,
+          "from": "rim",
+          "to": "loose",
+          "tip": "free",
+          "ele": 1.2,
+          "eleMod": "held",
+          "mesafe": 2.03,
+          "alan": "SAV/PG",
+          "dogrudan": false
+        },
+        {
+          "t": 63.127,
+          "from": "rim",
+          "to": "loose",
+          "tip": "score2",
+          "ele": 2.72,
+          "eleMod": "held",
+          "mesafe": 5.77,
+          "alan": "HUC/PF",
+          "dogrudan": false
+        },
+        {
+          "t": 76.663,
+          "from": "rim",
+          "to": "loose",
+          "tip": "score2",
+          "ele": 2.32,
+          "eleMod": "held",
+          "mesafe": 5.94,
+          "alan": "HUC/SG",
+          "dogrudan": false
+        },
+        {
+          "t": 89.975,
+          "from": "rim",
+          "to": "loose",
+          "tip": "score2",
+          "ele": 0.83,
+          "eleMod": "held",
+          "mesafe": 1.04,
+          "alan": "HUC/C",
+          "dogrudan": false
+        },
+        {
+          "t": 103.94,
+          "from": "rim",
+          "to": "loose",
+          "tip": "score2",
+          "ele": 0.83,
+          "eleMod": "held",
+          "mesafe": 0.85,
+          "alan": "HUC/PF",
+          "dogrudan": false
+        },
+        {
+          "t": 111.864,
+          "from": "rim",
+          "to": "loose",
+          "tip": "score2",
+          "ele": 0.82,
+          "eleMod": "held",
+          "mesafe": 0.37,
+          "alan": "SAV/PF",
+          "dogrudan": false
+        },
+        {
+          "t": 117.077,
+          "from": "rim",
+          "to": "loose",
+          "tip": "score2",
+          "ele": 0.82,
+          "eleMod": "held",
+          "mesafe": 2.31,
+          "alan": "HUC/C",
+          "dogrudan": false
+        },
+        {
+          "t": 129.807,
+          "from": "shot",
+          "to": "loose",
+          "tip": "miss3",
+          "ele": 2.42,
+          "eleMod": "pass",
+          "mesafe": 3.51,
+          "alan": "SAV/SG",
+          "dogrudan": false
+        },
+        {
+          "t": 138.704,
+          "from": "rim",
+          "to": "loose",
+          "tip": "reb",
+          "ele": 0.67,
+          "eleMod": "held",
+          "mesafe": 2.29,
+          "alan": "HUC/PG",
+          "dogrudan": false
+        },
+        {
+          "t": 147.292,
+          "from": "rim",
+          "to": "loose",
+          "tip": "score2",
+          "ele": 0.81,
+          "eleMod": "held",
+          "mesafe": 0.37,
+          "alan": "HUC/PF",
+          "dogrudan": false
+        },
+        {
+          "t": 154.952,
+          "from": "rim",
+          "to": "loose",
+          "tip": "miss3",
+          "ele": 1.83,
+          "eleMod": "held",
+          "mesafe": 1.04,
+          "alan": "SAV/SG",
+          "dogrudan": false
+        },
+        {
+          "t": 160.867,
+          "from": "shot",
+          "to": "loose",
+          "tip": "miss2",
+          "ele": 0.81,
+          "eleMod": "held",
+          "mesafe": 2.37,
+          "alan": "SAV/PF",
+          "dogrudan": false
+        },
+        {
+          "t": 168.667,
+          "from": "rim",
+          "to": "loose",
+          "tip": "miss2",
+          "ele": 1.34,
+          "eleMod": "held",
+          "mesafe": 2.96,
+          "alan": "SAV/SG",
+          "dogrudan": false
+        },
+        {
+          "t": 179.737,
+          "from": "rim",
+          "to": "loose",
+          "tip": "miss2",
+          "ele": 1.25,
+          "eleMod": "held",
+          "mesafe": 1.93,
+          "alan": "SAV/PF",
+          "dogrudan": false
+        },
+        {
+          "t": 190.622,
+          "from": "rim",
+          "to": "loose",
+          "tip": "free",
+          "ele": 0.81,
+          "eleMod": "held",
+          "mesafe": 2.25,
+          "alan": "SAV/SG",
+          "dogrudan": false
+        },
+        {
+          "t": 193.266,
+          "from": "rim",
+          "to": "loose",
+          "tip": "free",
+          "ele": 0.82,
+          "eleMod": "held",
+          "mesafe": 1.99,
+          "alan": "HUC/SG",
+          "dogrudan": false
+        }
+      ]
+    },
+    "pas": {
+      "n": 51,
+      "ust159": 2,
+      "ust159Oran": 3.9,
+      "ust20": 1,
+      "uzunlar": [
+        {
+          "t": 70.157,
+          "uz": 19,
+          "sokma": false,
+          "tip": "score2",
+          "veren": "HUC/SF",
+          "onceMod": "held"
+        },
+        {
+          "t": 83.163,
+          "uz": 24.1,
+          "sokma": false,
+          "tip": "score2",
+          "veren": "HUC/SF",
+          "onceMod": "held"
+        }
+      ],
+      "sokmaN": 13,
+      "sokmaMax": 10
+    },
+    "epizot": {
+      "n": 9,
+      "uzun": [
+        {
+          "t": 41.964,
+          "sure": 1.82,
+          "tip": "free",
+          "mod": "loose",
+          "ch": 1,
+          "idx": 9
+        },
+        {
+          "t": 64.135,
+          "sure": 1.23,
+          "tip": "foul",
+          "mod": "loose",
+          "ch": 1,
+          "idx": 11
+        }
+      ],
+      "toplamSn": 5.1,
+      "baglam": [
+        "free/loose:2.2s",
+        "foul/loose:2.0s",
+        "miss3/loose:0.6s",
+        "-/idle:0.3s",
+        "score2/loose:0.1s"
+      ]
+    },
+    "gecis": {
+      "n": 19,
+      "iyi": 18,
+      "iyiOran": 95,
+      "uzunlar": [
+        {
+          "t": 182.424,
+          "poz": "PF",
+          "huc": 1,
+          "tutma": 0.62,
+          "tip": "reb"
+        }
+      ],
+      "dagilim": {
+        "PG": 8,
+        "SG": 10,
+        "PF": 1
+      }
+    }
+  },
+  "dil": "tr",
+  "konsolHata": 0,
+  "startErr": null
+}
