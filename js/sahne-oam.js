@@ -582,9 +582,10 @@ function oamHakemKur(S){
       layer.insertBefore(g,layer.firstChild);   /* oyuncuların altında çizilir */
       return g;
     };
-    S.hakem=[{ad:'bas',g:mk('H'),x:COURT_MID,y:CRT_Y0-14,tx:COURT_MID,ty:CRT_Y0-14},
-             {ad:'arka',g:mk('H'),x:COURT_MID-120,y:CRT_Y1+14,tx:COURT_MID-120,ty:CRT_Y1+14},
-             {ad:'orta',g:mk('H'),x:COURT_MID+120,y:CRT_Y1+14,tx:COURT_MID+120,ty:CRT_Y1+14}];
+    /* maç başı: orta hakem çemberde (hava atışını o atar), diğer ikisi dip çizgi dışında */
+    S.hakem=[{ad:'bas',g:mk('H'),x:CRT_X0-16,y:250,tx:CRT_X0-16,ty:250},
+             {ad:'arka',g:mk('H'),x:CRT_X1+16,y:250,tx:CRT_X1+16,ty:250},
+             {ad:'orta',g:mk('H'),x:COURT_MID,y:250,tx:COURT_MID,ty:250}];
     S.hakem.forEach(h=>_tokSet(h.g,h.x,h.y,1));
   }catch(e){}
 }
@@ -595,18 +596,26 @@ function oamHakemTick(S,dt){
     const rim=_rim(offLeft); const dir=offLeft?-1:1;
     const [bas,arka,orta]=S.hakem;
     const topUst=(b.y<250);
-    if(S._hakemTop&&S._hakemTop.aktif){
-      /* baş hakem topu almaya gider */
-      bas.tx=b.x; bas.ty=b.y;
+    /* Hakemler ÇİZGİNİN DIŞINDA durur (FAZ 47 ilk sürümde işaret hatası: 14 px İÇERİDE — kullanıcı
+       "hakemler oyuncu gibi sahanın içinde dolaşıyor"). Dip çizgi: x = çizgi ∓ 16; kenar: y = çizgi ± 16. */
+    const dipX=offLeft?(CRT_X0-16):(CRT_X1+16);        /* hücum edilen dip çizginin dışı */
+    const ustY=CRT_Y0-16, altY=CRT_Y1+16;              /* kenar çizgilerinin dışı */
+    const havaAtisi=(!S.curType||S.curType==='start')&&S.time<3.5&&(mState.idx|0)<=2;
+    if(havaAtisi){
+      /* hava atışı: orta hakem çemberde topu atar (top oradan yükselir), diğer ikisi kenarda */
+      orta.tx=COURT_MID; orta.ty=250;
+      bas.tx=CRT_X0-16; bas.ty=250; arka.tx=CRT_X1+16; arka.ty=250;
+    } else if(S._hakemTop&&S._hakemTop.aktif){
+      bas.tx=b.x; bas.ty=b.y;                                                      /* baş hakem topu almaya gider */
     } else if(S._ftAktif){
-      bas.tx=_inX(rim[0]-dir*6); bas.ty=CRT_Y0+16+(topUst?0:0);                       /* dip çizgi, potanın yanı */
-      arka.tx=_inX(rim[0]-dir*(THREE_R+70)); arka.ty=CRT_Y1-20;
-      orta.tx=_inX(rim[0]-dir*150); orta.ty=CRT_Y0+40;
+      bas.tx=dipX; bas.ty=250-46;                                                  /* dip çizgi dışı, potanın yanı */
+      arka.tx=_inX(rim[0]-dir*(THREE_R+60)); arka.ty=altY;
+      orta.tx=_inX(rim[0]-dir*150); orta.ty=ustY;
     } else {
-      /* baş: hücum edilen dip çizgi, top tarafı · arka: topun 5 m gerisi, karşı kenar · orta: SA çizgisi hizası */
-      bas.tx=_inX(rim[0]-dir*(-4)); bas.ty=topUst?CRT_Y0+14:CRT_Y1-14;
-      const geriX=b.x-dir*170; arka.tx=Math.max(CRT_X0+30,Math.min(CRT_X1-30,geriX)); arka.ty=topUst?CRT_Y1-14:CRT_Y0+14;
-      orta.tx=_inX(rim[0]-dir*165); orta.ty=topUst?CRT_Y1-16:CRT_Y0+16;
+      /* baş: hücum edilen dip çizginin dışı, top tarafı · arka: topun 5 m gerisi, karşı kenar dışı · orta: SA çizgisi hizası, top tarafı kenar dışı */
+      bas.tx=dipX; bas.ty=topUst?170:330;
+      const geriX=b.x-dir*170; arka.tx=Math.max(CRT_X0+20,Math.min(CRT_X1-20,geriX)); arka.ty=topUst?altY:ustY;
+      orta.tx=_inX(rim[0]-dir*165); orta.ty=topUst?ustY:altY;
     }
     S.hakem.forEach(h=>{
       const dx=h.tx-h.x, dy=h.ty-h.y, d=Math.hypot(dx,dy);

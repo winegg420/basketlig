@@ -1406,3 +1406,14 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
 - **TOPU SÜREN TAKIMINI BEKLEMEZ AMA TEK BAŞINA DA GİTMEZ (FAZ 47):** geçişte topu tutan, üç
   takım arkadaşından 150 px+ öndeyse JOG'a düşer; uzunlar KOS ile gelir. Uzunları JOG'a
   düşürmek "topu süren tepede tek başına bekliyor" görüntüsünü ÜRETTİ (FAZ 46 ara ölçümü).
+- **"IŞINLANMA 0" ÖLÇÜMÜ HIZLI MAKİNEDE ALINDIYSA HİÇBİR ŞEY KANITLAMAZ (FAZ 47c, en pahalı ders):**
+  rAF döngüsü kare süresini 0,05 sn'ye kırpıyordu; 10-20 fps'lik makinede sim gerçek zamanın
+  yarısı hızında akıyor ve `main.js` "sahne geride" yolu 1,2 sn'de bir `_simCatchUp` ile ON JETONU
+  hedefine ışınlıyordu. 60 fps'lik bu makinede ölçüm hep "0" dedi; kullanıcı "sürekli ışınlanma"
+  gördü. Kare başına sim süresi artık 0,25 sn'ye kadar (33 ms alt adım × 32). Sahne ölçümü
+  `iz-kaydet --yavas=4` (CDP `Emulation.setCPUThrottlingRate`) ile de koşulmalı; tek karelik
+  sıçrama `tools/isin-oyuncu.js` ile sayılır (100 ms pencere ortalaması kısa sıçramayı yutar).
+- **HAKEM ÇİZGİNİN DIŞINDA DURUR — İŞARETİ ÖLÇEREK DOĞRULA (FAZ 47c):** ilk sürüm `CRT_Y1-14`
+  (içeri) yazdı; kontak sayfasında fark edilmedi çünkü 11 px'lik gri jeton kenarda "dışarıda
+  gibi" duruyordu. Kural: dip çizgi `CRT_X0-16 / CRT_X1+16`, kenar `CRT_Y0-16 / CRT_Y1+16`.
+  Hava atışını orta hakem çemberden atar (kurulumda orada durur, 3,5 sn sonra kenara çıkar).

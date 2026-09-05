@@ -82,6 +82,9 @@ async function main() {
   page.on('console', m => { if (m.type() === 'error') hatalar.push(m.text()); });
   page.on('pageerror', e => hatalar.push(e.message));
   await page.addInitScript('(' + TOHUM.toString() + ')(' + SEED + ');');
+  /* FAZ 47: --yavas=N — CPU N kat yavaşlatılır (kullanıcının makinesi gibi); ışınlanma/kare
+     takılması bu koşulda ölçülür. */
+  { const YAVAS = num('yavas', 1); if (YAVAS > 1) { try { const cdp = await page.context().newCDPSession(page); await cdp.send('Emulation.setCPUThrottlingRate', { rate: YAVAS }); console.log('CPU yavaşlatma: ' + YAVAS + '×'); } catch (e) { console.log('CPU yavaşlatma kurulamadı: ' + e); } } }
   /* FAZ 42-B: DİL TÜRKÇE'YE SABİTLENİR. Headless Chrome `navigator.language` olarak en-US
      bildirir ve i18n ilk açılışta buna göre İngilizceye düşer — anlatım ölçümü (E1/E2/E3)
      bu durumda test artefaktı ölçer. Kilit oyun betiklerinden ÖNCE kurulur. */

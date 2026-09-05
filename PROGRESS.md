@@ -8160,3 +8160,20 @@ hedefleri (kulvarlar 20 m ötede) anlık ortalama sapmayı büyütür; kapı dav
 - Set fazında oyuncu yayılımı `spacing-check`'in "potaya ortalama uzaklık ≤ 7 m" ve
   "ball-you-man ≥ %85" kapılarını tutmuyor (8,3 m · %80): şut noktasına göre şablon seçimi.
 - Sayı sonrası "içeriden" sayılan 2 vaka `_oobDonus` bayrağının bayat kalması (ölçüm etiketi).
+
+### FAZ 47c — KULLANICI: "hakemler sahanın içinde dolaşıyor · hava atışını hakem atmıyor · sürekli ışınlanma"
+
+1. **Hakem konumları:** ilk sürümde işaret hatası — hedefler çizginin 14 px İÇİNDEydi (kenar
+   `CRT_Y1-14`, dip `rim.x+4`). Şimdi baş hakem dip çizginin 16 px DIŞINDA top tarafında
+   (y 170/330), arka hakem topun 5 m gerisinde karşı kenarın dışında, orta hakem serbest atış
+   çizgisi hizasında top tarafı kenarın dışında; serbest atışta baş hakem dip çizgi dışı potanın
+   yanı. Kurulumda orta hakem ÇEMBERDE — hava atışını o atar (top onun elinden yükselir), 3,5 sn
+   sonra kenara çıkar; diğer ikisi dip çizgi dışında.
+2. **"Sürekli ışınlanma" kök nedeni (kullanıcının makinesi):** rAF döngüsü kare süresini 0,05 sn'ye
+   kırpıyordu; 10-20 fps'lik makinede sim gerçek zamanın yarısı hızında akıyor, 1,2 sn'de bir
+   `main.js` "sahne geride" yolu `_simCatchUp` ile ON JETONU hedefine ışınlıyordu. Bu makinede
+   (60 fps) hiç görünmediği için ölçümler "ışınlanma 0" diyordu. `iz-kaydet --yavas=4` (CDP CPU
+   kısıtlaması) ile yeniden üretildi. Düzeltme: kare başına sim süresi 0,25 sn'ye kadar (33 ms'lik
+   alt adımlarla, 32 adım) — yavaş makinede sahne gerçek zamanı tutar, yetişme yolu yalnız gerçek
+   arka plan dönüşünde çalışır. Yeni araç `tools/isin-oyuncu.js` tek karelik jeton/top sıçramasını
+   (>30 px) bağlamıyla listeler (100 ms pencere ortalaması kısa sıçramayı yutuyordu).

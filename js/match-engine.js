@@ -560,7 +560,7 @@ function _simStart(){
     if(!S.last) S.last=ts;
     S._rafAt=_rtNow();   /* FAZ 42-B §C: sahne bu anda gerçekten çizildi (olay kuyruğu bunu okur) */
     const raw=(ts-S.last)/1000;
-    const dtReal=Math.min(0.05,raw);   /* tek karede fizik sıçramasın */
+    const dtReal=Math.min(0.25,raw);   /* tek karede fizik sıçramasın · FAZ 47: 0,05 → 0,25 — yavaş makinede (10 fps) sim gerçek zamanın gerisinde kalıp main.js yetişme yolunu (ışınlama) tetikliyordu; _simStep 33 ms alt adımlarla böler */
     S.last=ts;
     /* maç bittikten ~3sn sonra döngüyü bırak (pil) */
     if(typeof mState!=='undefined'&&mState&&mState.running===false&&!mState.paused){
@@ -617,7 +617,7 @@ function _simStep(dtReal){
   const rate=Math.max(0.5,Math.min(4,(typeof mState!=='undefined'&&mState&&mState.rate)||1));
   let rem=dtReal*rate;
   let guard=0;
-  while(rem>0.0005&&guard++<12){
+  while(rem>0.0005&&guard++<32){   /* FAZ 47: 0,25 sn × hız 4 = 1 sn → 32 alt adım */
     const h=Math.min(0.0333,rem);
     _simTick(h);
     rem-=h;
