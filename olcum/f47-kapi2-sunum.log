@@ -1,0 +1,43 @@
+Statik sunucu: http://127.0.0.1:59940 · taban pencere 240000ms · üst sınır 900000ms · hız 2×
+  pencere: 900 sn · 2 maç · ÖRNEKLEM YETERSİZ: M9 uzun ribaundu (payda), M12 and-1
+  örneklem: m9 16/40 · and1 0/2 · hucumReb 30/5 · ft 17/12 · tasima 120/20 · sokma 77/40 · ftDrib 35/6 · sema 7/3 · sirtDonuk 988/200 · perde 97/3 · yaySmac 6/3 · yayUzak 81/5 · yayFloat 11/3 · yayTurnike 39/5
+
+══ CANLI SUNUM DAVRANIŞ DENETİMİ ══
+  ribaund olayı: 38 (uzun aldı: 10) · and-1: 0 · hücum ribaundu: 30
+  motor kararı: taşıyıcı uzun olan pozisyon 173, outlet kurulan 167 · outlet hedefi guard olan 222 · hedef rol dağılımı {"0":165,"1":57}
+  ✓ M9  Ribaund sonrası çıkış (outlet) pası
+       uzun ribaundu 10 kez aldı ve hücum kuruldu → 10 kez topu guard'a çıkardı (%100, hedef ≥ %80) · kapsam dışı vaka: 28 · kaçanlarda sonraki taşıyıcının rolü: {}
+  ✗ M12  AND-1 ek serbest atışı canlandırılıyor
+       ÖRNEK YOK — bu pencerede hiç and-1 olmadı (olasılık %8,5); --ms değerini artır
+  ✓ M14  Hücum ribaundunda şut saati 14 · gösterge boşalmıyor
+       hücum ribaundu 30, saat 14'e döndü: 30 · gösterge boş kare: 0/47034
+  ✓ F14-7  Serbest atışta oyuncular yerleşiyor
+       17 seri · atış anında yerinde 9.6/10 (hedef ≥ 9) · ortalama uzaklık 0.03 m · en uzak 1.57 m · jeton hızı 4 px/sn (hedef < 15)
+  ✓ F19-4  Akış damgası tabelayla aynı yönde (kalan süre)
+       tabela 3:04 · akış "1P 3:02" · damga farkı -2 sn (hedef |fark| ≤ 24, ikisi de geriye sayıyor)
+  ✓ F25-1  Orta sahayı geçen topu 1/2/3 taşıyor
+       120 taşıma · %97.5 rol 0/1/2 (hedef ≥ %85)
+  ✓ F25-2  Set hücumunda donma yok (jeton 1,5 sn+ yerinde çakılı kalmıyor)
+       donma olayı 0
+  ✓ F25-3  Kenardan sokmada takım yakın duruyor
+       77 sokma · ortalama 6.9 m (≤15) · 3+ yakın %100 · 25 m+ ilk pas 0/77
+  ✓ F25-4  Serbest atışta sektirme 1-3
+       35 atış rutini · sektirme 1-3
+  ✓ F25-5  Şemalar farklı yörünge üretiyor
+       pnr: boya %29 · yay %44 | spotup: boya %30 · yay %41 | putback: boya %34 · yay %40 | cut: boya %30 · yay %44 | transition: boya %28 · yay %41 | postup: boya %29 · yay %43 | iso: boya %28 · yay %44 → fark boya 6.3 puan · yay 4.0 puan
+  ✓ F25-6a  Post oyununda hücumcunun yönü potaya ters
+       988 kare · %99 sırtı potaya dönük (hedef ≥ %80)
+  ✓ F25-6b  Perdenin üç aşaması da görülüyor
+       evreler [1,2,3] · 97 damga · devrilme 17 roll / 11 pop
+  şut yörüngesi: uc tepe 108.5px (56) · turnike tepe 48.4px (39) · jumper tepe 95.4px (25) · floater tepe 96.4px (11) · kanca tepe 96.5px (7) · smac tepe 34.4px (6) · tipin tepe 38.3px (4)
+  ✓ F26-1  Şut tipi yörüngeye yansıyor (smaç alçak, uzak şut yüksek)
+       smaç tepe 34.4px (6) < uc tepe 108.5px (56) · hedef smaç < %70
+  ✓ F26-2  Floater turnikeden belirgin yüksek kavis çiziyor
+       floater 96.4px (11) > turnike 48.4px (39) · hedef ≥ 1,4×
+  ✓ F28-1  Maç öncesi her iki istatistik tablosunda rakip adı yazıyor
+       maç içi tablo "Sunum Denetimi" / "Bilbao Raptors" · özet kutu "Sunum Denetimi" / "Bilbao Raptors" · fikstür "Bilbao Raptors"
+  ✓ F26-3  Maç öncesi tabelada rakibin adı yazıyor
+       tabela "Sunum Denetimi" vs "Bilbao Raptors" · fikstürdeki rakip "Bilbao Raptors" · durum "BEKLEMEDE"
+  konsol hatası: 0 
+
+✗ DÜŞEN: M12

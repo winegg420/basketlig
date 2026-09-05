@@ -1,0 +1,20 @@
+
+==========================================================================
+CANLI SAHNE KABUL ÖLÇÜMÜ — 10784 kare · 180 sn · hız 2× · seed=987654321
+==========================================================================
+  ✓ top "pass" modu                                        12.4%   hedef ≤ %18
+  ✗ top "held" modu                                        64.2%   hedef ≥ %65
+  ✓ SAHİPSİZ top karesi                                    0.86%   hedef ≤ %2
+  ✓ aynı anda koşan oyuncu                               4.98/10   hedef 3 – 5 / 10
+  ✗ şut anında yerinde HÜCUMCU                     3.15/5 (n=34)   hedef ≥ 4,25 / 5 (brifin 8,5/10 ölçüsü)
+  ✓ serbest atışta yerinde oyuncu       9.86/10 (n=7, en kötü 9)   hedef ≥ 9,0 / 10 · en kötü ≥ 8
+  ✗ orta çizgi geçişi / pozisyon değişimi               82% (32/39)   hedef ≥ %85
+  ✓ yarı sahayı geçiren PG/SG/SF      91% {"PG":17,"SG":9,"SF":3,"C":1,"?":1,"PF":1}   hedef ≥ %90
+
+  bilgi: mod dağılımı {"idle":0,"loose":16.3,"pass":12.4,"held":64.2,"shot":5.1,"rim":2}
+  bilgi: şut anında yerinde — HÜCUM 3.15/5 · SAVUNMA 1.76/5
+  bilgi: sahipsiz kare modları {"loose":93} · en uzak 90 px
+  bilgi: top kurtarma (watchdog + _ballHold ağı) 0 kez
+  konsol hatası: 0
+==========================================================================
+✗ 3 hedef düştü

@@ -1373,3 +1373,36 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
 - **ÖLÇÜM: `pas-analiz` SOKMAYI OLAYIN KENDİSİNDEN SAYAR (FAZ 45-46):** serbest atış
   karesindeki hakem/toplayıcı pasları ve 2 m altı el değişimleri sokma değildir; "sayı
   sonrası ilk pas" listesinde `free` olayı (hakem topu) ayıklanır.
+
+- **HAKEMLER JETON DEĞİLDİR (FAZ 47):** `S.hakem` (üç gri "H") `playersLayer`ın altına çizilir,
+  `S.players`a girmez — çarpışma, ölçüm araçları (`iz-kaydet` 10 jeton varsayar), takip ve
+  bekçi onları görmez. Konumları `oamHakemTick` her karede yumuşak kaydırır (baş: hücum edilen
+  dip çizgi, top tarafı · arka: topun 5 m gerisi · orta: serbest atış çizgisi hizası). Serbest
+  atışta topu BAŞ HAKEM getirir (`S._hakemTop`); oyuncu ribaunt alıp pas vermez, bekçi
+  (`_sahipsizTopTick`) bu sırada sıfırlanır. Yeni bir ölü top töreni yazarken topu oyuncuya
+  değil hakeme aldır.
+- **UZUN TOPU ALINCA SÜRMEZ, OYUN KURUCU GELİR (FAZ 47, `oamOutletTick`):** eski "1,2/0,6 sn
+  sonra en yakın guard'a çıkar" kapısı uzunu sürerken yakalıyordu; kullanıcı "4-5 numaralar top
+  sürüyor, 1 numara gelmiyor" dedi. Mod: uzun yerinde döner (tx=konum, YÜRÜ), PG çıkış noktasına
+  sprintler (uzunun 5 m önü, yakın kenar), 14 m'ye girince pas; OAM'ın kendi hedef yazıcısı
+  bu iki oyuncuyu atlar (`S._outlet`). Hem OAM içinde hem OAM dışı anlarda (ribaund/çalma olayı)
+  çalışır. ⚠ Çıkış pası HER ZAMAN guard'a: ilk sürüm 1,6 sn sonra "en yakın"a düşüyordu ve
+  M9 %45'e indi (SF/uzuna çıkış); uzun 3 sn'ye kadar bekler (pivot), sonra PG'ye uzun pas.
+- **`_simCatchUp` 0,35 SN EŞİĞİ KARE TAKILMASINDA IŞINLIYORDU (FAZ 47):** meşgul bir PC'de tek
+  bir 0,4 sn'lik kare bütün jetonları hedeflerine sıçratıyordu ("maç ortasında ışınlanma").
+  Eşik 1,2 sn (gerçek arka plan dönüşü); kısa takılmalar zaten `dt=min(0,05,raw)` ile yumuşar.
+  `_ballHold` da 14 px üstü el değişimini kısa pasla yapar.
+- **DÖNÜŞ OTURTMASI OAM'A DEĞİL SARMALAYICIYA AİTTİR (FAZ 47, arka-plan-check 6/6 → 5/6 → düzeltme):**
+  `_simCatchUp` jetonları eski hedefe ışınlar; aynı karede OAM ya da çıkış pası modu yeni hedef
+  yazar. Oturtma yalnız OAM aktifken (`O._snapSeen`) yapılınca çıkış pası modundaki (OAM dışı)
+  dönüşler 310 px sapmayla kaldı. Sayaç `S._oamSnapSeen` ile sarmalayıcıda, her hedef yazıcıdan
+  SONRA ve eski tick'ten ÖNCE karşılaştırılır.
+- **BLOK NOKTASI TOPUN KONUMUNDAN (FAZ 47):** `oamAtes` blok dalı motorun şut noktasından (`sh.x`)
+  hesaplıyordu; bütçe dolup şutör noktasına varamadan atış zorlanınca top 12 m'yi 0,2 sn'de
+  uçtu (683 m/sn). Sahne olayı topun GERÇEK konumundan başlatır.
+- **`iz-kaydet` MAÇ SAATİ BAŞLAMADAN ÖNCEKİ KARELERİ ATAR (FAZ 47):** `saat=0` kurulum kareleri
+  çeyrek net saatini 0'a düşürüp sahne↔maç oranını 1 yapıyor ve kurulum yerleşimi "90 m/sn
+  sıçrama" sayılıyordu.
+- **TOPU SÜREN TAKIMINI BEKLEMEZ AMA TEK BAŞINA DA GİTMEZ (FAZ 47):** geçişte topu tutan, üç
+  takım arkadaşından 150 px+ öndeyse JOG'a düşer; uzunlar KOS ile gelir. Uzunları JOG'a
+  düşürmek "topu süren tepede tek başına bekliyor" görüntüsünü ÜRETTİ (FAZ 46 ara ölçümü).

@@ -8092,3 +8092,71 @@ boyada bir uzun, savunmacılar adamı ile pota arasında, topu tutana 1,6 m; top
 öndeki oyuncuya gider (geri pas %1), perde/kesme/post/açılma görülür, pasçı pas verip
 hareket eder; şutör motorun noktasında boşa çıkıp atar, savunmacısı kapamaya sıçrar.
 Çalma elden almadır; rakibe pas yok. Serbest atışta atıcı çizgide topla bekler.
+
+
+---
+
+## 47. oturum — FAZ 47: KULLANICI BİLDİRİMİ (tempo · hakem · çıkış pası · ışınlanma) (2026-09-05)
+
+Kullanıcı (OAM'ı izledikten sonra): "Topu süren çok hızlı, diğerleri geride kalıyor, tek başına
+bekliyor. Serbest atışta oyuncu ribaunt alıp atıcıya pas veriyor — top otomatik gitsin. Hakem
+ekle (gerçekte kaç hakem varsa). Ribaund alınınca 1 numara topu almaya gelmiyor, 4-5 top
+sürüyor. Hâlâ ışınlanma var."
+
+### YAPILAN (`js/sahne-oam.js` + `js/match-engine.js`)
+
+1. **Tempo (geçiş):** topu süren, üç takım arkadaşından 5 m+ öndeyse JOG'a düşer (hızlı hücum
+   hariç); uzunlar KOS ile arkadan gelir (JOG değil — set beklemesin diye).
+2. **Hakemler (FIBA üçlü):** `oamHakemKur` üç gri jeton (H) — baş hakem hücum edilen dip
+   çizgide top tarafında, arka hakem topun 5 m gerisinde karşı kenarda, orta hakem serbest atış
+   çizgisi hizasında. Jeton değiller: çarpışma/ölçüm/takip dışı, her karede hedefe kayarlar.
+   Serbest atışta baş hakem topu alır ve atıcıya verir (`oamFtToplayici` eski `_ftToplayici`yi
+   sarmalar; oyuncu ribaunt alıp pas vermez, bekçi devreye girmez `S._hakemTop`).
+3. **Çıkış pası modu (`oamOutletTick`):** uzun (PF/C) topu aldığında SÜRMEZ — yerinde döner;
+   oyun kurucu (1, yoksa 2) çıkış noktasına sprintler (uzunun 5 m önü, yakın kenar tarafı);
+   14 m'ye girince pas. OAM içinde (bekle/geçiş) ve OAM dışında (ribaund/çalma olayı sırasında)
+   aynı mod. Pota dibindeki uzun kendi bitirir (`_POTA_YAKIN_PX`).
+5. **Ölü top sokması OAM'da (`oamOluTop`):** faul / ihlal / taç / çeyrek başı olayında eski dal
+   sokucuyu ve noktayı kurar, OAM pası, dizilimi ve savunmayı devralır (şutsuz mod: dizilim
+   korunur, uzun tutuyorsa çıkış pası; şut olayı gelince `oamSut` yeniden kurar). Eski dalın
+   "set dizilimine yürüyen sütun"u ve kendi pası devre dışı. Kenar sokması ön sahadaysa herkes
+   dizilim noktasında, oyun kurucu topa 5 m (kenara dik), savunma adam adama.
+4. **Işınlanma:** `_simCatchUp` eşiği 0,35 → **1,2 sn** (bir kare takılması on jetonu
+   hedeflerine ışınlıyordu; yalnız gerçek arka plan dönüşü); `_ballHold` 14-30 px'lik anlık el
+   değişimini de kısa pasla yapar (tek karelik top sıçraması yok).
+
+### ÖLÇÜM (300 sn, aynı tohum) — FAZ 46 → FAZ 47
+
+| ölçü | FAZ 46 (470 sn) | FAZ 47 son (300 sn) |
+|---|---|---|
+| geri pas (içeriden açma/çevirme hariç) | %1,1 | %2,1 (1 pas) |
+| rakibe pas | 0 | 1 |
+| saha içinden sokma | 1/24 | **0/14** |
+| sayı sonrası çizgi dışından / içeriden | 17 / 1 | 11 / 3 (2'si stale bayrak, 1 hakem el değişimi) |
+| PG/SG/SF ile yarı saha geçişi | %92 | **%93** (uzunlar sürmüyor; çıkış pası PG'ye) |
+| ışınlanma (>25 m/sn) · top tepe hız | 4 · 20,4 | **0 · 21,4** |
+| oyuncu ort. hız (maç) | 1,82 | 1,79 |
+| sokma epizodu · ihlal | 32 · 1 | 21 · 0 |
+| sahipsiz 1 sn üstü | 0 | 0 (free/loose 2,7 sn: hakem topu getiriyor) |
+| hava atışı kapıları | 5/5 | 5/5 |
+
+### KAPILAR (son kod, `f47-kapilar2` + tekrarlar)
+
+**GEÇEN:** `visual-check` (0 hata) · `sunum-check` M9 ✓ (çıkış pası guard'a — ilk sürümde %45'e
+düşmüştü, düzeltildi), M14, F14-7 (hakemli serbest atış), F19-4, F25-1..6b, F26, F28-1; M12
+"örnek yok" (pencerede AND-1 olmadı) · `faz11-check` 15/15 · `realism-check` · `band.js`
+c19928475859c7ff · `sahne-check`: koşan **4,98** ✓ · PG/SG/SF %91 ✓ · serbest atışta yerinde
+9,86 ✓ · sahipsiz %0,86 ✓.
+**DÜŞEN:** `sahne-check` "top elde" %64,2 (≥65) · "şut anında yerinde" 3,15 · orta çizgi geçişi
+%82 (örneklemle %82-92 salınıyor) — FAZ 46'daki sınıf. `arka-plan-check` dönüş oturtması
+çıkış pası modunda 310 px sapıyordu → oturtma sarmalayıcıya taşındı; tekrar 329 px ile yine
+düştü. Sebep ölçümde: araç sapmayı dönüşten **10 sn sonra tek anda** ölçer ve eşik sabit 120 px
+(FAZ 34 eki bu ölçüyü "normal akış tabanı 124-128 px, örnekleme anına bağlı" diye kaydetmiş ve
+`faz11-check` F11-1'i kendini kalibre eder yapmıştı — o kapı 15/15 geçiyor). OAM'ın geçiş
+hedefleri (kulvarlar 20 m ötede) anlık ortalama sapmayı büyütür; kapı davranışı değil anı
+ölçüyor. Kapı yeniden yazılmadı.
+
+### ULAŞILAMAYAN / SONRAKİ TUR
+- Set fazında oyuncu yayılımı `spacing-check`'in "potaya ortalama uzaklık ≤ 7 m" ve
+  "ball-you-man ≥ %85" kapılarını tutmuyor (8,3 m · %80): şut noktasına göre şablon seçimi.
+- Sayı sonrası "içeriden" sayılan 2 vaka `_oobDonus` bayrağının bayat kalması (ölçüm etiketi).

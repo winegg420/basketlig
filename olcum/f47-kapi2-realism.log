@@ -1,0 +1,38 @@
+
+==== GERÇEKÇİLİK DENETİMİ (seed=987654321, 40sn) ====
+kare: 2397 | top modları %: {"idle":0,"loose":12,"pass":21,"held":59,"shot":5,"rim":2}
+İHLALLER:
+  oyuncu saha DIŞI     : 3 kare (%0), maks 7 px
+  TOP saha DIŞI        : 10 kare, maks 16 px
+  ışınlanma (>30px/kare): 0
+  insanüstü hız (>430)  : 3
+  üst üste binme (<26px): 34 kare | minNN 14
+  top taşıyıcıdan kopuk : 0 kare
+KENARDAN SOKMA        : 454 kare | SOKAN çizgi dışına maks 14 px | tam dışarıda 0 kare
+  (sokan HARİÇ herkes saha içinde: ihlal 3 kare)
+  sahipsiz serbest top  : 0 / 295 kare
+SENKRON — yorum ile ANLATTIĞI SAHNE BEATİ arasındaki mutlak fark (hedef ort ≤800 ms · en kötü tip ≤1200 ms):
+  ⋯ foul | olay ↔ yorum                n=  1  ort     0 ms (örneklem az — bilgi)
+  ⋯ free | olay ↔ yorum                n=  1  ort    84 ms (örneklem az — bilgi)
+  ⋯ miss3 | sonuç ↔ çember             n=  1  ort     0 ms (örneklem az — bilgi)
+  ⋯ miss3 | ön parça ↔ şut anı         n=  1  ort     0 ms (örneklem az — bilgi)
+  ⋯ quarter_start | olay ↔ yorum       n=  1  ort     0 ms (örneklem az — bilgi)
+  ⋯ reb | olay ↔ yorum                 n=  1  ort    34 ms (örneklem az — bilgi)
+  ⋯ score2 | sonuç ↔ çember            n=  1  ort     0 ms (örneklem az — bilgi)
+  ⋯ score2 | ön parça ↔ şut anı        n=  1  ort     0 ms (örneklem az — bilgi)
+  ⋯ score3 | sonuç ↔ çember            n=  2  ort     1 ms (örneklem az — bilgi)
+  ⋯ score3 | ön parça ↔ şut anı        n=  2  ort     0 ms (örneklem az — bilgi)
+  ⋯ start | olay ↔ yorum               n=  1  ort     1 ms (örneklem az — bilgi)
+  ✓ en kötü tip ortalaması 0 ms (hedef ≤1200)
+  ✓ anlatım sessizliği: en uzun boşluk 7910 ms · ortalama 3018 ms (hedef en uzun ≤12000 · ortalama ≤5000)
+BİLGİ — olay başından ilk yoruma (koreografi uzunluğu, yargılanmaz):
+  start          n=1 ort 1ms
+  quarter_start  n=1 ort 0ms
+  foul           n=1 ort 0ms
+  score3         n=2 ort 3813ms
+  miss3          n=1 ort 5395ms
+  reb            n=1 ort 34ms
+  score2         n=1 ort 5895ms
+  free           n=1 ort 84ms
+KONSOL HATASI: 0
+✓ tüm senkron hedefleri tuttu

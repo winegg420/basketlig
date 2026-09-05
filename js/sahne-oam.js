@@ -254,6 +254,33 @@ function oamSetBasla(S,O,etiket){
   if(O.degisim&&!O.degisti){ const [a,b2]=O.degisim; const ca=O.spots.get(a), cb=O.spots.get(b2); if(ca&&cb){ O.spots.set(a,cb); O.spots.set(b2,ca); } O.degisti=true; }
 }
 
+/* ── ÖLÜ TOP SOKMASI (FAZ 47b): faul / ihlal / çeyrek başı olayında eski dal sokucuyu ve noktayı
+   kurar; OAM pası, dizilimi ve savunmayı devralır (şutsuz mod: şut olayı gelince `oamSut` her şeyi
+   yeniden kurar). Eski dalın "set dizilimine yürüyen sütun"u ve kendi pası devre dışı. ──────── */
+function oamOluTop(S){
+  try{
+    const b=S.ball; const offP=S.offP, defP=S.defP; if(!offP||!defP||!offP.length) return false;
+    const inb=offP.find(p=>p&&p._oob); if(!inb||!isFinite(inb.tx)) return false;
+    const spot={x:inb.tx,y:inb.ty};
+    const offLeft=S.offSide; if(offLeft==null) return false;
+    const rim=_rim(offLeft), dir=offLeft?-1:1;
+    const offR=_rolesOrder(offP), defR=_rolesOrder(defP);
+    const pg=offR.find(p=>p!==inb&&p.role===0)||offR.find(p=>p!==inb&&_tasiyabilir(p))||offR.find(p=>p!==inb); if(!pg) return false;
+    const spots=oamSpotlar(S,offLeft,offR);
+    let icerde=false; spots.forEach((c)=>{ if(Math.hypot(c[0]-rim[0],c[1]-rim[1])<150) icerde=true; });
+    if(!icerde){ const uzun=offR.filter(p=>p!==pg).sort((a,b2)=>(b2.role|0)-(a.role|0))[0]; if(uzun) spots.set(uzun,[_inX(rim[0]+dir*44),_inY(250+(spot.y<250?54:-54))]); }
+    S.script=[]; S.sIdx=0;                                  /* eski dalın pası OAM'a geçer */
+    const spotOnde=offLeft?(spot.x<COURT_MID):(spot.x>COURT_MID);
+    const O={aktif:true,sutsuz:true,spotOnde,faz:'sokma',t:0,sh:null,shooter:null,pg,outletTok:null,mid:null,offP,defP,offR,defR,offLeft,dir,rim,
+      spots,zincir:[pg],zi:0,holdT:0,holdMin:0.6,scheme:null,fastBreak:false,putback:false,iso:false,isPnr:false,screener:null,cutter:null,postup:false,
+      degisim:null,degisti:true,inb,spot,tFire:99,tInb:2,tAdv:2.5,setDur:99,tSet:null,tGecis:null,res:null,onShoot:null,atildi:false,perdeEvre:0,
+      esle:new Map(),ph:new Map(),zorla:false,sutT:null,_snapSeen:(S._snapN|0)};
+    offR.forEach((p,i)=>{ O.esle.set(p,defR[i]||defR[0]); O.ph.set(p,i*1.3); }); defR.forEach((p,i)=>{ O.ph.set(p,i*1.7+0.5); });
+    S.oam=O; S.canliSet=false; S._setIstek=false; S.defTrack=false; S.cikisSonra=1e9; S.shooter=null;
+    return true;
+  }catch(e){ return false; }
+}
+
 /* ── Şut anı (eski `fire` sözleşmesi: ön parça elden çıkarken, sonuç çemberde) ──────── */
 function oamAtes(){
   const S=oamS(); const O=S&&S.oam; if(!O||O.atildi) return;
@@ -266,7 +293,10 @@ function oamAtes(){
   _lockTok(shooter,_sTip==='smac'?1.0:0.8);
   const dfn=O.esle.get(shooter); if(dfn&&oamD(dfn,shooter)<70) dfn.pop=(sh.contest==='heavy')?0.9:0.55;   /* kapama */
   if(sh.blk){
-    const bx=sh.x+(rim[0]-sh.x)*0.22+_srand(-16,16), by=sh.y+(rim[1]-sh.y)*0.22+_srand(-16,16);
+    /* FAZ 47: blok noktası TOPUN gerçek konumundan (motorun şut noktasından değil) — bütçe dolup
+       şutör noktasına varamadan atış zorlanınca top 12 m'yi 0,2 sn'de "uçuyordu" (683 m/sn). */
+    const S0=oamS(); const b0=S0?S0.ball:null; const sx=(b0&&isFinite(b0.x))?b0.x:sh.x, sy=(b0&&isFinite(b0.y))?b0.y:sh.y;
+    const bx=sx+(rim[0]-sx)*0.22+_srand(-16,16), by=sy+(rim[1]-sy)*0.22+_srand(-16,16);
     let bl=null,bd=1e9; defP.forEach(p=>{ const d=Math.hypot(p.x-sh.x,p.y-sh.y); if(d<bd){bd=d;bl=p;} });
     if(bl) bl.pop=1;
     _ballShoot([bx,by],0.20,false,()=>{
@@ -323,9 +353,7 @@ function oamTick(dt){
   /* ── faz geçişleri ── */
   if(O.faz==='bekle'){
     if(bizde){
-      if(carrier!==pg&&!_tasiyabilir(carrier)&&!O.putback&&O.holdT>0.12&&oamDR(carrier,rim)>_POTA_YAKIN_PX){
-        const h=_pasHedefSinirla(carrier,pg,offP,_SOKMA_MAX_PX)||pg; if(h!==carrier) oamPas(h);
-      }
+      if(carrier!==pg&&!_tasiyabilir(carrier)&&!O.putback){ oamOutletTick(S,dt); }   /* uzun sürmez: PG gelir, çıkış pası */
       if(carrier===pg||_tasiyabilir(carrier)||O.holdT>0.6){ O.faz='gecis'; O.tGecis=O.t; }
     } else if(carrier&&!bizde){
       if(O.holdT>0.2){ _ballLoose(0,0,14); _chase(pg,null,2.2); O.holdT=0; }
@@ -355,7 +383,7 @@ function oamTick(dt){
     }
   }
   else if(O.faz==='gecis'){
-    if(bizde&&carrier!==pg&&!_tasiyabilir(carrier)&&O.holdT>0.15&&!O.putback){ const h=_pasHedefSinirla(carrier,pg,offP,_SOKMA_MAX_PX)||pg; if(h!==carrier) oamPas(h); }
+    if(bizde&&carrier!==pg&&!_tasiyabilir(carrier)&&!O.putback){ oamOutletTick(S,dt); }   /* uzun sürmez: PG gelir, çıkış pası */
     const bh=bizde?carrier:pg;
     const bhSpot=spots.get(bh)||[rim[0]-dir*220,250];
     const vardi=Math.hypot(bh.x-bhSpot[0],bh.y-bhSpot[1])<70;
@@ -372,6 +400,12 @@ function oamTick(dt){
   }
   else if(O.faz==='set'){
     S.canliSet=true;
+    if(O.sutsuz){
+      /* şut olayı henüz gelmedi: dizilim korunur, uzun tutuyorsa çıkış pası; top hareketi yok */
+      if(bizde&&carrier!==pg&&!_tasiyabilir(carrier)) oamOutletTick(S,dt);
+      else if(!bizde&&!ucusta&&carrier){ if(O.holdT>0.2){ _ballLoose(0,0,14); _chase(pg,null,2.2); O.holdT=0; } }
+      oamHedefler(S,O); return;
+    }
     const ts=O.t-O.tSet;
     const kalan=O.tFire-O.t;
     /* şema aşamaları */
@@ -432,18 +466,29 @@ function oamHedefler(S,O){
   /* ── HÜCUM ── */
   offR.forEach((p,i)=>{
     if(!p||p._oob||(S.chase&&S.chase.tok===p)) return;
+    if(S._outlet&&(p===S._outlet.c||p===S._outlet.pg)) return;   /* çıkış pası modu hedefleri yazdı */
     const sp=spots.get(p)||[p.x,p.y];
     let tx=sp[0],ty=sp[1],urg=_URG.KOS;
     if(O.faz==='sokma'){
       const spot=O.spot; const ust=spot.y<250;
-      const T=[[spot.x+dir*165,(ust?spot.y+65:spot.y-65)],[spot.x+dir*250,(ust?380:120)],null,[spot.x+dir*120,(ust?330:170)],[spot.x+dir*290,(ust?spot.y+40:spot.y-40)]];
-      const c=(p===pg)?T[0]:(T[Math.min(i,4)]||null);
-      if(c){ tx=c[0]; ty=c[1]; }
-      urg=(p===pg||p.role<=1)?_URG.KOS:_URG.JOG;
+      if(O.spotOnde){
+        /* ön sahada kenar sokması: herkes dizilim noktasında, oyun kurucu topa 5 m (kenara dik) */
+        if(p===pg){ tx=spot.x+dir*40; ty=ust?spot.y+150:spot.y-150; }
+        urg=(p===pg)?_URG.KOS:_URG.JOG;
+      } else {
+        const T=[[spot.x+dir*165,(ust?spot.y+65:spot.y-65)],[spot.x+dir*250,(ust?380:120)],null,[spot.x+dir*120,(ust?330:170)],[spot.x+dir*290,(ust?spot.y+40:spot.y-40)]];
+        const c=(p===pg)?T[0]:(T[Math.min(i,4)]||null);
+        if(c){ tx=c[0]; ty=c[1]; }
+        urg=(p===pg||p.role<=1)?_URG.KOS:_URG.JOG;
+      }
     } else if(O.faz==='bekle'||O.faz==='gecis'){
-      if(p===carrier){ urg=O.fastBreak?_URG.SPRINT:_URG.KOS; }
+      if(p===carrier){
+        /* topu süren takımı beklemez ama tek başına da gitmez: üç takım arkadaşından 5 m+ öndeyse
+           tempoyu düşürür (kullanıcı: "topu süren çok hızlı, diğerleri geride kalıyor") */
+        let onde=0; offR.forEach(q=>{ if(q!==p&&(dir>0?(p.x-q.x):(q.x-p.x))>150) onde++; });
+        urg=O.fastBreak?_URG.SPRINT:(onde>=3?_URG.JOG:_URG.KOS);
+      }
       else if(p.role===1||p.role===2) urg=_URG.SPRINT;
-      else if(p.role>=3) urg=O.fastBreak?_URG.KOS:_URG.JOG;   /* uzunlar arkadan gelir */
       else urg=_URG.KOS;
       if(O.fastBreak&&p===shooter){ tx=O.sh.x; ty=O.sh.y; urg=_URG.SPRINT; }
     } else if(O.faz==='set'){
@@ -485,7 +530,7 @@ function oamHedefler(S,O){
     const m=offR[i]||offR[0]; if(!m) return;
     let tx,ty,urg=_URG.KOS;
     const dm=oamDR(m,rim);
-    if(O.faz==='sokma'){
+    if(O.faz==='sokma'&&!O.spotOnde){
       tx=(i<=1)?(COURT_MID+dir*90):(COURT_MID-dir*60); ty=TRANS_DEF[i][1]; urg=(i<=1)?_URG.KOS:_URG.JOG;
     } else if((O.faz==='bekle'||O.faz==='gecis')&&topArkaSaha){
       /* geri koş: adam-pota hattında %55, potaya en az 90 px */
@@ -515,6 +560,117 @@ function oamHedefler(S,O){
   });
 }
 
+/* ── HAKEMLER (FAZ 47, kullanıcı isteği): FIBA üçlü hakem — baş (dip çizgi), arka (oyunun
+   gerisi), orta (serbest atış çizgisi hizası, karşı kenar). Jeton değildir: çarpışmaya, ölçüme,
+   takibe girmez; her karede hedefe doğru yumuşak kayar. Serbest atışta topu BAŞ HAKEM getirir
+   (oyuncu ribaunt alıp atıcıya pas vermez). ───────────────────────────────────────────── */
+function oamHakemKur(S){
+  try{
+    if(S.hakem||typeof document==='undefined') return;
+    const layer=document.getElementById('playersLayer'); if(!layer) return;
+    const mk=(etiket)=>{
+      const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+      g.setAttribute('class','court-token court-ref');
+      const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('r','11'); c.setAttribute('fill','#4b5563'); c.setAttribute('stroke','rgba(255,255,255,0.75)'); c.setAttribute('stroke-width','2');
+      const s=document.createElementNS('http://www.w3.org/2000/svg','path');
+      s.setAttribute('d','M-11 0 H11'); s.setAttribute('stroke','rgba(255,255,255,0.55)'); s.setAttribute('stroke-width','3');
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('text-anchor','middle'); t.setAttribute('dy','4'); t.setAttribute('font-size','11'); t.setAttribute('font-weight','800');
+      t.setAttribute('fill','#fff'); t.setAttribute('pointer-events','none'); t.textContent=etiket;
+      g.appendChild(c); g.appendChild(s); g.appendChild(t);
+      layer.insertBefore(g,layer.firstChild);   /* oyuncuların altında çizilir */
+      return g;
+    };
+    S.hakem=[{ad:'bas',g:mk('H'),x:COURT_MID,y:CRT_Y0-14,tx:COURT_MID,ty:CRT_Y0-14},
+             {ad:'arka',g:mk('H'),x:COURT_MID-120,y:CRT_Y1+14,tx:COURT_MID-120,ty:CRT_Y1+14},
+             {ad:'orta',g:mk('H'),x:COURT_MID+120,y:CRT_Y1+14,tx:COURT_MID+120,ty:CRT_Y1+14}];
+    S.hakem.forEach(h=>_tokSet(h.g,h.x,h.y,1));
+  }catch(e){}
+}
+function oamHakemTick(S,dt){
+  try{
+    if(!S.hakem) oamHakemKur(S); if(!S.hakem) return;
+    const b=S.ball; const offLeft=(S.offSide!=null)?S.offSide:(b.x<COURT_MID);
+    const rim=_rim(offLeft); const dir=offLeft?-1:1;
+    const [bas,arka,orta]=S.hakem;
+    const topUst=(b.y<250);
+    if(S._hakemTop&&S._hakemTop.aktif){
+      /* baş hakem topu almaya gider */
+      bas.tx=b.x; bas.ty=b.y;
+    } else if(S._ftAktif){
+      bas.tx=_inX(rim[0]-dir*6); bas.ty=CRT_Y0+16+(topUst?0:0);                       /* dip çizgi, potanın yanı */
+      arka.tx=_inX(rim[0]-dir*(THREE_R+70)); arka.ty=CRT_Y1-20;
+      orta.tx=_inX(rim[0]-dir*150); orta.ty=CRT_Y0+40;
+    } else {
+      /* baş: hücum edilen dip çizgi, top tarafı · arka: topun 5 m gerisi, karşı kenar · orta: SA çizgisi hizası */
+      bas.tx=_inX(rim[0]-dir*(-4)); bas.ty=topUst?CRT_Y0+14:CRT_Y1-14;
+      const geriX=b.x-dir*170; arka.tx=Math.max(CRT_X0+30,Math.min(CRT_X1-30,geriX)); arka.ty=topUst?CRT_Y1-14:CRT_Y0+14;
+      orta.tx=_inX(rim[0]-dir*165); orta.ty=topUst?CRT_Y1-16:CRT_Y0+16;
+    }
+    S.hakem.forEach(h=>{
+      const dx=h.tx-h.x, dy=h.ty-h.y, d=Math.hypot(dx,dy);
+      const v=(S._hakemTop&&S._hakemTop.aktif&&h===bas)?190:125;
+      const adim=Math.min(d,v*dt);
+      if(d>0.5){ h.x+=dx/d*adim; h.y+=dy/d*adim; }
+      _tokSet(h.g,h.x,h.y,1);
+    });
+    /* serbest atış: baş hakem topa varınca topu atıcıya verir */
+    const HT=S._hakemTop;
+    if(HT&&HT.aktif){
+      HT.t=(HT.t||0)+dt;
+      S._sahipsizT=0;                                            /* bekçi oyuncu yollamasın */
+      const d=Math.hypot(bas.x-b.x,bas.y-b.y);
+      if(!b.carrier&&(d<=16||HT.t>2.2)){
+        const sh=HT.shooter; HT.aktif=false;
+        if(sh&&isFinite(sh.x)){ const dd=Math.hypot(sh.x-b.x,sh.y-b.y); b.h=Math.max(b.h||0,14); _ballPass(sh,Math.max(0.35,Math.min(0.9,dd/330))); }
+      } else if(b.carrier){ HT.aktif=false; }
+    }
+  }catch(e){}
+}
+/** Serbest atış arası: top oyuncuya değil HAKEME — eski `_ftToplayici` sarmalanır. */
+function oamFtToplayici(shooter,offP,defP,rim,made){
+  try{
+    const S=oamS(); if(!S||!shooter) return;
+    const b=S.ball;
+    if(!made){ const a=_sr()*6.283; _ballCarom(Math.cos(a)*40,Math.sin(a)*36,_srand(30,38)); }   /* kısa düşüş, oyuncu almaz */
+    S.chase=null;
+    S._hakemTop={aktif:true,shooter,t:0};
+  }catch(e){}
+}
+
+/* ── ÇIKIŞ PASI MODU (OAM dışı anlar — ribaund/çalma sonrası): uzun topu SÜRMEZ, yerinde döner;
+   oyun kurucu çıkış noktasına gelir (uzunun 5 m önü, yakın kenar tarafı), 14 m'ye girince pas.
+   Kullanıcı: "ribaund alınınca 1 numara topu almaya gelsin — 4-5 numaralar top sürüyor". ── */
+function oamOutletTick(S,dt){
+  try{
+    const b=S.ball; const c=b.carrier;
+    if(!c||b.mode!=='held'||c._oob||S._ftAktif||S.inb||(S._hakemTop&&S._hakemTop.aktif)) { S._outlet=null; return; }
+    const offP=S.offP||[]; if(offP.indexOf(c)<0||_tasiyabilir(c)) { S._outlet=null; return; }
+    const offLeft=S.offSide; if(offLeft==null) return;
+    const rim=_rim(offLeft), dir=offLeft?-1:1;
+    if(oamDR(c,rim)<=_POTA_YAKIN_PX) { S._outlet=null; return; }   /* pota dibinde: kendi bitirir */
+    const t=(S.curType||''); if(t==='free'||t==='foul'||t==='mola'||t==='quarter_end'||t==='end'||t==='start'||t==='quarter_start') return;
+    const offR=_rolesOrder(offP);
+    let pg=offR.find(p=>p!==c&&p.role===0)||offR.find(p=>p!==c&&p.role===1)||offR.find(p=>p!==c&&_tasiyabilir(p)); if(!pg) return;
+    if(!S._outlet||S._outlet.c!==c){ S._outlet={c,pg,t:0}; }
+    const O2=S._outlet; O2.t+=dt;
+    /* uzun yerinde döner (topu sürmez) */
+    c.tx=c.x; c.ty=c.y; c._wp=null; _setUrg(c,_URG.YURU);
+    /* oyun kurucu çıkış noktasına: uzunun 5 m önü, yakın kenar tarafı */
+    const ox=_inX(c.x+dir*150), oy=_inY(c.y<250?Math.max(CRT_Y0+40,c.y-70):Math.min(CRT_Y1-40,c.y+70));
+    pg.tx=ox; pg.ty=oy; pg._wp=null; _setUrg(pg,_URG.SPRINT);
+    const d=Math.hypot(pg.x-c.x,pg.y-c.y);
+    /* çıkış pası HER ZAMAN guard'a (M9): PG 14 m'ye girince; gelmiyorsa 3 sn'ye kadar uzun
+       yerinde bekler (pivot), sonra yine PG'ye uzun pas — uzuna/SF'ye çıkış yok. */
+    if((d<=_SOKMA_MAX_PX&&O2.t>=0.25)||O2.t>=3.0){
+      const g2=(d<=_SOKMA_MAX_PX)?pg:(offR.find(p=>p!==c&&(p.role===0||p.role===1)&&Math.hypot(p.x-c.x,p.y-c.y)<=_SOKMA_MAX_PX)||pg);
+      if(g2&&g2!==c){ _ballPass(g2,Math.max(0.36,Math.min(1.1,Math.hypot(g2.x-c.x,g2.y-c.y)/380))); if(typeof sfx==='function') sfx('pass'); }
+      S._outlet=null;
+    }
+  }catch(e){}
+}
+
 /* ── Bağlama (eski fonksiyonlar sarmalanır; `OAM_ACIK=false` ile eski yol geri gelir) ── */
 (function oamBagla(){
   if(typeof animateShotPossession!=='function'||typeof _simTick!=='function'||typeof movePlayersForEvent!=='function') return;
@@ -528,23 +684,32 @@ function oamHedefler(S,O){
     const S=oamS(); const O=S&&S.oam; const aktif=!!(O&&O.aktif);
     if(aktif){
       try{ oamTick(dt); }catch(e){ try{ console.warn('OAM tick',e); }catch(_){} }
-      /* F11-1: arka plandan dönüşte `_simCatchUp` jetonları ESKİ hedeflerine ışınlar, OAM aynı
-         karede yeni hedef yazar; jetonlar yeniden yola çıkmasın diye yeni hedefe de oturtulur. */
-      try{
-        if(O._snapSeen==null) O._snapSeen=S._snapN|0;
-        if((S._snapN|0)!==O._snapSeen){
-          O._snapSeen=S._snapN|0;
-          (S.players||[]).forEach(p=>{ if(!p||p._oob||!isFinite(p.tx)) return; p.x=_inX(p.tx); p.y=_inY(p.ty); p.vx=0; p.vy=0; try{ _tokSet(p.g,p.x,p.y,p.sc); }catch(_){} });
-          if(S.ball&&S.ball.carrier){ S.ball.x=S.ball.carrier.x; S.ball.y=S.ball.carrier.y; }
-        }
-      }catch(e){}
     }
+    if(!aktif&&S){ try{ oamOutletTick(S,dt); }catch(e){} }
+    /* F11-1: arka plandan dönüşte `_simCatchUp` jetonları ESKİ hedeflerine ışınlar ve aynı karede
+       OAM / çıkış pası modu YENİ hedef yazar; jetonlar yeniden yola çıkmasın diye yeni hedefe de
+       oturtulur — OAM aktif olsun olmasın (`S._snapN` sayacı bu karede değiştiyse). */
+    try{
+      if(S&&(S._snapN|0)!==(S._oamSnapSeen|0)){
+        S._oamSnapSeen=S._snapN|0;
+        (S.players||[]).forEach(p=>{ if(!p||p._oob||!isFinite(p.tx)) return; p.x=_inX(p.tx); p.y=_inY(p.ty); p.vx=0; p.vy=0; try{ _tokSet(p.g,p.x,p.y,p.sc); }catch(_){} });
+        if(S.ball&&S.ball.carrier){ S.ball.x=S.ball.carrier.x; S.ball.y=S.ball.carrier.y; }
+      }
+    }catch(e){}
     if(aktif&&S){ const cs=S.canliSet; S.canliSet=false; S.defTrack=false; _eskiTick(dt); S.canliSet=cs; }
     else _eskiTick(dt);
+    if(S){ try{ oamHakemTick(S,dt); }catch(e){} }
   };
+  if(typeof _ftToplayici==='function'){ _ftToplayici=oamFtToplayici; }
   const _eskiMove=movePlayersForEvent;
+  const OLU_TOP=['foul','sakatlikMac','tac','ihlal','hucumFaulu','ihlal24','quarter_start'];
   movePlayersForEvent=function(ev,paint){
     try{ const S=oamS(); if(S&&S.oam&&S.oam.aktif){ S.oam.aktif=false; S.cikisSonra=0; } }catch(e){}
-    return _eskiMove(ev,paint);
+    const r=_eskiMove(ev,paint);
+    try{
+      const S=oamS(); const t=ev&&ev.type;
+      if(OAM_ACIK&&S&&OLU_TOP.indexOf(t)>=0&&!(t==='quarter_start'&&ev.q===1)) oamOluTop(S);
+    }catch(e){}
+    return r;
   };
 })();

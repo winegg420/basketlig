@@ -1,0 +1,11 @@
+Statik sunucu: http://127.0.0.1:54729
+
+[desktop] açılıyor…
+[desktop] ✓ 0 konsol hatası — akış tamam, ekran görüntüleri kaydedildi.
+
+[mobile] açılıyor…
+[mobile] ✓ 0 konsol hatası — akış tamam, ekran görüntüleri kaydedildi.
+
+Ekran görüntüleri: tools\visual-check-output
+
+✓ Görsel test geçti (masaüstü + mobil, 0 hata).

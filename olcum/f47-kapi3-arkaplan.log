@@ -1,0 +1,15 @@
+SEKME ARKA PLANI DENETİMİ (C)
+================================================================
+  önce      : idx 3 · skor 0,0 · sim 6.01 · hidden false
+  gizli/baş : idx 3 · skor 0,0 · sim 6.38 · hidden false · _bgPause false · timer true
+  gizli/son : idx 4 · skor 0,3 · sim 7.88 · hidden false · _bgPause true
+  dönüş     : idx 5 → 8 · skor 3,5 · sim 8.34 → 18.38 · sapma 329 px · top sahipli · running true
+  · bilgi: document.hidden gizliyken false/false (API güvenilmez; koruma sahne/duvar oranına bağlı)
+  ✓ gizlenince duraklatma bayrağı kuruldu (_bgPause) — _bgPause false / true
+  ✓ gizliyken olay kuyruğu DURDU (30 sn, en fazla 1 olay sızar) — idx 3 → 4 · skor 0,0 → 0,3
+  ✓ dönüşte kuyruk sürdü (10 sn içinde olay ya da canlı zamanlayıcı) — idx 5 → 8 · timer true · _bgPause false
+  ✗ dönüşte sahne olaya eşitlendi (jeton sapması ≤ 120 px, top sahipli/hedefli) — sapma 329 px · top sahipli
+  ✓ dönüşte sahne saati akıyor — sim 8.34 → 18.38
+  ✓ konsol hatası 0
+================================================================
+SONUÇ: 5/6 — DÜŞTÜ

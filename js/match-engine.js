@@ -574,7 +574,7 @@ function _simStart(){
        geçiş dizilimine takılı kalıyor, set dizilimine HİÇ ulaşamıyor (FAZ 11 belgesinin
        "oyuncular orta sahada duruyor, boya boş" ölçümünün kaynağı budur).
        Çözüm: boşluk büyükse animasyonu simüle etmek yerine sahneyi güncel olaya eşitle. */
-    if(raw>0.35) { try{ _simCatchUp(); }catch(e){} }
+    if(raw>1.2) { try{ _simCatchUp(); }catch(e){} }   /* FAZ 47: 0,35 sn kare takılması bütün jetonları ışınlıyordu (kullanıcı: "maç ortasında ışınlanma"); yalnız gerçek arka plan (>1,2 sn) */
     else { try{ _simStep(dtReal); }catch(e){} }
     S.raf=requestAnimationFrame(loop);
   };
@@ -1483,7 +1483,7 @@ function _ballHold(p,noDrib){
   const d=Math.hypot(b.x-p.x,b.y-p.y);
   /* M6: üst sınır 0,30 sn iken 400 px lik mesafe ~40 m/sn hızla "pas" oluyordu (ışınlanma).
      Süre artık _ballPass in doğal hesabına bırakıldı: d/520, en çok 0,90 sn. */
-  if(d>30){ _ballPass(p,Math.max(0.12,Math.min(0.90,d/520))); return; }
+  if(d>14){ _ballPass(p,Math.max(0.12,Math.min(0.90,d/520))); return; }   /* FAZ 47: 14-30 px anlık el değişimi de kısa pas (tek karelik sıçrama yok) */
   if(b.carrier!==p) p._topAldi=null;   /* §7.1: topu YENİ alan oyuncunun 1,2 sn sayacı sıfırlanır */
   if(b.carrier&&b.carrier!==p) b._pasSonra=null;   /* FAZ 43: el değiştirince bekleyen gecikmeli pas düşer · FAZ 45: top UÇARAK gelince (önceki taşıyıcı yok) düşmez — serbest atış toplayıcısı topu tutup kalıyordu */
   b.mode='held'; b.carrier=p; b.t=0; b.noDrib=!!noDrib; b.vx=b.vy=b.vh=0;
