@@ -184,6 +184,9 @@ async function main() {
 
 /* ── ANALİZ ────────────────────────────────────────────────────────────────────────── */
 function analiz(K, BAL, ADLAR) {
+  /* FAZ 47: maç saati başlamadan önceki kareler (saat=0, kurulum) atılır — aksi hâlde çeyrek
+     net saati 0 çıkıp sahne↔maç oranı 1'e düşüyor ve kurulum yerleşimi "90 m/sn sıçrama" oluyordu. */
+  { const k0 = K.findIndex(k => k && k.saat > 0); if (k0 > 0) K = K.slice(k0); }
   if (K.length < 10) return { hata: 'kare yok', kare: K.length };
   BAL = BAL || []; ADLAR = ADLAR || [];
 
