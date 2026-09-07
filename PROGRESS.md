@@ -8763,3 +8763,44 @@ Yapılan:
 
 Ders: aynı durumu gösteren iki buton varsa ikisi de DURUM MAKİNESİNDEN okusun; render.js'in kendi
 `_live ? … : …` üçlüsü kilitli durumu görmüyordu (F13-15'in yarım kalan uygulaması).
+
+## FAZ 51 · 2. tur — 07.09.2026 · "hâlâ ışınlanmalar var, bunlar hiç kalmamalı" + hakem akışı (sürüm 89)
+
+Kullanıcı benim tarayıcısında oynattığım maçı izledi: "gerçek basketbola yaklaşmışız, ilerleme var; ama
+hâlâ ışınlanmalar, bir anda hızla yer değiştirmeler, oyunun kesilmesi var — hiç kalmamalı." Ayrı istek:
+"faullerde top hakeme geçer, hakem oyuncuya pas atar, kenardan sokmada da aynı."
+
+### Teşhis (iz-kaydet 90 sn · tohum 987654321 · `scratchpad/burst.js` 100 ms pencere)
+- `isin-oyuncu` (tek kare 30 px) 0 oyuncu sıçraması saydı — kullanıcının gördüğü şey tek karelik değil,
+  **100 ms'de 2-2,6 m'lik patlama** (18-22 m/sn sahne). 43 epizot, HEPSİ şut olayının başında (`oam='-'`,
+  hedefUz=0 → klip kinematiği): FAZ 50 klip harmanı 1 sn'de 6-9 m kaydırıyordu.
+- Top: ölü toplarda (faul/serbest atış) top oyuncudan oyuncuya 15-20 m/sn uçuyordu (`_ballHold` d>14 → pas).
+- `--yavas=4` (4× yavaş CPU): oyuncu tek kare sıçramaları çıktı ama iz-kaydet'in rAF örnekleyicisi ile oyun
+  döngüsünün AYNI karedeki sırası değişiyor — 0,12 sn'lik karede küçük, sonrakinde 7× adım; kayıt artefaktı.
+  Gerçek yavaş makinede kare başına 0,12 sn'lik hareket zaten tek karede çizilir (fps düşüklüğü).
+- "held 47 m/sn" ışınlanması 9 ms'lik rAF karesine bölünen 0,42 m'lik adımdı (alt adım 33 ms) — artefakt.
+
+### Yapılan
+1. **Klip harmanı hız sınırlı** (`js/sahne-klip.js`): ofset en çok `KLIP_HARMAN_V` 130 px/sn (şutör 200) küçülür,
+   kalan ofset elden çıkışa dek sabit hızla (`om/kalan`) biter — ilk sürümdeki `(1-ww)` çarpımı kısa kliplerde
+   1,5 sn'ye yığılıp yeni patlama üretti, kaldırıldı. Top ofseti klipte topu tutanın ofsetini izler
+   (`KLIP_HARMAN_V_TOP` 330). Klip seçim maliyetine 10 jetonun klibin ilk karesine ortalama uzaklığı girer
+   (10 ft = +1). Kare başına jeton yolu `KLIP_VMAX` 260 px/sn ile kelepçeli — SportVU izleme sıçraması
+   (≤ 2,5 m/kare geçer) fazlası ofsete yazılır, koşuyla kapanır.
+2. **Ölü topta hakem** (`js/sahne-oam.js`): `_oluTopSokucuyaVer` ve `_ftTopVer` sarmalandı → top topa en yakın
+   hakeme fırlatılır (`oamTopHakeme`: ghost pas; ışınlama YOK — snap denendi, iz 883 m/sn saydı), hakem sokma
+   noktası / serbest atış çizgisi hizasına yürür (150 px/sn), sokucu çizgiye varınca (≤ 22 px, en çok 3 sn;
+   serbest atış 2,2 sn) pası verir. Yeni olay gelirse hakemdeki top bekleyene hemen paslanır. Sayı sonrası
+   sokma hakemsiz (gerçekte de oyuncu kendi alır).
+3. Kurulum: pivot↔slot 0 takasında jeton hemen çizilir (t=0'daki 9 m'lik "sıçrama" kalktı).
+4. `iz-kaydet`: `cu` (_simCatchUp sayısı, satır "yetişme ışınlaması") ve `hk` (top hakemde → sahipsiz sayılmaz).
+
+### Ölçüm (90 sn, aynı tohum) — önce → sonra (f51 → f51d)
+- oyuncu >8 m/sn epizot: 43 → 10 · tepe 22,5 → 12,5 m/sn (sahne) · tek kare sıçrama 10 (t=0) → 0
+- top ışınlanma (>25 m/sn): 1 → 4 (hepsi 'held', 0,41-0,46 m/kare — klipte top tutanın ofsetine koşuyor,
+  330 px/sn'e indirildi; son ölçüm aşağıda) · sahipsiz kare %0,95 → %0,56 · sahipsiz epizot 3 → 2 (0,5 sn)
+- `_simCatchUp` 0 · konsol hatası 0 · `visual-check` ✓ · `kilit-check` 7/7
+- `hareket-bant-check` 90 sn'de 7 → 9 dağılım dışarıda (savunmacı mesafesi, potaya uzaklık eklendi) — 90 sn ≈ 12
+  pozisyon, FAZ 48 dersi: n≈50'de bile ±0,1 gürültü; karar 470 sn kayıtla (aşağıda).
+- Açık kalan: donma (<0,5 m/sn, ölü top hariç) %17,9 → %20,3 (kapı ≤ %12) — "oyunun kesilmesi" bu; geçiş
+  fazında olay bekleyen jetonlar. Sonraki tur.

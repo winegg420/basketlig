@@ -530,7 +530,7 @@ function initMatchPlayers(lu,rakip,oppPlayers){
        pivot 'start' olayında yürüyerek geliyor ve toss anında çemberde kimse kalmıyordu (ölçüldü:
        t=0,6'da çemberde 0). Roller atandıktan sonra pivot ile 1. slot yer değiştirir (ilk çizimden
        ÖNCE — ışınlanma değil, kurulum). */
-    [home,away].forEach(tk=>{ try{ const c=tk.find(p=>p.role===4)||tk[tk.length-1]; const s0=tk[0]; if(c&&s0&&c!==s0){ const x=s0.x,y=s0.y; s0.x=s0.tx=c.x; s0.y=s0.ty=c.y; c.x=c.tx=x; c.y=c.ty=y; } }catch(e){} });
+    [home,away].forEach(tk=>{ try{ const c=tk.find(p=>p.role===4)||tk[tk.length-1]; const s0=tk[0]; if(c&&s0&&c!==s0){ const x=s0.x,y=s0.y; s0.x=s0.tx=c.x; s0.y=s0.ty=c.y; c.x=c.tx=x; c.y=c.ty=y; try{ _tokSet(s0.g,s0.x,s0.y,s0.sc||1); _tokSet(c.g,c.x,c.y,c.sc||1); }catch(e){} }   /* FAZ 51: jeton da hemen çizilir — ilk kare eski slotta görünüp ikinci karede 9 m sıçrıyordu (iz: t=0 sıçraması) */ }catch(e){} });
     _scSeed(0x5CE4E5 ^ ((mState.events&&mState.events.length)||0));   /* B-5: sahne PRNG'si */
     mState._tokens={home:home.map(p=>p.g),away:away.map(p=>p.g)};
     mState._sim={

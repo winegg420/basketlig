@@ -128,6 +128,8 @@ async function main() {
             os: S.offSide ? 1 : 0,
             perde: (S._perde && S._perde.evre < 3 && (S.time - S._perde.t) < 1.6) ? 1 : 0,
             ch: S.chase ? 1 : 0,
+            cu: S.cuCount | 0,
+            hk: (S._hakemTop && S._hakemTop.aktif) ? 1 : 0,              /* FAZ 51: top hakemde (ölü top) — sahipsiz sayılmaz */                                 /* FAZ 51: _simCatchUp (yetişme ışınlaması) sayacı */
             oam: (S.oam && S.oam.aktif) ? S.oam.faz : '-',   /* FAZ 48: OAM fazı ('-' = eski kod) */
             p: (S.players || []).map(p => [
               +p.x.toFixed(1), +p.y.toFixed(1),
@@ -393,7 +395,7 @@ function analiz(K, BAL, ADLAR) {
     if (dis) { disKare++; if (dmax > disMax) disMax = dmax; sayac(disTip, k.tip); }
     const mod = k.b && k.b[2];
     const tasiyan = P.some(q => q && q[4] === 1);
-    if (!tasiyan && mod !== 'shot' && mod !== 'rim' && mod !== 'pass') {
+    if (!tasiyan && mod !== 'shot' && mod !== 'rim' && mod !== 'pass' && k.hk !== 1) {
       let ed = 1e9; for (const q of P) { if (q) { const d = Math.hypot(q[0] - k.b[0], q[1] - k.b[1]); if (d < ed) ed = d; } }
       if (ed > 2 * PX_M) { sahipsizKare++; sayac(sahTip, k.tip); sayac(sahMod, mod); if (k.ch === 1) sahChase.takipVar++; else sahChase.takipYok++; }
     }
@@ -493,7 +495,7 @@ function analiz(K, BAL, ADLAR) {
       let s = false;
       if (i < K.length) {
         const k = K[i], P = k.p || [], mod = k.b[2];
-        if (!P.some(q => q && q[4] === 1) && mod !== 'shot' && mod !== 'rim' && mod !== 'pass') {
+        if (!P.some(q => q && q[4] === 1) && mod !== 'shot' && mod !== 'rim' && mod !== 'pass' && k.hk !== 1) {
           let ed = 1e9; for (const q of P) if (q) { const d = Math.hypot(q[0] - k.b[0], q[1] - k.b[1]); if (d < ed) ed = d; }
           s = ed > 2 * PX_M;
         }
@@ -610,7 +612,7 @@ function analiz(K, BAL, ADLAR) {
       }
       const sokmaKisa = sokma.filter(s => s.sure >= 0.25);   /* çizgiden içeri adım atarken 1-2 karelik dış kare epizot değildir */
       const sIhlal = (s) => s.yakin < 3 || s.karsi > 4 || (s.ilkPas != null && s.ilkPas > 14);
-      return {
+  return {
         hava,
         sokma: { n: sokmaKisa.length, ihlalN: sokmaKisa.filter(sIhlal).length,
           ortYakin: sokmaKisa.length ? +(sokmaKisa.reduce((a, s) => a + s.yakin, 0) / sokmaKisa.length).toFixed(2) : null,
@@ -632,6 +634,7 @@ function analiz(K, BAL, ADLAR) {
   };
 
   return {
+    cuN: ((K[K.length - 1].cu | 0) - (K[0].cu | 0)),   /* FAZ 51: kayıt boyunca yetişme ışınlaması (_simCatchUp) */
     kare: K.length, sure: +(K[K.length - 1].t - K[0].t).toFixed(1),
     sahneKat: +sahneKat.toFixed(3),
     poz: pozN,
@@ -696,6 +699,7 @@ function bas(R, dosya) {
   L.push(`  en yüksek kare sıçraması       ${String(R.top.enYuksekSicrama + ' m/sn').padStart(16)}    ≤ 25`);
   L.push(`  ışınlanma (>25 m/sn) olayı     ${String(R.top.isinlanma + ' (' + R.top.isinlanmaPozBasi + '/poz)').padStart(16)}    0`);
   L.push(`     ışınlanma modları           ${JSON.stringify(R.top.isinModlar)}`);
+  L.push(`  yetişme ışınlaması (_simCatchUp) ${String(R.cuN).padStart(14)}    0 (ön planda)`);
   L.push(`  pas olayı / 8-20 m/sn platosu  ${String(R.top.pasOlay + ' / ' + R.top.pasPlatoKare).padStart(16)}    korunmalı`);
   L.push('');
   L.push('  ── OYUNCU ── (MAÇ ölçeği = sahne / ' + R.sahneKat + ')');

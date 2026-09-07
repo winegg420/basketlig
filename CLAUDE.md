@@ -1579,3 +1579,32 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   bir oyuncu 0,2 sn'de 3-20 m "atlıyordu" (kimlik karışması); sahnede jeton 3 m/kare spazm yapıyor,
   `isin-oyuncu` 115 tek kare sıçrama sayıyordu. `klip-cikar.js` oyuncu > 2,5 m/kare ya da top > 8 m/kare
   olan klibi atar (`say.sicrama`). Gerçek veri de ham hâliyle "gerçek" değildir; kapıdan geçir.
+
+- **AYNI DURUMU GÖSTEREN İKİ BUTON TEK DURUM MAKİNESİNDEN OKUR (FAZ 51, kullanıcı "maçı başlatıyorum
+  görüntü gelmiyor, hâlâ Başlat yazıyor"):** Maçlar sayfasındaki `startMatchBtn` F13-15 durum makinesinden
+  ("⏩ Kilitli sonucu uygula") okurken Ana Panel kartı (`renderDashboardNextMatch`) sabit "▶ Maçı Başlat"
+  yazıyordu; yarıda bırakılmış maçın C1 kilidi varken tıklama kilitli sonucu SESSİZCE uyguluyor, canlı
+  görüntü açılmıyordu. Kullanıcının tarayıcısında (Chrome eklentisi, kendi kaydı) yeniden üretildi — yerel
+  ve canlı temiz kayıtta çıkmıyordu. Etiket tek kaynaktan (`matchPlaybackState`), bildirim skoru ve sıradaki
+  adımı söyler; `tools/kilit-check.js` sınar. **"Bende oluyor sende olmuyor" şikâyetinde önce kullanıcının
+  KAYDIYLA dene**, temiz kariyerle değil.
+- **KLİP HARMANI ZAMANLA DEĞİL HIZLA KAPANIR (FAZ 51, ölçüldü):** FAZ 50'nin 1 sn'lik smoothstep harmanı her
+  şut olayının başında jetonları klibin ilk karesine 6-9 m kaydırıyordu — 100 ms'de 2,6 m (22 m/sn sahne),
+  40-48 kare; kullanıcının gördüğü "bir anda hızla yer değiştirme / ışınlanma" buydu. `isin-oyuncu` (tek kare
+  30 px) bunu GÖREMEZ — sıçrama kare başına 11 px'tir; `scratchpad/burst.js` gibi 100 ms pencerede >8 m/sn
+  epizot sayımı gerekir (43 → 9 epizot, tepe 22,5 → 12,6). Şimdi ofset en çok `KLIP_HARMAN_V` (130 px/sn,
+  şutör 200) ile küçülür; kalan ofset ELDEN ÇIKIŞA kadar sabit hızla biter (`om/kalan`) — `(1-ww)` çarpımı
+  kısa kliplerde (3-4 sn) sönümü 1,5 sn'ye yığıp yeni patlama üretti (ölçüldü, kaldırıldı). Top ofseti
+  tutanın ofsetini izler (`KLIP_HARMAN_V_TOP`), klip seçim maliyetine 10 jetonun ortalama uzaklığı girer.
+- **ÖLÜ TOPTA TOP HAKEME, HAKEM SOKUCUYA VERİR (FAZ 51, kullanıcı kararı):** faul · taç · ihlal · hücum
+  faulü · 24 sn ve serbest atış arasında top topa EN YAKIN hakeme fırlatılır (`oamTopHakeme`: >30 px ise
+  `_ballPass(ref)` — `ref.ghost=true`, pas bitince `_ballHold(ref)` hakemi tutucu yapar, tick topu eline
+  alır), hakem sokma noktasının hizasına yürür (150 px/sn) ve sokucu çizgiye varınca (≤22 px, en çok 3 sn)
+  pası verir. `_oluTopSokucuyaVer` ve `_ftTopVer` sarmalanır; sayı sonrası sokma (`_setupInbound`) hakemsiz
+  kalır (gerçekte de oyuncu kendi alır). Kullanıcı "top hakeme ışınlanır" dedi ama ışınlama YAPILMADI —
+  kısa fırlatma hem gerçekçi hem `iz-kaydet` ışınlanma kapısını korur (snap 883 m/sn ölçülmüştü).
+  Yeni olay gelirse hakemdeki top bekleyen oyuncuya hemen paslanır (`movePlayersForEvent` sarmalayıcısı).
+  `iz-kaydet` `hk` alanı ile hakemdeki topu "sahipsiz" saymaz; `cu` alanı `_simCatchUp` sayısını taşır.
+- **TEK KARE HIZI 9 ms'LİK KAREDE YANILTIR (FAZ 51):** "held 47 m/sn" ışınlanması 0,42 m'lik adımın 9 ms'lik
+  rAF karesine bölünmesiydi (sim alt adımı 33 ms) — kare süresine bakmadan tek kare hızını yargılama; 100 ms
+  pencere ya da px adımı (isin-oyuncu 30 px) ölçütü kullan.

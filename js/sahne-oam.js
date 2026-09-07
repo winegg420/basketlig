@@ -777,8 +777,12 @@ function oamHakemTick(S,dt){
       bas.tx=CRT_X0-16; bas.ty=250; arka.tx=CRT_X1+16; arka.ty=250;
     } else if(S._hakemTop&&S._hakemTop.aktif){
       /* FAZ 50 (kullanıcı: "hakemler sahanın içinde dolaşmasın, kenarda dursunlar"): baş hakem SAHAYA
-         GİRMEZ — dip çizgi dışında topun hizasına gelir, topu oradan verir */
-      bas.tx=dipX; bas.ty=Math.max(CRT_Y0+30,Math.min(CRT_Y1-30,b.y));
+         GİRMEZ — dip çizgi dışında topun hizasına gelir, topu oradan verir.
+         FAZ 51: ölü top sokmasında top ilgili hakeme (dip → baş · kenar → orta/arka) geçer, hakem sokma
+         noktasının hizasına yürür, sokucu çizgiye varınca pası verir (`HT.hakem` / `HT.hedef`). */
+      const HT=S._hakemTop, H=HT.hakem||bas;
+      if(HT.hedef){ H.tx=HT.hedef.x; H.ty=HT.hedef.y; }
+      else { bas.tx=dipX; bas.ty=Math.max(CRT_Y0+30,Math.min(CRT_Y1-30,b.y)); }
     } else if(S._ftAktif){
       bas.tx=dipX; bas.ty=250-46;                                                  /* dip çizgi dışı, potanın yanı */
       arka.tx=_inX(rim[0]-dir*(THREE_R+60)); arka.ty=altY;
@@ -791,37 +795,73 @@ function oamHakemTick(S,dt){
       arka.tx=COURT_MID; arka.ty=altY;
       orta.tx=_inX(rim[0]-dir*165); orta.ty=ustY;
     }
+    const HT=S._hakemTop, HH=(HT&&HT.aktif)?(HT.hakem||bas):null;
     S.hakem.forEach(h=>{
       const dx=h.tx-h.x, dy=h.ty-h.y, d=Math.hypot(dx,dy);
-      const v=(S._hakemTop&&S._hakemTop.aktif&&h===bas)?150:60;   /* FAZ 50: kenarda yavaş */
+      const v=(h===HH)?150:60;   /* FAZ 50: kenarda yavaş; topu taşıyan hakem hızlı */
       const adim=Math.min(d,v*dt);
       if(d>0.5){ h.x+=dx/d*adim; h.y+=dy/d*adim; }
       _tokSet(h.g,h.x,h.y,1);
     });
-    /* serbest atış: baş hakem topa varınca topu atıcıya verir */
-    const HT=S._hakemTop;
+    /* top hakemde: hakem yerine varınca (serbest atış: atıcıya · ölü top: çizgiye varmış sokucuya) verir */
     if(HT&&HT.aktif){
       HT.t=(HT.t||0)+dt;
       S._sahipsizT=0;                                            /* bekçi oyuncu yollamasın */
-      const d=Math.hypot(bas.x-bas.tx,bas.y-bas.ty);
-      if(!b.carrier&&(d<=16||HT.t>2.2)){
-        const sh=HT.shooter; HT.aktif=false;
-        if(sh&&isFinite(sh.x)){ b.mode='loose'; b.vx=b.vy=0; const dd=Math.hypot(sh.x-b.x,sh.y-b.y); b.h=Math.max(b.h||0,14); _ballPass(sh,Math.max(0.35,Math.min(0.9,dd/330))); }   /* FAZ 50: top hakemin durduğu kenardan gelir */
-      } else if(b.carrier){ HT.aktif=false; }
+      if(b.carrier===HH){ b.carrier=null; b.mode='loose'; b.vx=b.vy=b.vh=0; }   /* atılan top hakeme vardı */
+      const ucuyor=(b.mode==='pass'&&b.target===HH);
+      if(!ucuyor&&(b.carrier||b.mode!=='loose')){ HT.aktif=false; }   /* başka bir yol topu aldı — hakem çekilir */
+      else if(!ucuyor){
+        b.x=HH.x; b.y=HH.y; b.h=14; b.vx=b.vy=b.vh=0;             /* FAZ 51: top hakemin elinde (fizik değil) */
+        const d=Math.hypot(HH.x-HH.tx,HH.y-HH.ty);
+        const sh=HT.shooter;
+        const hazir=HT.inb?(sh&&HT.spot&&Math.hypot(sh.x-HT.spot.x,sh.y-HT.spot.y)<=22):true;
+        const bekle=HT.inb?3.0:2.2;
+        if((d<=16&&hazir)||HT.t>bekle){
+          HT.aktif=false;
+          if(sh&&isFinite(sh.x)){ const dd=Math.hypot(sh.x-b.x,sh.y-b.y); _ballPass(sh,Math.max(0.35,Math.min(0.9,dd/330))); if(HT.inb) b.onDone=()=>{ try{ S.ball.noDrib=true; }catch(e){} }; }   /* FAZ 50: top hakemin durduğu kenardan gelir */
+        }
+      }
     }
   }catch(e){}
+}
+/** FAZ 51: topa en yakın hakem (üçü de ölü topu yönetebilir). */
+function oamHakemYakin(S,b){ let r=S.hakem[0],rd=1e9; S.hakem.forEach(h=>{ const d=Math.hypot(h.x-b.x,h.y-b.y); if(d<rd){ rd=d; r=h; } }); return r; }
+/** FAZ 51: top hakemin eline geçer (kullanıcı: "faullerde top hakeme ışınlanır ve hakem topu oyuncuya pas atar"). */
+function oamTopHakeme(S,ref){
+  const b=S.ball; S.chase=null; b.onDone=null;
+  const d=Math.hypot(ref.x-b.x,ref.y-b.y);
+  /* uzaktaysa en yakın oyuncu topu hakeme ATAR (gerçekte de öyle: düdükte top hakeme fırlatılır) — ışınlanma yok;
+     pas bitince _ballHold(ref) hakemi tutucu yapar, hakem tick'i bunu görüp topu eline alır */
+  if(d>30){ ref.ghost=true; _ballPass(ref,Math.max(0.3,Math.min(0.8,d/430))); return; }
+  b.carrier=null; b.mode='loose'; b.vx=b.vy=b.vh=0; b.h=14; b.x=ref.x; b.y=ref.y; b.noDrib=false; b.t=0;
 }
 /** Serbest atış arası: top oyuncuya değil HAKEME — eski `_ftToplayici` sarmalanır. */
 function oamFtToplayici(shooter,offP,defP,rim,made){
   try{
     const S=oamS(); if(!S||!shooter) return;
-    const b=S.ball;
-    if(!made){ const a=_sr()*6.283; _ballCarom(Math.cos(a)*40,Math.sin(a)*36,_srand(30,38)); }   /* kısa düşüş, oyuncu almaz */
-    S.chase=null;
-    S._hakemTop={aktif:true,shooter,t:0};
-    /* FAZ 50: top hakemin durduğu dip çizgiye doğru yuvarlanır (hakem sahaya girmez, top ona ışınlanmaz) */
-    try{ const offLeft=(S.offSide!=null)?S.offSide:(b.x<COURT_MID); const hx=offLeft?(CRT_X0-16):(CRT_X1+16); const hy=Math.max(CRT_Y0+30,Math.min(CRT_Y1-30,b.y)); const dx=hx-b.x, dy=hy-b.y, dn=Math.hypot(dx,dy)||1; if(dn>30) _ballLoose(dx/dn*Math.min(170,dn*1.6),dy/dn*Math.min(170,dn*1.6),12); }catch(e){}
+    if(!S.hakem) oamHakemKur(S); if(!S.hakem) return;
+    const b=S.ball; const ref=oamHakemYakin(S,b);
+    const offLeft=(S.offSide!=null)?S.offSide:(b.x<COURT_MID); const hx=offLeft?(CRT_X0-16):(CRT_X1+16);
+    oamTopHakeme(S,ref);                                          /* FAZ 51: top EN YAKIN hakeme geçer (yuvarlanma yok) */
+    S._hakemTop={aktif:true,shooter,t:0,hakem:ref,hedef:{x:hx,y:250-46},inb:false};
   }catch(e){}
+}
+/** FAZ 51: ÖLÜ TOP SOKMASI (faul · taç · ihlal · hücum faulü · 24 sn) — top ilgili hakeme geçer, hakem
+    sokma noktasının hizasına gelir, sokucu çizgiye varınca topu ona verir. Eski `_oluTopSokucuyaVer`
+    (sokucu topa koşup alır / top ona uçar) sarmalanır; sayı sonrası sokma (`_setupInbound`) hakemsizdir. */
+function oamOluTopHakem(inb,_eski){
+  try{
+    const S=oamS(); if(!S||!inb||!isFinite(inb.tx)) return _eski(inb);
+    if(!S.hakem) oamHakemKur(S); if(!S.hakem) return _eski(inb);
+    const b=S.ball; if(b.carrier===inb) return;
+    const spot={x:inb.tx,y:inb.ty};
+    const dip=(spot.x<=CRT_X0||spot.x>=CRT_X1);
+    const ref=oamHakemYakin(S,b);                                 /* topa en yakın hakem yönetir (uzaktan lob olmasın) */
+    const hedef=dip?{x:spot.x,y:spot.y+(spot.y<250?40:-40)}:{x:spot.x+(spot.x<COURT_MID?40:-40),y:spot.y};
+    oamTopHakeme(S,ref);
+    S._hakemTop={aktif:true,shooter:inb,t:0,hakem:ref,hedef,spot,inb:true};
+    inb.tx=spot.x; inb.ty=spot.y; inb._wp=null; _setUrg(inb,_URG.KOS);
+  }catch(e){ try{ _eski(inb); }catch(_){} }
 }
 
 /* ── ÇIKIŞ PASI MODU (OAM dışı anlar — ribaund/çalma sonrası): uzun topu SÜRMEZ, yerinde döner;
@@ -990,11 +1030,16 @@ function oamTorenTick(S,O,dt){
     if(S){ try{ oamHakemTick(S,dt); }catch(e){} }
   };
   if(typeof _ftToplayici==='function'){ _ftToplayici=oamFtToplayici; }
+  /* FAZ 51: düdükte top eldeyse de hakeme geçer (eski `_ftTopVer` else dalı topu atıcıya uçuruyordu) */
+  if(typeof _ftTopVer==='function'){ _ftTopVer=function(shooter,offP,defP,rim){ try{ const S=oamS(); if(!S||!shooter||S.ball.carrier===shooter) return; oamFtToplayici(shooter,offP,defP,rim,true); }catch(e){} }; }
+  if(typeof _oluTopSokucuyaVer==='function'){ const _eskiOlu=_oluTopSokucuyaVer; _oluTopSokucuyaVer=function(inb){ return oamOluTopHakem(inb,_eskiOlu); }; }
   const _eskiMove=movePlayersForEvent;
   const OLU_TOP=['foul','sakatlikMac','tac','ihlal','hucumFaulu','ihlal24','quarter_start'];
   const TOREN_ON=['start','quarter_end','end','mvp'];          /* eski daldan ÖNCE OAM sahiplenir */
   movePlayersForEvent=function(ev,paint){
     try{ const S=oamS(); if(S&&S.oam&&S.oam.aktif){ S.oam.aktif=false; S.cikisSonra=0; } }catch(e){}
+    /* FAZ 51: hakem topu hâlâ elindeyken yeni olay geldiyse topu bekleyen oyuncuya hemen verir (top kenarda kalmasın) */
+    try{ const S=oamS(); const HT=S&&S._hakemTop; if(HT&&HT.aktif){ HT.aktif=false; const sh=HT.shooter; if(sh&&isFinite(sh.x)&&!S.ball.carrier){ const dd=Math.hypot(sh.x-S.ball.x,sh.y-S.ball.y); _ballPass(sh,Math.max(0.3,Math.min(0.9,dd/330))); } } }catch(e){}
     const t=ev&&ev.type;
     const ftMi=!!(ev&&ev.shots&&ev.shots.length&&ev.shots[0].kind==='ft');
     try{ const S=oamS(); if(OAM_ACIK&&S&&S.players&&S.players.length>=10){ if(TOREN_ON.indexOf(t)>=0) oamTorenKur(S,t,ev); else if(ftMi) oamTorenKur(S,'free',ev); } }catch(e){}
