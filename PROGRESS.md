@@ -8862,3 +8862,41 @@ Ders: "sadece ses geliyor" = crowd ambience çalıyor + sahne donuk = sahnenin r
 sunum katmanı rAF'a tek bağlıysa, rAF'ın durabileceği (arka plan, throttle, düşük fps) her senaryoda donar;
 zaman tabanlı bir yedek şart. Ayrıca "duraklat sonra yetiş" mekanizmaları (bgPause) donma riskini
 sürdürüyorsa ve yerini alan sağlam bir yol (rAF yedeği) varsa kaldırılmalı.
+
+## FAZ 51 · AÇIK SORUN — 08.09.2026 gece · "oyuncular görünmüyor, sadece saha var" ÇÖZÜLMEDİ
+
+Kullanıcı gün sonunda hâlâ maçı izleyemiyor: masaüstü, "maça basınca oyuncular görünmüyor bile,
+sadece saha var, sadece ses geliyor". Sürüm 94 + hard-refresh sonrası da düzelmedi. Yarın devam.
+
+### Kesin bilinen (kanıtlı)
+- **Kod SAĞLAM.** Kullanıcının KENDİ Chrome'unda (Claude-in-Chrome eklentisi), kullanıcının KENDİ
+  kaydıyla (dfdf), sürüm 93/94'te maç KUSURSUZ çalışıyor: oyuncular çizili + hareketli, skor 4-4,
+  saat 7:24 işliyor, istatistikler doluyor (ekran görüntüsüyle doğrulandı, kullanıcıya gönderildi).
+  playersLayer 13 element (10 oyuncu + 3 hakem), konsol hatası 0.
+- Yani sorun kullanıcının OYUNU ÇALIŞTIRMA BİÇİMİNDE, kod tabanında değil.
+
+### Bu oturumda yapılan düzeltmeler (hepsi push, sürüm 88→94)
+- 88: kilitli sonuç (C1) etiketi Ana Panel kartında da doğru + kilit-check aracı.
+- 89: klip harmanı hız sınırlı (ışınlanma), ölü topta hakem topu verir.
+- 90: görünür sekmede _bgPause'a girilmez.
+- 91: rAF yedeği (sahne rAF boğulursa setInterval ile sürer).
+- 92: _bgPause tamamen kapalı (_BGPAUSE_ACIK=false).
+- 93: maç başlarken öndeki modal (öğretici) kapatılır.
+- 94: otomatik güncelleme (controllerchange → tek sefer reload + açılışta reg.update()).
+
+### YARIN İLK SORULACAK / DENENECEK (önem sırası)
+1. **KULLANICI OYUNU NASIL AÇIYOR?** En güçlü hipotez: kullanıcı `charazay2.0.html`i ÇİFT TIKLAYIP
+   `file://` ile YEREL açıyor (CLAUDE.md'deki .bat / "çift tıkla" talimatı), canlı siteyi değil.
+   O zaman: (a) SW yok → sürüm 94 otomatik güncelleme ÇALIŞMAZ; (b) kullanıcının YEREL dosyası
+   ESKİ olabilir (git pull yapmıyor) → tüm push'larım ona ulaşmıyor; (c) `file://`de manifest.json
+   ve portre CORS ile yüklenemez — bunun jeton çizimini bozup bozmadığı YEREL `file://` ile test
+   EDİLMELİ (benim tüm testlerim canlı site ve headless; `file://` gerçek Chrome'da denenmedi).
+   ⇒ Kullanıcıya sor: adres çubuğunda "file://..." mı yoksa "winegg420.github.io" mu yazıyor?
+2. Kullanıcının GERÇEKTEN hangi sürümü çalıştırdığını öğren (belki hâlâ 87 ya da öncesi — o
+   sürümde oyuncu çizilmeme kusuru var mı ayrıca araştırılmalı; FAZ 50 klip/hakem sürümü ~87).
+3. `file://` gerçek Chrome senaryosunda `initMatchPlayers` + jeton çizimini test et (headless değil,
+   gerçek çift-tık). CORS bloklu manifest/portre jeton oluşturmayı yarıda kesiyor olabilir —
+   `portreAta`/avatar bir hata atarsa jeton eklenmeden döngü kırılabilir. try/catch ile korunmalı.
+4. Kullanıcı canlı site kullanıyorsa: SW/HTTP cache neden inat ediyor, sürüm 94 neden gelmiyor.
+
+Not: git yerel = origin/master = 4632981 (sürüm 94), 0 fark, temiz.
