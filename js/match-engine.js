@@ -415,6 +415,7 @@ function _inY(y){ return Math.max(CRT_Y0+CRT_IN,Math.min(CRT_Y1-CRT_IN,y)); }
 function clearMatchPlayers(){
   const S=(typeof mState!=='undefined'&&mState)?mState._sim:null;
   if(S&&S.raf){ cancelAnimationFrame(S.raf); S.raf=null; }
+  if(S&&S._rafYedek){ clearInterval(S._rafYedek); S._rafYedek=null; }   /* FAZ 51: rAF yedeği */
   ['playersLayer','ballShadow','ballRing','courtFx'].forEach(id=>{ const e=document.getElementById(id); if(e) e.remove(); });
   if(typeof mState!=='undefined'&&mState){ mState._tokens=null; mState._sim=null; }
 }
@@ -603,6 +604,29 @@ function _simStart(){
     S.raf=requestAnimationFrame(loop);
   };
   S.raf=requestAnimationFrame(loop);
+  /* ── FAZ 51: rAF YEDEĞİ (kullanıcı: "maça basınca hiçbir şey olmuyor, sadece ses geliyor") ──
+     Sahne TAMAMEN requestAnimationFrame'e bağlıydı; rAF herhangi bir sebeple boğulursa (bazı
+     Chrome/pencere durumlarında görünür sekmede bile ~1 fps, arka plan sekmesi, düşük performans)
+     jetonlar HİÇ hareket etmiyor — olay kuyruğu setTimeout ile aktığı için "ses var, oyun donuk"
+     görüntüsü çıkıyordu. Yedek: son rAF karesinden 220 ms+ geçtiyse simi setInterval ile elle
+     ilerlet. rAF normal çalışırken (her kare _rafAt tazelenir) yedek boşta kalır — çift adım yok. */
+  if(S._rafYedek){ clearInterval(S._rafYedek); }
+  S._rafYedekWall=_rtNow();
+  S._rafYedek=setInterval(()=>{
+    try{
+      const St=(typeof mState!=='undefined'&&mState)?mState._sim:null;
+      if(!St||St!==S){ clearInterval(S._rafYedek); S._rafYedek=null; return; }
+      if(mState.running===false&&!mState.paused){ return; }
+      if(mState.paused){ S._rafYedekWall=_rtNow(); return; }
+      const now=_rtNow();
+      const sinceRaf=now-(S._rafAt||0);
+      if(sinceRaf>220){                                   /* rAF gelmiyor → sahneyi elle sür */
+        const dt=Math.min(0.25,(now-(S._rafYedekWall||now))/1000);
+        S._rafYedekWall=now; S.last=0;
+        if(dt>0.001){ try{ _simStep(dt); }catch(e){} }
+      } else { S._rafYedekWall=now; }
+    }catch(e){}
+  },100);
 }
 
 /** F11-1: Kare kaybı sonrası sahneyi anlatımın bulunduğu ana eşitle.
