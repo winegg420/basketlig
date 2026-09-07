@@ -22,6 +22,10 @@ function toggleMatchTheater(force){
 /** Ana panel / fikstür kartından sıradaki maçı doğrudan başlat (test kolaylığı). */
 function startNextMatchNow(){
   if(!G.team){ showNotif('Önce takım oluştur.'); return; }
+  /* FAZ 51: açık modal (öğretici "HOŞ GELDİN", gelen teklif vb.) sahanın önünü kapatıp
+     tıklamaları yutuyordu — kullanıcı "maça basıyorum açılmıyor / sadece ses" diyordu.
+     Maça geçerken öndeki modalı kapat ki saha görünür olsun. */
+  try{ if(typeof closeAppModal==='function') closeAppModal(); }catch(e){}
   gotoMacPage();
   if(mState.running){ setTimeout(()=>scrollToMacLive(),80); return; }
   if(!G.season||!G.season.active){ setTimeout(()=>scrollToMacLive(false),80); showNotif('Önce Lig’den sezonu başlat.'); return; }
@@ -231,6 +235,8 @@ function startMatch(playoff){
   document.getElementById('liveBadge').style.display='inline-block';
   updateQuarterBoard({1:0,2:0,3:0,4:0},{1:0,2:0,3:0,4:0},0,0);
   setMatchButtonsRunning(true);
+  /* FAZ 51: maç kuruldu — öndeki modal (öğretici vb.) sahayı kapatmasın. */
+  try{ if(typeof closeAppModal==='function') closeAppModal(); }catch(e){}
 
   function matchStep(){
     if(!mState.running)return;
