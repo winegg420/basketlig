@@ -1,0 +1,125 @@
+5:  sahne→maç sıkıştırma      1 duvar sn = 1.24 maç sn
+8:  en yüksek hız (100 ms)                27.1 m/sn    ≤ 22
+10:  ışınlanma (>25 m/sn) olayı        11 (0.17/poz)    0
+15:  ortalama hız              maç   1.85 m/sn    1,8 – 2,6   [sahne 2.3]
+32:     ışınlanmalar: 9.832s held/score3 49.2 m/sn | 169.208s pass/miss3 26 m/sn | 169.224s pass/miss3 28.9 m/sn | 169.241s pass/miss3 25.9 m/sn | 169.258s pass/miss3 26.6 m/sn | 169.275s pass/miss3 26.3 m/sn | 169.292s pass/miss3 27.3 m/sn | 169.308s pass/
+60:     toss anında çemberde                      2    = 2 (iki takım)   [EV/C@0.68m · DEP/PG@0.68m]
+63:  sokma epizodu (top çizgi dışı)     15 · ihlal 2    her epizot: takım arkadaşı(15 m) ≥ 3 · karşı yarı ≤ 4 · ilk pas ≤ 14 m
+81:  konsol hatası: 0
+TEK KARE SIÇRAMASI — iz-f50d.json · 28158 kare · 470 sn · eşik 30 px
+  toplam: 13 (oyuncu 13 · top 0)
+  bağlam: -/idle:10 · miss3/held:2 · score2/held:1
+        0s SAV/PG#0    264 px (8.94 m) -/idle idx=0 (364,182)
+HAREKET DAĞILIMI ↔ GERÇEK — iz-f50d.json · 28157 kare · sahne→maç 1.240 · gerçek: 10 maç / 811291 kare
+  ✓ oyuncu hızı (m/sn)     L1  0.122  (eşik 0.35)   ort 1.85 ↔ gerçek 1.72   maç ölçeği   n=281570
+  ✓   ↳ DUVAR ölçeği (ekran) L1  0.232  (eşik 0.35)   ort 2.29 ↔ gerçek 1.72   kullanıcının gördüğü   n=281510
+  ✓ yayılım x (m)          L1  0.350  (eşik 0.35)   ort 3.24 ↔ gerçek 3.636   n=19628
+  ✓ yayılım y (m)          L1  0.247  (eşik 0.35)   ort 3.55 ↔ gerçek 3.754   n=19628
+  ✓ savunmacı mesafesi (m) L1  0.288  (eşik 0.35)   ort 2.63 ↔ gerçek 3.144   n=19628
+  ✓   ↳ ön sahada (m)      L1  0.316  (eşik 0.35)   ort 1.85 ↔ gerçek 2.003   n=13101
+  ✗   ↳ arka sahada (m)    L1  0.456  (eşik 0.35)   ort 4.19 ↔ gerçek 5.065   n=6527
+  ✗ pas / pozisyon         L1  0.603  (eşik 0.35)   ort 3.28 ↔ gerçek 3.136   n=39
+  ✗ topu tutma süresi (sn) L1  0.795  (eşik 0.35)   ort 2.68 ↔ gerçek 1.465   n=178
+  ✓ aynı anda koşan        L1  0.214  (eşik 0.35)   ort 3.72 ↔ gerçek 3.337   n=28157
+  ✓ kesme / 1,5 sn         L1  0.080  (eşik 0.35)   ort 0.68 ↔ gerçek 0.797   n=324
+  ✗ şut anında duran       L1  1.085  (eşik 0.35)   ort 3.08 ↔ gerçek 1.655   n=13
+  ✓ potaya uzaklık (m)     L1  0.237  (eşik 0.35)   ort 10.47 ↔ gerçek 10.937   n=19628
+  · 10 oyuncu aynı yarıda      70.2% ↔ gerçek 68.1%   (bilgi)
+  ✓ topun yarısındaki oyuncu L1  0.145  (eşik 0.35)   ort 8.92 ↔ gerçek 8.576   n=28157
+  · arka sahada tutma payı    33.3% ↔ gerçek 37.3%   (bilgi)
+  · top elde oranı            69.8% ↔ gerçek 80.9%   (bilgi)
+  · yarı sahayı geçen         G 71% F 29% C 0% ↔ gerçek G 79% F 14% C 6%   (bilgi)
+  · çıkarılamadı: perdeSayisi, sutTipi
+✗ 4 dağılım eşiğin dışında
+PAS ANALİZİ — iz-f50d.json · 193 pas · canlı top aynı takım 110
+  GERİ PAS (> 2 m potadan uzaklaşan, canlı top): 1  (0.9%)
+     bağlam: score2/geçiş:1
+     kim→kime: HUC/PG→HUC/PF:1
+  RAKİBE PAS (> 3 m, veren ≠ alan takımı): 0
+  SOKMA (çizgi dışı izinli oyuncunun pası): 11 · saha İÇİNDEN: 2
+     ✗ 81.527s score2 HUC/C→HUC/PF veren (94,229) İÇERİDE, 2 m
+     ✗ 325.881s score2 HUC/SG→HUC/PF veren (118,254) İÇERİDE, 3.5 m
+  SAYI SONRASI POZİSYON: 21 · ilk pas çizgi dışından: 5 · içeriden: 9 · pas yok/geç: 7
+pozisyon (>2 sn): 35 · held geçiş: 24 (69%) · pass: 3 · shot: 0 · hiç: 8
+=== sahne-check
+  ✓ top "held" modu                                        70.7%   hedef ≥ %65
+  ✓ SAHİPSİZ top karesi                                    1.60%   hedef ≤ %2
+  ✗ aynı anda koşan oyuncu                               2.69/10   hedef 3 – 5 / 10
+  ✓ serbest atışta yerinde oyuncu     10.00/10 (n=7, en kötü 10)   hedef ≥ 9,0 / 10 · en kötü ≥ 8
+  ✗ orta çizgi geçişi / pozisyon değişimi               73% (24/33)   hedef ≥ %85
+  ✗ yarı sahayı geçiren PG/SG/SF      67% {"SF":6,"PG":6,"PF":6,"SG":4,"C":2}   hedef ≥ %90
+
+  bilgi: mod dağılımı {"idle":0.1,"loose":10.6,"pass":13.5,"held":70.7,"shot":3.7,"rim":1.4}
+  bilgi: şut anında yerinde — HÜCUM 4.79/5 · SAVUNMA 4.83/5
+  bilgi: sahipsiz kare modları {"loose":173} · en uzak 115 px
+  bilgi: top kurtarma (watchdog + _ballHold ağı) 0 kez
+  konsol hatası: 0
+==========================================================================
+✗ 3 hedef düştü
+=== realism-check
+SENKRON — yorum ile ANLATTIĞI SAHNE BEATİ arasındaki mutlak fark (hedef ort ≤800 ms · en kötü tip ≤1200 ms):
+  ✓ en kötü tip ortalaması 0 ms (hedef ≤1200)
+  ✗ anlatım sessizliği: en uzun boşluk 21665 ms · ortalama 4971 ms (hedef en uzun ≤12000 · ortalama ≤5000)
+KONSOL HATASI: 0
+✗ 1 senkron hedefi düştü
+=== anlatim-check
+==================================================================
+SONUÇ: 31/31 denetim geçti
+=== balon-check
+
+  konsol hatası: 0
+  SONUÇ: GEÇTİ
+=== kural-check
+  ✓ gösterge 0'da takılmıyor (ihlalsiz ≤ 0,5/maç · en uzun ≤ 3 sn)
+✓ kural olayları gerçek bantlarda
+=== visual-check
+Ekran görüntüleri: tools\visual-check-output
+
+✓ Görsel test geçti (masaüstü + mobil, 0 hata).
+=== band
+skor dizisi hash: c19928475859c7ff
+pageerror: 0
+=== measure
+>>> DEĞİŞMEZLİK: ✅ GEÇTİ (hash eşleşti: 51fa02b6e0a8194b)
+=== sim-node
+============================================================
+✓ saf Node simülasyonu çalışıyor ve deterministik
+=== sunum-check
+  pencere: 900 sn · 1 maç · ÖRNEKLEM YETERSİZ: M9 uzun ribaundu (payda), F14-7 serbest atış anı, F25-6a post karesi, F25-6b perde damgası
+  örneklem: m9 11/40 · and1 4/2 · hucumReb 16/5 · ft 8/12 · tasima 102/20 · sokma 48/40 · ftDrib 17/6 · sema 7/3 · sirtDonuk 0/200 · perde 0/3 · yaySmac 7/3 · yayUzak 60/5 · yayFloat 17/3 · yayTurnike 23/5
+--
+  ✗ M9  Ribaund sonrası çıkış (outlet) pası
+       uzun ribaundu 3 kez aldı ve hücum kuruldu → 2 kez topu guard'a çıkardı (%67, hedef ≥ %80) · kapsam dışı vaka: 14 · kaçanlarda sonraki taşıyıcının rolü: {"3":1}
+  ✓ M12  AND-1 ek serbest atışı canlandırılıyor
+       4 and-1 · ek atış sahnesi kurulan: 4 · şutör çizgide+top elinde görülen: 1
+--
+  ✗ F14-7  Serbest atışta oyuncular yerleşiyor
+       8 seri · atış anında yerinde 8.3/10 (hedef ≥ 9) · ortalama uzaklık 0.18 m · en uzak 5.96 m · jeton hızı 7 px/sn (hedef < 15)
+--
+  ✗ F25-1  Orta sahayı geçen topu 1/2/3 taşıyor
+       102 taşıma · %83.3 rol 0/1/2 (hedef ≥ %85)
+--
+  ✗ F25-6a  Post oyununda hücumcunun yönü potaya ters
+       ÖRNEK YOK — bu pencerede post oyunu yakalanmadı
+  ✗ F25-6b  Perdenin üç aşaması da görülüyor
+       evreler [] · 0 damga · devrilme 0 roll / 0 pop
+--
+✗ DÜŞEN: M9, F14-7, F25-1, F25-6a, F25-6b
+=== spacing-check
+========================================================================
+  ✓ set hücumunda ortalama ikili mesafe              7.96 m   hedef ≥ 5,8 m
+  ✓ en yakın ikili (top sahibi hariç)                3.91 m   hedef ≥ 3,5 m
+  ✓ hücumun yayılımı / yarı saha (kutu)               %41.3   hedef ≥ %30
+  ✓ orta üçte birdeki hücumcu oranı                   %14.9   hedef < %20
+  ✗ boyada ≥1 hücumcu olan kare oranı                 %55.8   hedef ≥ %60
+  ✓ topu tutana en yakın savunmacı                   1.37 m   hedef < 1,8 m
+  ✓ savunmacının adamına ortalama uzaklığı           2.49 m   hedef < 3 m
+  ✓ yerine oturmuş ama adamı > 5 m uzakta              %0.0   hedef %0
+  ✗ savunmacı adamı ile pota arasında                 %83.7   hedef ≥ %85
+  ✗ hücumun saldırdığı potaya ortalama uzaklığı       7.40 m   hedef ≤ 7 m
+
+=== arka-plan
+================================================================
+SONUÇ: 5/6 — DÜŞTÜ
+=== kontak
+yazıldı: olcum\goruntu\f50d-kontak-2.png (32s 5·miss3·held·SG | 34s 5·miss3·held·SG | 36s 5·miss3·shot | 38s 6·reb·held·PF | 40s 7·score3·pass | 42s 7·score3·loose·INB | 44s 8·score2·pass | 46s 8·score2·held·SG | 48s 8·score2·held·SG | 50s 8·score2·held·PF | 52s 8·score2·held·PF | 54s 8·score2·held·PF*·INB | 56s 9·free·held·SG·FT | 58s 9·free·held·SG·FT | 60s 9·free·held·SG·FT)

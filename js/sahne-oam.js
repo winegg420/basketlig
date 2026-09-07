@@ -776,20 +776,24 @@ function oamHakemTick(S,dt){
       orta.tx=COURT_MID; orta.ty=250;
       bas.tx=CRT_X0-16; bas.ty=250; arka.tx=CRT_X1+16; arka.ty=250;
     } else if(S._hakemTop&&S._hakemTop.aktif){
-      bas.tx=b.x; bas.ty=b.y;                                                      /* baş hakem topu almaya gider */
+      /* FAZ 50 (kullanıcı: "hakemler sahanın içinde dolaşmasın, kenarda dursunlar"): baş hakem SAHAYA
+         GİRMEZ — dip çizgi dışında topun hizasına gelir, topu oradan verir */
+      bas.tx=dipX; bas.ty=Math.max(CRT_Y0+30,Math.min(CRT_Y1-30,b.y));
     } else if(S._ftAktif){
       bas.tx=dipX; bas.ty=250-46;                                                  /* dip çizgi dışı, potanın yanı */
       arka.tx=_inX(rim[0]-dir*(THREE_R+60)); arka.ty=altY;
       orta.tx=_inX(rim[0]-dir*150); orta.ty=ustY;
     } else {
       /* baş: hücum edilen dip çizginin dışı, top tarafı · arka: topun 5 m gerisi, karşı kenar dışı · orta: SA çizgisi hizası, top tarafı kenar dışı */
-      bas.tx=dipX; bas.ty=topUst?170:330;
-      const geriX=b.x-dir*170; arka.tx=Math.max(CRT_X0+20,Math.min(CRT_X1-20,geriX)); arka.ty=topUst?altY:ustY;
-      orta.tx=_inX(rim[0]-dir*165); orta.ty=topUst?ustY:altY;
+      /* FAZ 50: hakemler KENARDA DURUR — baş: dip çizgi dışı, top tarafı (iki nokta arasında yavaş);
+         arka: orta saha hizası, alt kenar dışı (sabit); orta: serbest atış hizası, üst kenar dışı (sabit) */
+      bas.tx=dipX; bas.ty=topUst?150:350;
+      arka.tx=COURT_MID; arka.ty=altY;
+      orta.tx=_inX(rim[0]-dir*165); orta.ty=ustY;
     }
     S.hakem.forEach(h=>{
       const dx=h.tx-h.x, dy=h.ty-h.y, d=Math.hypot(dx,dy);
-      const v=(S._hakemTop&&S._hakemTop.aktif&&h===bas)?190:125;
+      const v=(S._hakemTop&&S._hakemTop.aktif&&h===bas)?150:60;   /* FAZ 50: kenarda yavaş */
       const adim=Math.min(d,v*dt);
       if(d>0.5){ h.x+=dx/d*adim; h.y+=dy/d*adim; }
       _tokSet(h.g,h.x,h.y,1);
@@ -799,10 +803,10 @@ function oamHakemTick(S,dt){
     if(HT&&HT.aktif){
       HT.t=(HT.t||0)+dt;
       S._sahipsizT=0;                                            /* bekçi oyuncu yollamasın */
-      const d=Math.hypot(bas.x-b.x,bas.y-b.y);
+      const d=Math.hypot(bas.x-bas.tx,bas.y-bas.ty);
       if(!b.carrier&&(d<=16||HT.t>2.2)){
         const sh=HT.shooter; HT.aktif=false;
-        if(sh&&isFinite(sh.x)){ const dd=Math.hypot(sh.x-b.x,sh.y-b.y); b.h=Math.max(b.h||0,14); _ballPass(sh,Math.max(0.35,Math.min(0.9,dd/330))); }
+        if(sh&&isFinite(sh.x)){ b.mode='loose'; b.vx=b.vy=0; const dd=Math.hypot(sh.x-b.x,sh.y-b.y); b.h=Math.max(b.h||0,14); _ballPass(sh,Math.max(0.35,Math.min(0.9,dd/330))); }   /* FAZ 50: top hakemin durduğu kenardan gelir */
       } else if(b.carrier){ HT.aktif=false; }
     }
   }catch(e){}
@@ -815,6 +819,8 @@ function oamFtToplayici(shooter,offP,defP,rim,made){
     if(!made){ const a=_sr()*6.283; _ballCarom(Math.cos(a)*40,Math.sin(a)*36,_srand(30,38)); }   /* kısa düşüş, oyuncu almaz */
     S.chase=null;
     S._hakemTop={aktif:true,shooter,t:0};
+    /* FAZ 50: top hakemin durduğu dip çizgiye doğru yuvarlanır (hakem sahaya girmez, top ona ışınlanmaz) */
+    try{ const offLeft=(S.offSide!=null)?S.offSide:(b.x<COURT_MID); const hx=offLeft?(CRT_X0-16):(CRT_X1+16); const hy=Math.max(CRT_Y0+30,Math.min(CRT_Y1-30,b.y)); const dx=hx-b.x, dy=hy-b.y, dn=Math.hypot(dx,dy)||1; if(dn>30) _ballLoose(dx/dn*Math.min(170,dn*1.6),dy/dn*Math.min(170,dn*1.6),12); }catch(e){}
   }catch(e){}
 }
 
@@ -963,7 +969,8 @@ function oamTorenTick(S,O,dt){
     if(aktif){
       try{ oamTick(dt); }catch(e){ try{ console.warn('OAM tick',e); }catch(_){} }
     }
-    if(!aktif&&S){ try{ oamSokmaTick(S,dt); }catch(e){} try{ oamYuruTick(S,dt); }catch(e){} try{ oamOutletTick(S,dt); }catch(e){} try{ oamBaskiTick(S,dt); }catch(e){} }
+    const klipte=!!(S&&S.klip&&S.klip.aktif);   /* FAZ 50: klip oynarken eski yazıcılar susar */
+    if(!aktif&&S&&!klipte){ try{ oamSokmaTick(S,dt); }catch(e){} try{ oamYuruTick(S,dt); }catch(e){} try{ oamOutletTick(S,dt); }catch(e){} try{ oamBaskiTick(S,dt); }catch(e){} }
     else if(S){ S._yavasCik=false; S._sokmaT=0; }
     /* F11-1: arka plandan dönüşte `_simCatchUp` jetonları ESKİ hedeflerine ışınlar ve aynı karede
        OAM / çıkış pası modu YENİ hedef yazar; jetonlar yeniden yola çıkmasın diye yeni hedefe de

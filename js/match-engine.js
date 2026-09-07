@@ -660,6 +660,7 @@ const _SAHIPSIZ_PX=59;        /* ≈ 2 m (29,5429 px/m) */
 const _SAHIPSIZ_SN=0.6;   /* FAZ 37: 1,2 sn kuyruğu ölçümde %2,3 sahipsiz kare bırakıyordu */
 function _sahipsizTopTick(S,dt){
   try{
+    if(S._klipTop){ S._sahipsizT=0; return; }   /* FAZ 50: klip oynarken bekçi yok */
     if(typeof mState!=='undefined'&&mState&&mState.running===false){ S._sahipsizT=0; return; }   /* FAZ 43 D2: önizleme */
     const b=S.ball;
     /* ── FAZ 40 §A1: UÇAN PAS SAHİPSİZ DEĞİLDİR ─────────────────────────────────────────
@@ -1160,6 +1161,7 @@ function _simTick(dt){
   for(const p of P){ p._px=p.x; p._py=p.y; }   /* FAZ 42-B §B: top elde oyuncuyla gider */
   /* 3) hedefe doğru ivmeli koşu + boşta mikro salınım + varış freni */
   for(const p of P){
+    if(p._klip) continue;   /* FAZ 50: jeton gerçek klip yörüngesinde, fizik atlanır */
     const w=(p===carrier)?0:1;
     /* ARA NOKTA (waypoint): geçişte kanatlar önce KENARA açılır, sonra kulvarda öne koşar.
        Düz çizgi hedefiyle iki takım orta bantta iç içe koşuyordu; gerçek basketbolda
@@ -1368,6 +1370,7 @@ function _simTick(dt){
     for(let j=i+1;j<P.length;j++){
       const a=P[i],b=P[j];
       if(a._oob&&b._oob) continue;
+      if(a._klip||b._klip) continue;   /* FAZ 50: gerçek kayıttaki mesafeler korunur */
       let dx=b.x-a.x, dy=b.y-a.y;
       let d=Math.hypot(dx,dy);
       let _R=(a.team===b.team)?_PL_R_TAKIM:_PL_R;
@@ -1596,6 +1599,7 @@ function _topAlinabilir(p,b){
 }
 function _ballStep(dt){
   const S=mState._sim, b=S.ball;
+  if(S._klipTop) return;   /* FAZ 50: top gerçek klip yörüngesinde (js/sahne-klip.js) */
   const px=b.x, py=b.y;
   switch(b.mode){
     case 'held':{

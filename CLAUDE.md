@@ -6,7 +6,7 @@ Bu dosya, bu depoda çalışan Claude Code oturumları için proje rehberidir. Y
 
 **Charazay 2.0**, Türkçe, tek dosyalık bir **basketbol menajerlik oyunu**dur. Oyuncu bir kulüp menajeri olarak takım kurar, kadro/taktik yönetir, canlı maç simülasyonu izler, transfer yapar, altyapı/arena/ekonomi yönetir ve lig + playoff sezonları oynar. Steam yayınına hazırlanıyor.
 
-- Ana oyun: **`charazay2.0.html`** (HTML gövdesi + CSS; JS `js/*.js` içinde, 16 `<script src>` — FAZ 46'da `js/sahne-oam.js` eklendi).
+- Ana oyun: **`charazay2.0.html`** (HTML gövdesi + CSS; JS `js/*.js` içinde, 18 `<script src>` — FAZ 46'da `js/sahne-oam.js`, FAZ 50'de `js/klip-data.js` + `js/sahne-klip.js` eklendi).
 - Dil: arayüz ve tüm metinler **Türkçe**.
 
 ## Nasıl çalıştırılır?
@@ -69,10 +69,11 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/iz-kaydet.js` | **Canlı sahne iz kaydedicisi (FAZ 40)** — topun ve 10 jetonun konumu her karede kaydedilir; hız **100 ms pencerede** hesaplanır (kare-kare DEĞİL — 60 fps.te 1 px titreşim 1,8 m/sn sahte hız üretir). **Sahne↔maç saati oranını AYNI KOŞUDA ölçer ve her hızı iki ölçekte birden basar** (F15 tuzağı). Işınlanma, donma payı, yol eğriliği. `--yeniden=<etiket>` ile tarayıcısız yeniden çözümleme. Hareket/koreografi değişince çalıştır. |
 | `tools/iz-ciz.js` | İz kaydından yörünge + hız profili PNG.si üretir (`olcum/iz-<etiket>-*.png`). Her sürümde üretilip saklanır. |
 | `tools/gercek-hareket/indir.js` | **FAZ 48 gerçek HAREKET verisi indirici** — SportVU 2015-16 (linouk23/NBA-Player-Movements 7z, 25 kare/sn) + sumitrodatta/nba-alt-awards play-by-play; sezona eşit aralıkla `--n` maç. Ham veri `tools/gercek-hareket/_ham/` (≈1 GB, `.gitignore`) — **DEPOYA KOYMA**. |
+| `tools/gercek-hareket/klip-cikar.js` | **FAZ 50 gerçek pozisyon klibi çıkarıcı** — ham SportVU'dan şutla biten pozisyonları (takım topu aldığı an → elden çıkış + ~1 sn) 5 kare/sn, hücum sola normalize, Int16 base64 olarak `js/klip-data.js`e yazar (696 klip, 3 MB). Meta: bas (sokma/ribaund/gecis/onsaha), sure, şut noktası, şutör indeksi/sınıfı, pas sayısı, `r` (elden çıkış karesi). Veriyi yeniden üretince sürüm artır. |
 | `tools/gercek-hareket/cikar.js` | **FAZ 48 hareket dağılımı çıkarıcı** — ham SportVU'dan `tools/_lib/gercek-hareket.json` üretir (10 maç · 811.291 kare · 2.122 pozisyon): oyuncu hızı, hücum yayılımı, topu tutana en yakın savunmacı (toplam + ön/arka saha), pas/pozisyon, tutma süresi, aynı anda koşan, kesme, şut anında duran, potaya uzaklık, top elde payı, arka sahada tutma payı, yarı sahayı geçen rol — DAĞILIM olarak (tek sayı değil). Tanımlar dosya başında; bir tanımı değiştiren veriyi yeniden çıkarmak zorunda. `cikarilamadi`: perde sayısı, şut tipi — kapı YOK. |
 | `tools/_lib/gercek-hareket.json` | **Hareket kapılarının TEK DOĞRULUK KAYNAĞI** (FAZ 48). Elle DÜZENLEME; `cikar.js` üretir. |
 | `tools/hareket-bant-check.js` | **Hareket dağılımı ↔ gerçek (FAZ 48)** — `node tools/hareket-bant-check.js olcum/iz-<etiket>.json`: iz kaydından SportVU ile AYNI tanımlarla dağılımlar çıkarır (maç ölçeği) ve histogram **L1 uzaklığı** basar; kapı L1 ≤ 0,35 (tek sabit). ⚠ n≈50 pozisyonluk ölçütlerde (pas/poz, şut anında duran) L1 ±0,1 gürültülüdür — aynı kodun beş kaydında 0,32-0,45 salındı; karar ortalamanın yönüyle verilir. Hareket/koreografi değişince `iz-kaydet` + bunu çalıştır. **FAZ 49:** hızı iki ölçekte basar (maç + `↳ DUVAR ölçeği (ekran)` = kullanıcının gördüğü; kabul ölçütü duvar), `--bins` kova dökümü, `10 oyuncu aynı yarıda` ve `topun yarısındaki oyuncu` (gerçek `ayniYari`/`topYarisi`, `cikar.js`). |
-| `tools/iz-poz-ciz.js` | **Pozisyon penceresi yörünge grafiği (FAZ 48 · 3. taş)** — `--t=a-b` (motor kaydı, 10-14 sn pencere) ve `--gercek=<SportVU json> --olay=<id>` (gerçek olay) panellerini yan yana çizer (`olcum/*-poz.png`). 470 sn'lik tam yörünge "saç yumağı"dır; hiçbir kapının yakalamadığı kusurlar (sahayı boydan boya kat eden değişim yayları, uzunların köşe noktası) bu grafikte görüldü. Sayılar yeşilken şikâyet varsa `kontak-goruntu` ile birlikte ÖNCE bunu çalıştır ve kendin oku. |
+| `tools/iz-poz-ciz.js` | **Pozisyon penceresi yörünge grafiği (FAZ 48 · 3. taş)** — `--t=a-b` (motor kaydı, 10-14 sn pencere) ve `--gercek=<SportVU json> --olay=<id>` (gerçek olay) panellerini yan yana çizer (`olcum/*-poz.png`). 470 sn'lik tam yörünge "saç yumağı"dır; hiçbir kapının yakalamadığı kusurlar (sahayı boydan boya kat eden değişim yayları, uzunların köşe noktası) bu grafikte görüldü. Sayılar yeşilken şikâyet varsa `kontak-goruntu` ile birlikte ÖNCE bunu çalıştır ve kendin oku. |
 | `tools/kontak-goruntu.js` | **Canlı sahayı GÖZLE izleme (FAZ 44)** — `node tools/kontak-goruntu.js <KÖK> <etiket> --secs=60 --adim=2`: sahayı 2 sn'de bir kaydeder, 15'lik kontak sayfaları (5×3, her karede olay·mod·taşıyıcı·SET/FT/INB etiketi) üretir (`olcum/goruntu/`). Sayılar yeşilken "basketbola benzemiyor" şikâyetinde ÖNCE bunu çalıştır ve kareleri kendin oku; `<KÖK>` olarak `git worktree` ile açılan HEAD kopyası verilirse aynı tohumda yan yana kıyas yapılır. |
 | `tools/dizilim-olc.js` | **Olay indeksine göre dizilim yayılımı (FAZ 44)** — 100 ms'de bir ağırlık merkezine ortalama uzaklık, en yakın çift, 22 px altı çakışan çift, saha dışı jeton; olay başına özet. Duvar saatine bağlı ekran anları koşular arasında kıyaslanamaz — bu araç AYNI OLAYDA kıyaslar. |
 | `tools/gecis-analiz.js` | **Pozisyon başına orta çizgi geçişi (FAZ 44)** — `iz-kaydet` kaydını okur; her pozisyonda topun orta çizgiyi hangi modda (held/pass/shot/hiç) geçtiğini listeler. `sahne-check`in "geçiş / pozisyon değişimi" kapısı çift sayar (HEAD %111); davranış yargısı için bunu kullan. |
@@ -146,6 +147,8 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
 | `js/turkce-ek.js` | **Türkçe çekim eki** — `turkEk(ad,durum)` (ünlü uyumu + ünsüz benzeşmesi + kaynaştırma/zamir n'si), `turkEkUygula` (`%X{durum}` çözücü), `trKucuk`/`trBuyukIlk` (İ→i, I→ı). Saf fonksiyonlar; `match-engine.js`'ten ÖNCE yüklenir. |
 | `js/match-engine.js` | Maç motoru: `simulateMatch`/`buildMatchCtx` (sunucu sözleşmesi, `G`'siz) → `generateMatchEvents` → `runPossession` (tempo/odak/savunma stili/top yükleme/eşleştirme taktikleri), şut haritası/kutu skor render, `applyMatchResult`. **Canlı sunum v3** (27. oturum): rol tabanlı dizilim (`_assignRoles`, `SET_*`), üç fazlı pozisyon (sokma → `TRANS_*` geçiş → set), top durum makinesi (`_ballHold/_ballPass/_ballShoot/_ballLoose`), serbest top takibi (`_chase`), çizgi dışı sokma (`_inboundSetup`/`_clearOob`), anlatım senkronu (`movePlayersForEvent(ev,paint)`). |
 | `js/main.js` | `startMatch`/`stopMatch`/canlı oynatım, `toggleManualCoach`, antrenman + izci (`hireScout`) aksiyonları, transfer/gelen teklif (`showIncomingOfferModal`)/koç/arena aksiyonları, `showPage` (SPA, `analiz` dahil), `createTeam`, bildirim kuyruğu, `window.onload` bootstrap. |
+| `js/klip-data.js` | **Gerçek pozisyon kütüphanesi (FAZ 50)** — `KLIP_VERI` (696 SportVU klibi, Int16 base64). Üretici `tools/gercek-hareket/klip-cikar.js`; ELLE DÜZENLEME. |
+| `js/sahne-klip.js` | **Gerçek klip oynatıcı (FAZ 50)** — şut olayında motorun kararına (şutör · nokta · sonuç) en yakın gerçek pozisyonu seçer (`klipSec`), 10 jetonu + topu kinematik oynatır (`klipTick`: harman, şut noktası ofseti, tutan/pas modu), elden çıkışta `oamAtes`e devreder (`klipAtes`), klip sonunda fiziğe bırakır (`klipBitir`). `sahne-oam.js`'ten SONRA yüklenir; `animateShotPossession`/`_simTick`/`movePlayersForEvent` sarmalanır. `KLIP_ACIK=false` OAM'a döner. |
 | `js/sahne-oam.js` | **Oyun Akışı Makinesi (FAZ 46)** — canlı topun tek beyni: `oamSut` (şutlu pozisyon kurulumu, `animateShotPossession` yerine), `oamTick` (faz makinesi: sokma → geçiş → set → şut; top hareketi kararları), `oamHedefler` (her karede her oyuncuya tek hedef: boşluk şablonu + şema + adam adama savunma), `oamAtes` (eski `fire` sözleşmesi: ön parça/sonuç senkronu, blok, AND-1, ribaunt bloğu, sayı sonrası sokma kurulumu). `match-engine.js`'ten SONRA, `main.js`'ten ÖNCE yüklenir; `animateShotPossession`/`_simTick`/`movePlayersForEvent` sarmalanır. |
 | — | **7. oturum sistemleri:** playoff serisi + sezon ödülleri + **başkan hedefi** (`match-prep.js`), transfer pazarlığı + **kişilikler** (`playerAcceptsOffer`), **izci ağı** + **draft** (`startDraft`, `match-prep.js`), **Analiz** sayfası. Detay `PROGRESS.md` 7. oturum. |
 
@@ -1541,3 +1544,37 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   altına iner (L1 0,24, ort 1,50 ↔ 1,72) ve maç ~%27 uzun izlenir. L1'i 0,20'ye indirmenin
   ölçülen tek yolu seti gerçek uzunluğuna (10-15 sn) getirmek = gerçek zamanlı maç. İzleme hızı
   düğmesi (`setMatchRate`) durur; kullanıcı kararı gerekmeden daha da uzatma.
+
+- **CANLI TOP GERÇEK MAÇ KAYDINDAN OYNAR — `js/sahne-klip.js` + `js/klip-data.js` (FAZ 50, kullanıcı
+  kararı "radikal değişiklik"):** FAZ 46-49'un elle yazılmış koreografisi (OAM) altı turda gerçek
+  dağılımlara yaklaştırıldı ama kullanıcı "inanılmaz saçma tek paslar" dedi — basketbolun AKIŞI kural
+  listesiyle yazılamıyor. Artık şut olayı gelince motorun kararı (şutör · nokta · sonuç · kutu skor)
+  KORUNUR, sahne o şuta en yakın GERÇEK pozisyonu (SportVU 2015-16, 696 klip, 5 kare/sn, 10 oyuncu +
+  top; `tools/gercek-hareket/klip-cikar.js` üretir) seçip 10 jetonu ve topu o kaydın yörüngesinde
+  KİNEMATİK oynatır (`_klip` jeton, `S._klipTop` top: fizik, çarpışma, bekçi, eski yazıcılar atlanır).
+  Eşleme rol sırasıyla (PG,SG,SF,PF,C ↔ G,G,F,F,C), şutör klibin şutörüne; ilk 1 sn harman (blend);
+  son 1,5 sn'de şutör + top motorun noktasına kaydırılır; elden çıkışta top `oamAtes`e devredilir
+  (ön parça/sonuç senkronu, blok, AND-1, ribaunt mücadelesi, sokma aynen), oyuncular klibin şut sonrası
+  1 sn'sini oynar. Ölü top törenleri (hava atışı, serbest atış, faul sokması, mola) ve putback OAM'da.
+  `KLIP_ACIK=false` OAM'a döner. Ölçülen (470 sn): oyuncu hızı L1 **0,11**, yayılım x/y · savunmacı
+  (ön/arka) · koşan · kesme · potaya uzaklık · topun yarısı HEPSİ ✓; geri pas %1, rakibe pas 1.
+- **KLİP OYNATICIDA HIZ KIRPILMIŞ KONUMDAN TÜRER (FAZ 50, ölçülerek bulundu):** NBA verisinde oyuncu
+  çizgi dışına taşabilir; `p.x=_inX(nx)` kırpılınca `vx=(nx-p.x)/dt` her karede sabit 40 px'lik farkı
+  hız sanıyor (2500 px/sn) ve klip bitince fizik o hızla jetonu sahadan uçuruyordu. Hız `(p.x-ox)/dt`,
+  ±400 px/sn kelepçeli; klip bitişinde vx=vy=0.
+- **KLİBİN BAŞLANGICI TOPUN ŞU ANKİ YERİNE HİZALANIR (FAZ 50):** klip topun 14 m ötesinden başlarsa
+  1 sn'lik harman 47 m/sn "uçuş" üretir (ölçüldü, 28 ışınlanma tek pozisyonda). Seçim maliyetine ilk
+  karedeki top uzaklığı girer; klibin ilk %35'inde topa en yakın kare başlangıç alınır (≥ 3 m kazanç).
+- **ŞUT SONRASI 1 SN DE KLİPTEN (FAZ 50):** klip elden çıkışta bitince `oamAtes`in 0,58 sn'lik şut
+  hazırlığında on jeton donuyordu ("şut anında duran" 3,4/4 ↔ gerçek 1,66). Klip `r` (elden çıkış)
+  + ~1 sn taşır; top devredilir, oyuncular klip sonuna kadar gerçek yörüngede kalır.
+- **HAKEMLER SAHAYA GİRMEZ (FAZ 50, kullanıcı):** üçü de çizgi dışında ve neredeyse sabittir (baş: dip
+  çizgi dışı iki nokta arasında 60 px/sn; arka: orta saha hizası alt kenar; orta: serbest atış hizası
+  üst kenar). Serbest atışta top hakeme IŞINLANMAZ, dip çizgiye doğru yuvarlanır, hakem oradan verir.
+- **YAYIN DOSYASI: `js/klip-data.js` 3 MB (FAZ 50):** `<script>` etiketi ve `sw.js` JS_FILES listesinde;
+  `surum-check` iki listeyi kıyaslar. Klip verisini yeniden üretince (`klip-cikar.js`) sürüm artmalı.
+  Node harness'leri (sim-node, anlatim-check…) bu iki dosyayı YÜKLEMEZ — motor sözleşmesi değişmedi.
+- **SPORTVU VERİSİNDE İZLEME SIÇRAMASI VARDIR — KLİP ELENİR (FAZ 50, ölçüldü):** 769 klibin 73'ünde
+  bir oyuncu 0,2 sn'de 3-20 m "atlıyordu" (kimlik karışması); sahnede jeton 3 m/kare spazm yapıyor,
+  `isin-oyuncu` 115 tek kare sıçrama sayıyordu. `klip-cikar.js` oyuncu > 2,5 m/kare ya da top > 8 m/kare
+  olan klibi atar (`say.sicrama`). Gerçek veri de ham hâliyle "gerçek" değildir; kapıdan geçir.

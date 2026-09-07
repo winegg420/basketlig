@@ -8640,3 +8640,102 @@ Yeni düşüş YOK; düşen her kapı ya HEAD'de de düşüyor ya da gerçek ver
   `sunum-check --ms=1500000`: **M12 7 and-1 · 7 ek atış sahnesi ✓** (FAZ 48'in 3/5 düşüşü kapandı) ·
   M14 ✓ · M9 %71 (n=7, ÖRNEKLEM YETERSİZ; 900 sn'lik koşumda %83 ✓ n=12) · F14-7 9,0/10 (bir seride
   4,7 m uzakta jeton; ilk koşumda 9,9/10 ✓) · F25-2 3 donma (bilinçli, yukarıda).
+
+---
+
+## 50. oturum — FAZ 50: CANLI TOP GERÇEK MAÇ KAYDINDAN (SportVU klipleri) + hakemler kenarda (2026-09-07)
+
+**Kullanıcı (FAZ 49 sonrası, sürüm 86'yı izleyince):** "hakemler sahanın içinde aşırı dolaşıyor …
+inanılmaz saçma tek paslar yapılıyor, gerçek basketbolda böyle bir şey yok … bu yöntem işe yaramadı.
+gerçek basketbol görüntüsünü maç kaydını nereden bulacaksan bul, radikal değişiklik yap. şu an canlı
+maç BERBAT hâlde."
+
+### KARAR — koreografi yerine gerçek kayıt
+FAZ 46-49 boyunca elle yazılmış koreografi (OAM) gerçek DAĞILIMLARA yaklaştırıldı (hız, yayılım,
+savunmacı mesafesi) ama basketbolun AKIŞI — kim ne zaman kime pas atar, kim nereye koşar — kural
+listesiyle yazılamıyor; her tur bir kusuru düzeltip başka bir tuhaflık üretiyordu. Elimizde gerçek maç
+kaydı ZATEN vardı: FAZ 48'in indirdiği SportVU 2015-16 (10 maç, 25 kare/sn, 10 oyuncu + top).
+Radikal değişiklik: **sahne artık o kaydı oynatıyor.**
+
+- `tools/gercek-hareket/klip-cikar.js`: ham veriden şutla biten pozisyonlar — takım topu aldığı an →
+  elden çıkış + ~1 sn şut sonrası. 1.679 şut → 696 klip (73 izleme sıçraması elendi, 707'sinde şutörün tutuş karesi bulunamadı,
+  133 kısa, 45 kadro/kare eksik). Hücum sola normalize, 5 kare/sn, 0,1 ft, Int16 base64 →
+  `js/klip-data.js` (2,7 MB; `<script>` + `sw.js` listesinde). Ortalama 12,0 sn, 2,7 pas/klip.
+  Başlangıç sınıfı: ribaund 314 · geçiş 264 · ön saha 155 · sokma 36.
+- `js/sahne-klip.js` (`sahne-oam.js`'ten sonra): şut olayında motorun kararı (şutör · nokta · sonuç)
+  korunur; `klipSec` başlangıç durumu (top nerede: sokma/ribaund/geçiş/ön saha), şut mesafesi+açısı,
+  şutör sınıfı (G/F/C), klip uzunluğu ve topun şu anki yerine uzaklıkla puanlar, en iyi 6'dan sahne
+  PRNG'siyle seçer (son 10 klip tekrar etmez). Eşleme PG,SG,SF,PF,C ↔ G,G,F,F,C; motorun şutörü klibin
+  şutörüyle yer değiştirir. `klipTick` 10 jetonu + topu KİNEMATİK oynatır (`_klip` jeton, `S._klipTop`
+  top: fizik, çarpışma, bekçi, OAM/eski yazıcılar atlanır); ilk 1 sn harman (bulunduğu yer → klip),
+  son 1,5 sn şutör + top motorun noktasına ofsetlenir (klip zaten ≤ 1-2 m yakın seçilir); tutan =
+  4 ft içindeki hücumcu, yoksa `pass` modu. Elden çıkışta (`klipAtes`) top `oamAtes`e devredilir —
+  ön parça/sonuç senkronu, blok, AND-1, ribaunt mücadelesi, sayı sonrası sokma AYNEN; oyuncular klibin
+  şut sonrası saniyesini oynar, sonra fiziğe döner (`klipBitir`; hedefler koreografinindir).
+  Ölü top törenleri, putback ve klipsiz durumlar OAM'da. `KLIP_ACIK=false` eski yol. Oynatma hızı
+  `KLIP_HIZ=1,2` (gerçek zamanın 1,2 katı; sahne→maç 1,24).
+- **Hakemler kenarda:** üçü de çizgi dışında ve neredeyse sabit (baş: dip çizgi dışında iki nokta
+  arasında 60 px/sn; arka: orta saha hizası alt kenar; orta: serbest atış hizası üst kenar). Serbest
+  atışta top hakeme ışınlanmaz, dip çizgiye yuvarlanır, hakem oradan atıcıya verir.
+
+### Yol boyunca ölçülerek bulunanlar
+- b: savunmacı sahadan uçtu (41 px/kare) — NBA verisinde çizgi dışına taşan oyuncu kırpılınca hız
+  kırpılmamış hedeften türüyordu (2500 px/sn); hız `(p.x−ox)/dt`, ±400 kelepçe, klip sonunda 0.
+- b: şut anında herkes donuyordu (4'te 3,4 duran): klip elden çıkışta bitiyor, `oamAtes`in 0,58 sn
+  hazırlığında fizik vx=0 ile duruyordu → klipler +1 sn şut sonrası taşır (`r` alanı).
+- c: tek pozisyonda 28 "ışınlanma" (top 47 m/sn): klip topun 14 m ötesinden başlıyor, 1 sn harman
+  uçuş gibi görünüyordu → seçim maliyetine ilk kare top uzaklığı; klibin ilk %35'inde topa en yakın
+  kare başlangıç alınır.
+- d: and-1 / ribaunt hedefleri klip sonunda `tx=x` ile eziliyordu (F14-7 8,3/10) → şuttan sonra
+  klip yalnız konum yazar, `klipBitir` hedeflere dokunmaz. Uzun klipler anlatımı susturuyordu
+  (en uzun boşluk 21,7 sn) → 13 sn üstü klip maliyeti.
+
+### ÖLÇÜM (iz-f50d · 470 sn · sürüm 87 kodu) ↔ FAZ 49 sonu (iz-f49l) ↔ gerçek
+| ölçüt | FAZ 49 | **FAZ 50** | gerçek | L1 49 → 50 |
+|---|---|---|---|---|
+| oyuncu hızı (maç ölçeği) | 1,50 | **1,85** | 1,72 | 0,24 → **0,12** |
+| ↳ duvar (ekran) | 1,95 | 2,29 | 1,72 | 0,27 → **0,23** |
+| yayılım x / y | 2,67 / 3,10 | **3,24 / 3,55** | 3,64 / 3,75 | 0,62/0,55 → **0,35 ✓ / 0,25 ✓** |
+| savunmacı toplam · ön · arka | 2,81 · 1,62 · 4,55 | 2,63 · 1,85 · 4,19 | 3,14 · 2,00 · 5,07 | 0,34/0,48/0,31 → 0,29 ✓/0,32 ✓/0,46 ✗ |
+| pas / pozisyon | 4,44 | **3,28** | 3,14 | 0,65 → 0,60 ✗ (n=39) |
+| tutma süresi | 2,11 | 2,68 | 1,47 | 0,82 → 0,80 ✗ |
+| aynı anda koşan | 3,40 | 3,72 | 3,34 | 0,25 → **0,21** |
+| kesme / 1,5 sn | 0,70 | 0,68 | 0,80 | 0,22 → **0,08** |
+| şut anında duran | 2,74 | 3,08 | 1,66 | 0,78 → 1,09 ✗ (n=13; şut hazırlığı 0,58 sn içinde ölçülüyor) |
+| potaya uzaklık | 11,8 | **10,5** | 10,9 | 0,44 → **0,24** |
+| 10 oyuncu aynı yarıda | %68,9 | %70,2 | %68,1 | |
+| topun yarısındaki oyuncu | | | | 0,18 → **0,15** |
+| geri pas · rakibe pas | %0,6 · 1 | **%0,9 · 0** | | |
+| ışınlanma (470 sn) | 1 | 11 (10'u tek pozisyonda 26-29 m/sn'lik gerçek sert pas × 1,2) | | |
+| konsol hatası | 0 | 0 | | |
+Klipler gerçek kayıt olduğu için dağılımların çoğu tanım gereği oturdu; kalan ✗'ler ya küçük
+örneklem (şut anı n=13) ya da sahne→maç sıkıştırmasının kendisi (tutma maç ölçeğinde 1,24 kat).
+
+### REGRESYON (sürüm 87)
+`band.js` c19928475859c7ff · `measure.js` 51fa02b6e0a8194b · `sim-node` deterministik (motor
+dokunulmadı) · `anlatim-check` 31/31 · `balon-check` ✓ · `kural-check` ✓ · `visual-check` ✓ (0 hata)
+· `spacing-check` **7/10** (FAZ 49: 5/10; ikili 7,96 m, en yakın 3,91 ✓, yayılım %41 ✓, markaj 1,37;
+düşen: boyada %56, ball-you-man %84, potaya 7,4) · `arka-plan-check` 5/6 (FAZ 49: 4/6).
+`sahne-check`: held %70,7 ✓ · pass %13,5 ✓ · sahipsiz %1,6 ✓ · serbest atışta yerinde 10/10 ✓ ·
+**aynı anda koşan 2,69 ✗** (kademe sayar; klip jetonlarının kademesi yok — gerçek veri kapısı koşan
+L1 0,21 ✓) · orta çizgi %73 ✗ (eski çift sayım) · **PG/SG/SF %67 ✗** (kliplerde F sınıfı da getiriyor:
+G %71 · F %29 ↔ gerçek G %79 · F %14 — sınıf eşlemesi kaba).
+`sunum-check`: M12 ✓ (4/4) · M14 ✓ · **M9 %67 (n=3, ÖRNEKLEM YETERSİZ)** · **F14-7 8,3/10 ✗** (d
+düzeltmesinden önce; aşağıda) · F25-1 %83 ✗ (≥85, sınırda) · **F25-6a/6b ÖRNEK YOK** — post/perde
+damgaları OAM'ın iç işaretleriydi, klipte yok; bu iki kapı artık bir şey ölçmüyor.
+`realism-check`: iki beat 0 ms ✓ · **anlatım sessizliği en uzun 21,7 sn ✗** (uzun klipler; d
+düzeltmesi 13 sn üstünü cezalandırır — yeniden koşum aşağıda).
+
+### SON DOĞRULAMA (sürüm 87 kodu, 696 klip — sıçramalı 73 klip elendi)
+iz-f50f (200 sn): konsol hatası 0 · oyuncu tek kare sıçraması **1** (e'de 115 — SportVU izleme
+sıçraması, kaynakta elendi) · oyuncu hızı L1 0,16 (maç) / 0,31 (duvar, ort 2,54 = gerçek × 1,2 ×
+sıkıştırma) · `realism-check` iki beat 0 ms ✓, sessizlik en uzun 12,0 sn (eşik 12,0 — sınırda), ort
+3,5 ✓ · `visual-check` ✓ · `surum-check` ✓ (87). Topta 25 m/sn üstü 10 olay: gerçek sert paslar
+× 1,2 ve sokma/serbest atış top teslimleri — `isin-oyuncu` topta 0 tek kare sıçrama sayıyor.
+
+### KULLANICI NE GÖRECEK (sürüm 87)
+Her hücum gerçek bir NBA pozisyonunun kaydıdır: paslar, kesmeler, perdeler ve savunma kaymaları
+gerçek oyunculardan; şutu kim, nereden, ne sonuçla attığı yine motorun kararı (kutu skor değişmez).
+Hakemler kenar çizgisinin dışında durur, sahaya girmez. Maç hızı FAZ 49'a yakın (sahne→maç ~1,25).
+Bilinen sınırlar: rol eşlemesi kaba (klipteki "F" bazen PF'ye düşer, top getiren bazen forvet olur);
+post/perde damgaları OAM'a aitti, klipte yok; uzun pozisyonlarda anlatım 12 sn susabilir.

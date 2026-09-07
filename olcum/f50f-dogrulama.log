@@ -1,0 +1,14 @@
+5:  sahne→maç sıkıştırma      1 duvar sn = 1.347 maç sn
+8:  en yüksek hız (100 ms)                38.1 m/sn    ≤ 22
+9:  en yüksek kare sıçraması              41.2 m/sn    ≤ 25
+10:  ışınlanma (>25 m/sn) olayı        10 (0.33/poz)    0
+17:  en yüksek                 maç  23.15 m/sn    ≤ 8,5       [sahne 31.18]
+73:  konsol hatası: 0
+  toplam: 1 (oyuncu 1 · top 0)
+  bağlam: miss3/held:1
+   123.98s HUC/PF#3     32 px (1.09 m) miss3/held idx=19 (70,228)
+  ✓ oyuncu hızı (m/sn)     L1  0.158  (eşik 0.35)   ort 1.89 ↔ gerçek 1.72   maç ölçeği   n=119820
+  ✓   ↳ DUVAR ölçeği (ekran) L1  0.307  (eşik 0.35)   ort 2.54 ↔ gerçek 1.72   kullanıcının gördüğü   n=119760
+=== realism
+  ✗ anlatım sessizliği: en uzun boşluk 12017 ms · ortalama 3533 ms (hedef en uzun ≤12000 · ortalama ≤5000)
+KONSOL HATASI: 0
