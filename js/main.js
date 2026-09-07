@@ -446,7 +446,7 @@ function startMatch(playoff){
              eskiden bu bgPause'a sokuyor ve rAF boğuk değilken bile "sadece ses, oyun donuk"
              görüntüsü veriyordu — çıkış sim ilerlemesini beklediği için kilitleniyordu. Görünür
              sekmede rAF zaten çalışır; gerçek kare kaybı `raw>1.2` dalında _simCatchUp ile kapanır. */
-          if(_wallD>1.2&&_simD<0.35*_wallD*_rate&&(typeof document!=='undefined'&&document.hidden)){
+          if(_BGPAUSE_ACIK&&_wallD>1.2&&_simD<0.35*_wallD*_rate&&(typeof document!=='undefined'&&document.hidden)){
             mState._bgPause=true; mState._bgSimAt=_S.time; mState._bgWallAt=_now;
             dbg('bgPause','sahne çizilmiyor — olay kuyruğu bekliyor');
             matchEventTimer=setTimeout(stepGuarded,400);
@@ -510,6 +510,13 @@ function setMatchRate(r,btn){
    tetiklenmeye devam eder: sahne donmuşken olay kuyruğu ilerler ve o süredeki bütün
    anlatım satırları kaybolur. Sekme gizlenince kuyruğu duraklatıp dönüşte sürdürüyoruz. */
 let _hiddenPause=false;
+/* FAZ 51: bgPause (arka plan sekmesi olay-kuyruğu duraklatması) KAPALI. Amacı arka planda
+   anlatımın sahneyi geçmemesiydi; ama defalarca donmaya yol açtı (yumurta-tavuk kilidi: rAF
+   boğukken sim ilerlemez, çıkış sim ilerlemesini bekler). Artık rAF YEDEĞİ (match-engine
+   `_rafYedek`) sahneyi rAF boğuk olsa bile olaylarla senkron sürdüğü için bgPause gereksiz.
+   Kapalıyken: olay kuyruğu her koşulda akar, sahne rAF ya da yedekle akar, dönüşte _simCatchUp
+   eşitler. Donma yapısal olarak imkânsız. Geri açmak gerekirse true yap. */
+const _BGPAUSE_ACIK=false;
 if(typeof document!=='undefined'&&document.addEventListener){
   document.addEventListener('visibilitychange',function(){
     try{
@@ -534,7 +541,7 @@ if(typeof document!=='undefined'&&document.addEventListener){
            (mState._bgPause) ilan edilir ve bekçi o bayrağı görünce karışmaz.
            Ayrıca zamanlayıcı o an null olsa bile (şut sonucu beklenirken 60 ms'lik
            stepGuarded döngüsü) duraklatma yine de kurulur. */
-        if(!mState._bgPause){
+        if(_BGPAUSE_ACIK&&!mState._bgPause){
           const gecen=Date.now()-(mState._stepAt||Date.now());
           mState._stepRemain=Math.max(60,(mState._stepDelay||600)-gecen);
           if(matchEventTimer){ clearTimeout(matchEventTimer); matchEventTimer=null; }
@@ -2112,7 +2119,7 @@ function startMatchWatchdog(){
           if(mState._wdWall!=null){
             const _wd=(_now-mState._wdWall)/1000, _sd=_S.time-mState._wdSim;
             const _rate=Math.max(0.5,Math.min(4,mState.rate||1));
-            if(_wd>=1.5&&_sd<0.35*_wd*_rate&&!mState._bgPause&&(typeof document!=='undefined'&&document.hidden)){
+            if(_BGPAUSE_ACIK&&_wd>=1.5&&_sd<0.35*_wd*_rate&&!mState._bgPause&&(typeof document!=='undefined'&&document.hidden)){
               mState._bgPause=true; mState._bgSimAt=_S.time; mState._bgWallAt=_now;
               if(matchEventTimer){ clearTimeout(matchEventTimer); matchEventTimer=null; }
               dbg('bgPause','bekçi: sahne çizilmiyor — olay kuyruğu bekliyor');
