@@ -1,0 +1,121 @@
+=== sahne-check (son)
+  ✓ top "held" modu                                        67.3%   hedef ≥ %65
+  ✓ SAHİPSİZ top karesi                                    0.45%   hedef ≤ %2
+  ✗ aynı anda koşan oyuncu                               5.51/10   hedef 3 – 5 / 10
+  ✓ serbest atışta yerinde oyuncu     10.00/10 (n=7, en kötü 10)   hedef ≥ 9,0 / 10 · en kötü ≥ 8
+  ✗ orta çizgi geçişi / pozisyon değişimi               75% (27/36)   hedef ≥ %85
+  ✗ yarı sahayı geçiren PG/SG/SF      89% {"SF":5,"PG":16,"SG":3,"PF":1,"C":2}   hedef ≥ %90
+
+  bilgi: mod dağılımı {"idle":0,"loose":10.7,"pass":16.1,"held":67.3,"shot":4.3,"rim":1.6}
+  bilgi: şut anında yerinde — HÜCUM 2.00/5 · SAVUNMA 2.46/5
+  bilgi: sahipsiz kare modları {"loose":48} · en uzak 78 px
+  bilgi: top kurtarma (watchdog + _ballHold ağı) 0 kez
+  konsol hatası: 0
+==========================================================================
+✗ 3 hedef düştü
+=== realism-check (son)
+=== arka-plan-check (son)
+  ✗ gizlenince duraklatma bayrağı kuruldu (_bgPause) — _bgPause false / false
+  ✗ gizliyken olay kuyruğu DURDU (30 sn, en fazla 1 olay sızar) — idx 3 → 18 · skor 0,0 → 8,12
+  ✓ dönüşte kuyruk sürdü (10 sn içinde olay ya da canlı zamanlayıcı) — idx 18 → 19 · timer true · _bgPause false
+  ✓ dönüşte sahne olaya eşitlendi (jeton sapması ≤ 120 px, top sahipli/hedefli) — sapma 33 px · top sahipli
+  ✓ dönüşte sahne saati akıyor — sim 11.49 → 21.5
+  ✓ konsol hatası 0
+================================================================
+SONUÇ: 4/6 — DÜŞTÜ
+=== sunum-check (son)
+  pencere: 900 sn · 1 maç · ÖRNEKLEM YETERSİZ: M9 uzun ribaundu (payda), M12 and-1, F14-7 serbest atış anı, F26-1 smaç yörüngesi
+  örneklem: m9 16/40 · and1 0/2 · hucumReb 19/5 · ft 11/12 · tasima 100/20 · sokma 60/40 · ftDrib 22/6 · sema 8/3 · sirtDonuk 867/200 · perde 63/3 · yaySmac 1/3 · yayUzak 73/5 · yayFloat 12/3 · yayTurnike 30/5
+
+--
+  ✓ M9  Ribaund sonrası çıkış (outlet) pası
+       uzun ribaundu 12 kez aldı ve hücum kuruldu → 10 kez topu guard'a çıkardı (%83, hedef ≥ %80) · kapsam dışı vaka: 25 · kaçanlarda sonraki taşıyıcının rolü: {"2":1,"3":1}
+  ✗ M12  AND-1 ek serbest atışı canlandırılıyor
+       ÖRNEK YOK — bu pencerede hiç and-1 olmadı (olasılık %8,5); --ms değerini artır
+  ✓ M14  Hücum ribaundunda şut saati 14 · gösterge boşalmıyor
+--
+  ✓ F14-7  Serbest atışta oyuncular yerleşiyor
+       11 seri · atış anında yerinde 9.9/10 (hedef ≥ 9) · ortalama uzaklık 0.02 m · en uzak 0.37 m · jeton hızı 4 px/sn (hedef < 15)
+  ✓ F19-4  Akış damgası tabelayla aynı yönde (kalan süre)
+--
+  ✗ F25-2  Set hücumunda donma yok (jeton 1,5 sn+ yerinde çakılı kalmıyor)
+       17 donma · en uzun 1.50 sn · kilitli 0 · topta 1 · hedefi uzakta 0 · rol {"0":3,"1":3,"2":6,"3":3,"4":2} · örnek [{"t":178093.59999999404,"sure":1.5029000000059605,"role":2,"kilit":false,"topta":false,"hedefUzak":0,"nudge":12,"hiz":2.2},{"t":331325.1999999881,"sure":1.502,"role":2,"kilit":false,"topta":false,"hedefUzak":0,"nudge":12,"hiz":2.3},{"t":332810.2999999821,"sure":1.5020999999940394,"role":1,"kilit":false,"topta":false,"hedefUzak":0,"nudge":13,"hiz":2.9},{"t":332827.09999999404,"sure":1.5019000000059604,"role":2,"kilit":false,"topta":false,"hedefUzak":0,"nudge":13,"hiz":0},{"t":333812,"sure":1.5023000000119209,"role":4,"kilit":false,"topta":false,"hedefUzak":0,"nudge":13,"hiz":2.5},{"t":333962,"sure":1.502,"role":3,"kilit":false,"topta":false,"hedefUzak":0,"nudge":13,"hiz":2.5}] · [bilgi] dar alanda kıpırdama 23 (ort 4.1 px/sn)
+  ✓ F25-3  Kenardan sokmada takım yakın duruyor
+--
+✗ DÜŞEN: M12, F25-2
+=== spacing-check (son)
+Maç izleniyor: 240 sn · izleme hızı 3×…
+
+========================================================================
+SAHA DİZİLİMİ ÖLÇÜMÜ — 1873 kare (674 set fazı · %36) · seed=987654321
+========================================================================
+  ✓ set hücumunda ortalama ikili mesafe              6.96 m   hedef ≥ 5,8 m
+  ✗ en yakın ikili (top sahibi hariç)                3.02 m   hedef ≥ 3,5 m
+  ✗ hücumun yayılımı / yarı saha (kutu)               %28.0   hedef ≥ %30
+  ✓ orta üçte birdeki hücumcu oranı                   %10.4   hedef < %20
+  ✗ boyada ≥1 hücumcu olan kare oranı                 %54.0   hedef ≥ %60
+  ✓ topu tutana en yakın savunmacı                   1.50 m   hedef < 1,8 m
+  ✓ savunmacının adamına ortalama uzaklığı           1.95 m   hedef < 3 m
+  ✓ yerine oturmuş ama adamı > 5 m uzakta              %0.0   hedef %0
+  ✗ savunmacı adamı ile pota arasında                 %69.3   hedef ≥ %85
+  ✗ hücumun saldırdığı potaya ortalama uzaklığı      11.46 m   hedef ≤ 7 m
+
+  OTURMUŞ set kareleri (dizilim kurulduktan ≥1,2 sn sonra · 155 kare):
+    ikili ort 7.46 m · en yakın 3.28 m · alan %30.9 · boyada %63 · markaj 1.52 m · >5 m savunmacı %0.0
+
+  SÜZÜLMEMİŞ — top ön sahadayken geçen TÜM kareler (1048 kare · geçiş dahil):
+    ✓ set hücumunda ortalama ikili mesafe              6.72 m   hedef ≥ 5,8 m
+    ✗ en yakın ikili (top sahibi hariç)                3.12 m   hedef ≥ 3,5 m
+    ✗ hücumun yayılımı / yarı saha (kutu)               %27.2   hedef ≥ %30
+    ✗ orta üçte birdeki hücumcu oranı                   %22.6   hedef < %20
+##### HEAD
+=== arka-plan-check (HEAD)
+  ✗ gizlenince duraklatma bayrağı kuruldu (_bgPause) — _bgPause false / false
+  ✗ gizliyken olay kuyruğu DURDU (30 sn, en fazla 1 olay sızar) — idx 3 → 19 · skor 0,0 → 8,12
+  ✓ dönüşte kuyruk sürdü (10 sn içinde olay ya da canlı zamanlayıcı) — idx 19 → 20 · timer true · _bgPause false
+  ✓ dönüşte sahne olaya eşitlendi (jeton sapması ≤ 120 px, top sahipli/hedefli) — sapma 60 px · top shot+hedef
+  ✓ dönüşte sahne saati akıyor — sim 11.49 → 21.5
+  ✓ konsol hatası 0
+================================================================
+SONUÇ: 4/6 — DÜŞTÜ
+=== sunum-check (HEAD)
+  ✗ M9  Ribaund sonrası çıkış (outlet) pası
+       uzun ribaundu 11 kez aldı ve hücum kuruldu → 8 kez topu guard'a çıkardı (%73, hedef ≥ %80) · kapsam dışı vaka: 27 · kaçanlarda sonraki taşıyıcının rolü: {"2":2,"yok":1}
+  ✓ M12  AND-1 ek serbest atışı canlandırılıyor
+       4 and-1 · ek atış sahnesi kurulan: 4 · şutör çizgide+top elinde görülen: 4
+  ✓ M14  Hücum ribaundunda şut saati 14 · gösterge boşalmıyor
+--
+  ✓ F14-7  Serbest atışta oyuncular yerleşiyor
+       24 seri · atış anında yerinde 9.6/10 (hedef ≥ 9) · ortalama uzaklık 0.14 m · en uzak 8.39 m · jeton hızı 8 px/sn (hedef < 15)
+  ✓ F19-4  Akış damgası tabelayla aynı yönde (kalan süre)
+--
+  ✗ F25-2  Set hücumunda donma yok (jeton 1,5 sn+ yerinde çakılı kalmıyor)
+       2 donma · en uzun 1.50 sn · kilitli 0 · topta 2 · hedefi uzakta 0 · rol {"2":2} · örnek [{"t":534811.7999999821,"sure":1.502899999976158,"role":2,"kilit":false,"topta":true,"hedefUzak":0,"nudge":13,"hiz":2.9},{"t":536313.400000006,"sure":1.5016000000238419,"role":2,"kilit":false,"topta":true,"hedefUzak":0,"nudge":12,"hiz":0}] · [bilgi] dar alanda kıpırdama 7 (ort 26.9 px/sn)
+  ✓ F25-3  Kenardan sokmada takım yakın duruyor
+--
+✗ DÜŞEN: M9, F25-2
+=== spacing-check (HEAD)
+Maç izleniyor: 240 sn · izleme hızı 3×…
+
+========================================================================
+SAHA DİZİLİMİ ÖLÇÜMÜ — 1853 kare (555 set fazı · %30) · seed=987654321
+========================================================================
+  ✓ set hücumunda ortalama ikili mesafe              6.62 m   hedef ≥ 5,8 m
+  ✗ en yakın ikili (top sahibi hariç)                3.20 m   hedef ≥ 3,5 m
+  ✗ hücumun yayılımı / yarı saha (kutu)               %25.4   hedef ≥ %30
+  ✓ orta üçte birdeki hücumcu oranı                   %13.4   hedef < %20
+  ✗ boyada ≥1 hücumcu olan kare oranı                 %56.0   hedef ≥ %60
+  ✓ topu tutana en yakın savunmacı                   1.68 m   hedef < 1,8 m
+  ✓ savunmacının adamına ortalama uzaklığı           2.34 m   hedef < 3 m
+  ✓ yerine oturmuş ama adamı > 5 m uzakta              %0.0   hedef %0
+  ✗ savunmacı adamı ile pota arasında                 %67.2   hedef ≥ %85
+  ✗ hücumun saldırdığı potaya ortalama uzaklığı      10.62 m   hedef ≤ 7 m
+
+  OTURMUŞ set kareleri (dizilim kurulduktan ≥1,2 sn sonra · 53 kare):
+    ikili ort 6.75 m · en yakın 3.18 m · alan %24.9 · boyada %81 · markaj 1.82 m · >5 m savunmacı %0.0
+
+  SÜZÜLMEMİŞ — top ön sahadayken geçen TÜM kareler (968 kare · geçiş dahil):
+    ✓ set hücumunda ortalama ikili mesafe              6.90 m   hedef ≥ 5,8 m
+    ✗ en yakın ikili (top sahibi hariç)                3.39 m   hedef ≥ 3,5 m
+    ✗ hücumun yayılımı / yarı saha (kutu)               %28.0   hedef ≥ %30
+    ✓ orta üçte birdeki hücumcu oranı                   %18.6   hedef < %20

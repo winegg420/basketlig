@@ -1,0 +1,25 @@
+=== realism-check (son, swing<=1)
+SENKRON — yorum ile ANLATTIĞI SAHNE BEATİ arasındaki mutlak fark (hedef ort ≤800 ms · en kötü tip ≤1200 ms):
+  ✓ en kötü tip ortalaması 0 ms (hedef ≤1200)
+  ✗ anlatım sessizliği: en uzun boşluk 12666 ms · ortalama 3519 ms (hedef en uzun ≤12000 · ortalama ≤5000)
+✗ 1 senkron hedefi düştü
+=== sunum-check uzun (M12)
+  pencere: 900 sn · 1 maç · ÖRNEKLEM YETERSİZ: M9 uzun ribaundu (payda)
+  örneklem: m9 14/40 · and1 7/2 · hucumReb 20/5 · ft 22/12 · tasima 103/20 · sokma 67/40 · ftDrib 34/6 · sema 8/3 · sirtDonuk 2273/200 · perde 42/3 · yaySmac 8/3 · yayUzak 59/5 · yayFloat 5/3 · yayTurnike 41/5
+
+--
+  ✗ M9  Ribaund sonrası çıkış (outlet) pası
+       uzun ribaundu 7 kez aldı ve hücum kuruldu → 5 kez topu guard'a çıkardı (%71, hedef ≥ %80) · kapsam dışı vaka: 29 · kaçanlarda sonraki taşıyıcının rolü: {"4":2}
+  ✓ M12  AND-1 ek serbest atışı canlandırılıyor
+       7 and-1 · ek atış sahnesi kurulan: 7 · şutör çizgide+top elinde görülen: 3
+  ✓ M14  Hücum ribaundunda şut saati 14 · gösterge boşalmıyor
+--
+  ✗ F14-7  Serbest atışta oyuncular yerleşiyor
+       22 seri · atış anında yerinde 9.0/10 (hedef ≥ 9) · ortalama uzaklık 0.14 m · en uzak 4.71 m · jeton hızı 7 px/sn (hedef < 15)
+  ✓ F19-4  Akış damgası tabelayla aynı yönde (kalan süre)
+--
+  ✗ F25-2  Set hücumunda donma yok (jeton 1,5 sn+ yerinde çakılı kalmıyor)
+       3 donma · en uzun 1.50 sn · kilitli 0 · topta 0 · hedefi uzakta 0 · rol {"1":1,"3":1,"4":1} · örnek [{"t":644276.2000000179,"sure":1.5023000000119209,"role":1,"kilit":false,"topta":false,"hedefUzak":14,"nudge":13,"hiz":1.9},{"t":782319.2000000179,"sure":1.5023000000119209,"role":4,"kilit":false,"topta":false,"hedefUzak":0,"nudge":13,"hiz":2.7},{"t":814050.2000000179,"sure":1.5024000000059605,"role":3,"kilit":false,"topta":false,"hedefUzak":0,"nudge":13,"hiz":2.8}] · [bilgi] dar alanda kıpırdama 12 (ort 10.5 px/sn)
+  ✓ F25-3  Kenardan sokmada takım yakın duruyor
+--
+✗ DÜŞEN: M9, F14-7, F25-2

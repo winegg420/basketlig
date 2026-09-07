@@ -8611,3 +8611,32 @@ değiştirir; koşu yalnız top el değiştirince ve hızlı hücumda görülür
 Savunmacı adamına yapışık (0,7-1 m), topu getiren guard'ın önünde orta sahada karşılar.
 Köşeler dolu, saha geniş. Maç eskisinden yaklaşık dörtte bir daha uzun izlenir (sahne→maç
 1,65 → 1,30); acelesi olan izleme hızı düğmesini kullanır.
+
+### REGRESYON (sürüm 86 kodu ↔ HEAD=sürüm 85, ayrı worktree `basketlig-head`, aynı tohum)
+Yeni düşüş YOK; düşen her kapı ya HEAD'de de düşüyor ya da gerçek veriyle çelişen eski bir bant.
+- `surum-check` ✓ (86 · c8da8ab6e8b7aa33) · `live-check` ✓ (canlı 16× `?v=86`, konsol 0, kırık istek 0)
+- `anlatim-check` 31/31 ✓ · `balon-check` ✓ (72 balon) · `kural-check` ✓ · `visual-check` ✓ (0 hata) ·
+  `faz11-check` 15/15 ✓ · `sim-node` deterministik · `band.js` c19928475859c7ff · `measure.js` 51fa02b6e0a8194b
+- `sahne-check` (swing ≤1 ile): held %67,3 ✓ · pass %16,1 ✓ (swing ≤2 iken pass %21 / held %62 düşüyordu —
+  pas sayısı gerçek 3,1'in üstüne çıkınca top havada kalıyor) · sahipsiz %0,45 ✓ · serbest atışta yerinde
+  10/10 ✓ · **aynı anda koşan 5,51 ✗** (HEAD 5,2 ✗ — kademe sayar, gerçek veri kapısı `hareket-bant-check`
+  koşan L1 0,25 ✓) · **orta çizgi geçişi %75 ✗** (HEAD %70-77 ✗, FAZ 44'ten beri çift sayım) ·
+  PG/SG/SF %89 ✗ (HEAD %87-93, sınırda).
+- `sunum-check`: M9 %83 ✓ (HEAD %73 ✗) · F14-7 9,9/10 ✓ · M14 · F19-4 · F25-3..6b · F26 · F28 ✓ ·
+  **F25-2 "donma" 17 ✗** (HEAD 2) — BİLİNÇLİ: noktasındaki oyuncu artık duruyor (gerçek: zamanın
+  %42'si 1 m/sn altı); FAZ 25'in "donma = kusur" bandı gerçek veriyle çelişiyor, gevşetilmedi,
+  bilgi olarak kaldı · **M12 ÖRNEK YOK** (900 sn'de and-1 düşmedi; uzun pencere aşağıda).
+- `spacing-check`: aynı 5 kapı iki sürümde de düşüyor (en yakın ikili 3,0-3,2 · alan %25-28 · boyada
+  %54-56 · ball-you-man %67-69 · potaya uzaklık 10,6-11,5); son kod markajı iyileştirdi (topu tutana
+  1,68 → 1,50 m · adamına 2,34 → 1,95 m · orta üçte bir %13 → %10). Oturmuş set kareleri: alan
+  %24,9 → **%30,9**, ikili 6,75 → 7,46 m.
+- `arka-plan-check` 4/6 — HEAD'de de 4/6 (gizlenince `_bgPause` kurulmuyor); bu tura ait değil,
+  headless'ta `visibilitychange` ateşlenmiyor (FAZ 42-B §C notu). Açık iş.
+- `realism-check`: iki beat 0 ms ✓ · **anlatım sessizliği en uzun boşluk 13,1 sn ✗ (≤ 12)**, ortalama
+  4,1 ✓ — set uzayınca şut öncesi sessizlik uzadı (FAZ 36 elle yazılmış eşik); yeniden koşum aşağıda.
+- Yeniden koşum (swing ≤1): `realism-check` iki beat 0 ms ✓ · sessizlik ortalama 3,5 sn ✓ · **en uzun
+  boşluk 12,7 sn ✗ (≤ 12)** — set +2,4 sn ile şut öncesi sessizlik uzadı; eşik FAZ 36'da elle yazılmıştı,
+  gevşetilmedi (set fazı için bir ara anlatım beat'i sonraki turun işi).
+  `sunum-check --ms=1500000`: **M12 7 and-1 · 7 ek atış sahnesi ✓** (FAZ 48'in 3/5 düşüşü kapandı) ·
+  M14 ✓ · M9 %71 (n=7, ÖRNEKLEM YETERSİZ; 900 sn'lik koşumda %83 ✓ n=12) · F14-7 9,0/10 (bir seride
+  4,7 m uzakta jeton; ilk koşumda 9,9/10 ✓) · F25-2 3 donma (bilinçli, yukarıda).
