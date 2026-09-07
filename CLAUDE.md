@@ -1608,3 +1608,17 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
 - **TEK KARE HIZI 9 ms'LİK KAREDE YANILTIR (FAZ 51):** "held 47 m/sn" ışınlanması 0,42 m'lik adımın 9 ms'lik
   rAF karesine bölünmesiydi (sim alt adımı 33 ms) — kare süresine bakmadan tek kare hızını yargılama; 100 ms
   pencere ya da px adımı (isin-oyuncu 30 px) ölçütü kullan.
+
+- **GÖRÜNÜR SEKMEDE `_bgPause`'a GİRİLMEZ (FAZ 51, kullanıcı "maça basınca hiçbir şey olmuyor, sadece
+  ses geliyor"):** arka plan sekmesi duraklatması (bataryayı korumak için, FAZ 37/42-B) bir YUMURTA-TAVUK
+  kilidine düşüyordu: arka planda rAF boğulunca match-engine yalnız `_simCatchUp` koşar, `_simStep` HİÇ
+  çağrılmaz → sim saati durur; stepGuarded'ın çıkış koşulu "son 400 ms'de sahne saati ilerledi mi" ise sim
+  durgunken ASLA sağlanmaz → sim ilerlemiyor çünkü bgPause, bgPause çıkmıyor çünkü sim ilerlemiyor. Kullanıcı
+  maça basıp bakıyorken (crowd ambience = "ses" çalıyor) oyun idx=1'de donuyordu. Düzeltme: bgPause'a YALNIZ
+  `document.hidden===true` iken girilir (stepGuarded giriş dalı + watchdog 2103), çıkışta görünür sekme sim
+  ilerlemesini beklemeden hemen çıkar. Görünür sekmede bgPause yapısal olarak imkânsız → donma imkânsız.
+  Kanıt (canlı takılı durum): `document.hidden` false override etmek eski kodu çıkarmadı; bgPause devre dışı +
+  sim elle sürünce idx aktı. FAZ 42-B'nin "hidden güvenilmez, başka sekme öne alınca false kalıyor" kaygısı
+  kabul edildi: o nadir durumda bgPause kurulmaz, olaylar akar, sahne `raw>1.2` dalındaki _simCatchUp ile
+  yetişir (kullanıcı o sekmeye bakmıyor). "Duraklat, sonra yetiş" mekanizmasının ÇIKIŞI, girişini doğuran
+  koşuldan (rAF boğukluğu) bağımsız olmalı; yoksa kilitlenir.

@@ -421,9 +421,16 @@ function startMatch(playoff){
         const _now=performance.now();
         const _rate=Math.max(0.5,Math.min(4,mState.rate||1));
         if(mState._bgPause){
-          /* duraklamadayız: son 400 ms'lik pencerede sahne akmaya başladı mı? */
+          /* FAZ 51 (kullanıcı: "maça basınca hiçbir şey olmuyor, sadece ses geliyor"):
+             SEKME GÖRÜNÜRSE bgPause'da KALMA. Eski koşul sahnenin akmaya başlamasını
+             bekliyordu; ama arka planda rAF boğukken `_simStep` hiç çağrılmaz (match-engine
+             `raw>1.2` dalında yalnız `_simCatchUp` koşar), sim saati ilerlemez ve çıkış
+             koşulu (`_ps` ilerledi mi) HİÇ sağlanmaz — yumurta-tavuk kilidi: sim ilerlemiyor
+             çünkü rAF boğuk, bgPause çıkmıyor çünkü sim ilerlemiyor. Sekme öndeyken (hidden
+             false) rAF zaten çalışır; bir kez `_simCatchUp` + devam yeter, beklemeye gerek yok. */
+          const _gorunur=(typeof document==='undefined')||!document.hidden;
           const _pw=(_now-(mState._bgWallAt||_now))/1000, _ps=_S.time-(mState._bgSimAt||_S.time);
-          if(_pw<0.3||_ps<0.5*_pw*_rate){
+          if(!_gorunur&&(_pw<0.3||_ps<0.5*_pw*_rate)){
             mState._bgSimAt=_S.time; mState._bgWallAt=_now;
             matchEventTimer=setTimeout(stepGuarded,400);
             return;
@@ -431,10 +438,15 @@ function startMatch(playoff){
           mState._bgPause=false; _hiddenPause=false;
           _S.last=0; _S._sahipsizT=0;
           try{ if(typeof _simCatchUp==='function') _simCatchUp(); }catch(e){}
-          dbg('bgPause','sahne yeniden çiziliyor — kuyruk sürüyor');
+          dbg('bgPause',_gorunur?'sekme görünür — kuyruk sürüyor':'sahne yeniden çiziliyor — kuyruk sürüyor');
         } else {
           const _wallD=(_now-mState._wallAtStep)/1000, _simD=_S.time-mState._simAtStep;
-          if(_wallD>1.2&&_simD<0.35*_wallD*_rate){
+          /* FAZ 51: bgPause'a YALNIZ sekme gerçekten gizliyken gir. Görünür sekmede sahne
+             saati kısa bir kare kaybıyla geride kalabilir (portre yükleme, ağır ilk kare);
+             eskiden bu bgPause'a sokuyor ve rAF boğuk değilken bile "sadece ses, oyun donuk"
+             görüntüsü veriyordu — çıkış sim ilerlemesini beklediği için kilitleniyordu. Görünür
+             sekmede rAF zaten çalışır; gerçek kare kaybı `raw>1.2` dalında _simCatchUp ile kapanır. */
+          if(_wallD>1.2&&_simD<0.35*_wallD*_rate&&(typeof document!=='undefined'&&document.hidden)){
             mState._bgPause=true; mState._bgSimAt=_S.time; mState._bgWallAt=_now;
             dbg('bgPause','sahne çizilmiyor — olay kuyruğu bekliyor');
             matchEventTimer=setTimeout(stepGuarded,400);
@@ -2100,7 +2112,7 @@ function startMatchWatchdog(){
           if(mState._wdWall!=null){
             const _wd=(_now-mState._wdWall)/1000, _sd=_S.time-mState._wdSim;
             const _rate=Math.max(0.5,Math.min(4,mState.rate||1));
-            if(_wd>=1.5&&_sd<0.35*_wd*_rate&&!mState._bgPause){
+            if(_wd>=1.5&&_sd<0.35*_wd*_rate&&!mState._bgPause&&(typeof document!=='undefined'&&document.hidden)){
               mState._bgPause=true; mState._bgSimAt=_S.time; mState._bgWallAt=_now;
               if(matchEventTimer){ clearTimeout(matchEventTimer); matchEventTimer=null; }
               dbg('bgPause','bekçi: sahne çizilmiyor — olay kuyruğu bekliyor');

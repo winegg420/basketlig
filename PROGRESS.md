@@ -8804,3 +8804,33 @@ hâlâ ışınlanmalar, bir anda hızla yer değiştirmeler, oyunun kesilmesi va
   pozisyon, FAZ 48 dersi: n≈50'de bile ±0,1 gürültü; karar 470 sn kayıtla (aşağıda).
 - Açık kalan: donma (<0,5 m/sn, ölü top hariç) %17,9 → %20,3 (kapı ≤ %12) — "oyunun kesilmesi" bu; geçiş
   fazında olay bekleyen jetonlar. Sonraki tur.
+
+## FAZ 51 · 3. tur — 07.09.2026 · "maça basınca hiçbir şey olmuyor, sadece ses geliyor" (sürüm 90)
+
+Kullanıcının tarayıcısında (Chrome eklentisi, kendi kaydı) BİREBİR yeniden üretildi: maç başlıyor
+(saha + oyuncular çizili, crowd ambience = "ses" çalıyor) ama olaylar akmıyor — idx=1, saat 10:00,
+simTime 0,2'de donuk. Görünür pencerede (playwright headless:false) maç kusursuz akıyordu (idx 2→5,
+saat işliyor) — yani MOTOR sağlam.
+
+Kök neden `_bgPause` (arka plan sekmesi duraklatması) YUMURTA-TAVUK KİLİDİ:
+- Arka planda rAF boğulunca (`raw>1.2`) match-engine yalnız `_simCatchUp` koşar, `_simStep` HİÇ
+  çağrılmaz → sim saati ilerlemez.
+- stepGuarded çıkış koşulu "son 400 ms'de sahne saati ilerledi mi" idi → sim durgunken ASLA sağlanmaz.
+- Kilit: sim ilerlemiyor çünkü rAF boğuk, bgPause çıkmıyor çünkü sim ilerlemiyor.
+Kanıt (canlı sürüm 89, takılı durum): `document.hidden`'ı false'a override etmek eski kodu bgPause'dan
+ÇIKARMADI; `_bgPause=false` + matchStep elle kurmak da işe yaramadı (giriş dalı sim durgunken hemen
+geri soktu); bgPause'u tamamen devre dışı bırakıp simi elle sürünce idx 1→4, saat 10:00→9:52 aktı.
+
+Düzeltme (`js/main.js`): bgPause'a YALNIZ `document.hidden===true` iken girilir (stepGuarded giriş dalı
++ watchdog); çıkışta görünür sekme (`!document.hidden`) sim ilerlemesini beklemeden hemen çıkar. Böylece
+GÖRÜNÜR sekmede bgPause'a hiç girilmez → donma yapısal olarak imkânsız. Gerçek arka plan (hidden true)
+davranışı korunur; sekme öne gelince (hidden false) anında devam eder. Denge: başka-sekme-öndeyken
+`document.hidden` yanlış false kalırsa (FAZ 42-B'nin kaygısı) bgPause kurulmaz ve olaylar akar, sahne
+`raw>1.2` dalındaki _simCatchUp ile güncel olaya yetişir — kullanıcı o sekmeye bakmadığı için görünmez;
+donma (çok daha ciddi) tamamen ortadan kalkar.
+
+visual-check + kilit-check geçti. Sürüm 89 → 90.
+
+Ders: bgPause gibi "duraklat, sonra yetiş" mekanizmasının ÇIKIŞI, girişini doğuran koşuldan bağımsız
+olmalı; çıkış o koşulun düzelmesini beklerse (burada: sim ilerlemesi ↔ rAF boğukluğu) kilitlenir.
+Görünür sekmede batarya-koruma duraklatmasının yeri yoktur.
