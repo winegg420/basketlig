@@ -8900,3 +8900,32 @@ sadece saha var, sadece ses geliyor". Sürüm 94 + hard-refresh sonrası da düz
 4. Kullanıcı canlı site kullanıyorsa: SW/HTTP cache neden inat ediyor, sürüm 94 neden gelmiyor.
 
 Not: git yerel = origin/master = 4632981 (sürüm 94), 0 fark, temiz.
+
+## FAZ 51 · KÖK NEDEN BULUNDU — 08.09.2026 · kullanıcı Vercel kullanıyor + SW önbelleği
+
+**Kullanıcının gerçek URL'si: https://basketlig.vercel.app/charazay2.0.html** (GitHub Pages DEĞİL).
+Bütün oturum boyunca ben winegg420.github.io'ya push/test ediyordum; Vercel de aynı repoya bağlı
+ve otomatik deploy ediyor — Vercel HTML v=94, sw.js SCRIPT_V=94, klip-data.js 200 (GÜNCEL).
+
+Vercel'de `?nosw=1` ile (service worker BYPASS) test: maç kusursuz, oyuncular görünüyor, skor 5-9,
+saat işliyor, hata 0 (ekran görüntüsü kullanıcıya gönderildi). Yani Vercel'de kod GÜNCEL ve ÇALIŞIYOR.
+
+⇒ Kalan tek sorun: kullanıcının tarayıcısındaki ESKİ service worker eski JS'i önbellekten servis
+ediyor ("oyuncular görünmüyor" = eski/uyumsuz JS). Sürüm 94 otomatik-güncelleme mantığı kullanıcının
+MEVCUT eski SW'sinde YOK, o yüzden kendiliğinden düzelmiyor. Bir kere temizlemek/bypass gerek.
+
+### YARIN — KALICI ÇÖZÜM (Vercel SW önbelleği)
+1. **`vercel.json`** ekle: `sw.js` ve `charazay2.0.html` için `Cache-Control: no-cache` (ya da
+   max-age=0, must-revalidate) header — Vercel varsayılan static cache sw.js güncellemesini
+   geciktiriyor olabilir. Tarayıcı sw.js'i byte-diff ile kontrol eder; no-cache ile her ziyarette
+   taze sw.js alır, yeni SCRIPT_V'yi görür, skipWaiting+claim ile yeni JS'e geçer.
+2. Repoda vercel.json var mı kontrol et; yoksa oluştur.
+3. Kullanıcıya bu gece verilen workaround: **`?nosw=1`** linki (SW register etmez) — ama mevcut
+   aktif SW hâlâ fetch yakalayabilir; kesin çözüm SW'yi kaldırmak (DevTools > Application > SW >
+   Unregister, ya da ayarlardan site verilerini sil). Kullanıcı teknik değil → vercel.json + otomatik
+   güncelleme en temizi.
+4. Doğrula: Vercel'de normal (nosw'suz) açılışta, eski SW'li bir tarayıcıda sürüm 94'e otomatik
+   geçiyor mu.
+
+Not: bu eklenti tarayıcısında Vercel domain'inde kurduğum test kariyeri ('Vercel') temizlendi;
+kullanıcının GERÇEK kaydı kendi tarayıcısında, dokunulmadı. GitHub Pages'teki dfdf kaydı da olduğu gibi.
