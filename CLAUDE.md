@@ -71,7 +71,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/gercek-hareket/indir.js` | **FAZ 48 gerçek HAREKET verisi indirici** — SportVU 2015-16 (linouk23/NBA-Player-Movements 7z, 25 kare/sn) + sumitrodatta/nba-alt-awards play-by-play; sezona eşit aralıkla `--n` maç. Ham veri `tools/gercek-hareket/_ham/` (≈1 GB, `.gitignore`) — **DEPOYA KOYMA**. |
 | `tools/gercek-hareket/cikar.js` | **FAZ 48 hareket dağılımı çıkarıcı** — ham SportVU'dan `tools/_lib/gercek-hareket.json` üretir (10 maç · 811.291 kare · 2.122 pozisyon): oyuncu hızı, hücum yayılımı, topu tutana en yakın savunmacı (toplam + ön/arka saha), pas/pozisyon, tutma süresi, aynı anda koşan, kesme, şut anında duran, potaya uzaklık, top elde payı, arka sahada tutma payı, yarı sahayı geçen rol — DAĞILIM olarak (tek sayı değil). Tanımlar dosya başında; bir tanımı değiştiren veriyi yeniden çıkarmak zorunda. `cikarilamadi`: perde sayısı, şut tipi — kapı YOK. |
 | `tools/_lib/gercek-hareket.json` | **Hareket kapılarının TEK DOĞRULUK KAYNAĞI** (FAZ 48). Elle DÜZENLEME; `cikar.js` üretir. |
-| `tools/hareket-bant-check.js` | **Hareket dağılımı ↔ gerçek (FAZ 48)** — `node tools/hareket-bant-check.js olcum/iz-<etiket>.json`: iz kaydından SportVU ile AYNI tanımlarla dağılımlar çıkarır (maç ölçeği) ve histogram **L1 uzaklığı** basar; kapı L1 ≤ 0,35 (tek sabit). ⚠ n≈50 pozisyonluk ölçütlerde (pas/poz, şut anında duran) L1 ±0,1 gürültülüdür — aynı kodun beş kaydında 0,32-0,45 salındı; karar ortalamanın yönüyle verilir. Hareket/koreografi değişince `iz-kaydet` + bunu çalıştır. |
+| `tools/hareket-bant-check.js` | **Hareket dağılımı ↔ gerçek (FAZ 48)** — `node tools/hareket-bant-check.js olcum/iz-<etiket>.json`: iz kaydından SportVU ile AYNI tanımlarla dağılımlar çıkarır (maç ölçeği) ve histogram **L1 uzaklığı** basar; kapı L1 ≤ 0,35 (tek sabit). ⚠ n≈50 pozisyonluk ölçütlerde (pas/poz, şut anında duran) L1 ±0,1 gürültülüdür — aynı kodun beş kaydında 0,32-0,45 salındı; karar ortalamanın yönüyle verilir. Hareket/koreografi değişince `iz-kaydet` + bunu çalıştır. **FAZ 49:** hızı iki ölçekte basar (maç + `↳ DUVAR ölçeği (ekran)` = kullanıcının gördüğü; kabul ölçütü duvar), `--bins` kova dökümü, `10 oyuncu aynı yarıda` ve `topun yarısındaki oyuncu` (gerçek `ayniYari`/`topYarisi`, `cikar.js`). |
 | `tools/iz-poz-ciz.js` | **Pozisyon penceresi yörünge grafiği (FAZ 48 · 3. taş)** — `--t=a-b` (motor kaydı, 10-14 sn pencere) ve `--gercek=<SportVU json> --olay=<id>` (gerçek olay) panellerini yan yana çizer (`olcum/*-poz.png`). 470 sn'lik tam yörünge "saç yumağı"dır; hiçbir kapının yakalamadığı kusurlar (sahayı boydan boya kat eden değişim yayları, uzunların köşe noktası) bu grafikte görüldü. Sayılar yeşilken şikâyet varsa `kontak-goruntu` ile birlikte ÖNCE bunu çalıştır ve kendin oku. |
 | `tools/kontak-goruntu.js` | **Canlı sahayı GÖZLE izleme (FAZ 44)** — `node tools/kontak-goruntu.js <KÖK> <etiket> --secs=60 --adim=2`: sahayı 2 sn'de bir kaydeder, 15'lik kontak sayfaları (5×3, her karede olay·mod·taşıyıcı·SET/FT/INB etiketi) üretir (`olcum/goruntu/`). Sayılar yeşilken "basketbola benzemiyor" şikâyetinde ÖNCE bunu çalıştır ve kareleri kendin oku; `<KÖK>` olarak `git worktree` ile açılan HEAD kopyası verilirse aynı tohumda yan yana kıyas yapılır. |
 | `tools/dizilim-olc.js` | **Olay indeksine göre dizilim yayılımı (FAZ 44)** — 100 ms'de bir ağırlık merkezine ortalama uzaklık, en yakın çift, 22 px altı çakışan çift, saha dışı jeton; olay başına özet. Duvar saatine bağlı ekran anları koşular arasında kıyaslanamaz — bu araç AYNI OLAYDA kıyaslar. |
@@ -1494,3 +1494,50 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   `_startBreak`, 'reb' olayı gelince yalnız anlatım (`erken` bayrağı: top ribaundcuya geri
   UÇURULMAZ, hücum ikinci kez kurulmaz). Bayrak olay sonunda sarmalayıcıda sıfırlanır — bir
   olaya ait bayrak sonraki olaya sızarsa (faul → gerçek ribaund) yanlış dala girer.
+
+- **HIZ MERDİVENİ DUVAR (EKRAN) ÖLÇEĞİNDE YARGILANIR — FAZ 40 KARARI ÇÜRÜDÜ (FAZ 49):** FAZ 40
+  "merdiveni ölçeklemek kazanç getirmez, maç aynı oranda uzar" demişti ve MAÇ ölçeğinde ölçmüştü.
+  Kullanıcı maç ölçeğini göremez; sahne maç saatini 1,65× sıkıştırdığı için ekranda her jeton
+  gerçeğin 1,65 katı hızla akıyordu (duvar: ort 3,19 ↔ gerçek 1,72 · 7,5+ %9,3 ↔ %0,25). Ve
+  pozisyonun duvar süresini oyuncu hızı DEĞİL koreografi (set 2,2-3 sn sabit) belirler: hızlar
+  %40 düşürülünce sahne→maç yalnız 1,65 → 1,55 oldu. `hareket-bant-check` iki ölçeği de basar;
+  bir hız rakamını yargılarken hangi ölçeğe baktığını yaz. Kabul ölçütü DUVAR ölçeğidir.
+- **HIZI DÜŞÜRMEK HİSTOGRAMI DÜZELTMEZ, ZAMAN PAYI DÜZELTİR (FAZ 49, 12 kayıtla ölçüldü):**
+  merdiven tek başına 0-1 m/sn payını %21 → %23 yaptı; karelerin %54'ünde jeton hedefine 80 px'ten
+  uzaktı (geçiş+bekleme fazları karelerin %65'i, set %20'si). Gerçekte pozisyonun üçte ikisi
+  set fazıdır ve oyuncu orada DURUR. Doğru resim: **geçiş KISA ve KOŞULU (KOS 4 m/sn), set UZUN ve
+  durağan.** Geçişi JOG yapmak denendi (c) ve ters tepti: 2-3 m/sn bandı %28 (gerçek %14), hücum
+  yığın hâlinde ilerledi (yayılım y 3,6 → 2,7). Set +2,4 sn ile karelerin %26-30'u; şut
+  `setDur×0,8`te (0,55 ile uzatma boşa gidiyordu); set ≥3 hücumcu noktasının 4 m'sine gelince
+  başlar (ölçüldü: başlangıçta ort 6,8 m uzaktı).
+- **FAZ 41 ELİPS YAYI KAPATILDI (`_ELIPS_ACIK=false`, FAZ 49):** ω·a = 3,8 × 34 px ≈ 130 px/sn =
+  4,4 m/sn DUVAR ölçeği — "yerinde" jeton 1-2 m/sn ile tur atıyordu; yerinde+hızlı karelerin
+  %90'ı salınım penceresindeydi. Kapatınca 0-1 bandı %25 → %37. FAZ 42-B'nin "salınımı kapatmak
+  donmayı artırır" ölçümü eski hedefe (donma = kusur) göreydi; gerçek veride oyuncu zamanın
+  %42'sinde 1 m/sn altındadır — durmak kusur değil. Varış tavanı 10 px/sn, salınım penceresi 12.
+- **SAVUNMACININ HEDEFİ ÇARPIŞMA YARIÇAPININ İÇİNDEYSE İKİSİ DE SÜRÜNÜR (FAZ 49):** topsuz
+  savunmacı hedefi adamına 17-34 px, rakip çarpışma yarıçapı 40 px — hedefe hiç varamıyor, her
+  karede 3 px itilip yeniden yaklaşıyordu (24-80 px bandındaki savunmacı karelerinin %46'sı
+  1-2 m/sn). `_defGap` 28-40 px + markaj çifti (`d._mark===m`) 26 px + perde çifti 22 px.
+  Bir hedef yazarken hedefin fiziksel olarak ULAŞILABİLİR olduğunu (çarpışma, kırpma) kontrol et.
+- **KÖŞELERİ BOŞALTAN İKİ KURAL BİRLEŞİNCE YAYILIM ÇÖKER (FAZ 49):** "uzun köşede durmaz →
+  dirsek" + "zincir pasçısı köşede durmaz → takas" birlikte hedeflerin y yayılımını şablonun
+  5,1 m'sinden 3,0'a indiriyordu (gerçek 3,75; tepe 4-5 m). Köşedeki uzun zincir dışı bir
+  GUARD'la takas edilir, aday yoksa köşede kalır. Pas-ve-hareket köşeyi döndürmez (dışarısı
+  saha dışı olduğu için yalnız içeri dönebiliyordu) ve oyuncu başına bir kez.
+- **"SET İÇİNDE SPRINT ASLA" GERÇEK VERİYLE ÇELİŞTİ, VERİ KAZANDI (FAZ 49):** kesme gerçekte
+  1,5 sn'lik pencerede 0,80/pozisyon ve > 3 m/sn; KOS ile 0,09'a düştü. Kesme ve flaş kesme
+  (`OAM_FLAS_ACIK`) kısa SPRINT patlamasıdır (3 m); geçiş kanatları KOS, sprint hızlı hücumda.
+  Bir brif kuralı gerçek dağılımı bozuyorsa kural değil veri kazanır (FAZ 48 dersi).
+- **ŞUT ÖNCESİ HAREKETİ ERKEN TETİKLEMEK ONU YOK EDER (FAZ 49):** uzunları ribaunda 1,4 sn
+  önce indirmek onları şuttan ÖNCE noktasına vardırıp DURDURDU (4'ü duran şut %31 → %47).
+  Tetik yalnız top şutöre uçarken/şutördeyken. Yine de kapı (gerçek 1,66/4 duran) tutmadı —
+  ivme tavanı 118 px/sn² 0,3-0,6 sn'de 1,3 m/sn üretmiyor; hile yapılmadı, açık bırakıldı.
+- **"10 OYUNCU AYNI YARIDA" GERÇEKTE %68'DİR (FAZ 49):** brif "%65 → ≤ %30" istedi; SportVU
+  ölçümü (`ayniYari`) %68,1 — set hücumunda savunma zaten hücumun yarısındadır. Motor %64 → %69,
+  `topYarisi` L1 0,18. Bir "gözle görünen kusur" için önce gerçekte ne olduğunu ölç; "saha
+  yarısı bomboş" izlenimi doğrudur ve gerçektir.
+- **SAHNE→MAÇ 1,30 BİLİNÇLİDİR (FAZ 49):** ekran gerçeğe oturunca maç ölçeğindeki hız gerçeğin
+  altına iner (L1 0,24, ort 1,50 ↔ 1,72) ve maç ~%27 uzun izlenir. L1'i 0,20'ye indirmenin
+  ölçülen tek yolu seti gerçek uzunluğuna (10-15 sn) getirmek = gerçek zamanlı maç. İzleme hızı
+  düğmesi (`setMatchRate`) durur; kullanıcı kararı gerekmeden daha da uzatma.

@@ -26,6 +26,9 @@ const ekle = (h, v) => { if (!isFinite(v)) return; h.n++; h.toplam += v; for (le
 const oran = (h) => { const s = h.counts.reduce((a, b) => a + b, 0) || 1; return h.counts.map(c => c / s); };
 const L1 = (a, b) => a.reduce((s, v, i) => s + Math.abs(v - (b[i] || 0)), 0);
 const O = GER.olcutler;
+/* FAZ 49: DUVAR (sahne) ölçeğinde hız — kullanıcının ekranda GÖRDÜĞÜ hız. Sahne maç saatini
+   sıkıştırdığı için maç ölçeği ile ikisi ayrı ayrı basılır; brifin kabul ölçütü duvar ölçeğidir. */
+const HD = hist(O.hiz.edges); let ayniYari = 0, tumKare = 0; const HY = O.topYarisi ? hist(O.topYarisi.edges) : null;
 const H = { savunmaciOn: hist(O.savunmaciOn.edges), savunmaciArka: hist(O.savunmaciArka.edges), hiz: hist(O.hiz.edges), yayilimX: hist(O.yayilimX.edges), yayilimY: hist(O.yayilimY.edges), savunmaci: hist(O.savunmaci.edges), pasPoz: hist(O.pasPoz.edges), tutma: hist(O.tutma.edges), kosan: hist(O.kosan.edges), kesme: hist(O.kesme.edges), sutDuran: hist(O.sutDuran.edges), potaUzaklik: hist(O.potaUzaklik.edges) };
 
 /* hızlar: 100 ms pencere, maç ölçeği */
@@ -34,8 +37,9 @@ const hiz = new Array(K.length);
 for (let i = 0; i < K.length; i++) {
   let j = i; while (j > 0 && K[i].t - K[j].t < 0.1) j--;
   const v = new Array(10).fill(0); const dt = K[i].t - K[j].t;
-  if (dt >= 0.08) for (let a = 0; a < 10; a++) { const p = K[i].p[a], p0 = K[j].p[a]; if (p && p0) v[a] = Math.hypot(p[0] - p0[0], p[1] - p0[1]) / PX / dt / KAT; }
+  if (dt >= 0.08) for (let a = 0; a < 10; a++) { const p = K[i].p[a], p0 = K[j].p[a]; if (p && p0) { v[a] = Math.hypot(p[0] - p0[0], p[1] - p0[1]) / PX / dt / KAT; ekle(HD, v[a] * KAT); } }
   hiz[i] = v;
+  { const sol = K[i].p.filter(p => p && p[0] < ORTA).length; tumKare++; if (sol === 0 || sol === 10) ayniYari++; if (HY) ekle(HY, K[i].b[0] < ORTA ? sol : 10 - sol); }
 }
 let held = 0, ucus = 0, arkaHeld = 0, onHeld = 0; let tutan = -1, tutBas = 0, pasN = 0, os0 = null; let sonKes = -1e9;
 const gecen = { G: 0, F: 0, C: 0 };
@@ -73,9 +77,12 @@ for (let i = 0; i < K.length; i++) {
   if (i > 0 && tutuyor) { const x0 = K[i - 1].b[0], x1 = k.b[0]; const gecti = k.os ? (x0 >= ORTA && x1 < ORTA) : (x0 <= ORTA && x1 > ORTA); if (gecti) { const poz = k.p[ti][3]; const s = (poz === 'PG' || poz === 'SG') ? 'G' : (poz === 'C' ? 'C' : 'F'); gecen[s]++; } }
 }
 const sonuc = []; let dusen = 0;
-const satir = (ad, h, ger, etiket) => { const o = oran(h); const l1 = L1(o, ger.oran); const ok = l1 <= ESIK; if (!ok) dusen++; sonuc.push({ ad, l1, ok }); const ort = h.n ? (h.toplam / h.n) : NaN; console.log(`  ${ok ? '✓' : '✗'} ${ad.padEnd(22)} L1 ${l1.toFixed(3).padStart(6)}  (eşik ${ESIK})   ort ${isFinite(ort) ? ort.toFixed(2) : '-'} ↔ gerçek ${ger.ort}${etiket ? '   ' + etiket : ''}   n=${h.n}`); };
+const BINS = args.includes('--bins');   /* FAZ 49: kova kova oyun/gerçek payları */
+const satir = (ad, h, ger, etiket) => { const o = oran(h); const l1 = L1(o, ger.oran); const ok = l1 <= ESIK; if (!ok) dusen++; sonuc.push({ ad, l1, ok }); const ort = h.n ? (h.toplam / h.n) : NaN; console.log(`  ${ok ? '✓' : '✗'} ${ad.padEnd(22)} L1 ${l1.toFixed(3).padStart(6)}  (eşik ${ESIK})   ort ${isFinite(ort) ? ort.toFixed(2) : '-'} ↔ gerçek ${ger.ort}${etiket ? '   ' + etiket : ''}   n=${h.n}`); if (BINS) { console.log('      oyun  : ' + h.edges.slice(0, -1).map((e, i) => e + ':' + (100 * o[i]).toFixed(0)).join(' ')); console.log('      gerçek: ' + h.edges.slice(0, -1).map((e, i) => e + ':' + (100 * ger.oran[i]).toFixed(0)).join(' ')); } };
 console.log(`HAREKET DAĞILIMI ↔ GERÇEK — ${path.basename(dosya)} · ${K.length} kare · sahne→maç ${KAT.toFixed(3)} · gerçek: ${GER.mac} maç / ${GER.kare} kare`);
-satir('oyuncu hızı (m/sn)', H.hiz, O.hiz);
+satir('oyuncu hızı (m/sn)', H.hiz, O.hiz, 'maç ölçeği');
+satir('  ↳ DUVAR ölçeği (ekran)', HD, O.hiz, 'kullanıcının gördüğü');
+{ const o = oran(HD); const ust75 = o.slice(15).reduce((s, v) => s + v, 0), alt1 = o[0] + o[1]; console.log(`      duvar: 0-1 m/sn %${(100 * alt1).toFixed(1)} (gerçek %${(100 * (O.hiz.oran[0] + O.hiz.oran[1])).toFixed(1)}) · 7,5+ %${(100 * ust75).toFixed(2)} (gerçek %${(100 * O.hiz.oran.slice(15).reduce((s, v) => s + v, 0)).toFixed(2)})`); }
 satir('yayılım x (m)', H.yayilimX, O.yayilimX);
 satir('yayılım y (m)', H.yayilimY, O.yayilimY);
 satir('savunmacı mesafesi (m)', H.savunmaci, O.savunmaci);
@@ -88,6 +95,8 @@ satir('kesme / 1,5 sn', H.kesme, O.kesme);
 satir('şut anında duran', H.sutDuran, O.sutDuran);
 satir('potaya uzaklık (m)', H.potaUzaklik, O.potaUzaklik);
 const heldOran = held / (held + ucus || 1);
+if (O.ayniYari) console.log(`  · 10 oyuncu aynı yarıda      ${(100 * ayniYari / (tumKare || 1)).toFixed(1)}% ↔ gerçek ${(100 * O.ayniYari.oran).toFixed(1)}%   (bilgi)`);
+if (HY && O.topYarisi) satir('topun yarısındaki oyuncu', HY, O.topYarisi);
 console.log(`  · arka sahada tutma payı    ${(100 * arkaHeld / (arkaHeld + onHeld || 1)).toFixed(1)}% ↔ gerçek ${(O.arkaSaha.tutmaPayi * 100).toFixed(1)}%   (bilgi)`);
 console.log(`  · top elde oranı            ${(heldOran * 100).toFixed(1)}% ↔ gerçek ${(O.topElde.heldOran * 100).toFixed(1)}%   (bilgi)`);
 const g = gecen.G + gecen.F + gecen.C || 1;

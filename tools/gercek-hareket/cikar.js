@@ -38,7 +38,10 @@ const H = {
   kosan: hist(seq(0, 11, 1)), kesme: hist(seq(0, 6, 1)), sutDuran: hist(seq(0, 5, 1)),
   potaUzaklik: hist(seq(0, 14, 0.5)), topElde: { held: 0, ucus: 0 },
   /* FAZ 48 · 3. taş: savunmacı mesafesi ön/arka saha ayrımıyla + arka sahada tutma payı */
-  savunmaciOn: hist(seq(0, 6, 0.25)), savunmaciArka: hist(seq(0, 12, 0.5)), arkaSaha: { held: 0, on: 0 }
+  savunmaciOn: hist(seq(0, 6, 0.25)), savunmaciArka: hist(seq(0, 12, 0.5)), arkaSaha: { held: 0, on: 0 },
+  /* FAZ 49: saha iki yarıya bölünüyor mu — 10 oyuncunun tamamı aynı yarıda olan kare payı ve
+     topun yarısındaki oyuncu sayısı dağılımı (her kare) */
+  ayniYari: { ayni: 0, tum: 0 }, topYarisi: hist(seq(0, 11, 1))
 };
 const gecen = { G: 0, F: 0, C: 0 };
 const notlar = [];
@@ -129,6 +132,8 @@ function macIsle(dosya, pbp) {
     } else if (!yeni && tutan) { if (ucusBas == null) ucusBas = i; ekle(H.tutma, Math.max(0, K[tutBas].clock - k.clock)); sonTutan = tutan; tutan = null; }
     /* hız histogramı + koşan */
     let kosan = 0; hiz[i].forEach(v => { ekle(H.hiz, v); if (v > 2.0) kosan++; }); ekle(H.kosan, kosan);
+    /* FAZ 49: yarı saha doluluğu */
+    { const sol = k.oy.filter(p => p[2] < 47).length; H.ayniYari.tum++; if (sol === 0 || sol === 10) H.ayniYari.ayni++; ekle(H.topYarisi, b[2] < 47 ? sol : 10 - sol); }
     /* top eldeyken: yayılım, savunmacı, kesme, orta çizgi geçişi */
     if (tutuyor) {
       const t = yeni[0]; const huc = k.oy.filter(p => p[0] === t), sav = k.oy.filter(p => p[0] !== t);
@@ -181,6 +186,7 @@ function macIsle(dosya, pbp) {
       topElde: { heldOran: +(H.topElde.held / (H.topElde.held + H.topElde.ucus || 1)).toFixed(4) },
       savunmaciOn: kapat(H.savunmaciOn), savunmaciArka: kapat(H.savunmaciArka),
       arkaSaha: { tutmaPayi: +(H.arkaSaha.held / (H.arkaSaha.held + H.arkaSaha.on || 1)).toFixed(4) },
+      ayniYari: { oran: +(H.ayniYari.ayni / (H.ayniYari.tum || 1)).toFixed(4), n: H.ayniYari.tum }, topYarisi: kapat(H.topYarisi),
       gecenPozisyon: { G: +(gecen.G / g).toFixed(4), F: +(gecen.F / g).toFixed(4), C: +(gecen.C / g).toFixed(4), n: g }
     },
     cikarilamadi: { perdeSayisi: 'SportVU perde etiketi taşımıyor', sutTipi: 'yörünge verisi yok' },

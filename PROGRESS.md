@@ -8481,3 +8481,133 @@ geçiş kulvarları), set hücumunda uzun tutma segmentleri (3,0 ↔ 1,5 sn) ve 
 - **M12 (and-1 ek serbest atışı) 3/5** — d4 ile düştü, mekanizma bulunamadı; sonraki turun İLK işi.
 - Uzunun ribaundu sonrası çıkış pası 3 sn'ye kadar bekleyebiliyor (öndeki guard şartı); uzun bu sürede topla orta çizgiyi geçebiliyor (PG/SG/SF %87).
 - Faul sokmasında aynı faulün İKİNCİ sokması (top hemen dışarı çıkınca 0,5 sn'lik epizot, yakın 2).
+
+---
+
+## 49. oturum — FAZ 49: HIZ MERDİVENİ DUVAR ÖLÇEĞİNDE + YARI SAHA + SÜRÜM (2026-09-07)
+
+**Brifin amacı:** kullanıcı siteyi açınca oyuncuların artık sürekli koşmadığını GÖZLE görmeli.
+Sayısal karşılığı: SportVU hız dağılımına (`tools/_lib/gercek-hareket.json`) DUVAR (ekran)
+ölçeğinde L1 ≤ 0,20 · ortalama 1,6-2,0 m/sn · 7,5+ ≤ %1 · 0-1 m/sn ≥ %35.
+
+### İŞ 0 — SÜRÜM: brifin "85'te kaldı" maddesi ESKİ ÖLÇÜMDÜ
+`node tools/surum-check.js` oturum başında GEÇİYORDU (85 · hash 13a7ff29bcf7b6b3, çalışma ağacı
+temiz — FAZ 48 commit'i sürümü zaten artırmıştı). FAZ 44 kuralı: brif "kapı düşüyor" diyorsa önce
+kapıyı çalıştır. Sürüm turun SONUNDA bir kez artırıldı (85 → 86, `--yaz`); başta artırıp sonra
+koda dokunmak FAZ 40 hatasını üretirdi.
+
+### TEŞHİS — brifin tablosu DUVAR ölçeğiydi, FAZ 40 kararı MAÇ ölçeğiydi; ikisi de "haklıydı"
+`hareket-bant-check` (FAZ 48) hızı maç ölçeğinde basıyordu: taban kayıtta L1 0,189 ✓, ort 1,93.
+Brifin "ort 3,17 · L1 0,514" rakamları aynı kaydın DUVAR ölçeğidir (1,93 × 1,652 = 3,19).
+Sahne maç saatini 1,65× sıkıştırdığı için ekranda her jeton gerçeğin 1,65 katı hızla akıyordu;
+kullanıcı maç ölçeğini göremez. FAZ 40 "merdiveni ölçeklemek kazanç getirmez" derken maç
+ölçeğinde ölçmüştü — ve **o çıkarım bu turda ÇÜRÜDÜ**: pozisyonun duvar süresini oyuncu hızı
+değil KOREOGRAFİ (set fazı 2,2-3 sn sabit) belirliyor; hız düşünce maç aynı oranda uzamıyor
+(ölçüldü: hızlar ~%40 düşürüldü, sahne→maç 1,65 → 1,55). `hareket-bant-check` artık iki ölçeği
+de basar (`↳ DUVAR ölçeği (ekran)` satırı) ve `--bins` ile kova dökümü verir.
+
+### İŞ 1 — HIZ MERDİVENİ: 12 kalibrasyon kaydı (a…l, her biri 470 sn, tohum 987654321)
+| adım | değişiklik | duvar L1 | ort | 0-1 | 7,5+ | sahne→maç |
+|---|---|---|---|---|---|---|
+| taban (sürüm 85) | — | **0,520** | 3,19 | %20,7 | %9,3 | 1,652 |
+| a | merdiven 0,45/1/1,55/2,25 · jog 72-100 px/sn · ivme 118/177 · set içi sprint yok · OAM bütçesi merdivenden | 0,405 | 2,36 | %23 | %0,05 | 1,549 |
+| b | set +1 sn · swing pası · tutma 0,2-0,45 | 0,412 | 2,41 | %23 | %0,03 | 1,489 |
+| c | geçiş/set JOG · rampa 1,3 | 0,494 | 1,94 | %25 | %0,02 | 1,429 |
+| d | set +2,4 sn · kesme sprint | 0,491 | 1,95 | %25 | %0,02 | 1,299 |
+| e+f | jog 62-90 · markaj çifti yarıçapı 26 · savunma aralığı 28-40 · şut set'in %80'inde · salınım 18 | 0,573 | 1,79 | %25 | %0,03 | 1,259 |
+| g | ELİPS KAPALI · rampa 0,8 · kanat KOS · swing ≤2 · arka saha baskı 1,8-5,1 m | 0,421 | 1,64 | **%37** | %0,01 | 1,257 |
+| i | geçiş KOS (kısa ve koşulu) · rampa 1,6 · daire 1,2 rad/sn · salınım 12 · flaş kesme · şut öncesi ribaunt | **0,283** | 1,95 | %36,3 | %0,03 | 1,299 |
+| j | koş 1,5 · rampa 1,2 · tutma 0,12-0,42 · on-ball sarkma · şablon ölçeği 1,0 | 0,279 | 1,88 | %33 | %0,0 | 1,294 |
+| k | köşe kaymaz · set ≥3 yakın · koş 1,6 · rampa 1,5 · guard yer değiştirme | 0,269 | 1,96 | %34,4 | %0,0 | 1,308 |
+| **l (son)** | köşedeki uzun guard'la takas · şut anı tetiği | **0,271** | **1,95** | **%35,4** | **%0,0** | 1,298 |
+
+**Hız histogramı (duvar ölçeği, %):**
+| bant m/sn | 0-0,5 | 0,5-1 | 1-2 | 2-3 | 3-4,5 | 4,5-7,5 | 7,5+ | ort | L1 |
+|---|---|---|---|---|---|---|---|---|---|
+| GERÇEK (SportVU) | 26,9 | 14,8 | 24,9 | 14,3 | 14,3 | 4,5 | 0,2 | 1,72 | 0 |
+| taban (sürüm 85) | 14,6 | 6,1 | 20,1 | 17,3 | 15,1 | 17,5 | **9,3** | 3,19 | 0,520 |
+| son (l) | 27,1 | 8,3 | 20,3 | 19,5 | 17,8 | 7,1 | 0,0 | 1,95 | **0,271** |
+Maç ölçeğinde: taban L1 0,189 · ort 1,93 → son L1 0,241 · ort 1,50 (bilerek: ekran gerçeğe
+oturtuldu, maç saati 1,3× sıkışık kaldığı için maç ölçeği gerçeğin altına indi).
+
+**Kabul:** ort ✓ · 7,5+ ✓ · 0-1 ≥ %35 ✓ (35,4) · **L1 ≤ 0,20 ULAŞILAMADI (0,271)**. Kalan fark
+iki kovada: 0,5-1 m/sn %8 ↔ %15 (noktasındaki jeton ya tam duruyor ya yürüyor; gerçekte ayak
+değiştirme/kayma — salınım geri eklenmedi, brif titreme yasağı) ve 2-3 / 3-4,5 fazlası
+(geçiş+bekleme fazları karelerin ~%45'i; gerçekte pozisyonun üçte ikisi set). L1'i 0,20'ye
+indirmenin ölçülen tek yolu seti gerçek uzunluğuna (10-15 sn) getirmek = maçı gerçek zamanda
+izlemek; sahne→maç 1,30'da bırakıldı (maç ~%27 uzun izlenir; izleme hızı düğmesi durur).
+
+**Kalibrasyonda ölçülerek bulunanlar (hepsi CLAUDE.md'ye yazıldı):**
+- Hızı düşürmek tek başına histogramı DÜZELTMEDİ (a: 0-1 bandı %21 → %23). Kök neden hız
+  değil ZAMAN PAYI: karelerin %54'ünde jeton hedefine 80 px'ten uzaktı; set fazı karelerin %20'siydi.
+- Geçişi JOG yapmak (c) 2-3 bandını %28'e şişirdi ve hücumu yığın hâlinde ilerletti (yayılım
+  y 3,6 → 2,7): gerçekte geçiş KISA ve KOŞULU, set UZUN ve durağandır. Geçiş KOS'a döndü (i).
+- FAZ 41 elips yayı (ω·a ≈ 130 px/sn = 4,4 m/sn duvar) "yerinde" jetonu 1-2 m/sn ile tur
+  attırıyordu: yerinde+hızlı karelerin %90'ı salınım penceresindeydi. `_ELIPS_ACIK=false` (g):
+  0-1 bandı %25 → %37.
+- Topsuz savunmacının hedefi (17-34 px) rakip çarpışma yarıçapının (40) İÇİNDEYDİ: hiç varamıyor,
+  her karede itilip yaklaşıyordu (%46 kare 1-2 m/sn sürünme). `_defGap` 28-40 + markaj çifti 26 px.
+- Set süresi +2,4 sn tek başına seti uzatmadı: şut `setDur×0,55`te atılıyordu → %80.
+- Set, oyuncular noktalarına ort 6,8 m uzakken başlıyordu → ≥3 oyuncu 4 m içinde şartı (k).
+- Köşeler boşalıyordu: "uzun köşede durmaz → dirsek" + "zincir pasçısı köşede durmaz" birlikte
+  hedeflerin y yayılımını şablonun 5,1 m'sinden 3,0'a indiriyordu → köşedeki uzun zincir dışı
+  guard'la TAKAS (l): set yayılımı y 2,9 → 3,6-3,7 (gerçek 3,75).
+- Şut öncesi ribaunt inişi 1,4 sn önce tetiklenince uzunlar şuttan ÖNCE varıp duruyordu (4'ü
+  duran şut %31 → %47); tetik top şutöre uçarken/şutördeyken (l) — yine de 43 %: ivme tavanı
+  (118 px/sn²) 0,3-0,6 sn'de 1,3 m/sn'ye çıkarmıyor. ULAŞILAMADI, hile yapılmadı.
+- Kesme (real 0,80/1,5 sn): KOS ile 0,09 — kesme kısa bir SPRINT patlamasıdır; brifin "set içinde
+  sprint asla" kuralı gerçek veriyle çelişti, veri kazandı (cutter + flaş kesme sprint): 0,70 ✓.
+
+### İŞ 2 — YARI SAHA: brifin "≤ %30" hedefi GERÇEKLE ÇELİŞİYOR, iş yok
+`cikar.js`'e `ayniYari` (10 oyuncunun tamamı aynı yarıda olan kare payı) ve `topYarisi` (topun
+yarısındaki oyuncu sayısı dağılımı) eklendi, veri yeniden çıkarıldı: **gerçekte %68,1**. Set
+hücumunda savunma zaten hücumun yarısındadır (kendi potası orasıdır); "hücum bir tarafta, savunma
+kendi potasında" iki takımın AYNI yarıda olması demektir. Motor: taban %64,0 → son %68,9;
+`topYarisi` L1 0,22 → **0,18 ✓**. "Her pozisyon değişiminde top orta çizgiyi geçiyor": 37
+pozisyonun 26'sı held (%70), 2 pasla, 9'u hiç (sayı sonrası kısa kesitler / periyot sonu) —
+`gecis-analiz`, FAZ 44'ten beri aynı bant.
+
+### İŞ 3 — KALAN ÖLÇÜTLER (L1, taban → son)
+| ölçüt | taban | son | gerçek ort | L1 taban → son |
+|---|---|---|---|---|
+| savunmacı arka saha | 8,25→6,94 | **4,55** | 5,07 | 0,52 → **0,31 ✓** |
+| savunmacı toplam | 4,02 | 2,81 | 3,14 | 0,32 → 0,34 ✓ |
+| ↳ ön saha | 2,30 | 1,62 | 2,00 | 0,36 → 0,48 ✗ (0,5-2 m'de yığılı; sarkma eklendi, yetmedi) |
+| aynı anda koşan | 3,77 | 3,40 | 3,34 | 0,29 → **0,25 ✓** |
+| kesme / 1,5 sn | 0,80 | 0,70 | 0,80 | 0,03 → 0,22 ✓ |
+| pas / pozisyon | 2,46 | 4,44 | 3,14 | 0,63 → 0,65 ✗ (swing ≤2 ile bile 9+ paslı pozisyonlar; n=41) |
+| tutma süresi | 2,95 | 2,11 | 1,47 | 0,70 → 0,82 ✗ (0-0,5 sn kovası %13 ↔ %49; sahne→maç 1,3 ile 0,4 duvar sn = 0,5 maç sn) |
+| yayılım x / y | 3,18 / 3,56 | 2,67 / 3,10 | 3,64 / 3,75 | 0,40/0,37 → 0,62/0,55 ✗ (geçiş karelerinde yığın; set içi y 3,6-3,7 ✓) |
+| şut anında duran | 2,05 | 2,74 | 1,66 | 0,35 → 0,78 ✗ (yukarıda) |
+| potaya uzaklık | 10,9 | 11,8 | 10,9 | 0,38 → 0,44 ✗ |
+| 10 oyuncu aynı yarıda | %64,0 | %68,9 | %68,1 | (bilgi) |
+| arka sahada tutma payı | %37,0 | %40,7 | %37,3 | (bilgi) |
+Brifin "en büyük üçü" (tutma · pas/poz · arka saha savunmacı): arka saha ✓; tutma ve pas/poz
+denendi (swing, 0,12-0,42 sn tutma, alıcı 50 px) — yön doğru (tutma 2,95 → 2,11) ama L1 kova
+biçiminden (gerçek tutmaların yarısı 0,5 sn altı "dokun-geç") düşmedi. ULAŞILAMADI.
+
+### KORUNANLAR (l kaydı)
+hava atışı ✓ (idle 0,14 · tepe 5,05 m · çemberde 2 · 5-5) · sokma epizodu 25, ihlal 2 (yakın
+3,9 · karşı 1,8/9; ihlaller faul sokmasının 0,65 sn'lik ikinci kesiti + karşı 8 — FAZ 48'deki
+bilinen sınıf) · sokma içeriden 1/21 · sayı sonrası ilk pas dışarıdan 16/22 · geri pas %0,6 ·
+rakibe pas 1 · topun en yüksek hızı 19,9 m/sn ✓ · ışınlanma 1/470 sn (pass, tek kare) · konsol
+hatası 0. Motor: `sim-node --n=500 --seed=42` 93.1-87.9 · 268 · determinist ✓ · `band.js`
+**c19928475859c7ff** · `measure.js` **51fa02b6e0a8194b** — DEĞİŞMEDİ (sahne katmanı).
+
+### GRAFİKTE NE GÖRDÜM
+`olcum/iz-f49l-hiz.png` ↔ `olcum/iz-8b8d6f8-hiz.png` (taban): tabanda yeşil (oyuncu) çizgi
+bütün maç boyunca 8-13 m/sn'ye çıkan sık dikenlerle dolu — herkes hep koşuyor. Sonda yeşil
+4-5 m/sn'de kapaklanıyor ve "koş-dur" deseni okunuyor: koşu platoları (geçiş) arasında
+sıfıra yakın vadiler (set). g'de (geçiş JOG) bunun yerine 2,5-3 m/sn'de sürekli bir jog
+platosu vardı — herkes aynı tempoda ilerliyordu; basketbol değil yürüyüş turuydu.
+`olcum/iz-f49l-poz.png` (4-17 · 150-160 · 168-179 sn pencereleri): geçişler düz kulvarlar,
+varışta jeton izleri sıkı yumak (duruyor), savunmacı halkaları adamlarının yanında; top üç-dört
+kısa pasla dolaşıp şuta gidiyor. Kusur: 168-179 penceresinde PF ve C sahayı köşegen kesiyor
+(25 m'lik tek yay) — kulvar ara noktası `_kulvarWp` uzunlara da verilmeli (sonraki tur).
+
+### KULLANICI NE GÖRECEK (sürüm 86)
+Oyuncular artık ekranda insan hızında: set kurulunca çevredekiler noktalarında durur, ayak
+değiştirir; koşu yalnız top el değiştirince ve hızlı hücumda görülür ve 4-5 m/sn'yi geçmez.
+Savunmacı adamına yapışık (0,7-1 m), topu getiren guard'ın önünde orta sahada karşılar.
+Köşeler dolu, saha geniş. Maç eskisinden yaklaşık dörtte bir daha uzun izlenir (sahne→maç
+1,65 → 1,30); acelesi olan izleme hızı düğmesini kullanır.

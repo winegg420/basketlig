@@ -148,7 +148,17 @@ const CRT_OUT=26;    /* topu sokan oyuncunun çizgi dışına adımı */
 
 /* F15-1: 320 px/sn = 10,8 m/sn idi — bu, oyunun ölçeğinde (29,54 px = 1 m) bir insanın
    sprint sınırının üstü. Yedek değer artık gerçek "koşu" hızıdır: 150 px/sn = 5,1 m/sn. */
-const _PL_MAXV=150;          /* px/sn — hız stat'ı yoksa yedek koşu hızı */
+/* ── FAZ 49: HIZ MERDİVENİ DUVAR (EKRAN) ÖLÇEĞİNDE KURULUR ─────────────────────────────
+   FAZ 40 merdiveni MAÇ ölçeğinde yargılayıp geri almıştı (maç ölçeğinde L1 0,19 ✓). Ama
+   kullanıcı maç ölçeğini göremez — ekranda DUVAR saniyesi başına hareketi görür ve sahne maç
+   saatini 1,65× sıkıştırdığı için her jeton gerçeğin 1,65 katı hızla akıyordu (ölçüldü,
+   iz-f48-son2, duvar ölçeği: ort 3,19 m/sn ↔ gerçek 1,72 · 7,5+ %9,3 ↔ %0,25 · L1 0,52).
+   "Herkes sürekli koşuyor" şikâyetinin ölçülebilir karşılığı budur. Merdiven artık
+   SportVU dağılımına (`tools/_lib/gercek-hareket.json`, `hiz`) duvar ölçeğinde oturtulur;
+   `hareket-bant-check` iki ölçeği de basar. Maç ölçeğindeki karşılığın gerçeğin altına
+   düşmesi BİLİNÇLİDİR: pozisyonun duvar süresi koreografiden (set fazı 2,2-3 sn) gelir,
+   oyuncu hızından değil — hız düşünce maç uzamaz, yalnız ekran sakinleşir. */
+const _PL_MAXV=135;          /* px/sn — hız stat'ı yoksa yedek koşu hızı (4,6 m/sn duvar) */
 /* ── FAZ 40 §A1: TOP HIZ TAVANI ───────────────────────────────────────────────────────
    Ölçüm (tools/iz-kaydet.js, temel): topun en yüksek hızı 68,1 m/sn (245 km/sa) ve
    pozisyon başına 15,5 kez 25 m/sn aşılıyordu. Kök neden ışınlanma DEĞİL, SÜREYDİ:
@@ -206,10 +216,13 @@ const _PL_R_TAKIM=62;        /* px ≈ 2,10 m */
    (ölçülen: koreografi ×1,00 → sahneKat 1,388 · ×1,20 → 1,193 · ×1,35 → 1,052).
    Bu yüzden merdiven GERİ ALINDI. Değiştirilebilir olan ortalama değil DAĞILIMDIR:
    donma payı (§A2.3 salınım), uç değerler ve ivme profili (`_ivmeSinirla`). */
-const _V_TIER=[0.42,1.00,1.35,1.62];
+/* FAZ 49: taban (jog) 72-100 px/sn = 2,4-3,4 m/sn; ortalama oyuncu (hiz=60): yürü 40 · jog 89 ·
+   koş 138 · sprint 200 px/sn = 1,36 · 3,0 · 4,7 · 6,8 m/sn (duvar). En hızlı oyuncunun sprinti
+   225 px/sn = 7,6 m/sn — gerçekte 7,5+ payı %0,25. */
+const _V_TIER=[0.45,1.00,1.60,2.30];   /* k: koş 4,1 · sprint 5,9 m/sn (ort oyuncu); 1,7 ile 4,5+ bandı %10,8, 1,5 ile %1,2 (gerçek %4,5) */
 const _URG={YURU:0,JOG:1,KOS:2,SPRINT:3};
 /* Hız stat'ı olmayan jeton için JOG tabanı (eski `_PL_MAXV/2` yerine açık sabit). */
-const _PL_JOGV=178;
+const _PL_JOGV=76;
 /* ── FAZ 40 §A2: İVME SINIRI ──────────────────────────────────────────────────────────
    `_PL_ACC` hedefe yaklaşma SERTLİĞİDİR ve hızın kendisini sınırlamaz: hedef hız 0'dan
    jog'a atlayınca ilk karede ivme 3250 px/sn² (110 m/sn² sahne) oluyordu. Hız grafiğinde
@@ -256,7 +269,7 @@ function _donusSinirla(vx,vy,ux,uy,dt,kat,hedefUzak){
      yolu 2,3 sn'de kat ediyordu (iz: köşedeki ribauntçu önce 6 m BATIYA koştu). Gerçek
      oyuncu yürüme hızında tek adımda döner. Üstünde de büyük dönüş HIZ KESER (cos d):
      90°+ dönüşte istenen hız sıfır — "bas, dön, çık". */
-  if(sp<90&&Math.abs(d)>1.0) return [ux,uy,1];
+  if(sp<55&&Math.abs(d)>1.0) return [ux,uy,1];   /* FAZ 49: eşik yürüme (40) ile jog (89) arasına */
   let r=Math.max(26,Math.min(74,sp*0.30));                  /* px: 100 px/sn → 1 m · 250 → 2,5 m */
   if(hedefUzak!=null&&hedefUzak<2*r) r=Math.max(12,hedefUzak*0.5);
   const w=(sp/r)*(kat||1)*dt;
@@ -267,8 +280,10 @@ function _donusSinirla(vx,vy,ux,uy,dt,kat,hedefUzak){
   const a=th+(d>0?w:-w);
   return [Math.cos(a),Math.sin(a),hizK];
 }
-const _ACC_MAX=330;          /* px/sn² — hızlanma (5,3 m/sn² maç ölçeği) */
-const _DEC_MAX=470;          /* px/sn² — yavaşlama (7,6 m/sn² maç ölçeği) */
+/* FAZ 49: ivme de DUVAR ölçeğinde — hızlanma 4 m/sn², yavaşlama 6 m/sn² (brif); jog'a 0,75 sn'de,
+   sprinte 1,7 sn'de çıkılır. Markajdaki savunmacı ×1,6 (aşağıda). */
+const _ACC_MAX=118;          /* px/sn² — hızlanma (4,0 m/sn² duvar) */
+const _DEC_MAX=177;          /* px/sn² — yavaşlama (6,0 m/sn² duvar) */
 /** Bir karedeki hız değişimini ivme tavanına kırp. Yön korunur, yalnız büyüklük sınırlanır. */
 function _ivmeSinirla(p,vx0,vy0,dt,kat){
   const dvx=p.vx-vx0, dvy=p.vy-vy0;
@@ -306,6 +321,11 @@ const _EX_W=3.8;             /* rad/sn — bir tur ≈ 1,65 sahne sn */
 /* FAZ 42-B §A2: yerinde salınım anahtarı (elips yayı + savunma duruş kayması). Brif
    salınımla donma düşürmeyi yasaklıyor; anahtar ölçüm için konuldu, karar ölçümle verildi. */
 const _SALINIM_ACIK=true;
+/* FAZ 49 (ölçüldü, iz-f49e): elips yayı ω·a = 3,8 × 34 px ≈ 130 px/sn = 4,4 m/sn DUVAR ölçeğinde —
+   noktasına varmış oyuncu "yerinde" sayılırken 1-2 m/sn ile tur atıyordu (yerinde karelerin %38'i,
+   %90'ı salınım penceresinde). Gerçekte noktasındaki oyuncu DURUR (0-1 m/sn %42). Elips kapalı;
+   savunma duruş kayması (18 px/sn tavan) ve OAM'ın küçük dairesi (≤ 0,34 m/sn) kalır. */
+const _ELIPS_ACIK=false;
 function _hedefAta(p,tx,ty,urg){
   if(!p||p._oob) return;
   const d=Math.hypot(p.x-tx,p.y-ty);
@@ -342,7 +362,11 @@ function _tokBaseV(pl){
      (gerçek jog 2,5-3,3) — yani TEK bilinen sapma buradadır. 95-147 px/sn bandı denendi
      ve ölçüldü: dağılım düzelmedi, yalnız maç saati aynı oranda yavaşladı (yukarıdaki
      `_V_TIER` notu). Düşürmeden önce oradaki ölçümü oku. */
-  return (130+Math.max(0,Math.min(99,hiz))/99*80)*fat;
+  /* FAZ 49: taban JOG = 72-100 px/sn (2,4-3,4 m/sn DUVAR ölçeği); eski 130-210 ekranda 4,4-7,1 m/sn
+     "jog" demekti. Kademeler `_V_TIER` katlarıdır. */
+  /* f (ölçüldü, iz-f49d): jog 3,0 m/sn gerçek dağılımın 3-4,5 bandına düşüyordu (%23 ↔ %14);
+     geçiş jog'u gerçekte 2-3 m/sn. Taban 62-90 px/sn = 2,1-3,0 m/sn. */
+  return (62+Math.max(0,Math.min(99,hiz))/99*28)*fat;
 }
 function _tokShort(name){ const a=String(name||'').trim().split(/\s+/); return a[a.length-1]||String(name||''); }
 /* ── FAZ 33 §7: ANLATIMDA ÇOK KISA SOYAD TAM ADLA GEÇER ────────────────────────────
@@ -1055,7 +1079,7 @@ function _simTick(dt){
       /* FAZ 41 §2: elips penceresi — hareket döngüsü bu süre boyunca yay ofsetini uygular.
          Pencere salınım penceresinden UZUNDUR (0,60 → 1,10 sn): elipsin bir turu ≈ 2,7 sn
          ve pencere kapanınca jeton yayın ortasında durup yeni pencereyi beklerdi. */
-      if(_SALINIM_ACIK) p._exT=S.time+1.10;
+      if(_SALINIM_ACIK&&_ELIPS_ACIK) p._exT=S.time+1.10;
       p._swayT=S.time+0.60;        /* fren tavanı bu süre boyunca gevşer */
       p._nudgeN=(p._nudgeN||0)+1;   /* teşhis sayacı — sunum-check okur, davranışa dokunmaz */
     }
@@ -1225,7 +1249,7 @@ function _simTick(dt){
          sıfırlanmaz (alt sınır ω·9 ≈ 32 px/sn ≈ 0,74 m/sn maç).
          Yanal genlik 10 px (0,34 m) küçüktür: adam-pota doğrultusundaki sıralamayı
          bozmaz, ekranda savunmacının ayak değiştirmesi olarak görünür. */
-      const _w4=S.time*3.6+p.ph*1.9;
+      const _w4=S.time*2.2+p.ph*1.9;   /* FAZ 49: 3,6 → 2,2 rad/sn — savunma ayak değiştirmesi 0,8 m/sn'yi aşmasın */
       /* ⚠ RADYAL GENLİK 14'TE KALIR (18 denendi, ölçülerek geri alındı): kayma tek yönlü
          ve ADAMA doğru olduğu için genliği büyütmek TOPSUZ savunmacıyı kendi adamına
          yapıştırır ve yardım mesafesini açar — `spacing-check` "topu tutana en yakın
@@ -1311,8 +1335,8 @@ function _simTick(dt){
       /* FAZ 41 §2: elips penceresinde tavan 100 px/sn — yayın çevresel tepe hızı
          (ω·a ≈ 78 px/sn) bunun ALTINDA kalmalı, yoksa jeton hedefin gerisinde kalır ve
          FAZ 40'ın santimetre ölçekli titremesi geri gelir (ölçülen kök neden). */
-      const _sway=((p._exT||0)>S.time)?110:(((p._swayT||0)>S.time)?56:10);
-      const want=d<24?Math.min(_tv,_sway):Math.min(_tv,d*2.1);
+      const _sway=((p._exT||0)>S.time)?60:(((p._swayT||0)>S.time)?12:10);   /* FAZ 49: duvar ölçeği (1,0 / 0,6 / 0,34 m/sn); ölçüldü: hedefindeyken 1 m/sn üstü karelerin %88'i salınım penceresindeydi */
+      const want=d<24?Math.min(_tv,_sway):Math.min(_tv,d*1.5);   /* FAZ 49: yaklaşma rampası 2,1 → 1,6 (0,8 denendi: 24-80 px bandında %50 kare 1-2 m/sn sürünüyordu; fren tavanı `_DEC_MAX` zaten duruşu yumuşatır) */
       const _vx0=p.vx, _vy0=p.vy;
       /* FAZ 42-B §A3: yön sınırlı açısal hızla döner (varış bölgesi muaf). Markajdaki
          savunmacı ve serbest topa koşan jeton daha çevik (×1,6) — tepki hareketi. */
@@ -1354,6 +1378,11 @@ function _simTick(dt){
       /* FAZ 48: topu tutan ile rakip savunmacısı 20 px'e (0,68 m) kadar yaklaşabilir — gerçekte
          ön sahada savunmacı mesafesinin %21'i 1 m altı, 40 px yarıçapla bu hiç olmuyordu */
       if(S.ball&&S.ball.mode==='held'&&S.ball.carrier&&(a===S.ball.carrier||b===S.ball.carrier)&&a.team!==b.team) _R=Math.min(_R,20);
+      /* FAZ 49: markaj çifti (savunmacı ↔ adamı) 26 px'e kadar yaklaşabilir — hedef 28-40 px (`_defGap`),
+         40 px yarıçapla savunmacı hedefine hiç varamıyor ve ikisi de sürünüyordu (ölçüldü). Perde çifti
+         (perdeci ↔ topu tutan, sıyırma anı) 22 px: omuz omuza — 62 px takım yarıçapı perdeyi hiç kurdurmuyordu. */
+      else if(a.team!==b.team&&(a._mark===b||b._mark===a)) _R=Math.min(_R,26);
+      if(S._perde&&S._perde.evre<3&&S.ball&&S.ball.carrier&&a.team===b.team&&((a===S._perde.tok&&b===S.ball.carrier)||(b===S._perde.tok&&a===S.ball.carrier))) _R=Math.min(_R,22);
       if(S.chase&&S.chase.tok&&(a===S.chase.tok||b===S.chase.tok)&&S.ball&&S.ball.mode==='loose'){
         const ct=S.chase.tok;
         if(Math.hypot(ct.x-S.ball.x,ct.y-S.ball.y)<110) _R=Math.min(_R,22);   /* 60 → 110 (ölçüldü: 3 kişilik halka 61-74 px'te tutuyordu) */
@@ -1795,7 +1824,11 @@ function _script(steps){
 /** Topsuz savunmacının adamından sarkma mesafesi (yardım pozisyonu): topa uzak adamın
     savunmacısı boyaya doğru sarkar, ama TÜM savunma tek noktada yığılmasın diye üst
     sınır dar tutulur (~1.7m). Adamı topa yakınsa yakın markaja (deny) geçer. */
-function _defGap(distManBall){ return Math.min(34,17+distManBall*0.09); }
+/* FAZ 49 (ölçüldü, iz-f49c): topsuz savunmacının hedefi adamına 17-34 px'ti, rakip çarpışma yarıçapı
+   ise 40 px — hedefe hiç varamıyor, her karede itilip yeniden yaklaşıyordu (itme 3 px/kare ≈ 180 px/sn):
+   "yakın" savunmacı karelerinin %46'sı 1-2 m/sn'de sürünüyor, adamı da noktasından itiliyordu.
+   Hedef 28-40 px, markaj çifti için yarıçap 26 px (aşağıda) — ikisi çelişmez. */
+function _defGap(distManBall){ return Math.min(40,28+distManBall*0.09); }
 /** F11-5 (ball-you-man): savunmacının hedefi HER ZAMAN adamının pota tarafında kalsın.
     Yardım pozisyonu top ile pota arasına bakar; adamı potaya çok yakınken (post) kural
     uygulanmaz — orada iki jetonu ayıran zaten üst üste binme çözücüsüdür. */
@@ -2067,7 +2100,7 @@ function _setFormation(offLeft,offPlayers,defPlayers,shot,opts){
       const c=_pt(TRANS_OFF[i],offLeft,false);
       p._setTx=p._setTy=null; p._sonHedefT=S.time;
       /* §5.3: kulvarlarda üç oyuncu sprint (rol 0/1/2), iki uzun trailer olarak koşu kademesinde. */
-      _hedefAta(p,_jit(c[0],10),_jit(c[1],8),_URG.SPRINT);
+      _hedefAta(p,_jit(c[0],10),_jit(c[1],8),_URG.KOS);   /* FAZ 49: geçiş kısa ve koşulu (sprint yalnız hızlı hücumda) */
       /* kanatlar (rol 1-2) önce kendi hizasında KENARA açılır, sonra kulvarda öne koşar */
       p._wp=(i===1||i===2)?[_inX(p.x+(offLeft?-58:58)),_inY(c[1])]:_kulvarWp(p,c);
     });
@@ -3315,7 +3348,7 @@ function animateShotPossession(sh,onShoot,onResult){
         if(dfn){
           const dx=rim[0]-sh.x,dy=rim[1]-sh.y,dd=Math.hypot(dx,dy)||1;
           const g=sh.contest==='heavy'?30:40;
-          dfn.tx=_inX(sh.x+dx/dd*g); dfn.ty=_inY(sh.y+dy/dd*g); _setUrg(dfn,_URG.SPRINT);
+          dfn.tx=_inX(sh.x+dx/dd*g); dfn.ty=_inY(sh.y+dy/dd*g); _setUrg(dfn,_URG.KOS);   /* FAZ 49: set içinde sprint yok */
           _lockTok(dfn,0.9);
           if(sh.contest==='heavy') dfn.pop=0.6;
         }

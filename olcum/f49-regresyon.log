@@ -1,0 +1,124 @@
+=== sahne-check
+==========================================================================
+  ✗ top "pass" modu                                        21.2%   hedef ≤ %18
+  ✗ top "held" modu                                        62.3%   hedef ≥ %65
+  ✓ SAHİPSİZ top karesi                                    0.30%   hedef ≤ %2
+  ✗ aynı anda koşan oyuncu                               5.10/10   hedef 3 – 5 / 10
+  ✓ serbest atışta yerinde oyuncu     10.00/10 (n=7, en kötü 10)   hedef ≥ 9,0 / 10 · en kötü ≥ 8
+  ✗ orta çizgi geçişi / pozisyon değişimi               75% (27/36)   hedef ≥ %85
+  ✓ yarı sahayı geçiren PG/SG/SF      93% {"SF":4,"PG":17,"SG":4,"C":2}   hedef ≥ %90
+
+  bilgi: mod dağılımı {"idle":0,"loose":10.8,"pass":21.2,"held":62.3,"shot":4,"rim":1.6}
+  bilgi: şut anında yerinde — HÜCUM 2.36/5 · SAVUNMA 2.92/5
+  bilgi: sahipsiz kare modları {"loose":32} · en uzak 121 px
+  bilgi: top kurtarma (watchdog + _ballHold ağı) 0 kez
+  konsol hatası: 0
+==========================================================================
+✗ 4 hedef düştü
+=== realism-check
+  ⋯ score3 | sonuç ↔ çember            n=  2  ort     0 ms (örneklem az — bilgi)
+  ⋯ score3 | ön parça ↔ şut anı        n=  2  ort     0 ms (örneklem az — bilgi)
+  ⋯ start | olay ↔ yorum               n=  1  ort     1 ms (örneklem az — bilgi)
+  ✓ en kötü tip ortalaması 0 ms (hedef ≤1200)
+  ✗ anlatım sessizliği: en uzun boşluk 13069 ms · ortalama 4092 ms (hedef en uzun ≤12000 · ortalama ≤5000)
+BİLGİ — olay başından ilk yoruma (koreografi uzunluğu, yargılanmaz):
+  start          n=1 ort 1ms
+  quarter_start  n=1 ort 1ms
+  foul           n=1 ort 0ms
+  score3         n=2 ort 7061ms
+  miss3          n=1 ort 9199ms
+  reb            n=1 ort 1606ms
+KONSOL HATASI: 0
+✗ 1 senkron hedefi düştü
+=== anlatim-check
+  ✓ ardışık iki olayın damgası aynı değil — 10887 olay tarandı (duraklama olayları hariç)
+
+==================================================================
+SONUÇ: 31/31 denetim geçti
+=== balon-check
+  ✓ balon örneklemi                                       72   hedef ≥ 40
+
+  konsol hatası: 0
+  SONUÇ: GEÇTİ
+=== spacing-check
+  SÜZÜLMEMİŞ — top ön sahadayken geçen TÜM kareler (1036 kare · geçiş dahil):
+    ✓ set hücumunda ortalama ikili mesafe              6.54 m   hedef ≥ 5,8 m
+    ✗ en yakın ikili (top sahibi hariç)                3.18 m   hedef ≥ 3,5 m
+    ✗ hücumun yayılımı / yarı saha (kutu)               %26.1   hedef ≥ %30
+    ✗ orta üçte birdeki hücumcu oranı                   %21.3   hedef < %20
+    ✓ boyada ≥1 hücumcu olan kare oranı                 %73.4   hedef ≥ %60
+    ⋯ topu tutana en yakın savunmacı                   2.03 m   (geçişte savunma toparlanıyor — bilgi)
+    ⋯ savunmacının adamına ortalama uzaklığı           3.19 m   (geçişte savunma toparlanıyor — bilgi)
+    ⋯ yerine oturmuş ama adamı > 5 m uzakta              %6.5   (geçişte savunma toparlanıyor — bilgi)
+    ⋯ savunmacı adamı ile pota arasında                 %67.1   (geçişte savunma toparlanıyor — bilgi)
+    ✓ hücumun saldırdığı potaya ortalama uzaklığı       6.57 m   hedef ≤ 7 m
+
+  bilgi: dışbükey zarf %14.3 · hücum x ortalaması 402 · saldırılan pota x 260 (saha 0-940)
+  konsol hatası: 0
+========================================================================
+✗ 8 hedef düştü
+=== sunum-check
+  ✗ F25-2  Set hücumunda donma yok (jeton 1,5 sn+ yerinde çakılı kalmıyor)
+       3 donma · en uzun 1.50 sn · kilitli 0 · topta 0 · hedefi uzakta 0 · rol {"2":1,"3":2} · örnek [{"t":340519.5,"sure":1.5024000000059605,"role":3,"kilit":false,"topta":false,"hedefUzak":0,"nudge":13,"hiz":1.4},{"t":875781,"sure":1.5024000000059605,"role":2,"kilit":false,"topta":false,"hedefUzak":0,"nudge":13,"hiz":2.2},{"t":876297.900000006,"sure":1.5019000000059604,"role":3,"kilit":false,"topta":false,"hedefUzak":0,"nudge":13,"hiz":0.5}] · [bilgi] dar alanda kıpırdama 10 (ort 4 px/sn)
+  ✓ F25-3  Kenardan sokmada takım yakın duruyor
+       74 sokma · ortalama 7.4 m (≤15) · 3+ yakın %96 · 25 m+ ilk pas 0/74
+  ✓ F25-4  Serbest atışta sektirme 1-3
+       22 atış rutini · sektirme 1-3
+  ✓ F25-5  Şemalar farklı yörünge üretiyor
+       diger: boya %0 · yay %100 | spotup: boya %30 · yay %42 | postup: boya %35 · yay %35 | transition: boya %14 · yay %72 | putback: boya %22 · yay %34 | pnr: boya %34 · yay %40 | cut: boya %32 · yay %41 | iso: boya %30 · yay %49 → fark boya 35.0 puan · yay 65.5 puan
+  ✓ F25-6a  Post oyununda hücumcunun yönü potaya ters
+       2050 kare · %99 sırtı potaya dönük (hedef ≥ %80)
+  ✓ F25-6b  Perdenin üç aşaması da görülüyor
+       evreler [1,2,3] · 66 damga · devrilme 14 roll / 8 pop
+  şut yörüngesi: uc tepe 108.6px (42) · turnike tepe 49.8px (36) · floater tepe 103.2px (18) · jumper tepe 93.6px (12) · smac tepe 34.5px (5) · tipin tepe 38.3px (3) · kanca tepe 96.5px (3)
+  ✓ F26-1  Şut tipi yörüngeye yansıyor (smaç alçak, uzak şut yüksek)
+       smaç tepe 34.5px (5) < uc tepe 108.6px (42) · hedef smaç < %70
+  ✓ F26-2  Floater turnikeden belirgin yüksek kavis çiziyor
+       floater 103.2px (18) > turnike 49.8px (36) · hedef ≥ 1,4×
+  ✓ F28-1  Maç öncesi her iki istatistik tablosunda rakip adı yazıyor
+       maç içi tablo "Sunum Denetimi" / "Jerusalem Storm" · özet kutu "Sunum Denetimi" / "Jerusalem Storm" · fikstür "Jerusalem Storm"
+  ✓ F26-3  Maç öncesi tabelada rakibin adı yazıyor
+       tabela "Sunum Denetimi" vs "Jerusalem Storm" · fikstürdeki rakip "Jerusalem Storm" · durum "BEKLEMEDE"
+  konsol hatası: 0 
+
+✗ DÜŞEN: M9, F14-7, F25-2
+=== arka-plan-check
+  ✗ gizlenince duraklatma bayrağı kuruldu (_bgPause) — _bgPause false / false
+  ✗ gizliyken olay kuyruğu DURDU (30 sn, en fazla 1 olay sızar) — idx 3 → 18 · skor 0,0 → 8,12
+  ✓ dönüşte kuyruk sürdü (10 sn içinde olay ya da canlı zamanlayıcı) — idx 18 → 19 · timer true · _bgPause false
+  ✓ dönüşte sahne olaya eşitlendi (jeton sapması ≤ 120 px, top sahipli/hedefli) — sapma 33 px · top sahipli
+  ✓ dönüşte sahne saati akıyor — sim 11.49 → 21.5
+  ✓ konsol hatası 0
+================================================================
+SONUÇ: 4/6 — DÜŞTÜ
+=== kural-check
+ŞUT SAATİ GÖSTERGESİ (D1) — olay dizisi üzerinde, maç saatiyle
+  0'da bekleyen maç saniyesi        0.0 sn/maç   (olay süresi 2413 sn/maç → %0.00)
+  0'a inen pozisyon                 0.00 /maç · ihlal düdüğü OLMADAN 0.00 /maç
+  en uzun kesintisiz 0              0.0 sn
+  ✓ gösterge 0'da takılmıyor (ihlalsiz ≤ 0,5/maç · en uzun ≤ 3 sn)
+✓ kural olayları gerçek bantlarda
+=== visual-check
+[mobile] açılıyor…
+[mobile] ✓ 0 konsol hatası — akış tamam, ekran görüntüleri kaydedildi.
+
+Ekran görüntüleri: tools\visual-check-output
+
+✓ Görsel test geçti (masaüstü + mobil, 0 hata).
+=== faz11-check
+
+[B5] Sonuç değişmezliği
+  ℹ  dizilim sunum katmanıdır; ayrıca çalıştır: node tools/band.js  (hash değişmemeli)
+
+================================================================
+SONUÇ: 15/15 kriter geçti
+=== sim-node
+G durumu değişmedi : EVET
+============================================================
+✓ saf Node simülasyonu çalışıyor ve deterministik
+=== band
+skor dizisi hash: c19928475859c7ff
+pageerror: 0
+=== measure
+
+>>> DEĞİŞMEZLİK: ✅ GEÇTİ (hash eşleşti: 51fa02b6e0a8194b)

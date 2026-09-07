@@ -33,7 +33,16 @@ const OAM_BOS=44;            /* px ≈ 1,5 m — en yakın savunmacı bundan uza
 const OAM_GERI=60;           /* px ≈ 2 m — bundan fazla potadan uzaklaşan pas "geri" */
 const OAM_KICKOUT=150;       /* px ≈ 5 m — içeriden dışarı açma serbest */
 const OAM_CEVRE=90;          /* px — iki çevre oyuncusu arasındaki çevirme pası serbest */
-const OAM_SET_SURE={pnr:3.0,handoff:2.8,cut:2.6,postup:2.8,spotup:2.4,iso:2.2,transition:1.5,diger:2.4};
+/* FAZ 49: set süresi +1,0 sn. Ölçüldü (iz-f49a, duvar ölçeği): karelerin %54'ünde jeton hedefine
+   80 px'ten uzaktı ("yolda"), 0-1 m/sn payı %23 ↔ gerçek %42. Gerçekte pozisyonun üçte ikisi set
+   fazıdır ve oyuncular orada DURUR; motorda set 2,2-3 sn ile pozisyonun üçte biriydi. Set uzayınca
+   noktasına varan oyuncu bekler, pas sayısı artar (gerçek 3,1/poz) — maç ~1 sn/pozisyon uzar. */
+/* İkinci ölçüm (iz-f49c): +1 sn ile set karelerin %20'siydi, geçiş+bekleme %65 — gerçekte tersi
+   (24 sn'lik pozisyonun ~15 sn'si set). Duran oyuncu payı ancak set pozisyonun büyük yarısı olunca
+   çıkar; set +2,4 sn, pas başına +0,5 sn. Maç bu yüzden daha uzun izlenir (sahne→maç ~1,2);
+   hızlandırmak isteyen izleme hızı düğmesini kullanır (`setMatchRate`). */
+const OAM_FLAS_ACIK=true;   /* FAZ 49: topsuz flaş kesme */
+const OAM_SET_SURE={pnr:5.4,handoff:5.2,cut:5.0,postup:5.2,spotup:4.8,iso:4.6,transition:1.5,diger:4.8};
 
 /* ── Yardımcılar ───────────────────────────────────────────────────────────────────── */
 function oamS(){ return (typeof mState!=='undefined'&&mState)?mState._sim:null; }
@@ -47,7 +56,7 @@ function oamHedef(p,x,y,urg){
 }
 /** Noktasındaki oyuncu donmaz: hedef küçük bir dairede döner (r px, ω rad/sn). */
 function oamCanli(p,sx,sy,r,ph){
-  const S=oamS(); const t=(S?S.time:0)*2.1+ph;
+  const S=oamS(); const t=(S?S.time:0)*1.2+ph;   /* FAZ 49: 2,1 → 1,2 rad/sn — noktasındaki oyuncu 0,5 m/sn altında kalsın */
   return [sx+Math.cos(t)*r,sy+Math.sin(t)*r*0.7];
 }
 /** En yakın savunmacı uzaklığı (px). */
@@ -73,7 +82,10 @@ function oamPas(to,dur){
     try{
       if(O.faz==='set'&&!O.donuk&&veren&&veren!==O.shooter&&veren!==O.screener&&veren!==O.cutter&&O.spots.has(veren)){
         const rim=O.rim, sp=O.spots.get(veren); const r=Math.hypot(sp[0]-rim[0],sp[1]-rim[1]);
-        if(r>150){
+        /* FAZ 49 (ölçüldü, iz-f49j): her pasta ±25° döndürme köşeleri yalnız içeri çevirebiliyor (dışarısı saha dışı)
+           ve set boyunca hedeflerin y yayılımı 3,9 → 3,1 m'ye eriyordu (gerçek 3,75). Köşe kaymaz, oyuncu başına bir kez. */
+        if(r>150&&Math.abs(sp[1]-250)<=140&&!(O.pam&&O.pam.has(veren))){
+          (O.pam=O.pam||new Set()).add(veren);
           const a0=Math.atan2(sp[1]-rim[1],sp[0]-rim[0]); const a1=a0+(veren.y<250?1:-1)*0.42*(O.dir>0?-1:1)*(_sr()<0.5?1:-1);
           const nx=rim[0]+Math.cos(a1)*r, ny=rim[1]+Math.sin(a1)*r;
           const icerde=(nx>CRT_X0+30&&nx<CRT_X1-30&&ny>CRT_Y0+30&&ny<CRT_Y1-30);
@@ -115,7 +127,7 @@ function oamSpotlar(S,offLeft,offR){
   const rim=_rim(offLeft);
   offR.forEach((p,i)=>{ const c=_pt((base[i]||base[0]).slice(),offLeft,!!S.flip);
     /* şablon %7 içeri çekilir (ölçüldü: potaya ortalama uzaklık 8,2 m, hedef ≤ 7) */
-    m.set(p,[rim[0]+(c[0]-rim[0])*0.93,rim[1]+(c[1]-rim[1])*0.93]); });
+    m.set(p,[c[0],c[1]]); });   /* FAZ 49: %7 içeri çekme kaldırıldı — gerçek yayılım y 3,75 m, motor 3,0 ("≤ 7 m" kapısı elle yazılmıştı) */
   return m;
 }
 
@@ -216,7 +228,12 @@ function oamSut(sh,onShoot,onResult){
   const serbest=offR.filter(o=>o!==shooter&&zincir.indexOf(o)<0);
   let degisim=null;
   if(serbest.length>=2&&_sr()<0.7){ const a=spots.get(serbest[0]), c2=spots.get(serbest[1]); if(a&&c2&&Math.hypot(a[0]-c2[0],a[1]-c2[1])<=207) degisim=[serbest[0],serbest[1]]; }
-  offR.forEach(p=>{ if(p===shooter||(p.role|0)<3) return; const c=spots.get(p); if(c&&koseMi(c)){ spots.set(p,[_inX(rim[0]+dir*120),_inY(c[1]<250?170:330)]); } });
+  /* FAZ 49 (ölçüldü, iz-f49k): köşedeki uzunu dirseğe çekmek + zincir pasçısını köşeden almak köşeleri
+     BOŞALTIYOR, hedeflerin y yayılımı şablonun 5,1 m'sinden 3,0 m'ye düşüyordu (gerçek 3,75, tepe 4-5).
+     Uzun köşedeyse noktası zincir dışı bir guard/kanatla TAKAS edilir; aday yoksa köşede kalır. */
+  offR.forEach(p=>{ if(p===shooter||(p.role|0)<3) return; const c=spots.get(p); if(!c||!koseMi(c)) return;
+    const q=offR.find(o=>o!==shooter&&(o.role|0)<3&&zincir.indexOf(o)<0&&!koseMi(spots.get(o)||[0,250]));
+    if(q){ const cq=spots.get(q); spots.set(q,c); spots.set(p,cq); } });
 
   /* Şema aktörleri */
   const bigs=offR.filter(p=>p!==shooter&&p!==pg&&(p.role===3||p.role===4));
@@ -232,15 +249,17 @@ function oamSut(sh,onShoot,onResult){
     if(S.inb) spot={x:S.inb.x,y:S.inb.y}; else if(inb) spot={x:inb.tx,y:inb.ty};
     if(!inb){ inb=offR.reduce((a,c)=>oamDR(c,_rim(!offLeft))<oamDR(a,_rim(!offLeft))?c:a); spot=_inboundSpot('base',offLeft,null,250+(_sr()<0.5?-1:1)*_srand(24,74)); inb._oob=true; }
   }
-  const tInb=inbPending?Math.min(2.8,(inb?Math.hypot(inb.x-spot.x,inb.y-spot.y):0)/150+0.9):0;
+  /* FAZ 49: bütçe sabit hızdan değil MERDİVENDEN türer (150/205/250 px/sn sabitleri eski jog'a göreydi) */
+  const OAM_V_KOS=_PL_JOGV*_V_TIER[2], OAM_V_SPRINT=_PL_JOGV*_V_TIER[3];
+  const tInb=inbPending?Math.min(3.4,(inb?Math.hypot(inb.x-spot.x,inb.y-spot.y):0)/OAM_V_KOS+0.9):0;
   const pgSpot=spots.get(pg)||[rim[0]-dir*250,250];
   const getirMesafe=inbPending?Math.hypot(spot.x+dir*165-pgSpot[0],spot.y-pgSpot[1]):Math.hypot(pg.x-pgSpot[0],pg.y-pgSpot[1]);
-  const tAdv=putback?0:Math.max(0.35,Math.min(3.2,getirMesafe/(fastBreak?250:205)+0.25));
-  const setDur=putback?0.45:(fastBreak?1.0:((OAM_SET_SURE[scheme]||OAM_SET_SURE.diger)+Math.max(0,zincir.length-2)*0.35));
+  const tAdv=putback?0:Math.max(0.35,Math.min(6.0,getirMesafe/(fastBreak?OAM_V_SPRINT:OAM_V_KOS)+0.25));   /* FAZ 49: geçiş KOS */
+  const setDur=putback?0.45:(fastBreak?1.0:((OAM_SET_SURE[scheme]||OAM_SET_SURE.diger)+Math.max(0,zincir.length-2)*0.5));
   const tFire=tInb+tAdv+setDur;
 
   const O={aktif:true,faz:inbPending?'sokma':(putback?'set':'bekle'),t:0,sh,shooter,pg,outletTok,mid,offP,defP,offR,defR,offLeft,dir,rim,
-    spots,zincir,zi:0,holdT:0,holdMin:0.28+_sr()*0.3,scheme,fastBreak,putback,iso,isPnr,screener,cutter,postup,degisim,degisti:false,
+    spots,zincir,zi:0,holdT:0,holdMin:0.12+_sr()*0.3,swingN:0,scheme,fastBreak,putback,iso,isPnr,screener,cutter,postup,degisim,degisti:false,
     inb,spot,tFire,tInb,tAdv,setDur,tSet:null,tGecis:null,res:_res,onShoot,atildi:false,perdeEvre:0,esle:new Map(),ph:new Map(),
     zorla:false,sutT:null,_snapSeen:(S._snapN|0)};
   offR.forEach((p,i)=>{ O.esle.set(p,defR[i]||defR[0]); O.ph.set(p,i*1.3); });
@@ -320,7 +339,7 @@ function oamAtes(){
     const enUzun=(team,haric)=>{ let e=null,ed=1e9; _rolesOrder(team).slice(2).forEach(p=>{ if(!p||p===haric||p===shooter) return; const d=oamDR(p,rim); if(d<ed){ ed=d; e=p; } }); return e; };
     const r1=hucRib||enUzun(defP,null), r2=enUzun((r1&&defP.indexOf(r1)>=0)?offP:defP,r1);
     const yon=Math.atan2(sh.y-rim[1],sh.x-rim[0]);
-    [[r1,0.55],[r2,-0.55]].forEach(([p,da])=>{ if(!p||p===shooter) return; const rr=_srand(36,54); const a=yon+da; p.tx=_inX(rim[0]+Math.cos(a)*rr); p.ty=_inY(rim[1]+Math.sin(a)*rr); p._wp=null; _setUrg(p,_URG.SPRINT); _lockTok(p,0.9); });
+    [[r1,0.55],[r2,-0.55]].forEach(([p,da])=>{ if(!p||p===shooter) return; const rr=_srand(36,54); const a=yon+da; p.tx=_inX(rim[0]+Math.cos(a)*rr); p.ty=_inY(rim[1]+Math.sin(a)*rr); p._wp=null; _setUrg(p,_URG.KOS); _lockTok(p,0.9); });   /* FAZ 49: ribaunda koşu, sprint değil */
   }catch(e){}
   const _durSabit=(rimD<90||_sTip==='smac'||_sTip==='turnike'||_sTip==='floater'||_sTip==='kanca'||_sTip==='tipin')?0:0.58;
   _ballShoot(rim,_durSabit,sh.made,()=>{
@@ -430,8 +449,10 @@ function oamTick(dt){
     else {
       /* set, hücumun en az dördü ön sahadayken kurulur (ölçüm: arkadan gelen uzunlar potaya
          ortalama uzaklığı şişiriyordu); zaman tavanı yine geçerli */
-      let ondeN=0; offR.forEach(p=>{ if(p&&onSaha(p)) ondeN++; });
-      if(bizde&&((vardi&&ondeN>=4)||(onde&&ondeN>=4&&O.t>=O.tGecis+1.0)||O.t>=O.tInb+O.tAdv+1.0)) oamSetBasla(S,O,O.scheme||'diger');
+      let ondeN=0, yakinN=0; offR.forEach(p=>{ if(p&&onSaha(p)) ondeN++; const c=spots.get(p); if(p&&c&&Math.hypot(p.x-c[0],p.y-c[1])<120) yakinN++; });
+      /* FAZ 49: set, hücumun ≥3'ü noktasının 4 m'sine gelince başlar (ölçüldü: set başında oyuncular
+         noktalarına ort 6,8 m uzaktı, setin ilk yarısı varışla geçiyordu); zaman tavanı yine geçerli */
+      if(bizde&&((vardi&&ondeN>=4&&yakinN>=3)||(onde&&ondeN>=4&&yakinN>=3&&O.t>=O.tGecis+1.0)||O.t>=O.tInb+O.tAdv+1.6)) oamSetBasla(S,O,O.scheme||'diger');
     }
     /* geçiş pası: hızlı hücumda öndeki boş kanada */
     if(O.fastBreak&&bizde&&O.holdT>0.5&&carrier!==shooter&&oamBos(shooter,defP)&&oamDR(shooter,rim)<oamDR(carrier,rim)-40){ oamPas(shooter); }
@@ -446,6 +467,15 @@ function oamTick(dt){
     }
     const ts=O.t-O.tSet;
     const kalan=O.tFire-O.t;
+    /* ── FAZ 49: TOPSUZ FLAŞ KESME (gerçek veri: 1,5 sn'lik pencerede potaya 3 m+ yaklaşan hücumcu
+       0,80/pencere; motorda 0,1 — set, tek betikli kesme dışında durağandı). Noktasındaki çevre
+       oyuncusu potaya 3,4 m dalar, geri açılır; aynı anda en çok bir oyuncu, şuttan önce donuk fazda yok. */
+    if(OAM_FLAS_ACIK&&!O.donuk&&!O.putback&&!O.fastBreak&&ts>=0.8&&kalan>2.4&&!O.flas&&O.t>=(O.flasNext||0)){
+      const aday=offR.filter(c=>c&&!c._oob&&c!==shooter&&c!==carrier&&c!==O.cutter&&c!==O.screener&&spots.has(c)&&oamDR(c,rim)>150&&Math.hypot(c.x-spots.get(c)[0],c.y-spots.get(c)[1])<36);
+      if(aday.length){ const c=aday[Math.min(aday.length-1,Math.floor(_sr()*aday.length))]; const sp=spots.get(c); const dr=Math.hypot(sp[0]-rim[0],sp[1]-rim[1])||1; const ix=sp[0]+(rim[0]-sp[0])/dr*100, iy=sp[1]+(rim[1]-sp[1])/dr*100;
+        if(!oamNoktaDolu(O,c,ix,iy)) O.flas={p:c,ix,iy,t0:O.t,faz:'in'}; else O.flasNext=O.t+0.6; }
+    }
+    if(O.flas){ const F=O.flas, p=F.p; if(F.faz==='in'&&(Math.hypot(p.x-F.ix,p.y-F.iy)<26||O.t-F.t0>1.4)) F.faz='out'; const sp=spots.get(p); if(F.faz==='out'&&(Math.hypot(p.x-sp[0],p.y-sp[1])<24||O.t-F.t0>3.2)){ O.flas=null; O.flasNext=O.t+1.4+_sr()*1.2; } }
     /* şema aşamaları */
     if(O.isPnr&&O.screener){
       if(O.perdeEvre===0&&ts>=0.15){ O.perdeEvre=1; S._perde={evre:1,tok:O.screener,t:S.time}; }
@@ -465,7 +495,13 @@ function oamTick(dt){
            süre dolunca her hâlükârda */
         let oturan=0; offR.forEach(p=>{ if(p===shooter||p._oob) return; const c=spots.get(p); if(c&&Math.hypot(p.x-c[0],p.y-c[1])<=24) oturan++; });
         const oturdu=(oturan>=2)||(O.holdT>=0.9)||O.putback||O.fastBreak;   /* FAZ 48: gerçek veri */
-        if((sutYerinde&&oturdu&&O.holdT>=0.3&&(ts>=O.setDur*0.55||O.putback||O.fastBreak))||kalan<=0.05||(O.holdT>2.4)){ oamAtes(); return; }
+        if((sutYerinde&&oturdu&&O.holdT>=0.3&&(ts>=O.setDur*0.8||O.putback||O.fastBreak))||kalan<=0.05||(O.holdT>2.4)){ oamAtes(); return; }   /* FAZ 49: şut set süresinin %80'inde (0,55 ile set 4-5 sn'de bitiyor, uzatma boşa gidiyordu) */
+        /* FAZ 49: şut anı gelmediyse topu tutup beklemez — boş çevre arkadaşına çevirir, top geri gelir
+           (gerçek: tutma 1,5 sn · 3,1 pas/poz; motorda şutör 1-2 sn topla dikiliyordu). En çok 2/poz. */
+        if(!O.putback&&!O.fastBreak&&(O.swingN|0)<1&&O.holdT>=0.45&&(O.setDur*0.8-ts)>0.9&&kalan>1.6){   /* en çok 1 (2 ile pas/poz 4,4 ↔ gerçek 3,1; sahne-check pass modu %21) */
+          let en=null,ed=1e9; offR.forEach(c=>{ if(!c||c===shooter||c._oob||c===O.cutter||c===O.screener) return; const cs=spots.get(c); if(!cs||Math.hypot(c.x-cs[0],c.y-cs[1])>36) return; if(oamDR(c,rim)<OAM_KICKOUT) return; if(!oamBos(c,defP)||!oamPasOlur(shooter,c,rim)) return; const d=oamD(shooter,c); if(d<ed){ ed=d; en=c; } });
+          if(en){ O.swingN=(O.swingN|0)+1; const zi2=O.zincir.indexOf(shooter); O.zincir.splice(zi2>=0?zi2:O.zincir.length,0,en); oamPas(en); O.holdMin=0.12+_sr()*0.3; }
+        }
       } else {
         let alici=sonraki||shooter;
         const zor=(kalan<=0.9);                            /* bütçe: şutöre zorla */
@@ -476,11 +512,11 @@ function oamTick(dt){
           if(k&&!zor){ hedef=k; if(O.zincir.indexOf(k)<0) O.zincir.splice(zi+1,0,k); }
         }
         const hSpot=spots.get(hedef)||[hedef.x,hedef.y];
-        const hYerinde=Math.hypot(hedef.x-hSpot[0],hedef.y-hSpot[1])<=36;
+        const hYerinde=Math.hypot(hedef.x-hSpot[0],hedef.y-hSpot[1])<=50;   /* FAZ 49: 36 → 50 px, alıcı noktasına yaklaşırken pas gelir */
         const bos=oamBos(hedef,defP);
         if(zor){ if(O.holdT>=0.12) oamPas(hedef); }
         else if(O.holdT>=O.holdMin&&(hedef===shooter?sutYerinde:(hYerinde||O.holdT>=O.holdMin+0.5))&&(bos||O.holdT>=O.holdMin+0.4)){
-          oamPas(hedef); O.holdMin=0.28+_sr()*0.3;
+          oamPas(hedef); O.holdMin=0.12+_sr()*0.3;   /* FAZ 49: 0,28-0,58 → 0,12-0,42 sn (gerçek tutmaların %49'u 0,5 sn altı) */
         }
       }
     } else if(!bizde&&!ucusta&&carrier){ if(O.holdT>0.2){ _ballLoose(0,0,14); _chase(pg,null,2.2); O.holdT=0; } }
@@ -500,6 +536,10 @@ function oamHedefler(S,O){
   const ts=(O.faz==='set'&&O.tSet!=null)?(O.t-O.tSet):0;
   /* şuttan 0,7 sn önce ya da top şutördeyken dizilim DONAR: kıpırdanma ve yer değiştirme yok */
   O.donuk=(O.faz==='set'&&((O.tFire-O.t)<0.6||carrier===shooter));   /* FAZ 48: gerçekte şut anında 4'te ~2,3 hareketli */
+  /* FAZ 49: şut yaklaşıyor — uzunlar ribaunda iner (şuttan 1,4 sn önce, şutöre pas uçarken ya da top şutörde) */
+  /* l: 1,4 sn'lik ön pencere KALDIRILDI — uzunlar ribaunt noktasına şuttan önce varıp DURUYORDU (4'ü duran şut %31 → %47);
+     tetik yalnız top şutöre uçarken / şutördeyken: hareket şut anında sürüyor olsun */
+  O.sutYakin=(O.faz==='set'&&!O.putback&&(carrier===shooter||(b.mode==='pass'&&b.target===shooter)));
 
   /* ── HÜCUM ── */
   offR.forEach((p,i)=>{
@@ -530,9 +570,14 @@ function oamHedefler(S,O){
         /* topu süren takımı beklemez ama tek başına da gitmez: üç takım arkadaşından 5 m+ öndeyse
            tempoyu düşürür (kullanıcı: "topu süren çok hızlı, diğerleri geride kalıyor") */
         let onde=0; offR.forEach(q=>{ if(q!==p&&(dir>0?(p.x-q.x):(q.x-p.x))>150) onde++; });
+        /* FAZ 49 (ölçüldü, iz-f49g): geçiş JOG yapılınca 2-3 m/sn bandı %28'e şişti (gerçek %14), 3-4,5
+           bandı %5'e düştü (gerçek %14) ve hücum 20 m boyunca yığın hâlinde ilerledi (yayılım y 3,6 → 2,7).
+           Gerçekte geçiş KISA ve KOŞULUDUR, set uzun ve durağan: geçiş KOS, set YÜRÜ/dur. */
         urg=O.fastBreak?_URG.SPRINT:(onde>=3?_URG.JOG:_URG.KOS);
       }
-      else if(p.role===1||p.role===2) urg=_URG.SPRINT;
+      /* FAZ 49 (ölçüldü, iz-f49b): geçiş karelerinin %57'si 3-7,5 m/sn idi, gerçekte hızlı hücum dışındaki
+         geçiş JOG'dur (2,5-3,5 m/sn) — herkes birlikte yürür-koşar, set ona göre beklenir (tAdv JOG'dan). */
+      else if(p.role===1||p.role===2) urg=O.fastBreak?_URG.SPRINT:_URG.KOS;   /* kanatlar koşar (gerçek 3-4,5 bandı %14 — f'de %4'e düşmüştü) */
       else urg=_URG.KOS;
       if(O.fastBreak&&p===shooter){ tx=O.sh.x; ty=O.sh.y; urg=_URG.SPRINT; }
     } else if(O.faz==='set'){
@@ -541,7 +586,7 @@ function oamHedefler(S,O){
       if(O.isPnr&&O.screener&&p===O.screener&&O.perdeEvre>=1){
         const bh=bizde?carrier:pg; const dfn=O.esle.get(bh);
         if(O.perdeEvre<3&&dfn){ const ax=dfn.x-bh.x, ay=dfn.y-bh.y, an=Math.hypot(ax,ay)||1; tx=bh.x+ax/an*34+(-ay/an)*18*(O.screener.y<bh.y?-1:1); ty=bh.y+ay/an*34+(ax/an)*18*(O.screener.y<bh.y?-1:1); urg=_URG.KOS; }
-        else { const roll=S._perde&&S._perde.roll; if(roll){ tx=rim[0]+(p===shooter?(O.sh.x-rim[0]):dir*-1*40); ty=rim[1]+(p===shooter?(O.sh.y-rim[1]):40); } else { tx=sp[0]; ty=sp[1]; } urg=_URG.SPRINT; }
+        else { const roll=S._perde&&S._perde.roll; if(roll){ tx=rim[0]+(p===shooter?(O.sh.x-rim[0]):dir*-1*40); ty=rim[1]+(p===shooter?(O.sh.y-rim[1]):40); } else { tx=sp[0]; ty=sp[1]; } urg=_URG.KOS; }   /* FAZ 49: set içinde sprint yok */
       }
       /* topu tutan perdeyi kullanır */
       else if(O.isPnr&&O.screener&&p===carrier&&O.perdeEvre===2){
@@ -550,18 +595,31 @@ function oamHedefler(S,O){
       }
       /* kesme */
       else if(O.cutter&&p===O.cutter&&ts>=0.6&&ts<2.2){
-        tx=(p===shooter)?O.sh.x:(rim[0]+dir*-1*30); ty=(p===shooter)?O.sh.y:(rim[1]+(p.y<250?-26:26)); urg=_URG.SPRINT;
+        tx=(p===shooter)?O.sh.x:(rim[0]+dir*-1*30); ty=(p===shooter)?O.sh.y:(rim[1]+(p.y<250?-26:26)); urg=_URG.SPRINT;   /* FAZ 49: kesme kısa bir sprint patlamasıdır (gerçek veri: kesme > 3 m/sn, 0,8/1,5 sn; KOS ile 0,09'a düştü) */
+      }
+      /* FAZ 49: şut geliyor (donuk faz) — uzunlar ribaunt konumuna KOŞ ile iner (gerçek veri: şut anında
+         4 takım arkadaşının 2,3'ü hareketli; motorda 2,85'i duruyordu, L1 0,90) */
+      else if(O.sutYakin&&(p.role|0)>=3&&p!==shooter&&p!==carrier&&oamDR(p,rim)>95){
+        const yon=Math.atan2(p.y-rim[1],p.x-rim[0]); tx=rim[0]+Math.cos(yon)*70; ty=rim[1]+Math.sin(yon)*70; urg=_URG.KOS;
+      }
+      /* FAZ 49: guardlar şut yaklaşırken top tarafına 1 m kayar (gerçekte şut anında 4'te 2,3 hareketli — %31 şutta 4'ü de duruyordu) */
+      else if(O.sutYakin&&(p.role|0)<3&&p!==shooter&&p!==carrier&&O.flas!==p){
+        const ux=topX-sp[0], uy=topY-sp[1], un=Math.hypot(ux,uy)||1; tx=sp[0]+ux/un*30; ty=sp[1]+uy/un*30; urg=_URG.JOG;
+      }
+      /* FAZ 49: flaş kesme — potaya dalış sprint, geri açılma jog */
+      else if(O.flas&&p===O.flas.p&&p!==carrier){
+        if(O.flas.faz==='in'){ tx=O.flas.ix; ty=O.flas.iy; urg=_URG.SPRINT; } else { tx=sp[0]; ty=sp[1]; urg=_URG.JOG; }
       }
       /* topu tutan: noktasına sürer, noktasındaysa hafif kıpırdar (şuttan önce donar) */
       else if(p===carrier){
         const d=Math.hypot(p.x-sp[0],p.y-sp[1]);
         if(d<OAM_YERINDE&&!O.donuk){ const c=oamCanli(p,sp[0],sp[1],11,O.ph.get(p)||0); tx=c[0]; ty=c[1]; }
-        urg=(d>70)?_URG.KOS:_URG.JOG;
+        urg=_URG.JOG;   /* FAZ 49: set içinde sürme jog temposunda */
       }
       else {
         const d=Math.hypot(p.x-sp[0],p.y-sp[1]);
-        if(d<OAM_YERINDE){ if(!O.donuk){ const c=oamCanli(p,sp[0],sp[1],9,O.ph.get(p)||0); tx=c[0]; ty=c[1]; } urg=_URG.JOG; }
-        else urg=(d>70)?_URG.KOS:_URG.JOG;
+        if(d<OAM_YERINDE){ if(!O.donuk){ const c=oamCanli(p,sp[0],sp[1],9,O.ph.get(p)||0); tx=c[0]; ty=c[1]; } urg=_URG.YURU; }
+        else urg=(d>44)?_URG.JOG:_URG.YURU;   /* FAZ 49: set içinde topsuz oyuncu yürüyerek/jogla yer alır */
       }
     }
     oamHedef(p,tx,ty,urg);
@@ -583,7 +641,7 @@ function oamHedefler(S,O){
       /* geri koş: adam-pota hattında %55, potaya en az 90 px (topu tutanın savunmacısı hariç — baskı) */
       const g=Math.max(90,dm*0.45);
       tx=rim[0]+(m.x-rim[0])/(dm||1)*g; ty=rim[1]+(m.y-rim[1])/(dm||1)*g;
-      urg=(i>=3)?(O.fastBreak?_URG.KOS:_URG.JOG):(O.fastBreak?_URG.SPRINT:_URG.KOS);   /* guardlar önce döner, uzunlar arkadan */
+      urg=(i>=3)?_URG.KOS:(O.fastBreak?_URG.SPRINT:_URG.KOS);   /* FAZ 49: savunma koşarak döner (geçiş kısa, set uzun) */
     } else {
       /* markaj: adam ile pota arasında */
       const onBall=(m===topTasiyan);
@@ -593,9 +651,9 @@ function oamHedefler(S,O){
         /* FAZ 48 (gerçek ön saha: %21'i 1 m altı, ort 2,0 m; arka saha ort 5,1 m): çemberin
            içinde 0,75 m, dışında 1,0 m; uzun çemberin dışındaysa gevşek 2 m; arka sahada
            orta çizgiden uzaklaştıkça 1,3 → 3,7 m */
-        if(topArkaSaha) g=38+70*Math.min(1,Math.abs(m.x-COURT_MID)/220);
+        if(topArkaSaha) g=52+100*Math.min(1,Math.abs(m.x-COURT_MID)/220);   /* FAZ 49: 1,8 → 5,1 m (gerçek arka saha ort 5,1; 1,3-3,7 ile 4,0 ölçüldü) */
         else if((m.role|0)>=3&&dm>THREE_R-30) g=58;
-        else g=(dm<THREE_R-10)?22:30;
+        else g=((dm<THREE_R-10)?22:30)+((dm>THREE_R+40)?30:0)+((O.ph.get(d)||0)%1)*20;   /* FAZ 49: yaydan 1,4 m dışında sarkma + savunmacıya özgü 0-0,7 m (gerçek ön saha dağılımı 0,5-3,5 m'de düz) */
       }
       else {
         g=_defGap(dmb);
@@ -629,7 +687,7 @@ function oamBaskiTick(S,dt){
     const rim=_rim(offLeft);
     const arka=offLeft?(c.x>COURT_MID):(c.x<COURT_MID); if(!arka) return;
     const offR=_rolesOrder(offP), defR=_rolesOrder(defP); const i=offR.indexOf(c); const d=defR[i]; if(!d||d._oob||(S.chase&&S.chase.tok===d)) return;
-    const dm=oamDR(c,rim)||1; let g=38+70*Math.min(1,Math.abs(c.x-COURT_MID)/220); g=Math.min(g,Math.max(0,dm-26));
+    const dm=oamDR(c,rim)||1; let g=52+100*Math.min(1,Math.abs(c.x-COURT_MID)/220); g=Math.min(g,Math.max(0,dm-26));   /* FAZ 49 */
     d.tx=_inX(c.x+(rim[0]-c.x)/dm*g); d.ty=_inY(c.y+(rim[1]-c.y)/dm*g); d._wp=null; _setUrg(d,_URG.KOS); d._lock=S.time+0.1; d._mark=c;
   }catch(e){}
 }
