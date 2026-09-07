@@ -1935,7 +1935,20 @@ function registerServiceWorker(){
     if(typeof navigator==='undefined'||!('serviceWorker' in navigator)) return;
     if(!isProdHost()) return;
     if(new URLSearchParams(location.search||'').has('nosw')) return;
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
+    navigator.serviceWorker.register('sw.js').then(reg=>{
+      /* FAZ 51: OTOMATİK GÜNCELLEME. Kullanıcılar eski JS'i önbellekten çalıştırıp
+         düzeltmeleri alamıyordu ("oyuncular görünmüyor / maç açılmıyor" — eski sürüm).
+         Yeni bir service worker kontrolü aldığında sayfayı BİR KEZ otomatik yenile ki
+         güncel kod hemen yüklensin. Tek sefer (flag) — reload döngüsü olmaz. */
+      try{
+        navigator.serviceWorker.addEventListener('controllerchange',()=>{
+          if(window.__swReloaded) return; window.__swReloaded=true;
+          try{ location.reload(); }catch(e){}
+        });
+        /* Sayfa açıkken yeni sürüm yayınlandıysa: SW güncellemesini tetikle. */
+        if(reg&&typeof reg.update==='function'){ setTimeout(()=>{ try{ reg.update(); }catch(e){} },1500); }
+      }catch(e){}
+    }).catch(()=>{});
   }catch(e){}
 }
 
