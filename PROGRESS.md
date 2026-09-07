@@ -8739,3 +8739,27 @@ gerçek oyunculardan; şutu kim, nereden, ne sonuçla attığı yine motorun kar
 Hakemler kenar çizgisinin dışında durur, sahaya girmez. Maç hızı FAZ 49'a yakın (sahne→maç ~1,25).
 Bilinen sınırlar: rol eşlemesi kaba (klipteki "F" bazen PF'ye düşer, top getiren bazen forvet olur);
 post/perde damgaları OAM'a aitti, klipte yok; uzun pozisyonlarda anlatım 12 sn susabilir.
+
+## FAZ 51 — 07.09.2026 · "Maçı başlatıyorum görüntü gelmiyor, Başlat yazıyor hâlâ" (sürüm 88)
+
+Kullanıcının tarayıcısında canlı sitede yeniden üretildi (Chrome eklentisi, kayıtlı kariyer "dfdf").
+Kök neden kod hatası değil, ETİKET: 04.09 kaydında yarıda bırakılmış bir maçın kilitli sonucu
+(`G.pendingMatch`, C1) duruyordu. Maçlar sayfasındaki `startMatchBtn` durum makinesinden okunup
+"⏩ Kilitli sonucu uygula" diyordu ama Ana Panel kartı (`renderDashboardNextMatch`, render.js) her
+çizimde sabit "▶ Maçı Başlat" yazıyordu. Tıklama kilitli sonucu anında uyguluyor (4. tur
+Guadalajara 62-84 işlendi), canlı görüntü açılmıyor, etiket değişmiyor. Bildirim de skoru söylemiyordu.
+
+Yapılan:
+- `renderDashboardNextMatch` etiketi `matchPlaybackState()`'ten okur (tek kaynak, F13-15).
+- Kilitli sonuç bildirimi skoru ve sıradaki adımı söyler; ardından `syncMatchButtons()`.
+- EN kalıbı `I18N_PHRASES` başına eklendi.
+- Yeni kapı `tools/kilit-check.js` (7/7 ✓): maç başlat → yenile → kart/maç etiketi kilitli →
+  tıkla → bildirim skorlu, fikstür işlendi, canlı açılmadı → etiketler Başlat'a döndü → ikinci
+  tıklama gerçek maç.
+- Kullanıcının kaydında benim ölçümüm için başlattığım 5. tur maçının kilidi geri alındı
+  (`pendingMatch=null`, maç oynanmamış); 4. tur sonucu kullanıcının tıklaması zaten uygulayacağı
+  kilitli sonuçtu, geri alınmadı.
+- Sürüm 87 → 88 (`surum-check --yaz`), `visual-check` masaüstü+mobil 0 hata.
+
+Ders: aynı durumu gösteren iki buton varsa ikisi de DURUM MAKİNESİNDEN okusun; render.js'in kendi
+`_live ? … : …` üçlüsü kilitli durumu görmüyordu (F13-15'in yarım kalan uygulaması).

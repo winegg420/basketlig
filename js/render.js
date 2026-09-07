@@ -160,7 +160,17 @@ function renderDashboardNextMatch(){
   }
   /* Madde 7: maç canlıyken yeniden render olsa da buton pasif kalsın */
   const _live=(typeof mState!=='undefined'&&mState&&mState.running);
-  if(card){ card.style.opacity=''; card.style.pointerEvents=''; const btn=card.querySelector('.dn-play'); if(btn){ btn.textContent=_live?'⏳ Maç Devam Ediyor':'▶ Maçı Başlat'; btn.disabled=!!_live; } }
+  /* FAZ 51: etiket TEK kaynaktan (F13-15 durum makinesi). Kart "▶ Maçı Başlat" derken sonuç
+     kilitliyse (yarıda bırakılmış maç) tıklama canlı maç açmıyor, kilitli sonucu uyguluyordu —
+     kullanıcı "görüntü gelmiyor, hâlâ Başlat yazıyor" dedi. */
+  if(card){ card.style.opacity=''; card.style.pointerEvents=''; const btn=card.querySelector('.dn-play'); if(btn){
+    let _durum=_live?'running':'idle';
+    try{ if(typeof matchPlaybackState==='function') _durum=matchPlaybackState(); }catch(e){}
+    btn.textContent={running:'⏳ Maç Devam Ediyor',frozen:'▶ Devam et',pending:'⏩ Kilitli sonucu uygula',idle:'▶ Maçı Başlat'}[_durum]||'▶ Maçı Başlat';
+    btn.disabled=(_durum==='running');
+    if(_durum==='pending') btn.title='Bu maç daha önce başlatılmış ve sonucu kilitlenmişti — canlı izlenemez; basınca kilitli sonuç doğrudan uygulanır.';
+    else btn.removeAttribute('title');
+  } }
   nh.textContent=m.home;
   na.textContent=m.away;
   if(homeRec) homeRec.textContent=_teamRecordLabel(m.home);

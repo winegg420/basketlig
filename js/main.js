@@ -166,8 +166,11 @@ function startMatch(playoff){
       : isPlayoff
       ? {seasonMatchIx:-1,isPlayoff:true,playoffMatch:userPlayoffMatch(),rakipName:rakip.isim,userIsHome}
       : {seasonMatchIx:match.seasonMatchIx,isPlayoff:false,playoffMatch:null,rakipName:rakip.isim,userIsHome};
-    showNotif('Bu maç zaten oynanmıştı — sonucu kilitliydi, aynı sonuç uygulandı.',{critical:true});
+    /* FAZ 51: skor ve sıradaki adım da söylenir — kullanıcı "görüntü gelmiyor" sanıyordu. */
+    { const _pe=G.pendingMatch.ev; const _us=userIsHome?_pe.home:_pe.away, _op=userIsHome?_pe.away:_pe.home;
+      showNotif('⏩ Bu maç daha önce başlatılıp yarıda kalmıştı — kilitli sonuç uygulandı: '+G.team.isim+' '+_us+' - '+_op+' '+rakip.isim+'. Sıradaki maç için tekrar “Maçı Başlat”a bas.',{critical:true}); }
     applyMatchResult(G.pendingMatch.ev,ctx);
+    syncMatchButtons();
     return;
   }
   const lu=matchLineup();

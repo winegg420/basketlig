@@ -705,6 +705,8 @@ Object.assign(I18N_TR_EN,{
 
 /* Bu kalıplar dizinin BAŞINA eklenir: daha genel kalıplardan (ör. "hedef") önce çalışmalı. */
 I18N_PHRASES.unshift(
+  /* FAZ 51: kilitli sonuç bildirimi (skor + takım adları içerir) */
+  [/⏩ Bu maç daha önce başlatılıp yarıda kalmıştı — kilitli sonuç uygulandı: (.+?) (\d+) - (\d+) (.+?)\. Sıradaki maç için tekrar “Maçı Başlat”a bas\./g,'⏩ This match had been started earlier and left unfinished — the locked result was applied: $1 $2 - $3 $4. Press “Start Match” again for the next game.'],
   [/Başkanın hedefi/g,'Chairman’s goal'],
   [/Bugünün spikeri/g,'Today’s commentator'],
   [/Takım Trendi/g,'Team Trend'],

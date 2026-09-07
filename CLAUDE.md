@@ -96,6 +96,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/gercek-veri/_csv.js` | Akışlı CSV okuyucu. `cut -d,` / `split(',')` bu veride ÇALIŞMAZ — `pbpstats`in EVENTS sütunu tırnak içinde virgül VE satır sonu taşır. |
 | `tools/_lib/gercek-bantlar.json` | **TEK DOĞRULUK KAYNAĞI** — check araçlarının eşikleri. Elle DÜZENLEME; `cikar.js` üretir. |
 | `tools/_lib/gercek-bant.js` | Bant okuyucu + kapı yardımcısı (`al` / `ham` / `kapi` / `bas`). Yeni bir gerçekçilik kapısı yazarken eşiği BURADAN oku. |
+| `tools/kilit-check.js` | **FAZ 51 kilitli sonuç (C1) etiket denetçisi** — maç başlat → yenile → Ana Panel kartı ve Maçlar butonu "⏩ Kilitli sonucu uygula" demeli, tıklayınca skorlu bildirim + fikstür işlenir, etiketler Başlat'a döner, ikinci tıklama gerçek maç. Buton etiketi / pendingMatch akışı değişince çalıştır. |
 | `tools/schema-check.js` | **`db/schema.sql` denetçisi** — sözdizimi (varsa gerçek PostgreSQL ayrıştırıcısı), lig kuralları, RLS, "kod tabanında bağlantı yok". |
 | `db/schema.sql` | **Çok oyunculu veri modeli** (Postgres/Supabase). Yalnız dosya — hiçbir bağlantı kurulmuyor. |
 | `tools/gen-brand-images.js` | og:image (1200×630) + PWA ikonlarını üretir (Playwright). Marka görselini değiştirince tekrar çalıştır. |
