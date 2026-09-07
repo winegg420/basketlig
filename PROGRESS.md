@@ -8834,3 +8834,31 @@ visual-check + kilit-check geçti. Sürüm 89 → 90.
 Ders: bgPause gibi "duraklat, sonra yetiş" mekanizmasının ÇIKIŞI, girişini doğuran koşuldan bağımsız
 olmalı; çıkış o koşulun düzelmesini beklerse (burada: sim ilerlemesi ↔ rAF boğukluğu) kilitlenir.
 Görünür sekmede batarya-koruma duraklatmasının yeri yoktur.
+
+## FAZ 51 · 4. tur — 08.09.2026 · "yine açılmıyor sadece ses, commit ettin mi" (sürüm 91-92)
+
+Kullanıcı sürüm 90 sonrası hâlâ "maça basınca hiçbir şey olmuyor sadece ses" dedi. İki ayrı kök neden bulundu:
+
+1. **SAHNE TAMAMEN rAF'A BAĞLIYDI (sürüm 91):** jetonlar yalnız `requestAnimationFrame` ile hareket
+   ediyordu; rAF herhangi bir sebeple boğulursa (bazı Chrome/pencere durumlarında görünür sekmede bile
+   ~1 fps, arka plan, düşük performans) jetonlar HİÇ kıpırdamıyor, olay kuyruğu setTimeout ile aktığı için
+   "ses var, oyun donuk" çıkıyordu. `_simStart` içine rAF YEDEĞİ eklendi (`_rafYedek` setInterval): son rAF
+   karesinden 220 ms+ geçtiyse sim elle sürülür; rAF normalken yedek boşta (çift adım yok).
+2. **bgPause DEFALARCA DONMAYA YOL AÇTI (sürüm 92):** arka plan sekmesi olay-kuyruğu duraklatması
+   (`_bgPause`, FAZ 37/42-B) yumurta-tavuk kilidine düşüyordu. rAF yedeği artık arka planda da sahneyi
+   olaylarla senkron sürdüğü için bgPause gereksiz; `_BGPAUSE_ACIK=false` ile üç giriş noktası da kapatıldı.
+   Artık olay kuyruğu her koşulda akar, sahne rAF ya da yedekle akar, dönüşte `_simCatchUp` eşitler.
+
+**Kanıt (canlı, Chrome eklentisi = worst case: sekme gerçekten arka planda, rAF VE setInterval throttle):**
+sürüm 92'de bgPause=false, 10/10 jeton hareketli, sim/skor ilerledi (0-0 → 2-0, 10:00 → 9:59) — hidden=true
+olmasına rağmen. Görünür sekmede (kullanıcı senaryosu) rAF zaten tam hızda çalışır, yedek boşta.
+
+**SW/önbellek:** kullanıcının "commit ettin mi" sorusu haklıydı — canlı HTML sürüm 92 ama tarayıcı GitHub
+Pages HTTP önbelleğinden (max-age ~10 dk) eski HTML servis ediyordu; eklenti sekmesinde ilk yükleme v=90
+geldi, SW+cache elle temizlenince v=92 geldi ve maç aktı. SW mimarisi doğru (skipWaiting, clients.claim,
+sürümlü JS); gecikme CDN HTTP cache, hard-refresh (Ctrl+Shift+R) çözer.
+
+Ders: "sadece ses geliyor" = crowd ambience çalıyor + sahne donuk = sahnenin rAF'a tek-bağımlılığı. Bir
+sunum katmanı rAF'a tek bağlıysa, rAF'ın durabileceği (arka plan, throttle, düşük fps) her senaryoda donar;
+zaman tabanlı bir yedek şart. Ayrıca "duraklat sonra yetiş" mekanizmaları (bgPause) donma riskini
+sürdürüyorsa ve yerini alan sağlam bir yol (rAF yedeği) varsa kaldırılmalı.

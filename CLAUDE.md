@@ -1622,3 +1622,16 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   kabul edildi: o nadir durumda bgPause kurulmaz, olaylar akar, sahne `raw>1.2` dalındaki _simCatchUp ile
   yetişir (kullanıcı o sekmeye bakmıyor). "Duraklat, sonra yetiş" mekanizmasının ÇIKIŞI, girişini doğuran
   koşuldan (rAF boğukluğu) bağımsız olmalı; yoksa kilitlenir.
+
+- **SAHNE rAF'A TEK BAĞLI OLAMAZ — rAF YEDEĞİ (FAZ 51, kullanıcı "maça basınca sadece ses"):** canlı sahne
+  jetonları yalnız `requestAnimationFrame` ile hareket ediyordu; rAF boğulursa (arka plan sekmesi, bazı
+  pencere durumlarında görünür sekmede bile ~1 fps, düşük performans) jetonlar HİÇ kıpırdamaz, olay kuyruğu
+  setTimeout ile aktığı için "ses var (crowd ambience) + oyun donuk" görüntüsü çıkar. `_simStart` (match-engine)
+  artık bir setInterval yedeği kurar (`_rafYedek`): son rAF karesinden 220 ms+ geçtiyse sim elle `_simStep` ile
+  sürülür; rAF normalken (`_rafAt` her kare tazelenir) yedek boşta kalır, çift adım yok. `clearMatchPlayers`
+  temizler. Bir sunum katmanını rAF'a TEK bağlama; zaman tabanlı yedek şart.
+- **bgPause KAPALI (FAZ 51, `_BGPAUSE_ACIK=false` js/main.js):** arka plan sekmesi olay-kuyruğu duraklatması
+  (FAZ 37/42-B) yumurta-tavuk kilidiyle defalarca donmaya yol açtı (rAF boğukken sim ilerlemez, çıkış sim
+  ilerlemesini bekler). rAF yedeği arka planda da sahneyi olaylarla senkron sürdüğü için gereksiz kaldı ve
+  kapatıldı — üç giriş noktası (`stepGuarded` else, watchdog, visibilitychange) bayrağa bağlı. Donma yapısal
+  olarak imkânsız. Geri açmak gerekirse `_BGPAUSE_ACIK=true`.
