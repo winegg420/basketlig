@@ -97,6 +97,136 @@ const rsrc = fs.readFileSync(path.join(ROOT, 'js/render.js'), 'utf8');
 yaz(!/fsx\.count\s*\*\s*1\.6/.test(rsrc) && /fsx\.count\s*\*\s*TARAFTAR_KATSAYI/.test(rsrc),
   'renderArena taraftar tavanını TARAFTAR_KATSAYI üzerinden okuyor (gömülü 1.6 yok)');
 
+
+/* ── FAZ 52: ARENA MODÜLLERİ ─────────────────────────────────────────────────────────
+   Yeni kapılar. NİYET: (a) modül tablosunun kendisi tutarlı olsun (artan bedel, artan
+   bakım, azalan verim), (b) SEVİYE 1 = BUGÜNKÜ DAVRANIŞ kuralı sessizce bozulmasın —
+   bu kural, FAZ 25 ekonomi çapalarının ve `season-loop` dengesinin korunmasının tek
+   güvencesidir, (c) migrasyon eski kaydı kapasite/para kaybı olmadan taşısın,
+   (d) gelir dökümünün toplamı `homeTicketIncome()` ile birebir aynı olsun. */
+console.log('\nF) Modül tablosu tutarlı (FAZ 52)');
+const modOlcum = vm.runInContext(`(function(){
+  const t = {};
+  ARENA_MOD.forEach(m => {
+    t[m.key] = {
+      n: m.sv.length,
+      bedelArtan: m.sv.every((s,i) => i===0 ? s.m===0 : s.m > m.sv[i-1].m),
+      bakimArtan: m.sv.every((s,i) => i===0 ? true : s.bk >= m.sv[i-1].bk),
+      gunSayisi: (m.gun||[]).length,
+      ilkBakim: m.sv[0].bk,
+      /* azalan verim: son kademenin bedel/etki oranı ilkinden büyük olmalı */
+      son: m.sv[m.sv.length-1]
+    };
+  });
+  return t;
+})()`, ctx);
+const modKeys = Object.keys(modOlcum);
+yaz(modKeys.length === 10, `10 modül tanımlı (${modKeys.length})`);
+yaz(modKeys.every(k => modOlcum[k].n === 5), 'her modül 5 seviyeli');
+yaz(modKeys.every(k => modOlcum[k].bedelArtan), 'bedel her kademede artıyor ve Sv1 bedava');
+yaz(modKeys.every(k => modOlcum[k].bakimArtan), 'haftalık bakım hiçbir kademede azalmıyor');
+yaz(modKeys.every(k => modOlcum[k].gunSayisi === 5), 'her modülün 5 kademelik inşaat süresi var');
+/* Sv1 bakım toplamı = eski ARENA_LVL[0].bk — yeni modüller bedava başlar. */
+const sv1Bakim = modKeys.reduce((s, k) => s + modOlcum[k].ilkBakim, 0);
+const ARENA0_BK = vm.runInContext('ARENA_LVL[0].bk', ctx);
+yaz(sv1Bakim === ARENA0_BK, `Sv1 toplam bakımı eski başlangıç bakımıyla aynı (${sv1Bakim} = ${ARENA0_BK})`);
+
+console.log('\nG) Seviye 1 = bugünkü davranış (ekonomi çapası korunuyor)');
+const nots = vm.runInContext(`(function(){
+  G.team = { isim:'Test', tblKey:'tbl', renk:'#fff' };
+  G.arena = { s:1, kap:ARENA_LVL[0].kap, bk:ARENA_LVL[0].bk, isim:'A', mods:null, insaat:null };
+  G.ticketPrice = 2; G.wins = 0; G.losses = 0;
+  arenaSenkron();
+  const d = arenaGelirDokumu();
+  return {
+    bakim: arenaHaftalikBakim(),
+    kap: G.arena.kap,
+    guc: arenaGucu(),
+    dokum: d,
+    toplam: homeTicketIncome(),
+    biletSaf: Math.round(G.arena.kap * arenaDolulukOrani() * biletFiyati()),
+    gise: arenaGiseKaybi(),
+    guvEksik: arenaGuvenlikEksigi(),
+    cazibe: arenaCazibe(),
+    tol: arenaFiyatToleransi()
+  };
+})()`, ctx);
+yaz(nots.cazibe === 0 && nots.tol === 0, 'Sv1 doluluk katkısı ve fiyat toleransı 0');
+yaz(nots.gise === 0 && nots.guvEksik === 0, 'başlangıç arenasında gişe kaybı ve güvenlik eksiği yok');
+yaz(nots.dokum.toplam === nots.biletSaf,
+  `maç geliri saf bilet geliriyle birebir (${nots.dokum.toplam} = ${nots.biletSaf})`);
+yaz(nots.bakim === ARENA0_BK, `haftalık bakım ${nots.bakim} (eski ${ARENA0_BK})`);
+yaz(nots.guc.puan === 10 && nots.guc.max === 50, `arena gücü ${nots.guc.puan}/${nots.guc.max}`);
+
+console.log('\nH) Gelir dökümü toplamı = homeTicketIncome()');
+const dokumOlcum = vm.runInContext(`(function(){
+  const out = [];
+  G.team = { isim:'Test', tblKey:'tbl', renk:'#fff' };
+  for (const kol of [1,3,5]) for (const lvl of [1,3,5]) for (const fiyat of [0,2,4]) {
+    G.arena = { s:1, kap:0, bk:0, isim:'A', mods:{}, insaat:null };
+    ARENA_MOD.forEach(m => { G.arena.mods[m.key] = (m.key==='koltuk') ? kol : lvl; });
+    G.ticketPrice = fiyat; G.wins = 8; G.losses = 6;
+    arenaSenkron();
+    const d = arenaGelirDokumu();
+    const s = d.bilet + d.loca + d.yiyecek + d.magaza + d.sponsor + d.otopark - d.ceza;
+    out.push({ kol, lvl, fiyat, esit: Math.max(0,s) === d.toplam, esit2: homeTicketIncome() === d.toplam,
+               occ: d.occ, seyirci: d.seyirci, fan: d.taraftar, toplam: d.toplam, bakim: arenaHaftalikBakim() });
+  }
+  return out;
+})()`, ctx);
+yaz(dokumOlcum.every(x => x.esit && x.esit2),
+  `${dokumOlcum.length} modül birleşiminde döküm toplamı = maç geliri`);
+yaz(dokumOlcum.every(x => x.seyirci <= x.fan + 1),
+  'modüller açıkken de seyirci taraftar tabanını aşmıyor');
+yaz(dokumOlcum.every(x => x.occ >= 0 && x.occ <= 0.98), 'modüller açıkken doluluk 0–%98 arası');
+const tamMod = dokumOlcum.find(x => x.kol === 5 && x.lvl === 5 && x.fiyat === 2);
+const azMod = dokumOlcum.find(x => x.kol === 5 && x.lvl === 1 && x.fiyat === 2);
+yaz(!!tamMod && !!azMod && tamMod.toplam > azMod.toplam,
+  `tam donanımlı arena daha çok kazandırıyor (${azMod ? azMod.toplam : '—'} → ${tamMod ? tamMod.toplam : '—'})`);
+yaz(!!tamMod && !!azMod && tamMod.bakim > azMod.bakim * 2,
+  `karşılığında bakım da katlanıyor (${azMod ? azMod.bakim : '—'} → ${tamMod ? tamMod.bakim : '—'})`);
+
+console.log('\nI) Önkoşullar ve inşaat');
+const onk = vm.runInContext(`(function(){
+  G.team = { isim:'Test', tblKey:'tbl', renk:'#fff' };
+  G.arena = { s:1, kap:0, bk:0, isim:'A', mods:null, insaat:null };
+  arenaSenkron();
+  const locaSv1 = arenaOnkosulEngeli('loca',2);          /* koltuk Sv1 iken engellenmeli */
+  const giseSv1 = arenaOnkosulEngeli('gise',2);          /* koltuk Sv1 iken engellenmeli */
+  G.arena.mods.koltuk = 2; arenaSenkron();
+  const locaSv2 = arenaOnkosulEngeli('loca',2);          /* artık serbest */
+  const koltuk3 = arenaOnkosulEngeli('koltuk',3);        /* güvenlik Sv2 istenmeli */
+  G.arena.mods.guvenlik = 2; arenaSenkron();
+  const koltuk3b = arenaOnkosulEngeli('koltuk',3);
+  return { locaSv1, giseSv1, locaSv2, koltuk3, koltuk3b };
+})()`, ctx);
+yaz(!!onk.locaSv1 && !!onk.giseSv1, `loca ve gişe koltuk Sv1 iken kilitli (${onk.locaSv1})`);
+yaz(onk.locaSv2 === null, 'koltuk Sv2 olunca loca açılıyor');
+yaz(!!onk.koltuk3, `koltuk Sv3 güvenlik istiyor (${onk.koltuk3})`);
+yaz(onk.koltuk3b === null, 'güvenlik Sv2 olunca koltuk Sv3 açılıyor');
+const guvGerek = vm.runInContext('[arenaGuvenlikGerek(2000),arenaGuvenlikGerek(7000),arenaGuvenlikGerek(12000),arenaGuvenlikGerek(20000)]', ctx);
+yaz(JSON.stringify(guvGerek) === '[1,2,3,4]', `güvenlik merdiveni ${guvGerek.join('/')}`);
+
+console.log('\nJ) Eski kayıt migrasyonu (v10 → v11)');
+const mig = vm.runInContext(`(function(){
+  const out = [];
+  for (let s = 1; s <= 5; s++) {
+    const d = { v:10, arena:{ s, kap:ARENA_LVL[s-1].kap, bk:ARENA_LVL[s-1].bk, isim:'Eski Salon' } };
+    migrateArenaV10ToV11(d);
+    out.push({ s, v:d.v, koltuk:d.arena.mods.koltuk, kap:d.arena.kap, bk:d.arena.bk,
+               eskiKap:ARENA_LVL[s-1].kap, eskiBk:ARENA_LVL[s-1].bk,
+               digerHepsi1: ARENA_MOD.filter(m=>m.key!=='koltuk').every(m=>d.arena.mods[m.key]===1),
+               isim:d.arena.isim, insaat:d.arena.insaat });
+  }
+  return out;
+})()`, ctx);
+yaz(mig.every(x => x.v === 11), 'sürüm damgası v11');
+yaz(mig.every(x => x.koltuk === x.s), 'eski arena seviyesi koltuk modülüne taşındı');
+yaz(mig.every(x => x.kap === x.eskiKap), 'kapasite birebir korundu (oyuncu kapasite kaybetmiyor)');
+yaz(mig.every(x => x.bk === x.eskiBk), 'haftalık bakım birebir korundu (gider artmıyor)');
+yaz(mig.every(x => x.digerHepsi1), 'diğer bütün modüller Sv1');
+yaz(mig.every(x => x.isim === 'Eski Salon' && !x.insaat), 'arena adı korundu, bekleyen inşaat yok');
+
 console.log('\n' + '='.repeat(60));
 console.log(hata ? `✗ ${hata} kontrol başarısız` : '✓ arena doluluğu tutarlı');
 process.exit(hata ? 1 : 0);

@@ -1257,14 +1257,59 @@ function assignScout(id,pool){
   scheduleGameSave();
 }
 
+/* ── FAZ 52: MODÜL GELİŞTİRME ────────────────────────────────────────────────────────
+   Eski `upgradeArena(s)` doğrudan arena seviyesini satın alıyordu. Artık her modül ayrı
+   geliştirilir, bedel ANINDA ödenir ama seviye İNŞAAT SÜRESİ sonunda açılır (brif §4.4).
+   Aynı anda tek inşaat yürür — kulüp bütün salonu birden söküp yapamaz. */
+/** Sürmekte olan inşaat tamamlandıysa uygula. Oyun günü ilerleyen her yerden çağrılır. */
+function processArenaInsaat(){
+  try{
+    if(!G||!G.arena) return false;
+    arenaSenkron();
+    const ins=G.arena.insaat;
+    if(!ins||!ins.key) return false;
+    if((G.gameDay||1)<Number(ins.bitis)) return false;
+    const t=arenaModTanim(ins.key);
+    G.arena.insaat=null;
+    if(!t) return false;
+    G.arena.mods[ins.key]=Math.max(arenaModSv(ins.key),Number(ins.hedef)||1);
+    arenaSenkron();
+    if(ins.key==='koltuk'&&arenaModSv('koltuk')>=5&&typeof unlockAchievement==='function') unlockAchievement('megaArena');
+    try{ showNotif(`🏗️ ${t.ikon} ${t.ad} — Sv ${arenaModSv(ins.key)} tamamlandı!`); }catch(e){}
+    try{ scheduleGameSave(); }catch(e){}
+    try{ if(document.getElementById('page-arena')&&document.getElementById('page-arena').classList.contains('active')) renderArena(); }catch(e){}
+    return true;
+  }catch(e){ return false; }
+}
+/** Modül geliştirme butonu. */
+function upgradeArenaMod(key){
+  try{
+    const t=arenaModTanim(key);
+    if(!t){ showNotif('Bilinmeyen modül.'); return; }
+    if(G.arena&&G.arena.insaat&&G.arena.insaat.key){ showNotif('🏗️ Şu anda başka bir inşaat sürüyor.'); return; }
+    const sv=arenaModSv(key);
+    if(sv>=t.sv.length){ showNotif('Bu modül zaten en üst seviyede.'); return; }
+    const hedef=sv+1;
+    const engel=arenaOnkosulEngeli(key,hedef);
+    if(engel){ showNotif('🔒 '+engel); return; }
+    const veri=t.sv[hedef-1];
+    if(G.coins<veri.m){ showNotif('❌ Yeterli bakiye yok!'); return; }
+    txn('Arena yatırımı: '+t.ad+' Sv '+hedef,-veri.m);
+    const gun=Math.max(0,Number((t.gun||[])[hedef-1])||0);
+    G.arena.insaat={key,hedef,bas:(G.gameDay||1),bitis:(G.gameDay||1)+gun};
+    updateCoins();
+    if(gun<=0) processArenaInsaat();
+    else showNotif(`🏗️ ${t.ikon} ${t.ad} Sv ${hedef} inşaatı başladı — ${gun} gün.`);
+    renderArena();
+    scheduleGameSave();
+  }catch(e){ try{ dbg('upgradeArenaMod',e); }catch(_){} }
+}
+/** Geriye dönük: eski kayıtlardaki/HTML'deki `upgradeArena(s)` çağrısı koltuk modülüne gider. */
 function upgradeArena(s){
-  const g=ARENA_LVL[s-1];
-  if(G.arena.s>=s){showNotif('Bu seviye zaten alınmış.');return;}
-  if(G.coins<g.m){showNotif('❌ Yeterli bakiye yok!');return;}
-  txn('Arena yatırımı: '+g.isim,-g.m);G.arena={...G.arena,s:g.s,kap:g.kap,bk:g.bk};
-  if(g.s===5) unlockAchievement('megaArena');
-  updateCoins();showNotif(`🏟️ ${g.isim}\'e yükseltildi!`);renderArena();
-  scheduleGameSave();
+  const hedef=Math.max(2,Math.min(5,Number(s)||2));
+  if(arenaModSv('koltuk')>=hedef){ showNotif('Bu seviye zaten alınmış.'); return; }
+  if(arenaModSv('koltuk')+1!==hedef){ showNotif('Kapasiteyi kademe kademe büyütmelisin.'); return; }
+  upgradeArenaMod('koltuk');
 }
 
 // ===== NAVİGASYON =====
@@ -1696,8 +1741,9 @@ function createTeam(){
   }catch(e){ dbg("divizyon kayması",e); }
   G.ligTeams=genLigTeams();G.coaches=genCoaches();G.coachMarket=genCoachMarket();
   G.scoutMarket=genScoutMarket();
-  G.arena={s:1,kap:ARENA_LVL[0].kap,bk:ARENA_LVL[0].bk,isim:ARENA_LVL[0].isim};   /* F7-6: ham USD (ecoRound DEĞİL) — ARENA_LVL ile aynı ölçek */
+  G.arena={s:1,kap:ARENA_LVL[0].kap,bk:ARENA_LVL[0].bk,isim:ARENA_LVL[0].isim,mods:null,insaat:null};   /* F7-6: ham USD (ecoRound DEĞİL) — ARENA_LVL ile aynı ölçek */
   G.tactics={tempo:'normal',odak:'dengeli',defensiveStyle:'adam',focusPlayerId:null,markStar:false};
+  try{ arenaSenkron(); }catch(e){}   /* FAZ 52: modül seviyeleri kurulur (hepsi Sv1) */
   if(typeof suppressAutoSave==='function') suppressAutoSave(false);   /* F7-3: yeni kariyer bilinçli işlem */
   bootstrapAppUi();
   applyAutosaveSetting();

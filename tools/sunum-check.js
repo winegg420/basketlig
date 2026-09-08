@@ -574,11 +574,15 @@ async function main() {
     `${SK.sokma.n} sokma · ortalama ${SK.sokma.ortM.toFixed(1)} m (≤15) · 3+ yakın %${(SK.sokma.yakin3*100).toFixed(0)}` +
     ` · 25 m+ ilk pas ${SK.sokma.uzunPas}/${SK.sokma.pasliOrnek}`);
 
-  if (!SK.ftDrib.n) kayit('F25-4', 'Serbest atışta sektirme 1-3', false,
+  /* FAZ 52 (kullanıcı kararı): SERBEST ATIŞTA SEKTİRME YOK. Eski kapı "1-3 sekme"
+     istiyordu; sektirme kaldırıldığı için kapı ölçtüğü davranışı değil ESKİ BİR KURALI
+     savunur hâle geldi (FAZ 25/28/38 dersi: havuz/kural değişince kapıyı da güncelle).
+     Yeni niyet: atıcı topu alır ALMAZ tutar — hiçbir rutinde sekme görülmemeli. */
+  if (!SK.ftDrib.n) kayit('F25-4', 'Serbest atışta sektirme YOK', false,
     'ÖRNEK YOK — bu pencerede serbest atış yakalanmadı');
-  else kayit('F25-4', 'Serbest atışta sektirme 1-3',
-    SK.ftDrib.min >= 1 && SK.ftDrib.max <= 3,
-    `${SK.ftDrib.n} atış rutini · sektirme ${SK.ftDrib.min}-${SK.ftDrib.max}`);
+  else kayit('F25-4', 'Serbest atışta sektirme YOK',
+    SK.ftDrib.max === 0,
+    `${SK.ftDrib.n} atış rutini · sektirme ${SK.ftDrib.min}-${SK.ftDrib.max} (hedef 0)`);
 
   if (SK.sema.length < 2) kayit('F25-5', 'Şemalar farklı yörünge üretiyor', false,
     `ÖRNEK YOK — yalnız ${SK.sema.length} şema yeterli kare topladı`);

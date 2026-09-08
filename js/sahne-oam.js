@@ -100,8 +100,23 @@ function oamNoktaDolu(O,haric,x,y){
   let dolu=false; O.spots.forEach((c,p)=>{ if(p!==haric&&Math.hypot(c[0]-x,c[1]-y)<_PL_R_TAKIM) dolu=true; }); return dolu;
 }
 /** Pas mantıklı mı: geri değil, boya içinden geçmiyor (giriş pası hariç), 10 m'den uzun değil (açma hariç). */
+/** FAZ 52 (kullanıcı: "geri saha paslar atılıyor"): top ORTA ÇİZGİYİ GEÇTİYSE arka sahaya
+    pas atılamaz — FIBA'da ihlaldir. Ölçüldü (iz kaydı, 400 sn · 162 pas): ön saha → arka
+    saha pası %1,2 ve ikisi de ölü top sonrası geçiş dalındaydı. Kapı ucuzdur ve yalnız
+    SAHNE kararını etkiler; maçın rastgele akışına dokunmaz. */
+function oamArkaSaha(from,to,rim){
+  try{
+    if(!from||!to||!rim) return false;
+    const mid=(CRT_X0+CRT_X1)/2;
+    const sol=rim[0]<mid;                       /* hücum sola mı */
+    const onda=sol?(from.x<mid):(from.x>mid);   /* veren ön sahada mı */
+    const arkada=sol?(to.x>mid+8):(to.x<mid-8); /* alıcı arka sahada mı */
+    return onda&&arkada;
+  }catch(e){ return false; }
+}
 function oamPasOlur(from,to,rim){
   if(oamGeri(from,to,rim)) return false;
+  if(oamArkaSaha(from,to,rim)) return false;
   const df=oamDR(from,rim), dt=oamDR(to,rim);
   const d=oamD(from,to);
   if(d>300&&df>=OAM_KICKOUT&&dt>=OAM_KICKOUT) return false;
@@ -182,7 +197,12 @@ function oamSut(sh,onShoot,onResult){
   const scheme=sh.scheme||null;
   try{ mState._semaAd=scheme||'diger'; }catch(e){}
   S._sema=null;
-  const isPnr=(scheme==='pnr'||scheme==='handoff')&&!fastBreak&&!putback&&!iso;
+  /* FAZ 52 (kullanıcı: "screen ve devrilme, devrilene pas verme gibi özellikler artmalı"):
+     perde eskiden YALNIZ motorun 'pnr'/'handoff' şemasında kuruluyordu; şema damgası
+     taşımayan set pozisyonlarında hiç perde yoktu. Şemasız set pozisyonlarının %40'ında
+     da ikili oyun kurulur. Karar SAHNE PRNG'sindendir (`_sr`) — maçın rastgele akışına
+     ve `band.js` hash'ine dokunmaz (B-5 kuralı). */
+  const isPnr=(scheme==='pnr'||scheme==='handoff'||(!scheme&&_sr()<0.40))&&!fastBreak&&!putback&&!iso;
 
   /* Dizilim: şutörün noktası ŞUT NOKTASIDIR; en yakın şablon noktası ona bırakılır */
   const spots=oamSpotlar(S,offLeft,offR);
@@ -480,7 +500,9 @@ function oamTick(dt){
     if(O.isPnr&&O.screener){
       if(O.perdeEvre===0&&ts>=0.15){ O.perdeEvre=1; S._perde={evre:1,tok:O.screener,t:S.time}; }
       else if(O.perdeEvre===1&&ts>=0.95){ O.perdeEvre=2; S._perde={evre:2,tok:O.screener,t:S.time}; }
-      else if(O.perdeEvre===2&&ts>=1.55){ O.perdeEvre=3; S._perde={evre:3,tok:O.screener,t:S.time,roll:(O.screener===shooter||_sr()<0.6)}; }
+      /* FAZ 52: devrilme (roll) payı 0,60 → 0,82 — gerçek ikili oyunda perdeyi kuran
+         çoğunlukla potaya devrilir, "pop" azınlıktır. */
+      else if(O.perdeEvre===2&&ts>=1.55){ O.perdeEvre=3; S._perde={evre:3,tok:O.screener,t:S.time,roll:(O.screener===shooter||_sr()<0.82)}; }
     }
     if(O.postup&&!shooter._sirtDonuk&&ts>=0.3){ shooter._sirtDonuk=true; S._postup={tok:shooter,t:S.time}; }
     /* top hareketi */
@@ -504,6 +526,15 @@ function oamTick(dt){
         }
       } else {
         let alici=sonraki||shooter;
+        /* FAZ 52: DEVRİLENE PAS — perde devrildiyse (evre 3, roll) ve perdeci boştaysa top
+           bir kez ona gider; zincir oradan şutöre devam eder (gerçek ikili oyunun bitişi). */
+        if(O.isPnr&&O.screener&&O.perdeEvre>=3&&!O._rollPas&&carrier!==O.screener&&O.screener!==shooter
+           &&S._perde&&S._perde.roll&&kalan>1.4&&!O.screener._oob
+           &&oamPasOlur(carrier,O.screener,rim)&&oamBos(O.screener,defP)){
+          O._rollPas=true;
+          if(O.zincir.indexOf(O.screener)<0) O.zincir.splice(zi+1,0,O.screener);
+          alici=O.screener;
+        }
         const zor=(kalan<=0.9);                            /* bütçe: şutöre zorla */
         let hedef=zor?shooter:alici;
         /* mantıksız pas yoksa köprü: geri / boya içinden / 10 m+ pas yerine ara oyuncu */
@@ -535,7 +566,12 @@ function oamHedefler(S,O){
   const topArkaSaha=offLeft?(topX>COURT_MID):(topX<COURT_MID);
   const ts=(O.faz==='set'&&O.tSet!=null)?(O.t-O.tSet):0;
   /* şuttan 0,7 sn önce ya da top şutördeyken dizilim DONAR: kıpırdanma ve yer değiştirme yok */
-  O.donuk=(O.faz==='set'&&((O.tFire-O.t)<0.6||carrier===shooter));   /* FAZ 48: gerçekte şut anında 4'te ~2,3 hareketli */
+  /* FAZ 52: donuk faz ŞUT ANINA bağlıdır, "şutör topta" olmasına DEĞİL. Şutör topu
+     `ts>=setDur*0.8` şartını bekleyerek 2,4 sn'ye kadar tutabiliyor ve o süre boyunca
+     ON JETON birden donuyordu (`sunum-check` F25-2: 1,50 sn'lik donmalar, hepsi
+     hedefinde · hız 0-2 px/sn). Gerçek veride şut anında 4 takım arkadaşından ancak
+     1,66'sı duruyor (FAZ 48) — uzun donma zaten gerçeğe aykırıydı. */
+  O.donuk=(O.faz==='set'&&((O.tFire-O.t)<0.6||(carrier===shooter&&(O.tFire-O.t)<1.0)));
   /* FAZ 49: şut yaklaşıyor — uzunlar ribaunda iner (şuttan 1,4 sn önce, şutöre pas uçarken ya da top şutörde) */
   /* l: 1,4 sn'lik ön pencere KALDIRILDI — uzunlar ribaunt noktasına şuttan önce varıp DURUYORDU (4'ü duran şut %31 → %47);
      tetik yalnız top şutöre uçarken / şutördeyken: hareket şut anında sürüyor olsun */
@@ -957,7 +993,10 @@ function oamTorenKur(S,tip,ev){
     /* hedefler HEMEN yazılır: eski dalın bekleme tahmini (`_ftWaitSec`) ve `_ftHazir` kapısı `p.tx`
        okur — tören OAM'a geçince ilk karede eski hedefler kalıyor, serbest atış erken patlıyordu
        (F14-7 9,8 → 6,7/10, en uzak 7,3 m). */
-    O.spots.forEach((c,p)=>{ if(p&&!p._oob){ const d=Math.hypot(p.x-c[0],p.y-c[1]); oamHedef(p,c[0],c[1],d>110?_URG.KOS:_URG.JOG); } });
+    /* FAZ 52 (kullanıcı: "faul atışı esnasında oyuncular doğru yerleşmeli"): eşik 110 px
+       (3,7 m) idi — kulvarına 2-3 m uzakta duran oyuncu YÜRÜyerek gidiyor, atış anına
+       yetişemiyordu; bekleme tavanı da (4,6 sn) buna göre kısaldı. 55 px (1,9 m) üstü koşar. */
+    O.spots.forEach((c,p)=>{ if(p&&!p._oob){ const d=Math.hypot(p.x-c[0],p.y-c[1]); oamHedef(p,c[0],c[1],d>55?_URG.KOS:_URG.JOG); } });
     return true;
   }catch(e){ return false; }
 }
@@ -991,7 +1030,7 @@ function oamTorenTick(S,O,dt){
     if(!p||p._oob||(S.chase&&S.chase.tok===p)) return;
     const c=O.spots.get(p); if(!c) return;
     const d=Math.hypot(p.x-c[0],p.y-c[1]);
-    oamHedef(p,c[0],c[1],d>110?_URG.KOS:_URG.JOG);
+    oamHedef(p,c[0],c[1],d>(O.torenTip==='free'?55:110)?_URG.KOS:_URG.JOG);   /* FAZ 52 */
   });
 }
 

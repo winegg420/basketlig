@@ -347,7 +347,7 @@ function serializeGameState(){
      sessizce kaybolacak TEK yer burasıydı. Artık olduğu gibi saklanır. */
   const pl=(G.ligTeams||[]).slice();
   return{
-    v:10,  /* FAZ 33: küresel lig şeması — divizyon anahtarı + takım adları (v9: USD ekonomi) */
+    v:11,  /* FAZ 52: arena modülleri (v10: küresel lig şeması · v9: USD ekonomi) */
     savedAt:new Date().toISOString(),
     coins:G.coins,wins:G.wins,losses:G.losses,points:G.points,chemistry:G.chemistry,winStreak:G.winStreak||0,careerMatches:G.careerMatches||0,careerWins:G.careerWins||0,careerLosses:G.careerLosses||0,clubRecords:G.clubRecords||{},
     team:G.team,
@@ -507,7 +507,33 @@ function migrateEconomyV4ToV5(d){
    eski sürüm kaydı kabul EDİLMEZ, temizlenir ve kullanıcı bilgilendirilir.
    Eski migrasyon fonksiyonları yerinde bırakıldı (silme değil düzenleme kuralı); v<9
    burada elendiği için artık çağrılmıyorlar. */
-const SAVE_VERSIONS=[10];
+const SAVE_VERSIONS=[10,11];
+/* ── FAZ 52: v10 → v11 · ARENA MODÜLLERİ ─────────────────────────────────────────────
+   Eski kayıtta arena TEK seviyeydi (`arena.s` 1-5). Migrasyon o seviyeyi KOLTUK
+   KAPASİTESİ modülüne taşır, diğer bütün modülleri Sv1'den başlatır. Oyuncu ne para ne
+   kapasite kaybeder: kapasite `ARENA_LVL` ile birebir aynı kalır ve yeni modüllerin
+   Sv1 bakımı 0 olduğu için haftalık gider de değişmez (koltuk Sv N'in bakımı eski
+   `ARENA_LVL[N-1].bk` ile aynıdır). Sürmekte olan inşaat yoktur. */
+function migrateArenaV10ToV11(d){
+  try{
+    if(!d) return;
+    if(!d.arena||typeof d.arena!=='object'){ d.v=11; return; }
+    const s=Math.max(1,Math.min(ARENA_LVL.length,Number(d.arena.s)||1));
+    const mods={};
+    ARENA_MOD.forEach(t=>{ mods[t.key]=(t.key==='koltuk')?s:1; });
+    /* Eski kayıtta modül alanı elle eklenmişse (ileri sürüm kaydı) korunur. */
+    if(d.arena.mods&&typeof d.arena.mods==='object'){
+      ARENA_MOD.forEach(t=>{ const v=Number(d.arena.mods[t.key]); if(Number.isFinite(v)) mods[t.key]=Math.max(1,Math.min(t.sv.length,v)); });
+    }
+    d.arena.mods=mods;
+    d.arena.insaat=d.arena.insaat||null;
+    const kol=ARENA_MOD.find(t=>t.key==='koltuk');
+    d.arena.s=mods.koltuk;
+    d.arena.kap=(kol&&kol.sv[mods.koltuk-1]&&kol.sv[mods.koltuk-1].v)||d.arena.kap||ARENA_LVL[0].kap;
+    d.arena.bk=Math.round(ARENA_MOD.reduce((sum,t)=>sum+((t.sv[(mods[t.key]||1)-1]||{}).bk||0),0));
+  }catch(e){}
+  d.v=11;
+}
 /* F7-17: v5 → v6 normalizasyonu. v5'ten sonra eklenen alanlar (rol/eğilim, playbook,
    izci ağı, draft, başkan hedefi, soyunma odası krizi) boşluklarını '||' varsayılanlarıyla
    kapatıyordu; artık sürüm damgası hangi kaydın neyi içerdiğini ayırt ediyor ve eksik
@@ -654,6 +680,7 @@ function _applyGameStateInner(d){
   if((d.v|0)<6) migrateV5ToV6(d);
   if((d.v|0)<7) migrateV6ToV7(d);
   if((d.v|0)<8) migrateV7ToV8(d);
+  if((d.v|0)<11) migrateArenaV10ToV11(d);   /* FAZ 52 */
   G.coins=d.coins??START_USD;
   G.wins=d.wins??0;
   G.careerMatches=Number(d.careerMatches)||0; /* Paket B: kariyer maç sayacı */
@@ -674,6 +701,7 @@ function _applyGameStateInner(d){
   G.coachMarket=Array.isArray(d.coachMarket)?d.coachMarket:[];
   G.ligTeams=Array.isArray(d.ligTeams)?d.ligTeams:[];
   G.arena=d.arena||G.arena;
+  try{ arenaSenkron(); }catch(e){}   /* FAZ 52: modül seviyeleri → kap/bk/s */
   G.youthFacility=d.youthFacility&&typeof d.youthFacility==='object'?d.youthFacility:{s:1};
   G.selectedColor=d.selectedColor||'#f97316';
   G.activeTrainings=Array.isArray(d.activeTrainings)?d.activeTrainings:[];

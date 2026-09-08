@@ -36,12 +36,18 @@ function recentUserForm(n){
     return w/last.length;
   }catch(e){ return null; }
 }
+/** FAZ 52: maç günü TOPLAM geliri (bilet + loca + yiyecek + mağaza + LED + otopark
+    − güvenlik cezası). Modüller Sv1 iken değer eski "bilet geliri" ile BİREBİR aynıdır,
+    bu yüzden bütün çağıranlar (haber satırı, bilanço, ekonomi denetimi) değişmeden çalışır.
+    Döküm `arenaGelirDokumu()`tedir — ekran ve denetim oradan okur. */
 function homeTicketIncome(){
-  const occ=arenaDolulukOrani();
-  const budgetMul=(Number(G.budgetPenalty)||0)>0?0.90:1; /* Faz 4.3: başkan bütçe kısıtı sezonu */
-  /* B5: zorluk gelir çarpanı (normal = 1). */
-  const zorGelir=(typeof difficultyCfg==='function')?(difficultyCfg().gelir||1):1;
-  return Math.round((G.arena&&G.arena.kap||ARENA_LVL[0].kap)*occ*biletFiyati()*budgetMul*zorGelir);
+  try{ return arenaGelirDokumu().toplam; }
+  catch(e){
+    const occ=arenaDolulukOrani();
+    const budgetMul=(Number(G.budgetPenalty)||0)>0?0.90:1;
+    const zorGelir=(typeof difficultyCfg==='function')?(difficultyCfg().gelir||1):1;
+    return Math.round((G.arena&&G.arena.kap||ARENA_LVL[0].kap)*occ*biletFiyati()*budgetMul*zorGelir);
+  }
 }
 /** Madde 24: bilet fiyatı çarpanı — kullanıcı fiyatı belirler; yüksek fiyat gelir/bilet ↑ ama doluluk ↓. */
 function ticketPriceLevel(){ const v=Number(G.ticketPrice); return Number.isFinite(v)?Math.max(0,Math.min(4,v)):2; }
@@ -70,19 +76,176 @@ function arenaDolulukOrani(){
      kimsenin gelmediği bir sezon mümkün olmuyor, kötü yönetim cezasız kalıyordu
      (ölçüldü: pasif kulüp 7 sezon yaşıyor, bot iflası %8 — hedef 2-4 sezon / %10-25).
      Yeni bant: sonuncu ~%49 · orta ~%67 · şampiyon ~%92. */
-  const formTabanli=(0.42+wr*0.50)*ticketDemandFactor();
+  /* FAZ 52: arena modülleri (dev ekran + konfor + otopark erişimi) doluluğa katkı yapar;
+     hepsi Sv1 iken katkı 0 ve formül FAZ 25 ile birebir aynıdır. */
+  const formTabanli=(0.42+wr*0.50)*ticketDemandFactor()+arenaCazibe();
   const kap=(G.arena&&G.arena.kap)||5000;
   let taraftarTavani=1;
   try{ taraftarTavani=(getFanBaseStats().count*TARAFTAR_KATSAYI)/Math.max(1,kap); }catch(e){}
   /* FAZ 24 §5: %20 tabanı YALNIZ form dalına uygulanır. Eskiden dışta durduğu için
      taraftar tavanını eziyordu: 800 taraftarlı kulüp 30.000 kişilik arenada %20 = 6.000
      seyirci topluyordu. Tavan en SONDA uygulanır — seyirci taraftarı hiçbir koşulda aşamaz. */
-  const formDali=Math.max(0.20,Math.min(0.98,formTabanli));
+  let formDali=Math.max(0.20,Math.min(0.98,formTabanli));
+  /* FAZ 52: gişe kaybı (kuyruk/kaçak giriş) ve güvenlik eksiği doluluğu düşürür.
+     İkisi de Sv1 + küçük salonda 0'dır — başlangıç ekonomisi değişmez. */
+  try{ formDali*=(1-arenaGiseKaybi())*(1-Math.min(0.35,arenaGuvenlikEksigi()*0.04)); }catch(e){}
   return Math.max(0,Math.min(formDali,taraftarTavani));
+}
+
+/* ── FAZ 52: ARENA MODÜL EKONOMİSİ ───────────────────────────────────────────────────
+   Modül tablosu `ARENA_MOD` (js/roster-gen.js). Buradaki fonksiyonlar TEK KAYNAKTIR:
+   ekran (renderArena), gelir hesabı (homeTicketIncome), haftalık bakım (weeklyWageBill)
+   ve denetim araçları hepsi buradan okur. Ham dolar sabiti YOKTUR — tüm değerler
+   ARENA_MOD tablosundan gelir (FAZ 25 dersi: "eşiği tablodan türet, elle yazma"). */
+/** Modül tanımı (yoksa null). */
+function arenaModTanim(key){
+  try{ return ARENA_MOD.find(m=>m.key===key)||null; }catch(e){ return null; }
+}
+/** Bir modülün güncel seviyesi (1-5). Eski kayıtta modül yoksa 1. */
+function arenaModSv(key){
+  try{
+    const t=arenaModTanim(key); if(!t) return 1;
+    const mods=(G.arena&&G.arena.mods)||null;
+    const v=mods?Number(mods[key]):NaN;
+    return Math.max(1,Math.min(t.sv.length,Number.isFinite(v)?v:1));
+  }catch(e){ return 1; }
+}
+/** Modülün seviye kaydı ({m,bk,v,d,tol}). */
+function arenaModVeri(key,sv){
+  try{
+    const t=arenaModTanim(key); if(!t) return null;
+    const i=Math.max(0,Math.min(t.sv.length-1,(sv!=null?sv:arenaModSv(key))-1));
+    return t.sv[i];
+  }catch(e){ return null; }
+}
+/** Toplam arena gücü (tüm modül seviyelerinin toplamı) ve tavanı. */
+function arenaGucu(){
+  try{
+    let s=0,mx=0;
+    ARENA_MOD.forEach(t=>{ s+=arenaModSv(t.key); mx+=t.sv.length; });
+    return {puan:s,max:mx};
+  }catch(e){ return {puan:0,max:0}; }
+}
+/** Haftalık bakım = modüllerin bakım toplamı (tek kaynak). */
+function arenaHaftalikBakim(){
+  try{ return Math.round(ARENA_MOD.reduce((s,t)=>s+((arenaModVeri(t.key)||{}).bk||0),0)); }
+  catch(e){ return (G.arena&&Number(G.arena.bk))||0; }
+}
+/** Modül seviyeleri → G.arena.kap / bk / s alanları. Eski kod (bilet geliri, lig kartı,
+    işletme gideri, kayıt) bu üç alanı okur; modüller değiştikçe TEK YERDEN eşitlenir. */
+function arenaSenkron(){
+  try{
+    if(!G.arena) return;
+    if(!G.arena.mods) G.arena.mods={};
+    ARENA_MOD.forEach(t=>{ if(!Number.isFinite(Number(G.arena.mods[t.key]))) G.arena.mods[t.key]=1; });
+    const ks=arenaModSv('koltuk');
+    G.arena.s=ks;
+    G.arena.kap=(arenaModVeri('koltuk',ks)||{}).v||ARENA_LVL[0].kap;
+    G.arena.bk=arenaHaftalikBakim();
+  }catch(e){}
+}
+/** Bir modülün hedef seviyesi için önkoşul engeli — null = engel yok, metin = sebep. */
+function arenaOnkosulEngeli(key,hedef){
+  try{
+    const t=arenaModTanim(key); if(!t) return 'Bilinmeyen modül';
+    if(t.onk){
+      for(const k in t.onk){
+        if(arenaModSv(k)<t.onk[k]){
+          const o=arenaModTanim(k);
+          return `Önce ${o?o.ad:k} Sv ${t.onk[k]} gerekli`;
+        }
+      }
+    }
+    /* Güvenlik zorunluluğu: koltuk kapasitesi büyümeden önce güvenlik seviyesi yetmeli. */
+    if(key==='koltuk'){
+      const kap=(arenaModVeri('koltuk',hedef)||{}).v||0;
+      const ger=arenaGuvenlikGerek(kap);
+      if(arenaModSv('guvenlik')<ger) return `Önce Güvenlik Sv ${ger} gerekli`;
+    }
+    return null;
+  }catch(e){ return null; }
+}
+/** Bilet fiyatı toleransı: dev ekran + konfor pahalı kademedeki kaçışı azaltır. */
+function arenaFiyatToleransi(){
+  try{
+    const a=(arenaModVeri('ekran')||{}).tol||0, b=(arenaModVeri('konfor')||{}).tol||0;
+    return Math.max(0,Math.min(0.75,a*0.5+b*0.5));
+  }catch(e){ return 0; }
+}
+/** Doluluk katkısı (dev ekran + konfor + otopark erişimi) — puan olarak eklenir. */
+function arenaCazibe(){
+  try{
+    return ((arenaModVeri('ekran')||{}).d||0)+((arenaModVeri('konfor')||{}).d||0)+((arenaModVeri('otopark')||{}).d||0);
+  }catch(e){ return 0; }
+}
+/** Gişe kaybı oranı — HAM kayıp kapasiteyle büyür, modül seviyesi onu geri kazandırır.
+    2.000 kişilik salonda 0; 12.000'de %9,3; 20.000'de %12 (modül Sv1 iken). */
+function arenaGiseKaybi(){
+  try{
+    const kap=(G.arena&&Number(G.arena.kap))||ARENA_LVL[0].kap;
+    const ham=Math.max(0,Math.min(0.5,(kap-5000)/Math.max(1,kap)))*0.16;
+    const v=(arenaModVeri('gise')||{}).v||0;
+    return Math.max(0,ham*(1-v));
+  }catch(e){ return 0; }
+}
+/** Güvenlik eksiği (kademe). 0 = kural sağlanıyor. */
+function arenaGuvenlikEksigi(){
+  try{
+    const kap=(G.arena&&Number(G.arena.kap))||ARENA_LVL[0].kap;
+    return Math.max(0,arenaGuvenlikGerek(kap)-arenaModSv('guvenlik'));
+  }catch(e){ return 0; }
+}
+/** Mağaza başarı çarpanı: son 5 maç + sezon oranı + lig sırası. */
+function arenaBasariCarpani(){
+  try{
+    const form=recentUserForm(5);
+    const played=(G.wins+G.losses)||0;
+    const seasonWr=played?G.wins/Math.max(1,played):0.5;
+    const wr=form!=null?form*0.7+seasonWr*0.3:seasonWr;
+    let c=0.65+0.9*wr;
+    try{ const s=(typeof userLigSirasi==='function')?userLigSirasi():null; if(s!=null&&s<=3) c+=0.25; }catch(e){}
+    return Math.max(0.6,Math.min(1.8,c));
+  }catch(e){ return 1; }
+}
+/** LED panolarının divizyon çarpanı (Divizyon 1 = ×3, en alt = ×1). */
+function arenaDivizyonKat(){
+  try{
+    const key=(G.team&&G.team.tblKey)||'tbl';
+    const dv=(typeof divizyonNo==='function')?divizyonNo(key):null;
+    const dmax=(typeof DIV_SAYISI!=='undefined'?DIV_SAYISI:3);
+    if(dv==null) return 1;
+    return 1+2*Math.max(0,(dmax-dv)/Math.max(1,dmax-1));
+  }catch(e){ return 1; }
+}
+/** MAÇ BAŞI GELİR DÖKÜMÜ (brif §5) — tek kaynak. `homeTicketIncome` bunun toplamıdır. */
+function arenaGelirDokumu(){
+  const kap=(G.arena&&Number(G.arena.kap))||ARENA_LVL[0].kap;
+  const occ=arenaDolulukOrani();
+  const fiyat=biletFiyati();
+  const seyirci=Math.round(kap*occ);
+  const budgetMul=(Number(G.budgetPenalty)||0)>0?0.90:1;
+  const zorGelir=(typeof difficultyCfg==='function')?(difficultyCfg().gelir||1):1;
+  const kat=budgetMul*zorGelir;
+  /* Bilet: seyirci YUVARLANMADAN hesaplanır — FAZ 25 çapası (kap × doluluk × fiyat) birebir korunur. */
+  const bilet=Math.round(kap*occ*fiyat*kat);
+  const locaKoltuk=Math.round(kap*((arenaModVeri('loca')||{}).v||0));
+  const loca=Math.round(locaKoltuk*fiyat*ARENA_LOCA_KAT*Math.min(1,occ+0.15)*kat);
+  const yiyecek=Math.round(seyirci*((arenaModVeri('yiyecek')||{}).v||0)*kat);
+  let taraftar=0; try{ taraftar=getFanBaseStats().count||0; }catch(e){}
+  const magaza=Math.round(taraftar*((arenaModVeri('magaza')||{}).v||0)*arenaBasariCarpani()*kat);
+  const sponsor=Math.round(((arenaModVeri('led')||{}).v||0)*arenaDivizyonKat()*kat);
+  const otopark=Math.round(seyirci*((arenaModVeri('otopark')||{}).v||0)*kat);
+  const ceza=Math.round(arenaGuvenlikEksigi()*ARENA_GUV_CEZA);
+  const toplam=Math.max(0,bilet+loca+yiyecek+magaza+sponsor+otopark-ceza);
+  return {kap,occ,seyirci,fiyat,locaKoltuk,bilet,loca,yiyecek,magaza,sponsor,otopark,ceza,toplam,taraftar};
 }
 function ticketDemandFactor(){
   const lvl=ticketPriceLevel();
-  return [1.15,1.07,1.0,0.88,0.72][lvl]; /* pahalı → doluluk düşer */
+  const t=[1.15,1.07,1.0,0.88,0.72][lvl]; /* pahalı → doluluk düşer */
+  /* FAZ 52: dev ekran + konfor "pahalı" kademelerdeki kaçışı azaltır (tolerans).
+     Ucuz kademelere DOKUNMAZ; modüller Sv1 iken tolerans 0 ve değer eskisiyle aynıdır. */
+  if(t>=1) return t;
+  try{ return 1-(1-t)*(1-arenaFiyatToleransi()); }catch(e){ return t; }
 }
 
 /* ── FAZ 25 USD §2.5: SPONSOR GELİRİ ──
@@ -149,7 +312,9 @@ function weeklyWageBill(){
   const oy=Math.round((G.players||[]).reduce((s,p)=>s+(Number(p.maas)||0),0));
   const ko=Math.round((G.coaches||[]).reduce((s,c)=>s+(Number(c.maas)||0),0));
   const iz=Math.round((G.scouts||[]).reduce((s,c)=>s+(Number(c.maas)||0),0)); /* Faz 5.1 */
-  const ar=Math.round(((G.arena&&Number(G.arena.bk))||0)*enf);
+  /* FAZ 52: bakım artık modül toplamıdır (`arenaHaftalikBakim`); `G.arena.bk` onun
+     eşitlenmiş kopyasıdır (eski kayıt/deponun okuduğu alan). */
+  const ar=Math.round((arenaHaftalikBakim()||((G.arena&&Number(G.arena.bk))||0))*enf);
   const ay=Math.round(ecoRound(14)*Math.max(1,((G.youthFacility&&Number(G.youthFacility.s))||1))*enf);
   /* FAZ 25 USD: KULÜP İŞLETME GİDERİ — yeni kalem.
      Ölçüldü: lig 20 takım · 19 tur · sezon 30 gün ⇒ ekonomi haftası başına 4,43 maç,
@@ -363,6 +528,9 @@ function haftalikGelirBeklentisi(){
 
 function processEconomyWeeks(){
   if(!G.team) return;
+  /* FAZ 52: oyun günü ilerledi — süresi dolan arena inşaatı burada tamamlanır
+     (gameDay yalnız maç sonrası artar ve her iki yol da bu fonksiyonu çağırır). */
+  try{ if(typeof processArenaInsaat==='function') processArenaInsaat(); }catch(e){}
   if(G.lastEcoDay==null) G.lastEcoDay=1;
   if(G.gameDay<G.lastEcoDay) G.lastEcoDay=1; /* yeni sezonda gün sıfırlanır */
   let guard=0;

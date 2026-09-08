@@ -8929,3 +8929,189 @@ MEVCUT eski SW'sinde YOK, o yüzden kendiliğinden düzelmiyor. Bir kere temizle
 
 Not: bu eklenti tarayıcısında Vercel domain'inde kurduğum test kariyeri ('Vercel') temizlendi;
 kullanıcının GERÇEK kaydı kendi tarayıcısında, dokunulmadı. GitHub Pages'teki dfdf kaydı da olduğu gibi.
+
+## FAZ 52 · ARENA MODÜLER GELİŞTİRME (FAZ 1) + CANLI MAÇ DÜZELTMELERİ — 08.09.2026
+
+Kullanıcı brifi iki iş içeriyordu: (1) arena sayfasını tek boyutlu "daha büyük salon al"
+listesinden **modüler geliştirme sistemine** çevirmek (yalnız ekonomi + arayüz; maç
+motoruna dokunmadan), (2) canlı maçta beş somut kusuru düzeltmek.
+
+### A · ARENA MODÜLLERİ
+
+**Tasarımın taşıyıcı kararı: SEVİYE 1 = BUGÜNKÜ DAVRANIŞ.** Yeni modüllerin 1. seviyesi
+hiçbir gelir/doluluk etkisi taşımaz ve bakımı $0'dır; koltuk modülünün 1. seviyesi eski
+`ARENA_LVL[0]` ile birebir aynıdır. Sebep: FAZ 25 USD ekonomi çapaları (kasa $120.000 ·
+maç geliri ≈ $17.400 · haftalık denge ±$2.000 · bakım $3.000) ve `season-loop` dengesi
+`ekonomi-check` ile korunuyor; modüller gelir eklerse yeni kariyerin ekonomisi kayardı.
+Brifin "yiyecek Sv1 = $1,5" tarzı önerileri bu yüzden **bir kademe yukarı** taşındı —
+gelir modülü YATIRIM YAPILDIĞINDA başlar. Ölçüldü: `ekonomi-check` 37/37 · `arena-check`
+G bölümü "maç geliri saf bilet geliriyle birebir ($17.420 = $17.420)".
+
+#### Modül tablosu (`ARENA_MOD`, js/roster-gen.js · 10 modül × 5 seviye = arena gücü /50)
+
+| Modül | Sv1 → Sv5 etki | Bedel (Sv2→Sv5) | Bakım (Sv2→Sv5) | Gün | Önkoşul |
+|---|---|---|---|---|---|
+| 🪑 Koltuk Kapasitesi | 2.000 → 20.000 kişi | 250K · 700K · 2M · 5M | 6.0K · 10,5K · 18K · 30K | 5-7 | Sv3+ için Güvenlik Sv2/3/4 |
+| 🥂 Loca / VIP | yok → kapasitenin %2,5'i (bilet ×8) | 70K · 200K · 500K · 1,2M | 1,0K · 2,4K · 5,2K · 10K | 4-7 | Koltuk Sv2 |
+| 🍿 Yiyecek-İçecek | yok → $6,0 / kişi | 90K · 240K · 550K · 1,2M | 1,4K · 3,2K · 6,5K · 12K | 3-5 | — |
+| 🛍️ Kulüp Mağazası | yok → $0,90 / taraftar × başarı (0,6-1,8) | 80K · 200K · 480K · 1M | 1,2K · 2,6K · 5,4K · 10K | 4-7 | — |
+| 📺 LED Panolar | yok → $9.000 / maç × divizyon (Div1 ×3) | 60K · 160K · 400K · 900K | 0,9K · 2,0K · 4,2K · 8K | 3-6 | — |
+| 🅿️ Otopark | yok → $2,0 / kişi + %2,8 erişim | 50K · 130K · 300K · 650K | 0,6K · 1,3K · 2,6K · 5K | 3-6 | — |
+| 🔊 Dev Ekran + Ses | yok → doluluk +%7,5 · fiyat toleransı 0,60 | 70K · 180K · 420K · 900K | 1,0K · 2,2K · 4,4K · 8,5K | 4-7 | — |
+| 🛋️ Konfor | yok → doluluk +%6,8 · tolerans 0,55 | 60K · 150K · 360K · 800K | 0,9K · 2,0K · 4,0K · 7,8K | 3-6 | — |
+| 🎫 Gişe ve Turnike | yok → kaybın %100'ünü önler | 45K · 110K · 260K · 560K | 0,5K · 1,1K · 2,3K · 4,4K | 3-5 | Koltuk Sv3 |
+| 🛡️ Güvenlik | Sv1 → Sv5 | 40K · 100K · 240K · 520K | 0,8K · 1,8K · 3,6K · 7K | 3-5 | — |
+
+Denge kuralları (brif §4) nasıl karşılandı:
+1. **Her kademe bakımı artırır** — `arenaHaftalikBakim()` modül toplamıdır, `G.arena.bk`
+   onun eşitlenmiş kopyası (`arenaSenkron()`); `weeklyWageBill` oradan okur.
+2. **Azalan verim** — bedel kademe başına ~2,4×, etki ~1,5× büyür.
+3. **Taraftar tavanı** — `arenaDolulukOrani()`nin taraftar tavanı yerinde; ölçüldü:
+   20.000'lik arenada seyirci 2.755 ≤ taraftar 2.755.
+4. **İnşaat süresi** — bedel anında ödenir, seviye `G.arena.insaat={key,hedef,bas,bitis}`
+   dolunca açılır (`processArenaInsaat`, `processEconomyWeeks` başında). Aynı anda TEK inşaat.
+5. **Önkoşullar** — loca ← koltuk Sv2 · gişe ← koltuk Sv3 · koltuk Sv3/4/5 ← güvenlik
+   Sv2/3/4 (`arenaGuvenlikGerek(kap)` merdiveni 1/2/3/4).
+6. **Etkiyi göster** — her kartta "Bu seviye: yok → $1.500 / maç" karşılaştırması.
+7. **Ekonomi ölçeği** — tablo doğrudan dolardır (arena tablosu FAZ 25'ten beri
+   `ecoRound`'dan TÜRETİLMEZ); kodda ham `$`+sayı yok, hepsi `fmtPara`.
+
+#### Gelir hesabı — tek yerde (`arenaGelirDokumu`, js/economy.js)
+```
+bilet    = kapasite × doluluk × bilet fiyatı          (FAZ 25 çapası, yuvarlanmadan)
+loca     = loca koltuğu × bilet × 8 × min(1, doluluk+0,15)
+yiyecek  = seyirci × kişi başı
+mağaza   = taraftar × oran × başarı çarpanı (son 5 maç + sezon + lig sırası)
+sponsor  = LED sabiti × divizyon çarpanı (Div1 ×3 … en alt ×1)
+otopark  = seyirci × oran
+− güvenlik cezası ($2.500 × eksik kademe)
+doluluk  = (0,42 + galibiyet×0,50) × fiyat talebi(+tolerans) + cazibe(ekran+konfor+otopark)
+           sonra × (1 − gişe kaybı) × (1 − güvenlik cezası), taraftar tavanıyla kesilir
+gişe kaybı = clamp((kap−5.000)/kap, 0, 0,5) × 0,16 × (1 − modül önleme)
+```
+`homeTicketIncome()` artık bu dökümün TOPLAMIDIR — bütün eski çağıranlar (haber satırı,
+bilanço, ekonomi denetimi, maç sonu) değişmeden çalışır. `arena-check` H bölümü 27 modül
+birleşiminde "döküm toplamı = homeTicketIncome()" eşitliğini sınar.
+
+#### Arayüz
+Üstte arena görseli + **arena gücü** (10/50) ve genel bar (eski "Seviye 1/5" kalktı),
+altında modül kartları ızgarası (masaüstü 2 sütun · mobil 1), sağda dökümlü GELİR
+TAHMİNİ paneli. İnşaat sürerken üstte geri sayım kartı. Her kart: ikon · ad · Sv barı ·
+şu anki etki · "Bu seviye: X → Y" · maliyet · **haftalık bakım artışı** · inşaat süresi ·
+GELİŞTİR (kilitliyse gri + sebep: "Önce Güvenlik Sv 2 gerekli" / "Bakiye yetersiz" /
+"Başka bir inşaat sürüyor").
+
+#### Kayıt uyumu
+`migrateArenaV10ToV11` (SAVE_VERSIONS `[10,11]`): eski `arena.s` → koltuk modülü, diğer
+modüller Sv1. Ölçüldü (arena-check J): beş seviyenin hepsinde kapasite ve haftalık bakım
+BİREBİR korunuyor, arena adı duruyor, bekleyen inşaat yok — oyuncu ne para ne kapasite
+kaybediyor.
+
+#### Denge testi — `tools/arena-denge.js` (YENİ)
+2 sezon (17 ekonomi haftası), aynı kadro/form, tek fark yatırım:
+
+| | Yatırım yok | Yatırım var |
+|---|---|---|
+| arena gücü | 10/50 | 15/50 |
+| maç başı gelir | $17.802 | **$24.883 (1,40×)** |
+| haftalık bakım | $3.000 | $7.400 |
+| haftalık net | $10.873 | $23.022 |
+| 2 sezon sonu kasa | $293.492 | $84.432 (yatırıma gitti) |
+
+Alınan modüller: mağaza Sv2 · LED Sv2 · otopark Sv2 · konfor Sv2 · güvenlik Sv2.
+Brif §4.3 kapısı: küçük kitle (3.529 taraftar) + Sv5 koltuk → doluluk %17,6 · bakım
+$37.000 · **haftalık net −$26.635** — dev arena gerçekten iflas ettiriyor.
+
+### B · CANLI MAÇ DÜZELTMELERİ (kullanıcı listesi)
+
+1. **Aynı renk** — deplasman rengi SABİT `#16a34a` idi ve kurulum ekranında seçilebilen
+   renkler arasında yeşil (`#22c55e`) ve turkuaz (`#14b8a6`) vardı; o rengi seçen oyuncu
+   iki takımı ayırt edemiyordu. Artık `_ziRenk(evRengi)`: sekiz adaydan RGB küpünde EN
+   UZAK olanı seçilir. Hangi ev rengi seçilirse seçilsin jeton kümeleri ayrık.
+2. **Geri saha pası** — ölçüldü (`iz-kaydet --secs=400` + `scratchpad/geri.js`):
+   162 pasın 2'si (%1,2) ön sahadan arka sahaya gidiyordu, ikisi de ölü top sonrası
+   geçiş dalında. İki kapı eklendi: `oamArkaSaha()` (sahne-oam, `oamPasOlur` içinde) ve
+   `_pasHedefSinirla` aday süzgeci. Geriye pas (potadan uzaklaşan) zaten %1,4 idi ve
+   çoğu meşru (hücum ribaundu sonrası açma, set çevirme) — ona dokunulmadı.
+3. **Perde / devrilme** — OAM'da perde YALNIZ motorun `pnr`/`handoff` şemasında
+   kuruluyordu; şemasız set pozisyonlarının %40'ında da kurulur oldu, devrilme (roll)
+   payı 0,60 → 0,82, ve **devrilene pas** eklendi (perde evre 3 + boşsa top bir kez
+   perdeciye gider, zincir oradan şutöre devam eder). Kararlar SAHNE PRNG'sinden (`_sr`)
+   — maç sonucu ve `band.js` hash'i etkilenmez. ⚠ ÖNEMLİ NOT: FAZ 50'den beri şutlu
+   pozisyonlar GERÇEK SportVU kaydından oynatılıyor (`js/sahne-klip.js`); ekranda
+   görülen perdelerin çoğu zaten gerçek maçtan gelir. Bu değişiklik klip bulunmayan
+   pozisyonlarda (putback, veri dışı durumlar) ve ölü top sonrası OAM anlarında işler.
+4. **Serbest atışta sektirme YOK** (kullanıcı kararı) — `_ftSektir` artık topu doğrudan
+   ele sabitler. `sunum-check` F25-4 kapısı da niyetine göre yeniden yazıldı ("1-3 sekme"
+   → "sektirme 0").
+5. **Serbest atış yerleşimi** — koşu eşiği 110 → 55 px (hem `_setFtFormation` hem OAM
+   tören dalı): kulvarına 2-3 m uzaktaki oyuncu artık yürümüyor, koşuyor. Dizilim kapısı
+   `_ftYerlesti()` tek kaynağa alındı ve toleransı 20 → 8,5 px yapıldı (F14-7'nin ölçtüğü
+   0,30 m ölçütünden GEVŞEK olmamalı); AND-1 dalı da aynı kapıdan geçiyor (eskiden
+   yalnız top şartına bakıyordu).
+6. **Ölü top akış hızı** — `_ftWaitSec` tavanı 9,5 → 4,6 sn, atışlar arası 2,35 → 1,55 sn,
+   erteleme tavanı 2,5 → 3,0 sn. En kötü tören 12,0 → 7,6 sn; maç saati dururken ekranda
+   geçen duvar saati üçte bir kısaldı.
+
+### C · ÖLÇÜM (hepsi bu turda koşuldu)
+
+**Maç motoru DEĞİŞMEDİ (brif §8):** `sim-node --n=500 --seed=42` → 93.1 - 87.9 · olay/maç
+268 · determinizm EVET; `band.js` hash **c19928475859c7ff** (FAZ 43 referansı, aynı);
+`measure.js` hash **51fa02b6e0a8194b** (aynı). Bütün sahne kararları `_sr()`/`_srand()`
+ile alındı (B-5 kuralı).
+
+| Kapı | Sonuç |
+|---|---|
+| `ekonomi-check` | ✓ 37/37 |
+| `arena-check` | ✓ 33/33 (F-J bölümleri YENİ) |
+| `arena-denge` | ✓ 7/7 (YENİ araç) |
+| `schema-check` | ✓ 21/21 |
+| `bicim-check` | ✓ 32/32 |
+| `bozukdeger-check` | ✓ 2 sezon · TR+EN · 11 sayfa + 4 modal · 0 hata |
+| `i18n-scan` | ✓ A/B/C/D sınıfları 0 · canlı anlatım Türkçe %2,4 |
+| `mobile-check` | ✓ 18/18 |
+| `visual-check` | ✓ masaüstü + mobil · 0 konsol hatası |
+| `season-loop --runs=3` | ✓ 6/6 |
+| `sim-node` / `band` / `measure` | ✓ hash değişmedi |
+| `surum-check` | ✓ (sürüm 95) |
+
+**İz kaydı (400 sn, aynı tohum) — öncesi → sonrası:**
+top ışınlanması 1 → **0** · en yüksek top hızı 22,2 → 20,9 m/sn · en yüksek kare
+sıçraması 25,3 → 22,1 m/sn · donma (<0,5 m/sn) %23,7 → **%22,5** · ortalama oyuncu hızı
+1,69 → 1,72 m/sn (bant 1,8-2,6) · sokma/serbest atış epizotlarının hepsi ✓ (öncesinde
+15,7 m'lik bir ilk pas vardı).
+
+**`hareket-bant-check` (gerçek SportVU ile L1) — öncesi → sonrası:**
+pas/pozisyon 0,519 → **0,384** · şut anında duran 1,127 → **0,865** (ort 3,09 → 2,57 ↔
+gerçek 1,66) · yayılım x 0,324 → 0,234 · yayılım y 0,345 → 0,310. Üç kapı (pas/poz,
+tutma süresi, şut anında duran) İKİ SÜRÜMDE DE eşiğin dışında — gerileme değil, açık
+kalan borç; hepsi iyileşti.
+
+**`sahne-check` — HEAD → yeni:** held %62,5 → %63,9 · sahipsiz %1,16 → %1,02 · orta
+çizgi geçişi %72 → %80 · serbest atışta yerinde 10,0 → 9,86 (kapı ≥9) · aynı anda koşan
+3,01 → 2,94 (kapı 3-5; HEAD zaten sınırdaydı, %2 fark).
+
+**`sunum-check` — HEAD → yeni (aynı araç, ayrı `git worktree` kopyasında ölçüldü):**
+F14-7 9,5 → **9,4** ✓ (tören 12,0 → 7,6 sn'ye inerken korundu) · F25-4 kapısı niyetine
+göre yeniden yazıldı ve ✓ (sektirme 0) · F25-1 HEAD ✗ → dalgalı · M9 dalgalı (örneklem
+14/40, aracın kendi alt sınırının altında) · **F25-2 HEAD 0 → 3 donma** (hepsi tam 1,502
+sn, hedefinde, 1,5-2,3 px/sn): perde payının artmasının bedeli; `donuk` fazı şut anına
+bağlanarak 5'ten 3'e indirildi, kullanıcı "perde artsın" dediği için geri alınmadı ve
+burada RAPORLANIYOR. · **F25-6a/6b HEAD'de de 0 damga** — `S._perde`/`S._postup` yalnız
+OAM'ın şut dalında yazılır, o dal FAZ 50'den beri gerçek klip oynatıcıya devredilmiştir;
+bu iki kapı bugün perdenin varlığını ölçemiyor (gerileme DEĞİL).
+
+### D · OYUNCU NE GÖRECEK
+
+Arena sayfasını açan oyuncu artık dört kademeli bir alışveriş listesi değil, **on modüllü
+bir tesis** görüyor: üstte "Arena gücü 10 / 50" ve dolmayı bekleyen bir bar, altında her
+biri kendi seviye barı, şu anki etkisi, "Bu seviye: yok → $1.500 / maç" karşılaştırması,
+maliyeti, **haftalık bakım artışı** ve inşaat süresiyle duran kartlar; sağda ise maç
+gelirinin nereden geldiğini kalem kalem söyleyen bir döküm. $120.000 kasayla hiçbirini
+birden alamayacağı için ilk kararı şudur: **ucuz ve hemen getiren bir gelir modülünü mü
+(otopark $50.000 / LED $60.000 / konfor $60.000), yoksa bütün diğer gelirlerin tabanı olan
+koltuk kapasitesini mi ($250.000, üstelik önce Güvenlik Sv2 şartı) büyütmek?** Kapasiteyi
+seçerse taraftar kitlesi yetişene kadar boş tribüne bakacak ve haftalık bakım iki katına
+çıkacak; küçük modülleri seçerse büyüme yavaş ama güvenli olacak. Ölçüldü: iki sezonda
+yatırım yapan kulüp maç başına $17.802 yerine $24.883 kazanıyor, karşılığında haftalık
+bakımı $3.000'den $7.400'e çıkıyor ve kasası yatırıma gidiyor.

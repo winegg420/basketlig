@@ -13,6 +13,81 @@ const ARENA_LVL=[
   {s:3,isim:'Büyük Arena', kap:7000, m:700000,  bk:10500},
   {s:4,isim:'Dev Arena',   kap:12000,m:2000000, bk:18000},
   {s:5,isim:'Mega Arena',  kap:20000,m:5000000, bk:30000}];
+/* ── FAZ 52: ARENA MODÜLER GELİŞTİRME ────────────────────────────────────────────────
+   Arena eskiden tek boyutluydu (yalnız "daha büyük salon al"). Artık arenanın her
+   parçası ayrı bir MODÜL: kendi seviyesi (1-5), tek seferlik bedeli, HAFTALIK BAKIM
+   artışı, inşaat süresi ve önkoşulu vardır.
+
+   ⚠ TASARIM KURALI — SEVİYE 1 = BUGÜNKÜ DAVRANIŞ.
+   Yeni modüllerin 1. seviyesi HİÇBİR gelir/doluluk etkisi taşımaz ve bakımı 0'dır;
+   koltuk modülünün 1. seviyesi de eski `ARENA_LVL[0]` ile birebir aynıdır. Böylece
+   yeni kariyerin ekonomisi (kasa, bilet geliri, haftalık denge) FAZ 25 USD çapalarıyla
+   BİREBİR korunur ve `ekonomi-check` / `season-loop` kapıları kaymaz. Brifin "Sv1 $1,5
+   yiyecek geliri" tarzı önerileri bu yüzden bir kademe yukarı taşındı: gelir modülü
+   yatırım yapıldığında başlar.
+
+   Azalan verim: bedel kademe başına ~2,4× artarken etki ~1,5× artar.
+   Bakım: her kademe haftalık gideri büyütür — sınırsız büyüme cezasızlık değildir. */
+const ARENA_LOCA_KAT=8;          /* loca bileti = normal bilet × bu kat */
+const ARENA_GUV_CEZA=2500;       /* güvenlik seviyesi eksikse maç başına ceza (USD/eksik kademe) */
+const ARENA_MOD=[
+  {key:'koltuk',ikon:'🪑',ad:'Koltuk Kapasitesi',olc:'Kapasite',
+   aciklama:'Salonun kaç kişi aldığı. Diğer bütün gelirlerin tabanı.',
+   gun:[0,5,6,7,7],
+   sv:[{m:0,bk:3000,v:2000},{m:250000,bk:6000,v:4000},{m:700000,bk:10500,v:7000},
+       {m:2000000,bk:18000,v:12000},{m:5000000,bk:30000,v:20000}]},
+  {key:'loca',ikon:'🥂',ad:'Loca / VIP',olc:'Loca koltuğu',
+   aciklama:'Loca bileti normal biletin '+ARENA_LOCA_KAT+' katıdır. Kapasitenin küçük bir yüzdesi.',
+   gun:[0,4,5,6,7],onk:{koltuk:2},
+   sv:[{m:0,bk:0,v:0},{m:70000,bk:1000,v:0.005},{m:200000,bk:2400,v:0.010},
+       {m:500000,bk:5200,v:0.016},{m:1200000,bk:10000,v:0.025}]},
+  {key:'yiyecek',ikon:'🍿',ad:'Yiyecek-İçecek',olc:'Kişi başı harcama',
+   aciklama:'Maç geliri = seyirci × kişi başı harcama.',
+   gun:[0,3,3,4,5],
+   sv:[{m:0,bk:0,v:0},{m:90000,bk:1400,v:1.5},{m:240000,bk:3200,v:3.0},
+       {m:550000,bk:6500,v:4.5},{m:1200000,bk:12000,v:6.0}]},
+  {key:'magaza',ikon:'🛍️',ad:'Kulüp Mağazası',olc:'Taraftar başına',
+   aciklama:'Gelir taraftar sayısıyla ve BAŞARIYLA büyür — şampiyonlukta patlar, düşme hattında erir.',
+   gun:[0,4,5,6,7],
+   sv:[{m:0,bk:0,v:0},{m:80000,bk:1200,v:0.20},{m:200000,bk:2600,v:0.38},
+       {m:480000,bk:5400,v:0.60},{m:1000000,bk:10000,v:0.90}]},
+  {key:'led',ikon:'📺',ad:'LED Reklam Panoları',olc:'Maç başı sponsor',
+   aciklama:'Aynı pano üst divizyonda kat kat değerlidir (Divizyon 1 = ×3).',
+   gun:[0,3,4,5,6],
+   sv:[{m:0,bk:0,v:0},{m:60000,bk:900,v:1500},{m:160000,bk:2000,v:3200},
+       {m:400000,bk:4200,v:5500},{m:900000,bk:8000,v:9000}]},
+  {key:'otopark',ikon:'🅿️',ad:'Otopark',olc:'Seyirci başına',
+   aciklama:'Maç başı ek gelir + erişim: kolay ulaşılan salon daha çok dolar.',
+   gun:[0,3,4,5,6],
+   sv:[{m:0,bk:0,v:0,d:0},{m:50000,bk:600,v:0.5,d:0.005},{m:130000,bk:1300,v:0.9,d:0.010},
+       {m:300000,bk:2600,v:1.4,d:0.018},{m:650000,bk:5000,v:2.0,d:0.028}]},
+  {key:'ekran',ikon:'🔊',ad:'Dev Ekran + Ses',olc:'Doluluk katkısı',
+   aciklama:'Doluluğu artırır; pahalı bilet kademesinde kaçan seyirciyi azaltır.',
+   gun:[0,4,5,6,7],
+   sv:[{m:0,bk:0,d:0,tol:0},{m:70000,bk:1000,d:0.020,tol:0.15},{m:180000,bk:2200,d:0.038,tol:0.30},
+       {m:420000,bk:4400,d:0.055,tol:0.45},{m:900000,bk:8500,d:0.075,tol:0.60}]},
+  {key:'konfor',ikon:'🛋️',ad:'Konfor',olc:'Doluluk katkısı',
+   aciklama:'Koltuk KALİTESİ, ısıtma-soğutma, hijyen. Koltuk SAYISI ayrı bir modüldür.',
+   gun:[0,3,4,5,6],
+   sv:[{m:0,bk:0,d:0,tol:0},{m:60000,bk:900,d:0.018,tol:0.12},{m:150000,bk:2000,d:0.032,tol:0.25},
+       {m:360000,bk:4000,d:0.048,tol:0.38},{m:800000,bk:7800,d:0.068,tol:0.55}]},
+  {key:'gise',ikon:'🎫',ad:'Gişe ve Turnike',olc:'Kayıp önleme',
+   aciklama:'Kuyruk ve kaçak giriş kaybını azaltır. Küçük salonda faydası yok, 12.000+ arenada ciddi.',
+   gun:[0,3,3,4,5],onk:{koltuk:3},
+   sv:[{m:0,bk:0,v:0},{m:45000,bk:500,v:0.30},{m:110000,bk:1100,v:0.55},
+       {m:260000,bk:2300,v:0.78},{m:560000,bk:4400,v:1.00}]},
+  {key:'guvenlik',ikon:'🛡️',ad:'Güvenlik',olc:'Seviye',
+   aciklama:'Kapasite büyüdükçe asgari seviye ZORUNLUDUR; eksikse doluluk düşer ve maç başı ceza yazılır.',
+   gun:[0,3,3,4,5],
+   sv:[{m:0,bk:0},{m:40000,bk:800},{m:100000,bk:1800},{m:240000,bk:3600},{m:520000,bk:7000}]}];
+/** Kapasiteye göre ZORUNLU asgari güvenlik seviyesi (brif §4.5). */
+function arenaGuvenlikGerek(kap){
+  const k=Number(kap)||0;
+  if(k>=20000) return 4;
+  if(k>=12000) return 3;
+  if(k>=7000) return 2;
+  return 1;
+}
 /** stat: haftalık koç bonusunun işlediği özellik (null = altyapı çarpanı). Maaşlar ham USD/hafta. */
 const KOC_T=[{isim:'Hücum Koçu',ulke:null,ikon:'⚔️',uzm:'Hücum',stat:'hucum',bonus:'Haftada zayıf oyunculara +1 Hücum',maas:120},{isim:'Savunma Koçu',ulke:null,ikon:'🛡️',uzm:'Savunma',stat:'savunma',bonus:'Haftada zayıf oyunculara +1 Savunma',maas:120},{isim:'Kondisyon Koçu',ulke:null,ikon:'🏃',uzm:'Kondisyon',stat:'kondisyon',bonus:'Haftada zayıf oyunculara +1 Kondisyon',maas:90},{isim:'Şut Koçu',ulke:null,ikon:'🎯',uzm:'Şut İsabeti',stat:'sutIsabeti',bonus:'Haftada zayıf oyunculara +1 Şut',maas:135},{isim:'Altyapı Koçu',ulke:null,ikon:'🌱',uzm:'Altyapı',stat:null,bonus:'Altyapı +%5 gelişim',maas:150}];
 const ANTRENMAN_T=[{isim:'Hücum Antrenmanı',ikon:'⚔️',etki:'hucum',gun:5,maliyet:0},{isim:'Savunma Antrenmanı',ikon:'🛡️',etki:'savunma',gun:5,maliyet:0},{isim:'Kondisyon Koşusu',ikon:'🏃',etki:'kondisyon',gun:4,maliyet:0},{isim:'Çift Antrenman',ikon:'💪',etki:'all',gun:6,maliyet:ecoRound(42)}];
@@ -55,7 +130,7 @@ const DEFAULT_G={
   team:null,players:[],youth:[],marketPlayers:[],
   clubTransferPlayers:[],marketTab:'free',clubTransferFilter:'all',
   coaches:[],coachMarket:[],ligTeams:[],
-  arena:{s:1,kap:ARENA_LVL[0].kap,bk:ARENA_LVL[0].bk,isim:ARENA_LVL[0].isim},   /* F7-6: ham USD (ecoRound DEĞİL) — ARENA_LVL ile aynı ölçek */
+  arena:{s:1,kap:ARENA_LVL[0].kap,bk:ARENA_LVL[0].bk,isim:ARENA_LVL[0].isim,mods:null,insaat:null},   /* F7-6: ham USD (ecoRound DEĞİL) — ARENA_LVL ile aynı ölçek */
   youthFacility:{s:1},
   selectedColor:'#f97316',
   activeTrainings:[],

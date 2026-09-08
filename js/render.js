@@ -1706,10 +1706,13 @@ function renderArena(){
   if(fg) fg.textContent=fs.group;
   if(fc) fc.textContent=fmtn(fs.count);
   if(fcard) fcard.textContent=`${fs.group} · ${fmtn(fs.count)}`;
+  try{ if(typeof processArenaInsaat==='function') processArenaInsaat(); }catch(e){}   /* FAZ 52 */
   document.getElementById('arenaCapDisp').textContent=fmtn(a.kap);
   document.getElementById('arCap2').textContent=fmtn(a.kap);
-  document.getElementById('arenaLvl').textContent=a.s;
-  document.getElementById('capFill').style.width=(a.s/5*100)+'%';
+  /* FAZ 52: "Seviye 1/5" göstergesinin yerini ARENA GÜCÜ alır (tüm modül seviyeleri). */
+  const guc=arenaGucu();
+  document.getElementById('arenaLvl').textContent=guc.puan+' / '+guc.max;
+  document.getElementById('capFill').style.width=(guc.max?guc.puan/guc.max*100:0)+'%';
   /* FAZ 22 §3: doluluk tek kaynaktan (arenaDolulukOrani) — formül önceden burada ve
      homeTicketIncome içinde ayrı ayrı duruyordu. */
   const occ=arenaDolulukOrani();
@@ -1733,18 +1736,106 @@ function renderArena(){
   if(plbl) plbl.textContent=priceNames[lvl];
   const pctrl=document.getElementById('ticketPriceCtrl');
   if(pctrl) pctrl.innerHTML=priceNames.map((nm,i)=>`<button type="button" class="btn-sm" style="padding:5px 8px;font-size:10px;${i===lvl?'background:var(--accent);color:#111;font-weight:700;':''}" onclick="setTicketPrice(${i})">${nm}</button>`).join('');
-  document.getElementById('ticketInc').textContent=fmtPara(homeTicketIncome());
-  document.getElementById('arenaMaint').textContent='-'+fmtPara(a.bk);
-  document.getElementById('upgradeList').innerHTML=ARENA_LVL.slice(1).map(g=>`
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg3);border-radius:8px;margin-bottom:7px;">
-      <div><div style="font-weight:700;font-size:13px;">${g.isim}</div><div style="font-size:11px;color:var(--text2);">${fmtn(g.kap)} kişilik</div></div>
-      <div style="text-align:right;">
-        <div style="font-size:12px;color:var(--gold);">${fmtPara(g.m)}</div>
-        <button class="upbtn" onclick="upgradeArena(${g.s})" ${G.coins<g.m||G.arena.s>=g.s?'disabled':''} style="margin-top:5px;padding:6px 12px;font-size:11px;">
-          ${G.arena.s>=g.s?'✅':'SATIN AL'}
-        </button>
-      </div>
-    </div>`).join('');
+  /* FAZ 52 §5: maç başı gelir artık DÖKÜMLÜ — her modülün karşılığı ayrı satırda. */
+  const dk=arenaGelirDokumu();
+  const dokum=document.getElementById('arenaGelirDokum');
+  if(dokum){
+    const sat=[];
+    const ek=(lbl,val,ren)=>{ if(!val) return; sat.push(`<div class="brow"><span class="blbl">${lbl}</span><span class="bval ${ren||''}">${(ren==='gider'?'-':'')+fmtPara(Math.abs(val))}</span></div>`); };
+    ek('Bilet geliri',dk.bilet);
+    if(dk.locaKoltuk) ek(`Loca (${fmtn(dk.locaKoltuk)} koltuk)`,dk.loca);
+    ek('Yiyecek-içecek',dk.yiyecek);
+    ek('Mağaza',dk.magaza);
+    ek('Sponsor (LED)',dk.sponsor);
+    ek('Otopark',dk.otopark);
+    ek('Güvenlik cezası',dk.ceza,'gider');
+    dokum.innerHTML=sat.join('');
+  }
+  document.getElementById('ticketInc').textContent=fmtPara(dk.toplam);
+  document.getElementById('arenaMaint').textContent='-'+fmtPara(arenaHaftalikBakim());
+  renderArenaInsaat();
+  renderArenaMods();
+}
+
+/** FAZ 52: sürmekte olan inşaatın geri sayım kartı. */
+function renderArenaInsaat(){
+  const el=document.getElementById('arenaInsaatKart'); if(!el) return;
+  try{
+    const ins=G.arena&&G.arena.insaat;
+    if(!ins||!ins.key){ el.innerHTML=''; return; }
+    const t=arenaModTanim(ins.key); if(!t){ el.innerHTML=''; return; }
+    const kalan=Math.max(0,Number(ins.bitis)-(G.gameDay||1));
+    const toplam=Math.max(1,Number(ins.bitis)-Number(ins.bas));
+    const yuzde=Math.max(0,Math.min(100,Math.round((1-kalan/toplam)*100)));
+    el.innerHTML=`<div class="card" style="border-color:var(--gold);margin-bottom:14px;">
+      <div class="card-title">🏗️ İnşaat sürüyor</div>
+      <div style="font-size:13px;font-weight:700;">${t.ikon} ${escMatch(t.ad)} — Sv ${ins.hedef}</div>
+      <div class="amod-bar" style="margin-top:8px;"><i style="width:${yuzde}%;"></i></div>
+      <div style="font-size:11px;color:var(--gold);">${kalan>0?(kalan+' gün kaldı'):'Bugün tamamlanıyor'}</div>
+    </div>`;
+  }catch(e){ el.innerHTML=''; }
+}
+
+/** FAZ 52: modül kartları ızgarası — seviye barı, şimdiki/sonraki etki, bedel, bakım artışı,
+    inşaat süresi ve önkoşul sebebi. "Bu seviye: X → Y" karşılaştırması brif §4.6'dır. */
+function renderArenaMods(){
+  const el=document.getElementById('arenaModList'); if(!el) return;
+  try{
+    const ins=(G.arena&&G.arena.insaat)||null;
+    const dk=arenaGelirDokumu();
+    el.innerHTML=ARENA_MOD.map(t=>{
+      const sv=arenaModSv(t.key), mx=t.sv.length, son=sv>=mx;
+      const hedef=Math.min(mx,sv+1);
+      const cur=t.sv[sv-1]||{}, nxt=t.sv[hedef-1]||{};
+      const engel=son?null:arenaOnkosulEngeli(t.key,hedef);
+      const insBu=!!(ins&&ins.key===t.key);
+      const insBaska=!!(ins&&ins.key&&!insBu);
+      const para=!son&&G.coins<(nxt.m||0);
+      const dis=son||insBu||insBaska||!!engel||para;
+      const etkiSimdi=arenaModEtkiMetni(t.key,sv,dk), etkiSonra=son?'':arenaModEtkiMetni(t.key,hedef,dk);
+      const gun=Math.max(0,Number((t.gun||[])[hedef-1])||0);
+      let not='';
+      if(insBu) not='İnşaat sürüyor';
+      else if(engel) not=engel;
+      else if(insBaska) not='Başka bir inşaat sürüyor';
+      else if(para) not='Bakiye yetersiz';
+      const uyari=(t.key==='guvenlik'&&arenaGuvenlikEksigi()>0)?`<div class="amod-not">Kapasite için Sv ${arenaGuvenlikGerek(G.arena.kap)} zorunlu — doluluk düşüyor ve maç başı ceza yazılıyor.</div>`:'';
+      return `<div class="amod ${dis&&!son?'kilit':''} ${insBu?'insa':''}">
+        <div class="amod-h"><span class="ai">${t.ikon}</span><span>${escMatch(t.ad)}</span><span class="amod-sv">Sv ${sv}/${mx}</span></div>
+        <div class="amod-bar"><i style="width:${sv/mx*100}%;"></i></div>
+        <div style="font-size:10.5px;color:var(--text2);line-height:1.4;margin-bottom:5px;">${escMatch(t.aciklama)}</div>
+        <div class="amod-row"><span>${escMatch(t.olc)}</span><b>${etkiSimdi}</b></div>
+        ${son?'<div class="amod-etki">En üst seviye</div>':`<div class="amod-etki">Bu seviye: ${etkiSimdi} → ${etkiSonra}</div>
+        <div class="amod-row"><span>Maliyet</span><b>${fmtPara(nxt.m||0)}</b></div>
+        <div class="amod-row"><span>Haftalık bakım</span><b>+${fmtPara(Math.max(0,(nxt.bk||0)-(cur.bk||0)))}</b></div>
+        <div class="amod-row"><span>İnşaat süresi</span><b>${gun} gün</b></div>`}
+        <button class="amod-btn" onclick="upgradeArenaMod('${t.key}')" ${dis?'disabled':''}>${son?'TAMAMLANDI':'GELİŞTİR'}</button>
+        ${not?`<div class="amod-not">${escMatch(not)}</div>`:''}${uyari}
+      </div>`;
+    }).join('');
+  }catch(e){ el.innerHTML=''; }
+}
+
+/** Modülün belirli bir seviyedeki etkisini okunur metne çevirir (ekran için tek kaynak). */
+function arenaModEtkiMetni(key,sv,dk){
+  try{
+    const t=arenaModTanim(key); if(!t) return '—';
+    const v=t.sv[Math.max(0,Math.min(t.sv.length-1,sv-1))]||{};
+    const kap=(arenaModVeri('koltuk')||{}).v||0;
+    switch(key){
+      case 'koltuk':   return fmtn(v.v)+' kişi';
+      case 'loca':     return v.v?(fmtn(Math.round(kap*v.v))+' koltuk'):'yok';
+      case 'yiyecek':  return v.v?(fmtPara(v.v)+' / kişi'):'yok';
+      case 'magaza':   return v.v?(fmtPara(v.v)+' / taraftar'):'yok';
+      case 'led':      return v.v?(fmtPara(Math.round(v.v*arenaDivizyonKat()))+' / maç'):'yok';
+      case 'otopark':  return v.v?(fmtPara(v.v)+' / kişi'):'yok';
+      case 'ekran':
+      case 'konfor':   return v.d?('+'+fmtYuzde(Math.round(v.d*100))):'yok';
+      case 'gise':     return v.v?fmtYuzde(Math.round(v.v*100))+' önleme':'yok';
+      case 'guvenlik': return 'Sv '+sv+(arenaGuvenlikEksigi()>0&&sv===arenaModSv('guvenlik')?' (yetersiz)':'');
+    }
+    return '—';
+  }catch(e){ return '—'; }
 }
 
 function setTicketPrice(lvl){

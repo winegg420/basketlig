@@ -222,6 +222,7 @@ function localizeCatalogs(){
   try{ mapArr(typeof DEF_SETS!=='undefined'?DEF_SETS:null,['ad','ozet']); }catch(e){}
   try{ mapArr(typeof INJURIES!=='undefined'?INJURIES:null,['ad','bolge','siddet']); }catch(e){}
   try{ mapArr(typeof ARENA_LVL!=='undefined'?ARENA_LVL:null,['isim']); }catch(e){}
+  try{ mapArr(typeof ARENA_MOD!=='undefined'?ARENA_MOD:null,['ad','olc','aciklama']); }catch(e){}   /* FAZ 52 */
   try{ mapArr(typeof YOUTH_FAC_LVL!=='undefined'?YOUTH_FAC_LVL:null,['isim']); }catch(e){}
   try{ mapArr(typeof KOC_T!=='undefined'?KOC_T:null,['isim','uzm','bonus']); }catch(e){}
   try{ mapArr(typeof ANTRENMAN_T!=='undefined'?ANTRENMAN_T:null,['isim']); }catch(e){}

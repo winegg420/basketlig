@@ -467,7 +467,13 @@ function initMatchPlayers(lu,rakip,oppPlayers){
     layer.setAttribute('id','playersLayer');
     svg.insertBefore(layer,ball); /* top jetonların üstünde kalsın */
     const homeCol=(G.team&&G.team.renk)||'#f97316';
-    const awayCol='#16a34a';
+    /* FAZ 52 (kullanıcı: "rakip takımla ev sahibi aynı renk olmuş, oyuncular karışıyor"):
+       deplasman rengi SABİT yeşildi (#16a34a) ve kurulum ekranında seçilebilen renkler
+       arasında yeşil (#22c55e) ile turkuaz (#14b8a6) vardı — o rengi seçen oyuncunun
+       maçında iki takım ayırt EDİLEMİYORDU. Renk artık ev renginden türetilir: aday
+       listesinden RGB uzaklığı en büyük olan seçilir, böylece hangi ev rengi seçilirse
+       seçilsin iki jeton kümesi ayrık kalır. */
+    const awayCol=_ziRenk(homeCol);
     const mk=(num,label,fill)=>{
       const g=document.createElementNS('http://www.w3.org/2000/svg','g');
       g.setAttribute('class','court-token');
@@ -1493,15 +1499,19 @@ function _ball(){ return mState._sim.ball; }
     kullanıldığı için bir sekme ≈ 0,383 sn. Sayı SAHNE PRNG'sinden (`_srand`) çekilir —
     `Math.random`/`rand` kullanılırsa maçın rastgele akışı kayar (B-5 dersi). */
 const _FT_SEKME_SN=0.383;
+/* FAZ 52 (kullanıcı kararı): SERBEST ATIŞTA SEKTİRME EFEKTİ YOK. Sahnede jetonun elindeki
+   top ayrı bir nesne olmadığı için "sektirme" topu jetonun altında ileri geri zıplatıyordu;
+   izleyicide ritüel değil titreme izlenimi bırakıyordu ve atış anını geciktiriyordu.
+   Fonksiyon KALDIRILMADI (çağıranları duruyor): artık topu doğrudan ele sabitler.
+   `_ftDrib` damgası (sunum-check okur) adet 0 ile yazılır. */
 function _ftSektir(shooter){
   try{
     const S=mState._sim; if(!S||!shooter) return 0;
     const b=_ball();
-    const adet=_srand(1,3);
-    b.noDrib=false;
-    b.dribBitis=S.time+adet*_FT_SEKME_SN;
-    S._ftDrib={adet,bitis:b.dribBitis};      /* sunum-check okur; davranışı etkilemez */
-    return adet*_FT_SEKME_SN;
+    b.noDrib=true;
+    b.dribBitis=null;
+    S._ftDrib={adet:0,bitis:null};
+    return 0;
   }catch(e){ return 0; }
 }
 /* ── FAZ 37 §9.1: TOP HİÇBİR KOŞULDA BOŞLUKTA KİLİTLENMEZ ─────────────────────────────
@@ -1546,6 +1556,18 @@ function _ballHold(p,noDrib){
   if(b.carrier!==p) p._topAldi=null;   /* §7.1: topu YENİ alan oyuncunun 1,2 sn sayacı sıfırlanır */
   if(b.carrier&&b.carrier!==p) b._pasSonra=null;   /* FAZ 43: el değiştirince bekleyen gecikmeli pas düşer · FAZ 45: top UÇARAK gelince (önceki taşıyıcı yok) düşmez — serbest atış toplayıcısı topu tutup kalıyordu */
   b.mode='held'; b.carrier=p; b.t=0; b.noDrib=!!noDrib; b.vx=b.vy=b.vh=0;
+}
+/** FAZ 52: ev rengine EN UZAK deplasman rengi (RGB küpünde). Aday listesi kurulum
+    ekranındaki sekiz renkten UZAK duran, birbirinden de ayrık koyu tonlardır. */
+const _ZIT_ADAY=['#16a34a','#e11d48','#2563eb','#f59e0b','#7c3aed','#0891b2','#65a30d','#db2777'];
+function _ziRenk(hex){
+  try{
+    const oku=h=>{ const s=String(h||'').replace('#',''); const n=parseInt(s.length===3?s.replace(/(.)/g,'$1$1'):s,16); return [(n>>16)&255,(n>>8)&255,n&255]; };
+    const a=oku(hex);
+    let en=_ZIT_ADAY[0], ed=-1;
+    _ZIT_ADAY.forEach(c=>{ const b=oku(c); const d=Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]); if(d>ed){ ed=d; en=c; } });
+    return en;
+  }catch(e){ return '#16a34a'; }
 }
 function _ballPass(to,dur,bounce){
   const b=_ball(); if(!to) return;
@@ -1912,6 +1934,9 @@ function _pasHedefSinirla(from,to,offP,maxPx){
       if(!p||p===from||p._oob) return;
       const d=Math.hypot(p.x-from.x,p.y-from.y);
       if(d>lim) return;
+      /* FAZ 52: veren ön sahadaysa arka sahadaki aday elenir (geri saha ihlali). */
+      if(rim){ const mid=(CRT_X0+CRT_X1)/2, sol=rim[0]<mid;
+        if((sol?(from.x<mid):(from.x>mid)) && (sol?(p.x>mid+8):(p.x<mid-8))) return; }
       const onde=(rim&&dR(p)<=dFrom+20);
       if(p.role===0||p.role===1){ if(onde&&d<gOd){ gOd=d; gOn=p; } if(d<gd){ gd=d; g=p; } }
       if(_tasiyabilir(p)){ if(onde&&d<od){ od=d; on=p; } if(d<ed){ ed=d; en=p; } }
@@ -2332,8 +2357,10 @@ function _setFtFormation(offLeft,offPlayers,defPlayers,shooter){
      atış anına yetişemiyordu (ölçüm: yakalanan karede yerinde olan oyuncu 0/10).
      Şutör JOG kalır; o zaten çizgiye yakın ve acelesi yok. */
   const others=bigFirst(offPlayers.filter(p=>p!==shooter));
-  others.forEach((p,i)=>{ const c=_pt(FT_OFF_S[i%FT_OFF_S.length],offLeft,false); _hedefAta(p,_jit(c[0],2),_jit(c[1],2),(Math.hypot(p.x-c[0],p.y-c[1])>110?_URG.KOS:_URG.JOG)); });
-  bigFirst(defPlayers).forEach((p,i)=>{ const c=_pt(FT_DEF_S[i%FT_DEF_S.length],offLeft,false); _hedefAta(p,_jit(c[0],2),_jit(c[1],2),(Math.hypot(p.x-c[0],p.y-c[1])>110?_URG.KOS:_URG.JOG)); });
+  /* FAZ 52: koşu eşiği 110 → 55 px (OAM tören dalıyla aynı) — oyuncular kulvarlarına atış
+     anına kadar oturuyor, tören kısalınca dizilim geride kalmıyor. */
+  others.forEach((p,i)=>{ const c=_pt(FT_OFF_S[i%FT_OFF_S.length],offLeft,false); _hedefAta(p,_jit(c[0],2),_jit(c[1],2),(Math.hypot(p.x-c[0],p.y-c[1])>55?_URG.KOS:_URG.JOG)); });
+  bigFirst(defPlayers).forEach((p,i)=>{ const c=_pt(FT_DEF_S[i%FT_DEF_S.length],offLeft,false); _hedefAta(p,_jit(c[0],2),_jit(c[1],2),(Math.hypot(p.x-c[0],p.y-c[1])>55?_URG.KOS:_URG.JOG)); });
 }
 
 /** F14-7: SERBEST ATIŞ BEKLEMESİ — düdükten atışa kadar geçmesi gereken süre (sn).
@@ -2343,6 +2370,16 @@ function _setFtFormation(offLeft,offPlayers,defPlayers,shooter){
     Varış süresi düz "yol / hız" değildir: jeton son 24 px'i varış freniyle (≤12 px/sn)
     kapatır, yalnız o bölüm ~2 sn sürer — fren payı hesaba katılır.
     İKİ ÇAĞIRAN VARDIR (normal faul dalı ve `_and1Sequence`); ikisi de buradan geçmeli. */
+/** FAZ 52: serbest atış dizilimi oturdu mu — 10 oyuncudan en az 9'u hedefinin 8,5 px
+    (0,29 m) içinde. F14-7 kapısı 0,30 m ölçtüğü için tolerans ondan GEVŞEK olmamalı;
+    normal faul dalı ve `_and1Sequence` ikisi de buradan geçer (F14-7 dersinin devamı). */
+function _ftYerlesti(offP,defP){
+  try{
+    let n=0;
+    (offP||[]).concat(defP||[]).forEach(p=>{ if(p&&Math.hypot(p.x-p.tx,p.y-p.ty)<=8.5) n++; });
+    return n>=9;
+  }catch(e){ return true; }
+}
 function _ftWaitSec(players){
   try{
     const eta=p=>{
@@ -2355,7 +2392,12 @@ function _ftWaitSec(players){
     /* FAZ 37 §8.1: üst sınır 6,0 sn idi. Faul sahanın öbür ucunda olduğunda on oyuncunun
        kulvarlara dizilmesi 7-9 sn sürüyor ve şut ERKEN patlıyordu (yerinde oyuncu 0/10).
        Sınır 9,5 sn'ye çıkarıldı; alt sınır 1,6 sn (yakın faul) aynı kaldı. */
-    return Math.max(1.6,Math.min(9.5,enGec+0.45));
+    /* FAZ 52 (kullanıcı: "faul atışı esnasında oyun hızı akışı farklılaşıyor"):
+       tavan 9,5 sn idi. Maç saati serbest atışta DURDUĞU için bu süre boyunca tabela
+       donuyor, izleyici maçın durduğunu görüyordu. Tavan 4,6 sn — dizilim yine beklenir
+       (`_ftHazir` kapısı +2,5 sn erteler), ama en kötü durumda bile tören 7 sn'yi geçmez.
+       Jetonlar da artık daha erken KOŞ kademesine geçtiği için (aşağıda) yetişiyorlar. */
+    return Math.max(1.4,Math.min(4.6,enGec+0.35));
   }catch(e){ return 2.0; }
 }
 
@@ -2873,13 +2915,12 @@ function movePlayersForEvent(ev,paint){
          şut yine erken patlar. Bu kapı her karede bakar: 10 oyuncudan en az 9'u hedefine
          20 px yaklaşmadıysa atışı en fazla +2,5 sn erteler. Sahne saatinde çalışır,
          rastgelelik tüketmez. */
-      const _ftHazir=()=>{
-        try{
-          let n=0;
-          offP.concat(defP).forEach(p=>{ if(p&&Math.hypot(p.x-p.tx,p.y-p.ty)<=20) n++; });
-          return n>=9;
-        }catch(e){ return true; }
-      };
+      /* FAZ 52: eşik 20 → 8,5 px. Tören süresi kısaldığı için (tavan 9,5 → 4,6 sn) kapı
+         artık BEKLEMEYE bağlı: 20 px (0,68 m) toleransı, F14-7'nin ölçtüğü 0,30 m
+         ölçütünden GEVŞEKTİ ve atış oyuncular tam oturmadan patlıyordu (ölçüldü: yerinde
+         7,3/10, en uzak 1,46 m). Ertelemenin tavanı 2,5 → 3,0 sn; en kötü tören 7,6 sn —
+         eski 12,0 sn'nin çok altında, hız hissi korunuyor. */
+      const _ftHazir=()=>_ftYerlesti(offP,defP);
       /* §4: topu alır ve 1-3 kez sektirir; süre dolunca top elde kalır ve atış gelir. */
       steps.push({at:0.10,fn:()=>{ if(!P) _ftTopVer(shooter,offP,defP,rim); }});
       steps.push({at:tBase-0.60,fn:()=>{ if(S.ball.carrier!==shooter&&S.ball.mode!=='pass') _ballHold(shooter); _ftSektir(shooter); }});
@@ -2888,9 +2929,13 @@ function movePlayersForEvent(ev,paint){
       shots.forEach((sh,i)=>{
         /* FAZ 43 İŞ 1: aralık 1,05 → 2,35 sn — top fileden düşer, seker, kulvar oyuncusu
            yerden alıp atıcıya verir, atıcı sektirir. (Gerçek ritim 5-8 sn; sahne sıkıştırır.) */
-        const t0=tBase+0.55+i*2.35;
+        /* FAZ 52: atışlar arası 2,35 → 1,55 sn. Sektirme kalktığı için topu alan atıcı
+           doğrudan atar; ölü topta geçen duvar saati üçte bir kısaldı. */
+        const t0=tBase+0.40+i*1.55;
         last=t0;
-        steps.push({at:t0,bekle:(i===0)?(()=>(_ftHazir()&&S.ball.carrier===shooter)):()=>(S.ball.carrier===shooter),max:2.5,fn:()=>{
+        /* FAZ 52: dizilim kapısı YALNIZ ilk atışta vardı; atışlar arası süre 2,35 → 1,55 sn
+           olunca 2. ve 3. atışta jetonlar tam oturmadan atış geliyordu (F14-7 8,5/10). */
+        steps.push({at:t0,bekle:(i===0)?(()=>(_ftHazir()&&S.ball.carrier===shooter)):(()=>(S.ball.carrier===shooter&&_ftHazir())),max:3.0,fn:()=>{
           shooter.pop=0.8;
           _ballShoot(rim,0.50,sh.made,()=>{
             _liveMark(sh);
@@ -2915,8 +2960,8 @@ function movePlayersForEvent(ev,paint){
            ~135 px tek kare sicramasi); hakem topu geri verir — gorunur kisa pas. */
         if(i<shots.length-1){
           /* FAZ 43 İŞ 1: top toplayıcıdan gelmeden sektirme başlamaz (adım bekler). */
-          steps.push({at:t0+1.85,bekle:()=>(S.ball.carrier===shooter&&S.ball.mode==='held'),max:2.2,fn:()=>{ _ftSektir(shooter); }});
-          steps.push({at:t0+2.15,fn:()=>{ const _b=_ball(); _b.noDrib=true; _b.dribBitis=null; }});
+          steps.push({at:t0+1.15,bekle:()=>(S.ball.carrier===shooter&&S.ball.mode==='held'),max:1.6,fn:()=>{ _ftSektir(shooter); }});
+          steps.push({at:t0+1.35,fn:()=>{ const _b=_ball(); _b.noDrib=true; _b.dribBitis=null; }});
         }
       });
       _markMarks();
@@ -3886,7 +3931,9 @@ function _and1Sequence(sh,shooter,offP,defP,offLeft,rim,res){
     _script([
       {at:0.12,fn:()=>{ _ftToplayici(shooter,offP,defP,rim,true); }},   /* FAZ 43 İŞ 1: top yerden alınır, atıcıya verilir */
       {at:tAt-0.18,fn:()=>{ if(S.ball.carrier===shooter) _ballHold(shooter); }},      /* çizgiye varınca hizalan */
-      {at:tAt,bekle:()=>(S.ball.carrier===shooter),max:2.0,fn:()=>{
+      /* FAZ 52: AND-1 ek atışında da dizilim beklenir — F14-7 iki dalı birden örnekliyor,
+         yalnız normal faul dalına kapı koymak ölçümü yarım bırakıyordu. */
+      {at:tAt,bekle:()=>(S.ball.carrier===shooter&&_ftYerlesti(offP,defP)),max:3.0,fn:()=>{
         shooter.pop=0.8;
         _ballShoot(rim,0.50,made,()=>{
           _rimFlash(rim[0],rim[1],made);

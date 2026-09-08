@@ -115,7 +115,8 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/bicim-check.js` | **FAZ 29 biçim birim testi** — `fmtSayi`/`fmtYuzde`/`fmtSira` TR ve EN çıktıları, İngilizce sıra ekinin 11/12/13 istisnası, ve kaynakta elle kalmış `toLocaleString('tr-TR')` / `'%'+n` taraması. Biçim değişince çalıştır. |
 | `tools/sut-check.js` | **FAZ 26 şut tipi denetçisi** (tarayıcısız) — her saha şutunun tipi var mı, tip bölgeyle tutarlı mı, smaç/floater payı gerçekçi mi, smaç/turnike/floater dili doğru tipte mi, tip deterministik mi. Şut tipi ya da anlatım havuzları değişince çalıştır. |
 | `tools/lig-check.js` | **FAZ 19 lig denetçisi** — standings ↔ fikstür tek kaynak, ayrışma senaryosunda onarım, tablo tutarlılığı (o = g + m), 10 sezonluk denge kapıları (ortalama fark, 20+/5- oranı, 16-0 takım), şehir tekrarı. Lig/tablo/denge değişince çalıştır. |
-| `tools/arena-check.js` | **FAZ 24 arena doluluğu denetçisi** — 125 arena×bilet fiyatı×form birleşiminde **seyirci ≤ taraftar tabanı**, doluluk sınırları, sezon başı bilet gelirinin değişmezliği, `TARAFTAR_KATSAYI`nın tek kaynak olması. Arena / bilet / taraftar formülü değişince çalıştır. |
+| `tools/arena-check.js` | **FAZ 24 arena doluluğu denetçisi** — 125 arena×bilet fiyatı×form birleşiminde **seyirci ≤ taraftar tabanı**, doluluk sınırları, sezon başı bilet gelirinin değişmezliği, `TARAFTAR_KATSAYI`nın tek kaynak olması. **FAZ 52'de modül kapıları eklendi (F-J):** tablo tutarlılığı · "Sv1 = bugünkü davranış" · gelir dökümü toplamı = `homeTicketIncome()` · önkoşul ağacı · v10→v11 migrasyonu. Arena / bilet / taraftar formülü ya da `ARENA_MOD` değişince çalıştır. |
+| `tools/arena-denge.js` | **FAZ 52 arena modül denge testi** (tarayıcısız) — 2 sezonluk ekonomi akışı iki kez sürülür (modüle yatırım yapan / yapmayan) ve maç başı gelir · haftalık bakım · kasa farkı raporlanır; ayrıca "küçük taraftar kitlesi + dev arena zarar ettirmeli" kapısı. `ARENA_MOD` tablosu ya da gelir formülü değişince çalıştır. |
 | `tools/analiz-check.js` | **FAZ 24 analiz sayı tutarlılığı** — Analiz kartındaki "Sayı ort. (attı)" ile "Attığı sayı" grafiğinin aynı diziden beslendiğini ve grafik eksen etiketlerinin ÇİZİM için açılan banttan değil gerçek min/max'tan basıldığını (FAZ 22 §4.1 gerilemesi) 3 maçlık veriyle sınar. |
 | `tools/turkek-check.js` | **FAZ 25 Türkçe çekim eki birim testi** — brifin 8 ad × 4 durum tablosu (32 kapı), kaynaştırma/zamir n'si ayrımı, ünsüz benzeşmesi, şablon çözücü (`%X{durum}`), Türkçe küçük harf. `js/turkce-ek.js` değişince çalıştır. |
 | `tools/portre-uret-yerel.py` | **FAZ 17C yerel portre üretimi** (SD-Turbo, CPU). Kova kotaları, bant dengesi, kaldığı yerden devam, dilim başına commit+push. Boru hattı `tools/portre_boru.py`. |
@@ -144,7 +145,7 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
 | `js/roster-gen.js` | Oyun sabitleri (`STAT_KEYS`,`ARENA_LVL`,`KOC_T`,`INJURIES`), global `G`, `genPlayer/genRoster/genYouth/genMarket`, TBL durumu, `buildLeagueRows`, terfi/düşme. |
 | `js/league.js` | Lig modalları, haber/sidebar, takım detay sayfası, `genRoundRobinMatches`, fikstür, `openMatchTactics`/`saveMatchTactics`, ilk-5 editörü. |
 | `js/match-prep.js` | `updateStandingsFromResult`, `computeRosterOfrDef`, `matchLineup`, `simulateCpuMatch`, yorgunluk/sakatlık, playoff, `startLeagueSeason`. |
-| `js/render.js` | Sayfa render'ları: `renderRoster/renderLig/renderMarket/renderArena/renderAltyapi/renderAntrenman/renderBilanço/renderAnalytics`, oyuncu kartı/modal, scouting/izci ağı (`renderScouts`), kulüp transfer pazarlığı (`openClubOfferModal`), SVG grafik (`svgLineChart`). |
+| `js/render.js` | Sayfa render'ları: `renderRoster/renderLig/renderMarket/renderArena/renderAltyapi/renderAntrenman/renderBilanço/renderAnalytics`, oyuncu kartı/modal, scouting/izci ağı (`renderScouts`), kulüp transfer pazarlığı (`openClubOfferModal`), SVG grafik (`svgLineChart`). **FAZ 52:** arena modül kartları (`renderArenaMods`), inşaat geri sayımı (`renderArenaInsaat`), etki metni (`arenaModEtkiMetni`). |
 | `js/turkce-ek.js` | **Türkçe çekim eki** — `turkEk(ad,durum)` (ünlü uyumu + ünsüz benzeşmesi + kaynaştırma/zamir n'si), `turkEkUygula` (`%X{durum}` çözücü), `trKucuk`/`trBuyukIlk` (İ→i, I→ı). Saf fonksiyonlar; `match-engine.js`'ten ÖNCE yüklenir. |
 | `js/match-engine.js` | Maç motoru: `simulateMatch`/`buildMatchCtx` (sunucu sözleşmesi, `G`'siz) → `generateMatchEvents` → `runPossession` (tempo/odak/savunma stili/top yükleme/eşleştirme taktikleri), şut haritası/kutu skor render, `applyMatchResult`. **Canlı sunum v3** (27. oturum): rol tabanlı dizilim (`_assignRoles`, `SET_*`), üç fazlı pozisyon (sokma → `TRANS_*` geçiş → set), top durum makinesi (`_ballHold/_ballPass/_ballShoot/_ballLoose`), serbest top takibi (`_chase`), çizgi dışı sokma (`_inboundSetup`/`_clearOob`), anlatım senkronu (`movePlayersForEvent(ev,paint)`). |
 | `js/main.js` | `startMatch`/`stopMatch`/canlı oynatım, `toggleManualCoach`, antrenman + izci (`hireScout`) aksiyonları, transfer/gelen teklif (`showIncomingOfferModal`)/koç/arena aksiyonları, `showPage` (SPA, `analiz` dahil), `createTeam`, bildirim kuyruğu, `window.onload` bootstrap. |
@@ -1635,3 +1636,47 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   ilerlemesini bekler). rAF yedeği arka planda da sahneyi olaylarla senkron sürdüğü için gereksiz kaldı ve
   kapatıldı — üç giriş noktası (`stepGuarded` else, watchdog, visibilitychange) bayrağa bağlı. Donma yapısal
   olarak imkânsız. Geri açmak gerekirse `_BGPAUSE_ACIK=true`.
+
+- **ARENA MODÜLERDİR — TEK SEVİYE YOK (FAZ 52):** arena artık 10 ayrı modülden oluşur
+  (`ARENA_MOD`, `js/roster-gen.js`): koltuk · loca · yiyecek · mağaza · LED · otopark ·
+  dev ekran · konfor · gişe · güvenlik; her biri 1-5 seviye, arena gücü /50.
+  **TAŞIYICI KURAL: SEVİYE 1 = BUGÜNKÜ DAVRANIŞ** — yeni modüllerin Sv1'i sıfır etki,
+  sıfır bakım taşır ve koltuk Sv1 eski `ARENA_LVL[0]` ile birebir aynıdır. Bu kural,
+  FAZ 25 USD ekonomi çapalarının (kasa $120.000 · maç geliri ≈$17.420 · haftalık denge
+  ±$2.000 · bakım $3.000) ve `season-loop` dengesinin tek güvencesidir; yeni bir modül
+  ya da kademe eklerken Sv1'i ASLA gelir/gider taşıyacak hâle getirme. Tek kaynaklar:
+  `arenaModSv/arenaModVeri/arenaGucu/arenaHaftalikBakim/arenaSenkron/arenaGelirDokumu`
+  (`js/economy.js`). `G.arena.s/kap/bk` artık TÜREVDİR — `arenaSenkron()` yazar, elle
+  set etme. `homeTicketIncome()` bilet değil MAÇ GÜNÜ TOPLAMIDIR (dökümün toplamı).
+  Bedel anında ödenir, seviye `G.arena.insaat` süresi dolunca açılır
+  (`processArenaInsaat`, `processEconomyWeeks` başında); aynı anda tek inşaat.
+  Kayıt sürümü **v11** (`migrateArenaV10ToV11`: eski `arena.s` → koltuk modülü, diğerleri
+  Sv1; kapasite ve bakım birebir korunur). Değişince `node tools/arena-check.js`
+  (F-J bölümleri) + `node tools/arena-denge.js` + `ekonomi-check` + `season-loop --runs=3`.
+- **DEPLASMAN RENGİ EV RENGİNDEN TÜRER (FAZ 52, kullanıcı: "iki takım aynı renk"):**
+  deplasman jetonu SABİT `#16a34a` idi; kurulum ekranında seçilebilen sekiz renk arasında
+  yeşil (`#22c55e`) ve turkuaz (`#14b8a6`) vardı ve o rengi seçen oyuncu iki takımı ayırt
+  edemiyordu. `_ziRenk(evRengi)` sekiz adaydan RGB küpünde EN UZAK olanı döndürür. Yeni
+  bir takım rengi eklerken `_ZIT_ADAY` listesini de gözden geçir.
+- **SERBEST ATIŞTA SEKTİRME YOK (FAZ 52, kullanıcı kararı):** `_ftSektir` artık topu
+  doğrudan ele sabitler (fonksiyon silinmedi, çağıranları duruyor). `sunum-check` F25-4
+  kapısı da niyetine göre yeniden yazıldı ("1-3 sekme" → "sektirme 0"). Geri EKLENMEMELİ.
+- **SERBEST ATIŞ DİZİLİM KAPISI TEK KAYNAK VE F14-7'DEN SIKI OLMALI (FAZ 52):**
+  `_ftYerlesti(offP,defP)` — 10 oyuncudan ≥9'u hedefinin **8,5 px** (0,29 m) içinde.
+  F14-7 kapısı 0,30 m ölçtüğü için tolerans ondan GEVŞEK olamaz: eski 20 px'lik
+  `_ftHazir` ile tören kısalınca (tavan 9,5 → 4,6 sn) atış oyuncular oturmadan patlıyordu
+  (ölçüldü: yerinde 7,3/10, en uzak 1,46 m). Normal faul dalı ve `_and1Sequence` ikisi de
+  buradan geçer. Koşu eşiği 110 → 55 px (hem `_setFtFormation` hem OAM tören dalı).
+  Ölü topta geçen duvar saati: en kötü tören 12,0 → 7,6 sn.
+- **ÖN SAHADAN ARKA SAHAYA PAS YOK (FAZ 52):** `oamArkaSaha()` (`oamPasOlur` içinde) ve
+  `_pasHedefSinirla` aday süzgeci. Ölçüldü (`iz-kaydet --secs=400` + pozisyon başına
+  orta çizgi analizi): 162 pasın 2'si (%1,2) ihlaldi ve ikisi de ölü top sonrası geçiş
+  dalındaydı. Potadan uzaklaşan "geriye pas" AYRI bir olgudur (%1,4) ve çoğu meşrudur
+  (hücum ribaundu sonrası açma, set çevirme) — ona kural koyma.
+- **PERDE/DEVRİLME OAM'DA, AMA ŞUTLU POZİSYONLAR KLİPTEN OYNAR (FAZ 52 · FAZ 50 sonucu):**
+  `sunum-check` F25-6a (post) ve F25-6b (perde) HEAD'de de **0 damga** verir — `S._perde`
+  / `S._postup` yalnız OAM'ın şut dalında yazılır, o dal ise FAZ 50'den beri gerçek klip
+  oynatıcıya devredilmiştir. Bu iki kapı bugün OAM'ın yalnız putback/klipsiz yollarını
+  örnekler; "perde yok" sonucu bir gerileme DEĞİLDİR. FAZ 52'de perde şemasız set
+  pozisyonlarının %40'ında da kurulur oldu, devrilme payı 0,60 → 0,82 ve **devrilene pas**
+  eklendi (kararlar `_sr()` ile — maç sonucu ve `band.js` hash'i etkilenmez).

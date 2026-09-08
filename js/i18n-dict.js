@@ -1032,3 +1032,99 @@ Object.assign(I18N_TR_EN,{
 /* ── FAZ 36 eki: takım sayısı artık şablondan geldiği için sabit dize sözlükte
    eşleşmiyor; kalıp olarak yazılır (i18n-scan D sınıfı). ── */
 I18N_PHRASES.unshift([/^Grupta (\d+) kulüp olmalı; eksik slot var\.$/, 'The group must have $1 clubs; a slot is missing.']);
+
+/* ── FAZ 52: ARENA MODÜLER GELİŞTİRME ── */
+Object.assign(I18N_TR_EN,{
+  /* modül adları (ARENA_MOD.ad — localizeCatalogs yerinde çevirir) */
+  'Koltuk Kapasitesi':'Seating Capacity',
+  'Loca / VIP':'Boxes / VIP',
+  'Yiyecek-İçecek':'Food & Beverage',
+  'Kulüp Mağazası':'Club Store',
+  'LED Reklam Panoları':'LED Advertising Boards',
+  'Otopark':'Parking',
+  'Dev Ekran + Ses':'Jumbotron + Sound',
+  'Konfor':'Comfort',
+  'Gişe ve Turnike':'Box Office & Turnstiles',
+  'Güvenlik':'Security',
+  /* modül ölçüleri (ARENA_MOD.olc) */
+  'Kapasite':'Capacity',
+  'Loca koltuğu':'Box seats',
+  'Kişi başı harcama':'Spend per head',
+  'Taraftar başına':'Per supporter',
+  'Maç başı sponsor':'Sponsor per game',
+  'Seyirci başına':'Per spectator',
+  'Doluluk katkısı':'Attendance boost',
+  'Kayıp önleme':'Loss prevention',
+  'Seviye':'Level',
+  /* modül açıklamaları (ARENA_MOD.aciklama) */
+  'Salonun kaç kişi aldığı. Diğer bütün gelirlerin tabanı.':
+    'How many people the arena holds. The base of every other revenue stream.',
+  'Loca bileti normal biletin 8 katıdır. Kapasitenin küçük bir yüzdesi.':
+    'A box seat costs 8× a regular ticket. A small share of capacity.',
+  'Maç geliri = seyirci × kişi başı harcama.':'Game revenue = spectators × spend per head.',
+  'Gelir taraftar sayısıyla ve BAŞARIYLA büyür — şampiyonlukta patlar, düşme hattında erir.':
+    'Revenue grows with the fan base and with SUCCESS — it booms with a title and melts near relegation.',
+  'Aynı pano üst divizyonda kat kat değerlidir (Divizyon 1 = ×3).':
+    'The same board is worth far more in a higher division (Division 1 = ×3).',
+  'Maç başı ek gelir + erişim: kolay ulaşılan salon daha çok dolar.':
+    'Extra revenue per game + access: an easy-to-reach arena fills up better.',
+  'Doluluğu artırır; pahalı bilet kademesinde kaçan seyirciyi azaltır.':
+    'Raises attendance and keeps fans who would leave at expensive ticket tiers.',
+  'Koltuk KALİTESİ, ısıtma-soğutma, hijyen. Koltuk SAYISI ayrı bir modüldür.':
+    'Seat QUALITY, heating-cooling, hygiene. Seat COUNT is a separate module.',
+  'Kuyruk ve kaçak giriş kaybını azaltır. Küçük salonda faydası yok, 12.000+ arenada ciddi.':
+    'Cuts queue and gate-crashing losses. Useless in a small hall, serious in a 12,000+ arena.',
+  'Kapasite büyüdükçe asgari seviye ZORUNLUDUR; eksikse doluluk düşer ve maç başı ceza yazılır.':
+    'A minimum level is MANDATORY as capacity grows; if short, attendance drops and a fine is charged per game.',
+  /* arayüz */
+  'Arena gücü':'Arena power',
+  'Arena Modülleri':'Arena Modules',
+  'Her modül ayrı geliştirilir. Bedel hemen ödenir, seviye inşaat bitince açılır.':
+    'Each module is upgraded separately. You pay now; the level unlocks when construction ends.',
+  'İnşaat sürüyor':'Construction in progress',
+  'Bugün tamamlanıyor':'Completing today',
+  'Maç Başı Toplam':'Total Per Game',
+  'Bilet geliri':'Ticket income',
+  'Yiyecek-içecek':'Food & beverage',
+  'Mağaza':'Store',
+  'Sponsor (LED)':'Sponsor (LED)',
+  'Güvenlik cezası':'Security fine',
+  'Maliyet':'Cost',
+  'Haftalık bakım':'Weekly upkeep',
+  'İnşaat süresi':'Construction time',
+  'GELİŞTİR':'UPGRADE',
+  'TAMAMLANDI':'COMPLETED',
+  'En üst seviye':'Top level',
+  'Bakiye yetersiz':'Not enough funds',
+  'Başka bir inşaat sürüyor':'Another construction is running',
+  'yok':'none',
+  'Bilinmeyen modül.':'Unknown module.',
+  'Bu modül zaten en üst seviyede.':'This module is already at the top level.',
+  'Kapasiteyi kademe kademe büyütmelisin.':'You must grow capacity one level at a time.'
+});
+I18N_PHRASES.unshift(
+  /* Sayı/ad taşıyan metinler TAM DÜĞÜM eşleşemez — kalıp şart (FAZ 31 dersi). */
+  [/^Sv (\d+)\/(\d+)$/,'Lv $1/$2'],
+  [/^Sv (\d+) \(yetersiz\)$/,'Lv $1 (insufficient)'],
+  [/^Sv (\d+)$/,'Lv $1'],
+  /* "yok" cümlenin İÇİNDE geçtiği için sözlük girişi eşleşmez — kalıp şart (FAZ 31 dersi);
+     genel "Bu seviye: " kalıbından ÖNCE gelmeli. */
+  [/Bu seviye: yok →/g,'This level: none →'],
+  [/→ yok$/,'→ none'],
+  [/Bu seviye: /g,'This level: '],
+  [/Önce ([^]+?) Sv (\d+) gerekli/g,'Requires $1 Lv $2 first'],
+  [/([\d.,]+) koltuk/g,'$1 seats'],
+  [/([\d.,]+) kişi\b/g,'$1 people'],
+  [/(\d+) gün kaldı/g,'$1 days left'],
+  [/^Loca \(([\d.,]+) koltuk\)$/,'Boxes ($1 seats)'],
+  [/ \/ kişi$/,' / head'],
+  [/ \/ taraftar$/,' / supporter'],
+  [/ \/ maç$/,' / game'],
+  [/ önleme$/,' prevention'],
+  [/🏗️ ([^]+?) — Sv (\d+) inşaatı başladı — (\d+) gün\./g,'🏗️ $1 Lv $2 construction started — $3 days.'],
+  [/🏗️ ([^]+?) — Sv (\d+) tamamlandı!/g,'🏗️ $1 — Lv $2 completed!'],
+  [/^🏗️ Şu anda başka bir inşaat sürüyor\.$/,'🏗️ Another construction is already running.'],
+  [/Kapasite için Sv (\d+) zorunlu — doluluk düşüyor ve maç başı ceza yazılıyor\./g,
+   'Lv $1 is mandatory for this capacity — attendance is dropping and a fine is charged per game.'],
+  [/^Arena yatırımı: ([^]+?) Sv (\d+)$/,'Arena investment: $1 Lv $2']
+);
