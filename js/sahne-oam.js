@@ -766,10 +766,34 @@ function oamSokmaTick(S,dt){
     if(!I||!I.tok||b.carrier!==I.tok||b.mode!=='held'||S._ftAktif||(S._hakemTop&&S._hakemTop.aktif)){ S._sokmaT=0; return; }
     const t=(S.curType||''); if(!(/^score/.test(t)||t==='free')) return;   /* yalnız sayı / serbest atış sonrası dip çizgi sokması */
     const inb=I.tok; if(Math.hypot(inb.x-I.x,inb.y-I.y)>16){ S._sokmaT=0; return; }
-    S._sokmaT=(S._sokmaT||0)+dt; if(S._sokmaT<0.7) return;
+    S._sokmaT=(S._sokmaT||0)+dt;
+    { const aday=(S.offP||[]).filter(q=>q&&q!==inb&&!q._oob);
+      let yakin=aday.filter(q=>Math.hypot(q.x-inb.x,q.y-inb.y)<=177).length;
+      if(yakin<3){
+        /* ── FAZ 56 · 4b: BEKLEMEK YETMEZ, ama ÇAĞIRMAK DA YANLIŞ ────────────────────────
+           Kapı FAZ 54'te yazılmıştı ve yalnız BEKLİYORDU; kimse yaklaşmadığı için her sokma
+           3,5 sn zaman aşımıyla açılıyordu (ölçüldü: 6 m içinde ort 1,5 arkadaş).
+           İlk düzeltme üç arkadaşı sokucunun 4,5 m'sine ÇAĞIRDI ve ölçülerek elendi: uzunlar
+           dip çizgiye iniyor, geçiş kulvarları boşalıyor ve topu orta sahaya taşıyan pivot
+           0/19 → 13/47'ye fırlıyordu (kullanıcının FAZ 47'de şikâyet ettiği kusur).
+           Doğrusu geri çağırmak değil TUTMAKTIR: kullanıcının şikâyeti "sokarken herkes yarı
+           sahayı geçmiş oluyor" — yani sorun uzaklaşma HIZI. Hedef, oyuncunun KENDİ yönünde
+           sokucudan 5,7 m'ye kırpılır; kulvar ve rol korunur, yalnız mesafe sınırlanır. */
+        const SIN=168;   /* px ≈ 5,7 m — kapı eşiğinin (177) hemen içi */
+        aday.forEach(q=>{
+          const tx0=(q.tx!=null?q.tx:q.x), ty0=(q.ty!=null?q.ty:q.y);
+          let vx=tx0-inb.x, vy=ty0-inb.y; let dd=Math.hypot(vx,vy);
+          if(dd<1){ vx=q.x-inb.x; vy=q.y-inb.y; dd=Math.hypot(vx,vy); }
+          if(dd>SIN&&dd>0.001){ _hedefAta(q,_inX(inb.x+vx/dd*SIN),_inY(inb.y+vy/dd*SIN)); }
+        });
+        yakin=aday.filter(q=>Math.hypot(q.x-inb.x,q.y-inb.y)<=177).length;
+      }
+      S._sokmaYakin=yakin; }
+    if(S._sokmaT<0.7) return;
+    if((S._sokmaYakin|0)<3&&S._sokmaT<3.5) return;
     /* FAZ 54 C4 (ölçüldü: 5 m içinde 1-2 arkadaş, en uzağı 15,7-16,9 m): en az 3 takım arkadaşı
        6 m (177 px) içine gelmeden sokma pası atılmaz — en çok 3,5 sn beklenir. */
-    { let yakin=0; (S.offP||[]).forEach(q=>{ if(q&&q!==inb&&!q._oob&&Math.hypot(q.x-inb.x,q.y-inb.y)<=177) yakin++; }); if(yakin<3&&S._sokmaT<3.5) return; }
+
     const offR=_rolesOrder(S.offP||[]);
     const pg=offR.find(p=>p!==inb&&p.role===0)||offR.find(p=>p!==inb&&p.role===1)||offR.find(p=>p!==inb&&_tasiyabilir(p)); if(!pg) return;
     if(Math.hypot(pg.x-inb.x,pg.y-inb.y)>_SOKMA_MAX_PX) return;

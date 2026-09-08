@@ -9510,3 +9510,130 @@ köşe %30 (gerçek: üçlükler içinde ~%26-28) ✓.
    pay %23,8 gerçeğin çok altında (%5,5) ama uç değer duruyor.
 5. **iç içe geçme <55 cm %4,71** (hedef 0) — <40 cm çözüldü (%10,46 → %0,02); 40-55 cm bandı
    klip çiftlerinde duruyor (gerçek kayıt).
+
+---
+
+## 56. oturum — FAZ 56: ışınlanmanın kök nedeni (klip verisi 5 kare/sn) (2026-09-09)
+
+Brif tek bir kök nedene odaklandı ve haklı çıktı. FAZ 40, 48, 49, 54 ve 55'te ivme/ışınlanma için
+yapılan **altı ayrı deneme** başarısızdı; sebep kodda değil **verideydi**.
+
+### 0. Brifin kapattığı iki madde (kabul)
+Brif A3 (minimum pas) ve C1 (üç saniye) maddelerini kendi ölçümünün 10 Hz olduğunu tespit ederek
+kapattı — `tools/sahne-olcum.js` tam kare hızında ölçüyor ve o iki satırda aracın sayısı doğru.
+Ayrıca gerçek SportVU verisinde de boyada kalış p99 7,4 · max 12,8 sn (>3 sn %22,2).
+
+### 1. KÖK NEDEN: veri kaynağın beşte biri hızındaydı
+`js/klip-data.js` 5 kare/sn taşıyordu; kaynak (SportVU) **25 kare/sn**. Düğümler arası 200 ms var
+ve o boşlukta oyuncu 1,5-2 m yol alır — aradaki 11 kareyi hangi eğri uydurursa uydursun ivme
+düğümde sıçrar. Sahnedeki karelerin %68,7'si klip karesi olduğu için ölçüm tablosunu bu dolduruyordu.
+
+### 2. Veri yeniden çıkarıldı — 25 kare/sn, Int8 delta, 0,01 ft
+- `tools/gercek-hareket/klip-cikar.js`: FPS 5 → **25**; kodlama Int16 → **ilk kare mutlak + Int8
+  delta** (−128 kaçış); nicemleme 0,1 ft → **0,01 ft**; klip seçimi "eşit aralık" yerine
+  **TEMİZLİK SKORU + KARE BÜTÇESİ** (izleme boşluğu · tepe hız · süre; gruplar korunur).
+- Sonuç: **320 klip · 81.942 kare · 25 kare/sn · 2,46 MB** (eski: 696 klip · 45.322 kare ·
+  5 kare/sn · 2,74 MB). Yani beş kat zaman çözünürlüğü, bugünkü dosyanın altında.
+- **Nicemleme kare hızıyla birlikte sıkışmalı:** 0,1 ft (3 cm) 40 ms'de 0,76 m/sn'lik sahte hız,
+  ~19 m/sn²'lik sahte ivme demek. Ölçüldü: kaynağın kendi >8 payı 0,1 ft'te %52,5 · 0,01 ft'te %8,9.
+
+### 3. Süzgeç KAYNAĞA uygulandı (jetona değil)
+Optik izlemenin kendi gürültüsü 25 kare/sn'de ivmeye dönüşüyor. Çıkarma anında **simetrik 1-2-1**
+(oyuncu 8 geçiş · top 2 geçiş) uygulandı — faz kaydırmaz, yani düzeltilen şey yörüngenin kendisidir
+ve jeton onu birebir izler. **FAZ 54/55'te elenen denemelerden yapısal farkı budur:** orada jeton
+yörüngeden geciktiriliyor, gecikme sonraki karede kapanmak zorunda kalıyor ve hız patlıyordu.
+Ölçülen: 60 fps kare-kare ivme tepe **597 → 24 m/sn²**, >8 payı **%9,65 → %0,25**, yörünge sapması
+ortalama **0,6 cm**.
+
+### 4. Ara değer: uçları düzeltilmiş Catmull-Rom
+Brif "doğrusal yeter" diyordu; ölçüm aksini söyledi (aynı veri, 60 fps, 320 klip):
+
+| ara değer | tepe | >8 payı |
+|---|---|---|
+| doğrusal | 51 | %1,66 |
+| Catmull-Rom, uçlar kelepçeli | 142 | %0,64 |
+| **Catmull-Rom, uçlar düzeltilmiş** | **24** | **%0,25** |
+
+Doğrusal ara değer düğüm sınırlarında darbe ivmesi üretiyor; kübik eğri onu siliyor ama uç düğümü
+`Math.max(0,i1-1)` ile kelepçelemek klibin ilk karesinde yapay teğet veriyordu — 60 m/sn²'yi aşan
+**401 olayın 401'i** klibin ilk %3'ündeydi. Uç düğüm komşudan dışarıya uzatıldı. 1-2-1 düğüm
+yumuşatma oynatıcıdan kalktı (artık çevrimdışı yapılıyor), `KLIP_VMAX` hız kırpması da kalktı.
+
+### 5. Kalan ivmenin kaynağı: harman ofseti (jeton başına ayrıştırılarak bulundu)
+Veri temizlendikten sonra sahne hâlâ %3,29 diyordu. Motor içinde jeton başına ayrıştırıldı:
+
+| terim | >8 payı |
+|---|---|
+| SAF KLİP konumu | %0,48 |
+| ÇİZİLEN konum | %1,99 |
+| **harman OFSETİ** | **%2,70** |
+| warp (şut noktası) | %0,00 |
+
+Eski kapanış yasası üç yerde kırılgandı: ivme rampası (`KLIP_IVME`), √(2·fren·om) freni (9 m/sn²)
+ve `om ≤ adım` olunca ofsetin **sıfırlanıp** kapanış hızının tek karede kaybolması (75 px/sn ≈
+150 m/sn²). Yeni yasa hızı uzaklığın düzgün fonksiyonu yapar: **v = V·(1 − e^(−om/L))** — sıfıra
+yaklaşırken kendiliğinden söner, ivme tavanı V²/L ≈ 0,7 m/sn², durum değişkeni yok.
+Ölçülen: ofsetin >8 payı **%2,70 → %0,01**, çizilen konum %1,99 → %0,66.
+
+### 6. FAZ 55 C4 (mutlak 0,55 m taban) GERİ ALINDI — gerçek veriyle çelişiyordu
+320 gerçek klibin 81.942 karesinde en yakın çift **%10,41 oranında 40 cm'den, %20,71 oranında
+55 cm'den** yakın; 40 cm altında **7,7 saniyelik kesintisiz** bir bölüm var. FAZ 55'te koyduğum
+"hiçbir iki jeton 55 cm'ye giremez" kuralı bu yüzden yanlıştı (brifin FAZ 55'te kendi geri çektiği
+"<%6 üst üste binme" hedefiyle aynı hata) ve bedeli ağırdı: itme klip jetonunu tek karede
+**21,8 px** kaydırıyor (≈25 m/sn) ve kare-kare ivmenin son kaynağı oluyordu. Taban artık yalnız
+kendi koreografimize uygulanır (16 → **17 px**, brifin 4a isteği) ve ayrışma **hız sınırlıdır**
+(`_AYIR_MAX = 1,2 px/kare`); klip çiftinde kayıttaki mesafeler aynen korunur.
+Kapı gerçek paya bağlandı (<40 cm ≤ %13 · <55 cm ≤ %26) ve **geçiyor** (%11,0 / %18,8).
+
+### 7. 4b — sokma dizilimi: kusur tick'te değil TABLODAYDI
+"En az 3 arkadaş 6 m içinde" kapısı FAZ 54'te yazılmıştı ama yalnız BEKLİYORDU. İki deneme
+ölçülerek elendi: (a) üç arkadaşı sokucunun 4,5 m'sine ÇAĞIRMAK — uzunlar dip çizgiye iniyor,
+geçiş kulvarları boşalıyor; (b) hedefi kendi yönünde 5,7 m'ye KIRPMAK — ölçülebilir kazanç yok
+(1,5 → 1,7). Kök neden `_sokmaKisit` tablosuydu: PG 5,6 m ama SG **7,2 m**, C **8,6 m**, PF
+mutlak y kullandığı için sokma noktası dip çizgideyken **~10 m**. Tablo düzeltildi (SG 5,5 m ·
+PF 5,4 m, C 8,5 m'de kaldı, SF kulvarında öne koşar).
+
+### Kapılar
+- `sim-node --n=500 --seed=42` → 93.1 - 87.9 · determinizm ✓
+- `band.js` **c19928475859c7ff** ✓ · `measure.js` **51fa02b6e0a8194b** ✓ (referanslar değişmedi;
+  klip verisi ve sahne katmanı maç matematiğine girmez)
+- `anlatim-check` 31/31 ✓ · `taktik-klip-check` ✓ (yeni 320'lik havuzda da taktik ayrımı duruyor;
+  asıl taşıyıcı slotu dağılımı eskiyle aynı: guard %67,8 → %65,3 · pivot %7,3 → %7,8)
+
+### FAZ 56 · SONUÇ — HEAD (FAZ 55) ile aynı koşulda kıyas (1100 sn · aynı tohum)
+
+| satır | HEAD (FAZ 55) | FAZ 56 | gerçek veri |
+|---|---|---|---|
+| kare-kare ivme >8 payı | %3,58 (tepe 918) | **%1,75** (tepe 1622*) | %0,37 (tepe 45) |
+| aşan karelerin klip payı | %69 | **%38** (klip kareleri toplamın %68,7'si) | — |
+| 0,2 sn ivmesi p99 | — | 8,9 (HEAD 9,x) | 7,0 |
+| iç içe geçme <40 cm / <55 cm | %0,02 / %3,98 (yapay taban) | **%10,9 / %18,7** | %10,41 / %20,71 |
+| üst üste binme <70 cm | %25,9 | **%28,1** | %37,7 |
+| ortalama oyuncu hızı | 1,92 | 1,86 | 1,90 |
+| 0-1 m/sn bandı | — | %33,9 | %32,0 |
+| orta çizgiyi topla geçen C | 13/49 | **9/47** | — |
+| sokmada 6 m içindeki arkadaş | 1,7 (11/15) | **2,1** (10/16) | 3,07 (%24'ü <3) |
+| sahipsiz top (canlı) en uzun | 2,75 sn | 4,06 sn | p90 1,60 sn |
+
+*Tepe değeri tek bir olayın uç değeridir ve koşudan koşuya 540-1622 arasında salınıyor (aynı kod,
+dört koşu: 540 · 993 · 1002 · 1622); p99,9 ise 90-100 bandında oturmuş durumda. Kalan aşırı
+ivmenin **%62'si artık klip DIŞI** karelerde, yani kendi eski fizik koreografimizde — klip katmanı
+bu turda ölçüm tablosundaki en temiz katman hâline geldi.
+
+**Açık kalan satırlar (dürüst rapor):**
+1. **kare-kare ivme >8 %1,75** (kapı %0,6 · gerçek %0,37) — klip tarafı çözüldü (%0,48), kalan
+   eski fiziğin çarpışma ayrıştırması ve hedef yazıcılarıdır. Bu, klip katmanından bağımsız bir
+   sonraki iştir.
+2. **üç saniye (eski fizik) max 3,4-4,3 sn** (kapı 3,0) — HEAD'de de 4,1; değişmedi.
+3. **sahipsiz top en uzun 4,06 sn** (HEAD 2,75) — ribaunt karambolünde kötüleşti; klip çiftinden
+   çarpışma itmesinin kalkması topun çevresindeki kalabalığı sıklaştırıyor olabilir. Açık madde.
+4. **sokmada 6 m içindeki arkadaş 2,1** (gerçek 3,07) — `_sokmaKisit` tablosu düzeltildi ama
+   oyuncular 3,5 sn'lik pencerede noktalarına varamıyor.
+5. **üst üste binme <70 cm %28,1** — gerçek %37,7, kapı tabanı %29,7; HEAD'den (%25,9) iyi ama
+   hâlâ tabanın hemen altında.
+
+### Kapılar (kapanış)
+`sim-node --n=500 --seed=42` 93.1-87.9 ✓ · `band.js` c19928475859c7ff ✓ · `measure.js`
+51fa02b6e0a8194b ✓ · `anlatim-check` 31/31 ✓ · `balon-check` ✓ · `taktik-klip-check` ✓ ·
+`visual-check` ✓ (0 konsol hatası) · `surum-check --yaz` → **sürüm 100** (`sw.js` SCRIPT_V=100 ·
+HTML `?v=100`, 18 dosya senkron).

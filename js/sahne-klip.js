@@ -40,21 +40,51 @@ const KLIP_VMAX=265;         /* FAZ 54 B2: 380 → 265 px/sn ≈ 9,0 m/sn — sp
    düğümde hızı SIÇRATIYOR, jeton duruştan tam hıza tek karede çıkıyordu; ışınlanma hissinin asıl
    kaynağı buydu. İnsan sporcunun tepe ivmesi 6-8 m/sn²: hız değişimi kareye bu sınırla uygulanır,
    kalan yol ofsete yazılır (jeton yörüngeye ivmeyle yetişir). Fren daha sert (9 m/sn²). */
+/* ⚠ FAZ 56: KLIP_IVME/KLIP_FREN artık KULLANILMIYOR — ofset kapanışı doyumlu hız yasasına
+   geçti (aşağıda, klipTick). Sabitler tarihsel kayıt olarak duruyor. */
 const KLIP_IVME=3.4*29.5429;   /* 100 px/sn² — ofset kapanışının hızlanması (FAZ 54: 7,0 → 3,4 m/sn²;
    ivme sınırı ofsete uygulanır ve klip yörüngesinin kendi ivmesiyle TOPLANIR — ölçüldü p99 11,8 ↔ gerçek 5,1) */
 const KLIP_FREN=9.0*29.5429;   /* 266 px/sn² — yavaşlama */
+const KLIP_HARMAN_L=3.6;     /* sn — doyum uzunluğu (L = V×bu). İvme tavanı V²/L: 75 px/sn'de 0,7 m/sn² */
 const KLIP_BEKLE_V=175;         /* px/sn ≈ 5,9 m/sn — sahipsiz topa giden tutucu (koşu) */         /* px/sn ≈ 12,9 m/sn sahne — klibin gerçek sprintini geçer, yalnız SportVU izleme sıçramasını (>12,5 m/sn) keser; düşük tutmak yayılımı daraltıyordu */
 const KLIP_WARP=2.2;         /* sn — şut noktası ofseti bu pencerede biner (FAZ 54: 1,5 → 2,2, ivme tepesi düşsün) */
 const KLIP_FT=0.3048, KLIP_SAHA_X=94, KLIP_SAHA_Y=50;
 const KLIP_TUTMA_FT=4.0;     /* top oyuncuya bu kadar yakınsa "elinde" */
 
 let _klipD=null;             /* çözülmüş veri: {fps, klip:[meta], v:Int16Array} */
+/* FAZ 56 · Int8 DELTA ÇÖZÜCÜ — üretici tools/gercek-hareket/klip-cikar.js ile birlikte değişir.
+   Klip başına ilk kare Int16 mutlak (LE), sonraki kareler komşu farkı Int8; -128 kaçış değeridir
+   ve ardından o değerin Int16 mutlak hâli gelir. Kodlama 25 kare/sn'lik veriyi bayt sayısını
+   ikiye bölerek taşır. bo alanı taşımayan eski (FAZ 50-55) düz Int16 dosyası da okunur.
+   ÇIKTI Float32'dir ve birimi 0,1 ft'tir — bütün çağıranlar değeri /10 ile ft'e çeviriyor;
+   nicemleme 0,01 ft'e sıkışsa da (FAZ 56) o sözleşme korunur, yalnız ondalık kazanır. */
+function _klipCoz(u8,kl,olcek){
+  const OL=olcek||10, kat=10/OL;
+  let toplam=0; for(const k of kl) toplam=Math.max(toplam,k.o+k.n*23);
+  const v=new Float32Array(toplam);
+  if(!kl.length||kl[0].bo==null){ const o16=new Int16Array(u8.buffer,u8.byteOffset,Math.floor(u8.length/2)); for(let i=0;i<toplam&&i<o16.length;i++) v[i]=o16[i]*kat; return v; }
+  const cur=new Int32Array(23);
+  for(const k of kl){
+    let p=k.bo|0; const o=k.o|0;
+    for(let j=0;j<23;j++){ cur[j]=((u8[p]|(u8[p+1]<<8))<<16)>>16; p+=2; v[o+j]=cur[j]*kat; }
+    for(let i=1;i<k.n;i++){
+      const sat=o+i*23;
+      for(let j=0;j<23;j++){
+        const b=u8[p++];
+        if(b===128){ cur[j]=((u8[p]|(u8[p+1]<<8))<<16)>>16; p+=2; }
+        else cur[j]+=((b<<24)>>24);
+        v[sat+j]=cur[j]*kat;
+      }
+    }
+  }
+  return v;
+}
 function klipVeri(){
   if(_klipD) return _klipD;
   try{
     if(typeof KLIP_VERI==='undefined'||!KLIP_VERI||!KLIP_VERI.b64) return null;
     const bin=atob(KLIP_VERI.b64); const u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
-    _klipD={fps:KLIP_VERI.fps||5,klip:KLIP_VERI.klip,v:new Int16Array(u8.buffer),son:[]};
+    _klipD={fps:KLIP_VERI.fps||25,klip:KLIP_VERI.klip,v:_klipCoz(u8,KLIP_VERI.klip,KLIP_VERI.olcek),son:[]};
     /* FAZ 53: taktik eşleşmesi için havuzun kendi MEDYANI (eşik sabiti yazılmaz).
        Bir kez, yükleme anında hesaplanır (~35 bin kare örneklemesi). */
     try{
@@ -244,18 +274,23 @@ function klipSec(bas,shPx,offLeft,sutSinif,fb,topPx,toksPx,stil,scheme){
 }
 /* Klip karesi (ara değerli): dizi [bx,by,bz, o0..o4, d0..d4] (ft) */
 function klipKare(D,k,tau){
-  /* FAZ 54 B1b: Catmull-Rom — doğrusal ara değer her 0,2 sn'lik düğümde hızı sıçratıyordu
-     (60 fps'de ölçülen ivme 26-47 m/sn²); kübik eğri düğümlerde hız sürekliliği verir. */
+  /* FAZ 56 · Catmull-Rom, UÇLARI DÜZELTİLMİŞ. Veri artık kaynağın kendi hızında (25 kare/sn,
+     40 ms) ve izleme gürültüsü ÇIKARMA ANINDA süzüldü — 1-2-1 düğüm yumuşatma (FAZ 54 B1b)
+     buradan KALKTI, çevrimdışı yapılıyor. Ölçülen (60 fps, 320 klip · kare-kare ivme):
+       doğrusal              tepe  51 · >8 %1,66   ← düğüm sınırlarında darbe
+       CR, uçlar kelepçeli   tepe 142 · >8 %0,64   ← tepe olaylarının HEPSİ klibin ilk %3'ünde
+       CR, uçlar düzeltilmiş tepe  24 · >8 %0,25   ← gerçek veri tabanı: tepe 45 · %0,37
+     Uçlarda i0/i3'ü kelepçelemek (p0=p1) eğriye yapay bir teğet verir; doğrusu komşudan
+     DIŞARIYA uzatmaktır. Beş fazdır aranan "klip karelerindeki aşırı ivme" bunun ta kendisiydi. */
   const fi=Math.max(0,Math.min(k.n-1,tau*D.fps)); const i1=Math.floor(fi), w=fi-i1;
-  const i0=Math.max(0,i1-1), i2=Math.min(k.n-1,i1+1), i3=Math.min(k.n-1,i1+2);
-  /* düğüm yumuşatma (1-2-1): komşularıyla ağırlıklı ortalanmış düğüm — SportVU izleme gürültüsü
-     kübik eğride ivme tepesine dönüşüyordu (ölçüldü: p99 12,6 ↔ gerçek 7,0 m/sn²). */
-  const im1=Math.max(0,i0-1), ip2=Math.min(k.n-1,i3+1);
-  const dg=(idx,pre,nxt,j)=>(D.v[k.o+pre*23+j]+2*D.v[k.o+idx*23+j]+D.v[k.o+nxt*23+j])*0.25;
+  const i2=Math.min(k.n-1,i1+1), son=k.n-1;
+  const g=(i,j)=>D.v[k.o+i*23+j];
   const out=new Array(23);
   const w2=w*w, w3=w2*w;
   for(let j=0;j<23;j++){
-    const p0=dg(i0,im1,i1,j), p1=dg(i1,i0,i2,j), p2=dg(i2,i1,i3,j), p3=dg(i3,i2,ip2,j);
+    const p1=g(i1,j), p2=g(i2,j);
+    const p0=(i1-1>=0)?g(i1-1,j):(2*g(0,j)-g(Math.min(1,son),j));
+    const p3=(i1+2<=son)?g(i1+2,j):(2*g(son,j)-g(Math.max(0,son-1),j));
     out[j]=(0.5*((2*p1)+(-p0+p2)*w+(2*p0-5*p1+4*p2-p3)*w2+(-p0+3*p1-3*p2+p3)*w3))/10;
   }
   return out;
@@ -411,17 +446,27 @@ function klipTick(dt){
     const wk=(p===K.shooter)?1:0.35;
     const o=K.ofs[j]; const om=Math.hypot(o[0],o[1]);
     if(om>0){
-      /* FAZ 54 B1b: kapanış hızı İVMEYLE artar (KLIP_IVME), varışta fren mesafesiyle (√(2·fren·om)) söner —
-         eski sabit 130 px/sn kapanış her klip başında 10 jetona tek karede 4,4 m/sn hız veriyordu
-         (ölçüldü: ivme p99 43,6 m/sn²). Bekleyen tutucu topa sprintle gider (KLIP_BEKLE_V). */
+      /* ── FAZ 56 · KAPANIŞ YASASI: DOYUMLU HIZ ────────────────────────────────────────
+         Ölçüldü (motor içi, jeton başına ayrıştırılmış): klip verisi 25 kare/sn'ye çıkıp
+         süzülünce SAF KLİP konumunun kare-kare ivmesi %0,48'e indi (kapı %0,6), ama ÇİZİLEN
+         konum %1,99, harman OFSETİNİN kendisi %2,70 kaldı — yani kalan ivme kayıttan değil
+         bu kapanıştan geliyordu. Eski yasa üç yerde kırılgandı: (a) ivme rampası (KLIP_IVME),
+         (b) √(2·fren·om) freni 9 m/sn²'lik sabit yavaşlama demekti, (c) om ≤ adım olunca ofset
+         SIFIRLANIP kapanış hızı tek karede kayboluyordu (75 px/sn ≈ 2,5 m/sn = ~150 m/sn²).
+         Yeni yasa hızı UZAKLIĞIN DÜZGÜN bir fonksiyonu yapar: v = V·(1-e^(-om/L)). Sıfıra
+         yaklaşırken hız kendiliğinden söner (ayrı fren yok), ivme tavanı V²/L ≈ 0,7 m/sn².
+         _hv durumu kalktı — durum tutmayan yasa, kare atlansa da tutarlıdır. */
       const hedefV=(K.bekle&&j===K.bekle.j)?KLIP_BEKLE_V:((p===K.shooter)?KLIP_HARMAN_V_SUTOR:KLIP_HARMAN_V);
-      const frenV=Math.sqrt(2*KLIP_FREN*om);
-      p._hv=Math.min(hedefV,frenV,(p._hv||0)+KLIP_IVME*dt);
-      const adim=p._hv*dt; if(om<=adim){ o[0]=0; o[1]=0; p._hv=Math.max(0,p._hv-KLIP_FREN*dt); } else { const k2=(om-adim)/om; o[0]*=k2; o[1]*=k2; } }
-    else if(p._hv>0) p._hv=Math.max(0,p._hv-KLIP_FREN*dt);   /* FAZ 55: rampa ivme tavanıyla söner (ani kesme = 150 m/sn² sıçrama) */
+      const L=hedefV*KLIP_HARMAN_L;
+      const kv=hedefV*(1-Math.exp(-om/L));
+      const adim=Math.min(om,kv*dt);
+      if(om-adim<0.4){ o[0]=0; o[1]=0; } else { const k2=(om-adim)/om; o[0]*=k2; o[1]*=k2; } }
     let nx=_inX(c[0]+o[0]+K.warp[0]*ww*wk), ny=_inY(c[1]+o[1]+K.warp[1]*ww*wk);   /* hedef saha içinde: çizgi dışındaki sokucu İÇERİ YÜRÜR (kırpma sıçratmaz — FAZ 40 dersi, ölçüldü 1,35 m tek kare) */
-    /* FAZ 51: tek karede en çok KLIP_VMAX·dt yol — fazlası ofsete eklenir (jeton yörüngeye koşarak yetişir) */
-    { const mx=KLIP_VMAX*dt, ddx=nx-p.x, ddy=ny-p.y, dd=Math.hypot(ddx,ddy); if(dd>mx&&dd>0.01){ const kx=p.x+ddx/dd*mx, ky=p.y+ddy/dd*mx; o[0]+=kx-nx; o[1]+=ky-ny; nx=kx; ny=ky; } }
+    /* ⚠ FAZ 56: KLIP_VMAX kırpması KALDIRILDI. Kırpma 5 kare/sn'lik kaydın ara değerinden doğan
+       hız sıçramalarını bastırmak için vardı; jetonu yörüngenin gerisinde bıraktığı için fark
+       ofsete yazılıyor ve bir sonraki karede DAHA HIZLI kapanıyordu (kırpma açılıp kapandığında
+       tek karede 9 m/sn'lik fark = ~540 m/sn²). 25 kare/sn'de kaydın kendi hızı zaten gerçektir
+       ve izleme sıçraması çıkarıcıda (12,5 m/sn) eleniyor. */
     /* hız KIRPILMIŞ konumdan: klipte çizgi dışına taşan oyuncu (NBA verisi) kırpılınca kırpılmamış hedefle
        fark her karede sabit kalır ve hız 2500 px/sn'ye çıkar — ölçüldü, savunmacı sahadan uçtu */
     /* ⚠ FAZ 55: konum düşük-geçiren filtre (nx=0,34·önceki+0,66·yeni) DENENDİ ve ölçülerek

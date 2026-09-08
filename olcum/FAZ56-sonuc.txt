@@ -1,0 +1,93 @@
+FAZ 54 — CANLI SAHNE ÖLÇÜMÜ · etiket=f56-5 · 66003 kare · 1100 sn · hız 1× · seed=987654321 · 2026-09-08T22:21
+  konsol hatası 0 · ölçek: DUVAR (ekran) — sahne→maç oranı için iz-kaydet
+  ✓                  loose>held geçişi              93 (+dead>held 6)                  hedef ≥ 1
+  ✓                  loose>pass geçişi              0                                  hedef 0
+  ✓                  pass>shot geçişi               0                                  hedef 0
+  ✓                  shot>pass geçişi               0                                  hedef 0
+  ✗                  hayalet held (taşıyıcısız) sn  0.2 sn · %0.02 kare · en uzun 0.0sn@816s(free) · 0.0sn@174s(free) · 0.0sn@933s(steal) · 0.0sn@478s(quarter_start) · 0.0sn@721s(free) hedef 0,0 sn
+  ✓                  top saha dışı %                0.00 {}                            hedef < 0,5
+  ✓                  oyuncu saha dışı % (>10 px)    0.00 (>0 px: 0.00)                 hedef 0,0
+  ✗                  üç saniye (eski fizik) max sn  4.3 · >3 sn 5 olay · C@731s        hedef ≤ 3,0 (koreografi bizim)  (n=156)
+  bilgi: boyada kalış TÜMÜ (klip dahil) max 8.0 sn · >3 sn 44 olay — gerçek SportVU aynı ölçütle p99 7,4 · max 12,8 sn · >3 sn %22,2 (kapı YOK: klip gerçek kayıttır)
+  ✓                  üçlük mesafe aralığı (m)       6.84 – 9.62 · ort 7.55 · köşe %30 · >8,3 m %6 hedef min < 7,0 · max > 8,0  (n=69)
+  ✗                  ivme KARE-KARE (m/sn²)         tepe 1002 · p99,9 92.9 · >8 %1.59 (aşanların %33'i klip) — gerçek: tepe 45 · >8 %0,37 hedef >8 payı ≤ %0,6 · tepe ≤ 60 (gerçek veri)  (n=659389)
+  ✗                  oyuncu ivmesi (m/sn², 0,2 sn)  p99 9.0 · p99,9 20.2 · max 35 · >8: %1.33 (gerçek: p99 7,0 · p99,9 13,0 · >8 %0,58) hedef p99 ≤ 8,0 (gerçek veri)  (n=59940)
+  ✗                  sahipsiz top % (ham)           9.59 · en uzun 6.37 sn · >0,8: 44 · >1,4: 16 hedef < 2 · en uzun < 0,8 sn
+  ✗                  sahipsiz top % (canlı)         6.13 · en uzun 5.63 sn · >0,8: 28 (gerçek pay %23,8 · p90 1,60 sn) hedef < 6 · en uzun < 2,0 sn (gerçek p90 1,60)
+  ✓                  iç içe geçme % (<40 cm)        9.98 · <55 cm %18.61 · en uzun 55 cm altı 3.3 sn (SG–SF) hedef <40 cm ≤ %13 · <55 cm ≤ %26 (gerçek %10,41 / %20,71 · +%25 pay)
+  ✗                  üst üste binme % (<70 cm)      28.8 · canlı top 35.9 (gerçek %37,7) hedef %29,7 – 45,7 (gerçek ±8)
+  ✗                  ortalama pas mesafesi (m)      4.99 · <2 m: 19                    hedef 5,0 – 6,5  (n=165)
+  ✓                  ortalama oyuncu hızı (m/sn)    1.84 · klip 2.05 (gerçek 1,90) · fizik 1.52 hedef 1,70 – 2,00 (gerçek 1,90)  (n=659393)
+  ✓                  0–1 m/sn bandı %               34.1 · bantlar {"0-1":34.1,"1-2":26.4,"2-3.5":25.7,"3.5-5":11.7,"5-7.5":2.2,">7.5":0} (gerçek %32,0) hedef ≥ 27 (gerçek 32,0)
+  ✓                  >7,5 m/sn bandı %              0                                  hedef < 0,5
+  ✓                  donuk oyuncu % (<0,3 px)       14.7 (gerçek %18,8)                hedef %13,8 – 23,8 (gerçek ±5)
+  ✓                  savunmadan >4 m %              16.6 · ort 2.53 m (gerçek %15,6 · 2,43 m) hedef ≤ 20 · ort ≤ 3,0 m (gerçek 15,6)  (n=133441)
+  ÖRNEKLEM YETERSİZ  sokmada 6 m içindeki arkadaş   ort 1.8 · <3 olan 12/17            hedef ≥ 3  (n=17)
+  ✗                  orta çizgiyi geçen C           12/47 · {"SG":16,"PF":2,"PG":13,"C":12,"SF":4} hedef ≤ 1/13  (n=47)
+  bilgi: geçişler {"idle>held":1,"held>pass":187,"pass>held":174,"held>shot":75,"shot>rim":71,"rim>loose":64,"loose>held":93,"shot>loose":5,"held>loose":9,"pass>loose":13,"held>dead":9,"dead>held":6,"rim>held":7,"dead>loose":2,"dead>shot":1} · held→held el değişimi 62
+  bilgi: en uzun sahipsiz: 1028.0s score3 6.37sn · 497.9s miss3 5.63sn · 825.7s free 5.28sn · 528.6s miss2 4.77sn · 721.1s free 3.82sn
+  bilgi: canlı-top hız bantları {"0-1":29.6,"1-2":28.7,"2-3.5":25.6,"3.5-5":13.3,"5-7.5":2.8,">7.5":0}
+  bilgi: KLİP kareleri {"0-1":27.8,"1-2":30.1,"2-3.5":23.9,"3.5-5":14.8,"5-7.5":3.4,">7.5":0} (n=401053) · ESKİ FİZİK kareleri {"0-1":44,"1-2":20.5,"2-3.5":28.4,"3.5-5":6.8,"5-7.5":0.2,">7.5":0} (n=258340)
+
+FAZ 54 — CANLI SAHNE ÖLÇÜMÜ · etiket=f56-6 · 65997 kare · 1100 sn · hız 1× · seed=987654321 · 2026-09-08T22:42
+  konsol hatası 0 · ölçek: DUVAR (ekran) — sahne→maç oranı için iz-kaydet
+  ✓                  loose>held geçişi              96 (+dead>held 3)                  hedef ≥ 1
+  ✓                  loose>pass geçişi              0                                  hedef 0
+  ✓                  pass>shot geçişi               0                                  hedef 0
+  ✓                  shot>pass geçişi               0                                  hedef 0
+  ✗                  hayalet held (taşıyıcısız) sn  0.2 sn · %0.02 kare · en uzun 0.0sn@486s(free) · 0.0sn@959s(steal) · 0.0sn@645s(free) · 0.0sn@184s(steal) · 0.0sn@537s(foul) hedef 0,0 sn
+  ✓                  top saha dışı %                0.00 {}                            hedef < 0,5
+  ✓                  oyuncu saha dışı % (>10 px)    0.00 (>0 px: 0.00)                 hedef 0,0
+  ✗                  üç saniye (eski fizik) max sn  3.4 · >3 sn 4 olay · C@728s        hedef ≤ 3,0 (koreografi bizim)  (n=156)
+  bilgi: boyada kalış TÜMÜ (klip dahil) max 9.9 sn · >3 sn 35 olay — gerçek SportVU aynı ölçütle p99 7,4 · max 12,8 sn · >3 sn %22,2 (kapı YOK: klip gerçek kayıttır)
+  ✓                  üçlük mesafe aralığı (m)       6.84 – 9.62 · ort 7.55 · köşe %30 · >8,3 m %6 hedef min < 7,0 · max > 8,0  (n=69)
+  ✗                  ivme KARE-KARE (m/sn²)         tepe 540 · p99,9 89.9 · >8 %1.68 (aşanların %32'i klip) — gerçek: tepe 45 · >8 %0,37 hedef >8 payı ≤ %0,6 · tepe ≤ 60 (gerçek veri)  (n=659332)
+  ✗                  oyuncu ivmesi (m/sn², 0,2 sn)  p99 8.9 · p99,9 17.7 · max 36 · >8: %1.31 (gerçek: p99 7,0 · p99,9 13,0 · >8 %0,58) hedef p99 ≤ 8,0 (gerçek veri)  (n=59940)
+  ✗                  sahipsiz top % (ham)           8.22 · en uzun 4.83 sn · >0,8: 43 · >1,4: 15 hedef < 2 · en uzun < 0,8 sn
+  ✗                  sahipsiz top % (canlı)         4.93 · en uzun 4.10 sn · >0,8: 25 (gerçek pay %23,8 · p90 1,60 sn) hedef < 6 · en uzun < 2,0 sn (gerçek p90 1,60)
+  ✓                  iç içe geçme % (<40 cm)        11.04 · <55 cm %18.78 · en uzun 55 cm altı 3.1 sn (PG–PF) hedef <40 cm ≤ %13 · <55 cm ≤ %26 (gerçek %10,41 / %20,71 · +%25 pay)
+  ✗                  üst üste binme % (<70 cm)      29.1 · canlı top 36.5 (gerçek %37,7) hedef %29,7 – 45,7 (gerçek ±8)
+  ✓                  ortalama pas mesafesi (m)      5.04 · <2 m: 21                    hedef 5,0 – 6,5  (n=184)
+  ✓                  ortalama oyuncu hızı (m/sn)    1.83 · klip 2.02 (gerçek 1,90) · fizik 1.50 hedef 1,70 – 2,00 (gerçek 1,90)  (n=659345)
+  ✓                  0–1 m/sn bandı %               34.3 · bantlar {"0-1":34.3,"1-2":26.3,"2-3.5":26.2,"3.5-5":11.1,"5-7.5":2,">7.5":0} (gerçek %32,0) hedef ≥ 27 (gerçek 32,0)
+  ✓                  >7,5 m/sn bandı %              0                                  hedef < 0,5
+  ✓                  donuk oyuncu % (<0,3 px)       14.8 (gerçek %18,8)                hedef %13,8 – 23,8 (gerçek ±5)
+  ✓                  savunmadan >4 m %              16.9 · ort 2.54 m (gerçek %15,6 · 2,43 m) hedef ≤ 20 · ort ≤ 3,0 m (gerçek 15,6)  (n=131259)
+  ÖRNEKLEM YETERSİZ  sokmada 6 m içindeki arkadaş   ort 1.7 · <3 olan 14/18            hedef ≥ 3  (n=18)
+  ✗                  orta çizgiyi geçen C           10/45 · {"SG":15,"PF":3,"PG":8,"C":10,"SF":9} hedef ≤ 1/13  (n=45)
+  bilgi: geçişler {"idle>held":1,"held>pass":206,"pass>held":191,"held>shot":76,"shot>rim":70,"rim>loose":64,"loose>held":96,"shot>loose":5,"held>loose":9,"pass>loose":15,"held>dead":6,"dead>loose":3,"rim>held":6,"dead>held":3} · held→held el değişimi 59
+  bilgi: en uzun sahipsiz: 1058.3s score3 4.83sn · 362.3s miss2 4.10sn · 422.1s score2 3.28sn · 551.7s miss2 2.90sn · 959.3s steal 2.60sn
+  bilgi: canlı-top hız bantları {"0-1":29.7,"1-2":28.8,"2-3.5":26.4,"3.5-5":12.5,"5-7.5":2.6,">7.5":0}
+  bilgi: KLİP kareleri {"0-1":28.1,"1-2":29.6,"2-3.5":25.2,"3.5-5":14,"5-7.5":3.1,">7.5":0} (n=408135) · ESKİ FİZİK kareleri {"0-1":44.4,"1-2":21,"2-3.5":27.9,"3.5-5":6.4,"5-7.5":0.2,">7.5":0} (n=251210)
+
+FAZ 54 — CANLI SAHNE ÖLÇÜMÜ · etiket=f56-7 · 65991 kare · 1100 sn · hız 1× · seed=987654321 · 2026-09-08T23:02
+  konsol hatası 0 · ölçek: DUVAR (ekran) — sahne→maç oranı için iz-kaydet
+  ✓                  loose>held geçişi              99 (+dead>held 5)                  hedef ≥ 1
+  ✓                  loose>pass geçişi              0                                  hedef 0
+  ✓                  pass>shot geçişi               0                                  hedef 0
+  ✓                  shot>pass geçişi               0                                  hedef 0
+  ✗                  hayalet held (taşıyıcısız) sn  0.2 sn · %0.02 kare · en uzun 0.0sn@611s(free) · 0.0sn@470s(free) · 0.0sn@743s(sportmenlikDisi) · 0.0sn@621s(free) · 0.0sn@995s(score3) hedef 0,0 sn
+  ✓                  top saha dışı %                0.00 {}                            hedef < 0,5
+  ✓                  oyuncu saha dışı % (>10 px)    0.00 (>0 px: 0.00)                 hedef 0,0
+  ✗                  üç saniye (eski fizik) max sn  3.9 · >3 sn 2 olay · C@247s        hedef ≤ 3,0 (koreografi bizim)  (n=146)
+  bilgi: boyada kalış TÜMÜ (klip dahil) max 7.1 sn · >3 sn 44 olay — gerçek SportVU aynı ölçütle p99 7,4 · max 12,8 sn · >3 sn %22,2 (kapı YOK: klip gerçek kayıttır)
+  ✓                  üçlük mesafe aralığı (m)       6.84 – 9.62 · ort 7.55 · köşe %30 · >8,3 m %6 hedef min < 7,0 · max > 8,0  (n=69)
+  ✗                  ivme KARE-KARE (m/sn²)         tepe 1622 · p99,9 96.3 · >8 %1.75 (aşanların %38'i klip) — gerçek: tepe 45 · >8 %0,37 hedef >8 payı ≤ %0,6 · tepe ≤ 60 (gerçek veri)  (n=659271)
+  ✗                  oyuncu ivmesi (m/sn², 0,2 sn)  p99 8.9 · p99,9 19.3 · max 35 · >8: %1.33 (gerçek: p99 7,0 · p99,9 13,0 · >8 %0,58) hedef p99 ≤ 8,0 (gerçek veri)  (n=59940)
+  ✗                  sahipsiz top % (ham)           8.80 · en uzun 4.06 sn · >0,8: 51 · >1,4: 13 hedef < 2 · en uzun < 0,8 sn
+  ✗                  sahipsiz top % (canlı)         5.11 · en uzun 4.06 sn · >0,8: 26 (gerçek pay %23,8 · p90 1,60 sn) hedef < 6 · en uzun < 2,0 sn (gerçek p90 1,60)
+  ✓                  iç içe geçme % (<40 cm)        10.87 · <55 cm %18.66 · en uzun 55 cm altı 3.3 sn (C–C) hedef <40 cm ≤ %13 · <55 cm ≤ %26 (gerçek %10,41 / %20,71 · +%25 pay)
+  ✗                  üst üste binme % (<70 cm)      28.1 · canlı top 35.7 (gerçek %37,7) hedef %29,7 – 45,7 (gerçek ±8)
+  ✓                  ortalama pas mesafesi (m)      5.09 · <2 m: 12                    hedef 5,0 – 6,5  (n=180)
+  ✓                  ortalama oyuncu hızı (m/sn)    1.86 · klip 2.10 (gerçek 1,90) · fizik 1.51 hedef 1,70 – 2,00 (gerçek 1,90)  (n=659279)
+  ✓                  0–1 m/sn bandı %               33.9 · bantlar {"0-1":33.9,"1-2":25.6,"2-3.5":26.3,"3.5-5":11.7,"5-7.5":2.5,">7.5":0} (gerçek %32,0) hedef ≥ 27 (gerçek 32,0)
+  ✓                  >7,5 m/sn bandı %              0                                  hedef < 0,5
+  ✓                  donuk oyuncu % (<0,3 px)       15.0 (gerçek %18,8)                hedef %13,8 – 23,8 (gerçek ±5)
+  ✓                  savunmadan >4 m %              16.9 · ort 2.59 m (gerçek %15,6 · 2,43 m) hedef ≤ 20 · ort ≤ 3,0 m (gerçek 15,6)  (n=131066)
+  ÖRNEKLEM YETERSİZ  sokmada 6 m içindeki arkadaş   ort 2.1 · <3 olan 10/16            hedef ≥ 3  (n=16)
+  ✗                  orta çizgiyi geçen C           9/47 · {"SG":17,"PF":2,"PG":12,"SF":7,"C":9} hedef ≤ 1/13  (n=47)
+  bilgi: geçişler {"idle>held":1,"held>pass":204,"pass>held":190,"held>shot":81,"shot>rim":76,"rim>loose":70,"loose>held":99,"shot>loose":5,"held>loose":9,"pass>loose":13,"held>dead":7,"dead>held":5,"dead>loose":2,"rim>held":6} · held→held el değişimi 61
+  bilgi: en uzun sahipsiz: 641.9s miss3 4.06sn · 879.7s miss3 2.95sn · 918.4s steal 2.80sn · 525.4s miss2 2.60sn · 930.4s miss2 2.55sn
+  bilgi: canlı-top hız bantları {"0-1":29.4,"1-2":27.9,"2-3.5":25.9,"3.5-5":13.6,"5-7.5":3.2,">7.5":0}
+  bilgi: KLİP kareleri {"0-1":27.1,"1-2":29.2,"2-3.5":24.6,"3.5-5":15.1,"5-7.5":4,">7.5":0} (n=395979) · ESKİ FİZİK kareleri {"0-1":44.2,"1-2":20.2,"2-3.5":28.7,"3.5-5":6.7,"5-7.5":0.2,">7.5":0} (n=263300)
+

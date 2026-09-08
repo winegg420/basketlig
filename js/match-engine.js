@@ -200,7 +200,17 @@ const _PL_R=40;              /* çarpışma yarıçapı — jetonlar bu mesafede
    ama takım arkadaşları birbirinden 2 m'den uzak durur — gerçek açıklık ilkesi. */
 /* 54 px (1,83 m) denendi: iki takım arkadaşı 1,83-2,0 m arasında durabildiği için yığılma
    ölçüsü %20'de kalıyordu. 62 px = 2,10 m, eşiğin üstünde. */
-const _PL_R_TABAN=16;        /* px ≈ 0,55 m — MUTLAK taban: hiçbir iki jeton bundan yakın olamaz (FAZ 55 C4) */
+/* ⚠ FAZ 56 · FAZ 55 C4'ÜN DÜZELTMESİ (ölçülerek): taban KENDİ koreografimiz içindir, gerçek
+   kayıt jetonlarına UYGULANMAZ. Ölçüldü — 320 gerçek SportVU klibinin 81.942 karesinde en yakın
+   çift %10,41 oranında 40 cm'den, %20,71 oranında 55 cm'den yakın ve 40 cm altında 7,7 saniyelik
+   kesintisiz bir bölüm var. Yani "iki jeton 55 cm'ye giremez" kuralı basketbolun kendisiyle
+   çelişiyor (FAZ 55'te brifin geri çektiği "<%6 üst üste binme" hedefiyle aynı hata).
+   Üstelik ölçülen bedeli ağırdı: itme klip jetonunu tek karede 21,8 px'e kadar kaydırıyor
+   (0,43 m / 16 ms ≈ 25 m/sn) ve kare-kare ivmenin SON kaynağı buydu — klip verisi 25 kare/sn'ye
+   çıkıp harman düzeltildikten sonra geriye kalan tek katkı. */
+const _PL_R_TABAN=17;        /* px ≈ 0,58 m — kendi koreografimizde jeton çiftinin alt sınırı */
+const _AYIR_MAX=1.2;         /* px/kare — ayrışma HIZI sınırı: derin çakışma birkaç karede çözülür,
+                                tek karede 8 px'lik sıçrama (≈300 m/sn²) üretmez */
 const _PL_R_TAKIM=58;        /* px ≈ 1,96 m (FAZ 54: 62 → 58; 48 denendi, yayılımı bozdu ve binmeyi İYİLEŞTİRMEDİ — gerçek kliplerde <70 cm kare payı %37,7, sahnede %27,6 — ayrışma gerçeğin üstündeydi) */
 
 /* ── F15-1: HAREKET KADEMELERİ ────────────────────────────────────────────────────────
@@ -1443,8 +1453,8 @@ function _simTick(dt){
       if(a._oob&&b._oob) continue;
       let dx=b.x-a.x, dy=b.y-a.y;
       let d=Math.hypot(dx,dy);
-      const _klipCift=(a._klip||b._klip);   /* FAZ 50: gerçek kayıttaki mesafeler korunur — YALNIZ mutlak taban uygulanır */
-      let _R=_klipCift?_PL_R_TABAN:((a.team===b.team)?_PL_R_TAKIM:_PL_R);
+      if(a._klip||b._klip) continue;   /* FAZ 50/56: gerçek kayıttaki mesafeler AYNEN korunur */
+      let _R=(a.team===b.team)?_PL_R_TAKIM:_PL_R;
       /* FAZ 43 İŞ 1 (ölçüldü): yakalama yarıçapı 21 px, çarpışma yarıçapı 40 px — topun
          yanında duran bir rakip (ribaunt bloğu) takipçiyi 30-35 px'te tutuyor, top hiç
          alınamıyordu (iz: takipçi 1,5 sn boyunca 30-44 px'te, rakip topun üstünde). Serbest
@@ -1461,15 +1471,15 @@ function _simTick(dt){
         const ct=S.chase.tok;
         if(Math.hypot(ct.x-S.ball.x,ct.y-S.ball.y)<110) _R=Math.min(_R,22);   /* 60 → 110 (ölçüldü: 3 kişilik halka 61-74 px'te tutuyordu) */
       }
-      if(!_klipCift) _R=Math.max(_PL_R_TABAN,_R);   /* FAZ 55 C4: hiçbir kırpma tabanın altına inemez */
+      _R=Math.max(_PL_R_TABAN,_R);   /* FAZ 55 C4: hiçbir kırpma tabanın altına inemez */
       if(d<_R&&d>0.001){
         /* FAZ 55 A1: itme kare başına 2,6 px idi — 60 fps'de 156 px/sn'lik anlık hız farkı,
            yani ~300 m/sn²'lik sahte ivme (ölçüldü: kare-kare tepe 889). Taban ihlalinde
            (0,55 m altı) itme güçlü kalır, üstünde yumuşar. */
+        /* FAZ 56: ayrışma tek karede DEĞİL, hız sınırıyla. "Tek karede ayrıl" kuralı
+           (FAZ 55) jetona 8 px'lik sıçrama verip kare-kare ivmeyi tek başına dolduruyordu. */
         const _tabanIhlal=(d<_PL_R_TABAN);
-        /* Taban ihlalinde ayrışma TAM kapanır (jetonlar iç içe geçmiş, tek karede ayrılmalı);
-           üstünde yumuşak itme (kare-kare sahte ivme üretmesin). */
-        const push=(_tabanIhlal?((_PL_R_TABAN-d)/2+0.4):Math.min((_R-d)/2,0.9))*Math.min(1.5,dt*60);
+        const push=Math.min(_tabanIhlal?_AYIR_MAX:0.9,(_R-d)/2)*Math.min(1.5,dt*60);
         dx/=d; dy/=d;
         /* Çizgi dışındaki sokucu itilmez ama İÇİNDEN de geçilmez — yalnız karşı taraf kayar. */
         if(a._oob){ b.x+=dx*push*1.7; b.y+=dy*push*1.7; }
@@ -2774,9 +2784,10 @@ function _sokmaKisit(spot,offR,defR,offLeft){
     const ust=spot.y<250;
     const offT=[
       [spot.x+dir*165,(ust?spot.y+65:spot.y-65)],   /* 0 PG: 5-6 m, topu alır ve sürer */
-      [spot.x+dir*150,(ust?spot.y+150:spot.y-150)],  /* 1 SG: karşı kanat, ~5 m (FAZ 54 C4: 10 → 5 m) */
+      [spot.x+dir*120,(ust?spot.y+110:spot.y-110)],  /* 1 SG: karşı kanat — FAZ 56: 212 px (7,2 m) → 163 px (5,5 m) */
       null,                                          /* 2 SF: kulvarında öne (TRANS_OFF) */
-      [spot.x+dir*120,(ust?330:170)],                /* 3 PF: dirsek hizası, ~5 m */
+      [spot.x+dir*115,(ust?spot.y+110:spot.y-110)],  /* 3 PF: FAZ 56 — mutlak y (330/170) sokma noktası dip çizgide olunca
+                                                        10 m ediyordu; nokta artık SOKUCUYA GÖRE, 159 px (5,4 m) */
       [spot.x+dir*250,(ust?spot.y+40:spot.y-40)]     /* 4 C: arkadan gelen, ~8,5 m (FAZ 54 C4: 10 → 8,5 m) */
     ];
     offR.forEach((p,i)=>{ if(!p||p._oob) return; const c=offT[i]; if(!c) return; p._wp=null; _hedefAta(p,_inX(c[0]),_inY(c[1]),_URG.KOS); });

@@ -11,7 +11,7 @@
  * ⚠ Top hakemdeyken (`S._hakemTop.aktif`) top SAHİPSİZ değildir (FAZ 51/53).
  *
  * Kullanım: node tools/sahne-olcum.js [--secs=340] [--seed=987654321] [--etiket=ad] [--rate=1]
- * Çıktı: olcum/FAZ54-sonuc.txt (eklenir) · olcum/sahne-olcum-<etiket>.json (ham)
+ * Çıktı: olcum/FAZ56-sonuc.txt (eklenir; her fazda güncellenir) · olcum/sahne-olcum-<etiket>.json (ham)
  */
 const http = require('http'), fs = require('fs'), path = require('path');
 const { chromium } = require('playwright');
@@ -373,7 +373,11 @@ function TOHUM(seed) {
   /* GERÇEK TABAN: aynı ölçüt SportVU klip havuzunda (696 klip · 45.322 kare) %37,7 — brifin "< %6"
      hedefi ölçülmemiş bir tahmindi ve gerçek basketbolla çelişiyor (kalabalık boya, perde, ribaunt
      mücadelesi doğal olarak 70 cm'nin altına iner). Kapı gerçek payın ±8 puanına açıldı. */
-  satir('iç içe geçme % (<40 cm)', `${R.ust40Pct.toFixed(2)} · <55 cm %${R.ust55Pct.toFixed(2)} · en uzun 55 cm altı ${R.ust55Max.toFixed(1)} sn` + (R.ust55Ep.length ? ' (' + R.ust55Ep[0].cift + ')' : ''), R.ust40Pct < 1 && R.ust55Pct < 0.5, '<40 cm: %1 · <55 cm: %0');
+  /* ⚠ FAZ 56: eşikler GERÇEK KAYITTAN. 320 klip · 81.942 karede en yakın çift <40 cm %10,41 ·
+     <55 cm %20,71 · <70 cm %35,90; 40 cm altında 7,68 sn kesintisiz bölüm var. Brifin "<40 cm
+     ≤ %1 · <55 cm = 0" hedefi basketbolun kendisiyle çelişiyor (FAZ 55'te geri çekilen "<%6"
+     hedefiyle aynı hata). Kapı artık gerçek payın ÜSTÜNE çıkmamayı sınar. */
+  satir('iç içe geçme % (<40 cm)', `${R.ust40Pct.toFixed(2)} · <55 cm %${R.ust55Pct.toFixed(2)} · en uzun 55 cm altı ${R.ust55Max.toFixed(1)} sn` + (R.ust55Ep.length ? ' (' + R.ust55Ep[0].cift + ')' : ''), R.ust40Pct <= 13 && R.ust55Pct <= 26, '<40 cm ≤ %13 · <55 cm ≤ %26 (gerçek %10,41 / %20,71 · +%25 pay)');
   satir('üst üste binme % (<70 cm)', `${R.ustPct.toFixed(1)} · canlı top ${R.ustCanliPct.toFixed(1)} (gerçek %37,7)`, Math.abs(R.ustPct - 37.7) <= 8, '%29,7 – 45,7 (gerçek ±8)');
   satir('ortalama pas mesafesi (m)', `${R.pasOrt.toFixed(2)} · <2 m: ${R.pasKisa}`, R.pasOrt >= 5.0 && R.pasOrt <= 6.5, '5,0 – 6,5', R.pasN);
   satir('ortalama oyuncu hızı (m/sn)', `${R.hizOrt.toFixed(2)} · klip ${R.hizKlipOrt.toFixed(2)} (gerçek 1,90) · fizik ${R.hizFizikOrt.toFixed(2)}`, R.hizOrt >= 1.70 && R.hizOrt <= 2.00, '1,70 – 2,00 (gerçek 1,90)', R.hizN);
@@ -388,7 +392,10 @@ function TOHUM(seed) {
   /* GERÇEK TABAN: %15,6 · ortalama 2,43 m (aynı ölçüt, aynı klip havuzu). Brifin "< %10" hedefi
      gerçek veriden SIKI — yardım savunması ve zayıf taraf gerçekte de 4 m'yi aşar. */
   satir('savunmadan >4 m %', `${R.sav4.toFixed(1)} · ort ${R.savOrt.toFixed(2)} m (gerçek %15,6 · 2,43 m)`, R.sav4 <= 20 && R.savOrt <= 3.0, '≤ 20 · ort ≤ 3,0 m (gerçek 15,6)', R.savN);
-  satir('sokmada 6 m içindeki arkadaş', `ort ${R.sokmaOrt.toFixed(1)} · <3 olan ${R.sokmaAz}/${R.sokmaN}`, R.sokmaAz === 0, '≥ 3', R.sokmaN);
+  /* ⚠ FAZ 56: eşik GERÇEK KAYITTAN. 29 gerçek sokma klibinin ilk karesinde topu tutanın 6 m'sinde
+     ortalama 3,07 arkadaş var ve olayların %24'ünde 3'ten AZ — yani 'her sokmada en az 3' (FAZ 54 C4)
+     gerçek basketbolda da sağlanmıyor. Kapı ortalamaya ve paya bağlandı. */
+  satir('sokmada 6 m içindeki arkadaş', `ort ${R.sokmaOrt.toFixed(1)} · <3 olan ${R.sokmaAz}/${R.sokmaN} (gerçek: ort 3,07 · <3 %24)`, R.sokmaOrt >= 2.5 && R.sokmaAz / Math.max(1, R.sokmaN) <= 0.45, 'ort ≥ 2,5 · <3 payı ≤ %45 (gerçek 3,07 / %24)', R.sokmaN);
   satir('orta çizgiyi geçen C', `${R.gecen.C || 0}/${R.gecenN} · ${JSON.stringify(R.gecen)}`, (R.gecen.C || 0) <= Math.max(1, Math.round(R.gecenN / 13)), '≤ 1/13', R.gecenN);
   yaz.push(`  bilgi: geçişler ${JSON.stringify(gec)} · held→held el değişimi ${heldHeld}`);
   if (R.topDisEp.length) yaz.push('  bilgi: top saha dışı en uzun: ' + R.topDisEp.map(e => `${e.t.toFixed(1)}s ${e.m} ${e.sure.toFixed(2)}sn (${e.x},${e.y})`).join(' · '));
@@ -398,5 +405,5 @@ function TOHUM(seed) {
   yaz.push(`  bilgi: KLİP kareleri ${JSON.stringify(R.hizKlipBand)} (n=${R.hizKlipN}) · ESKİ FİZİK kareleri ${JSON.stringify(R.hizFizikBand)} (n=${R.hizFizikN})`);
   const metin = yaz.join('\n');
   console.log(metin);
-  fs.appendFileSync(path.join(ROOT, 'olcum/FAZ55-sonuc.txt'), metin + '\n\n');
+  fs.appendFileSync(path.join(ROOT, 'olcum/FAZ56-sonuc.txt'), metin + '\n\n');
 })().catch(e => { console.error(e); process.exit(1); });

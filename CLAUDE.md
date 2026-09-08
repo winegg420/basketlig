@@ -1843,3 +1843,54 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   hiçbir çift için delinemez ve hiçbir `_R` kırpması altına inemez; taban ihlalinde ayrışma tek
   karede tamamlanır, üstünde itme yumuşaktır (sert itme kare-kare sahte ivme üretiyordu).
   Ölçülen: <40 cm %10,46 → %0,02, <70 cm %30,5 (gerçek bandın içinde).
+
+- **BEŞ FAZDIR ARANAN "IŞINLANMA"NIN KÖK NEDENİ VERİNİN KARE HIZIYDI (FAZ 56):** klip kütüphanesi
+  kaynağın (SportVU, 25 kare/sn) **beşte biri** olan 5 kare/sn ile taşınıyordu; düğümler arası
+  200 ms vardı ve o boşlukta bir oyuncu 1,5-2 m yol alır. Aradaki 11 kareyi hangi eğri uydurursa
+  uydursun, ivme düğümlerde sıçrar. FAZ 40/48/49/54/55'te denenen ALTI ayrı düzeltme (doğrusal ara
+  değer, Catmull-Rom, 1-2-1 düğüm yumuşatma, konum düşük-geçiren filtre, hız kırpma `KLIP_VMAX`,
+  ivme rampası `KLIP_IVME`) hep aynı duvara çarptı: **kaynak veride o bilgi yoktu.** Veri 25 kare/sn
+  ile yeniden çıkarıldı (40 ms; ara değerin uydurduğu mesafe 1,5-2 m → 25-33 cm). Bir kusuru
+  düzeltmek için kodu altı kez değiştirdiysen, sorunun VERİDE olup olmadığını sor.
+- **NİCEMLEME KARE HIZIYLA BİRLİKTE SIKILAŞMALI (FAZ 56, FAZ 55 dersinin veri tarafı):** klipler
+  0,1 ft'e (3 cm) yuvarlanıyordu. 200 ms'de bu görünmez; 40 ms'de **0,76 m/sn'lik sahte hız farkı,
+  yani ~19 m/sn²'lik sahte ivme** demektir — ölçüldü: 25 kare/sn'ye çıkınca kaynağın kendi >8 payı
+  %52,5 çıktı, 0,01 ft'e inince %8,9. Ham SportVU float'tır; nicemleme bizim seçimimizdi ve delta
+  kodlamada 0,01 ft bedavadır. FAZ 55'te ÖLÇÜM ARACININ yuvarlaması kusur üretmişti; burada
+  VERİNİN yuvarlaması. Kare-kare türev alınan her yerde çözünürlüğü kare süresiyle birlikte düşün.
+- **KAYNAĞI SÜZMEK ≠ JETONU SÜZMEK (FAZ 56, FAZ 54/55'te elenen denemelerin doğru biçimi):** optik
+  izlemenin kendi gürültüsü 25 kare/sn'de ivmeye dönüşür. Süzgeç ÇIKARMA ANINDA ve SİMETRİK
+  (1-2-1, faz kaydırmaz) uygulanır — düzeltilen şey YÖRÜNGENİN KENDİSİDİR, jeton onu birebir izler.
+  FAZ 54/55'te elenen denemelerde jeton yörüngeden GECİKTİRİLİYORDU ve gecikme sonraki karede
+  kapanmak zorunda kalıp hızı patlatıyordu. Ölçülen: kare-kare ivme tepe 597 → 24 m/sn², >8 payı
+  %9,65 → %0,25, yörünge sapması ortalama **0,6 cm**.
+- **KÜBİK ARA DEĞERİN UÇ DÜĞÜMÜ KELEPÇELENMEZ (FAZ 56, ölçülerek bulundu):** Catmull-Rom'da
+  `i0=Math.max(0,i1-1)` yazmak klibin ilk karesinde p0=p1 yapar ve eğriye yapay bir teğet verir.
+  Ölçüldü: 60 m/sn²'yi aşan olayların **401'inin 401'i** klibin ilk %3'ündeydi; uç düğümü komşudan
+  DIŞARIYA uzatınca (p0 = 2·A[0] − A[1]) tepe 142 → 24'e indi. Doğrusal ara değer bu tuzağa
+  düşmez ama düğüm sınırlarında darbe ivmesi üretir (>8 %1,66 ↔ CR %0,25) — 25 kare/sn'de doğru
+  seçim uçları düzeltilmiş Catmull-Rom'dur.
+- **HARMAN OFSETİNİN KAPANIŞI DA BİR HAREKETTİR — DOYUMLU HIZ YASASI (FAZ 56):** klip verisi
+  temizlendikten sonra jeton başına ayrıştırılan ölçüm şunu gösterdi: SAF KLİP konumu %0,48,
+  ÇİZİLEN konum %1,99, harman OFSETİ %2,70 (>8 payı). Yani kalan ivme kayıttan değil ofsetin
+  kapanışından geliyordu. Eski yasa üç yerde kırılgandı: ivme rampası, √(2·fren·om) freni
+  (9 m/sn²) ve `om ≤ adım` olunca ofsetin SIFIRLANIP kapanış hızının tek karede kaybolması
+  (75 px/sn ≈ 150 m/sn²). Yeni yasa hızı uzaklığın düzgün fonksiyonu yapar: **v = V·(1−e^(−om/L))**
+  — sıfıra yaklaşırken kendiliğinden söner, ivme tavanı V²/L ≈ 0,7 m/sn², durum değişkeni yok.
+  Ölçülen: ofsetin >8 payı %2,70 → **%0,01**. Bir "yaklaştırma/harman" yazarken hızın uzaklığa
+  göre TÜREVİNİ sınırla; eşik/kırpma ile kapatma.
+- **GERÇEK OYUNCULAR İÇ İÇE GEÇER — FAZ 55 C4'ÜN DÜZELTMESİ (FAZ 56, ölçülerek):** 320 gerçek
+  SportVU klibinin 81.942 karesinde en yakın çift **%10,41 oranında 40 cm'den, %20,71 oranında
+  55 cm'den** yakın ve 40 cm altında **7,7 saniyelik kesintisiz** bir bölüm var. FAZ 55'te
+  koyduğum "hiçbir iki jeton 55 cm'ye giremez" mutlak tabanı bu yüzden yanlıştı (brifin FAZ 55'te
+  kendi geri çektiği "<%6 üst üste binme" hedefiyle aynı hata) ve bedeli ağırdı: itme klip
+  jetonunu tek karede **21,8 px** kaydırıyor (≈25 m/sn) ve kare-kare ivmenin son kaynağı oluyordu.
+  Taban artık YALNIZ kendi koreografimize uygulanır (17 px) ve ayrışma HIZ SINIRLIDIR
+  (`_AYIR_MAX`); klip çiftinde kayıttaki mesafeler aynen korunur. Kapı da gerçek paya bağlandı.
+- **SOKMADA OYUNCULAR ÇAĞRILMAZ, KULVARINDA TUTULUR (FAZ 56 · 4b):** "en az 3 arkadaş 6 m içinde"
+  kapısı FAZ 54'te yazılmıştı ama yalnız BEKLİYORDU; kimse yaklaşmadığı için her sokma 3,5 sn
+  zaman aşımıyla açılıyordu. Üç arkadaşı sokucunun 4,5 m'sine ÇAĞIRMAK denendi ve ölçülerek
+  elendi: uzunlar dip çizgiye iniyor, geçiş kulvarları boşalıyor ve topu orta sahaya taşıyan
+  pivot 0/19 → 13/47'ye fırlıyordu (FAZ 47'de kullanıcının şikâyet ettiği kusurun geri dönüşü).
+  Doğrusu tutmaktır: hedef, oyuncunun KENDİ yönünde sokucudan 5,7 m'ye kırpılır — kulvar ve rol
+  korunur, yalnız uzaklaşma sınırlanır.
