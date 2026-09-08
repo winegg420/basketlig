@@ -1812,3 +1812,34 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   daraltıyor (yayılım y L1 0,310 → **0,415**, eşik 0,35). 170 dengede kalıyor.
   Aynı turda `_PL_R_TAKIM` 62 → 48 denendi: üst üste binmeyi İYİLEŞTİRMEDİ (%27,6 → %23,9,
   ters yön) ve yayılımı bozdu — 58'de bırakıldı.
+
+- **ÖLÇÜM ARACININ YUVARLAMASI KENDİ KUSURUNU ÜRETİR (FAZ 55, bu turun en pahalı bulgusu):**
+  `sahne-olcum.js` jeton konumlarını `toFixed(1)` (0,1 px) ile saklıyordu ve "kare-kare ivme
+  >8 m/sn² payı %45,7" diyordu. Kanıt: GERÇEK SportVU yörüngesi aynı 60 fps matematiğiyle ham
+  float örneklenince >8 payı **%0,37**, aynı veri 0,1 px'e yuvarlanınca **%45,30** — sahnedeki
+  değerle birebir. dt=16,7 ms'de 0,1 px'lik yuvarlama 0,2 m/sn sahte hız, yani ~12 m/sn² sahte
+  ivme üretir. Kare-kare türev alan her ölçüm aracında konum tam hassasiyetle saklanmalı; bir
+  "aşırı ivme" bulgusunda önce aracın kendi çözünürlüğünü hesapla.
+- **KLİP JETONUNU YÖRÜNGEDEN GECİKTİREN HER YAPI HIZI ARTIRIR (FAZ 55, üçüncü kez ölçülerek
+  elendi):** klip kaydı ARA DEĞERLİ bir yörüngedir; jetonu ondan sapan her kural (ivme sınırı —
+  FAZ 54 ve 55; konum düşük-geçiren filtre — FAZ 55) sapmayı kapatırken kaydın kendisinden hızlı
+  hareket etmek zorunda kalır. Ölçülen: ivme sınırı → klip hızı 2,24 → 3,07 m/sn · >7,5 bandı
+  %0,1 → %3,4 · oyuncu saha dışı %0,00 → %0,60 (`_inX/_inY` kırpması bypass edildiği için);
+  düşük-geçiren filtre → kare-kare tepe 845 → 1297 · >8 %3,67 → %3,92 · ort hız 1,97 → 2,06.
+  Doğru yapı: hız TAVANI (`KLIP_VMAX`) + kırpılan farkı ofsete geri yazmak, ofseti de ivme
+  tavanıyla (`KLIP_FREN`) SÖNDÜRMEK — ofset rampasını ani sıfırlamak tek karede 2,5 m/sn kayıp
+  (~150 m/sn²) demektir.
+- **`held` ⇒ TAŞIYICI GEÇERLİ BİR OYUNCU OLMALI — HAKEM İSTİSNASI SESSİZ REGRESYON ÜRETTİ
+  (FAZ 55 B1):** FAZ 51'de top ölü topta hakeme veriliyor; hakemdeki topu bekleyen oyuncuya
+  aktaran dal `!S.ball.carrier` şartını arıyordu, oysa taşıyıcı HAKEMİN KENDİSİ olduğu için şart
+  hiç tutmadı ve top maçta toplam 10,3 sn (en uzunu 5,88 sn) `held` modunda "hayalet" olarak
+  kaldı. Şart "taşıyıcı bir OYUNCU değilse" oldu; ayrıca `_ballStep` başında yapısal ağ var
+  (taşıyıcı `S.players` dışındaysa top `dead` olur ve en yakın oyuncu alır). Bir varlığı oyuncu
+  dizisine SOKMADAN taşıyıcı yapan her mekanizma, o dizinin varlığını sınayan bütün şartları
+  gözden geçirmeyi gerektirir.
+- **ÜST ÜSTE BİNMEDE MUTLAK TABAN İSTİSNASIZDIR, ORTALAMA DEĞİL (FAZ 55 C4):** "<%6 üst üste
+  binme" hedefi brifin kendisi tarafından geri çekildi (gerçek kliplerde %37,7 — FAZ 54 ölçümü);
+  kusur ORTALAMADA değil UÇ DEĞERLERDEDİR. `_PL_R_TABAN = 16 px (0,55 m)` klip jetonları dahil
+  hiçbir çift için delinemez ve hiçbir `_R` kırpması altına inemez; taban ihlalinde ayrışma tek
+  karede tamamlanır, üstünde itme yumuşaktır (sert itme kare-kare sahte ivme üretiyordu).
+  Ölçülen: <40 cm %10,46 → %0,02, <70 cm %30,5 (gerçek bandın içinde).

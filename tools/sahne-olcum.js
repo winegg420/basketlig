@@ -79,7 +79,7 @@ function TOHUM(seed) {
             ft: S._ftAktif ? 1 : 0, inb: S.inb ? 1 : 0,
             kl: (S.klip && S.klip.aktif) ? 1 : 0, oam: (S.oam && S.oam.aktif) ? (S.oam.faz || '?') : '-',
             os: S.offSide ? 1 : 0, cu: S._snapN | 0,
-            p: S.players.map(p => [+p.x.toFixed(1), +p.y.toFixed(1), (S.offP || []).indexOf(p) >= 0 ? 1 : 0, (p.pl && p.pl.poz) || '?', (p._oob || p._oobDonus) ? 1 : 0, p._klip ? 1 : 0])
+            p: S.players.map(p => [+p.x.toFixed(3), +p.y.toFixed(3), (S.offP || []).indexOf(p) >= 0 ? 1 : 0, (p.pl && p.pl.poz) || '?', (p._oob || p._oobDonus) ? 1 : 0, p._klip ? 1 : 0])
           });
         }
       } catch (e) {}
@@ -123,6 +123,18 @@ function TOHUM(seed) {
   }
   R.gec = gec; R.heldHeld = heldHeld;
 
+  /* B1 · HAYALET held: mod 'held' ama taşıyıcı yok — ekranda top boşlukta asılı kalır */
+  { let n = 0, cur = null; const ep = [];
+    K.forEach(f => {
+      const hayalet = (f.m === 'held' && f.c < 0 && !f.hk);   /* ölü topu YÖNETEN hakemin elindeki top hayalet değildir */
+      if (hayalet) { n++; if (!cur) cur = { t: f.t, tip: f.tip, x: f.bx, y: f.by }; }
+      else if (cur) { cur.sure = f.t - cur.t; ep.push(cur); cur = null; }
+    });
+    if (cur) { cur.sure = K[K.length - 1].t - cur.t; ep.push(cur); }
+    ep.sort((a, b) => b.sure - a.sure);
+    R.hayaletN = n; R.hayaletPct = pct(n, N);
+    R.hayaletSn = ep.reduce((a, e) => a + e.sure, 0); R.hayaletEp = ep.slice(0, 5); }
+
   /* top saha dışı */
   let topDis = 0, topDisMod = {}, topDisEp = [], cur = null;
   K.forEach(f => {
@@ -156,7 +168,7 @@ function TOHUM(seed) {
     if (!canli(f) || (f.m !== 'held' && f.m !== 'pass')) { boya.clear(); continue; }
     const rim = rimOf(f);
     f.p.forEach((p, j) => {
-      const icinde = p[2] && Math.abs(p[1] - 250) < 2.45 * PXM && Math.abs(p[0] - rim[0]) < 5.8 * PXM;
+      const icinde = p[2] && Math.abs(p[1] - 250) < 2.45 * PXM && Math.abs(p[0] - rim[0]) < 5.8 * PXM;   /* topu tutan DAHİL (FAZ 55 A2) */
       if (!icinde) { if (boya.has(j)) { boyaN++; boya.delete(j); } return; }
       const v = boya.get(j) || { s: 0, kl: 0, n: 0 };
       v.s += dt; v.n++; if (p[5]) v.kl++; boya.set(j, v);
@@ -169,9 +181,13 @@ function TOHUM(seed) {
   R.boyaMaxFizik = boyaMaxFizik; R.boyaIhlalFizik = boyaIhlalFizik; R.boyaOrnFizik = boyaOrnFizik;
 
   /* üçlük mesafesi — MOTOR olayları (bütün maç) */
-  const u3 = ham.sut3.map(s => { const r = s.left ? RIM.L : RIM.R; return { d: m(Math.hypot(s.x - r[0], s.y - r[1])), kose: Math.abs(s.y - 250) > 160 }; });
+  const u3 = ham.sut3.map(s => {
+    const r = s.left ? RIM.L : RIM.R;
+    const a = Math.abs(Math.atan2(s.y - r[1], (s.left ? 1 : -1) * (s.x - r[0])) * 180 / Math.PI);
+    return { d: m(Math.hypot(s.x - r[0], s.y - r[1])), kose: a > 52 };   /* açı ölçütü — sut-cografya-check ile aynı */
+  });
   R.u3n = u3.length;
-  if (u3.length) { const ds = u3.map(x => x.d); R.u3min = Math.min(...ds); R.u3max = Math.max(...ds); R.u3ort = ds.reduce((a, b) => a + b, 0) / ds.length; R.u3kose = pct(u3.filter(x => x.kose).length, u3.length); R.u3derin = pct(ds.filter(d => d > 8.3).length, ds.length); }
+  if (u3.length) { const ds = u3.map(x => x.d); R.u3min = Math.min(...ds); R.u3max = Math.max(...ds); R.u3ort = ds.reduce((a, b) => a + b, 0) / ds.length; R.u3kose = pct(u3.filter(x => x.kose).length, u3.length);   /* gerçek: üçlükler içinde köşe ~%26-28 */ R.u3derin = pct(ds.filter(d => d > 8.3).length, ds.length); }
 
   /* hız + ivme (3 karelik pencere · duvar ölçeği) */
   const hizlar = [], hizCanli = [], ivme = [], hizKlip = [], hizFizik = [];
@@ -201,6 +217,27 @@ function TOHUM(seed) {
   R.hizCanliOrt = hizCanli.reduce((a, b) => a + b, 0) / (hizCanli.length || 1); R.hizCanliBand = band(hizCanli);
   R.hizKlipOrt = hizKlip.reduce((a, b) => a + b, 0) / (hizKlip.length || 1); R.hizKlipBand = band(hizKlip); R.hizKlipN = hizKlip.length;
   R.hizFizikOrt = hizFizik.reduce((a, b) => a + b, 0) / (hizFizik.length || 1); R.hizFizikBand = band(hizFizik); R.hizFizikN = hizFizik.length;
+  /* A1 · KARE-KARE ivme (brifin ölçütü): ardışık iki karenin hız farkı. 0,2 sn penceresi
+     gerçek veriyle kıyaslanabilir tek ölçüttür (SportVU 5 kare/sn); bu ise ekrandaki tek
+     karelik sıçramayı yakalar — çarpışma itmesi ve doğrudan konum atamaları buraya düşer. */
+  { const kk = []; const vP = new Map();
+    for (let i = 1; i < N; i++) {
+      const a = K[i - 1], f = K[i];
+      const dtk = (f.st != null && a.st != null) ? (f.st - a.st) : (f.t - a.t);
+      if (dtk <= 0.004 || dtk > 0.05 || f.t < 1.0 || f.cu !== a.cu) continue;
+      f.p.forEach((p, j) => {
+        const q = a.p[j]; if (!q) return;
+        const v = m(Math.hypot(p[0] - q[0], p[1] - q[1])) / dtk; if (v > 25) return;
+        const pr = vP.get(j);
+        if (pr && (f.t - pr.t) > 0 && (f.t - pr.t) <= 0.05) kk.push({ a: Math.abs(v - pr.v) / (f.t - pr.t), kl: p[5], t: f.t, poz: p[3] });
+        vP.set(j, { v, t: f.t });
+      });
+    }
+    kk.sort((x, y) => x.a - y.a);
+    R.kkN = kk.length; R.kkMax = kk.length ? kk[kk.length - 1].a : 0;
+    R.kkP999 = kk.length ? kk[Math.floor(kk.length * 0.999)].a : 0;
+    R.kk8 = pct(kk.filter(x => x.a > 8).length, kk.length);
+    R.kk8Klip = pct(kk.filter(x => x.a > 8 && x.kl).length, Math.max(1, kk.filter(x => x.a > 8).length)); }
   const iv = ivme.map(x => x.a).sort((a, b) => a - b);
   R.ivmeN = iv.length; R.ivmeMax = iv[iv.length - 1] || 0; R.ivmeP99 = iv[Math.floor(iv.length * 0.99)] || 0; R.ivmeP999 = iv[Math.floor(iv.length * 0.999)] || 0;
   R.ivme8 = ivme.filter(x => x.a > 8).length; R.ivme8Klip = ivme.filter(x => x.a > 8 && x.kl).length;
@@ -242,6 +279,21 @@ function TOHUM(seed) {
     if (canli(f)) { canliN++; if (var_) ustCanliN++; }
   });
   R.ustPct = pct(ustN, N); R.ustCanliPct = pct(ustCanliN, canliN);
+  /* C4 · UÇ DEĞERLER: 0,55 m (16 px) mutlak taban ve 0,40 m — jetonlar iç içe geçmemeli */
+  { let n40 = 0, n55 = 0, cur = null; const ep = [];
+    K.forEach(f => {
+      let en = 1e9, cift = null;
+      for (let i = 0; i < f.p.length; i++) for (let j = i + 1; j < f.p.length; j++) {
+        if (f.p[i][4] || f.p[j][4]) continue;
+        const d = Math.hypot(f.p[i][0] - f.p[j][0], f.p[i][1] - f.p[j][1]);
+        if (d < en) { en = d; cift = f.p[i][3] + '–' + f.p[j][3]; }
+      }
+      if (en < 0.40 * PXM) n40++;
+      if (en < 0.55 * PXM) { n55++; if (!cur) cur = { t: f.t, cift, d: en / PXM }; }
+      else if (cur) { cur.sure = f.t - cur.t; ep.push(cur); cur = null; }
+    });
+    ep.sort((a, b) => b.sure - a.sure);
+    R.ust40Pct = pct(n40, N); R.ust55Pct = pct(n55, N); R.ust55Ep = ep.slice(0, 5); R.ust55Max = ep.length ? ep[0].sure : 0; }
 
   /* pas mesafesi */
   const paslar = [];
@@ -301,11 +353,16 @@ function TOHUM(seed) {
   satir('loose>pass geçişi', g('loose>pass') + g('dead>pass') + g('rim>pass'), g('loose>pass') + g('dead>pass') + g('rim>pass') === 0, '0');
   satir('pass>shot geçişi', g('pass>shot'), g('pass>shot') === 0, '0');
   satir('shot>pass geçişi', g('shot>pass'), g('shot>pass') === 0, '0');
+  satir('hayalet held (taşıyıcısız) sn', `${R.hayaletSn.toFixed(1)} sn · %${R.hayaletPct.toFixed(2)} kare` + (R.hayaletEp.length ? ' · en uzun ' + R.hayaletEp.map(e => e.sure.toFixed(1) + 'sn@' + e.t.toFixed(0) + 's(' + e.tip + ')').join(' · ') : ''), R.hayaletSn <= 0.05, '0,0 sn');
   satir('top saha dışı %', R.topDisPct.toFixed(2) + ' ' + JSON.stringify(R.topDisMod), R.topDisPct < 0.5, '< 0,5');
   satir('oyuncu saha dışı % (>10 px)', R.oyDis10Pct.toFixed(2) + ' (>0 px: ' + R.oyDisPct.toFixed(2) + ')', R.oyDis10Pct === 0, '0,0');
   satir('üç saniye (eski fizik) max sn', R.boyaMaxFizik.toFixed(1) + ' · >3 sn ' + R.boyaIhlalFizik + ' olay' + (R.boyaOrnFizik ? ' · ' + R.boyaOrnFizik.poz + '@' + R.boyaOrnFizik.t.toFixed(0) + 's' : ''), R.boyaMaxFizik <= 3.0, '≤ 3,0 (koreografi bizim)', R.boyaN);
   yaz.push('  bilgi: boyada kalış TÜMÜ (klip dahil) max ' + R.boyaMax.toFixed(1) + ' sn · >3 sn ' + R.boyaIhlal + ' olay — gerçek SportVU aynı ölçütle p99 7,4 · max 12,8 sn · >3 sn %22,2 (kapı YOK: klip gerçek kayıttır)');
   satir('üçlük mesafe aralığı (m)', R.u3n ? `${R.u3min.toFixed(2)} – ${R.u3max.toFixed(2)} · ort ${R.u3ort.toFixed(2)} · köşe %${R.u3kose.toFixed(0)} · >8,3 m %${R.u3derin.toFixed(0)}` : '—', R.u3n && R.u3min < 7.0 && R.u3max > 8.0, 'min < 7,0 · max > 8,0', R.u3n);
+  /* GERÇEK TABAN (aynı 60 fps ara değerli yörünge, ham float): p99 5,9 · p99,9 11,7 ·
+     tepe 45 · >8 %0,37. "Tepe ≤ 8" gerçek veride bile sağlanmaz (45); ölçülebilir hedef
+     >8 PAYIDIR. Kapı: >8 payı ≤ %0,6 (gerçek %0,37 × 1,6) ve tepe ≤ 60. */
+  satir('ivme KARE-KARE (m/sn²)', `tepe ${R.kkMax.toFixed(0)} · p99,9 ${R.kkP999.toFixed(1)} · >8 %${R.kk8.toFixed(2)} (aşanların %${R.kk8Klip.toFixed(0)}'i klip) — gerçek: tepe 45 · >8 %0,37`, R.kk8 <= 0.6 && R.kkMax <= 60, '>8 payı ≤ %0,6 · tepe ≤ 60 (gerçek veri)', R.kkN);
   satir('oyuncu ivmesi (m/sn², 0,2 sn)', `p99 ${R.ivmeP99.toFixed(1)} · p99,9 ${R.ivmeP999.toFixed(1)} · max ${R.ivmeMax.toFixed(0)} · >8: %${(100 * R.ivme8 / Math.max(1, R.ivmeN)).toFixed(2)} (gerçek: p99 7,0 · p99,9 13,0 · >8 %0,58)`, R.ivmeP99 <= 8.0, 'p99 ≤ 8,0 (gerçek veri)', R.ivmeN);
   satir('sahipsiz top % (ham)', `${R.bosPct.toFixed(2)} · en uzun ${R.bosMax.toFixed(2)} sn · >0,8: ${R.bos08} · >1,4: ${R.bos14}`, R.bosPct < 2 && R.bosMax < 0.8, '< 2 · en uzun < 0,8 sn');
   /* GERÇEK TABAN: gerçek kliplerde topu kimsenin tutmadığı kare %23,8; kesintisiz süre p50 0,60 ·
@@ -316,6 +373,7 @@ function TOHUM(seed) {
   /* GERÇEK TABAN: aynı ölçüt SportVU klip havuzunda (696 klip · 45.322 kare) %37,7 — brifin "< %6"
      hedefi ölçülmemiş bir tahmindi ve gerçek basketbolla çelişiyor (kalabalık boya, perde, ribaunt
      mücadelesi doğal olarak 70 cm'nin altına iner). Kapı gerçek payın ±8 puanına açıldı. */
+  satir('iç içe geçme % (<40 cm)', `${R.ust40Pct.toFixed(2)} · <55 cm %${R.ust55Pct.toFixed(2)} · en uzun 55 cm altı ${R.ust55Max.toFixed(1)} sn` + (R.ust55Ep.length ? ' (' + R.ust55Ep[0].cift + ')' : ''), R.ust40Pct < 1 && R.ust55Pct < 0.5, '<40 cm: %1 · <55 cm: %0');
   satir('üst üste binme % (<70 cm)', `${R.ustPct.toFixed(1)} · canlı top ${R.ustCanliPct.toFixed(1)} (gerçek %37,7)`, Math.abs(R.ustPct - 37.7) <= 8, '%29,7 – 45,7 (gerçek ±8)');
   satir('ortalama pas mesafesi (m)', `${R.pasOrt.toFixed(2)} · <2 m: ${R.pasKisa}`, R.pasOrt >= 5.0 && R.pasOrt <= 6.5, '5,0 – 6,5', R.pasN);
   satir('ortalama oyuncu hızı (m/sn)', `${R.hizOrt.toFixed(2)} · klip ${R.hizKlipOrt.toFixed(2)} (gerçek 1,90) · fizik ${R.hizFizikOrt.toFixed(2)}`, R.hizOrt >= 1.70 && R.hizOrt <= 2.00, '1,70 – 2,00 (gerçek 1,90)', R.hizN);
@@ -340,5 +398,5 @@ function TOHUM(seed) {
   yaz.push(`  bilgi: KLİP kareleri ${JSON.stringify(R.hizKlipBand)} (n=${R.hizKlipN}) · ESKİ FİZİK kareleri ${JSON.stringify(R.hizFizikBand)} (n=${R.hizFizikN})`);
   const metin = yaz.join('\n');
   console.log(metin);
-  fs.appendFileSync(path.join(ROOT, 'olcum/FAZ54-sonuc.txt'), metin + '\n\n');
+  fs.appendFileSync(path.join(ROOT, 'olcum/FAZ55-sonuc.txt'), metin + '\n\n');
 })().catch(e => { console.error(e); process.exit(1); });

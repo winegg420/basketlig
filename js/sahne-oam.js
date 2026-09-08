@@ -382,7 +382,7 @@ function oamAtes(){
          2,82 sn — gerçek ribaunt 0,8-1,5 sn içinde alınır). Sekme kısaldı; uzaktaki
          ribaundcuya yönlendirme dalı da aynı oranda düştü. */
       let away=Math.atan2(sh.y-rim[1],sh.x-rim[0])+(_sr()*2-1)*1.1;
-      let sp=_srand(38,70);   /* FAZ 54: 58-104 → 38-70 (top ribaundcunun uzanma alanında kalsın) */
+      let sp=_srand(32,58);   /* FAZ 54/55: 58-104 → 32-58 (top ribaundcunun uzanma alanında kalsın) */
       try{ const nxR=_peekNext(); if(nxR&&nxR.type==='reb'&&nxR.rebId!=null){
         const nm=offP.concat(defP).find(p=>p.pl&&p.pl.id===nxR.rebId);
         if(nm){ const dn=oamDR(nm,rim); if(dn>90){ away=Math.atan2(nm.y-rim[1],nm.x-rim[0])+(_sr()*2-1)*0.35; sp=_srand(70,98); } }
@@ -581,7 +581,7 @@ function oamBoyaKac(S,O,p){
     const ic=Math.abs(p.y-250)<2.45*29.5429&&Math.abs(p.x-rim[0])<5.8*29.5429;
     if(!ic){ p._boyaT=0; return null; }
     p._boyaT=(p._boyaT||0)+(S._oamDt||0.016);
-    if(p._boyaT<1.9) return null;
+    if(p._boyaT<1.6) return null;
     const hy=250+(p.y<250?-1:1)*(2.45*29.5429+22);
     return [_inX(p.x),_inY(hy)];
   }catch(e){ return null; }
@@ -1120,7 +1120,10 @@ function oamTorenTick(S,O,dt){
   movePlayersForEvent=function(ev,paint){
     try{ const S=oamS(); if(S&&S.oam&&S.oam.aktif){ S.oam.aktif=false; S.cikisSonra=0; } }catch(e){}
     /* FAZ 51: hakem topu hâlâ elindeyken yeni olay geldiyse topu bekleyen oyuncuya hemen verir (top kenarda kalmasın) */
-    try{ const S=oamS(); const HT=S&&S._hakemTop; if(HT&&HT.aktif){ HT.aktif=false; const sh=HT.shooter; if(sh&&isFinite(sh.x)&&!S.ball.carrier){ const dd=Math.hypot(sh.x-S.ball.x,sh.y-S.ball.y); _ballPass(sh,Math.max(0.3,Math.min(0.9,dd/330))); } } }catch(e){}
+    /* FAZ 55 B1: taşıyıcı HAKEMİN KENDİSİ olduğu için `!S.ball.carrier` şartı tutmuyor, pas hiç
+       atılmıyor ve top hakemin elinde kalıyordu (ölçüldü: 5,88 sn "hayalet held", taç sonrası).
+       Şart artık "taşıyıcı bir OYUNCU değilse" — hakemdeki top bekleyen oyuncuya verilir. */
+    try{ const S=oamS(); const HT=S&&S._hakemTop; if(HT&&HT.aktif){ HT.aktif=false; const sh=HT.shooter; const oyuncuda=(S.ball.carrier&&(S.players||[]).indexOf(S.ball.carrier)>=0); if(sh&&isFinite(sh.x)&&!oyuncuda){ const dd=Math.hypot(sh.x-S.ball.x,sh.y-S.ball.y); _ballPass(sh,Math.max(0.3,Math.min(0.9,dd/330))); } } }catch(e){}
     const t=ev&&ev.type;
     const ftMi=!!(ev&&ev.shots&&ev.shots.length&&ev.shots[0].kind==='ft');
     try{ const S=oamS(); if(OAM_ACIK&&S&&S.players&&S.players.length>=10){ if(TOREN_ON.indexOf(t)>=0) oamTorenKur(S,t,ev); else if(ftMi) oamTorenKur(S,'free',ev); } }catch(e){}

@@ -417,13 +417,18 @@ function klipTick(dt){
       const hedefV=(K.bekle&&j===K.bekle.j)?KLIP_BEKLE_V:((p===K.shooter)?KLIP_HARMAN_V_SUTOR:KLIP_HARMAN_V);
       const frenV=Math.sqrt(2*KLIP_FREN*om);
       p._hv=Math.min(hedefV,frenV,(p._hv||0)+KLIP_IVME*dt);
-      const adim=p._hv*dt; if(om<=adim){ o[0]=0; o[1]=0; p._hv=0; } else { const k2=(om-adim)/om; o[0]*=k2; o[1]*=k2; } }
-    else p._hv=0;
+      const adim=p._hv*dt; if(om<=adim){ o[0]=0; o[1]=0; p._hv=Math.max(0,p._hv-KLIP_FREN*dt); } else { const k2=(om-adim)/om; o[0]*=k2; o[1]*=k2; } }
+    else if(p._hv>0) p._hv=Math.max(0,p._hv-KLIP_FREN*dt);   /* FAZ 55: rampa ivme tavanıyla söner (ani kesme = 150 m/sn² sıçrama) */
     let nx=_inX(c[0]+o[0]+K.warp[0]*ww*wk), ny=_inY(c[1]+o[1]+K.warp[1]*ww*wk);   /* hedef saha içinde: çizgi dışındaki sokucu İÇERİ YÜRÜR (kırpma sıçratmaz — FAZ 40 dersi, ölçüldü 1,35 m tek kare) */
     /* FAZ 51: tek karede en çok KLIP_VMAX·dt yol — fazlası ofsete eklenir (jeton yörüngeye koşarak yetişir) */
     { const mx=KLIP_VMAX*dt, ddx=nx-p.x, ddy=ny-p.y, dd=Math.hypot(ddx,ddy); if(dd>mx&&dd>0.01){ const kx=p.x+ddx/dd*mx, ky=p.y+ddy/dd*mx; o[0]+=kx-nx; o[1]+=ky-ny; nx=kx; ny=ky; } }
     /* hız KIRPILMIŞ konumdan: klipte çizgi dışına taşan oyuncu (NBA verisi) kırpılınca kırpılmamış hedefle
        fark her karede sabit kalır ve hız 2500 px/sn'ye çıkar — ölçüldü, savunmacı sahadan uçtu */
+    /* ⚠ FAZ 55: konum düşük-geçiren filtre (nx=0,34·önceki+0,66·yeni) DENENDİ ve ölçülerek
+       ELENDİ — üçüncü başarısız A1 denemesi. Filtre jetonu yörüngenin gerisinde bıraktığı için
+       fark bir sonraki karede kapanıyor: kare-kare tepe 845 → 1297, >8 payı %3,67 → %3,92,
+       ortalama hız 1,97 → 2,06 m/sn (bandın dışı). Klip yörüngesinden SAPAN her yapı, sapmayı
+       kapatırken kaydın kendisinden hızlı hareket etmek zorunda kalıyor. */
     const ox=p.x, oy=p.y;
     p.x=nx; p.y=ny; p._px=p.x; p._py=p.y;
     if(!K.atildi){ p.tx=p.x; p.ty=p.y; }   /* şuttan sonra hedefler koreografinindir (ribaunt, serbest atış dizilişi) */
@@ -468,7 +473,7 @@ function klipTick(dt){
       else { b.carrier=en; b.mode='held'; b.noDrib=false; b._heldAt=S.time; }
     } else if(b.mode!=='held'){ b.mode='held'; b._heldAt=S.time; }
   }
-  else if(b.mode==='held'&&b.carrier&&Math.hypot(b.carrier.x-b.x,b.carrier.y-b.y)>KLIP_TUTMA_FT*1.3*pxFt){ b.carrier=null; b.mode='pass'; b.target=en; b.from=[b.x,b.y]; }   /* FAZ 54 A5: 4 → 6,4 ft — ölçüldü, 103 pasın 48'i 2 m altındaydı (sürme/ofset titremesi) */
+  else if(b.mode==='held'&&b.carrier&&Math.hypot(b.carrier.x-b.x,b.carrier.y-b.y)>KLIP_TUTMA_FT*1.6*pxFt){ b.carrier=null; b.mode='pass'; b.target=en; b.from=[b.x,b.y]; }   /* FAZ 54 A5: 4 → 6,4 ft — ölçüldü, 103 pasın 48'i 2 m altındaydı (sürme/ofset titremesi) */
   else if(b.mode==='pass'){ b.target=en; }
   /* loose / rim / dead: olduğu gibi kalır — hücumcu 4 ft'e girince 'held' */
   b.rot=(b.rot||0)+dt*(b.mode==='pass'?720:180);

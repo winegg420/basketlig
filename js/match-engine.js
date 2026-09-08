@@ -200,6 +200,7 @@ const _PL_R=40;              /* çarpışma yarıçapı — jetonlar bu mesafede
    ama takım arkadaşları birbirinden 2 m'den uzak durur — gerçek açıklık ilkesi. */
 /* 54 px (1,83 m) denendi: iki takım arkadaşı 1,83-2,0 m arasında durabildiği için yığılma
    ölçüsü %20'de kalıyordu. 62 px = 2,10 m, eşiğin üstünde. */
+const _PL_R_TABAN=16;        /* px ≈ 0,55 m — MUTLAK taban: hiçbir iki jeton bundan yakın olamaz (FAZ 55 C4) */
 const _PL_R_TAKIM=58;        /* px ≈ 1,96 m (FAZ 54: 62 → 58; 48 denendi, yayılımı bozdu ve binmeyi İYİLEŞTİRMEDİ — gerçek kliplerde <70 cm kare payı %37,7, sahnede %27,6 — ayrışma gerçeğin üstündeydi) */
 
 /* ── F15-1: HAREKET KADEMELERİ ────────────────────────────────────────────────────────
@@ -1422,14 +1423,14 @@ function _simTick(dt){
     if(canliTop&&S.offP&&S.offSide!=null&&!(S.oam&&S.oam.aktif)){
       const rimC=_rim(S.offSide);
       S.offP.forEach(p=>{
-        if(!p||p._klip||p._oob||p===bl.carrier){ p._boyaT=0; return; }
+        if(!p||p._klip||p._oob){ if(p) p._boyaT=0; return; }   /* FAZ 55 A2: topu tutan da sayaca dahil */
         const icinde=Math.abs(p.y-250)<2.45*29.5429&&Math.abs(p.x-rimC[0])<5.8*29.5429;
         if(!icinde){ p._boyaT=0; return; }
         p._boyaT=(p._boyaT||0)+dt;
-        if(p._boyaT>=1.9&&(p._boyaCikis||0)<S.time){   /* FAZ 54: 2,4 → 1,9 sn, JOG → KOS (ölçüldü: 3,9 sn'ye kadar çıkıyordu) */
+        if(p._boyaT>=1.6&&(p._boyaCikis||0)<S.time){   /* FAZ 54: 2,4 → 1,9 sn, JOG → KOS (ölçüldü: 3,9 sn'ye kadar çıkıyordu) */
           p._boyaCikis=S.time+1.4;
           const ty=250+(p.y<250?-1:1)*(2.45*29.5429+22);
-          p.tx=_inX(p.x); p.ty=_inY(ty); p._wp=null; _setUrg(p,_URG.KOS); p._lock=S.time+0.7;
+          p.tx=_inX(p.x); p.ty=_inY(ty); p._wp=null; _setUrg(p,_URG.KOS); p._lock=S.time+1.4;   /* FAZ 55 A2: 0,7 → 1,4 sn (kaçış penceresiyle aynı) */
         }
       });
     } else if(S.offP){ S.offP.forEach(p=>{ if(p) p._boyaT=0; }); }
@@ -1440,10 +1441,10 @@ function _simTick(dt){
     for(let j=i+1;j<P.length;j++){
       const a=P[i],b=P[j];
       if(a._oob&&b._oob) continue;
-      if(a._klip||b._klip) continue;   /* FAZ 50: gerçek kayıttaki mesafeler korunur */
       let dx=b.x-a.x, dy=b.y-a.y;
       let d=Math.hypot(dx,dy);
-      let _R=(a.team===b.team)?_PL_R_TAKIM:_PL_R;
+      const _klipCift=(a._klip||b._klip);   /* FAZ 50: gerçek kayıttaki mesafeler korunur — YALNIZ mutlak taban uygulanır */
+      let _R=_klipCift?_PL_R_TABAN:((a.team===b.team)?_PL_R_TAKIM:_PL_R);
       /* FAZ 43 İŞ 1 (ölçüldü): yakalama yarıçapı 21 px, çarpışma yarıçapı 40 px — topun
          yanında duran bir rakip (ribaunt bloğu) takipçiyi 30-35 px'te tutuyor, top hiç
          alınamıyordu (iz: takipçi 1,5 sn boyunca 30-44 px'te, rakip topun üstünde). Serbest
@@ -1460,8 +1461,15 @@ function _simTick(dt){
         const ct=S.chase.tok;
         if(Math.hypot(ct.x-S.ball.x,ct.y-S.ball.y)<110) _R=Math.min(_R,22);   /* 60 → 110 (ölçüldü: 3 kişilik halka 61-74 px'te tutuyordu) */
       }
+      if(!_klipCift) _R=Math.max(_PL_R_TABAN,_R);   /* FAZ 55 C4: hiçbir kırpma tabanın altına inemez */
       if(d<_R&&d>0.001){
-        const push=Math.min((_R-d)/2,2.6)*Math.min(1.5,dt*60);
+        /* FAZ 55 A1: itme kare başına 2,6 px idi — 60 fps'de 156 px/sn'lik anlık hız farkı,
+           yani ~300 m/sn²'lik sahte ivme (ölçüldü: kare-kare tepe 889). Taban ihlalinde
+           (0,55 m altı) itme güçlü kalır, üstünde yumuşar. */
+        const _tabanIhlal=(d<_PL_R_TABAN);
+        /* Taban ihlalinde ayrışma TAM kapanır (jetonlar iç içe geçmiş, tek karede ayrılmalı);
+           üstünde yumuşak itme (kare-kare sahte ivme üretmesin). */
+        const push=(_tabanIhlal?((_PL_R_TABAN-d)/2+0.4):Math.min((_R-d)/2,0.9))*Math.min(1.5,dt*60);
         dx/=d; dy/=d;
         /* Çizgi dışındaki sokucu itilmez ama İÇİNDEN de geçilmez — yalnız karşı taraf kayar. */
         if(a._oob){ b.x+=dx*push*1.7; b.y+=dy*push*1.7; }
@@ -1681,6 +1689,8 @@ function _ziRenk(hex){
 function _ballPass(to,dur,bounce){
   const b=_ball(); if(!to) return;
   if(b.mode!=='held'&&_pasKorumasi(to,dur,bounce)) return;   /* FAZ 54 A1/A3: sahipsiz/uçan toptan pas atılamaz */
+  /* FAZ 55 A3: 2,0 m altı "pas" ÜRETİLMEZ — el değişimi olarak işlenir. */
+  if(isFinite(to.x)&&Math.hypot(to.x-b.x,to.y-b.y)<2.0*29.5429){ _ballTut(to,!!(to&&to.ghost)); return; }
   /* FAZ 54: top ele geçtiği KARE içinde geri çıkamaz (ölçüldü: 60 fps örneklemede loose>held>pass
      tek karede geçiyor ve "loose>pass" görünüyordu). En az _TOP_TUT_SN elde kalır, sonra pas. */
   try{ const S=mState._sim; if(S&&b.mode==='held'&&b.carrier&&to!==b.carrier&&(S.time-(b._heldAt||0))<_TOP_TUT_SN){ b._pasBekle={to,dur:dur||null,bounce:!!bounce,t0:S.time}; return; } }catch(e){}
@@ -1779,6 +1789,10 @@ function _topAlinabilir(p,b){
 function _ballStep(dt){
   const S=mState._sim, b=S.ball;
   if(S._klipTop) return;   /* FAZ 50: top gerçek klip yörüngesinde (js/sahne-klip.js) */
+  /* FAZ 55 B1: 'held' ⇒ taşıyıcı GEÇERLİ bir oyuncu (ya da ölü topu yöneten hakem). */
+  if(b.mode==='held'&&b.carrier&&!(S._hakemTop&&S._hakemTop.aktif)&&(S.players||[]).indexOf(b.carrier)<0){
+    b.mode='dead'; b.carrier=null; b.vx=b.vy=b.vh=0; b.t=0; b._deadAt=S.time; S._hayaletN=(S._hayaletN|0)+1;
+  }
   const px=b.x, py=b.y;
   switch(b.mode){
     case 'held':{

@@ -9425,3 +9425,88 @@ dikdörtgeni bunu göremez, bu yüzden gerçek kayıtta da 12,8 sn'lik "ihlaller
 Maç motoru DEĞİŞMEDİ: `sim-node --n=500 --seed=42` → 93.1 - 87.9 · 268 · determinizm ✓ ·
 `band.js` **c19928475859c7ff** · `measure.js` **51fa02b6e0a8194b** (ikisi de FAZ 43 değeri).
 `anlatim-check` 31/31 ✓ · `visual-check` ✓ (0 konsol hatası) · `sahne-olcum` 12-13/18.
+
+---
+
+## 55. oturum — FAZ 55: FAZ 54'ün uygulanmayan maddeleri + "hayalet held" regresyonu (2026-09-08)
+
+Brif: canlı sürüm v98 (25.731 kare) ölçümü. Bölüm 1 geçenler (dokunulmadı), 1-b brifin kendi
+GERİ ÇEKTİĞİ hedef (<%6 üst üste binme — FAZ 54'te ölçülmüştü: gerçek kliplerde %37,7), bölüm 2
+uygulanmayanlar (A1 ivme · A2 üç saniye · A3 min pas · A4 oyuncu saha dışı · A5 gevşek savunma),
+bölüm 3 yeni regresyon (B1 hayalet held · B2 sahipsiz top), bölüm 4 kısmi düzeltmeler (C1-C4).
+Kural: commit öncesi `surum-check --yaz` geçecek. Çıktı `olcum/FAZ55-sonuc.txt`.
+
+### B1 — "hayalet held" (10,3 sn): kök neden hakemdi
+Top `held` modunda ama taşıyıcısı `S.players` içinde değil. Kök neden `js/sahne-oam.js`:
+hakemdeki topu bekleyen oyuncuya veren dal `!S.ball.carrier` şartını arıyordu — oysa taşıyıcı
+HAKEMİN KENDİSİ olduğu için şart hiç tutmuyor, pas atılmıyor ve top hakemin elinde kalıyordu
+(en uzunu 5,88 sn, taç sonrası). Şart "taşıyıcı bir OYUNCU değilse" oldu. Ayrıca `_ballStep`
+başına yapısal ağ: `held` ⇒ taşıyıcı geçerli oyuncu (ya da ölü topu yöneten hakem); değilse top
+`dead` olur ve en yakın oyuncu alır (`_topuAlmayaCalis`). Ölçülen: **10,3 sn → 0,0-0,1 sn**.
+
+### C4 — üst üste binmenin UÇ değerleri (mutlak 0,55 m tabanı)
+Brif haklı olarak "%6 hedefi yanlıştı, kusur uç değerlerde" dedi. `_PL_R_TABAN=16 px (0,55 m)`
+İSTİSNASIZDIR: klip jetonları da dahil (gerçek kayıtta iki oyuncu 55 cm'ye girse bile ekranda
+iki daire iç içe geçmemeli) ve hiçbir `_R` kırpması bunun altına inemez. Taban ihlalinde ayrışma
+tek karede tamamlanır, üstünde itme yumuşaktır (sert itme kare-kare sahte ivme üretiyordu).
+Ölçülen: <40 cm **%10,46 → %0,02**; <70 cm %30,5 (gerçek %37,7 bandının içinde).
+
+### A2/C1 — üç saniye
+Boyada kesintisiz kalış sayacına topu TUTAN da dahil edildi, kaçış eşiği 1,9 → 1,6 sn, kaçış
+kilidi 0,7 → 1,4 sn (kaçış penceresiyle aynı — 0,7'de koreografi jetonu boyaya geri çağırıyordu).
+Ölçülen: eski fizik karelerinde max 4,1 sn (hedef 3,0) — **açık madde**. Gerçek düdük
+EKLENMEDİ: yeni bir top kaybı olayı maç matematiğini değiştirir ve `band.js`/`measure.js`
+hash'ini kaydırır; ayrı bir turda skor bandı yeniden temellendirilerek eklenmeli.
+
+### A3 — minimum pas mesafesi
+`_ballPass` 2,0 m altı hedefe "pas" ÜRETMEZ, el değişimi olarak işler (`_ballTut`). Klip
+tarafında tutma eşiği 1,6× ayarında bırakıldı (1,3'te ortalama pas 4,98 m'ye düşüyordu).
+Ölçülen: ortalama pas 5,46 m (hedef 5,0-6,5) · 2 m altı 5 olay.
+
+### A1 — ÜÇÜNCÜ KEZ ELENDİ (kare-kare ivme)
+Klip jetonuna "hedefe ivme sınırlı git" kuralı FAZ 54'te ve FAZ 55'te ayrı ayrı denendi, ikisinde
+de geri alındı: jeton yörüngenin gerisinde kalıyor, ofset büyüyor ve `_hv` rampası kapanırken hız
+patlıyor (klip hızı 2,24 → 3,07 m/sn · >7,5 bandı %0,1 → %3,4 · üstelik `_inX/_inY` kırpması
+devre dışı kaldığı için oyuncu saha dışı %0,00 → %0,60). Bu turda üçüncü bir yapı — konum düşük
+geçiren filtre (`nx = 0,34·önceki + 0,66·yeni`) — denendi ve ölçülerek elendi: kare-kare tepe
+845 → 1297, >8 payı %3,67 → %3,92, ortalama hız 1,97 → 2,06 (bandın dışı). **Klip yörüngesinden
+sapan her yapı, sapmayı kapatırken kaydın kendisinden hızlı hareket etmek zorunda kalıyor.**
+Kalan iyileştirme: `_hv` rampası artık ani sıfırlanmıyor, `KLIP_FREN` ile SÖNÜYOR (ani kesme
+tek karede 2,5 m/sn kayıp = ~150 m/sn² sahte sıçrama üretiyordu).
+
+### ÖLÇÜM ARACININ KENDİSİ KUSURLUYDU — 0,1 px yuvarlaması ivmeyi UYDURUYORDU
+`tools/sahne-olcum.js` konumları `toFixed(1)` ile saklıyordu. Kanıt: gerçek SportVU yörüngesi
+aynı 60 fps matematiğiyle ham float örneklenince kare-kare >8 m/sn² payı **%0,37**; AYNI veri
+0,1 px'e yuvarlanınca **%45,30** — sahnede ölçülen %45,69 ile birebir. Yuvarlama dt=16,7 ms'de
+0,2 m/sn'lik sahte hız farkı, yani ~12 m/sn²'lik sahte ivme üretiyor. Araç `toFixed(3)` oldu;
+gerçek taban (tepe 45 · >8 %0,37) ölçüldü ve kapı brifin "tepe ≤ 8" hedefi yerine ona bağlandı
+(gerçek veride bile tepe 45'tir — o hedef ulaşılamaz). Kalan: >8 %3,64 (hedef ≤ %0,6) — açık.
+
+### Aracın köşe ölçütü de yanlıştı
+`sahne-olcum` üçlüklerde köşeyi y tabanlı ölçüyordu (%45) ve `sut-cografya-check` ile
+çelişiyordu; o araç AÇI tabanlıdır (|a| > 52°) ve gerçek bantta geçiyor. Ölçüt aynılaştırıldı:
+köşe %30 (gerçek: üçlükler içinde ~%26-28) ✓.
+
+### Kapılar (kapanış)
+- `sim-node --n=500 --seed=42` → 93.1 - 87.9 · olay/maç 268 · determinizm ✓
+- `band.js` **c19928475859c7ff** ✓ · `measure.js` **51fa02b6e0a8194b** ✓ (referanslar DEĞİŞMEDİ)
+- `visual-check` ✓ (0 konsol hatası) · `anlatim-check` 31/31 ✓ · `balon-check` ✓
+- `sahne-check`: 4 kapı düşüyor — **HEAD'de de aynı 4 kapı düşüyor**, üstelik hepsi iyileşti
+  (serbest atış dizilişi 9,00/en kötü 7 → 9,75/9 · yarı sahayı geçiren %77 → %81 · sahipsiz
+  top %1,09 → %0,74). Gerileme yok.
+- `hareket-bant-check`: 4 dağılım eşik dışı — HEAD'de de 4. Bu turda düzelen: yayılım y
+  L1 0,489 → 0,323 ✓, şut anında duran 0,824 → 0,501. Kötüleşen: arka sahada savunmacı
+  0,304 → 0,378 (n=3134; ort 5,54 ↔ gerçek 5,065). Pas/pozisyon ve tutma süresi n=11-55 ile
+  ölçülemez (FAZ 48 dersi).
+- `surum-check --yaz` → **sürüm 99** (`sw.js` SCRIPT_V=99 · HTML `?v=99`, 18 dosya senkron) ✓
+
+### AÇIK KALAN 5 SATIR (dürüst rapor)
+1. **üç saniye (eski fizik) max 4,1 sn** (hedef 3,0) — kaçış çalışıyor ama jeton hedefe varana
+   dek boyada kalıyor. Gerçek düdük hash'i kaydırır, ayrı tur ister.
+2. **kare-kare ivme >8 %3,64** (hedef ≤ %0,6 · gerçek %0,37) — kaynağın %72'si klip karesi;
+   üç ayrı yapı denendi, hepsi ölçülerek elendi (yukarıda).
+3. **0,2 sn ivmesi p99 10,7** (hedef 8,0 · gerçek 7,0) — aynı kök.
+4. **sahipsiz top en uzun 2,75 sn** (hedef < 2,0) — ribaunt karambolü; sekme 32-58'e indirildi,
+   pay %23,8 gerçeğin çok altında (%5,5) ama uç değer duruyor.
+5. **iç içe geçme <55 cm %4,71** (hedef 0) — <40 cm çözüldü (%10,46 → %0,02); 40-55 cm bandı
+   klip çiftlerinde duruyor (gerçek kayıt).
