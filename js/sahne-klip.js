@@ -21,18 +21,30 @@
    ═══════════════════════════════════════════════════════════════════════════════════ */
 
 const KLIP_ACIK=true;
-const KLIP_HIZ=1.2;          /* klip oynatma hızı (gerçek zamanın katı); 1,3 ile ekran hızı ort 2,36 m/sn ↔ gerçek 1,72 */
+/* FAZ 54 B2 (kullanıcı kararı — ekran gerçek hızda): 1,2 → 1,0. Ölçüldü (duvar ölçeği): ortalama oyuncu hızı
+   2,38-2,77 m/sn ↔ gerçek 1,72; 0-1 m/sn bandı %20-27 ↔ gerçek %41,7. Klip gerçek zamanda akar; maç ~%15 uzun
+   izlenir — izleme hızı düğmesi (setMatchRate) duruyor. */
+const KLIP_HIZ=1.0;          /* klip oynatma hızı (gerçek zamanın katı) */
 const KLIP_BLEND=1.0;        /* sn — (eski) zaman tabanlı harman; FAZ 51'den beri yalnız topun yedek yolu */
 /* FAZ 51 (kullanıcı: "bi anda oyuncuların hızla yer değiştirmesi, ışınlanmalar"): harman ZAMANLA değil
    HIZLA kapanır. Eski smoothstep 1 sn'de 6-9 m kaydırıyordu (ölçüldü: 100 ms'de 2,6 m = 22 m/sn sahne,
    her şut olayının başında 40-48 kare). Şimdi her jetonun klip yörüngesine uzaklığı (ofset) en çok
    KLIP_HARMAN_V px/sn ile küçülür — jeton klibin hareketi + koşu hızıyla yörüngesine "yetişir". */
-const KLIP_HARMAN_V=130;     /* px/sn ≈ 4,4 m/sn sahne · 3,1 m/sn maç — koşu */
-const KLIP_HARMAN_V_SUTOR=200;/* şutör daha çabuk yetişir (şut noktası bağlayıcı) */
+const KLIP_HARMAN_V=75;      /* px/sn ≈ 2,5 m/sn — ofset kapanışı (FAZ 54: 130 → 75; kapanış hızı klip hızının ÜSTÜNE bindiği için ortalamayı şişiriyordu) */
+const KLIP_HARMAN_V_SUTOR=150;/* şutör daha çabuk yetişir (şut noktası bağlayıcı) — FAZ 54: 200 → 150 */
 const KLIP_HARMAN_V_TOP=330; /* top ofseti tutanın ofsetine bu hızla yaklaşır (el değişiminde sıçramasın) */
 const KLIP_TOP_VMAX=650;     /* px/sn ≈ 22 m/sn sahne — SportVU top izinde 40 m/sn'lik sıçramalar var (ölçüldü: 157 sn'de 47 m/sn), fazlası top ofsetine yazılır */
-const KLIP_VMAX=380;         /* px/sn ≈ 12,9 m/sn sahne — klibin gerçek sprintini geçer, yalnız SportVU izleme sıçramasını (>12,5 m/sn) keser; düşük tutmak yayılımı daraltıyordu */
-const KLIP_WARP=1.5;         /* sn — şut noktası ofseti bu pencerede biner */
+const KLIP_VMAX=265;         /* FAZ 54 B2: 380 → 265 px/sn ≈ 9,0 m/sn — sprint tavanı; SportVU izleme sıçramalarını da keser */
+/* FAZ 54 B1: İVME SINIRI (duvar ölçeği, px/sn²). Ölçüldü (canlı site, 24.921 kare): oyuncu ivmesi
+   2.592 olayda 26-47 m/sn², klip karelerinde p99 43,6 — 5 kare/sn'lik kaydın doğrusal ara değeri her
+   düğümde hızı SIÇRATIYOR, jeton duruştan tam hıza tek karede çıkıyordu; ışınlanma hissinin asıl
+   kaynağı buydu. İnsan sporcunun tepe ivmesi 6-8 m/sn²: hız değişimi kareye bu sınırla uygulanır,
+   kalan yol ofsete yazılır (jeton yörüngeye ivmeyle yetişir). Fren daha sert (9 m/sn²). */
+const KLIP_IVME=3.4*29.5429;   /* 100 px/sn² — ofset kapanışının hızlanması (FAZ 54: 7,0 → 3,4 m/sn²;
+   ivme sınırı ofsete uygulanır ve klip yörüngesinin kendi ivmesiyle TOPLANIR — ölçüldü p99 11,8 ↔ gerçek 5,1) */
+const KLIP_FREN=9.0*29.5429;   /* 266 px/sn² — yavaşlama */
+const KLIP_BEKLE_V=175;         /* px/sn ≈ 5,9 m/sn — sahipsiz topa giden tutucu (koşu) */         /* px/sn ≈ 12,9 m/sn sahne — klibin gerçek sprintini geçer, yalnız SportVU izleme sıçramasını (>12,5 m/sn) keser; düşük tutmak yayılımı daraltıyordu */
+const KLIP_WARP=2.2;         /* sn — şut noktası ofseti bu pencerede biner (FAZ 54: 1,5 → 2,2, ivme tepesi düşsün) */
 const KLIP_FT=0.3048, KLIP_SAHA_X=94, KLIP_SAHA_Y=50;
 const KLIP_TUTMA_FT=4.0;     /* top oyuncuya bu kadar yakınsa "elinde" */
 
@@ -196,7 +208,7 @@ function klipSec(bas,shPx,offLeft,sutSinif,fb,topPx,toksPx,stil,scheme){
     const kDx=k.x-5.25; let en=1e9,fl=false;
     for(const f of [false,true]){
       const kDy=f?(25-k.y):(k.y-25); const d=Math.hypot(kDx,kDy), a=Math.atan2(kDy,kDx); let da=Math.abs(a-eA); if(da>Math.PI) da=2*Math.PI-da; let cc=Math.abs(d-eD)/3+da/0.5;
-      if(toksFt){ let s=0; for(let j=0;j<10;j++){ const px=D.v[k.o+3+j*2]/10, py0=D.v[k.o+4+j*2]/10; const py=f?(KLIP_SAHA_Y-py0):py0; s+=Math.hypot(px-toksFt[j][0],py-toksFt[j][1]); } cc+=s/220; }   /* FAZ 51: dizilim benzerliği HAFİF (bölen büyük) — ağır olunca klip seçimi bozulup yayılım daralıyordu */
+      if(toksFt){ let s=0; for(let j=0;j<10;j++){ const px=D.v[k.o+3+j*2]/10, py0=D.v[k.o+4+j*2]/10; const py=f?(KLIP_SAHA_Y-py0):py0; s+=Math.hypot(px-toksFt[j][0],py-toksFt[j][1]); } cc+=s/170; }   /* FAZ 54: 220 → 170 (120 denendi: yayılım y L1 0,415 ile eşiği aştı — FAZ 51 uyarısı doğrulandı) — başlangıç ofseti küçülür (ivme/hız/dizilim) */   /* FAZ 51: dizilim benzerliği HAFİF (bölen büyük) — ağır olunca klip seçimi bozulup yayılım daralıyordu */
       if(cc<en){ en=cc; fl=f; }
     }
     c+=en;
@@ -205,7 +217,7 @@ function klipSec(bas,shPx,offLeft,sutSinif,fb,topPx,toksPx,stil,scheme){
     if(topFt){ const bx=D.v[k.o]/10, by0=D.v[k.o+1]/10; const by=fl?(KLIP_SAHA_Y-by0):by0; c+=Math.hypot(bx-topFt[0],by-topFt[1])/9; }
     if(k.c!==sutSinif) c+=0.8;
     if(D.son.indexOf(i)>=0) c+=2.0;
-    { const im=klipImza(D,k); if(im.hs>=3) c+=0.9; else if(im.hs===2) c+=0.3; }   /* FAZ 53: topu uzun süren klipler seyrek seçilsin */
+    { const im=klipImza(D,k); if(im.hs>=4) c+=3.4; else if(im.hs===3) c+=2.2; else if(im.hs===2) c+=0.6; }   /* FAZ 53/54 C3: pivotun taşıdığı klip neredeyse hiç seçilmez (orta çizgiyi C 3/20 geçiyordu) */
 
     aday.push({i,c,fl});
   });
@@ -232,9 +244,20 @@ function klipSec(bas,shPx,offLeft,sutSinif,fb,topPx,toksPx,stil,scheme){
 }
 /* Klip karesi (ara değerli): dizi [bx,by,bz, o0..o4, d0..d4] (ft) */
 function klipKare(D,k,tau){
-  const fi=Math.max(0,Math.min(k.n-1,tau*D.fps)); const i0=Math.floor(fi), i1=Math.min(k.n-1,i0+1), w=fi-i0;
-  const a=k.o+i0*23, b=k.o+i1*23; const out=new Array(23);
-  for(let j=0;j<23;j++) out[j]=(D.v[a+j]*(1-w)+D.v[b+j]*w)/10;
+  /* FAZ 54 B1b: Catmull-Rom — doğrusal ara değer her 0,2 sn'lik düğümde hızı sıçratıyordu
+     (60 fps'de ölçülen ivme 26-47 m/sn²); kübik eğri düğümlerde hız sürekliliği verir. */
+  const fi=Math.max(0,Math.min(k.n-1,tau*D.fps)); const i1=Math.floor(fi), w=fi-i1;
+  const i0=Math.max(0,i1-1), i2=Math.min(k.n-1,i1+1), i3=Math.min(k.n-1,i1+2);
+  /* düğüm yumuşatma (1-2-1): komşularıyla ağırlıklı ortalanmış düğüm — SportVU izleme gürültüsü
+     kübik eğride ivme tepesine dönüşüyordu (ölçüldü: p99 12,6 ↔ gerçek 7,0 m/sn²). */
+  const im1=Math.max(0,i0-1), ip2=Math.min(k.n-1,i3+1);
+  const dg=(idx,pre,nxt,j)=>(D.v[k.o+pre*23+j]+2*D.v[k.o+idx*23+j]+D.v[k.o+nxt*23+j])*0.25;
+  const out=new Array(23);
+  const w2=w*w, w3=w2*w;
+  for(let j=0;j<23;j++){
+    const p0=dg(i0,im1,i1,j), p1=dg(i1,i0,i2,j), p2=dg(i2,i1,i3,j), p3=dg(i3,i2,ip2,j);
+    out[j]=(0.5*((2*p1)+(-p0+p2)*w+(2*p0-5*p1+4*p2-p3)*w2+(-p0+3*p1-3*p2+p3)*w3))/10;
+  }
   return out;
 }
 
@@ -313,6 +336,9 @@ function klipSut(sh,onShoot,onResult){
     offMap[si]=shooter;
     if(bi!==si){
       let h=(bizde&&b.carrier&&b.carrier!==shooter&&offSira.indexOf(b.carrier)>=0&&(typeof _tasiyabilir!=='function'||_tasiyabilir(b.carrier)))?b.carrier:null;
+      /* FAZ 54 A1: top yerdeyse ve bir hücumcu ona ZATEN koşuyorsa (ribaund/çalma takibi) klibin
+         tutucusu odur — ölçüldü: guard 10 m öteden çağrılınca top 4,18 sn sahipsiz kaldı. */
+      if(!h&&S.chase&&S.chase.tok&&S.chase.tok!==shooter&&offSira.indexOf(S.chase.tok)>=0) h=S.chase.tok;
       if(!h) h=offSira.find(p=>p!==shooter&&(p.role===0||p.role===1));
       if(!h) h=offSira.find(p=>p!==shooter&&(typeof _tasiyabilir!=='function'||_tasiyabilir(p)));
       if(!h) h=offSira.find(p=>p!==shooter);
@@ -336,17 +362,38 @@ function klipSut(sh,onShoot,onResult){
   /* ara tutucu listesi (top kimde) — pas modu için sonraki alıcı */
   toks.forEach(p=>{ p._klip=true; p._oob=false; p._wp=null; p._lock=0; p._mark=null; });
   S._klipTop=true;
-  S.klip={aktif:true,t:0,tau0,k,D,toks,offMap,defMap,offP,defP,offLeft,flip:sec.flip,rim,sh,shooter,bas0,ofs:bas0.map(v=>v.slice()),bOfs:bOfs.slice(),warp,T,TN,res:_res,onShoot,atildi:false,si,ix:sec.ix,bas};
+  /* ── FAZ 54 A1: TOP SAHİPSİZSE KLİP BEKLER ───────────────────────────────────────────
+     Ölçüldü (adım 1 sonrası): en uzun sahipsiz top epizotlarının %18-61'i klip karesiydi —
+     klip başlarken top yerdeyse (ribaund takibi bitmeden sıradaki olay gelmişti) topun ofseti
+     tutucunun ofsetine 330 px/sn ile yaklaşıyor, yani TOP OYUNCUYA UÇUYORDU (sahipsiz modda).
+     Şimdi klip tutucu topa varana kadar başlangıç karesinde bekler; tutucunun hedefi klip
+     noktası değil TOPUN KENDİSİDİR, 4 ft'e gelince topu alır ve klip akar. En çok 1,6 sn. */
+  let _bekle=null;
+  { const hj=(function(){ const fb=klipKare(D,k,tau0); let e=1e9,ei=0; for(let j=0;j<5;j++){ const dd=Math.hypot(fb[3+j*2]-fb[0],fb[4+j*2]-fb[1]); if(dd<e){ e=dd; ei=j; } } return ei; })();
+    const tutucu=offMap[hj];
+    if(tutucu&&b.carrier!==tutucu&&(b.mode!=='held'||!b.carrier)){ _bekle={j:hj,tok:tutucu,t:0}; } }
+  S.klip={aktif:true,t:0,tau0,k,D,toks,offMap,defMap,offP,defP,offLeft,flip:sec.flip,rim,sh,shooter,bas0,ofs:bas0.map(v=>v.slice()),bOfs:bOfs.slice(),warp,T,TN,res:_res,onShoot,atildi:false,si,ix:sec.ix,bas,bekle:_bekle};
+  if(_bekle){ const dd=Math.hypot(_bekle.tok.x-b.x,_bekle.tok.y-b.y); _bekle.tahmin=Math.min(2.6,dd/KLIP_BEKLE_V); }
   try{ mState._animRez=1800; }catch(e){}
   try{ S._dbgKlip={ix:sec.ix,bas,kb:k.b,sure:k.s,pas:k.p}; }catch(e){}
-  const ms=Math.round(((T-tau0)/KLIP_HIZ+0.25)*1000)+1400+((sh.made&&sh.and1)?2100:0);
+  const ms=Math.round(((T-tau0)/KLIP_HIZ+0.25+0.12+((_bekle&&_bekle.tahmin)||0))*1000)+1400+((sh.made&&sh.and1)?2100:0);   /* FAZ 54 A2: +0,12 sn şut öncesi tutma · A1: sahipsiz top beklemesi */
   return ms;
 }
 
 /* ── Her kare: jetonlar ve top klip yörüngesinde ───────────────────────────────────── */
 function klipTick(dt){
   const S=oamS(); const K=S&&S.klip; if(!K||!K.aktif) return;
-  K.t+=dt;
+  const B=K.bekle;
+  if(B){ B.t+=dt; const b0=S.ball; const dd=Math.hypot(B.tok.x-b0.x,B.tok.y-b0.y);
+    if(dd<=KLIP_TUTMA_FT*((CRT_X1-CRT_X0)/KLIP_SAHA_X)||B.t>2.6){
+      /* tutucu topa vardı: top ele, ofsetler klip referansına göre yeniden kurulur (sıçrama yok) */
+      if(dd<=KLIP_TUTMA_FT*((CRT_X1-CRT_X0)/KLIP_SAHA_X)){ b0.carrier=B.tok; b0.mode='held'; b0.noDrib=false; b0._heldAt=S.time; }
+      const f0=klipKare(K.D,K.k,K.tau0); const c=klipPx(f0[3+B.j*2],f0[4+B.j*2],K.offLeft,K.flip); K.ofs[B.j]=[B.tok.x-c[0],B.tok.y-c[1]];
+      const cb=klipPx(f0[0],f0[1],K.offLeft,K.flip); K.bOfs=[b0.x-cb[0],b0.y-cb[1]];
+      K.bekle=null;
+    }
+  }
+  if(!K.bekle) K.t+=dt;
   const tau=Math.min(K.TN,K.tau0+K.t*KLIP_HIZ);
   const f=klipKare(K.D,K.k,tau);
   if(tau>=K.TN-1e-6){ klipBitir(); return; }
@@ -359,10 +406,19 @@ function klipTick(dt){
      penceresinde kalan ofset ww ile de söner (şutör şut noktasına kesin varır). Eski zaman tabanlı
      smoothstep 1 sn'de 6-9 m kaydırıyordu — kullanıcının gördüğü "ışınlanma" buydu. */
   K.toks.forEach((p,j)=>{
-    const c=klipPx(f[3+j*2],f[4+j*2],K.offLeft,K.flip);
+    let c=klipPx(f[3+j*2],f[4+j*2],K.offLeft,K.flip);
+    if(K.bekle&&j===K.bekle.j){ c=[S.ball.x,S.ball.y]; const o=K.ofs[j]; if(!K.bekle.kur){ K.bekle.kur=true; o[0]=p.x-c[0]; o[1]=p.y-c[1]; } }   /* FAZ 54 A1: tutucu TOPA yürür */
     const wk=(p===K.shooter)?1:0.35;
     const o=K.ofs[j]; const om=Math.hypot(o[0],o[1]);
-    if(om>0){ const hiz=Math.max((p===K.shooter)?KLIP_HARMAN_V_SUTOR:KLIP_HARMAN_V, om/kalan); const adim=hiz*dt; if(om<=adim){ o[0]=0; o[1]=0; } else { const k2=(om-adim)/om; o[0]*=k2; o[1]*=k2; } }
+    if(om>0){
+      /* FAZ 54 B1b: kapanış hızı İVMEYLE artar (KLIP_IVME), varışta fren mesafesiyle (√(2·fren·om)) söner —
+         eski sabit 130 px/sn kapanış her klip başında 10 jetona tek karede 4,4 m/sn hız veriyordu
+         (ölçüldü: ivme p99 43,6 m/sn²). Bekleyen tutucu topa sprintle gider (KLIP_BEKLE_V). */
+      const hedefV=(K.bekle&&j===K.bekle.j)?KLIP_BEKLE_V:((p===K.shooter)?KLIP_HARMAN_V_SUTOR:KLIP_HARMAN_V);
+      const frenV=Math.sqrt(2*KLIP_FREN*om);
+      p._hv=Math.min(hedefV,frenV,(p._hv||0)+KLIP_IVME*dt);
+      const adim=p._hv*dt; if(om<=adim){ o[0]=0; o[1]=0; p._hv=0; } else { const k2=(om-adim)/om; o[0]*=k2; o[1]*=k2; } }
+    else p._hv=0;
     let nx=_inX(c[0]+o[0]+K.warp[0]*ww*wk), ny=_inY(c[1]+o[1]+K.warp[1]*ww*wk);   /* hedef saha içinde: çizgi dışındaki sokucu İÇERİ YÜRÜR (kırpma sıçratmaz — FAZ 40 dersi, ölçüldü 1,35 m tek kare) */
     /* FAZ 51: tek karede en çok KLIP_VMAX·dt yol — fazlası ofsete eklenir (jeton yörüngeye koşarak yetişir) */
     { const mx=KLIP_VMAX*dt, ddx=nx-p.x, ddy=ny-p.y, dd=Math.hypot(ddx,ddy); if(dd>mx&&dd>0.01){ const kx=p.x+ddx/dd*mx, ky=p.y+ddy/dd*mx; o[0]+=kx-nx; o[1]+=ky-ny; nx=kx; ny=ky; } }
@@ -380,6 +436,7 @@ function klipTick(dt){
   if(tau>=K.T-1e-6&&!K.atildi){ klipAtes(); return; }
   if(K.atildi) return;
   /* top */
+  if(K.bekle) return;   /* FAZ 54 A1: sahipsiz top yerinde bekler — tutucu ona gelir */
   const c=klipPx(f[0],f[1],K.offLeft,K.flip);
   /* FAZ 51: top ofseti KLİPTE topu tutanın (klip koordinatında en yakın hücumcu) ofsetine yaklaşır —
      tutan kendi ofsetiyle koşarken top elinde kalır; el değişiminde ofset farkı sıçramaz, 420 px/sn ile kapanır */
@@ -390,15 +447,30 @@ function klipTick(dt){
   { let nx=c[0]+K.bOfs[0]+K.warp[0]*ww, ny=c[1]+K.bOfs[1]+K.warp[1]*ww;
     const mx=KLIP_TOP_VMAX*dt, ddx=nx-b.x, ddy=ny-b.y, dd=Math.hypot(ddx,ddy);
     if(dd>mx&&dd>0.01){ const kx=b.x+ddx/dd*mx, ky=b.y+ddy/dd*mx; K.bOfs[0]+=kx-nx; K.bOfs[1]+=ky-ny; nx=kx; ny=ky; }   /* FAZ 51: top da tek karede kelepçeli */
-    b.x=nx; b.y=ny; }
+    /* FAZ 54 A4: SportVU topu çizgi dışına taşabilir (taç/sokma anları) — sahnede top çizgide durur */
+    b.x=Math.max(CRT_X0+2,Math.min(CRT_X1-2,nx)); b.y=Math.max(CRT_Y0+2,Math.min(CRT_Y1-2,ny)); }
   b.h=Math.max(0,(f[2]-1.5)*KLIP_FT*9.84);   /* ft → px (çember 3,05 m ↔ 30 px); tutulan top ~1,5 ft'te */
   b.vx=0; b.vy=0; b.vh=0;
   /* tutan: en yakın hücumcu ≤ 4 ft ve top alçakta; yoksa uçuşta (pas) */
   let en=null,ed=1e9;
   K.offMap.forEach(p=>{ const d=Math.hypot(p.x-b.x,p.y-b.y); if(d<ed){ ed=d; en=p; } });
   const pxFt=(CRT_X1-CRT_X0)/KLIP_SAHA_X;
-  if(en&&ed<=KLIP_TUTMA_FT*pxFt&&f[2]<7.5){ if(b.carrier!==en){ b.carrier=en; b.mode='held'; b.noDrib=false; } }
-  else if(b.carrier||b.mode!=='pass'){ b.carrier=null; b.mode='pass'; b.target=en; b.from=[b.x,b.y]; }
+  /* ── FAZ 54 A1/A5: TOP DURUMU KLİPTE DE SÖZLEŞMEYE UYAR ─────────────────────────────
+     (a) Taşıyıcı değişimi HİSTEREZİSLİ: eski taşıyıcı topa 5,6 ft'ten yakınken el değişmez —
+         ölçüldü: C→C 0,6 m / 0,13 sn "pas"lar, 40 pasın ortalaması 3,4 m (gerçek 5-6 m).
+     (b) Sahipsiz top (loose/rim/dead) ancak bir hücumcu 4 ft'e girince ELE geçer; doğrudan
+         'pass' olmaz (`loose>pass` 13 → 0). 'pass' yalnız 'held'den açılır. */
+  const tut=(en&&ed<=KLIP_TUTMA_FT*pxFt&&f[2]<7.5);
+  if(tut){
+    if(b.carrier!==en){
+      const eskiD=(b.carrier&&isFinite(b.carrier.x))?Math.hypot(b.carrier.x-b.x,b.carrier.y-b.y):1e9;
+      if(b.mode==='held'&&b.carrier&&eskiD<=KLIP_TUTMA_FT*1.4*pxFt){ /* eski taşıyıcı hâlâ topta */ }
+      else { b.carrier=en; b.mode='held'; b.noDrib=false; b._heldAt=S.time; }
+    } else if(b.mode!=='held'){ b.mode='held'; b._heldAt=S.time; }
+  }
+  else if(b.mode==='held'&&b.carrier&&Math.hypot(b.carrier.x-b.x,b.carrier.y-b.y)>KLIP_TUTMA_FT*1.3*pxFt){ b.carrier=null; b.mode='pass'; b.target=en; b.from=[b.x,b.y]; }   /* FAZ 54 A5: 4 → 6,4 ft — ölçüldü, 103 pasın 48'i 2 m altındaydı (sürme/ofset titremesi) */
+  else if(b.mode==='pass'){ b.target=en; }
+  /* loose / rim / dead: olduğu gibi kalır — hücumcu 4 ft'e girince 'held' */
   b.rot=(b.rot||0)+dt*(b.mode==='pass'?720:180);
 }
 /** Klip bitti: jetonlar fiziğe geri verilir (şut sonrası koreografi — ribaunt, sokma — devam eder). */
@@ -415,7 +487,11 @@ function klipAtes(){
   K.atildi=true;
   S._klipTop=false;   /* top motora; oyuncular klip bitene dek gerçek yörüngede (`_klip` açık kalır) */
   K.toks.forEach(p=>{ p.tx=p.x; p.ty=p.y; p._lock=0; try{ _setUrg(p,_URG.YURU); }catch(e){} });
-  const b=S.ball; b.carrier=K.shooter; b.mode='held'; b.h=Math.max(b.h||0,10);   /* top şutörün elinde — konumu klipten (ışınlama yok) */
+  const b=S.ball;
+  /* FAZ 54 A2: top şutörün eline ŞİMDİ geçiyorsa `_heldAt` şimdidir — `_ballShoot` koruması atışı
+     `_TOP_TUT_SN` (0,10 sn) erteler; ekranda "topu aldı, çekti" okunur (ölçüldü: 14/26 pass>shot). */
+  if(b.carrier!==K.shooter||b.mode!=='held') b._heldAt=S.time;
+  b.carrier=K.shooter; b.mode='held'; b.h=Math.max(b.h||0,10);   /* top şutörün elinde — konumu klipten (ışınlama yok) */
   /* savunma eşlemesi: şutörün savunmacısı = ona en yakın rakip */
   const esle=new Map(); K.offMap.forEach((p,i)=>{ esle.set(p,K.defMap[i]||K.defMap[0]); });
   let dn=null,dd=1e9; K.defMap.forEach(d=>{ const x=Math.hypot(d.x-K.shooter.x,d.y-K.shooter.y); if(x<dd){ dd=x; dn=d; } }); if(dn) esle.set(K.shooter,dn);

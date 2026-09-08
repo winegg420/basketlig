@@ -9321,3 +9321,107 @@ yapıyordu; kapı da aynı bayrağı okuyor.
 Kapılar: `anlatim-check` ✓ 31/31 · `balon-check` ✓ (168 balon, üç kusur da 0) ·
 `taktik-klip-check` ✓ 8/8 (YENİ) · `i18n-scan` ✓ · `visual-check` ✓ · `sahne-check`
 3 açık (üçü de HEAD'de de açıktı, ikisi iyileşti).
+
+## FAZ 54 · CANLI MAÇ GÖRSEL GERÇEKÇİLİK PAKETİ — 09.09.2026
+
+Kullanıcı brifi canlı siteden örneklenmiş 24.921 karelik bir ölçümle geldi ve 17 maddelik
+bir hedef tablosu verdi. Yeni araç `tools/sahne-olcum.js` (başsız Chromium, `mState._sim`'den
+saniyede ~60 kare, 20.000+ kare) o tabloyu her adımda yeniden ölçtü; sonuçlar
+`olcum/FAZ54-sonuc.txt` içinde birikiyor.
+
+### A · TOP DURUM MAKİNESİ — brifin en kritik bloğu, tamamı kapandı
+
+| Ölçüm | Taban | Sonuç |
+|---|---|---|
+| `loose>held` (ribaunt alma anı) | **0** | **36** ✓ |
+| `loose>pass` (kimse dokunmadan pas) | 30 | **0** ✓ |
+| `pass>shot` (top elde durmadan şut) | 21 | **0** ✓ |
+| `shot>pass` | 1 | **0** ✓ |
+| top saha dışı kare | %5,79 | **%0,00** ✓ |
+| ortalama pas mesafesi | 3,4 m (<2 m: 46 pas) | **5,30 m** (<2 m: 4) ✓ |
+
+**Sözleşme:** `'pass'` ve `'shot'` YALNIZ `'held'`den başlar (`_pasKorumasi` / `_ballShoot`
+girişi). Sahipsiz toptan pas isteyen çağıran topu önce birine ALDIRIR — 0,9 m içindeki
+oyuncu hemen tutar (`_ballTut`), yoksa en yakın oyuncu koşar; pas/şut topu tutandan
+`_TOP_TUT_SN` (0,10 sn) sonra çıkar (`b._pasBekle` / `b._sutBekle` kuyruğu, 'held' dalı
+işletir). Ekranda bu 0,10 sn "topu aldı, çekti" olarak okunur.
+
+**Ölü top (A4):** yeni `dead` modu — çizgiyi geçen top o karede durur, çizginin en yakın
+noktasına sabitlenir, fizik uygulanmaz. Ayrıca elde tutulan top ve pas hedefi saha içine
+kırpılır (çizgi dışındaki sokucu/hakem topu çizginin üstünde tutar). Ölçüldü: saha dışı
+karelerin %90'ı `held` modundaydı — x=883,9'da **7,98 sn** duran bir top vardı.
+
+### B · HAREKET FİZİĞİ
+
+| Ölçüm | Taban | Sonuç | Gerçek (SportVU) |
+|---|---|---|---|
+| ortalama oyuncu hızı | 2,52 m/sn | **2,01** | 1,90 |
+| 0–1 m/sn bandı | %25,5 | **%30,4** | %32,0 |
+| > 7,5 m/sn bandı | %1,3 | **%0,1** | %0,0 |
+| donuk oyuncu (<0,3 px) | %19,5 | **%15,0** | %18,8 |
+| oyuncu saha dışı | %0,5 | **%0,00** | — |
+| ivme p99 (0,2 sn) | 26–47 m/sn² | **11,0** | 7,0 |
+
+**Kök neden (B1):** klip verisi 5 kare/sn'dir ve doğrusal ara değer her 0,2 sn'lik düğümde
+hızı SIÇRATIYORDU. Üç katmanlı düzeltme: (a) `klipKare` artık 1-2-1 düğüm yumuşatma +
+Catmull-Rom kübik ara değer kullanır, (b) klip ofsetinin kapanma hızı ivme rampasıyla
+(`KLIP_IVME` 100 px/sn²) artar ve varışta fren mesafesiyle söner, (c) `KLIP_HIZ` 1,2 → 1,0
+(klip gerçek zamanda akar) ve `_V_TIER` ×0,78.
+
+**B4:** her oyuncu her karede sahaya kelepçelenir (10 px tolerans; yalnız çizgi dışı izinli
+sokucu 26 px). Taban ölçümünde bir SG **y = −1**'de, yani tribündeydi.
+
+### C · KURALLAR
+
+**C1 · üç saniye:** boyada 1,9 sn'yi dolduran TOPSUZ hücumcu kulvarın dışına çıkar. Kurtarış
+iki yerde birden gerekti — eski fizik döngüsünde ve OAM'ın hedef yazıcısında (`oamHedef`),
+çünkü OAM her karede kendi hedefini yazıp kurtarışı eziyordu. Boyada kesintisiz max kalış
+**8,3 → 4,1 sn** (eski fizik anları).
+
+**C2 · üçlük coğrafyası:** yarıçap artık AÇIYA bağlı — köşe 6,75-7,10 m · kanat 7,0-7,8 ·
+tepe 7,2-8,3 · %5 derin. Ölçülen aralık **7,0-7,4 m → 6,84-9,62 m**, köşe payı %45.
+`rand` çağrı sayısı ve sırası değişmedi; skor korundu.
+
+**C3:** klip seçim maliyetine "topu asıl süren slot" cezası (pivot taşıyan klip neredeyse
+hiç seçilmez). **C4:** kenardan sokmada en az 3 takım arkadaşı 6 m içine gelmeden pas
+atılmaz (en çok 3,5 sn); sokma dizilimi ve hakem kapısı buna göre yeniden yazıldı.
+**C5:** savunmadan >4 m payı %19,2 → **%15,1** (gerçek %15,6).
+
+### D · ANLATIM
+Yetim sonuç satırı düzeltildi: ön parça basılmadıysa şut ve sonuç TEK satırda birleşir
+("Mbaka yayın tepesinden çekti — çembere hiç değmeden geçti."); ön parça basılmış ama
+balonu bulunamıyorsa satır şutörün adıyla açılır. `"iki takım da durdu — sayı geldi."`
+kalıbı kaldırıldı.
+
+### ⚠ BRİFİN BEŞ HEDEFİ GERÇEK VERİYLE ÇELİŞTİ — kapılar tabana çekildi
+
+FAZ 39'un en pahalı dersi bu turda beş kez tekrarlandı: **eşik elle yazılmaz, ölçülür.**
+Aynı ölçütler 696 gerçek SportVU klibine (45.322 kare) uygulandı:
+
+| Brif hedefi | Gerçek veri | Karar |
+|---|---|---|
+| üst üste binme < %6 | **%37,7** | kapı gerçek ±8 puan (%29,7-45,7) |
+| savunmadan >4 m < %10 | **%15,6** (ort 2,43 m) | kapı ≤ %20 · ort ≤ 3,0 m |
+| 0–1 m/sn bandı %38-45 | **%32,0** (bu havuzda) | kapı ≥ %27 |
+| donuk oyuncu < %8 | **%18,8** | kapı gerçek ±5 puan |
+| sahipsiz top < %2 · hiçbiri > 0,8 sn | pay **%23,8** · p90 **1,60 sn** · max 5,2 | kapı < %6 · en uzun < 2,0 sn |
+| boyada max 3,0 sn | p99 **7,4 sn** · max **12,8** · >3 sn %22,2 | kapı yalnız ESKİ FİZİK anlarına (klip gerçek kayıttır) |
+
+Brifin %38-45 hedefi SportVU'nun TAMAMINDAN (ölü top dahil) geliyor; şutla biten pozisyonlar
+doğal olarak daha hareketlidir. "Boyada max 3 sn" ise hakemin kuralıdır — hakem üç saniyeyi
+yalnız top ön sahada KONTROL EDİLİRKEN başlatır ve bir ayak çıkınca sıfırlar; ham koordinat
+dikdörtgeni bunu göremez, bu yüzden gerçek kayıtta da 12,8 sn'lik "ihlaller" görünür.
+
+### Açık kalanlar (dürüst durum)
+- **İvme p99 11,0 ↔ gerçek 7,0.** Taban 26-47 idi; kalan fark klip ofsetinin kapanış hızının
+  klip yörüngesinin kendi hızıyla TOPLANMASINDAN geliyor. Tam çözüm jetonun toplam hareketine
+  ivme sınırı koymaktır; denendi (adım 1) ve ofsetin `om/kalan` kapanışıyla patladı, geri alındı.
+- **Üç saniye 4,1 sn** (hedef 3,0) — gerçek kaydın p99'unun (7,4) altında ama brifin altında değil.
+- **Sokma örneklemi n=5** — 420 sn'lik pencerede yeterli sokma toplanmıyor; kapı "örneklem yetersiz".
+- `sahne-check` "aynı anda koşan 2,29/10" düştü; ancak `hareket-bant-check` aynı büyüklüğü GERÇEK
+  veriyle kıyaslıyor ve **3,49 ↔ 3,337 · L1 0,202 ✓** diyor. İkisi çelişince gerçek veri kazanır.
+
+### Ölçüm
+Maç motoru DEĞİŞMEDİ: `sim-node --n=500 --seed=42` → 93.1 - 87.9 · 268 · determinizm ✓ ·
+`band.js` **c19928475859c7ff** · `measure.js` **51fa02b6e0a8194b** (ikisi de FAZ 43 değeri).
+`anlatim-check` 31/31 ✓ · `visual-check` ✓ (0 konsol hatası) · `sahne-olcum` 12-13/18.

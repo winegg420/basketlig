@@ -54,10 +54,14 @@ function randShotXY(isLeft,is3,made,poz){
   const r2=poz==='C' ?_rBant(_u,made?0.65:0.55,made?0.31:0.34)
         :poz==='PF'  ?_rBant(_u,made?0.50:0.43,made?0.34:0.34)
         :             _rBant(_u,made?0.38:0.31,made?0.33:0.32);
-  const r=is3
-    /* kaçan üçlük en fazla yayın ~1.1m gerisinden — daha derini "orta sahadan şut" gibi görünüyordu */
-    ? (made?rand(THREE_R+5,THREE_R+34):rand(THREE_R+4,THREE_R+38))
-    : r2;
+  /* FAZ 54 C2: ÜÇLÜK YARIÇAPI AÇIYA BAĞLIDIR. Eski bant açıdan bağımsız 4-38 px (6,9-8,0 m) idi;
+     köşe üçlüğü kanatla aynı uzaklıktan atılıyor, oyuncular bir çemberin üstüne dizilmiş görünüyordu.
+     Gerçek dağılım: köşe 6,75-7,10 m · kanat 7,0-7,8 · tepe 7,2-8,3 · %5 derin (>8,3).
+     ⚠ rand ÇAĞRI SAYISI VE SIRASI AYNI (önce yarıçap çekilişi, sonra açı) — isabet zaten
+     kararlaştırılmıştır, skor/kutu skor değişmez (`band.js`/`measure.js` hash korunur). Açı
+     dağılımı (bölge payları) dokunulmadı — `sut-cografya-check` gerçek veriyle kapılıdır. */
+  const _u3r=is3?(rand(0,1000)/1000):0;
+  let r=r2;
   /* §6: üçlük açısı ±82° iken köşe payı %39, kanat %31 çıkıyordu (gerçek: köşe ~%25,
      kanat ~%40). Açı bandı daraltılınca dağılım kanat/tepe lehine döner; iki sayılık
      şutlarda bant korunur (boya geometrisi değişmesin). */
@@ -71,6 +75,11 @@ function randShotXY(isLeft,is3,made,poz){
   let a;
   if(is3){ const _u3=rand(-1000,1000)/1000; a=Math.sign(_u3)*68*Math.pow(Math.abs(_u3),0.89)*Math.PI/180; }
   else a=rand(-82,82)*Math.PI/180;
+  if(is3){
+    const ad=Math.abs(a)*180/Math.PI;                                   /* 0-68° */
+    const dp=(ad>52)?(2+_u3r*10):(ad>26)?(8+_u3r*30):(14+_u3r*34);      /* köşe · kanat · tepe (px, yayın gerisi) */
+    r=THREE_R+dp*(made?0.92:1)+((_u3r>0.95)?42:0);                     /* %5 derin üçlük (+1,4 m) */
+  }
   let x=rim[0]+dir*Math.cos(a)*r;
   let y=rim[1]+Math.sin(a)*r;
   x=Math.max(66,Math.min(874,x));
@@ -177,8 +186,11 @@ const _TOP_YAKLAS=260;       /* px/sn — elde tutulan topun ELE GÖRE kapanma h
    da pasla). Karambol dikey hızı da gerçek ölçekte (≈2,5 m/sn → 48 px/sn, tepe 0,6 m). */
 const _TOP_G=202;            /* px/sn² — sahne ölçeğinde yerçekimi */
 const _TOP_RIM_TEMAS=0.14;   /* sn — kaçan şutta top çemberde sallanır, sonra karambol */
-const _TOP_TUTMA_H=20;       /* ≈2,0 m — bunun üstündeki top ele ulaşmaz (havada yakalama tavanı) */
-const _TOP_TUTMA_PX=21;      /* ≈0,7 m — oyuncu topa bu kadar yaklaşınca alabilir */
+const _TOP_TUTMA_H=26;       /* ≈2,6 m — sıçrayan ribaundcunun uzanma tavanı (FAZ 54: 20 → 26; ölçüldü: top yere inip
+                                   sekene kadar 1,3-2,3 sn sahipsiz kalıyordu, gerçek ribaunt havada 0,3-0,6 sn'de alınır) */
+const _TOP_TUTMA_PX=26.6;    /* ≈0,9 m — oyuncu topa bu kadar yaklaşınca alabilir (FAZ 54: 21 px iken çalma sonrası
+                                   takipçi 2,2 sn boyunca alamıyordu — kaybeden oyuncunun 22 px'lik çarpışma halkası
+                                   topu örtüyordu; FAZ 43 tuzağının aynısı) */
 const _PL_ACC=13;            /* hedefe yaklaşma sertliği */
 const _PL_R=40;              /* çarpışma yarıçapı — jetonlar bu mesafeden yakın durmaz */
 /* F16-C: AYNI TAKIM oyuncuları için daha geniş yarıçap. Ölçüm (hareket-check): karelerin
@@ -188,7 +200,7 @@ const _PL_R=40;              /* çarpışma yarıçapı — jetonlar bu mesafede
    ama takım arkadaşları birbirinden 2 m'den uzak durur — gerçek açıklık ilkesi. */
 /* 54 px (1,83 m) denendi: iki takım arkadaşı 1,83-2,0 m arasında durabildiği için yığılma
    ölçüsü %20'de kalıyordu. 62 px = 2,10 m, eşiğin üstünde. */
-const _PL_R_TAKIM=62;        /* px ≈ 2,10 m */
+const _PL_R_TAKIM=58;        /* px ≈ 1,96 m (FAZ 54: 62 → 58; 48 denendi, yayılımı bozdu ve binmeyi İYİLEŞTİRMEDİ — gerçek kliplerde <70 cm kare payı %37,7, sahnede %27,6 — ayrışma gerçeğin üstündeydi) */
 
 /* ── F15-1: HAREKET KADEMELERİ ────────────────────────────────────────────────────────
    Ölçüm (tools/hareket-check.js, kalibrasyon öncesi): ortalama hız 2,86 m/sn, zamanın
@@ -219,7 +231,7 @@ const _PL_R_TAKIM=62;        /* px ≈ 2,10 m */
 /* FAZ 49: taban (jog) 72-100 px/sn = 2,4-3,4 m/sn; ortalama oyuncu (hiz=60): yürü 40 · jog 89 ·
    koş 138 · sprint 200 px/sn = 1,36 · 3,0 · 4,7 · 6,8 m/sn (duvar). En hızlı oyuncunun sprinti
    225 px/sn = 7,6 m/sn — gerçekte 7,5+ payı %0,25. */
-const _V_TIER=[0.45,1.00,1.60,2.30];   /* k: koş 4,1 · sprint 5,9 m/sn (ort oyuncu); 1,7 ile 4,5+ bandı %10,8, 1,5 ile %1,2 (gerçek %4,5) */
+const _V_TIER=[0.35,0.78,1.25,1.79];   /* FAZ 54 B2: ×0,78 — sprint 1,79×135 = 242 px/sn = 8,2 m/sn duvar (brif tavanı); ölçüldü: ×0,86 ile ort 2,19, hedef 1,7-1,9 */
 const _URG={YURU:0,JOG:1,KOS:2,SPRINT:3};
 /* Hız stat'ı olmayan jeton için JOG tabanı (eski `_PL_MAXV/2` yerine açık sabit). */
 const _PL_JOGV=76;
@@ -687,7 +699,7 @@ function _simStep(dtReal){
    ⚠ Şut ve çemberden düşüş muaf — top orada tasarım gereği kimsenin elinde değildir.
    ⚠ Yalnız SAHNE katmanı; maç matematiğine dokunmaz, rastgelelik tüketmez. */
 const _SAHIPSIZ_PX=59;        /* ≈ 2 m (29,5429 px/m) */
-const _SAHIPSIZ_SN=0.6;   /* FAZ 37: 1,2 sn kuyruğu ölçümde %2,3 sahipsiz kare bırakıyordu */
+const _SAHIPSIZ_SN=0.45;  /* FAZ 37: 1,2 sn kuyruğu ölçümde %2,3 sahipsiz kare bırakıyordu · FAZ 54: 0,6 → 0,45 */
 function _sahipsizTopTick(S,dt){
   try{
     if(S._klipTop){ S._sahipsizT=0; return; }   /* FAZ 50: klip oynarken bekçi yok */
@@ -759,10 +771,10 @@ function _simTick(dt){
       S._chaseAsimN=(S._chaseAsimN|0)+1;   /* FAZ 43: teşhis — top oyuncuya "gitti" */
       /* Takip zaman aşımına uğrasa da top TAKİPÇİYE verilir: takip zaten "bu oyuncu topu
          alacak" demektir; vermezsek anlatımda adı geçen oyuncu ile sahadaki taşıyıcı ayrışır. */
-      if(t){ _ballHold(t); t.pop=1; }
+      if(t){ _ballTut(t); t.pop=1; }   /* FAZ 54: _ballHold → pas → yeni chase döngüsü kırıldı */
       if(typeof c.fn==='function'){ try{ c.fn(); }catch(e){} }
     }
-    else if(!t||(b.mode!=='loose'&&b.mode!=='rim')){
+    else if(!t||(b.mode!=='loose'&&b.mode!=='rim'&&b.mode!=='dead')){
       /* Top başkasına geçti/tutuldu: takibi bitir ama geri çağrıyı ÇALIŞTIR. */
       if(b.mode!=='pass'&&b.mode!=='shot'){
         S.chase=null;
@@ -773,8 +785,8 @@ function _simTick(dt){
       t.tx=b.x; t.ty=b.y; _setUrg(t,(c.urg!=null?c.urg:_URG.SPRINT)); t._lock=S.time+0.1;
       /* FAZ 43 İŞ 1: yakalama TEK kapıdan (`_topAlinabilir`): top serbest, 0,7 m içinde ve
          ele inmiş. Eski ölçüt (26 px · h<30) topu çemberdeyken ve 0,9 m'den alıyordu. */
-      if(_topAlinabilir(t,b)){
-        _ballHold(t); t.pop=1; S.chase=null;
+      if(_topAlinabilir(t,b)||(c.t>0.5&&Math.hypot(t.x-b.x,t.y-b.y)<=40&&b.h<=_TOP_TUTMA_H)){
+        _ballTut(t); t.pop=1; S.chase=null;
         if(typeof c.fn==='function'){ try{ c.fn(); }catch(e){} }
       }
     }
@@ -1367,7 +1379,7 @@ function _simTick(dt){
       /* FAZ 41 §2: elips penceresinde tavan 100 px/sn — yayın çevresel tepe hızı
          (ω·a ≈ 78 px/sn) bunun ALTINDA kalmalı, yoksa jeton hedefin gerisinde kalır ve
          FAZ 40'ın santimetre ölçekli titremesi geri gelir (ölçülen kök neden). */
-      const _sway=((p._exT||0)>S.time)?60:(((p._swayT||0)>S.time)?12:10);   /* FAZ 49: duvar ölçeği (1,0 / 0,6 / 0,34 m/sn); ölçüldü: hedefindeyken 1 m/sn üstü karelerin %88'i salınım penceresindeydi */
+      const _sway=((p._exT||0)>S.time)?60:(((p._swayT||0)>S.time)?22:22);   /* FAZ 49: duvar ölçeği · FAZ 54 B3: 10-12 → 22 px/sn (0,75 m/sn) — hedefindeki jeton "ayak değiştirir", 0,3 px/kare altına düşüp donuk sayılmaz */
       const want=d<24?Math.min(_tv,_sway):Math.min(_tv,d*1.5);   /* FAZ 49: yaklaşma rampası 2,1 → 1,6 (0,8 denendi: 24-80 px bandında %50 kare 1-2 m/sn sürünüyordu; fren tavanı `_DEC_MAX` zaten duruşu yumuşatır) */
       const _vx0=p.vx, _vy0=p.vy;
       /* FAZ 42-B §A3: yön sınırlı açısal hızla döner (varış bölgesi muaf). Markajdaki
@@ -1391,9 +1403,37 @@ function _simTick(dt){
       _ivmeSinirla(p,_vx0,_vy0,dt,_savunmada?1.6:1);
     } else { p.vx*=0.85; p.vy*=0.85; }
     p.x+=p.vx*dt; p.y+=p.vy*dt;
+    /* FAZ 54 B4: SAHA KELEPÇESİ — hızlı jeton çizgiyi aşamaz (ölçüldü: bir SG y=−1, tribünde).
+       Sıradan oyuncu en çok 10 px (34 cm) taşabilir; yalnız çizgi dışı izinli sokucu 26 px (0,88 m). */
+    { const _m=(p._oob||p._oobDonus)?26:10;
+      if(p.x<CRT_X0-_m){ p.x=CRT_X0-_m; if(p.vx<0) p.vx=0; } else if(p.x>CRT_X1+_m){ p.x=CRT_X1+_m; if(p.vx>0) p.vx=0; }
+      if(p.y<CRT_Y0-_m){ p.y=CRT_Y0-_m; if(p.vy<0) p.vy=0; } else if(p.y>CRT_Y1+_m){ p.y=CRT_Y1+_m; if(p.vy>0) p.vy=0; } }
     if(p.pop>0) p.pop=Math.max(0,p.pop-dt*2.6);        /* sıçrama/şut "pop" sönümü */
     p.sc=1+p.pop*0.20;
   }
+  /* ── FAZ 54 C1: ÜÇ SANİYE — YAPAY ZEKÂ KURTARIŞI ────────────────────────────────────
+     Ölçüldü (canlı site): 53 ihlal, boyada kesintisiz en uzun 12,2 sn; PG dahil herkes
+     boyada oturuyordu. Klip karelerinde hareket gerçek kayıttır (dokunulmaz); eski fizikle
+     yürüyen anlarda (ribaund sonrası bekleme, geçiş) topsuz hücumcu boyada 2,4 sn'yi doldurunca
+     kulvarın dışına (aynı taraf, 0,5 m açığa) çıkar. Sayaç boyadan çıkınca ya da top ölünce
+     sıfırlanır. Taşıyıcı, klip jetonu, çizgi dışı sokucu ve OAM'ın yazdığı hedefler muaf. */
+  try{
+    const bl=S.ball; const canliTop=bl&&(bl.mode==='held'||bl.mode==='pass')&&!S._ftAktif&&!S.inb&&!(S._hakemTop&&S._hakemTop.aktif);
+    if(canliTop&&S.offP&&S.offSide!=null&&!(S.oam&&S.oam.aktif)){
+      const rimC=_rim(S.offSide);
+      S.offP.forEach(p=>{
+        if(!p||p._klip||p._oob||p===bl.carrier){ p._boyaT=0; return; }
+        const icinde=Math.abs(p.y-250)<2.45*29.5429&&Math.abs(p.x-rimC[0])<5.8*29.5429;
+        if(!icinde){ p._boyaT=0; return; }
+        p._boyaT=(p._boyaT||0)+dt;
+        if(p._boyaT>=1.9&&(p._boyaCikis||0)<S.time){   /* FAZ 54: 2,4 → 1,9 sn, JOG → KOS (ölçüldü: 3,9 sn'ye kadar çıkıyordu) */
+          p._boyaCikis=S.time+1.4;
+          const ty=250+(p.y<250?-1:1)*(2.45*29.5429+22);
+          p.tx=_inX(p.x); p.ty=_inY(ty); p._wp=null; _setUrg(p,_URG.KOS); p._lock=S.time+0.7;
+        }
+      });
+    } else if(S.offP){ S.offP.forEach(p=>{ if(p) p._boyaT=0; }); }
+  }catch(e){}
   /* 4) üst üste binmeyi çöz — itme kare başına SINIRLI; çizgi dışındaki sokucu itilmez. */
   const shooterTok=S.shooter;
   for(let i=0;i<P.length;i++){
@@ -1542,7 +1582,7 @@ function _ballKurtar(){
       const t=S.inb.tok, sp={x:S.inb.x,y:S.inb.y};
       _setUrg(t,_URG.KOS); _chase(t,()=>{ try{ S.ball.noDrib=true; t.tx=sp.x; t.ty=sp.y; t._wp=null; _setUrg(t,_URG.KOS); }catch(e){} },2.4);
     }
-    else if(en){ _setUrg(en,_URG.SPRINT); _chase(en,null,1.5); }
+    else if(en){ if(Math.hypot(en.x-b.x,en.y-b.y)<=_TOP_AL_PX*1.5){ _ballTut(en); } else { _setUrg(en,_URG.SPRINT); _chase(en,null,1.5); } }
     S._kurtarN=(S._kurtarN|0)+1;   /* teşhis sayacı — ölçüm araçları okur */
   }catch(e){}
 }
@@ -1553,9 +1593,78 @@ function _ballHold(p,noDrib){
   /* M6: üst sınır 0,30 sn iken 400 px lik mesafe ~40 m/sn hızla "pas" oluyordu (ışınlanma).
      Süre artık _ballPass in doğal hesabına bırakıldı: d/520, en çok 0,90 sn. */
   if(d>14){ _ballPass(p,Math.max(0.12,Math.min(0.90,d/520))); return; }   /* FAZ 47: 14-30 px anlık el değişimi de kısa pas (tek karelik sıçrama yok) */
+  _ballTut(p,noDrib);
+}
+/** FAZ 54 A1: TOPU ELE AL — mesafe kontrolü YAPMAZ (`_ballHold`'un d>14 dalı pas üretir ve
+    `_ballPass` korumasıyla döngüye girerdi). Top zaten oyuncunun 0,9 m'sindedir; 'held' dalı
+    onu `_TOP_YAKLAS` hızıyla ele kaydırır. `_heldAt` damgası A2'nin "en az 0,10 sn tut" kuralı
+    ve bekleyen pas/şut kuyruğu içindir. */
+function _ballTut(p,noDrib){
+  const b=_ball(); if(!p) return;
+  const S=mState._sim;
   if(b.carrier!==p) p._topAldi=null;   /* §7.1: topu YENİ alan oyuncunun 1,2 sn sayacı sıfırlanır */
   if(b.carrier&&b.carrier!==p) b._pasSonra=null;   /* FAZ 43: el değiştirince bekleyen gecikmeli pas düşer · FAZ 45: top UÇARAK gelince (önceki taşıyıcı yok) düşmez — serbest atış toplayıcısı topu tutup kalıyordu */
+  if(b.carrier!==p) b._heldAt=S?S.time:0;
   b.mode='held'; b.carrier=p; b.t=0; b.noDrib=!!noDrib; b.vx=b.vy=b.vh=0;
+}
+/* ── FAZ 54 A1/A3: TOP DURUM MAKİNESİ SÖZLEŞMESİ ──────────────────────────────────────
+   Ölçüldü (canlı site, 24.921 kare): `loose>held` 0 · `loose>pass` 13 · `shot>pass` 1 · şutların
+   14/26'sı `pass>shot`. Yani potadan seken top hiçbir zaman bir oyuncunun eline geçmiyor, sahipsiz
+   toptan doğrudan pas başlıyor, şut havadayken pasa dönüşüyordu — kullanıcının gördüğü "top ribaunt
+   alan olmadan birine ışınlandı" tam olarak bu.
+   Kural: 'pass' ve 'shot' YALNIZ 'held'den başlar. Sahipsiz toptan pas isteyen çağıran, topu önce
+   birine ALDIRIR: 0,9 m içindeki oyuncu hemen tutar, yoksa en yakın oyuncu koşar; pas topu tutan
+   oyuncudan `_TOP_TUT_SN` sonra çıkar. Havadaki toptan (shot/rim) pas isteği topun yere inmesini
+   bekler. Kuyruk `b._pasBekle` / `b._sutBekle`, 'held' dalı işletir, 2,5 sn'de bayatlar. */
+const _TOP_AL_PX=26.6;        /* 0,9 m — sahipsiz topu alma yarıçapı */
+const _TOP_AL_V=118;          /* px/sn ≈ 4 m/sn — bundan hızlı koşan oyuncu topu alamaz */
+const _TOP_TUT_SN=0.10;       /* sn — pas/şut öncesi asgari tutma (ekranda "topu aldı, çekti") */
+/** FAZ 54 A1/A4: sahipsiz (loose/dead) topu 0,9 m içindeki oyuncu alır — tek kapı. */
+function _topuAlmayaCalis(S,b){
+  if(S._hakemTop&&S._hakemTop.aktif) return;
+  if(!(b.h<=_TOP_TUTMA_H&&(b.vh<=0||b.h<=4))) return;
+  let aday=null;
+  if(S.chase&&S.chase.tok) aday=S.chase.tok;
+  else if(S.inb&&S.inb.tok&&S.offP&&S.offP.indexOf(S.inb.tok)>=0) aday=S.inb.tok;
+  if(aday){
+    /* FAZ 54 A1b: takipçi 3 m'den uzakta ve top 0,7 sn'dir yerdeyse AYNI TAKIMDAN 0,9 m içindeki
+       oyuncu alır (ribaund sonrası 2,6-2,7 sn'lik boşluklar ölçüldü; takım aynı kaldığı için takibin
+       geri çağrısı — çıkış pası / hücum kurulumu — olduğu gibi çalışır). Bekleyen sokucu muaf. */
+    const ch=(S.chase&&S.chase.tok===aday)?S.chase:null;
+    if(!ch) return;
+    const cd=Math.hypot(aday.x-b.x,aday.y-b.y);
+    if(cd<=90||(S.time-(b._looseAt||S.time))<0.7) return;
+    const yk2=_topKimeYakin(S,b,(S.players||[]).filter(q=>q&&q.team===aday.team&&!q._oob));
+    if(yk2.p&&yk2.d<=_TOP_AL_PX&&Math.hypot(yk2.p.vx||0,yk2.p.vy||0)<=_TOP_AL_V){
+      const fn=ch.fn; S.chase=null; _ballTut(yk2.p); yk2.p.pop=Math.max(yk2.p.pop||0,0.6);
+      if(typeof fn==='function'){ try{ fn(); }catch(e){} }
+    }
+    return;
+  }
+  const yk=_topKimeYakin(S,b,null);
+  if(yk.p&&yk.d<=_TOP_AL_PX&&Math.hypot(yk.p.vx||0,yk.p.vy||0)<=_TOP_AL_V&&!yk.p._oob){
+    if(b.mode==='dead'||!b._yerdenAl||(b.h<=8&&b.vh<=0)||((b._sekme|0)>=1&&b.h<=3)){ _ballTut(yk.p); yk.p.pop=Math.max(yk.p.pop||0,0.6); }
+  }
+}
+function _topKimeYakin(S,b,liste){
+  let en=null,ed=1e9;
+  (liste||S.players||[]).forEach(p=>{ if(!p||!isFinite(p.x)) return; const d=Math.hypot(p.x-b.x,p.y-b.y); if(d<ed){ ed=d; en=p; } });
+  return {p:en,d:ed};
+}
+/** Sahipsiz/uçan toptan istenen pası kurala bağlar. true = çağıran işi bitti (kuyruklandı/aldırıldı). */
+function _pasKorumasi(to,dur,bounce){
+  const b=_ball(); const S=mState._sim; if(!S) return false;
+  if(b.mode==='held') return false;
+  const kuyruk=()=>{ b._pasBekle={to,dur:dur||null,bounce:!!bounce,t0:S.time}; };
+  if(b.mode==='shot'||b.mode==='rim'||b.mode==='pass'){ kuyruk(); return true; }   /* yere insin / varsın */
+  /* loose / dead: en yakın oyuncu alır (takip ya da bekleyen sokucu varsa öncelik onda) */
+  let aday=null;
+  if(S.chase&&S.chase.tok) aday=S.chase.tok;
+  else if(S.inb&&S.inb.tok&&S.offP&&S.offP.indexOf(S.inb.tok)>=0) aday=S.inb.tok;
+  const yk=_topKimeYakin(S,b,aday?[aday]:null);
+  if(yk.p&&yk.d<=_TOP_AL_PX){ _ballTut(yk.p); kuyruk(); return true; }
+  if(yk.p){ if(!S.chase||S.chase.tok!==yk.p) _chase(yk.p,()=>{ kuyruk(); },2.0); else kuyruk(); return true; }
+  return false;
 }
 /** FAZ 52: ev rengine EN UZAK deplasman rengi (RGB küpünde). Aday listesi kurulum
     ekranındaki sekiz renkten UZAK duran, birbirinden de ayrık koyu tonlardır. */
@@ -1571,6 +1680,10 @@ function _ziRenk(hex){
 }
 function _ballPass(to,dur,bounce){
   const b=_ball(); if(!to) return;
+  if(b.mode!=='held'&&_pasKorumasi(to,dur,bounce)) return;   /* FAZ 54 A1/A3: sahipsiz/uçan toptan pas atılamaz */
+  /* FAZ 54: top ele geçtiği KARE içinde geri çıkamaz (ölçüldü: 60 fps örneklemede loose>held>pass
+     tek karede geçiyor ve "loose>pass" görünüyordu). En az _TOP_TUT_SN elde kalır, sonra pas. */
+  try{ const S=mState._sim; if(S&&b.mode==='held'&&b.carrier&&to!==b.carrier&&(S.time-(b._heldAt||0))<_TOP_TUT_SN){ b._pasBekle={to,dur:dur||null,bounce:!!bounce,t0:S.time}; return; } }catch(e){}
   const d=Math.hypot(to.x-b.x,to.y-b.y);
   b.mode='pass'; b.carrier=null; b.from=[b.x,b.y]; b.target=to; b.noDrib=false;
   b.hFrom=b.h;   /* FAZ 44 §1: yüksekten başlayan pas (hava atışı tap'i) 11 px'e düşmez, iner */
@@ -1584,6 +1697,26 @@ function _ballPass(to,dur,bounce){
 /** @param tip FAZ 26 §1: 'smac' | 'turnike' | 'floater' | 'jumper' | 'uc' | null (ör. serbest atış) */
 function _ballShoot(to,dur,made,onDone,tip){
   const b=_ball();
+  /* FAZ 54 A2: 'shot' YALNIZ 'held'den. Top pasla gelmiş ama henüz ele alınmamışsa (ölçüldü: şutların
+     14/26'sı pass>shot — top havada yön değiştiriyor, ışınlanma gibi görünüyor) top şutöre aldırılır
+     ve atış `_TOP_TUT_SN` sonra çıkar. Blok (dur ≤ 0,21) anlık kalır — top zaten eldeydi. */
+  try{
+    const S=mState._sim;
+    if(S&&!S._klipTop){
+      const sutor=(S.shooter&&isFinite(S.shooter.x))?S.shooter:null;
+      if(b.mode==='pass'&&b.target&&isFinite(b.target.x)){   /* uçan pas: varsın, 0,10 sn tutulsun, sonra şut */
+        b._sutBekle={to:[to[0],to[1]],dur,made,onDone,tip,t0:S.time}; return;
+      }
+      if(b.mode!=='held'||!b.carrier){
+        const aday=sutor||_topKimeYakin(S,b,S.offP).p;
+        if(aday&&Math.hypot(aday.x-b.x,aday.y-b.y)<=_TOP_AL_PX*1.6){ _ballTut(aday); }
+      }
+      /* blok dahil (ölçüldü: kalan 2 pass>shot bloklu şuttu) — top ele gelmeden şut yok */
+      if(b.mode==='held'&&b.carrier&&(S.time-(b._heldAt||0))<_TOP_TUT_SN){
+        b._sutBekle={to:[to[0],to[1]],dur,made,onDone,tip,t0:S.time}; return;
+      }
+    }
+  }catch(e){}
   const d=Math.hypot(to[0]-b.x,to[1]-b.y);
   b.mode='shot'; b.carrier=null; b.from=[b.x,b.y]; b.to=[to[0],to[1]]; b.noDrib=false;
   b.h0=Math.max(b.h,20);      /* top elden ~omuz/baş hizasından çıkar */
@@ -1637,9 +1770,9 @@ function _ballCarom(vx,vy,vh){
     (`_yerdenAl`: en az bir kez zıplamış ve yere yakın) — gerçek maçta da fileden çıkan
     top bir kez seker, sokucu yerden toplar. */
 function _topAlinabilir(p,b){
-  if(!p||!b||b.mode!=='loose') return false;
+  if(!p||!b||(b.mode!=='loose'&&b.mode!=='dead')) return false;   /* FAZ 54 A4: ölü top da yerden alınır */
   if(Math.hypot(p.x-b.x,p.y-b.y)>_TOP_TUTMA_PX) return false;
-  if(b._yerdenAl) return (b._sekme|0)>=1&&b.h<=3&&b.vh<=0;
+  if(b._yerdenAl) return (b.h<=8&&b.vh<=0)||((b._sekme|0)>=1&&b.h<=3&&b.vh<=0);   /* FAZ 54: fileden inen top yere değmeden de alınır */
   if(b.h<=_TOP_TUTMA_H&&b.vh<=0) return true;
   return b.h<=4&&Math.abs(b.vh)<20;
 }
@@ -1651,6 +1784,9 @@ function _ballStep(dt){
     case 'held':{
       const p=b.carrier;
       if(!p){ b.mode='loose'; b.vx=b.vy=0; b.vh=0; break; }
+      /* FAZ 54 A1/A2: bekleyen pas/şut — top en az `_TOP_TUT_SN` elde kaldıktan sonra çıkar */
+      if(b._sutBekle){ const q=b._sutBekle; if(S.time-q.t0>2.5){ b._sutBekle=null; } else if(S.time-(b._heldAt||0)>=_TOP_TUT_SN){ b._sutBekle=null; _ballShoot(q.to,q.dur,q.made,q.onDone,q.tip); break; } }
+      if(b._pasBekle){ const q=b._pasBekle; if(S.time-q.t0>2.5||!q.to||!isFinite(q.to.x)){ b._pasBekle=null; } else if(q.to===p){ b._pasBekle=null; } else if(S.time-(b._heldAt||0)>=_TOP_TUT_SN){ b._pasBekle=null; _ballPass(q.to,q.dur,q.bounce); break; } }
       if(b._pasSonra&&S.time>=b._pasSonra.t){ const ps=b._pasSonra; b._pasSonra=null; if(ps.to&&ps.to!==p){ _ballPass(ps.to,ps.dur||null); break; } }
       const sp=Math.hypot(p.vx,p.vy);
       const ux=sp>10?p.vx/sp:1, uy=sp>10?p.vy/sp:0;
@@ -1686,12 +1822,17 @@ function _ballStep(dt){
         const _dx=_hx-b.x, _dy=_hy-b.y, _d=Math.hypot(_dx,_dy);
         if(_d>_mx&&_d>0.001){ b.x+=_dx/_d*_mx; b.y+=_dy/_d*_mx; }
         else { b.x=_hx; b.y=_hy; } }
+      /* FAZ 54 A4: elde tutulan top SAHA DIŞINA çıkmaz — çizgi dışındaki sokucu/hakem topu
+         çizginin üstünde tutar (ölçüldü: x=883,9'da 7,98 sn 'held', saha dışı karelerin %90'ı buydu). */
+      b.x=Math.max(CRT_X0+2,Math.min(CRT_X1-2,b.x)); b.y=Math.max(CRT_Y0+2,Math.min(CRT_Y1-2,b.y));
       break;
     }
     case 'pass':{
       b.t+=dt/b.dur;
       const t=Math.min(1,b.t);
-      const tx=b.target?b.target.x:b.from[0], ty=b.target?b.target.y:b.from[1];
+      /* FAZ 54 A4: uçuş noktası saha içine kırpılır — hakem ve çizgi dışındaki sokucu topu
+         çizginin üstünden alır; pas hiçbir zaman saha dışında uçmaz (ölçüldü: 3,17 sn 'pass' y=19). */
+      const tx=Math.max(CRT_X0+2,Math.min(CRT_X1-2,b.target?b.target.x:b.from[0])), ty=Math.max(CRT_Y0+2,Math.min(CRT_Y1-2,b.target?b.target.y:b.from[1]));
       /* FAZ 40 §A1: hedef UÇUŞ SIRASINDA hareket ettiği için nominal süre doğru olsa bile
          anlık hız tavanı aşabilir. Konum yine `t`den kurulur, sonra tavana kırpılır;
          top hedefe geç varırsa `_ballHold` d>30 dalı kalanı doğal süreyle tamamlar. */
@@ -1747,9 +1888,30 @@ function _ballStep(dt){
       if(b.x>CRT_X1-8){ b.x=CRT_X1-8; b.vx=-Math.abs(b.vx)*0.35; }
       if(b.y<CRT_Y0+8){ b.y=CRT_Y0+8; b.vy=Math.abs(b.vy)*0.35; }
       if(b.y>CRT_Y1-8){ b.y=CRT_Y1-8; b.vy=-Math.abs(b.vy)*0.35; }
+      /* FAZ 54 A1: `loose`tan çıkışın TEK yolu `held`. 0,9 m içindeki, 4 m/sn'den yavaş oyuncu
+         topu alır (top ele inecek yükseklikte). Takip ya da bekleyen sokucu varsa öncelik onda —
+         anlatımda adı geçen ribaundcu korunur (FAZ 43); hakem topu yönetiyorsa kimse almaz. */
+      _topuAlmayaCalis(S,b);
+      break;
+    }
+    case 'dead':{
+      /* FAZ 54 A4: ÖLÜ TOP — çizgiyi geçen top burada durur; hiçbir fizik uygulanmaz. Sokma
+         töreni (`_ballHold`) ya da 0,9 m'ye gelen oyuncu topu 'held'e alır. */
+      b.vx=b.vy=b.vh=0; b.h=0;
+      _topuAlmayaCalis(S,b);
       break;
     }
     default: break;
+  }
+  /* FAZ 54 A4: SAHA SINIRI AĞI — pass/loose/shot fiziği topu çizginin dışına taşırsa top o karede
+     'dead' olur, çizginin EN YAKIN noktasına sabitlenir, hızı sıfırlanır. (Hedef kırpması sayesinde
+     normalde buraya düşülmez; ağ, ileride açılacak dalların sessizce dışarı uçmasını engeller.) */
+  if((b.mode==='pass'||b.mode==='loose'||b.mode==='shot')&&(b.x<CRT_X0||b.x>CRT_X1||b.y<CRT_Y0||b.y>CRT_Y1)){
+    const cb=(b.mode==='shot')?b.onDone:null; b.onDone=null;
+    b.x=Math.max(CRT_X0+2,Math.min(CRT_X1-2,b.x)); b.y=Math.max(CRT_Y0+2,Math.min(CRT_Y1-2,b.y));
+    b.mode='dead'; b.carrier=null; b.target=null; b.vx=b.vy=b.vh=0; b.h=0; b.t=0; b._deadAt=S.time;
+    S._deadN=(S._deadN|0)+1;
+    if(cb){ try{ cb(); }catch(e){} }
   }
   /* ── FAZ 40 §A1: GÜVENLİK AĞI ────────────────────────────────────────────────────────
      Durum makinesinin her dalı kendi tavanını uyguluyor; bu ağ, ileride açılacak yeni bir
@@ -2598,10 +2760,10 @@ function _sokmaKisit(spot,offR,defR,offLeft){
     const ust=spot.y<250;
     const offT=[
       [spot.x+dir*165,(ust?spot.y+65:spot.y-65)],   /* 0 PG: 5-6 m, topu alır ve sürer */
-      [spot.x+dir*250,(ust?380:120)],                /* 1 SG: karşı kanat, ~10 m */
+      [spot.x+dir*150,(ust?spot.y+150:spot.y-150)],  /* 1 SG: karşı kanat, ~5 m (FAZ 54 C4: 10 → 5 m) */
       null,                                          /* 2 SF: kulvarında öne (TRANS_OFF) */
       [spot.x+dir*120,(ust?330:170)],                /* 3 PF: dirsek hizası, ~5 m */
-      [spot.x+dir*290,(ust?spot.y+40:spot.y-40)]     /* 4 C: arkadan gelen, ~10 m */
+      [spot.x+dir*250,(ust?spot.y+40:spot.y-40)]     /* 4 C: arkadan gelen, ~8,5 m (FAZ 54 C4: 10 → 8,5 m) */
     ];
     offR.forEach((p,i)=>{ if(!p||p._oob) return; const c=offT[i]; if(!c) return; p._wp=null; _hedefAta(p,_inX(c[0]),_inY(c[1]),_URG.KOS); });
     S.defTrack=false;   /* savunma markaja değil orta çizgiye — pas atılınca dizilim yeniden verilir */
@@ -3040,7 +3202,7 @@ function movePlayersForEvent(ev,paint){
             if(P){ P(); }
             _startBreak(thiefIsUser);
             try{ const hd=_cikisHedefi(thief,S.offP||[],_rim(S.offSide)); if(hd) _script([{at:0.30,fn:()=>{ try{ _ballPass(hd,0.30); }catch(e){} }}]); }catch(e){}
-          },2.2);
+          },1.3);   /* FAZ 54: 2,2 → 1,3 sn — elden alınan top bir adımda toplanır */
         }catch(e){} };
         _script([{at:0.02,bekle:()=>{
           try{
@@ -4698,7 +4860,7 @@ const SUT_SONUC={
             'çemberin ortasından geçti.','çember izin verdi, sayı geldi.','sayıyı yazdırdı.',
             'tam ortasından geçti.','çembere hiç değmeden geçti.','fileden aşağı süzüldü.',
             'çemberi yalayıp içeri düştü.','arka demirden içeri döndü.','file sesi geldi.',
-            'tam isabetle indi.','çemberden içeri süzüldü.','iki takım da durdu — sayı geldi.',
+            'tam isabetle indi.','çemberden içeri süzüldü.','çemberden temiz geçti.',
             'çemberin ortasını buldu.','savunma geç kaldı, sayı geldi.','tam doğru zamanda içeri düştü.',
             'skoru değiştirdi, içeride.','sayıyı getirdi, tribün ayakta.','çember misafirini kabul etti.'],
     kacan:['ön demire çarptı.','arka demirden döndü.','kısa kaldı.','çemberi turlayıp çıktı.',

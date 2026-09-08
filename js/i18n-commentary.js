@@ -1428,7 +1428,7 @@ Object.assign(I18N_TR_EN,{
   'birini içeri gönderdi, diğeri demirden döndü.':'he sent one in, the other came off the iron.',
   'ilkini kaçırdı, ikincisini attı.':'he missed the first and made the second.',
   'çizgide yarım kaldı.':'he split them at the line.',
-  'iki takım da durdu — sayı geldi.':'both teams stopped — the points come.',
+  'çemberden temiz geçti.':'clean through the rim.',
   'tam doğru zamanda içeri düştü.':'it drops at exactly the right moment.',
   'skoru değiştirdi, içeride.':'that changes the score, it is in.',
   'sayıyı getirdi, tribün ayakta.':'he brings the points, the crowd is on its feet.',

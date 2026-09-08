@@ -939,6 +939,29 @@ function addComment(txt,type='',key,zincir){
       }
     }catch(e){}
   }
+  /* ── FAZ 54 D: YETİM SONUÇ SATIRI ─────────────────────────────────────────────────────
+     Sonuç parçası (`chain`) küçük harfle ve öznesiz yazılır ("demirden sekti, girmedi.") çünkü
+     ön parçanın balonuna EKLENMEK için tasarlandı. Canlı sitede ön parça basılmadan (kare kaybı,
+     klip erken bitişi, yeniden başlatma) sonuç tek başına düşüyordu: küçük harf, özne yok, kim
+     attığı belli değil (ölçüldü: 9 satır art arda). Ön parça hiç basılmadıysa ikisi TEK SATIRDA
+     birleşir ("Mbaka yayın tepesinden çekti — çembere hiç değmeden geçti."); ön parça basılmış ama
+     balonu bulunamıyorsa satır ŞUTÖRÜN ADIYLA açılır ("Mbaka — çembere hiç değmeden geçti."). */
+  if(zincir){
+    try{
+      const onK='i'+String(_k).split(':')[0].slice(1)+':on';
+      const onBasildi=!!(mState._logged&&mState._logged.has(onK));
+      const on=String(ev.preText||'').trim();
+      if(on&&!onBasildi){
+        let govde=on.replace(/\s*\.\s*$/,' —');
+        if(/[!?]$/.test(govde)) txt=(typeof trBuyukIlk==='function')?trBuyukIlk(String(txt)):String(txt);
+        txt=govde+' '+txt;
+        try{ mState._logged.add(onK); }catch(e){}
+      } else if(/^[a-zçğıöşü]/.test(String(txt))){
+        const ad=on.split(/\s+/)[0]||'';
+        txt=(ad&&/^[A-ZÇĞİÖŞÜ]/.test(ad))?(ad+' — '+txt):((typeof trBuyukIlk==='function')?trBuyukIlk(String(txt)):String(txt));
+      }
+    }catch(e){}
+  }
   const item=document.createElement('div');
   let cls='ci';
   if(type==='score3'||type==='score2'||type==='free') cls+=' ci-score';

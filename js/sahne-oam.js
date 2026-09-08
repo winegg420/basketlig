@@ -49,6 +49,8 @@ function oamS(){ return (typeof mState!=='undefined'&&mState)?mState._sim:null; 
 function oamD(a,b){ return Math.hypot(a.x-b.x,a.y-b.y); }
 function oamDR(p,rim){ return Math.hypot(p.x-rim[0],p.y-rim[1]); }
 function oamHedef(p,x,y,urg){
+  /* FAZ 54 C1: üç saniye kurtarışı — hedefi boyanın dışına çeker (tek kapı: OAM'ın her hedef yazımı). */
+  try{ const S=oamS(); const O=S&&S.oam; if(O&&O.aktif&&O.rim&&(S.offP||[]).indexOf(p)>=0){ const k=oamBoyaKac(S,O,p); if(k){ x=k[0]; y=k[1]; urg=_URG.KOS; } } }catch(e){}
   if(!p) return;
   p.tx=_inX(x); p.ty=_inY(y); p._wp=null; p._sonHedefT=(oamS()||{}).time||0;
   const d=Math.hypot(p.x-p.tx,p.y-p.ty);
@@ -312,6 +314,11 @@ function oamOluTop(S){
     const spots=oamSpotlar(S,offLeft,offR);
     let icerde=false; spots.forEach((c)=>{ if(Math.hypot(c[0]-rim[0],c[1]-rim[1])<150) icerde=true; });
     if(!icerde){ const uzun=offR.filter(p=>p!==pg).sort((a,b2)=>(b2.role|0)-(a.role|0))[0]; if(uzun) spots.set(uzun,[_inX(rim[0]+dir*44),_inY(250+(spot.y<250?54:-54))]); }
+    /* FAZ 54 C4: sokucunun ÜÇ arkadaşı 6 m içine gelir (pas ancak o zaman atılır) — geri kalan
+       ikisi şablon noktasında kalır. Ölçüldü: ölü top sokmalarında 5 m içinde 1-2 kişi. */
+    { const ust=spot.y<250, sg=ust?1:-1;
+      const yak=[[spot.x+dir*150,spot.y+sg*60],[spot.x+dir*110,spot.y+sg*130],[spot.x+dir*60,spot.y+sg*160]];
+      offR.filter(p=>p!==inb).slice(0,3).forEach((p,i)=>{ spots.set(p,[_inX(yak[i][0]),_inY(yak[i][1])]); }); }
     S.script=[]; S.sIdx=0;                                  /* eski dalın pası OAM'a geçer */
     const spotOnde=offLeft?(spot.x<COURT_MID):(spot.x>COURT_MID);
     const O={aktif:true,sutsuz:true,spotOnde,faz:'sokma',t:0,sh:null,shooter:null,pg,outletTok:null,mid:null,offP,defP,offR,defR,offLeft,dir,rim,
@@ -375,10 +382,10 @@ function oamAtes(){
          2,82 sn — gerçek ribaunt 0,8-1,5 sn içinde alınır). Sekme kısaldı; uzaktaki
          ribaundcuya yönlendirme dalı da aynı oranda düştü. */
       let away=Math.atan2(sh.y-rim[1],sh.x-rim[0])+(_sr()*2-1)*1.1;
-      let sp=_srand(58,104);
+      let sp=_srand(38,70);   /* FAZ 54: 58-104 → 38-70 (top ribaundcunun uzanma alanında kalsın) */
       try{ const nxR=_peekNext(); if(nxR&&nxR.type==='reb'&&nxR.rebId!=null){
         const nm=offP.concat(defP).find(p=>p.pl&&p.pl.id===nxR.rebId);
-        if(nm){ const dn=oamDR(nm,rim); if(dn>90){ away=Math.atan2(nm.y-rim[1],nm.x-rim[0])+(_sr()*2-1)*0.35; sp=_srand(92,132); } }
+        if(nm){ const dn=oamDR(nm,rim); if(dn>90){ away=Math.atan2(nm.y-rim[1],nm.x-rim[0])+(_sr()*2-1)*0.35; sp=_srand(70,98); } }
       } }catch(e){}
       _ballCarom(Math.cos(away)*sp,Math.sin(away)*sp,_srand(44,54));
       S.inb=null;
@@ -425,6 +432,7 @@ function oamRebScramble(S,offA,defA,rimXY,left){
 /* ── Kare beyni ─────────────────────────────────────────────────────────────────────── */
 function oamTick(dt){
   const S=oamS(); const O=S&&S.oam; if(!O||!O.aktif) return;
+  S._oamDt=dt;   /* FAZ 54 C1: boya sayacı bu adımı kullanır */
   O.t+=dt; O.holdT+=dt;
   if(O.faz==='toren'){ oamTorenTick(S,O,dt); return; }
   const b=S.ball, {offP,defP,offR,rim,dir,shooter,pg,spots}=O;
@@ -564,6 +572,20 @@ function oamTick(dt){
 }
 
 /* ── Hedefler: her karede her oyuncuya TEK hedef ───────────────────────────────────── */
+/** FAZ 54 C1: boyada 1,9 sn'yi dolduran topsuz hücumcunun hedefini kulvarın dışına kaydırır. */
+function oamBoyaKac(S,O,p){
+  try{
+    const rim=O.rim; if(!rim) return null;
+    const b=S.ball;
+    if(!p||p===b.carrier||p._oob||p._klip) { if(p) p._boyaT=0; return null; }
+    const ic=Math.abs(p.y-250)<2.45*29.5429&&Math.abs(p.x-rim[0])<5.8*29.5429;
+    if(!ic){ p._boyaT=0; return null; }
+    p._boyaT=(p._boyaT||0)+(S._oamDt||0.016);
+    if(p._boyaT<1.9) return null;
+    const hy=250+(p.y<250?-1:1)*(2.45*29.5429+22);
+    return [_inX(p.x),_inY(hy)];
+  }catch(e){ return null; }
+}
 function oamHedefler(S,O){
   const b=S.ball, {offP,defP,offR,defR,rim,dir,shooter,pg,spots,offLeft}=O;
   const carrier=b.carrier, bizde=!!(carrier&&offP.indexOf(carrier)>=0);
@@ -745,6 +767,9 @@ function oamSokmaTick(S,dt){
     const t=(S.curType||''); if(!(/^score/.test(t)||t==='free')) return;   /* yalnız sayı / serbest atış sonrası dip çizgi sokması */
     const inb=I.tok; if(Math.hypot(inb.x-I.x,inb.y-I.y)>16){ S._sokmaT=0; return; }
     S._sokmaT=(S._sokmaT||0)+dt; if(S._sokmaT<0.7) return;
+    /* FAZ 54 C4 (ölçüldü: 5 m içinde 1-2 arkadaş, en uzağı 15,7-16,9 m): en az 3 takım arkadaşı
+       6 m (177 px) içine gelmeden sokma pası atılmaz — en çok 3,5 sn beklenir. */
+    { let yakin=0; (S.offP||[]).forEach(q=>{ if(q&&q!==inb&&!q._oob&&Math.hypot(q.x-inb.x,q.y-inb.y)<=177) yakin++; }); if(yakin<3&&S._sokmaT<3.5) return; }
     const offR=_rolesOrder(S.offP||[]);
     const pg=offR.find(p=>p!==inb&&p.role===0)||offR.find(p=>p!==inb&&p.role===1)||offR.find(p=>p!==inb&&_tasiyabilir(p)); if(!pg) return;
     if(Math.hypot(pg.x-inb.x,pg.y-inb.y)>_SOKMA_MAX_PX) return;
@@ -852,7 +877,7 @@ function oamHakemTick(S,dt){
       const ucuyor=(b.mode==='pass'&&b.target===HH);
       if(!ucuyor&&(b.carrier||b.mode!=='loose')){ HT.aktif=false; }   /* başka bir yol topu aldı — hakem çekilir */
       else if(!ucuyor){
-        b.x=HH.x; b.y=HH.y; b.h=14; b.vx=b.vy=b.vh=0;             /* FAZ 51: top hakemin elinde (fizik değil) */
+        b.x=Math.max(CRT_X0+2,Math.min(CRT_X1-2,HH.x)); b.y=Math.max(CRT_Y0+2,Math.min(CRT_Y1-2,HH.y)); b.h=14; b.vx=b.vy=b.vh=0;   /* FAZ 51: top hakemin elinde · FAZ 54 A4: top çizginin üstünde */
         const d=Math.hypot(HH.x-HH.tx,HH.y-HH.ty);
         const sh=HT.shooter;
         /* FAZ 53: SERBEST ATIŞTA HAKEM DİZİLİMİ BEKLER. Eski kodda `hazir` serbest atış
@@ -862,8 +887,9 @@ function oamHakemTick(S,dt){
            Ölçüt tek kaynaktan: `_ftYerlesti` (10 oyuncudan ≥9'u hedefinin 8,5 px içinde)
            + atıcının çizgide olması. Tavan 2,2 → 3,4 sn: dizilim gecikse bile oyun
            kilitlenmez. */
+        const _yakin=(()=>{ try{ if(!HT.inb||!sh) return 9; const tk=(S.offP&&S.offP.indexOf(sh)>=0)?S.offP:S.defP; let n=0; (tk||[]).forEach(q=>{ if(q&&q!==sh&&!q._oob&&Math.hypot(q.x-sh.x,q.y-sh.y)<=177) n++; }); return n; }catch(e){ return 9; } })();
         const hazir=HT.inb
-          ? (sh&&HT.spot&&Math.hypot(sh.x-HT.spot.x,sh.y-HT.spot.y)<=22)
+          ? (sh&&HT.spot&&Math.hypot(sh.x-HT.spot.x,sh.y-HT.spot.y)<=22&&(_yakin>=3||HT.t>=3.5))   /* FAZ 54 C4: 3 arkadaş 6 m içinde */
           : ((typeof _ftYerlesti!=='function')||(_ftYerlesti(HT.offP,HT.defP)&&(!sh||!isFinite(sh.tx)||Math.hypot(sh.x-sh.tx,sh.y-sh.ty)<=14)));
         const bekle=HT.inb?3.0:3.4;
         if((d<=16&&hazir)||HT.t>bekle){

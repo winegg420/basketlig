@@ -79,6 +79,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/gecis-analiz.js` | **Pozisyon başına orta çizgi geçişi (FAZ 44)** — `iz-kaydet` kaydını okur; her pozisyonda topun orta çizgiyi hangi modda (held/pass/shot/hiç) geçtiğini listeler. `sahne-check`in "geçiş / pozisyon değişimi" kapısı çift sayar (HEAD %111); davranış yargısı için bunu kullan. |
 | `tools/pas-analiz.js` | **Pas yönü + sokma yeri (FAZ 45)** — `iz-kaydet` kaydından: canlı topta potadan uzaklaşan (geri) paslar bağlam ve kim→kime ile; rakibe giden pas; çizgi dışı izinli oyuncunun SAHA İÇİNDEN attığı pas; **her sayı-sonrası pozisyonun ilk pası** verenin konumuyla (dışarıda/içeride). FAZ 44'ün sokma kapısı yalnız çizgi dışındaki epizotları saydığı için "hiç çıkmayan sokucu"yu göremedi (22/24); payda olayın kendisidir. Sokma/geçiş/çalma koreografisi değişince çalıştır. |
 | `tools/balon-check.js` | **Anlatım balonu denetçisi (FAZ 40)** — RENDER EDİLMİŞ balonu okur. `anlatim-check` ön parça ile sonuç parçasını AYRI taradığı için birleşme kusurlarını (nokta + küçük harf, çift noktalama) GÖREMEZ. Anlatım birleştirme mantığı değişince çalıştır. |
+| `tools/sahne-olcum.js` | **FAZ 54 canlı sahne görsel gerçekçilik ölçümü** — başsız Chromium, `mState._sim`ten saniyede ~60 kare (20.000+ kare), 18 satırlık tablo: top durum geçişleri (`loose>held`/`loose>pass`/`pass>shot`/`shot>pass`) · saha dışı top/oyuncu · üç saniye · üçlük mesafe dağılımı · ivme · sahipsiz top · üst üste binme · pas mesafesi · hız bantları · savunma mesafesi · sokma dizilimi · orta çizgiyi geçen rol. Her satırda GERÇEK SportVU tabanı da basılır; 20 örneklemin altında "ÖRNEKLEM YETERSİZ". Çıktı `olcum/FAZ54-sonuc.txt`e eklenir. Sahne/top mantığı değişince çalıştır. |
 | `tools/taktik-klip-check.js` | **FAZ 53 taktik ↔ klip eşleşmesi** (tarayıcısız) — aynı şut noktalarında yalnız savunma stili/şema değiştirilerek seçilen kliplerin imzası ölçülür: bölge → savunma potaya daha yakın · pres → topa en yakın savunmacı daha yakın · ikili oyun → perde izi yüksek · birebir → düşük. `klipTaktikMaliyet` ya da klip verisi değişince çalıştır. |
 | `tools/sahne-kapsam-check.js` | **Sahne kapsamı (FAZ 40 · B5+B6)** — motorun ürettiği her olay türünün `movePlayersForEvent` karşılığı var mı (tür adıyla YA DA `shots[].kind===ft` alanıyla), ve koreografi süresinin ALT SINIR sözleşmesi (`delay=max(simMs,dtMs)`) duruyor mu. Tarayıcısız. Yeni olay türü eklerken çalıştır. |
 | `tools/geometri-check.js` | **Saha çizgisi geometrisi (FAZ 14)** — 3 sayı yayı, köşe düzlükleri, boya, çember/pano ölçüleri, kesişme ve "sahada karşılığı olmayan çizim". **Nitelik okumaz**, `getPointAtLength`/`getBBox` ile ÇİZİLEN eğriyi ölçer. Saha SVG'si değişince çalıştır. |
@@ -1759,3 +1760,55 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   85-150 px/sn iken top 3-5 m uzağa gidiyor ve oyun 2-2,8 sn duruyordu (22 canlı serbest top
   epizodu ölçüldü). Sekme 58-104 px/sn; çalınan top 110 → 62 px/sn (üç ayrı epizot birebir
   2,17 sn sürüyordu — elden alınan top kısa sıçrar). `sahne-check` sahipsiz kare %1,02 → %0,07.
+
+- **TOP DURUM MAKİNESİ SÖZLEŞMESİ (FAZ 54 A):** `'pass'` ve `'shot'` YALNIZ `'held'`den
+  başlar. Ölçüldü (canlı site, 24.921 kare): `loose>held` **0** · `loose>pass` 13 ·
+  `shot>pass` 1 · şutların 14/26'sı `pass>shot` — yani potadan seken top hiçbir zaman bir
+  oyuncunun eline geçmiyor, sahipsiz toptan doğrudan pas başlıyor, şut havadayken pasa
+  dönüşüyordu (kullanıcının gördüğü "top ribaunt alan olmadan birine ışınlandı" tam olarak
+  budur). Sahipsiz toptan pas isteyen çağıran topu önce ALDIRIR (`_pasKorumasi`): 0,9 m
+  içindeki oyuncu hemen tutar (`_ballTut` — mesafe kontrolü YAPMAZ, `_ballHold`'un d>14
+  dalı pas üretip döngüye sokardı), yoksa en yakın oyuncu koşar. Pas/şut topu tutandan
+  **`_TOP_TUT_SN` (0,10 sn)** sonra çıkar; kuyruk `b._pasBekle` / `b._sutBekle`, 'held' dalı
+  işletir, 2,5 sn'de bayatlar. Yeni bir top yolu yazarken bu kapılardan geçir.
+- **ÖLÜ TOP MODU `dead` (FAZ 54 A4):** çizgiyi geçen top o karede `dead` olur, çizginin en
+  yakın noktasına sabitlenir, hiçbir fizik uygulanmaz; sokma töreni ya da 0,9 m'ye gelen
+  oyuncu topu 'held'e alır. Ayrıca elde tutulan top ve pas hedefi saha içine KIRPILIR —
+  çizgi dışındaki sokucu/hakem topu çizginin üstünde tutar. Ölçüldü: saha dışı karelerin
+  %90'ı `held` idi ve bir top x=883,9'da **7,98 sn** durdu (%5,79 → %0,00).
+- **KLİP ARA DEĞERİ HIZI SIÇRATIYORDU (FAZ 54 B1):** klip verisi 5 kare/sn'dir; doğrusal ara
+  değer her 0,2 sn'lik düğümde hızı sıçratıyor ve 60 fps'de ivme 26-47 m/sn² çıkıyordu
+  (insan tepesi 6-8). `klipKare` artık **1-2-1 düğüm yumuşatma + Catmull-Rom** kullanır,
+  ofset kapanışı ivme rampasıyla (`KLIP_IVME`) artıp varışta fren mesafesiyle söner.
+  ⚠ İvme sınırını jetonun TOPLAM hareketine koymak denendi ve geri alındı: ofsetin
+  `om/kalan` kapanışıyla birleşince hız patlıyor (ort 2,45 → 2,71 · >7,5 bandı %1,3 → 2,6).
+  Kalan borç: p99 11,0 ↔ gerçek 7,0.
+- **`KLIP_HIZ`=1,0 — KLİP GERÇEK ZAMANDA AKAR (FAZ 54 B2):** 1,2 iken duvar ölçeğinde
+  ortalama oyuncu hızı 2,38-2,77 m/sn ↔ gerçek 1,72-1,90 idi. `_V_TIER` de ×0,78 ile aynı
+  ölçeğe indi (sprint 8,2 m/sn duvar). Maç ~%15 daha uzun izlenir; izleme hızı düğmesi durur.
+- **⚠ BRİFİN HEDEFİ GERÇEK VERİYLE ÇELİŞEBİLİR — ÖNCE ÖLÇ (FAZ 54, FAZ 39 dersinin beşinci
+  tekrarı):** FAZ 54 brifinin 17 hedefinden **altısı** ölçülmemiş tahmindi. Aynı ölçütler
+  696 gerçek SportVU klibine (45.322 kare) uygulandığında: üst üste binme (<70 cm) hedef
+  <%6 / gerçek **%37,7** · savunmadan >4 m hedef <%10 / gerçek **%15,6** · 0-1 m/sn bandı
+  hedef %38-45 / bu havuzda **%32,0** · donuk oyuncu hedef <%8 / gerçek **%18,8** · sahipsiz
+  top hedef <%2 ve hiçbiri >0,8 sn / gerçek pay **%23,8**, p90 **1,60 sn**, max 5,2 ·
+  boyada max hedef 3,0 sn / gerçek p99 **7,4** max **12,8** (>3 sn payı %22,2). Kapılar
+  gerçek tabana çekildi ve `tools/sahne-olcum.js` her satırda gerçek değeri de basar.
+  Üç saniye kapısı yalnız ESKİ FİZİK karelerine bakar — klip gerçek kayıttır, eğilmez.
+- **ÜÇ SANİYE KURTARIŞI İKİ YERDE BİRDEN GEREKİR (FAZ 54 C1):** boyada 1,9 sn'yi dolduran
+  TOPSUZ hücumcunun hedefi kulvar dışına kaydırılır — hem eski fizik döngüsünde hem
+  `oamHedef` içinde, çünkü OAM her karede kendi hedefini yazıp kurtarışı eziyordu (ölçüldü:
+  yalnız eski fiziğe konunca max kalış 8,3 → 4,2 sn'de takıldı, OAM kapısıyla 4,1).
+- **ÜÇLÜK YARIÇAPI AÇIYA BAĞLIDIR (FAZ 54 C2):** eski bant açıdan bağımsız 6,9-8,0 m idi ve
+  ölçülen 8 üçlüğün hepsi 7,0-7,4 m'den geliyordu — oyuncular bir çemberin üstüne dizilmiş
+  görünüyordu. Yeni dağılım köşe 6,75-7,10 · kanat 7,0-7,8 · tepe 7,2-8,3 · %5 derin.
+  `rand` çağrı SAYISI ve SIRASI değişmedi (isabet zaten önce kararlaştırılır) — skor korunur.
+- **`sahne-olcum` İLE `sahne-check` ÇELİŞİRSE GERÇEK VERİ KAZANIR (FAZ 54):** `sahne-check`
+  "aynı anda koşan 3-5/10" ister ve 2,29 ile düşer; `hareket-bant-check` aynı büyüklüğü
+  GERÇEK veriyle kıyaslar ve **3,49 ↔ 3,337 · L1 0,202 ✓** der. İlkinin eşiği elle yazılmış,
+  ikincisininki ölçülmüştür.
+- **DİZİLİM BENZERLİĞİ AĞIRLAŞTIRILAMAZ (FAZ 54, FAZ 51 uyarısı doğrulandı):** klip seçim
+  maliyetinde dizilim bölenini 220 → 120 yapmak başlangıç ofsetini küçültüyor ama yayılımı
+  daraltıyor (yayılım y L1 0,310 → **0,415**, eşik 0,35). 170 dengede kalıyor.
+  Aynı turda `_PL_R_TAKIM` 62 → 48 denendi: üst üste binmeyi İYİLEŞTİRMEDİ (%27,6 → %23,9,
+  ters yön) ve yayılımı bozdu — 58'de bırakıldı.
