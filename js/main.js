@@ -1085,6 +1085,9 @@ function buyFromMarket(id){
   delete np.sure;
   delete np.freeAgent;
   if(np.enerji==null||np.enerji==='') np.enerji=100;
+  /* FAZ 52-B: soyunma odası/tesisler iyi olan kulüpte oyuncu daha düşük maaşa imzalar. */
+  const _indN=(typeof arenaTesisMaasIndirimi==='function')?arenaTesisMaasIndirimi():0;
+  if(_indN>0&&typeof istenenMaas==='function') np.maas=istenenMaas(p);
   G.players.push(np);
   G.marketPlayers=G.marketPlayers.filter(x=>x.id!==id);
   const dropM=teamLeadership()>=78?rand(3,8):rand(5,12); /* güçlü kaptan uyumu kolaylaştırır (Madde 36) */

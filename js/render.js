@@ -324,7 +324,9 @@ function submitClubOffer(id){
   let offer=Math.round(Number(inp&&inp.value)||p.fiyat);
   offer=Math.max(1,offer);
   if(G.coins<offer){ showNotif('❌ Bu teklifi karşılayacak bakiye yok!'); return; }
-  const dec=playerAcceptsOffer(p,offer,p.fiyat,{betterTeam:false});
+  /* FAZ 52-B: tesis kulübün cazibesidir — oyuncu daha kolay ikna olur (artı işaret). */
+  const dec=playerAcceptsOffer(p,offer,p.fiyat,{betterTeam:false,
+    tesis:((typeof arenaTesisIkna==='function')?arenaTesisIkna():0)});
   if(dec.accept){
     closeAppModal();
     buyClubPlayer(id,offer);
@@ -351,6 +353,8 @@ function buyClubPlayer(id,price){
   ['mode','fiyat','kiralik','fromClub','sure','teklifler','freeAgent','hiddenPot'].forEach(k=>delete np[k]);
   np.scouted=true;
   if(np.enerji==null||np.enerji==='') np.enerji=100;
+  /* FAZ 52-B: tesis indirimi — oyuncu daha düşük maaşa imzalar. */
+  if(typeof istenenMaas==='function'&&typeof arenaTesisMaasIndirimi==='function'&&arenaTesisMaasIndirimi()>0) np.maas=istenenMaas(p);
   G.players.push(np);
   G.clubTransferPlayers=G.clubTransferPlayers.filter(x=>x.id!==id);
   G.chemistry=Math.max(20,G.chemistry-(teamLeadership()>=78?rand(3,8):rand(5,12)));
@@ -1825,14 +1829,22 @@ function arenaModEtkiMetni(key,sv,dk){
     switch(key){
       case 'koltuk':   return fmtn(v.v)+' kişi';
       case 'loca':     return v.v?(fmtn(Math.round(kap*v.v))+' koltuk'):'yok';
-      case 'yiyecek':  return v.v?(fmtPara(v.v)+' / kişi'):'yok';
-      case 'magaza':   return v.v?(fmtPara(v.v)+' / taraftar'):'yok';
+      /* FAZ 52-B: kişi başına düşen oranlar ($0,20 / $1,50) `fmtPara` ile "$0"/"$2"e
+         yuvarlanıyor ve kartta bilgi taşımıyordu. Artık bu üç modül MAÇ BAŞI TUTARI
+         gösterir — oyuncunun karşılaştırdığı sayı zaten budur (dk = güncel döküm). */
+      case 'yiyecek':  return v.v?(fmtPara(Math.round(((dk&&dk.seyirci)||0)*v.v))+' / maç'):'yok';
+      case 'magaza':   return v.v?(fmtPara(Math.round(((dk&&dk.taraftar)||0)*v.v*arenaBasariCarpani()))+' / maç'):'yok';
       case 'led':      return v.v?(fmtPara(Math.round(v.v*arenaDivizyonKat()))+' / maç'):'yok';
-      case 'otopark':  return v.v?(fmtPara(v.v)+' / kişi'):'yok';
+      case 'otopark':  return v.v?(fmtPara(Math.round(((dk&&dk.seyirci)||0)*v.v))+' / maç'):'yok';
       case 'ekran':
       case 'konfor':   return v.d?('+'+fmtYuzde(Math.round(v.d*100))):'yok';
       case 'gise':     return v.v?fmtYuzde(Math.round(v.v*100))+' önleme':'yok';
       case 'guvenlik': return 'Sv '+sv+(arenaGuvenlikEksigi()>0&&sv===arenaModSv('guvenlik')?' (yetersiz)':'');
+      /* FAZ 52-B. ⚠ Ondalık göstermeyiz: `fmtYuzde` sayıyı olduğu gibi basar, ondalık
+         ayracı dile göre dönmez (bicim-check §3). Tam sayıya yuvarlanır. */
+      case 'soyunma':  return v.mor?('+'+fmtSayi(v.mor)+' moral / hafta'):'yok';
+      case 'saglik':   return v.sure?(fmtYuzde(Math.round(v.sure*100))+' hızlı iyileşme'):'yok';
+      case 'taraftarOrg': return v.ft?('rakip SA −'+fmtYuzde(Math.round(v.ft*100))):'yok';
     }
     return '—';
   }catch(e){ return '—'; }

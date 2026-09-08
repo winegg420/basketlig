@@ -126,6 +126,49 @@ console.log(`  haftalık bakım $${dev.bakim} · haftalık net $${dev.net}`);
 yaz(dev.net < 0, `dev arena küçük kitleyle zarar ettiriyor (haftalık $${dev.net})`);
 yaz(dev.seyirci <= dev.fan, 'boş tribün: seyirci taraftar tabanını aşmıyor');
 
+
+/* ── FAZ 52-B: EV AVANTAJININ BÜYÜKLÜĞÜ ──────────────────────────────────────────────
+   Brif: "FAZ 2'ye geçildiğinde skor bandı (takım başına 78-95) KORUNACAK."
+   Ölçüt: aynı tohumlarla aynı iki kadro, tek fark `homeEvAvantaj`. Modül Sv1 iken
+   sonuç BİREBİR aynı olmalı (hash sözleşmesi); Sv5'te rakip ortalaması gerçek NBA ev
+   avantajı mertebesinde (~2-4 sayı) düşmeli ve bant dışına taşmamalı. */
+console.log('\n── EV AVANTAJI (taraftar organizasyonu · FAZ 52-B) ──');
+const evOlcum = vm.runInContext(`(function(){
+  const N = 220;
+  const kur = (tohum, poz) => genRoster ? null : null;
+  /* iki sabit kadro: aynı tohumla üretilir, iki koşuda da AYNI kadro kullanılır */
+  Math.random = (function(){ let a = 20260908 >>> 0; return function(){ a ^= a<<13; a>>>=0; a ^= a>>17; a ^= a<<5; a>>>=0; return a/4294967296; }; })();
+  const evKadro = genRoster(), depKadro = genRoster();
+  const kos = (av) => {
+    let hs = 0, as = 0, hMin = 999, hMax = 0, aMin = 999, aMax = 0;
+    for (let i = 0; i < N; i++) {
+      const r = simulateMatch({
+        seed: 1000 + i, userIsHome: true,
+        homeName: 'Ev', awayName: 'Deplasman',
+        homeRoster: evKadro, awayRoster: depKadro,
+        homeChemistry: 75, homeEvAvantaj: av
+      });
+      hs += r.home; as += r.away;
+      hMin = Math.min(hMin, r.home); hMax = Math.max(hMax, r.home);
+      aMin = Math.min(aMin, r.away); aMax = Math.max(aMax, r.away);
+    }
+    return { ev: hs / N, dep: as / N, hMin, hMax, aMin, aMax, n: N };
+  };
+  const sv1 = kos({ ft: 0, to: 0 });
+  const v5 = ARENA_MOD.find(m => m.key === 'taraftarOrg').sv[4];
+  const sv5 = kos({ ft: v5.ft, to: v5.to });
+  return { sv1, sv5 };
+})()`, ctx);
+const A = evOlcum.sv1, Bv = evOlcum.sv5;
+console.log(`  Sv1 : ev ${A.ev.toFixed(1)} · deplasman ${A.dep.toFixed(1)}  (n=${A.n})`);
+console.log(`  Sv5 : ev ${Bv.ev.toFixed(1)} · deplasman ${Bv.dep.toFixed(1)}`);
+const fark = (Bv.ev - Bv.dep) - (A.ev - A.dep);
+console.log(`  ev avantajı kazancı: ${fark.toFixed(2)} sayı/maç · rakip ${(A.dep - Bv.dep).toFixed(2)} sayı düşüyor`);
+yaz(Math.abs(A.ev - Bv.ev) < 12 && Bv.dep < A.dep, 'Sv5 rakibin sayısını düşürüyor');
+yaz(fark >= 1.0 && fark <= 6.0, `kazanç gerçek ev avantajı mertebesinde (${fark.toFixed(2)} sayı, hedef 1-6)`);
+yaz(Bv.ev >= 78 && Bv.ev <= 100 && Bv.dep >= 70 && Bv.dep <= 95,
+  `skor bandı korunuyor (ev ${Bv.ev.toFixed(1)} · deplasman ${Bv.dep.toFixed(1)})`);
+
 console.log('\n' + '='.repeat(62));
 console.log(hata ? `✗ ${hata} denge kapısı düştü` : '✓ arena modül dengesi sağlıklı');
 process.exit(hata ? 1 : 0);

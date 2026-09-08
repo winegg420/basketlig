@@ -116,7 +116,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/sut-check.js` | **FAZ 26 şut tipi denetçisi** (tarayıcısız) — her saha şutunun tipi var mı, tip bölgeyle tutarlı mı, smaç/floater payı gerçekçi mi, smaç/turnike/floater dili doğru tipte mi, tip deterministik mi. Şut tipi ya da anlatım havuzları değişince çalıştır. |
 | `tools/lig-check.js` | **FAZ 19 lig denetçisi** — standings ↔ fikstür tek kaynak, ayrışma senaryosunda onarım, tablo tutarlılığı (o = g + m), 10 sezonluk denge kapıları (ortalama fark, 20+/5- oranı, 16-0 takım), şehir tekrarı. Lig/tablo/denge değişince çalıştır. |
 | `tools/arena-check.js` | **FAZ 24 arena doluluğu denetçisi** — 125 arena×bilet fiyatı×form birleşiminde **seyirci ≤ taraftar tabanı**, doluluk sınırları, sezon başı bilet gelirinin değişmezliği, `TARAFTAR_KATSAYI`nın tek kaynak olması. **FAZ 52'de modül kapıları eklendi (F-J):** tablo tutarlılığı · "Sv1 = bugünkü davranış" · gelir dökümü toplamı = `homeTicketIncome()` · önkoşul ağacı · v10→v11 migrasyonu. Arena / bilet / taraftar formülü ya da `ARENA_MOD` değişince çalıştır. |
-| `tools/arena-denge.js` | **FAZ 52 arena modül denge testi** (tarayıcısız) — 2 sezonluk ekonomi akışı iki kez sürülür (modüle yatırım yapan / yapmayan) ve maç başı gelir · haftalık bakım · kasa farkı raporlanır; ayrıca "küçük taraftar kitlesi + dev arena zarar ettirmeli" kapısı. `ARENA_MOD` tablosu ya da gelir formülü değişince çalıştır. |
+| `tools/arena-denge.js` | **FAZ 52 arena modül denge testi** (tarayıcısız) — 2 sezonluk ekonomi akışı iki kez sürülür (modüle yatırım yapan / yapmayan) ve maç başı gelir · haftalık bakım · kasa farkı raporlanır; ayrıca "küçük taraftar kitlesi + dev arena zarar ettirmeli" kapısı. **FAZ 52-B:** ev avantajının büyüklüğünü de ölçer (aynı iki kadro · 220 tohum · tek fark `homeEvAvantaj`; kazanç 1-6 sayı bandında ve skor bandı korunmalı). `ARENA_MOD` tablosu, gelir formülü ya da ev avantajı değişince çalıştır. |
 | `tools/analiz-check.js` | **FAZ 24 analiz sayı tutarlılığı** — Analiz kartındaki "Sayı ort. (attı)" ile "Attığı sayı" grafiğinin aynı diziden beslendiğini ve grafik eksen etiketlerinin ÇİZİM için açılan banttan değil gerçek min/max'tan basıldığını (FAZ 22 §4.1 gerilemesi) 3 maçlık veriyle sınar. |
 | `tools/turkek-check.js` | **FAZ 25 Türkçe çekim eki birim testi** — brifin 8 ad × 4 durum tablosu (32 kapı), kaynaştırma/zamir n'si ayrımı, ünsüz benzeşmesi, şablon çözücü (`%X{durum}`), Türkçe küçük harf. `js/turkce-ek.js` değişince çalıştır. |
 | `tools/portre-uret-yerel.py` | **FAZ 17C yerel portre üretimi** (SD-Turbo, CPU). Kova kotaları, bant dengesi, kaldığı yerden devam, dilim başına commit+push. Boru hattı `tools/portre_boru.py`. |
@@ -1680,3 +1680,29 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   örnekler; "perde yok" sonucu bir gerileme DEĞİLDİR. FAZ 52'de perde şemasız set
   pozisyonlarının %40'ında da kurulur oldu, devrilme payı 0,60 → 0,82 ve **devrilene pas**
   eklendi (kararlar `_sr()` ile — maç sonucu ve `band.js` hash'i etkilenmez).
+
+- **ARENA MODÜLLERİ TAKIMA DA DOKUNUR — AMA Sv1'DE DEĞİL (FAZ 52-B):** `soyunma`
+  (moral · transferde ikna · istenen maaş), `saglik` (sakatlık süresi/riski) ve
+  `taraftarOrg` (EV maçında rakip serbest atışı ↓, top kaybı ↑) eklendi; arena gücü
+  tavanı /50 → **/65**. Üçü de Sv1'de SIFIR etkidir ve ek `Math.random` TÜKETMEZ —
+  bu yüzden brifin öngördüğü `band.js`/`measure.js` hash yenilemesine gerek kalmadı
+  (ikisi de FAZ 43 değerlerinde: **c19928475859c7ff** / **51fa02b6e0a8194b**).
+  Yeni bir modül etkisi eklerken kural aynıdır: Sv1 = eski kodun birebir aynısı.
+- **EV AVANTAJI CTX İLE GİRER, `G` İLE DEĞİL (FAZ 52-B):** maç motoru `G`'siz çalışır
+  (sunucu sözleşmesi). `buildMatchCtx` `home.evAvantaj={ft,to}` alanını doldurur,
+  `simulateMatch` onu `o.homeEvAvantaj`ten alır, motor içinde `_evAv/_evFt/_evTo`
+  YALNIZ `userIsHome` iken uygulanır. Rakibin serbest atışı tek noktadan geçer
+  (`ftMakeYan(shooter,isUser)`); ek top kaybı pres dalıyla toplanır (`_presTO`).
+  Ölçülen kazanç Sv5'te **2,19 sayı/maç** (gerçek NBA ~2,5-3) — `arena-denge` sınar.
+- **`season-loop` K2 KAPISI 3 KOŞUDA YANILTICIDIR (FAZ 52-B, ölçüldü):** seansın 1. ve
+  2. sezonu deterministiktir, **3. sezon değildir** — bot transferi `Date.now()` ile
+  tohumlanır, aynı kodda kasa 183.931 / 197.418 / 271.100 ve farklı şampiyon çıkar.
+  `--runs=3` medyanı bu yüzden 1,14× ile 2,26× arasında salınır ve kapıyı davranış
+  değişmeden düşürür. Ekonomi tarafını yargılarken **deterministik harness'a**
+  (`ekonomi-check` D bölümü, 10 sezon, byte-birebir kıyaslanabilir) bak; `season-loop`
+  için **en az `--runs=6`** kullan.
+- **KİŞİ BAŞINA DÜŞEN ORAN `fmtPara` İLE GÖSTERİLMEZ (FAZ 52-B):** $0,20/taraftar ve
+  $1,50/kişi ekranda "$0" ve "$2" olarak yuvarlanıp bilgi taşımıyordu. Yiyecek · mağaza ·
+  otopark kartları artık MAÇ BAŞI TUTARI gösterir (`arenaGelirDokumu` çıktısından);
+  ölçü etiketi de "Maç geliri"dir. Yeni bir oran gösterirken önce fmtPara'nın onu
+  yuvarlayıp yuvarlamadığını kontrol et.

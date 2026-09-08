@@ -1128,3 +1128,30 @@ I18N_PHRASES.unshift(
    'Lv $1 is mandatory for this capacity — attendance is dropping and a fine is charged per game.'],
   [/^Arena yatırımı: ([^]+?) Sv (\d+)$/,'Arena investment: $1 Lv $2']
 );
+
+/* ── FAZ 52-B: takıma etki eden arena modülleri ── */
+Object.assign(I18N_TR_EN,{
+  'Soyunma Odası ve Tesisler':'Locker Room & Facilities',
+  'Sağlık ve Fizyoterapi':'Medical & Physiotherapy',
+  'Taraftar Organizasyonu':'Supporter Organisation',
+  'Haftalık moral':'Weekly morale',
+  'İyileşme hızı':'Recovery speed',
+  'Ev avantajı':'Home advantage',
+  'Oyuncu morali haftada toparlanır, mağlubiyet daha az yıkar; transferde kulübün cazibesi artar ve istenen maaş düşer.':
+    'Morale recovers weekly and defeats hurt less; the club becomes more attractive in transfers and asking wages drop.',
+  'Sakatlık süresini kısaltır ve riski bir miktar düşürür. Yorgun rotasyonun bedelini hafifletir.':
+    'Shortens injury spells and slightly lowers the risk. Softens the cost of a tired rotation.',
+  'Kombine ve tribün grubu. EV maçlarında rakibin serbest atış isabeti düşer, top kaybı artar.':
+    'Season tickets and a supporters’ block. At HOME the opponent’s free-throw accuracy drops and turnovers rise.'
+});
+I18N_PHRASES.unshift(
+  [/\+([\d.,]+) moral \/ hafta/g,'+$1 morale / week'],
+  [/([\d%]+) hızlı iyileşme/g,'$1 faster recovery'],
+  [/hızlı iyileşme/g,'faster recovery'],
+  [/rakip SA −/g,'opponent FT −'],
+  [/📣 Tribün ayakta — /g,'📣 The stands are up — '],
+  [/ gürültüde pasını kontrol edemedi, /g,' lost the pass in the noise, ']
+);
+
+/* FAZ 52-B: modül ölçü etiketi (kişi başına oranlar yerine maç başı tutar gösterilir) */
+Object.assign(I18N_TR_EN,{ 'Maç geliri':'Game revenue' });

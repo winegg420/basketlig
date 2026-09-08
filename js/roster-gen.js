@@ -41,12 +41,12 @@ const ARENA_MOD=[
    gun:[0,4,5,6,7],onk:{koltuk:2},
    sv:[{m:0,bk:0,v:0},{m:70000,bk:1000,v:0.005},{m:200000,bk:2400,v:0.010},
        {m:500000,bk:5200,v:0.016},{m:1200000,bk:10000,v:0.025}]},
-  {key:'yiyecek',ikon:'🍿',ad:'Yiyecek-İçecek',olc:'Kişi başı harcama',
+  {key:'yiyecek',ikon:'🍿',ad:'Yiyecek-İçecek',olc:'Maç geliri',
    aciklama:'Maç geliri = seyirci × kişi başı harcama.',
    gun:[0,3,3,4,5],
    sv:[{m:0,bk:0,v:0},{m:90000,bk:1400,v:1.5},{m:240000,bk:3200,v:3.0},
        {m:550000,bk:6500,v:4.5},{m:1200000,bk:12000,v:6.0}]},
-  {key:'magaza',ikon:'🛍️',ad:'Kulüp Mağazası',olc:'Taraftar başına',
+  {key:'magaza',ikon:'🛍️',ad:'Kulüp Mağazası',olc:'Maç geliri',
    aciklama:'Gelir taraftar sayısıyla ve BAŞARIYLA büyür — şampiyonlukta patlar, düşme hattında erir.',
    gun:[0,4,5,6,7],
    sv:[{m:0,bk:0,v:0},{m:80000,bk:1200,v:0.20},{m:200000,bk:2600,v:0.38},
@@ -56,7 +56,7 @@ const ARENA_MOD=[
    gun:[0,3,4,5,6],
    sv:[{m:0,bk:0,v:0},{m:60000,bk:900,v:1500},{m:160000,bk:2000,v:3200},
        {m:400000,bk:4200,v:5500},{m:900000,bk:8000,v:9000}]},
-  {key:'otopark',ikon:'🅿️',ad:'Otopark',olc:'Seyirci başına',
+  {key:'otopark',ikon:'🅿️',ad:'Otopark',olc:'Maç geliri',
    aciklama:'Maç başı ek gelir + erişim: kolay ulaşılan salon daha çok dolar.',
    gun:[0,3,4,5,6],
    sv:[{m:0,bk:0,v:0,d:0},{m:50000,bk:600,v:0.5,d:0.005},{m:130000,bk:1300,v:0.9,d:0.010},
@@ -79,7 +79,31 @@ const ARENA_MOD=[
   {key:'guvenlik',ikon:'🛡️',ad:'Güvenlik',olc:'Seviye',
    aciklama:'Kapasite büyüdükçe asgari seviye ZORUNLUDUR; eksikse doluluk düşer ve maç başı ceza yazılır.',
    gun:[0,3,3,4,5],
-   sv:[{m:0,bk:0},{m:40000,bk:800},{m:100000,bk:1800},{m:240000,bk:3600},{m:520000,bk:7000}]}];
+   sv:[{m:0,bk:0},{m:40000,bk:800},{m:100000,bk:1800},{m:240000,bk:3600},{m:520000,bk:7000}]},
+/* ── FAZ 52-B (FAZ 2): TAKIMA ETKİ EDEN MODÜLLER ─────────────────────────────────────
+   FAZ 1'in on modülü yalnız ekonomi ve arayüzdü. Bu üçü OYUNUN İÇİNE dokunur:
+   moral/ikna, sakatlık ve ev sahibi avantajı. Sv1 = SIFIR ETKİ kuralı burada da
+   geçerlidir — üçü de Sv1'de hiçbir sayıyı değiştirmez, hiçbir ek rastgelelik
+   tüketmez; bu yüzden `band.js` / `measure.js` hash'leri ve FAZ 25 ekonomi çapaları
+   modüller alınmadıkça BİREBİR korunur (ölçüldü). */
+  {key:'soyunma',ikon:'🚿',ad:'Soyunma Odası ve Tesisler',olc:'Haftalık moral',
+   aciklama:'Oyuncu morali haftada toparlanır, mağlubiyet daha az yıkar; transferde kulübün cazibesi artar ve istenen maaş düşer.',
+   gun:[0,4,5,6,7],
+   sv:[{m:0,bk:0,mor:0,ikna:0,yum:0},{m:80000,bk:1200,mor:1.5,ikna:0.10,yum:0.10},
+       {m:210000,bk:2600,mor:2.6,ikna:0.19,yum:0.18},{m:500000,bk:5600,mor:3.8,ikna:0.29,yum:0.28},
+       {m:1100000,bk:11000,mor:5.0,ikna:0.40,yum:0.40}]},
+  {key:'saglik',ikon:'🩺',ad:'Sağlık ve Fizyoterapi',olc:'İyileşme hızı',
+   aciklama:'Sakatlık süresini kısaltır ve riski bir miktar düşürür. Yorgun rotasyonun bedelini hafifletir.',
+   gun:[0,4,5,6,7],
+   sv:[{m:0,bk:0,sure:0,risk:0},{m:90000,bk:1300,sure:0.10,risk:0.05},
+       {m:230000,bk:2900,sure:0.18,risk:0.09},{m:540000,bk:6000,sure:0.27,risk:0.14},
+       {m:1200000,bk:12000,sure:0.38,risk:0.20}]},
+  {key:'taraftarOrg',ikon:'📣',ad:'Taraftar Organizasyonu',olc:'Ev avantajı',
+   aciklama:'Kombine ve tribün grubu. EV maçlarında rakibin serbest atış isabeti düşer, top kaybı artar.',
+   gun:[0,3,4,5,6],onk:{koltuk:2},
+   sv:[{m:0,bk:0,ft:0,to:0},{m:70000,bk:1000,ft:0.010,to:0.006},
+       {m:180000,bk:2200,ft:0.018,to:0.011},{m:420000,bk:4600,ft:0.026,to:0.017},
+       {m:950000,bk:9000,ft:0.035,to:0.024}]}];
 /** Kapasiteye göre ZORUNLU asgari güvenlik seviyesi (brif §4.5). */
 function arenaGuvenlikGerek(kap){
   const k=Number(kap)||0;

@@ -613,6 +613,9 @@ function rollInjuriesAfterUserMatch(){
     const enerji=Number(p.enerji||100);
     let risk=(yas>=36?0.17:yas>=33?0.11:yas>=30?0.078:yas>=27?0.052:0.034)
              *((typeof difficultyCfg==='function')?(difficultyCfg().sakat||1):1);   /* B5 */
+    /* FAZ 52-B: sağlık ünitesi riski bir miktar düşürür (Sv5'te −%20). Sv1'de çarpan 1,
+       yani eski davranış birebir korunur ve ek rastgelelik tüketilmez. */
+    try{ if(typeof arenaSaglikRisk==='function') risk*=(1-arenaSaglikRisk()); }catch(e){}
     if(enerji<52) risk*=1.58; else if(enerji<68) risk*=1.24;
     /* Faz 1.2: kronik yorgunluk — art arda düşük enerjiyle sahaya çıkan oyuncuda risk kademeli artar.
        Her ardışık yorgun maç +%15 ek risk, üst sınır +%60 (dengeyi bozmayacak makul tavan). */
@@ -623,7 +626,12 @@ function rollInjuriesAfterUserMatch(){
     if(returning) risk*=1.7;
     if(Math.random()<risk){
       const inj=pickInjury();
-      p.injReturnDay=gd+rand(inj.minD,inj.maxD);
+      /* FAZ 52-B: fizyoterapi iyileşmeyi hızlandırır (Sv5'te −%38, en az 1 gün).
+         `rand` ÖNCE çağrılır, sonra kısaltılır — çağrı sayısı ve rastgelelik akışı değişmez.
+         Yalnız KULLANICININ kadrosuna işler; rakip kadro dalı (aşağıda) dokunulmadan kalır. */
+      let _gun=rand(inj.minD,inj.maxD);
+      try{ const _k=(typeof arenaSaglikSure==='function')?arenaSaglikSure():0; if(_k>0) _gun=Math.max(1,Math.round(_gun*(1-_k))); }catch(e){}
+      p.injReturnDay=gd+_gun;
       p.injuryEtiket=inj.ad;
       p.injuryBolge=inj.bolge;
       p.injurySeverity=inj.siddet;

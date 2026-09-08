@@ -5022,6 +5022,10 @@ function buildMatchCtx(rakip,opts){
       chemistry:(_G.chemistry!=null?_G.chemistry:75),
       strength:computeRosterOfrDef(),
       bonus:(typeof teamBonusFactor==='function')?teamBonusFactor():1,
+      /* FAZ 52-B: taraftar organizasyonunun EV avantajı. Motor `G`'siz çalışır — değer
+         burada okunup ctx'e konur; modül Sv1 iken {ft:0,to:0} ve motor eski kodu birebir
+         çalıştırır (ek rastgelelik bile tüketmez). */
+      evAvantaj:(typeof arenaEvAvantaji==='function')?arenaEvAvantaji():{ft:0,to:0},
       wins:_G.wins||0,
       losses:_G.losses||0
     },
@@ -5080,6 +5084,7 @@ function simulateMatch(o){
       chemistry:o.homeChemistry!=null?o.homeChemistry:75,
       strength:computeRosterOfrDef(o.homeRoster||[]),
       bonus:o.homeBonus!=null?o.homeBonus:1,
+      evAvantaj:o.homeEvAvantaj||{ft:0,to:0},   /* FAZ 52-B: sunucu sözleşmesi — çağıran verir */
       wins:o.homeWins||0,
       losses:o.homeLosses||0
     },
@@ -5310,12 +5315,23 @@ function generateMatchEvents(rakip, opts){
     if(isUser===false) return base*skillMul*enMul*psyMul*clutchMul;
     return base*skillMul*enMul*psyMul*clutchMul*uMul*pozFitMul(shooter);
   };
-  const ftMake=(shooter)=>{
+  /* ── FAZ 52-B: EV SAHİBİ AVANTAJI (taraftar organizasyonu modülü) ──────────────────
+     Yalnız kullanıcı GERÇEKTEN ev sahibiyken uygulanır. `_evFt` rakibin serbest atış
+     isabetinden düşülen pay, `_evTo` rakip pozisyonu başına ek top kaybı olasılığıdır.
+     Modül Sv1 iken ikisi de 0'dır ve kod eski hâliyle BİREBİR aynı çalışır — eşik
+     değişmez, ek `Math.random` çağrısı yapılmaz (hash sözleşmesi). */
+  const _evAv=(userIsHome&&MC.home&&MC.home.evAvantaj)?MC.home.evAvantaj:{ft:0,to:0};
+  const _evFt=Math.max(0,Math.min(0.10,Number(_evAv.ft)||0));
+  const _evTo=Math.max(0,Math.min(0.06,Number(_evAv.to)||0));
+  /** @param dus FAZ 52-B: rakip tarafta ev sahibi baskısıyla düşen isabet payı (0 = eski davranış). */
+  const ftMake=(shooter,dus)=>{
     const sb=statN(shooter,'serbest');
     /* FAZ 39: taban 0,55 → 0,58. Ölçülen lig FT%'si 74,9 idi, gerçek 78,1 [75,5-80,7]
        (nbastats EVENTMSGTYPE 3, 90 takım-sezon). Eğim korundu — yalnız taban kaydı. */
-    return Math.random()<Math.max(0.45,Math.min(0.95,0.58+sb/100*0.30));
+    return Math.random()<Math.max(0.45,Math.min(0.95,0.58+sb/100*0.30)-(dus||0));
   };
+  /** Rakip tarafın serbest atışı — ev sahibi baskısı burada tek noktadan uygulanır. */
+  const ftMakeYan=(shooter,isUser)=>ftMake(shooter,isUser?0:_evFt);
   /* ── Faul sistemi (Madde 16/17/20) ──
      Her kullanıcı oyuncusunun kendi faulü (p.matchFouls) tutulur; 5. faulde oyundan atılır ve
      yedek sırasından (benchQueue) değiştirilir. Çeyrek bazında takım faulü sayılır; 5. takım
@@ -5855,7 +5871,7 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
         const failB=failUser?hB:aB, atanB=failUser?aB:hB;
         failB.foul++;
         let nMade=0;
-        for(let i=0;i<nAtis;i++){ if(failUser?(Math.random()<0.74):ftMake(atan)) nMade++; }
+        for(let i=0;i<nAtis;i++){ if(failUser?(Math.random()<(0.74-_evFt)):ftMake(atan)) nMade++; }   /* FAZ 52-B */
         atanB.ftAtt+=nAtis; atanB.ftMade+=nMade;
         if(nMade){
           if(failUser){ awayScore+=nMade; qa[q]+=nMade; _runEkle('a',nMade); bumpO(atan,'pts',nMade); }
@@ -6076,7 +6092,7 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
                         :(wPick(oppCourt,p=>Math.max(0.2,statN(p,'serbest')/100))||oAny());
       let nMade=0;
       if(userPos){ if(ftMake(_sut))nMade++; if(ftMake(_sut))nMade++; }
-      else { if(Math.random()<0.74)nMade++; if(Math.random()<0.74)nMade++; }
+      else { if(Math.random()<(0.74-_evFt))nMade++; if(Math.random()<(0.74-_evFt))nMade++; }   /* FAZ 52-B */
       B.ftAtt+=2; B.ftMade+=nMade;
       addPts(nMade); if(userPos) bumpP(_sut,'pts',nMade); else bumpO(_sut,'pts',nMade);
       if(ftRebound(userPos,B,D,nMade,2,q,t)) posNext=userPos;
@@ -6093,7 +6109,12 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
     }
 
     /* Faz 3 — Pres savunması: rakip pozisyonunda akış dışı ekstra top kaybı (kullanıcı çalar). */
-    if(!userPos && defPressTO>0 && Math.random()<defPressTO){
+    /* FAZ 52-B: taraftar organizasyonu ev maçlarında rakibi hataya zorlar — aynı daldan
+       geçer (pres savunmasıyla toplanır). `_evTo` 0 iken koşul ve rastgelelik tüketimi
+       eski hâliyle BİREBİR aynıdır. */
+    const _presTO=defPressTO+_evTo;
+    if(!userPos && _presTO>0 && Math.random()<_presTO){
+      const _tribun=(_evTo>0&&defPressTO<=0);   /* kaynak: pres mi, tribün mü */
       const stealer=wPick(userCourt,stlW)||uAny();   /* FAZ A: kilit savunmacı çalar */
       /* F13-6: topu KAYBEDEN de söylenir — "kimden aldı?" sorusu ekranda kalmasın.
          ⚠ Seçim SUNUM PRNG'si (pr) ile yapılır: `wPick`/`oAny` Math.random tüketir ve maç
@@ -6103,7 +6124,9 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
       const _loser=_lcand[Math.floor(pr()*_lcand.length)]||_lcand[0]||oppCourt[0];
       B.to++; D.stl++;
       fastNext='steal';
-      events.push({type:'steal',text:`🔥 Pres tuttu — ${_loser.isim} pasını kontrol edemedi, ${stealer.isim} topu çaldı! ${sc()}`,q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:true,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
+      events.push({type:'steal',text:(_tribun
+        ? `📣 Tribün ayakta — ${_loser.isim} gürültüde pasını kontrol edemedi, ${stealer.isim} topu çaldı! ${sc()}`
+        : `🔥 Pres tuttu — ${_loser.isim} pasını kontrol edemedi, ${stealer.isim} topu çaldı! ${sc()}`),q,t,home:homeScore,away:awayScore,stealId:stealer.id,stealIsUser:true,box:snap(),qh:cloneQx(qh),qa:cloneQx(qa)});
       return;
     }
     /* Faz 3 — Hızlı hücum: acele şutta kullanıcı pozisyonunda ekstra top kaybı riski. */
@@ -6236,14 +6259,14 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
         /* F13-5: and-1 faulü de sayaca yazılıyordu ama anlatımda görünmüyordu; oyuncunun
            kişisel faul dizisi "1 → 3" gibi atlamalı görünüyordu. */
         _and1Foul=foulPrefix(_fp);
-        and1Made=ftMake(shooter);   /* M20: rakip de kendi serbest atış statından */
+        and1Made=ftMakeYan(shooter,userPos);   /* M20: rakip de kendi serbest atış statından · FAZ 52-B: ev baskısı */
         if(and1Made){ B.ftMade++; addPts(1); if(userPos) bumpP(shooter,'pts',1); else bumpO(shooter,'pts',1); }
         else if(ftRebound(userPos,B,D,0,1,q,t)) posNext=userPos;
       }
       /* Kaçan turnikede savunma faulü → 2 serbest atış */
       if(!made&&!is3&&Math.random()<0.086*_dFoulMul){   /* FAZ 42-B §F: 0,095 → 0,086 */  /* M18: kaçan turnikede faul %15 → %9,5 */
         let nMade=0;
-        if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++;   /* M20: iki taraf da aynı yoldan */
+        if(ftMakeYan(shooter,userPos))nMade++; if(ftMakeYan(shooter,userPos))nMade++;   /* M20: iki taraf da aynı yoldan · FAZ 52-B */
         B.ftAtt+=2; B.ftMade+=nMade; D.foul++; const _fp=recordFoul(defenderIsUser,q,t);
         if(ftRebound(userPos,B,D,nMade,2,q,t)) posNext=userPos;
         addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
@@ -6257,7 +6280,7 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
       /* Madde 20: kaçan 3 sayı denemesinde savunma faulü → 3 serbest atış */
       if(!made&&is3&&Math.random()<0.045*_dFoulMul){   /* FAZ 42-B §F: 0,05 → 0,045 */    /* M18: üçlükte faul %8 → %5 */
         let nMade=0;
-        for(let k=0;k<3;k++){ if(userPos?ftMake(shooter):(Math.random()<0.74)) nMade++; }
+        for(let k=0;k<3;k++){ if(userPos?ftMake(shooter):(Math.random()<(0.74-_evFt))) nMade++; }   /* FAZ 52-B */
         B.ftAtt+=3; B.ftMade+=nMade; D.foul++; const _fp=recordFoul(defenderIsUser,q,t);
         if(ftRebound(userPos,B,D,nMade,3,q,t)) posNext=userPos;
         addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
@@ -6545,7 +6568,7 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
     } else if(roll<0.811){   /* FAZ 42-B §F: şutsuz faul payı 4,2 → 4,3; top kaybı payı 20,3 → 17,4 */
       /* Şut faulü — çizgide 2 serbest atış. M18: pay %10 → %6 (serbest atış enflasyonu). */
       let nMade=0;
-      if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++;     /* M20: iki taraf da aynı yoldan */
+      if(ftMakeYan(shooter,userPos))nMade++; if(ftMakeYan(shooter,userPos))nMade++;     /* M20: iki taraf da aynı yoldan · FAZ 52-B */
       B.ftAtt+=2; B.ftMade+=nMade; D.foul++; const _fp=recordFoul(defenderIsUser,q,t);
       if(ftRebound(userPos,B,D,nMade,2,q,t)) posNext=userPos;
       addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
@@ -6563,7 +6586,7 @@ const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye b
         if(inBonus(defenderIsUser,q)){
           let nMade=0;
           if(userPos){ if(ftMake(shooter))nMade++; if(ftMake(shooter))nMade++; }
-          else { if(Math.random()<0.755)nMade++; if(Math.random()<0.755)nMade++; }
+          else { if(Math.random()<(0.755-_evFt))nMade++; if(Math.random()<(0.755-_evFt))nMade++; }   /* FAZ 52-B */
           B.ftAtt+=2; B.ftMade+=nMade;
           if(ftRebound(userPos,B,D,nMade,2,q,t)) posNext=userPos;
           addPts(nMade); if(userPos) bumpP(shooter,'pts',nMade); else bumpO(shooter,'pts',nMade);
@@ -7166,8 +7189,12 @@ function applyMatchResult(ev,ctx){
   }
   else showNotif('Maç berabere.');
   updateCoins();
+  /* FAZ 52-B: iyi bir soyunma odası mağlubiyetin moral yıkımını yumuşatır (kazanç payı
+     DEĞİŞMEZ — tesis moral üretmez, kaybı hafifletir). `rand` çağrı sayısı aynı kalır. */
+  const _moralYum=(typeof arenaTesisKayipYum==='function')?arenaTesisKayipYum():0;
   G.players.forEach(p=>{
-    const d=ev.winner==='home'?rand(2,8):ev.winner==='away'?rand(-8,-2):0;
+    let d=ev.winner==='home'?rand(2,8):ev.winner==='away'?rand(-8,-2):0;
+    if(d<0&&_moralYum>0) d=Math.min(-1,Math.round(d*(1-_moralYum)));
     p.mood=Math.min(100,Math.max(0,p.mood+d));
   });
   /* Paket B: kariyer maç sayacı ("Yüz Maç Kulübü") + kariyer G/M (Kariyer Özeti). */

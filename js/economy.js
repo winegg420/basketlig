@@ -217,6 +217,41 @@ function arenaDivizyonKat(){
     return 1+2*Math.max(0,(dmax-dv)/Math.max(1,dmax-1));
   }catch(e){ return 1; }
 }
+
+/* ── FAZ 52-B (FAZ 2): TAKIMA ETKİ EDEN MODÜLLERİN TEK KAYNAĞI ───────────────────────
+   Üçü de Sv1'de 0 döner; çağıran taraf 0'da ESKİ KODUN BİREBİR AYNISINI çalıştırır
+   (ek `Math.random` bile tüketmez). Yeni bir etki eklerken bu kuralı koru — `band.js`
+   ve `measure.js` hash'lerinin korunmasının tek güvencesi budur. */
+/** Soyunma odası: haftalık moral toparlanması (puan). */
+function arenaTesisMoral(){ try{ return (arenaModVeri('soyunma')||{}).mor||0; }catch(e){ return 0; } }
+/** Soyunma odası: transferde ikna gücü (0-0,40). Hem oyuncunun bize gelme isteğini
+    artırır hem de bizden ayrılma isteğini azaltır. */
+function arenaTesisIkna(){ try{ return (arenaModVeri('soyunma')||{}).ikna||0; }catch(e){ return 0; } }
+/** Soyunma odası: mağlubiyet moral kaybının yumuşatılması (0-0,40). */
+function arenaTesisKayipYum(){ try{ return (arenaModVeri('soyunma')||{}).yum||0; }catch(e){ return 0; } }
+/** Soyunma odası: imzalanan oyuncunun istediği maaştaki indirim (0-0,14).
+    İkna gücünün ~%35'i kadar — tesis iyi olan kulüpte oyuncu daha ucuza imzalar. */
+function arenaTesisMaasIndirimi(){ return Math.max(0,Math.min(0.20,arenaTesisIkna()*0.35)); }
+/** Bir transfer hedefinin BİZDEN isteyeceği haftalık maaş (tesis indirimi uygulanmış). */
+function istenenMaas(p){
+  const m=Math.round(Number(p&&p.maas)||0);
+  if(!m) return m;
+  return Math.max(1,Math.round(m*(1-arenaTesisMaasIndirimi())));
+}
+/** Sağlık ünitesi: sakatlık süresi kısaltma oranı (0-0,38). */
+function arenaSaglikSure(){ try{ return (arenaModVeri('saglik')||{}).sure||0; }catch(e){ return 0; } }
+/** Sağlık ünitesi: sakatlanma riski azaltma oranı (0-0,20). */
+function arenaSaglikRisk(){ try{ return (arenaModVeri('saglik')||{}).risk||0; }catch(e){ return 0; } }
+/** Taraftar organizasyonu: EV maçı avantajı. `ft` = rakibin serbest atış isabetinden
+    düşülen pay, `to` = rakip pozisyonu başına ek top kaybı olasılığı.
+    ⚠ Maç motoru `G`'siz çalışır (sunucu sözleşmesi) — bu değer `buildMatchCtx` ile
+    `MC.home.evAvantaj` alanına konur ve motor YALNIZ oradan okur. */
+function arenaEvAvantaji(){
+  try{
+    const v=arenaModVeri('taraftarOrg')||{};
+    return {ft:v.ft||0,to:v.to||0};
+  }catch(e){ return {ft:0,to:0}; }
+}
 /** MAÇ BAŞI GELİR DÖKÜMÜ (brif §5) — tek kaynak. `homeTicketIncome` bunun toplamıdır. */
 function arenaGelirDokumu(){
   const kap=(G.arena&&Number(G.arena.kap))||ARENA_LVL[0].kap;
@@ -454,6 +489,10 @@ function playerAcceptsOffer(player,offer,asking,opts){
   score+=(mood<45?0.5:mood>75?-0.25:0);           /* mutsuz oyuncu daha çok gitmek ister */
   score-=(k.sadakat-1)*0.55;                      /* sadık / şehir bağımlısı ayrılmaya direnç gösterir */
   if(opts.betterTeam) score+=0.6*k.para;          /* hırslı/parasever daha iyi kulübe atlamaya meyilli */
+  /* FAZ 52-B: soyunma odası / tesisler. `opts.tesis` ARTI ise oyuncu BİZE gelmeye daha
+     istekli (tesisimiz iyi), EKSİ ise bizden ayrılmaya daha isteksizdir. Çağıran işareti
+     belirler; modül Sv1 iken 0 gelir ve skor eski hâliyle birebir aynıdır. */
+  score+=(Number(opts.tesis)||0)*1.2;
   const noise=(Math.random()-0.5)*((player&&player.kisilik==='kararsiz')?1.5:0.5);
   score+=noise;                                   /* kişilik ana eğilim; küçük sürpriz payı */
   const prob=1/(1+Math.exp(-score*1.6));
@@ -476,7 +515,9 @@ function maybeIncomingOffers(){
     const club=peers.length?ch(peers):'Bir kulüp';
     const asking=transferFeeUSD(pick);
     const offer=Math.round(asking*(0.7+Math.random()*0.65)); /* %70..135 */
-    const dec=playerAcceptsOffer(pick,offer,asking,{betterTeam:Math.random()<0.5});
+    /* FAZ 52-B: iyi tesis oyuncuyu tutar — rakip kulübün teklifine direnç artar (eksi işaret). */
+    const dec=playerAcceptsOffer(pick,offer,asking,{betterTeam:Math.random()<0.5,
+      tesis:-((typeof arenaTesisIkna==='function')?arenaTesisIkna():0)});
     if(!dec.wantsToGo&&Math.random()<0.6) return;  /* oyuncu ilgilenmiyorsa çoğu teklif düşer */
     G.pendingOffers.push({playerId:pick.id,playerName:pick.isim,poz:pick.poz,genel:pick.genel,club,offer,asking,wantsToGo:dec.wantsToGo,kisilik:pick.kisilik});
     if(typeof showIncomingOfferModal==='function') showIncomingOfferModal();
@@ -526,6 +567,22 @@ function haftalikGelirBeklentisi(){
   return {bilet,biletHafta:Math.round(bilet*EV_MAC_HAFTA),sponsor,gelir,gider:gider.top,net:gelir-gider.top,w:gider};
 }
 
+/** FAZ 52-B: soyunma odası ve tesisler — haftalık moral toparlanması.
+    Moral 70'e (nötr) DOĞRU çekilir, tavan olarak 70'i aşan oyuncuya da küçük bir pay
+    verilir; kimse 100'e sabitlenmez. Modül Sv1 iken hiçbir şey yapmaz (erken çıkış) —
+    ek `Math.random` bile tüketmez. */
+function arenaTesisHaftalikMoral(){
+  try{
+    const m=arenaTesisMoral(); if(!(m>0)) return;
+    (G.players||[]).forEach(p=>{
+      if(!p) return;
+      const cur=Number(p.mood!=null?p.mood:70);
+      /* 70'in altındaki oyuncu tam payı alır, üstündeki payın üçte birini. */
+      const pay=cur<70?m:m*0.33;
+      p.mood=Math.min(100,Math.max(0,cur+pay));
+    });
+  }catch(e){ try{ dbg('tesisMoral',e); }catch(_){} }
+}
 function processEconomyWeeks(){
   if(!G.team) return;
   /* FAZ 52: oyun günü ilerledi — süresi dolan arena inşaatı burada tamamlanır
@@ -542,6 +599,7 @@ function processEconomyWeeks(){
     const sp=sponsorHaftalik();
     if(sp>0) txn('Sponsor geliri — '+sponsorKademe().ad,sp);
     applyWeeklyCoachBonuses();
+    arenaTesisHaftalikMoral();   /* FAZ 52-B: soyunma odası haftalık moral toparlar */
     processScoutingWeek(); /* Faz 5.1: izci ağı otomatik keşif */
     aiWeeklyLeagueActivity();
     pushLeagueNewsLine(`<div style="padding:9px 12px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--red);">🧾 Haftalık gider: <strong>-${fmtPara(w.top)}</strong> (oyuncu ${fmtPara(w.oy)} · koç ${fmtPara(w.ko)}${w.iz?' · izci '+fmtPara(w.iz):''} · arena ${fmtPara(w.ar)}${w.ay?' · akademi '+fmtPara(w.ay):''}${w.is?' · işletme '+fmtPara(w.is):''}) · sponsor <strong>+${fmtPara(sp)}</strong></div>`);

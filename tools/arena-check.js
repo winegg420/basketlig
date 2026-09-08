@@ -121,7 +121,7 @@ const modOlcum = vm.runInContext(`(function(){
   return t;
 })()`, ctx);
 const modKeys = Object.keys(modOlcum);
-yaz(modKeys.length === 10, `10 modül tanımlı (${modKeys.length})`);
+yaz(modKeys.length === 13, `13 modül tanımlı (${modKeys.length})`);   /* FAZ 52-B: +soyunma, saglik, taraftarOrg */
 yaz(modKeys.every(k => modOlcum[k].n === 5), 'her modül 5 seviyeli');
 yaz(modKeys.every(k => modOlcum[k].bedelArtan), 'bedel her kademede artıyor ve Sv1 bedava');
 yaz(modKeys.every(k => modOlcum[k].bakimArtan), 'haftalık bakım hiçbir kademede azalmıyor');
@@ -156,7 +156,7 @@ yaz(nots.gise === 0 && nots.guvEksik === 0, 'başlangıç arenasında gişe kayb
 yaz(nots.dokum.toplam === nots.biletSaf,
   `maç geliri saf bilet geliriyle birebir (${nots.dokum.toplam} = ${nots.biletSaf})`);
 yaz(nots.bakim === ARENA0_BK, `haftalık bakım ${nots.bakim} (eski ${ARENA0_BK})`);
-yaz(nots.guc.puan === 10 && nots.guc.max === 50, `arena gücü ${nots.guc.puan}/${nots.guc.max}`);
+yaz(nots.guc.puan === 13 && nots.guc.max === 65, `arena gücü ${nots.guc.puan}/${nots.guc.max}`);
 
 console.log('\nH) Gelir dökümü toplamı = homeTicketIncome()');
 const dokumOlcum = vm.runInContext(`(function(){
@@ -226,6 +226,61 @@ yaz(mig.every(x => x.kap === x.eskiKap), 'kapasite birebir korundu (oyuncu kapas
 yaz(mig.every(x => x.bk === x.eskiBk), 'haftalık bakım birebir korundu (gider artmıyor)');
 yaz(mig.every(x => x.digerHepsi1), 'diğer bütün modüller Sv1');
 yaz(mig.every(x => x.isim === 'Eski Salon' && !x.insaat), 'arena adı korundu, bekleyen inşaat yok');
+
+
+/* ── FAZ 52-B (FAZ 2): TAKIMA ETKİ EDEN MODÜLLER ─────────────────────────────────────
+   NİYET: (a) üçü de Sv1'de SIFIR etki üretsin — `band.js`/`measure.js` hash'lerinin ve
+   FAZ 25 ekonomi çapalarının korunmasının tek güvencesi budur; (b) etkiler seviyeyle
+   TEK YÖNLÜ büyüsün; (c) ev avantajı maç motoruna `G` üzerinden değil ctx ile girsin
+   (sunucu sözleşmesi). */
+console.log('\nK) Takıma etki eden modüller (FAZ 52-B)');
+const f2 = vm.runInContext(`(function(){
+  G.team = { isim:'Test', tblKey:'tbl', renk:'#fff' };
+  const oku = (sv) => {
+    G.arena = { s:1, kap:0, bk:0, isim:'A', mods:{}, insaat:null };
+    ARENA_MOD.forEach(m => { G.arena.mods[m.key] = sv; });
+    arenaSenkron();
+    return { mor:arenaTesisMoral(), ikna:arenaTesisIkna(), yum:arenaTesisKayipYum(),
+             maas:arenaTesisMaasIndirimi(), sure:arenaSaglikSure(), risk:arenaSaglikRisk(),
+             ev:arenaEvAvantaji() };
+  };
+  const out = [];
+  for (let sv = 1; sv <= 5; sv++) out.push(oku(sv));
+  /* istenenMaas: Sv1'de dokunmaz, Sv5'te indirir */
+  G.arena.mods && ARENA_MOD.forEach(m => { G.arena.mods[m.key] = 1; }); arenaSenkron();
+  const maasSv1 = istenenMaas({ maas: 10000 });
+  ARENA_MOD.forEach(m => { G.arena.mods[m.key] = 5; }); arenaSenkron();
+  const maasSv5 = istenenMaas({ maas: 10000 });
+  return { out, maasSv1, maasSv5 };
+})()`, ctx);
+const s1 = f2.out[0], s5 = f2.out[4];
+yaz(s1.mor === 0 && s1.ikna === 0 && s1.yum === 0 && s1.maas === 0,
+  'Sv1: soyunma odası hiçbir etki üretmiyor');
+yaz(s1.sure === 0 && s1.risk === 0, 'Sv1: sağlık ünitesi hiçbir etki üretmiyor');
+yaz(s1.ev.ft === 0 && s1.ev.to === 0, 'Sv1: ev avantajı yok (motor eski kodu çalıştırır)');
+yaz(f2.maasSv1 === 10000, `Sv1: istenen maaş değişmiyor (${f2.maasSv1})`);
+const artan = (al) => f2.out.every((x, i) => i === 0 || al(x) >= al(f2.out[i - 1]));
+yaz(artan(x => x.mor) && artan(x => x.ikna) && artan(x => x.yum), 'moral/ikna/yumuşatma seviyeyle artıyor');
+yaz(artan(x => x.sure) && artan(x => x.risk), 'iyileşme ve risk azaltma seviyeyle artıyor');
+yaz(artan(x => x.ev.ft) && artan(x => x.ev.to), 'ev avantajı seviyeyle artıyor');
+yaz(s5.maas > 0 && s5.maas <= 0.20 && f2.maasSv5 < 10000,
+  `Sv5: istenen maaş %${Math.round(s5.maas * 100)} düşüyor ($10.000 → ${f2.maasSv5})`);
+/* Ev avantajının büyüklüğü: FT etkisi sayı olarak ~1, top kaybı ~2 sayı — toplam ~3 sayı.
+   Gerçek NBA ev avantajı ~2,5-3 sayıdır; modül TAVANI bunu aşmamalı. */
+yaz(s5.ev.ft <= 0.05 && s5.ev.to <= 0.03,
+  `ev avantajı tavanı makul (rakip SA −%${(s5.ev.ft * 100).toFixed(1)} · ek top kaybı %${(s5.ev.to * 100).toFixed(1)}/poz)`);
+
+/* Motor sözleşmesi: `buildMatchCtx` evAvantaj alanını DOLDURUYOR ve motor onu G'den
+   değil ctx'ten okuyor. `simulateMatch` (sunucu yolu) çağıranın verdiğini kullanır. */
+const mesrc = fs.readFileSync(path.join(ROOT, 'js/match-engine.js'), 'utf8');
+yaz(/evAvantaj:\(typeof arenaEvAvantaji==='function'\)/.test(mesrc),
+  'buildMatchCtx evAvantaj alanını dolduruyor');
+yaz(/evAvantaj:o\.homeEvAvantaj\|\|\{ft:0,to:0\}/.test(mesrc),
+  'simulateMatch (sunucu yolu) evAvantaj için G okumuyor, çağırandan alıyor');
+yaz(/const _evAv=\(userIsHome&&MC\.home&&MC\.home\.evAvantaj\)/.test(mesrc),
+  'motor ev avantajını YALNIZ kullanıcı ev sahibiyken uyguluyor');
+yaz(!/arenaEvAvantaji\(\)/.test(mesrc.slice(mesrc.indexOf('function generateMatchEvents'))),
+  'generateMatchEvents içinde doğrudan G/arena çağrısı yok (sunucu sözleşmesi)');
 
 console.log('\n' + '='.repeat(60));
 console.log(hata ? `✗ ${hata} kontrol başarısız` : '✓ arena doluluğu tutarlı');

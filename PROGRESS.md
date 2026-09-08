@@ -9115,3 +9115,88 @@ seçerse taraftar kitlesi yetişene kadar boş tribüne bakacak ve haftalık bak
 çıkacak; küçük modülleri seçerse büyüme yavaş ama güvenli olacak. Ölçüldü: iki sezonda
 yatırım yapan kulüp maç başına $17.802 yerine $24.883 kazanıyor, karşılığında haftalık
 bakımı $3.000'den $7.400'e çıkıyor ve kasası yatırıma gidiyor.
+
+## FAZ 52-B · ARENA MODÜLLERİ — FAZ 2 (takıma/maça etki edenler) — 08.09.2026
+
+Kullanıcı onayıyla brifin §3.C listesi uygulandı: **soyunma odası**, **sağlık ünitesi**,
+**taraftar organizasyonu**. Arena artık **13 modül · arena gücü /65**.
+
+### Taşıyıcı karar: brifin öngördüğü hash yenilemesine GEREK KALMADI
+Brif "FAZ 2'ye geçildiğinde `band.js` ve `measure.js` referansları TEK ADIMDA
+yenilenecek" diyordu. FAZ 1'in **Sv1 = sıfır etki** kuralı bu üç modüle de uygulandığı
+için gerek kalmadı: modüller alınmadıkça motor eski kodun BİREBİR aynısını çalıştırır,
+ek `Math.random` bile tüketmez. Ölçüldü — `band.js` **c19928475859c7ff** ·
+`measure.js` **51fa02b6e0a8194b** · `sim-node --n=500 --seed=42` **93.1 - 87.9 · 268**
+(üçü de FAZ 43'ten beri aynı). Hash yenilenmedi; eski değerler geçerli.
+
+### Modüller
+
+| Modül | Sv1 → Sv5 etki | Bedel (Sv2→Sv5) | Bakım | Gün | Önkoşul |
+|---|---|---|---|---|---|
+| 🚿 Soyunma Odası ve Tesisler | moral +0 → **+5,0 / hafta** · mağlubiyet kaybı −0 → **−%40** · ikna 0 → **0,40** · istenen maaş −0 → **−%14** | 80K · 210K · 500K · 1,1M | 1,2K → 11K | 4-7 | — |
+| 🩺 Sağlık ve Fizyoterapi | sakatlık süresi −0 → **−%38** · risk −0 → **−%20** | 90K · 230K · 540K · 1,2M | 1,3K → 12K | 4-7 | — |
+| 📣 Taraftar Organizasyonu | EV maçında rakip SA −0 → **−%3,5** · rakip ek top kaybı 0 → **%2,4/poz** | 70K · 180K · 420K · 950K | 1,0K → 9K | 3-6 | Koltuk Sv2 |
+
+**Nerede işliyor:**
+- *Moral:* `arenaTesisHaftalikMoral()` haftalık ekonomi akışında (70'in altındaki oyuncu
+  tam payı, üstündeki üçte birini alır); `applyMatchResult`'ta mağlubiyet moral kaybı
+  `1−yum` ile yumuşar (galibiyet payı DEĞİŞMEZ — tesis moral üretmez, kaybı hafifletir).
+- *İkna:* `playerAcceptsOffer(opts.tesis)` — bizim teklifimizde ARTI, rakibin bizden
+  oyuncu almasında EKSİ işaretle geçer. İmzada `istenenMaas(p)` maaşı indirir
+  (market ve kulüpten transfer, iki yol da).
+- *Sakatlık:* `rollInjuriesAfterUserMatch` — `rand` ÖNCE çağrılır, sonra kısaltılır
+  (çağrı sayısı ve rastgelelik akışı değişmez). Rakip kadro dalı DOKUNULMADI.
+- *Ev avantajı:* maç motoru `G`'siz çalışır (sunucu sözleşmesi) — değer `buildMatchCtx`
+  ile `MC.home.evAvantaj` alanına konur, motor YALNIZ oradan okur ve YALNIZ
+  `userIsHome` iken uygular. Rakibin serbest atışı tek noktadan (`ftMakeYan`) geçer;
+  ek top kaybı pres savunmasıyla aynı daldan (`_presTO`) akar ve tribün kaynaklıysa
+  anlatımı ayrıdır ("📣 Tribün ayakta — …").
+
+### Ölçüm — ev avantajının büyüklüğü (`tools/arena-denge.js`, yeni bölüm)
+Aynı iki kadro, aynı 220 tohum, tek fark `homeEvAvantaj`:
+
+| | ev | deplasman |
+|---|---|---|
+| Sv1 | 92,1 | 90,0 |
+| Sv5 | 92,3 | **88,1** |
+
+**Kazanç 2,19 sayı/maç** — gerçek NBA ev avantajı (~2,5-3 sayı) mertebesinde. Skor bandı
+korundu (ev 92,3 · deplasman 88,1). Kapılar: kazanç 1-6 sayı aralığında · ev avantajı
+tavanı makul (rakip SA −%3,5 · ek top kaybı %2,4/poz).
+
+### Ölçüm — nötrlük (Sv1)
+- `ekonomi-check` 10 sezonluk pasif kulüp tablosu HEAD ile **byte-birebir** (kasa
+  182.364 / 241.382 / 338.354 … aynı).
+- `sim-node` / `band` / `measure` hash'leri **aynı**.
+- `season-loop` 1. ve 2. sezonlar HEAD ile birebir aynı (OVR, yaş, kadro, kasa).
+- `arena-check` K bölümü (yeni, 13 kapı): üç modül de Sv1'de sıfır etki, etkiler
+  seviyeyle tek yönlü artıyor, `buildMatchCtx`/`simulateMatch` sözleşmesi korunuyor.
+
+⚠ **`season-loop` K2 kapısı 3 koşuda YANILTICIDIR (bu turda ölçüldü):** ilk ölçümde
+medyan 1,65× (HEAD) ↔ 2,26× (yeni) çıktı ve kapı düştü. Kök neden bulundu: seansın 1. ve
+2. sezonu birebir aynı, **3. sezon koşudan koşuya değişiyor** (aynı kodda 183.931 /
+197.418 / 271.100 kasa ve farklı şampiyon — bot transferi `Date.now()` ile tohumlanıyor).
+`--runs=6` ile: HEAD medyan **1,14×**, yeni **1,81×**, örnekler 0,73-2,61 bandında
+tamamen örtüşüyor ve iki tarafta da **6/6 geçiyor**. Ekonomi tarafı deterministik harness'ta
+byte-birebir olduğu için fark GERİLEME DEĞİL, aracın kendi gürültüsüdür. **K2'yi 3 koşuyla
+yargılama.**
+
+### Arayüz düzeltmesi
+Kişi başına düşen oranlar (`$0,20 / taraftar`, `$1,50 / kişi`) `fmtPara` ile "$0" / "$2"e
+yuvarlanıp bilgi taşımıyordu; yiyecek · mağaza · otopark modülleri artık **maç başı
+tutarı** gösteriyor (ölçü etiketi de "Maç geliri" oldu).
+
+### Kapılar (hepsi bu turda koşuldu)
+`arena-check` ✓ 46/46 (K bölümü yeni) · `arena-denge` ✓ 10/10 (ev avantajı bölümü yeni) ·
+`ekonomi-check` ✓ 37/37 · `schema-check` ✓ 21/21 · `bicim-check` ✓ 32/32 ·
+`i18n-scan` ✓ (A/B/C/D 0) · `bozukdeger-check` ✓ · `mobile-check` ✓ 18/18 ·
+`visual-check` ✓ (0 konsol hatası) · `season-loop --runs=6` ✓ 6/6 ·
+`sim-node`/`band`/`measure` ✓ hash değişmedi · `surum-check` ✓ (sürüm 96).
+
+### Oyuncu ne görecek
+Arena sayfasında modül sayısı 10'dan 13'e çıktı ve bar artık `/65`. Üç yeni kart
+kadronun kendisine dokunuyor: soyunma odası moral ve transfer pazarlığını, sağlık ünitesi
+sakatlık takvimini, taraftar organizasyonu ise ev maçlarında rakibi zorluyor. İlk karar
+yine bütçeden geliyor: aynı $70-90 bin ile ya doğrudan para getiren bir modül (LED,
+otopark) ya da **kadroyu koruyan** bir modül (sağlık, soyunma) alınabiliyor — biri kasayı,
+öteki sahayı büyütüyor.
