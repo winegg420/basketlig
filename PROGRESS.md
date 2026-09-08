@@ -9028,7 +9028,7 @@ $37.000 · **haftalık net −$26.635** — dev arena gerçekten iflas ettiriyor
    renkler arasında yeşil (`#22c55e`) ve turkuaz (`#14b8a6`) vardı; o rengi seçen oyuncu
    iki takımı ayırt edemiyordu. Artık `_ziRenk(evRengi)`: sekiz adaydan RGB küpünde EN
    UZAK olanı seçilir. Hangi ev rengi seçilirse seçilsin jeton kümeleri ayrık.
-2. **Geri saha pası** — ölçüldü (`iz-kaydet --secs=400` + `scratchpad/geri.js`):
+2. **Geri saha pası** — ölçüldü (`iz-kaydet --secs=400`, pozisyon basina orta cizgi cozumlemesi):
    162 pasın 2'si (%1,2) ön sahadan arka sahaya gidiyordu, ikisi de ölü top sonrası
    geçiş dalında. İki kapı eklendi: `oamArkaSaha()` (sahne-oam, `oamPasOlur` içinde) ve
    `_pasHedefSinirla` aday süzgeci. Geriye pas (potadan uzaklaşan) zaten %1,4 idi ve
