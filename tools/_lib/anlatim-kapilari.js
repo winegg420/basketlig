@@ -164,10 +164,21 @@ const YAKIN_SOZ = /turnike|pota altı|boyalı alan|dibe indi|smaç/i;
    basketbolda karşılığı yoktur), "Yavuz demire geldi", "Turnike dönmedi",
    "Smacı tutmadı" — hiçbiri Türkçede kullanılan bir deyim değil. */
 const SERVIS_RE = /(^|[^A-Za-zÇĞİÖŞÜçğıöşü])servis(i|in|ini|inde)?([^A-Za-zÇĞİÖŞÜçğıöşü]|$)/i;
+/* FAZ 53 (kullanıcı: "file hiç dalgalanmadı ne demek, nereden çıkıyor bu basketbol dışı
+   gerzekçe anlatım"): FUTBOL/VOLEYBOL KLİŞELERİ. "File dalgalandı" futbol spikerliğidir;
+   basketbolda file zaten her sayıda sallanır, haber değeri yoktur. Aynı şekilde fileyi
+   özneleştiren kişileştirmeler ("file ağladı / küstü / uykuda / boyun eğdi") anlatımı
+   çocuklaştırıyordu. "Adım ihlali" yerine yayın dilinde "steps" kullanılır. */
 const KARA_LISTE = [
   /demire geldi/i,
   /turnike dönmedi/i,
   /smacı tutmadı/i,
+  /file\s*(dalgalan|ağla|küs|yan(dı|ıyor)|boyun eğ|uykuda|yerinden oynad|paramparça)/i,
+  /fileyi dalgalandır/i,
+  /file bile sallanmadı/i,          /* SAYI için kullanılıyordu — hava atışını anlatır */
+  /adım ihlali/i,                   /* → "steps" */
+  /fileye (davetiye|ısmarla)/i,
+  /adrese teslim/i,
 ];
 
 /* ── Fiil (yüklem) taraması ──

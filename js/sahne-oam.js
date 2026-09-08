@@ -369,11 +369,16 @@ function oamAtes(){
     if(sh.made){
       _setupInbound(!sh.isHome,250+(_sr()<0.5?-1:1)*_srand(24,74));
     } else {
+      /* FAZ 53 (kullanıcı: "ribaund sonrası bazen top çok yerde kalıyor, kopukluk oluyor"):
+         sekme hızı 85-150 px/sn idi ve top 3-5 m uzağa gidiyordu; ribaundcu peşinden
+         koşarken oyun 2-2,8 sn duruyordu (ölçüldü: 22 canlı serbest top epizodu, en uzunu
+         2,82 sn — gerçek ribaunt 0,8-1,5 sn içinde alınır). Sekme kısaldı; uzaktaki
+         ribaundcuya yönlendirme dalı da aynı oranda düştü. */
       let away=Math.atan2(sh.y-rim[1],sh.x-rim[0])+(_sr()*2-1)*1.1;
-      let sp=_srand(85,150);
+      let sp=_srand(58,104);
       try{ const nxR=_peekNext(); if(nxR&&nxR.type==='reb'&&nxR.rebId!=null){
         const nm=offP.concat(defP).find(p=>p.pl&&p.pl.id===nxR.rebId);
-        if(nm){ const dn=oamDR(nm,rim); if(dn>90){ away=Math.atan2(nm.y-rim[1],nm.x-rim[0])+(_sr()*2-1)*0.35; sp=_srand(120,165); } }
+        if(nm){ const dn=oamDR(nm,rim); if(dn>90){ away=Math.atan2(nm.y-rim[1],nm.x-rim[0])+(_sr()*2-1)*0.35; sp=_srand(92,132); } }
       } }catch(e){}
       _ballCarom(Math.cos(away)*sp,Math.sin(away)*sp,_srand(44,54));
       S.inb=null;
@@ -850,8 +855,17 @@ function oamHakemTick(S,dt){
         b.x=HH.x; b.y=HH.y; b.h=14; b.vx=b.vy=b.vh=0;             /* FAZ 51: top hakemin elinde (fizik değil) */
         const d=Math.hypot(HH.x-HH.tx,HH.y-HH.ty);
         const sh=HT.shooter;
-        const hazir=HT.inb?(sh&&HT.spot&&Math.hypot(sh.x-HT.spot.x,sh.y-HT.spot.y)<=22):true;
-        const bekle=HT.inb?3.0:2.2;
+        /* FAZ 53: SERBEST ATIŞTA HAKEM DİZİLİMİ BEKLER. Eski kodda `hazir` serbest atış
+           dalında KOŞULSUZ true idi; hakem kendi noktasına varır varmaz topu atıcıya
+           veriyor, kulvarlara koşan dokuz oyuncu daha yoldayken atıcı topu tutuyordu
+           (kullanıcı: "herkes faule yerleşmeden hakem topu oyuncuya atmasın").
+           Ölçüt tek kaynaktan: `_ftYerlesti` (10 oyuncudan ≥9'u hedefinin 8,5 px içinde)
+           + atıcının çizgide olması. Tavan 2,2 → 3,4 sn: dizilim gecikse bile oyun
+           kilitlenmez. */
+        const hazir=HT.inb
+          ? (sh&&HT.spot&&Math.hypot(sh.x-HT.spot.x,sh.y-HT.spot.y)<=22)
+          : ((typeof _ftYerlesti!=='function')||(_ftYerlesti(HT.offP,HT.defP)&&(!sh||!isFinite(sh.tx)||Math.hypot(sh.x-sh.tx,sh.y-sh.ty)<=14)));
+        const bekle=HT.inb?3.0:3.4;
         if((d<=16&&hazir)||HT.t>bekle){
           HT.aktif=false;
           if(sh&&isFinite(sh.x)){ const dd=Math.hypot(sh.x-b.x,sh.y-b.y); _ballPass(sh,Math.max(0.35,Math.min(0.9,dd/330))); if(HT.inb) b.onDone=()=>{ try{ S.ball.noDrib=true; }catch(e){} }; }   /* FAZ 50: top hakemin durduğu kenardan gelir */
@@ -879,7 +893,9 @@ function oamFtToplayici(shooter,offP,defP,rim,made){
     const b=S.ball; const ref=oamHakemYakin(S,b);
     const offLeft=(S.offSide!=null)?S.offSide:(b.x<COURT_MID); const hx=offLeft?(CRT_X0-16):(CRT_X1+16);
     oamTopHakeme(S,ref);                                          /* FAZ 51: top EN YAKIN hakeme geçer (yuvarlanma yok) */
-    S._hakemTop={aktif:true,shooter,t:0,hakem:ref,hedef:{x:hx,y:250-46},inb:false};
+    /* FAZ 53 (kullanıcı: "herkes faule yerleşmeden hakem topu oyuncuya atmasın"):
+       kadrolar da saklanır — hakem topu ancak kulvarlar dolunca verir. */
+    S._hakemTop={aktif:true,shooter,t:0,hakem:ref,hedef:{x:hx,y:250-46},inb:false,offP,defP};
   }catch(e){}
 }
 /** FAZ 51: ÖLÜ TOP SOKMASI (faul · taç · ihlal · hücum faulü · 24 sn) — top ilgili hakeme geçer, hakem

@@ -2375,9 +2375,18 @@ function _setFtFormation(offLeft,offPlayers,defPlayers,shooter){
     normal faul dalı ve `_and1Sequence` ikisi de buradan geçer (F14-7 dersinin devamı). */
 function _ftYerlesti(offP,defP){
   try{
-    let n=0;
-    (offP||[]).concat(defP||[]).forEach(p=>{ if(p&&Math.hypot(p.x-p.tx,p.y-p.ty)<=8.5) n++; });
-    return n>=9;
+    let n=0,enUzak=0;
+    (offP||[]).concat(defP||[]).forEach(p=>{
+      if(!p) return;
+      const d=Math.hypot(p.x-p.tx,p.y-p.ty);
+      if(d<=8.5) n++;
+      if(d>enUzak) enUzak=d;
+    });
+    /* FAZ 53: "9'u yerinde" tek başına yetmiyor — ONUNCU oyuncu 5,78 m uzakta kalabiliyor
+       ve ekranda tek başına koşarken atış yapılıyordu (ölçüldü, `sunum-check` F14-7 8,6/10).
+       Onuncunun da en fazla 2 m (60 px) kalması aranır; kilitlenme riski yok, iki çağıranın
+       da zaman aşımı var (hakem 3,4 sn · atış 3,0 sn). */
+    return n>=9&&enUzak<=60;
   }catch(e){ return true; }
 }
 function _ftWaitSec(players){
@@ -3023,7 +3032,10 @@ function movePlayersForEvent(ev,paint){
         const strip=()=>{ try{
           const bb=S.ball;
           const ddx=thief.x-bb.x, ddy=thief.y-bb.y, dn=Math.hypot(ddx,ddy)||1;
-          _ballLoose(ddx/dn*110+_srand(-30,30),ddy/dn*110+_srand(-30,30),40);   /* FAZ 42-B §B / FAZ 43 yerçekimi */
+          /* FAZ 53: çalınan top 110 px/sn ile 3-4 m uzağa fırlıyor ve hırsız peşinden
+             koşarken 2,17 sn ölü zaman doğuyordu (ölçüldü, üç ayrı epizot birebir aynı süre).
+             Elden alınan top kısa mesafe sıçrar — hırsız bir adımda toplar. */
+          _ballLoose(ddx/dn*62+_srand(-18,18),ddy/dn*62+_srand(-18,18),26);   /* FAZ 42-B §B / FAZ 43 yerçekimi */
           _chase(thief,()=>{
             if(P){ P(); }
             _startBreak(thiefIsUser);
@@ -4040,9 +4052,9 @@ const SPIKERS=[
 const SPIKER_LINES={
   cosku:{
     score2:['%S SMACI ÇAKTI, potaya asıldı! %SC','%S SMAÇLA BİTİRDİ — çember titredi! %SC','%S çemberi PARÇALADI, smaç! %SC','%S yumuşak kavisle yükseldi, içeride! %SC','%S POTAYA ASILDI, İKİ SAYI! %SC','%S BOYALI ALANI YIKTI! %SC','%S turnikeyi PATLATTI! %SC','%S pota altında CANAVAR gibi, iki! %SC','%S ORTA MESAFEDEN VURDU, muhteşem! %SC','%S orta mesafeden soğukkanlı, iki! %SC','%S orta mesafe şutunu tutturdu! %SC','%S DURDURULAMIYOR, iki sayı! %SC','%S sayıyı yazdırdı, tribün ayakta! %SC','%S buz gibi bitirdi! %SC','%S coştu, iki daha geldi! %SC'],
-    score3:['%S DERİNDEN BOMBAYI PATLATTI — ÜÇLÜK! %SC','%S ÜÇLÜĞÜ GÖMDÜ, tribün ayakta! %SC','%S köşeden NİŞANCI gibi, üç! %SC','%S UZAKTAN VURDU, inanılmaz! %SC','%S yaydan ATEŞ etti — SWISH! %SC','%S logodan denedi ve GİRDİ! %SC','%S kanattan bombayı bıraktı! %SC','%S tereddütsüz çekti, üç geldi! %SC','%S file sallandı, muhteşem üçlük! %SC','%S yay dışından acımadı! %SC','%S üçlükte ateş hattında! %SC'],
+    score3:['%S DERİNDEN BOMBAYI PATLATTI — ÜÇLÜK! %SC','%S ÜÇLÜĞÜ GÖMDÜ, tribün ayakta! %SC','%S köşeden NİŞANCI gibi, üç! %SC','%S UZAKTAN VURDU, inanılmaz! %SC','%S yaydan ATEŞ etti — SWISH! %SC','%S logodan denedi ve GİRDİ! %SC','%S kanattan bombayı bıraktı! %SC','%S tereddütsüz çekti, üç geldi! %SC','%S muhteşem bir üçlük attı! %SC','%S yay dışından acımadı! %SC','%S üçlükte ateş hattında! %SC'],
     miss2:['%S smacı çemberde patladı!','%S kavisi kısa kaldı!','%S turnikede tökezledi!','%S POTA İZİN VERMEDİ, kaçtı!','%S yakındaydı ama SEKTİ!','%S orta mesafeden kaçırdı!','%S orta mesafe şutu kısa kaldı!','%S uzaktan denedi, olmadı!','%S çember reddetti!','%S bu sefer olmadı, yazık!','%S demire takıldı!','%S ıskaladı, seyirci sustu!'],
-    miss3:['%S üçlüğü KAÇTI, çemberden döndü!','%S uzaktan ıskaladı, olmadı!','%S bombayı boşa harcadı!','%S yay dışından vuramadı!','%S köşe üçlüğü havada kaldı!','%S demir dedi, girmedi!','%S üçlük kısa düştü!','%S file yerine demiri buldu!','%S dış atış tutmadı!'],
+    miss3:['%S üçlüğü KAÇTI, çemberden döndü!','%S uzaktan ıskaladı, olmadı!','%S bombayı boşa harcadı!','%S yay dışından vuramadı!','%S köşe üçlüğü havada kaldı!','%S demir dedi, girmedi!','%S üçlük kısa düştü!','%S demire vurdu, girmedi!','%S dış atış tutmadı!'],
     block:['%B MUAZZAM BLOK! %S geri döndü!','%B ŞAPKAYI TAKTI, inanılmaz savunma!','%B topu SİLİP ATTI!','%B duvar gibi, %S durduruldu!','%B kapağı kapadı, %S şaşkın!','%B uzun topu geri çevirdi!','%B savunmada devleşti!'],
     steal:['%C TOPU KAPTI, koşuyoo!','%C pas arasını OKUDU, çaldı!','%C elini uzattı ve ALDI!','%C müthiş bir top çalma!','%C çizgiyi okudu, top bizde!','%C hücumu ters çevirdi!','%C aktif eller, çaldı gitti!'],
     tactic:['Ritim değişiyor — tempo yükseliyoo!','Savunma kilitlendi, enerji tavanda!','Baskı artıyor, tribün ayakta!','Hücumda yeni varyasyon geliyoo!','Koç kenardan bağırıyor, tempo!']
@@ -4057,17 +4069,17 @@ const SPIKER_LINES={
     tactic:['Set oyunu düzenleniyor, sabırlı hücum.','Savunma rotasyonu yeniden ayarlanıyor.','Tempo kontrolü — doğru karar.','Açılma yeniden kuruluyor, akıllı oyun.','Hücum organizasyonu netleşiyor.']
   },
   cem:{
-    score2:['%S potaya "merhaba" dedi, iki sayı! %SC','%S turnikede savunmayı seyirci bıraktı! %SC','%S pota ile anlaştı, iki! %SC','%S boyalı alanı ziyaret etti, iki! %SC','%S orta mesafeden "bu benden" dedi! %SC','%S orta mesafe şutunu fileye ısmarladı! %SC','%S uzaktan göz kırptı, iki! %SC','%S öyle bitirdi ki savunma özür diledi. %SC','%S savunma dönmeden yazdırdı! %SC','%S savunmaya "pardon" demedi! %SC','%S file ile tokalaştı, iki! %SC'],
-    score3:['%S yayın gerisinden fileyi dalgalandırdı — üç! %SC','%S neredeyse tribünden attı — üçlük! %SC','%S yayı gördü, "neden olmasın" dedi! %SC','%S bombayı bıraktı, file "şşşt" dedi! %SC','%S üçlükte usta, file yandı! %SC','%S köşeden selam gönderdi — üç! %SC','%S logodan "niye olmasın" dedi, girdi! %SC','%S yay dışından fileye davetiye! %SC','%S üçlüğü postaladı, adrese teslim! %SC','%S kanattan bombayı gömdü! %SC','%S file ağladı, üçlük! %SC'],
-    miss2:['%S kaçırdı, pota bugün nazlı!','%S ıskaladı, olur böyle şeyler!','%S turnike geri geldi, "hayır" dedi!','%S bu sefer file küstü!','%S top çemberi turladı ve çıktı!','%S orta mesafeden selam gitti, karşılıksız!','%S pota kapıyı yüzüne kapadı!','%S demir "olmaz" dedi!','%S şut çemberde tur attı, çıktı!','%S bugün file uykuda!'],
-    miss3:['%S üçlük denedi, fileye bile uğramadı — hava topu!','%S ıskaladı, yay bugün sağır!','%S bombayı ateşledi, demir geri yolladı!','%S çember bugün kimseyi içeri almıyor!','%S köşe üçlüğü tribünü selamladı!','%S yay dışından mektup kayıp!','%S demir "yanlış numara" dedi!','%S üçlük havada asılı kaldı!','%S file bugün kapıyı açmıyor!'],
+    score2:['%S potaya "merhaba" dedi, iki sayı! %SC','%S turnikede savunmayı seyirci bıraktı! %SC','%S pota ile anlaştı, iki! %SC','%S boyalı alanı ziyaret etti, iki! %SC','%S orta mesafeden "bu benden" dedi! %SC','%S orta mesafe şutunu tam ortadan geçirdi! %SC','%S uzaktan göz kırptı, iki! %SC','%S öyle bitirdi ki savunma özür diledi. %SC','%S savunma dönmeden yazdırdı! %SC','%S savunmaya "pardon" demedi! %SC','%S orta mesafeden vurdu, iki! %SC'],
+    score3:['%S yayın çok gerisinden vurdu — üç! %SC','%S çok derinden denedi — üçlük! %SC','%S yayı gördü, "neden olmasın" dedi! %SC','%S bombayı bıraktı, çemberin ortasından geçti! %SC','%S üçlükte ustalığını gösterdi! %SC','%S köşeden selam gönderdi — üç! %SC','%S orta sahaya yakın bir noktadan denedi, girdi! %SC','%S yay dışından tereddütsüz bıraktı, içeride! %SC','%S üçlüğü tam ortadan geçirdi! %SC','%S kanattan bombayı gömdü! %SC','%S uzaktan bombayı patlattı, üç! %SC'],
+    miss2:['%S kaçırdı, pota bugün nazlı!','%S ıskaladı, olur böyle şeyler!','%S turnike geri geldi, "hayır" dedi!','%S bu sefer çemberi geçemedi!','%S top çemberi turladı ve çıktı!','%S orta mesafeden selam gitti, karşılıksız!','%S pota kapıyı yüzüne kapadı!','%S demir "olmaz" dedi!','%S şut çemberde tur attı, çıktı!','%S bugün ritmini bulamadı!'],
+    miss3:['%S üçlük denedi, çembere bile değmedi — hava atışı!','%S ıskaladı, yay bugün sağır!','%S bombayı ateşledi, demir geri yolladı!','%S çember bugün kimseyi içeri almıyor!','%S köşe üçlüğü tribünü selamladı!','%S yay dışından mektup kayıp!','%S demir "yanlış numara" dedi!','%S üçlük havada asılı kaldı!','%S bugün çemberi dar buluyor!'],
     block:['%B "buraya giremezsin" dedi — blok!','%B topu geldiği yere geri yolladı!','%B şapkayı taktı, %S şok!','%B boyalı alanın kapısını kapadı!','%B "iade" damgası bastı — blok!','%B topa "dur" dedi, %S kaldı!','%B kapıcılık yaptı, blok!'],
     steal:['%C pası havada okudu — top artık onun!','%C elini araya soktu, hücum ters döndü!','%C pası dinledi, çaldı gitti!','%C eli değdi, top el değiştirdi!','%C pas hattına daldı, top bizde!','%C hücumu cebe attı — çalma!','%C topu kibarca ödünç aldı, geri vermez!'],
     tactic:['Koç tahtaya bir şeyler karalıyor!','Taktik değişti, yedek kulübesi ayaklandı!','Yeni varyasyon — umarım işe yarar!','Hücumda plan B devreye giriyor!','Koç zaman istedi, beyaz tahta doldu!']
   },
   reha:{
     score2:['%S pota altında bitirdi. %SC','%S turnikeyi tamamladı. %SC','%S boyalı alandan bitirdi. %SC','%S pota dibinden bitirdi. %SC','%S orta mesafeden isabet kaydetti. %SC','%S orta mesafe şutunu geçti. %SC','%S uzaktan iki sayı buldu. %SC','%S içeride bitirdi. %SC','%S basket, iki sayı hanesine. %SC','%S sakin bitirdi. %SC','%S farkı ikiye indirdi. %SC'],
-    score3:['%S dıştan vurdu, üç. %SC','%S dış atıştan başarılı. %SC','%S üçlük çizgisinden buldu. %SC','%S uzak mesafeden isabet. %SC','%S yay ötesinden geçirdi. %SC','%S yay dışından tamamladı. %SC','%S köşeden üç sayı. %SC','%S kanattan isabetli üçlük. %SC','%S dış atışta net isabet. %SC','%S üçlüğü fileye bıraktı. %SC','%S yay ötesinden skora üç. %SC'],
+    score3:['%S dıştan vurdu, üç. %SC','%S dış atıştan başarılı. %SC','%S üçlük çizgisinden buldu. %SC','%S uzak mesafeden isabet. %SC','%S yay ötesinden geçirdi. %SC','%S yay dışından tamamladı. %SC','%S köşeden üç sayı. %SC','%S kanattan isabetli üçlük. %SC','%S dış atışta net isabet. %SC','%S üçlüğü rahat bıraktı, içeride. %SC','%S yay ötesinden skora üç. %SC'],
     miss2:['%S çemberden döndü.','%S şutu kısa kaldı.','%S turnikede başarısız.','%S tutturamadı.','%S bu kez tutturamadı.','%S orta mesafeden kaçırdı.','%S pota altında tamamlayamadı.','%S şutu çemberden döndü.','%S iki sayı denemesi boşa.','%S isabetsiz bir deneme.'],
     miss3:['%S üçlükte isabet yok.','%S dış atış tuttu değil.','%S uzaktan kaçırdı.','%S üç sayı denemesi boşa.','%S köşe üçlüğü isabetsiz.','%S yay dışından kaçırdı.','%S üçlük çemberden döndü.','%S dış atışta başarısız.','%S üç sayı bulamadı.'],
     block:['%B bloke etti; %S durduruldu.','%B temiz bir blok gerçekleştirdi.','%B savunmada blok kaydetti.','%B şutu engelledi.','%B bloğu tamamladı, %S{i} durdurdu.','%B savunmada müdahale etti.','%B şutu geri çevirdi.'],
@@ -4346,7 +4358,7 @@ const REB_DEF_LINES=[
 const _CORNER_WORDS=/köşe/i;
 /* Ortak köşe üçlüğü havuzu (F13-8): filtre sonrası spiker havuzuna eklenir. */
 const CORNER3_MADE=[
-  '%S köşede boştu, üçlük file! %SC',
+  '%S köşede boştaydı, üçlüğü geçirdi! %SC',
   '%S köşeden tetiği çekti — üç sayı! %SC',
   '%S dip köşeden vurdu, üçlük! %SC',
   '%S köşede ayakları hazırdı; üç! %SC',
@@ -4359,7 +4371,7 @@ const CORNER3_MISS=[
   '%S köşeden denedi, olmadı.',
   '%S köşe üçlüğünü kısa bıraktı.',
   '%S dip köşeden ıskaladı.',
-  '%S köşede açıktı ama file dalgalanmadı.',
+  '%S köşede açıktı ama şutu tutmadı.',
   '%S köşe şutu çemberden döndü.',
   '%S köşeden zorladı, girmedi.',
   'Köşe üçlüğü %S için bugün gelmiyor.',
@@ -4681,33 +4693,33 @@ const SUT_EYLEM={
    Spiker kişiliğine göre dağıtılır; ortak havuz + kişilik eki (her spiker ≥16 kalıp). */
 const SUT_SONUC={
   ortak:{
-    isabet:['fileyi buldu!','tereddütsüz fileye gitti.','temiz, file bile sallanmadı.',
+    isabet:['fileyi buldu!','tereddüt etmeden bıraktı, içeride.','temiz bir şut, çembere değmeden girdi.',
             'camdan yumuşak dönüp içeri düştü.','çemberi doldurdu!','içeri düştü.',
-            'file dalgalandı.','çember izin verdi, sayı geldi.','sayıyı yazdırdı.',
+            'çemberin ortasından geçti.','çember izin verdi, sayı geldi.','sayıyı yazdırdı.',
             'tam ortasından geçti.','çembere hiç değmeden geçti.','fileden aşağı süzüldü.',
             'çemberi yalayıp içeri düştü.','arka demirden içeri döndü.','file sesi geldi.',
             'tam isabetle indi.','çemberden içeri süzüldü.','iki takım da durdu — sayı geldi.',
-            'çemberin ortasını buldu.','file boyun eğdi.','tam doğru zamanda içeri düştü.',
+            'çemberin ortasını buldu.','savunma geç kaldı, sayı geldi.','tam doğru zamanda içeri düştü.',
             'skoru değiştirdi, içeride.','sayıyı getirdi, tribün ayakta.','çember misafirini kabul etti.'],
     kacan:['ön demire çarptı.','arka demirden döndü.','kısa kaldı.','çemberi turlayıp çıktı.',
            'fileye değmedi, hava atışı oldu.','savunmanın eli değdi, yörünge bozuldu.',
            'çemberden döndü.','uzun kaldı, arka demire çarptı.','demire çarpıp dışarı çıktı.',
            'tutmadı.','çembere takıldı.','yay çok yüksek kaldı, girmedi.','çember geri çevirdi.',
-           'demirden sekti, girmedi.','file hiç dalgalanmadı, kaçtı.','hedefi bulmadı.',
+           'demirden sekti, girmedi.','çembere hiç dokunmadı, kaçtı.','hedefi bulmadı.',
            'çemberin kenarından sıyırdı.','içeri girmedi, ribaunt mücadelesi başladı.',
            'çember bu kez kapalıydı.','yörünge kısa kaldı.','demire vurup çıktı.',
            'top potadan uzaklaştı, isabet yok.','şans yaver gitmedi, girmedi.','içeri düşmedi.']
   },
-  cosku:{ isabet:['ve fileye gömüldü!','fileyi paramparça etti!','tribün ayakta, sayı geldi!',
+  cosku:{ isabet:['ve fileye gömüldü!','sertçe içeri gömdü!','tribün ayakta, sayı geldi!',
                   'tam istediği gibi düştü!','çember bunu geri çeviremedi!','salon yıkıldı!',
-                  'işte bu, içeri düştü!','file yerinden oynadı!','salonu ayağa kaldırdı!',
+                  'işte bu, içeri düştü!','salon patladı, içeri girdi!','salonu ayağa kaldırdı!',
                   'çember teslim oldu!','bunu kimse durduramazdı!','muhteşem, içeri girdi!'],
           kacan:['ama olmadı!','çember bu kez acımadı!','demire takıldı, yazık!','salon sustu — girmedi.',
                  'kaçtı, tribün inledi.','tutturamadı!','çember izin vermedi!','yazık, girmedi!',
                  'demir çok sert vurdu!','salon nefesini tuttu, girmedi.'] },
   bilge:{ isabet:['mekaniği kusursuzdu, içeri düştü.','doğru seçimdi, sayı geldi.',
                   'sabırlı hücumun karşılığını aldı, sayı.','yüksek yüzdeli tercihti, girdi.',
-                  'bileği düzgün çalıştı, file.','disiplinli bitirdi.',
+                  'bileği düzgün çalıştı, içeride.','disiplinli bitirdi.',
                   'dengesi bozulmadı, girdi.','ayak yerleşimi doğruydu, düştü.',
                   'hazırlığı iyiydi, sayı geldi.','temiz iş çıkardı, sayı geldi.',
                   'kararı doğruydu, içeri girdi.','ritmi tuttu, sayı geldi.'],
@@ -4716,18 +4728,18 @@ const SUT_SONUC={
                  'ritmi bozuldu, kaçtı.','bileği geç kalktı, kısa düştü.',
                  'baskıyı okuyamadı, kaçırdı.','erken bıraktı, girmedi.','dengesi kaydı, olmadı.'] },
   cem:{ isabet:['buz gibi bitirdi.','soğukkanlı tamamladı.','hiç düşünmedi, sayı geldi.',
-                'elini sallamış, girdi.','sakin sakin bıraktı, file.','işi bitirdi, içeride.',
-                'gözünü bile kırpmadı, file.','kolay gösterdi, içeri düştü.','yine yaptı, sayı geldi.',
+                'elini sallamış, girdi.','sakin sakin bıraktı, içeride.','işi bitirdi, içeride.',
+                'gözünü bile kırpmadı, içeride.','kolay gösterdi, içeri düştü.','yine yaptı, sayı geldi.',
                 'bunu ezbere biliyor, girdi.','şaşırtmadı, girdi.','alışkanlık hâline getirdi.'],
         kacan:['bu sefer olmadı.','çember misafir kabul etmedi.','kaçtı, olur böyle.',
                'tutmadı, devam ediyoruz.','girmedi ama denedi.','bugün onun günü değil.',
                'bu kez tutturamadı.','çember huysuzlandı, girmedi.','kaçırdı, canı sıkıldı — girmedi.',
                'girmedi, olmadı bu sefer.'] },
   reha:{ isabet:['içeri düştü, skor tabelası döndü.','sayı geldi, fark değişti.',
-                 'file, iki takım da koşuyor.','içeri girdi — oyun hızlı akıyor.',
+                 'içeride, iki takım da koşuyor.','içeri girdi — oyun hızlı akıyor.',
                  'sayı geldi, tempo yükseliyor.','geçti, oyun sürüyor.',
                  'girdi, hücum sırası değişiyor.','sayı yazıldı, akış devam ediyor.',
-                 'içeri düştü, saat işliyor.','file, oyun kesintisiz sürüyor.',
+                 'içeri düştü, saat işliyor.','içeride, oyun kesintisiz sürüyor.',
                  'sayı geldi, tabela güncellendi.','girdi, iki takım da geri dönüyor.'],
          kacan:['kaçtı, ribaunt mücadelesi başlıyor.','girmedi, top cam altına düştü.',
                 'tutmadı, cam altı kalabalıklaştı.','kaçtı — hızlı geçiş gelebilir.',
@@ -4779,10 +4791,10 @@ const HUCUM_FAULU_LINES=[
   '%S ittirdi, hakem hücum faulünü gördü.'
 ];
 const ADIM_LINES=[
-  '%S adım attı — düdük çaldı, topu %R kullanacak.',
+  '%S steps yaptı — düdük çaldı, topu %R kullanacak.',
   '%S çift sürme yaptı; hücum bitti, top %R{de}.',
   '%S çift sürme yaptı.',
-  'Adım ihlali — %S pivot ayağını kaydırdı.',
+  'Steps — %S pivot ayağını kaydırdı.',
   '%S topu ayağına değdirdi — ihlal, top %R{e} geçiyor.',
   'Üç saniye ihlali — %S boyadan çıkmadı.'
 ];
@@ -4836,7 +4848,7 @@ const SUT_LINES={
             '%S smacı fileye gömdü! %SC','%S çembere yüklenip smaçladı. %SC',
             '%S havada kalıp smaçladı. %SC'],
     miss2:['%S smacını çember reddetti!','%S smaçta çembere takıldı.',
-           '%S çakmak istedi, olmadı.','%S smacı fileyi bulmadı.']
+           '%S çakmak istedi, olmadı.','%S smaçta çemberi bulamadı.']
   },
   turnike:{
     score2:['%S turnikeyi tamamladı. %SC','%S camdan yumuşak bıraktı. %SC',
@@ -4849,7 +4861,7 @@ const SUT_LINES={
     score2:['%S havada asılı bıraktı! %SC','%S parmak ucundan yolladı. %SC',
             '%S uzunların üstünden kavisledi. %SC','%S kavisi tutturdu. %SC',
             '%S boyadan yumuşak kavis bıraktı. %SC','%S yüksek kavisle geçirdi. %SC',
-            '%S kavisli şutu fileye bıraktı. %SC','%S parmak ucuyla yumuşacık bıraktı. %SC'],
+            '%S yüksek kavisli şutu içeri bıraktı. %SC','%S parmak ucuyla yumuşacık bıraktı. %SC'],
     miss2:['%S kavisli şutu denedi, takıldı.','%S kavisi uzun bıraktı.',
            '%S parmak ucundan denedi, olmadı.','%S yumuşak kavisi zorladı, girmedi.',
            '%S havada asılı bıraktı ama olmadı.','%S kavisi çemberden döndü.',
@@ -5732,13 +5744,13 @@ function generateMatchEvents(rakip, opts){
     'hata yok.','tereddütsüz, ikisi de girdi.','soğukkanlı bitirdi.'];
   const FT_TAM3=['üçünü de attı.','çizgiden şaşmadı.','üç atış üç sayı.','hepsi içeride.','hata yok.'];
   /* İŞ 6.4: 'yarısı geldi' gibi zorlama kalıplar kalktı; her sonuç kendi doğal diliyle. */
-const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini fileye bıraktı, biri dışarıda.',
+const FT_YARIM=['birini kaçırdı.','sadece birini attı.','ikincisini içeri bıraktı, biri dışarıda.',
   'birini içeri gönderdi, diğeri demirden döndü.','ilkini kaçırdı, ikincisini attı.','çizgide yarım kaldı.'];
   const FT_SIFIR=['ikisi de gitti; seyirci sustu.','ikisi de dışarıda.','ikisini de kaçırdı.','hiçbiri girmedi.'];
   /* TEK ATIŞ (teknik faul) kendi dilini ister: iki atışlık kalıplar burada
      'ikisini de attı' diye yalan söylüyordu. */
   const FT_TEK_VAR=['attı.','tereddütsüz bıraktı, içeride.','çizgiden şaşmadı.','fileyi buldu.'];
-  const FT_TEK_YOK=['kaçırdı.','demirden döndü.','çizgide bırakamadı.','fileyi bulamadı.'];
+  const FT_TEK_YOK=['kaçırdı.','demirden döndü.','çizgide bırakamadı.','çemberi bulamadı.'];
   const ftLine=(nMade,nAtt,who)=>{
     try{
       /* Ad ftPre'de zaten geçiyor ('… Batıkan Bayrak çizgide.'); ftRes'te tam adı

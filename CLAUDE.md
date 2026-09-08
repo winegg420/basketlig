@@ -79,6 +79,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/gecis-analiz.js` | **Pozisyon başına orta çizgi geçişi (FAZ 44)** — `iz-kaydet` kaydını okur; her pozisyonda topun orta çizgiyi hangi modda (held/pass/shot/hiç) geçtiğini listeler. `sahne-check`in "geçiş / pozisyon değişimi" kapısı çift sayar (HEAD %111); davranış yargısı için bunu kullan. |
 | `tools/pas-analiz.js` | **Pas yönü + sokma yeri (FAZ 45)** — `iz-kaydet` kaydından: canlı topta potadan uzaklaşan (geri) paslar bağlam ve kim→kime ile; rakibe giden pas; çizgi dışı izinli oyuncunun SAHA İÇİNDEN attığı pas; **her sayı-sonrası pozisyonun ilk pası** verenin konumuyla (dışarıda/içeride). FAZ 44'ün sokma kapısı yalnız çizgi dışındaki epizotları saydığı için "hiç çıkmayan sokucu"yu göremedi (22/24); payda olayın kendisidir. Sokma/geçiş/çalma koreografisi değişince çalıştır. |
 | `tools/balon-check.js` | **Anlatım balonu denetçisi (FAZ 40)** — RENDER EDİLMİŞ balonu okur. `anlatim-check` ön parça ile sonuç parçasını AYRI taradığı için birleşme kusurlarını (nokta + küçük harf, çift noktalama) GÖREMEZ. Anlatım birleştirme mantığı değişince çalıştır. |
+| `tools/taktik-klip-check.js` | **FAZ 53 taktik ↔ klip eşleşmesi** (tarayıcısız) — aynı şut noktalarında yalnız savunma stili/şema değiştirilerek seçilen kliplerin imzası ölçülür: bölge → savunma potaya daha yakın · pres → topa en yakın savunmacı daha yakın · ikili oyun → perde izi yüksek · birebir → düşük. `klipTaktikMaliyet` ya da klip verisi değişince çalıştır. |
 | `tools/sahne-kapsam-check.js` | **Sahne kapsamı (FAZ 40 · B5+B6)** — motorun ürettiği her olay türünün `movePlayersForEvent` karşılığı var mı (tür adıyla YA DA `shots[].kind===ft` alanıyla), ve koreografi süresinin ALT SINIR sözleşmesi (`delay=max(simMs,dtMs)`) duruyor mu. Tarayıcısız. Yeni olay türü eklerken çalıştır. |
 | `tools/geometri-check.js` | **Saha çizgisi geometrisi (FAZ 14)** — 3 sayı yayı, köşe düzlükleri, boya, çember/pano ölçüleri, kesişme ve "sahada karşılığı olmayan çizim". **Nitelik okumaz**, `getPointAtLength`/`getBBox` ile ÇİZİLEN eğriyi ölçer. Saha SVG'si değişince çalıştır. |
 | `tools/spacing-check.js` | **Saha dizilimi ölçümü (FAZ 11)** — set hücumunda aralık, yayılım, boya kullanımı, markaj mesafesi, ball-you-man. Tohumlu. `--bg` sekmeyi arka plana alıp ölçer (F11-1 gerileme testi). **Dizilim/koreografi değişince çalıştır.** |
@@ -1706,3 +1707,55 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   otopark kartları artık MAÇ BAŞI TUTARI gösterir (`arenaGelirDokumu` çıktısından);
   ölçü etiketi de "Maç geliri"dir. Yeni bir oran gösterirken önce fmtPara'nın onu
   yuvarlayıp yuvarlamadığını kontrol et.
+
+- **FUTBOL KLİŞESİ ANLATIMA GİREMEZ (FAZ 53, kullanıcı: "file hiç dalgalanmadı ne demek,
+  nereden çıkıyor bu basketbol dışı gerzekçe anlatım"):** "file dalgalandı", "file ağladı /
+  küstü / uykuda / boyun eğdi", "fileye davetiye", "adrese teslim" ve — SAYI için
+  kullanılan — "temiz, file bile sallanmadı" (bu aslında hava atışını anlatır) havuzlardan
+  çıkarıldı; `adım ihlali` → **`steps`**. Kalıcı kapı `tools/_lib/anlatim-kapilari.js`
+  `KARA_LISTE`sindedir. TR havuzu (`match-engine.js`) ile EN sözlüğü
+  (`i18n-commentary.js`) AYNI ANDA değişmeli — yalnız anahtarı değiştirmek eski
+  İngilizceyi yeni cümleye yapıştırır (FAZ 29 dersi).
+- **BALON METNİ TEK NOKTADAN TEMİZLENİR — `_balonTemiz` (FAZ 53):** anlatım beş ayrı
+  parçadan birleşir (ön parça + sonuç + skor + yorum eki + saat damgası); biri boş dönünce
+  "… bıraktı ." gibi boşluklu noktalama, çift boşluk ya da sonda asılı "—" kalıyordu.
+  Havuzlara dokunmak yerine BİRLEŞMİŞ metin `js/main.js` içinde normalize edilir.
+  ⚠ Üç nokta "…" tek karakterdir ama kaynakta 12 yerde ASCII "..." geçer — kural onu
+  bozmamalı (bu yüzden "aynı noktalama tekrarı" kuralı yerine `[,;:]` + `[.!?]` çifti
+  hedeflenir). Kapı: `tools/balon-check.js`.
+- **KLİP EŞLEMESİNDE KÖR TAKAS YAPMA (FAZ 53 — "4 numara neden top sürüyor"nun kök nedeni):**
+  klip slotları sınıfa göre sıralıdır (`KLIP_SINIF` = G,G,F,F,C). Eski kod motorun şutörünü
+  klibin şutör slotuna kör takasla koyuyordu; şutör PG ve klibin şutörü 4. slot ise takas
+  sonucu **klibin topu getiren guard slotuna bizim PF'imiz** düşüyordu. Ölçüldü (400 sn iz
+  kaydı): topu SÜREN karelerin %49'u PF, yalnız %7,5'i PG. Doğru eşleme iki noktayı birden
+  çiviler — klibin ŞUTÖR slotu → motorun şutörü, klibin ASIL TAŞIYICI slotu (elden çıkışa
+  kadarki karelerde topa en yakın hücumcunun en çok olduğu slot) → gerçek taşıyıcımız,
+  yoksa bir guard; kalan slotlar rol sırasını koruyarak dolar. Sonuç: süren PG %45,1 ·
+  PF %24,2 · orta çizgiyi topla geçen guard payı %60 → %80.
+- **TAKTİK KLİBİ EĞEREK DEĞİL SEÇEREK YANSITILIR (FAZ 53):** klibin içindeki savunma kaydın
+  kendisidir; "adam adamaya çevir" diye bükülürse yine elle yazılmış koreografiye dönülür
+  (kullanıcı FAZ 50'de tam olarak onu reddetti). 696 klibin savunma imzası bir kez ölçülür
+  (`klipImza`: savunmanın potaya uzaklığı · ikili yayılım · topa en yakın savunmacı · perde
+  izi · asıl taşıyıcı slotu) ve sahadaki savunmaya BENZEYEN klip seçilir. Savunan taraf bot
+  ise **botun koç profili** okunur (`klipSavunmaStili`). **Seçim İKİ AŞAMALIDIR:** önce
+  geometriyle 24'lük kısa liste, sonra o listenin içinden taktiğe en çok benzeyen altısı.
+  İki sürüm ölçülerek elendi — taktik maliyetini geometri maliyetine EKLEMEK ilk altıyı hiç
+  değiştirmedi, havuzun yüzdelik dilimini HEDEF almak ise seçimi TERS yöne itti (kısa liste
+  zaten hedefin ötesindeydi). Kapı: `node tools/taktik-klip-check.js`.
+  ⚠ Klip oynatıcıda ANLIK tepki YOKTUR: "screen sonrası adam değiştirme", "screen'in
+  tutması/tutmaması", "boş kalınca hemen şut" klibin içinde ne varsa odur. Bunlara ancak
+  klip kütüphanesine o olayların etiketi çıkarılıp seçim daraltılarak yaklaşılır.
+- **SERBEST ATIŞTA HAKEM DİZİLİMİ BEKLER (FAZ 53, kullanıcı: "herkes faule yerleşmeden
+  hakem topu oyuncuya atmasın"):** `oamHakemTick` içinde serbest atış dalında `hazir`
+  KOŞULSUZ `true` idi. Artık `_ftYerlesti(offP,defP)` — 10 oyuncudan ≥9'u hedefinin 8,5 px
+  içinde **VE onuncusu da en fazla 60 px (2 m)** — aranır. "9'u yerinde" tek başına yetmez:
+  onuncu 5,78 m uzakta kalıp ekranda tek başına koşarken atış yapılıyordu (F14-7 8,6/10 →
+  9,1/10). Kilitlenme riski yok, iki çağıranın da zaman aşımı var (hakem 3,4 sn · atış 3,0 sn).
+- **`sahne-check` "SAHİPSİZ TOP" ÖLÇÜTÜ HAKEMİ SAYMAZ (FAZ 53):** FAZ 51'den beri ölü topta
+  topu hakem taşır; hakem `S.players` listesinde olmadığı için "en yakın oyuncu 5,7 m"
+  çıkıyor ve DOĞRU davranış kusur sayılıyordu (%1,02 → %2,12). Kapı artık `S._hakemTop`
+  bayrağını okur — `iz-kaydet` bu ayrımı `hk` alanıyla zaten yapıyordu.
+- **RİBAUND/ÇALMA SONRASI ÖLÜ ZAMAN SEKME MESAFESİNDEN GELİR (FAZ 53):** sekme hızı
+  85-150 px/sn iken top 3-5 m uzağa gidiyor ve oyun 2-2,8 sn duruyordu (22 canlı serbest top
+  epizodu ölçüldü). Sekme 58-104 px/sn; çalınan top 110 → 62 px/sn (üç ayrı epizot birebir
+  2,17 sn sürüyordu — elden alınan top kısa sıçrar). `sahne-check` sahipsiz kare %1,02 → %0,07.

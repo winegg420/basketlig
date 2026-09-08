@@ -9200,3 +9200,124 @@ sakatlık takvimini, taraftar organizasyonu ise ev maçlarında rakibi zorluyor.
 yine bütçeden geliyor: aynı $70-90 bin ile ya doğrudan para getiren bir modül (LED,
 otopark) ya da **kadroyu koruyan** bir modül (sağlık, soyunma) alınabiliyor — biri kasayı,
 öteki sahayı büyütüyor.
+
+## FAZ 53 · ANLATIM TEMİZLİĞİ + CANLI MAÇ KUSURLARI + TAKTİK ↔ KLİP — 09.09.2026
+
+Kullanıcı iki ayrı mesajla geldi: (1) anlatımdaki basketbol dışı cümleler ("file hiç
+dalgalanmadı", "adım ihlali", kopuk zincir cümleleri) — "RADİKAL DEĞİŞİKLİK YAP"; (2) canlı
+maçta duran kusurlar (4 numara top sürüyor · faul atışında sektirme · hakem erken topu
+veriyor · ribaund sonrası kopukluk · gereksiz hızlı/geride kalan oyuncu) ve taktiklerin
+sahada görünmesi. "Maçı canlı izleyip detaylı analiz yapmadan bu ufak pürüzler düzelmez."
+
+### A · ANLATIM — 37 ifade değişti
+
+**Kaldırılan sınıf: futbol/voleybol klişeleri.** "File dalgalandı" futbol spikerliğidir;
+basketbolda file zaten her sayıda sallanır. Fileyi özneleştiren kişileştirmeler
+("file ağladı / küstü / uykuda / boyun eğdi / yerinden oynadı / paramparça oldu"),
+"fileye davetiye", "adrese teslim" ve — SAYI için kullanılan — "temiz, file bile
+sallanmadı" (bu aslında hava atışını anlatır) hepsi gitti. `%S adım attı` → **`%S steps
+yaptı`**, `Adım ihlali` → **`Steps`** (kullanıcı: "steps demek varken").
+
+Değişiklik TR havuzunda (`js/match-engine.js`) ve EN sözlüğünde (`js/i18n-commentary.js`)
+AYNI ANDA yapıldı — yalnız anahtarı değiştirmek eski İngilizceyi yeni cümleye yapıştırırdı
+(FAZ 29 dersi). 34 sözlük çifti + 2 düz geçiş + 37 havuz satırı.
+
+**Kalıcı kapı:** `tools/_lib/anlatim-kapilari.js` kara listesine dokuz kalıp eklendi
+(`file dalgalan|ağla|küs|yan|boyun eğ|uykuda|…`, `adım ihlali`, `adrese teslim`,
+`file bile sallanmadı`). Bu ifadeler bir daha havuza giremez.
+
+**"… bıraktı ." kusuru (kullanıcının örneği):** anlatım metni beş ayrı yerden birleşiyor
+(ön parça + sonuç + skor + yorum eki + saat damgası); biri boş dönünce araya boşluk +
+noktalama, cümle sonuna asılı "—" kalıyordu. Havuzlara dokunmak yerine BİRLEŞMİŞ metin
+tek noktadan normalize edilir (`_balonTemiz`, `js/main.js`): noktalamadan önceki boşluk,
+", ." çifti, çift boşluk ve asılı tire temizlenir. ⚠ Üç nokta "…" tek karakterdir ve
+kaynakta 12 yerde ASCII "..." geçer — kural onları bozmayacak biçimde yazıldı.
+
+### B · CANLI MAÇ — ÖLÇEREK BULUNAN KÖK NEDENLER
+
+**1. "4 numara neden top sürüyor" — KLİP EŞLEMESİ KÖR TAKAS YAPIYORDU.**
+FAZ 50'den beri şutlu pozisyonlar gerçek SportVU kaydından oynar ve klip slotları sınıfa
+göre sıralıdır (G,G,F,F,C). Eski kod motorun şutörünü klibin şutör slotuna **kör takasla**
+koyuyordu: şutör PG ise ve klibin şutörü 4. slotsa, takas sonucu **0. slota — klibin topu
+getiren guard'ına — bizim PF'imiz** düşüyordu. Ölçüldü (400 sn iz kaydı):
+
+| | topu SÜREN | orta çizgiyi topla geçen |
+|---|---|---|
+| önce | **PF %49,0** · PG %7,5 | PG %40 · PF %24 |
+| sonra | **PG %45,1** · PF %24,2 | **PG %52 + SG %28 = %80** · PF %16 |
+
+Yeni eşleme iki noktayı birden çiviler: klibin şutör slotu → motorun şutörü; klibin ASIL
+TAŞIYICI slotu (elden çıkışa kadarki karelerde topa en yakın hücumcunun en çok olduğu
+slot) → gerçek taşıyıcımız, yoksa bir guard. Kalan slotlar rol sırasını koruyarak dolar.
+Ayrıca klip seçim maliyetine "topu uzun süren klip" cezası eklendi (slot ≥3 → +0,9).
+
+**2. Faul atışında sektirme** — FAZ 52'de kaldırılmıştı (sürüm 95); `sunum-check` F25-4
+"sektirme 0" ile doğruluyor. Kullanıcı büyük olasılıkla eski sürümü izliyordu.
+
+**3. "Herkes yerleşmeden hakem topu atmasın"** — `oamHakemTick` içinde serbest atış dalında
+`hazir` KOŞULSUZ `true` idi; hakem kendi noktasına varır varmaz topu atıcıya veriyordu.
+Artık `_ftYerlesti` (10 oyuncudan ≥9'u hedefinin 8,5 px içinde) + atıcının çizgide olması
+şartı aranır; tavan 2,2 → 3,4 sn.
+
+**4. Ribaund/çalma sonrası kopukluk** — sekme hızı 85-150 px/sn idi, top 3-5 m uzağa
+gidiyor ve oyun 2-2,8 sn duruyordu (ölçüldü: 22 canlı serbest top epizodu). Sekme 58-104,
+uzaktaki ribaundcuya yönlendirme 120-165 → 92-132. Çalınan top 110 → 62 px/sn (üç ayrı
+epizot birebir 2,17 sn sürüyordu — elden alınan top kısa sıçrar). Ortalama serbest top
+süresi 1,34 → **1,44 sn**, `sahne-check` "sahipsiz top karesi" **%1,02 → %0,07**.
+
+**5. "Gereksiz hızlı koşan / geride kalan oyuncu"** — ölçüldü: maç ölçeğinde 7 m/sn üstü
+kare **%0,25** ve örneklerin hepsi kurulum karesi (t=0,1 sn). Gerçek kusur hız değil,
+1. maddedeki eşlemeydi: yanlış slota düşen uzun sahayı boydan boya kat ediyordu
+("tam sahayı düz geçen jeton" 1 → 0; `sahne-check` "yarı sahayı geçiren PG/SG/SF"
+**%68 → %84**).
+
+### C · TAKTİKLER SAHADA GÖRÜNÜYOR (yeni: `tools/taktik-klip-check.js`)
+
+Klibin içindeki savunma, kaydın kendisinden gelir — "adam adamaya çevir" diye eğilip
+bükülemez (eğilirse yine elle yazılmış koreografiye döneriz; kullanıcı FAZ 50'de tam olarak
+onu reddetti). Doğru yol SEÇİMDİR: 696 klibin her biri için savunma imzası bir kez ölçülür
+(`klipImza`: savunmanın potaya uzaklığı · ikili yayılımı · topa en yakın savunmacı · perde
+izi · asıl taşıyıcı slotu) ve sahadaki savunmaya BENZEYEN klip seçilir. Savunan taraf bot
+ise **botun koç profili** okunur — "bot takımı da bunu yapıyor olmalı".
+
+**Seçim iki aşamalıdır** (iki sürüm ölçülerek elendi): taktik maliyetini geometri
+maliyetine EKLEMEK hiçbir şeyi değiştirmedi (ilk altı aday aynı kaldı), havuzun yüzdelik
+dilimini HEDEF alıp uzaklığı cezalandırmak ise seçimi TERS yöne itti (kısa liste zaten
+hedefin ötesindeydi). Doğrusu: önce geometriyle 24'lük kısa liste, sonra o listenin
+İÇİNDEN taktiğe en çok benzeyen altısı.
+
+Ölçülen (aynı şut noktaları, tek fark taktik · n=200):
+
+| Savunma | savunmanın potaya uzaklığı | topa en yakın savunmacı |
+|---|---|---|
+| Adam adama (nötr) | 14,10 ft | 5,90 ft |
+| 2-3 Bölge | **12,19 ft** (paketlenmiş) | 6,19 ft |
+| Tam saha pres | 14,06 ft | **4,55 ft** (topa yapışık) |
+
+Şema: ikili oyun (pnr) perde izi **0,164** ↔ birebir (iso) **0,000** ↔ nötr 0,073.
+
+⚠ **AÇIK KALAN:** "screen'den sonra adam değiştirme", "screen'in başarılı/başarısız
+olması", "boş kalınca hemen şuta kalkma" gibi ANLIK tepkiler klip oynatıcıda YOK — klip
+sabit bir kayıttır, içindeki savunma bizim şemamıza tepki vermez. Bu ancak klip
+kütüphanesine bu olayların etiketi çıkarılıp (`klip-cikar.js` yeni meta) seçim daha da
+daraltılarak yaklaşılabilir; şu an yapılan, o davranışları GERÇEKTEN İÇEREN klipleri
+seçmektir.
+
+### D · ÖLÇÜM
+
+**Maç motoru DEĞİŞMEDİ:** `sim-node --n=500 --seed=42` 93.1 - 87.9 · 268 · determinizm ✓;
+`band.js` **c19928475859c7ff**; `measure.js` **51fa02b6e0a8194b** (ikisi de FAZ 43 değeri).
+
+`sahne-check` HEAD → FAZ 52 → FAZ 53: held %62,5 → 63,9 → **65,1 ✓** · sahipsiz %1,16 →
+1,02 → **0,07 ✓** · serbest atışta yerinde 10,0 → 9,86 → **10,0 ✓** · yarı sahayı geçiren
+%69 → 68 → **84** · orta çizgi geçişi %72 → 80 → 69 (bu kapı çift sayar, davranış kanıtı
+değildir — CLAUDE.md) · aynı anda koşan 3,01 → 2,94 → 2,94 (sınırda, HEAD de sınırdaydı).
+
+⚠ `sahne-check`in "sahipsiz top" ölçütü DÜZELTİLDİ: FAZ 51'den beri ölü topta topu hakem
+taşıyor, hakem `S.players` listesinde olmadığı için "en yakın oyuncu 5,7 m" çıkıyor ve
+DOĞRU davranış kusur sayılıyordu (%2,12). `iz-kaydet` bu ayrımı `hk` alanıyla zaten
+yapıyordu; kapı da aynı bayrağı okuyor.
+
+Kapılar: `anlatim-check` ✓ 31/31 · `balon-check` ✓ (168 balon, üç kusur da 0) ·
+`taktik-klip-check` ✓ 8/8 (YENİ) · `i18n-scan` ✓ · `visual-check` ✓ · `sahne-check`
+3 açık (üçü de HEAD'de de açıktı, ikisi iyileşti).

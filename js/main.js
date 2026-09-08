@@ -867,6 +867,21 @@ function continueMatchAfterBreak(){
    (`_markPainted()` çağrılmadığında) kurulmuyordu. Bayrak yerine OLAY KİMLİĞİ: hangi
    yoldan gelirse gelsin bir olay+mod bir kez basılır. Kullanıcı eylemleri (taktik, mola,
    değişiklik) bilerek tekrarlanabilir — onlar benzersiz anahtar geçer. */
+/** FAZ 53 (kullanıcı: "… bıraktı ." gibi cümleler): BALON METNİ TEK NOKTADAN TEMİZLENİR.
+    Anlatım metni beş ayrı yerden birleşiyor (ön parça + sonuç + skor + yorum eki + saat
+    damgası); bunlardan biri boş dönünce araya boşluk+noktalama ya da çift boşluk kalıyor,
+    cümle sonunda asılı bir "—" duruyordu. Havuzlara dokunmak yerine BİRLEŞMİŞ metin
+    normalize edilir — `balon-check` zaten bu üç kusuru ölçüyor. */
+function _balonTemiz(s){
+  try{
+    return String(s)
+      .replace(/\s+([.,;:!?])/g,'$1')      /* noktalamadan önceki boşluk: "bıraktı ." */
+      .replace(/([,;:])\s*([.!?])/g,'$2')  /* "…, ." → "…." (üç nokta "…" tek karakterdir, bozulmaz) */
+      .replace(/\s{2,}/g,' ')              /* çift boşluk */
+      .replace(/\s+[—–]\s*$/,'')           /* sonuç parçası hiç gelmediyse asılı kalan tire */
+      .trim();
+  }catch(e){ return s; }
+}
 function addComment(txt,type='',key,zincir){
   /* _k fonksiyon kapsamında olmalı: zincir birleştirme (§3) da aynı anahtarı okur. */
   const _k=(key!=null)?key:('t:'+String(txt).slice(0,60));
@@ -918,7 +933,7 @@ function addComment(txt,type='',key,zincir){
           if(/\.\s*$/.test(govde))      govde=govde.replace(/\s*\.\s*$/,' —');
           else if(/[!?]\s*$/.test(govde)) ek=(typeof trBuyukIlk==='function')?trBuyukIlk(ek):(ek.charAt(0).toUpperCase()+ek.slice(1));
         }
-        el.innerHTML=govde+' '+ek;
+        el.innerHTML=_balonTemiz(govde+' '+ek);
         mState._chainKey=null; mState._chainEl=null;
         return;
       }
@@ -932,7 +947,7 @@ function addComment(txt,type='',key,zincir){
   if(type==='tactic') cls+=' ci-tactic';
   if(type==='foul') cls+=' ci-foul';
   item.className=cls;
-  item.innerHTML=`<span class="ci-time">${qLbl} ${dm}:${ds.toString().padStart(2,'0')}</span> ${txt}`;
+  item.innerHTML=`<span class="ci-time">${qLbl} ${dm}:${ds.toString().padStart(2,'0')}</span> ${_balonTemiz(txt)}`;
   div.insertBefore(item,div.firstChild);
   /* §3: bu satır bir ön parçaysa, zincir sonucunun ekleneceği balonu damgala. */
   try{

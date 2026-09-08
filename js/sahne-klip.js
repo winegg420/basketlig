@@ -43,6 +43,20 @@ function klipVeri(){
     if(typeof KLIP_VERI==='undefined'||!KLIP_VERI||!KLIP_VERI.b64) return null;
     const bin=atob(KLIP_VERI.b64); const u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
     _klipD={fps:KLIP_VERI.fps||5,klip:KLIP_VERI.klip,v:new Int16Array(u8.buffer),son:[]};
+    /* FAZ 53: taktik eşleşmesi için havuzun kendi MEDYANI (eşik sabiti yazılmaz).
+       Bir kez, yükleme anında hesaplanır (~35 bin kare örneklemesi). */
+    try{
+      const sy=[],bp=[],pd=[],sr=[];
+      _klipD.klip.forEach(k=>{ const im=klipImza(_klipD,k); sy.push(im.sy); bp.push(im.bp); pd.push(im.pd); sr.push(im.sr); });
+      const yuzde=(a,q)=>{ a=a.slice().sort((x,y)=>x-y); return a.length?a[Math.max(0,Math.min(a.length-1,Math.floor(a.length*q)))]:0; };
+      /* ⚠ HEDEF, MEDYAN DEĞİL ÇEYREKTİR. İlk sürüm "medyanın ÜSTÜNDE olanı cezalandır"
+         diyordu; ama şut geometrisi zaten potaya yakın savunmalı klipleri öne alıyor ve
+         aday havuzunun tamamı medyanın ALTINDA kalıyordu — ceza her adayda 0 çıkıp
+         seçimi hiç değiştirmiyordu (ölçüldü: bölge 14,35 ↔ adam adama 14,28 ft).
+         Artık hedefe UZAKLIK cezalandırılır (iki yönlü) ve hedef havuzun %25'lik dilimidir. */
+      const med=a=>yuzde(a,0.5);
+      _klipD.med={sy:med(sy),bp:med(bp),pd:med(pd),sr:med(sr),srDar:yuzde(sr,0.25),bpDar:yuzde(bp,0.25)};
+    }catch(e){ _klipD.med={sy:16,bp:6,pd:0.1,sr:16,srDar:13,bpDar:4}; }
   }catch(e){ try{ console.warn('KLIP veri',e); }catch(_){} _klipD=null; }
   return _klipD;
 }
@@ -59,9 +73,112 @@ function klipFt(x,y,offLeft){
   const xf=offLeft?((x-CRT_X0)/W*KLIP_SAHA_X):((CRT_X1-x)/W*KLIP_SAHA_X);
   return [xf,(y-CRT_Y0)/H*KLIP_SAHA_Y];
 }
+/* ── FAZ 53: TAKTİK ↔ KLİP EŞLEŞMESİ ─────────────────────────────────────────────────
+   Kullanıcı: "taktiklerdeki oyun stilleri maça yansımalı, o taktikleri canlı maçta
+   görüyor olmalıyız; botla oynarken bot takımı da bunu yapıyor olmalı — alan savunması,
+   adam adama, screen'den sonra adam değiştirme, screen'in başarılı/başarısız olması,
+   oyuncunun boş kalması, boş kalınca hemen şuta kalkması ya da potaya yüklenmesi."
+
+   FAZ 50'den beri şutlu pozisyonlar GERÇEK maç kaydından oynuyor; klibin içindeki
+   savunma dizilimi ve perde, kaydın kendisinden gelir — sonradan "adam adamaya çevir"
+   diye eğilip bükülemez (eğilirse yine elle yazılmış koreografiye döneriz, kullanıcının
+   FAZ 50'de reddettiği şey buydu). Yapılabilecek doğru şey SEÇİMDİR: 696 klibin her biri
+   için savunma imzası bir kez ölçülür ve o pozisyonda sahada hangi savunma varsa ona
+   BENZEYEN klip seçilir. Böylece 2-3 bölge kurulduğunda ekranda gerçekten paketlenmiş,
+   boyayı kapatan bir savunma; tam saha preste topa yapışan bir savunma; ikili oyun
+   şemasında gerçekten perde kurulan bir pozisyon oynar.
+
+   Ölçülen imzalar (ft cinsinden, klip başına bir kez, `klipVeri()` içinde):
+     sy = savunmanın yayılımı (5 savunmacının ikili mesafe ortalaması) — bölge DÜŞÜK
+     bp = topa en yakın savunmacı mesafesi ortalaması            — pres DÜŞÜK
+     pd = perde izi: topu tutanın 4 ft'ine giren takım arkadaşı karesi sayısı / kare */
+function klipImza(D,k){
+  if(k._im) return k._im;
+  const n=k.n, adim=Math.max(1,Math.floor(n/24));   /* en çok 24 kare örnekle (yükleme ucuz kalsın) */
+  let sySum=0,bpSum=0,pdSum=0,srSum=0,m=0;
+  for(let i=0;i<n;i+=adim){
+    const o=k.o+i*23;
+    const bx=D.v[o]/10, by=D.v[o+1]/10;
+    /* savunmacı yayılımı (slot 5..9) */
+    let s=0,c=0;
+    for(let a=0;a<5;a++) for(let b2=a+1;b2<5;b2++){
+      const ax=D.v[o+13+a*2]/10, ay=D.v[o+14+a*2]/10;
+      const bx2=D.v[o+13+b2*2]/10, by2=D.v[o+14+b2*2]/10;
+      s+=Math.hypot(ax-bx2,ay-by2); c++;
+    }
+    sySum+=s/Math.max(1,c);
+    /* topa en yakın savunmacı */
+    let en=1e9;
+    for(let a=0;a<5;a++){ const dx=D.v[o+13+a*2]/10-bx, dy=D.v[o+14+a*2]/10-by; const d=Math.hypot(dx,dy); if(d<en) en=d; }
+    bpSum+=en;
+    /* savunmanın POTAYA ortalama uzaklığı — 2-3 bölgenin asıl imzası budur (boyayı kapatır).
+       İkili mesafe (sy) tek başına ayırt etmiyordu: ölçüldü, bölge 16,33 ↔ adam adama 16,23 ft. */
+    let sr=0;
+    for(let a=0;a<5;a++){ const dx=D.v[o+13+a*2]/10-5.25, dy=D.v[o+14+a*2]/10-25; sr+=Math.hypot(dx,dy); }
+    srSum+=sr/5;
+    /* perde izi: topu tutan hücumcuya 4 ft içinde BAŞKA bir hücumcu var mı */
+    let ti=-1,td=1e9;
+    for(let a=0;a<5;a++){ const dx=D.v[o+3+a*2]/10-bx, dy=D.v[o+4+a*2]/10-by; const d=Math.hypot(dx,dy); if(d<td){ td=d; ti=a; } }
+    if(ti>=0&&td<=5){
+      for(let a=0;a<5;a++){ if(a===ti) continue;
+        const dx=D.v[o+3+a*2]/10-D.v[o+3+ti*2]/10, dy=D.v[o+4+a*2]/10-D.v[o+4+ti*2]/10;
+        if(Math.hypot(dx,dy)<=4.5){ pdSum++; break; }
+      }
+    }
+    m++;
+  }
+  m=Math.max(1,m);
+  /* ASIL TAŞIYICI SLOTU: klip slotları sınıfa göre sıralı (G,G,F,F,C) olduğu için slot
+     indeksi taşıyıcının sınıfını verir. 0-1 = guard. Seçim bunu tercih eder — yoksa
+     taktik eşleşmesi (post-up ağırlıklı klipler) "4 numara top sürüyor" kusurunu geri
+     getiriyordu (ölçüldü: eşleşme açılınca süren PF %17 → %43). */
+  let hs=0,hb=-1;
+  { const rN=(k.r!=null?k.r:(n-1)), ad2=Math.max(1,Math.floor(rN/18)), say=[0,0,0,0,0];
+    for(let i=0;i<=rN;i+=ad2){ const o=k.o+i*23, bx=D.v[o]/10, by=D.v[o+1]/10;
+      let ei=0,ed=1e9;
+      for(let j=0;j<5;j++){ const dd=Math.hypot(D.v[o+3+j*2]/10-bx,D.v[o+4+j*2]/10-by); if(dd<ed){ ed=dd; ei=j; } }
+      if(ed<=6) say[ei]++; }
+    for(let j=0;j<5;j++) if(say[j]>hb){ hb=say[j]; hs=j; } }
+  k._im={sy:sySum/m,bp:bpSum/m,pd:pdSum/m,sr:srSum/m,hs:hs};
+  return k._im;
+}
+/** O anda SAVUNAN tarafın savunma stili ('adam' | 'bolge' | 'pres'). Kullanıcı savunuyorsa
+    kendi seçimi, bot savunuyorsa botun koç profili — "bot takımı da bunu yapıyor olmalı". */
+function klipSavunmaStili(offIsUser){
+  try{
+    if(!offIsUser){
+      const t=(typeof G!=='undefined'&&G&&G.tactics)||{};
+      return t.defSet||t.defensiveStyle||'adam';
+    }
+    const ad=(typeof mState!=='undefined'&&mState&&mState.rakipName)||'';
+    const bc=(typeof botCoachProfile==='function')?botCoachProfile(ad):null;
+    return (bc&&bc.def)||'adam';
+  }catch(e){ return 'adam'; }
+}
+/** Taktik uyum maliyeti — küçük = bu klip o taktiğe benziyor. Eşikler klip havuzunun
+    kendi dağılımından (medyan) gelir; sabit sayı yazılmaz. */
+/** Taktik uyum maliyeti — kısa listenin İÇİNDE sıralamak için; küçük = daha benzer.
+    ⚠ HEDEF DEĞERİ YOKTUR, SIRALAMA VARDIR. İki sürüm ölçülerek elendi: (a) maliyeti
+    geometri maliyetine EKLEMEK (ilk altı hiç değişmedi), (b) havuzun yüzdelik dilimini
+    HEDEF alıp ona uzaklığı cezalandırmak (kısa liste zaten hedefin ötesindeydi, ceza
+    seçimi ters yöne itti — bölge 16,02 ft ↔ adam adama 14,10 ft). Doğrusu, kısa listeyi
+    doğrudan o eksende sıralamaktır: bölge → potaya en yakın duran savunma, pres → topa
+    en yakın savunmacı, ikili oyun → perde izi en yüksek, birebir → en düşük. */
+function klipTaktikMaliyet(D,k,stil,scheme){
+  try{
+    const im=klipImza(D,k);
+    let c=0;
+    c+=(im.hs>=3?3.2:(im.hs===2?1.1:0));   /* topu asıl süren guard olsun (1-2 numara) */
+    if(stil==='bolge')      c+=im.sr+im.sy*0.35-im.bp*0.30;   /* paketlenmiş, boyayı kapatan, topa yapışmayan */
+    else if(stil==='pres')  c+=im.bp*1.60;                    /* topa yapışan */
+    if(scheme==='pnr'||scheme==='handoff') c+=-im.pd*30;      /* gerçekten perde kurulan pozisyon */
+    else if(scheme==='iso')                c+= im.pd*30;      /* birebir: perde yok */
+    return c;
+  }catch(e){ return 0; }
+}
 const KLIP_SINIF=['G','G','F','F','C'];
 /* Klip seçimi: başlangıç durumu + şut geometrisi + şutör sınıfı; en iyi 6 arasından sahne PRNG'siyle */
-function klipSec(bas,shPx,offLeft,sutSinif,fb,topPx,toksPx){
+function klipSec(bas,shPx,offLeft,sutSinif,fb,topPx,toksPx,stil,scheme){
   const D=klipVeri(); if(!D||!D.klip.length) return null;
   const [ex,ey]=klipFt(shPx[0],shPx[1],offLeft);
   const topFt=topPx?klipFt(topPx[0],topPx[1],offLeft):null;
@@ -88,10 +205,28 @@ function klipSec(bas,shPx,offLeft,sutSinif,fb,topPx,toksPx){
     if(topFt){ const bx=D.v[k.o]/10, by0=D.v[k.o+1]/10; const by=fl?(KLIP_SAHA_Y-by0):by0; c+=Math.hypot(bx-topFt[0],by-topFt[1])/9; }
     if(k.c!==sutSinif) c+=0.8;
     if(D.son.indexOf(i)>=0) c+=2.0;
+    { const im=klipImza(D,k); if(im.hs>=3) c+=0.9; else if(im.hs===2) c+=0.3; }   /* FAZ 53: topu uzun süren klipler seyrek seçilsin */
+
     aday.push({i,c,fl});
   });
   aday.sort((a,b)=>a.c-b.c);
-  const ust=aday.slice(0,6); const sec=ust[_srand(0,ust.length-1)];
+  /* ── FAZ 53: TAKTİK SEÇİMİ İKİ AŞAMALIDIR ────────────────────────────────────────
+     Taktik maliyetini geometri maliyetine EKLEMEK işe yaramadı (ölçüldü: bölge 15,09 ↔
+     adam adama 14,93 ft — fark yok): geometri farkları taktik cezasından büyük olduğu
+     için ilk altı aday hiç değişmiyordu. Doğru yapı elemedir — önce GEOMETRİ ile geniş
+     bir kısa liste (24 klip; şut noktası ve dizilim yine tutarlı), sonra o listenin
+     içinden TAKTİĞE en çok benzeyen altısı. Böylece 2-3 bölge kurulduğunda ekranda
+     gerçekten boyayı kapatan, preste topa yapışan bir savunma oynar. */
+  let ust=aday.slice(0,24);
+  /* 'adam' NÖTRDÜR: adam adama savunmanın ayırt edici bir imzası yoktur (havuzun
+     tamamı ağırlıklı adam adamadır) — yeniden sıralama yapılmaz, geometri kazanır.
+     Bölge ve pres kendi imzalarını arar. */
+  const _semaVar=(scheme==='pnr'||scheme==='handoff'||scheme==='iso');
+  if((stil&&stil!=='adam')||_semaVar){
+    ust=ust.map(x=>({x,tc:klipTaktikMaliyet(D,D.klip[x.i],stil,scheme)}))
+           .sort((a,b)=>a.tc-b.tc).slice(0,6).map(o=>o.x);
+  } else ust=ust.slice(0,6);
+  const sec=ust[_srand(0,ust.length-1)];
   D.son.push(sec.i); if(D.son.length>10) D.son.shift();
   return {k:D.klip[sec.i],ix:sec.i,flip:sec.fl};
 }
@@ -128,7 +263,10 @@ function klipSut(sh,onShoot,onResult){
   else if(dOwn<260) bas='ribaund';
   else if(onSahada&&dRim<330) bas='onsaha';
   const sutSinif=(shooter.role|0)<=1?'G':((shooter.role|0)>=4?'C':'F');
-  const sec=klipSec(bas,[sh.x,sh.y],offLeft,sutSinif,!!sh.fb,[b.x,b.y],offR.slice(0,5).concat(defR.slice(0,5)).map(p=>[p.x,p.y]));   /* FAZ 51: dizilim benzerliği maliyette */
+  /* FAZ 53: sahadaki savunma stili (kullanıcı savunuyorsa kendi seçimi, bot savunuyorsa
+     botun koç profili) ve motorun şeması klip seçimine girer — taktik EKRANDA görünür. */
+  const _stil=klipSavunmaStili(sh.isHome!==false);   /* sh.isHome = hücumdaki taraf kullanıcı mı */
+  const sec=klipSec(bas,[sh.x,sh.y],offLeft,sutSinif,!!sh.fb,[b.x,b.y],offR.slice(0,5).concat(defR.slice(0,5)).map(p=>[p.x,p.y]),_stil,sh.scheme||null);   /* FAZ 51: dizilim benzerliği maliyette */
   if(!sec) return oamSut(sh,onShoot,onResult);
   const k=sec.k;
 
@@ -141,9 +279,48 @@ function klipSut(sh,onShoot,onResult){
   S.canliSet=false; S._setIstek=false; S.defTrack=false; S.cikisSonra=1e9; S.shooter=shooter;
   try{ mState._semaAd=sh.scheme||'klip'; S._sema=null; }catch(e){}
 
-  /* eşleme: hücum rol sırası ↔ klip hücum sırası; şutör ↔ klibin şutörü (yer değiştirme) */
-  const offMap=offR.slice(0,5); const r=offMap.indexOf(shooter); const si=k.i;
-  if(r>=0&&r!==si){ const t=offMap[si]; offMap[si]=offMap[r]; offMap[r]=t; }
+  /* ── EŞLEME (FAZ 53'te DÜZELTİLDİ) ───────────────────────────────────────────────
+     Klip slotları sınıfa göre sıralıdır (`KLIP_SINIF` = G,G,F,F,C; `klip-cikar.js`
+     `RANK` ile sıralar), bu yüzden rol sırası (PG,SG,SF,PF,C) slotlara birebir oturur.
+     ESKİ KOD şutörü klibin şutör slotuna KÖR TAKASLA koyuyordu: şutör PG ise ve klibin
+     şutörü 4. slot (PF) ise takas sonucu 0. SLOTA — yani klibin topu getiren
+     guard'ına — bizim PF'imiz düşüyordu. Ölçüldü (400 sn iz kaydı): topu SÜREN
+     karelerin **%49'u PF**, yalnız %7,5'i PG (kullanıcı: "4 numara neden top sürüyor").
+     Yeni eşleme iki noktayı birden çiviler:
+       · klibin ŞUTÖR slotu  → motorun şutörü (şut noktası sözleşmesi),
+       · klibin TOPU TUTAN slotu (ilk karede topa en yakın hücumcu) → gerçek taşıyıcımız,
+         yoksa bir guard (rol 0/1) — "1 ve 2 numara topu alır, yarı sahayı onlar geçer".
+     Kalan slotlar rol sırasını KORUYARAK doldurulur (uzun uzun slotuna düşer). */
+  const si=k.i;
+  const offSira=offR.slice(0,5);
+  const offMap=new Array(5);
+  { /* Klibin ASIL TAŞIYICISI: yalnız ilk kareye bakmak yetmiyordu (ölçüldü: topu süren
+       karelerin %38,7'si hâlâ PF idi) — top pozisyon boyunca el değiştiriyor ve en çok
+       süren slot başka olabiliyor. Elden çıkışa kadarki karelerde "topa en yakın hücumcu"
+       sayacı tutulur, en çok önde olan slot taşıyıcı sayılır ve oraya bir GUARD konur. */
+    const rN=(k.r!=null?k.r:(k.n-1));
+    const say=[0,0,0,0,0];
+    const adm=Math.max(1,Math.floor(rN/18));
+    for(let i=0;i<=rN;i+=adm){
+      const o=k.o+i*23, bx=D.v[o]/10, by=D.v[o+1]/10;
+      let ei=0,ed=1e9;
+      for(let j=0;j<5;j++){ const dd=Math.hypot(D.v[o+3+j*2]/10-bx,D.v[o+4+j*2]/10-by); if(dd<ed){ ed=dd; ei=j; } }
+      if(ed<=6) say[ei]++;
+    }
+    let bi=0,bd=-1;
+    for(let j=0;j<5;j++) if(say[j]>bd){ bd=say[j]; bi=j; }
+    if(bd<=0){ const fb=klipKare(D,k,0); let e=1e9; for(let j=0;j<5;j++){ const dd=Math.hypot(fb[3+j*2]-fb[0],fb[4+j*2]-fb[1]); if(dd<e){ e=dd; bi=j; } } }
+    offMap[si]=shooter;
+    if(bi!==si){
+      let h=(bizde&&b.carrier&&b.carrier!==shooter&&offSira.indexOf(b.carrier)>=0&&(typeof _tasiyabilir!=='function'||_tasiyabilir(b.carrier)))?b.carrier:null;
+      if(!h) h=offSira.find(p=>p!==shooter&&(p.role===0||p.role===1));
+      if(!h) h=offSira.find(p=>p!==shooter&&(typeof _tasiyabilir!=='function'||_tasiyabilir(p)));
+      if(!h) h=offSira.find(p=>p!==shooter);
+      offMap[bi]=h;
+    }
+    const kalan=offSira.filter(p=>offMap.indexOf(p)<0);
+    for(let j=0;j<5;j++) if(!offMap[j]) offMap[j]=kalan.shift();
+  }
   const defMap=defR.slice(0,5);
   const toks=offMap.concat(defMap);
   const T=(k.r!=null?k.r:(k.n-1))/D.fps;         /* elden çıkış anı (gerçek sn); klip sonrası ~1 sn şut sonrası hareket */

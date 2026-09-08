@@ -139,7 +139,14 @@ async function main() {
            (yani kimse topa yaklaşmıyor). Motorun kendi `S.chase` bayrağına BAKILMAZ —
            kapı ölçtüğü şeyi motordan bağımsız görmelidir. */
         const yaklasiyor = (oncekiUzak != null && enYakin < oncekiUzak - 0.5);
-        const sahipsiz = (!ucuyor && !b.carrier && enYakin > SAHIPSIZ && !yaklasiyor) ? 1 : 0;
+        /* FAZ 53: TOP HAKEMDEYSE SAHİPSİZ DEĞİLDİR. FAZ 51'den beri ölü topta topu hakem
+           taşır ve kenarda bekler; FAZ 53'te serbest atışta hakem DİZİLİM OTURANA KADAR
+           bekliyor (kullanıcı: "herkes faule yerleşmeden hakem topu oyuncuya atmasın").
+           Hakem `S.players` listesinde olmadığı için "en yakın oyuncu 5,7 m" çıkıyor ve
+           doğru davranış kusur sayılıyordu (ölçüldü: %1,02 → %2,12). `iz-kaydet` bu
+           ayrımı `hk` alanıyla zaten yapıyordu; kapı da aynı bayrağı okur. */
+        const hakemde = !!(S._hakemTop && S._hakemTop.aktif);
+        const sahipsiz = (!ucuyor && !b.carrier && !hakemde && enYakin > SAHIPSIZ && !yaklasiyor) ? 1 : 0;
         oncekiUzak = enYakin;
         window.__S.kare.push({
           m: b.mode, kosan, sahipsiz,
