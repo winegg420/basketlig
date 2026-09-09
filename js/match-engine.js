@@ -453,6 +453,8 @@ const _CIZ_MAX=12;           /* px (0,58 m) — jeton başına en büyük çizim
 const _CIZ_HIZ=3.5;          /* px/kare (60 fps) — kaymanın değişim hızı · FAZ 58 F: 2,0 → 3,5 (çift 1,3-2,6 sn
                                 sürüyor; kayma 9 px'e ancak 4-5 karede varıyordu, epizot bitmeden yetişmiyordu) */
 const _CIZ_GEC=6;            /* gevşetme geçişi */
+const _CIZ_AD=34;            /* px — bu mesafeden yakın komşusu olan jetonun İSMİ gizlenir (FAZ 62)
+                                jeton çapı 24 px; etiket ondan geniş olduğu için eşik 1,4 katı */
 function _cizAyristir(S,dt){
   const P=(S&&S.players)||[]; if(P.length<2) return;
   /* İstenen kayma GEVŞETME ile bulunur: üçlü kümelerde bir komşudan kaçarken ötekine
@@ -476,6 +478,27 @@ function _cizAyristir(S,dt){
     let ex=wx-(p._cizDx||0), ey=wy-(p._cizDy||0); const em=Math.hypot(ex,ey);
     if(em>adim&&em>0){ ex=ex/em*adim; ey=ey/em*adim; }
     p._cizDx=(p._cizDx||0)+ex; p._cizDy=(p._cizDy||0)+ey;
+  }
+  /* ── FAZ 62: KALABALIKTA İSİM ETİKETİ GİZLENİR ────────────────────────────────────────
+     Kullanıcının tarayıcısında ölçüldü (canlı site, 626 kare): karelerin %47,6'sında 3 m'lik
+     bir zincirde 6+ oyuncu, %19,3'ünde 8+ oyuncu var — bu GERÇEK basketboldur (klip kareleri
+     %84) ve konum ayrıştırması bu kadar büyük bir kümede yetmiyor (çizimde gerçek örtüşme
+     %10,2). Ama okunmazlığın büyük kısmı jetonlardan değil İSİM ETİKETLERİNDEN geliyor:
+     etiket jetondan geniştir, üç isim yan yana gelince harf yığınına dönüşüyor ve kullanıcı
+     "isimler okunmuyor" diyor. Kalabalıkta isim SAKLANIR — forma numarası zaten jetonun
+     üstünde ve okunur kalır. Eşik jeton çapının ~1,4 katıdır. */
+  for(const p of P){
+    if(!p.g) continue;
+    let en=1e9;
+    for(const q of P){ if(q===p||!q.g) continue;
+      const d=Math.hypot((q.x+(q._cizDx||0))-(p.x+(p._cizDx||0)),(q.y+(q._cizDy||0))-(p.y+(p._cizDy||0)));
+      if(d<en) en=d; }
+    const gizle=(en<_CIZ_AD);
+    if(p._adGizli!==gizle){
+      p._adGizli=gizle;
+      if(!p._nmEl){ try{ p._nmEl=p.g.querySelector('.tok-name'); }catch(e){} }
+      if(p._nmEl) p._nmEl.style.display=gizle?'none':'';
+    }
   }
 }
 function _tokSet(g,x,y,sc){
