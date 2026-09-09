@@ -372,13 +372,45 @@ function klipSut(sh,onShoot,onResult){
     if(bi!==si){
       let h=(bizde&&b.carrier&&b.carrier!==shooter&&offSira.indexOf(b.carrier)>=0&&(typeof _tasiyabilir!=='function'||_tasiyabilir(b.carrier)))?b.carrier:null;
       /* FAZ 54 A1: top yerdeyse ve bir hücumcu ona ZATEN koşuyorsa (ribaund/çalma takibi) klibin
-         tutucusu odur — ölçüldü: guard 10 m öteden çağrılınca top 4,18 sn sahipsiz kaldı. */
-      if(!h&&S.chase&&S.chase.tok&&S.chase.tok!==shooter&&offSira.indexOf(S.chase.tok)>=0) h=S.chase.tok;
+         tutucusu odur — ölçüldü: guard 10 m öteden çağrılınca top 4,18 sn sahipsiz kaldı.
+         ⚠ FAZ 59 · 3: takipçi TOPU TAŞIYABİLEN bir oyuncu olmalı. Sayı sonrası sokucu potaya
+         en yakın oyuncudur, yani çoğu zaman UZUNDUR; koşulsuz atandığında klibin ASIL
+         TAŞIYICI slotuna düşüyor ve topu orta sahaya PF getiriyordu (ölçüldü v102: orta
+         çizgiyi topla geçen 27 olayın 6'sı PF ve ALTISI DA klip jetonu, beşi sayı sonrası —
+         FAZ 47'de kullanıcının şikâyet ettiği "4-5 numaralar top sürüyor" kusurunun aynısı).
+         Uzun takipçi artık bu slota girmez; klibin kendi ilk pası (sokma) topu guard'a taşır.
+         Topun BEKLEMESİ ayrı bir mekanizmadır (`_bekle`, slot `hj`) ve etkilenmez. */
+      if(!h&&S.chase&&S.chase.tok&&S.chase.tok!==shooter&&offSira.indexOf(S.chase.tok)>=0
+         &&(typeof _tasiyabilir!=='function'||_tasiyabilir(S.chase.tok))) h=S.chase.tok;
       if(!h) h=offSira.find(p=>p!==shooter&&(p.role===0||p.role===1));
       if(!h) h=offSira.find(p=>p!==shooter&&(typeof _tasiyabilir!=='function'||_tasiyabilir(p)));
       if(!h) h=offSira.find(p=>p!==shooter);
       offMap[bi]=h;
     }
+    /* ── FAZ 59 · 3: ORTA SAHA TAŞIYICISI GUARD OLMALI ────────────────────────────────
+       "Asıl taşıyıcı" (`bi`) klibin TAMAMINDA topu en çok tutan slottur; topu ARKA
+       SAHADAN getiren slot çoğu zaman BAŞKASIDIR. Ölçüldü (v102, 640 sn): orta çizgiyi
+       topla geçen 27 olayın 6'sı PF, altısı da klip jetonu ve beşi sayı sonrası — yani
+       kusur `bi` seçiminde değil, ARADA KALAN slotların rol sırasına göre körlemesine
+       doldurulmasındaydı (FAZ 53'ün "kör takas yapma" dersinin ikinci yüzü).
+       Klibin kendi verisinden orta saha taşıyıcısı çıkarılır: topun kendi yarısından
+       karşıya geçtiği karede (klip koordinatında xf 47'yi aşağı doğru kesen kare) topa
+       en yakın hücumcu slotu. O slota boşsa bir GUARD (önce PG) konur. */
+    { const rN2=(k.r!=null?k.r:(k.n-1)); let mi=-1, prevx=null;
+      for(let i=0;i<=rN2;i++){
+        const o2=k.o+i*23, bx=D.v[o2]/10;
+        if(prevx!=null&&prevx>=47&&bx<47){
+          const by=D.v[o2+1]/10; let ei=-1,ed=1e9;
+          for(let j=0;j<5;j++){ const dd=Math.hypot(D.v[o2+3+j*2]/10-bx,D.v[o2+4+j*2]/10-by); if(dd<ed){ ed=dd; ei=j; } }
+          if(ed<=6) mi=ei;
+          break;
+        }
+        prevx=bx;
+      }
+      if(mi>=0&&!offMap[mi]){
+        const g=offSira.find(q=>offMap.indexOf(q)<0&&(q.role===0||q.role===1));
+        if(g) offMap[mi]=g;
+      } }
     const kalan=offSira.filter(p=>offMap.indexOf(p)<0);
     for(let j=0;j<5;j++) if(!offMap[j]) offMap[j]=kalan.shift();
   }
@@ -406,7 +438,14 @@ function klipSut(sh,onShoot,onResult){
   let _bekle=null;
   { const hj=(function(){ const fb=klipKare(D,k,tau0); let e=1e9,ei=0; for(let j=0;j<5;j++){ const dd=Math.hypot(fb[3+j*2]-fb[0],fb[4+j*2]-fb[1]); if(dd<e){ e=dd; ei=j; } } return ei; })();
     const tutucu=offMap[hj];
-    if(tutucu&&b.carrier!==tutucu&&(b.mode!=='held'||!b.carrier)){ _bekle={j:hj,tok:tutucu,t:0}; } }
+    if(tutucu&&b.carrier!==tutucu&&(b.mode!=='held'||!b.carrier)){
+      _bekle={j:hj,tok:tutucu,t:0};
+      /* FAZ 59 · 1c: bekleme dalı topu YERİNDE tutar (`klipTop` başında `if(K.bekle) return`).
+         Top o an 'pass' modundaysa ekranda "uçan ama kımıldamayan top" görünür — ölçüldü:
+         1. madde düzeltildikten sonra kalan TEK donma olayı (0,5 sn, (836,247)) buydu.
+         Bekleyen top sahipsizdir: mod 'loose'a alınır (FAZ 54 A1 sözleşmesi). */
+      if(b.mode==='pass'){ b.mode='loose'; b.target=null; b.vx=0; b.vy=0; b.onDone=null; }
+    } }
   S.klip={aktif:true,t:0,tau0,k,D,toks,offMap,defMap,offP,defP,offLeft,flip:sec.flip,rim,sh,shooter,bas0,ofs:bas0.map(v=>v.slice()),bOfs:bOfs.slice(),warp,T,TN,res:_res,onShoot,atildi:false,si,ix:sec.ix,bas,bekle:_bekle};
   if(_bekle){ const dd=Math.hypot(_bekle.tok.x-b.x,_bekle.tok.y-b.y); _bekle.tahmin=Math.min(2.6,dd/KLIP_BEKLE_V); }
   try{ mState._animRez=1800; }catch(e){}

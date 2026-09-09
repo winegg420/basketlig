@@ -99,6 +99,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/_lib/gercek-bantlar.json` | **TEK DOĞRULUK KAYNAĞI** — check araçlarının eşikleri. Elle DÜZENLEME; `cikar.js` üretir. |
 | `tools/_lib/gercek-bant.js` | Bant okuyucu + kapı yardımcısı (`al` / `ham` / `kapi` / `bas`). Yeni bir gerçekçilik kapısı yazarken eşiği BURADAN oku. |
 | `tools/faz58-check.js` | **FAZ 58 canlı sahne kusur denetçisi** (tarayıcısız) — `iz-kaydet` kaydını okur: rakibe giden pas · izinsiz saha dışı / `_oob` sızıntısı · tek kare jeton sıçraması · canlı ve ölü sahipsiz top · tek kare top sıçraması · ÇİZİLEN konumda iç içe jeton payı. Pencere **en az 600 sn**. Top sahipliği / sokma / klip kırpması değişince `iz-kaydet --secs=620` + bunu çalıştır. |
+| `tools/faz59-check.js` | **FAZ 59 uçan top + taşıyıcı denetçisi** (tarayıcısız) — `iz-kaydet` kaydını okur: donan uçuş (mod pass/shot ama konum sabit) · pas süresi p99 · rakibe giden pas · canlı sahipsiz top · orta çizgiyi TOPLA geçen rol · FAZ 58 gerileme satırları. Pencere **en az 600 sn**. ⚠ İvme ve savunma mesafesi kapıları burada DEĞİL `sahne-olcum.js`tedir (yuvarlama/tanım farkı). Top durum makinesi ya da klip slot eşlemesi değişince çalıştır. |
 | `tools/kilit-check.js` | **FAZ 51 kilitli sonuç (C1) etiket denetçisi** — maç başlat → yenile → Ana Panel kartı ve Maçlar butonu "⏩ Kilitli sonucu uygula" demeli, tıklayınca skorlu bildirim + fikstür işlenir, etiketler Başlat'a döner, ikinci tıklama gerçek maç. Buton etiketi / pendingMatch akışı değişince çalıştır. |
 | `tools/schema-check.js` | **`db/schema.sql` denetçisi** — sözdizimi (varsa gerçek PostgreSQL ayrıştırıcısı), lig kuralları, RLS, "kod tabanında bağlantı yok". |
 | `db/schema.sql` | **Çok oyunculu veri modeli** (Postgres/Supabase). Yalnız dosya — hiçbir bağlantı kurulmuyor. |
@@ -2006,3 +2007,55 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   başlamadan önceki kurulum kareleri (FAZ 44 §1 pivot ↔ slot takası) 3,5-3,8 m'lik meşru
   "sıçrama" gösterir ve dilimlenmezse aracın kendi yanlış pozitifini üretir (FAZ 47 dersi).
   `iz-kaydet` alanları 14-17: çizim ofseti (`_cizDx/_cizDy`) · klip bayrağı · ham `_oob`.
+
+- **ULAŞILAMAYAN HEDEFE PAS ATILMAZ — MESAFE, TOPUN VARABİLECEĞİ NOKTAYA ÖLÇÜLÜR
+  (FAZ 59 · 1b, kullanıcı: "top pass modunda donuyor, maçın %6,1'i):** ölçüldü (v102,
+  640 sn): top 7 kez, toplam 26,7 sn 'pass' modunda TEK PİKSEL kımıldamadan asılı kaldı;
+  pas süresi p99 7,02 sn, en uzunu 9,8 sn. Zincir: pasın hedefi ÇİZGİ DIŞINDAKİ sokucudur
+  (`_oob`) → `_ballStep`in 'pass' dalı uçuş noktasını saha içine KIRPAR (FAZ 54 A4) → top
+  hedefe ASLA varamaz → `b.t>=1` olunca `_ballHold(to)` çalışır, mesafe hâlâ 14 px'in
+  üstündedir ve `_ballPass` YENİDEN atılır → sonsuz döngü (`b.t` her seferinde sıfırlanır).
+  FAZ 55'te 'held' modunda kapattığımız "hayalet top"un pas hâli. `_ballHold` artık
+  mesafeyi hedefin KENDİSİNE değil topun ULAŞABİLECEĞİ (kırpılmış) noktaya ölçer; top
+  zaten oradaysa pas değil EL DEĞİŞİMİ olur. ⚠ Bu kusurun brifteki teşhisi
+  (`_inboundPass`in `b0.onDone`'ının silinmesi) YANLIŞTI: `_ballStep`in 'pass' dalı
+  `b.onDone`'ı HİÇ ÇAĞIRMAZ — onDone yalnız 'shot' dalında kullanılır, o geri çağrı
+  zaten hiçbir zaman çalışmıyordu. Kapı: `node tools/faz59-check.js olcum/iz-<etiket>.json`.
+- **KUSURUN KONUMLARI TEKRAR EDİYORSA KÖK NEDEN O SABİTTEDİR (FAZ 59, teşhisin anahtarı):**
+  donma noktaları rastgele değildi — (58,204) = CRT_X0+2 · (882,204) = CRT_X1−2 ·
+  (200,30)/(486,30) = CRT_Y0+2, yani hepsi SAHA SINIRI KIRPMASININ değeri. Bu tek gözlem
+  kök nedeni verdi. Bir kusuru teşhis ederken önce konum/süre değerlerinin koddaki hangi
+  sabitle birebir eşleştiğine bak; brifin gösterdiği satırı okumaktan hızlıdır.
+- **UÇAN TOP NÖBETÇİSİ (FAZ 59 · 1a, kalıcı ağ):** 'pass'/'shot' modundaki top TANIMI
+  GEREĞİ hareket eder; 0,35 sn boyunca hiç yer değiştirmiyorsa takılmıştır. `_ballStep`
+  başında (klip erken-dönüşünün ÜSTÜNDE, ki klip karelerini de görsün): fizik tarafında
+  top 'dead' olur ve sokma yeniden kurulur (`_sokmaYenidenKur`), şut geri çağrısı düşmez;
+  KLİP sürerken kurtarma YAPILMAZ (zararlıdır), yalnız mod 'loose'a çekilir. Sayaç
+  `S._donukN` — tetiklenirse yeni bir yol takılıyor demektir.
+- **KLİP BEKLERKEN TOP 'pass' MODUNDA KALAMAZ (FAZ 59 · 1c):** `klipTop`un bekleme dalı
+  (`if(K.bekle) return`, FAZ 54 A1) topu YERİNDE tutar; top o an 'pass' modundaysa ekranda
+  "uçan ama kımıldamayan top" görünür. Bekleyen top sahipsizdir — mod 'loose'a alınır.
+- **KLİP SLOT EŞLEMESİNDE "ASIL TAŞIYICI" ORTA SAHA TAŞIYICISI DEĞİLDİR (FAZ 59 · 3,
+  FAZ 53 dersinin ikinci yüzü):** `bi` klibin TAMAMINDA topu en çok tutan slottur; topu
+  ARKA SAHADAN getiren slot çoğu zaman BAŞKASIDIR ve kalan slotlar rol sırasına göre
+  körlemesine dolduruluyordu. Ölçüldü (v102): orta çizgiyi topla geçen 27 olayın 6'sı PF
+  ve ALTISI DA klip jetonu, beşi sayı sonrası — FAZ 47'de kullanıcının şikâyet ettiği
+  "4-5 numaralar top sürüyor"un aynısı. Artık klibin kendi verisinden ORTA SAHA
+  TAŞIYICISI çıkarılır (top klip koordinatında xf=47'yi aşağı doğru kestiği karede topa
+  en yakın hücumcu slotu) ve o slota boşsa GUARD konur. Ayrıca `S.chase.tok` asıl taşıyıcı
+  slotuna atanırken `_tasiyabilir` şartı arar — sayı sonrası sokucu potaya en yakın
+  oyuncudur, yani çoğu zaman uzundur. Ölçülen: guard payı %76 → %78 (gerçek %79),
+  forward %24 → %19 (gerçek %14), C %0 → %3 (gerçek %6).
+- **PG/SG AYRIMI GERÇEK VERİDE YOKTUR — KAPI GUARD PAYIDIR (FAZ 59 · 3):** klip kütüphanesi
+  oyuncuları `KLIP_SINIF` = G,G,F,F,C olarak sınıflar; hangi guard'ın PG hangisinin SG
+  olduğu kayıtta YOKTUR. "PG payı ≥ %50" gibi bir kapı bu yüzden veriden türetilemez
+  (FAZ 39 dersi). Ölçülebilir büyüklük `hareket-bant-check`in "yarı sahayı geçen rol"
+  satırıdır ve gerçek tabanı G %79 / F %14 / C %6'dır.
+- **`tools/faz59-check.js` — uçan top + taşıyıcı denetçisi:** `iz-kaydet` kaydını
+  tarayıcısız çözümler: donan uçuş (>0,35 sn) · pas süresi p99 · rakibe giden pas ·
+  canlı sahipsiz top · orta çizgiyi topla geçen rol · FAZ 58 gerileme satırları.
+  Pencere en az 600 sn. ⚠ İVME BU ARAÇTA ÖLÇÜLMEZ (FAZ 55 dersi): `iz-kaydet` konumu
+  0,1 px'e yuvarlar ve dt=16,7 ms'de bu ~12 m/sn² sahte ivme demektir; ivme satırı
+  `tools/sahne-olcum.js`ten (ham float, 0,2 sn pencereli) okunur. Aynı sebeple
+  "savunmadan >4 m" kapısı da `sahne-olcum`dadır — bu araçtaki geniş tanımlı sayı
+  (taşıyıcı olan HER kare) sistematik olarak yüksektir (aynı koşuda 27,2 ↔ 17,9).

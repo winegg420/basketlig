@@ -9853,3 +9853,95 @@ FAZ 57'de zaten ölçülerek elenmiş bir öneri tekrarlıyordu (D "ikinci takip
 kaynak gösterdiği yerde dört kaynak vardı (A). Buna karşılık **her maddede tarif edilen
 GÖZLEM doğruydu.** Kullanıcının gördüğü şey her zaman gerçektir; brifin gösterdiği satır
 her zaman kök neden değildir — önce ölç.
+
+---
+
+## 59. oturum — FAZ 59: uçan top `pass` modunda donuyordu (sürüm 103)
+
+**Kullanıcı brifi:** "Top `pass` modunda donuyor — 642 sn'de 10 olay, toplam 38,9 sn,
+maçın %6,1'i." + taşıyıcı rolleri, sahipsiz top, savunma mesafesi.
+
+Yeni araç **`tools/faz59-check.js`** (tarayıcısız, `iz-kaydet` kaydını okur). 640 sn'lik
+taban kaydı önce alındı ve brifin ana bulgusunu doğruladı. Tam tablo: `olcum/FAZ59-sonuc.txt`.
+
+### Sonuç (taban v102 → FAZ 59, 640 sn)
+| | v102 | FAZ 59 | kapı |
+|---|---|---|---|
+| **donan uçuş** | 7 olay · 26,7 sn (%4,2) | **0 olay · 0,0 sn** | 0 ✓ |
+| **pas süresi p99** | 7,02 sn (en uzun 9,8) | **1,24 sn** (en uzun 1,3) | ≤1,5 ✓ |
+| rakibe giden pas | 0 / 100 | 0 / 107 | 0 ✓ |
+| canlı sahipsiz top | 1,64 sn | **1,54 sn** | <2,0 ✓ |
+| orta çizgiyi geçen C | %0 | %3 | ≤%4 ✓ |
+| orta çizgiyi geçen PG | %37 | %42 (koşular %32-52) | ≥%50 ✗ |
+| savunmadan >4 m (sahne-olcum) | %19,5 · 2,61 m | **%17,9 · 2,48 m** | ≤%20 ✓ |
+
+**Motor matematiği DEĞİŞMEDİ:** `sim-node --n=500 --seed=42` → 93.1 - 87.9 · olay 268 ·
+`band.js` **c19928475859c7ff** · `measure.js` **51fa02b6e0a8194b** (hepsi birebir).
+
+### 1. Kök neden brifin gösterdiği satır DEĞİLDİ
+Brif `_inboundPass`in `b0.onDone`'ının silinmesini gösteriyordu. Bu olamazdı:
+**`_ballStep`in 'pass' dalı `onDone`'ı hiç çağırmaz** (onDone yalnız 'shot' dalında).
+
+Gerçek mekanizma donma NOKTALARINDAN okundu — konumlar rastgele değildi, hepsi saha
+sınırı kırpmasının değeriydi: (58,204)=CRT_X0+2 · (882,204)=CRT_X1−2 · (200,30)/(486,30)
+=CRT_Y0+2. Zincir: pasın hedefi **çizgi dışındaki sokucu** → `_ballStep` uçuş noktasını
+saha içine kırpar (FAZ 54 A4) → top hedefe **asla varamaz** → `b.t>=1` olunca
+`_ballHold(to)` → mesafe hâlâ >14 px → `_ballPass` yeniden → sonsuz döngü, `b.t` her
+seferinde sıfırlanır. FAZ 55'te 'held'de kapattığımız hayalet topun **pas hâli**.
+
+- **1b (asıl):** `_ballHold` mesafeyi hedefin kendisine değil topun ULAŞABİLECEĞİ
+  (kırpılmış) noktaya ölçer. Top zaten oradaysa pas değil el değişimi. → 7 olay → 1.
+- **1c:** kalan tek olay klip katmanındaydı — `klipTop` bekleme dalı topu yerinde tutar
+  ama mod 'pass' kalıyordu. Bekleyen top sahipsizdir, mod 'loose'a alınır.
+- **1a (kalıcı nöbetçi):** 'pass'/'shot' modunda 0,35 sn hiç yer değiştirmeyen top
+  takılmıştır; fizik tarafında 'dead' + `_sokmaYenidenKur`, klip sürerken yalnız mod
+  düzeltmesi. Nöbetçi klip erken-dönüşünün ÜSTÜNDE (klip karelerini de görür).
+  Sayaç `S._donukN` — tetiklenirse yeni bir yol takılıyor demektir. → **0 olay**.
+
+### 2. Taşıyıcı rolü — brifin teşhisi (C gerilemesi) yanlış, kusur PF'teydi
+C payı v102'de **%0** ölçüldü. Gerçek kusur: 27 geçişin 6'sı PF ve **altısı da klip
+jetonu**, beşi sayı sonrası. İki kaynak:
+- `S.chase.tok` klibin asıl taşıyıcı slotuna koşulsuz atanıyordu (FAZ 54 A1); sayı
+  sonrası sokucu potaya en yakın oyuncudur, yani çoğu zaman uzundur. `_tasiyabilir` şartı.
+- **Asıl kusur:** "asıl taşıyıcı" (`bi`) klibin TAMAMINDA topu en çok tutan slottur; topu
+  ARKA SAHADAN getiren slot çoğu zaman başkasıdır ve rol sırasına göre körlemesine
+  dolduruluyordu (FAZ 53'ün "kör takas yapma" dersinin ikinci yüzü). Artık klibin kendi
+  verisinden **orta saha taşıyıcısı** çıkarılır (top xf=47'yi aşağı kestiği karede topa en
+  yakın hücumcu slotu) ve o slota guard konur.
+
+⚠ Brifin "PG ≥ %50" kapısı **gerçek veriden türetilemez**: klip kütüphanesi oyuncuları
+`KLIP_SINIF` = G,G,F,F,C olarak sınıflar, PG/SG ayrımı kayıtta YOKTUR. Ölçülebilir
+büyüklük guard payıdır: taban G %76 / F %24 / C %0 → FAZ 59 **G %78 / F %19 / C %3**,
+gerçek **G %79 / F %14 / C %6** — üçünde de gerçeğe yaklaşıldı.
+
+### 3. Madde 2 ve 4 — ölçüldü, ek kod gerekmedi
+- Sahipsiz top: brifin 3,6 sn'lik olayları HAM sayaçtır (çemberden inen top + tören
+  dahil). Canlı top 1,64 → 1,54 sn, kapı zaten geçiyor. **Brifin "iki takipçi" önerisi
+  EKLENMEDİ** — FAZ 57'de ölçülerek elenmişti, tekrar denenmedi.
+- Savunma mesafesi: brifin %21,3'ü `sahne-olcum` satırıdır ve **HEAD'de de %19,5 ile
+  geçiyordu** — gerileme yoktu. FAZ 59: %17,9 · 2,48 m (gerçek %15,6 · 2,43).
+
+### Kapılar
+- `visual-check` ✓ (üç kez) · `anlatim-check` 31/31 ✓ · `balon-check` ✓ · `isin-oyuncu` 0 ✓
+- `sahne-olcum`: HEAD **10** düşen ↔ FAZ 59 **8** düşen (pas mesafesi 4,89 ✗ → 5,22 ✓ ·
+  ortalama hız 2,02 ✗ → 1,97 ✓ · savunmadan >4 m %19,5 → %17,9)
+- `hareket-bant-check`: ikisi de 5 bant dışı; pas/pozisyon L1 0,459 ✗ → **0,334 ✓**,
+  savunmacı 0,158 → 0,137, arka saha 0,270 → 0,175, top elde %70,6 → %74,2
+- `sahne-check`: HEAD 4 düşen ↔ FAZ 59 4 düşen (aynı dördü)
+- `surum-check --yaz` → **sürüm 103**
+
+### Açık kalan (dürüst)
+1. PG/SG ayrımı gerçek veriden türetilemiyor; guard payı %78 ↔ gerçek %79 ile hedefte.
+2. `sahne-olcum` kare-kare ivme %1,10 (kapı %0,6) ve rejim sınırı %2,88 (kapı %2) —
+   HEAD'de de düşüyor, aşanların %57'si klip karesi (brif de "şimdilik dokunma" diyor).
+3. `hareket-bant-check` yayılım x/y ve topu tutma süresi bant dışı (HEAD'de de).
+4. "şut anında duran" dört koşuda 0,411 / 0,331 / 0,382 / 0,645 — n≈50, CLAUDE.md'de
+   belgeli gürültü; sistematik kayma yok.
+
+### Bu turun dersi
+Brifin dört maddesinden **üçünün teşhisi yanlıştı** (1'de gösterilen satır hiç
+çalışmıyordu; 3'te "C gerilemesi" yoktu, kusur PF'teydi; 4'te gerileme yoktu, kapı
+HEAD'de de geçiyordu) ve biri zaten geçen bir kapıydı (2). Ama **1. maddenin GÖZLEMİ
+tamamen doğruydu ve bu turun en büyük kusuruydu.** Donma noktalarının rastgele
+olmaması kök nedeni tek başına verdi: bir kusurun konumları tekrar ediyorsa, o
+konumların KODDA hangi sabitten geldiğini ara.

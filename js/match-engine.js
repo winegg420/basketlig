@@ -1734,7 +1734,22 @@ function _ballHold(p,noDrib){
      Süre artık _ballPass in doğal hesabına bırakıldı: d/520, en çok 0,90 sn. */
   /* FAZ 58 A: rakibe pas kapısı ARTIK `_ballPass` içinde (tek nokta) — buradan geçen
      uzak hedefli el değişimleri de oraya düşer ve gerekirse pas yerine el değişimi olur. */
-  if(d>14){ _ballPass(p,Math.max(0.12,Math.min(0.90,d/520))); return; }   /* FAZ 47: 14-30 px anlık el değişimi de kısa pas (tek karelik sıçrama yok) */
+  /* ── FAZ 59 · 1b: ULAŞILAMAYAN HEDEFE PAS ATILMAZ ──────────────────────────────────────
+     Ölçüldü (v102, 640 sn): top 7 kez, toplam 26,7 sn (maçın %4,2'si) 'pass' modunda TEK
+     PİKSEL kımıldamadan asılı kaldı; pas süresi p99 7,02 sn, en uzunu 9,8 sn. Donma
+     noktaları rastgele DEĞİLDİ — hepsi saha sınırı kırpmasının değeriydi: (58,204) =
+     CRT_X0+2 · (882,204) = CRT_X1-2 · (200,30)/(486,30) = CRT_Y0+2.
+     Mekanizma: hedef, ÇİZGİ DIŞINDAKİ sokucudur (`_oob`). `_ballStep`in 'pass' dalı uçuş
+     noktasını saha içine kırpar (FAZ 54 A4), yani top hedefe ASLA varamaz; `b.t>=1` olunca
+     `_ballHold(to)` çalışır, mesafe hâlâ 14 px'in üstündedir ve yeniden `_ballPass` atılır.
+     Sonsuz döngü: mod 'pass', konum sabit, süre sınırsız. FAZ 55'te 'held' modunda
+     kapattığımız "hayalet top"un pas hâli.
+     Kural: mesafe, hedefin KENDİSİNE değil topun ULAŞABİLECEĞİ noktaya (kırpılmış hedef)
+     ölçülür. Top zaten oradaysa pas değil EL DEĞİŞİMİ olur — `_ballTut` mesafe sınamaz ve
+     'held' dalı topu çizginin üstünde tutar (sokucu topu çizgide tutar, doğru davranış). */
+  const _ux=Math.max(CRT_X0+2,Math.min(CRT_X1-2,p.x)), _uy=Math.max(CRT_Y0+2,Math.min(CRT_Y1-2,p.y));
+  const _du=Math.hypot(b.x-_ux,b.y-_uy);
+  if(d>14&&_du>14){ _ballPass(p,Math.max(0.12,Math.min(0.90,d/520))); return; }   /* FAZ 47: 14-30 px anlık el değişimi de kısa pas (tek karelik sıçrama yok) */
   _ballTut(p,noDrib);
 }
 /** FAZ 54 A1: TOPU ELE AL — mesafe kontrolü YAPMAZ (`_ballHold`'un d>14 dalı pas üretir ve
@@ -1964,9 +1979,49 @@ function _topAlinabilir(p,b){
   if(b.h<=_TOP_TUTMA_H&&b.vh<=0) return true;
   return b.h<=4&&Math.abs(b.vh)<20;
 }
+/** FAZ 59 · 1a: takılan uçuşu kurtar — bekleyen sokma varsa sokucuya, yoksa hücum
+    takımından topa en yakına. Nöbetçi 1b'den sonra HİÇ tetiklenmemeli; tetiklenirse
+    başka bir yol takılıyor demektir ve `S._donukN` sayacı onu görünür kılar. */
+function _sokmaYenidenKur(){
+  try{
+    const S=mState._sim; if(!S) return; const b=S.ball;
+    const inb=(S.inb&&S.inb.tok&&isFinite(S.inb.tok.x))?S.inb.tok:null;
+    if(inb){ _chase(inb,()=>{ try{ _ballTut(inb,true); S.ball.noDrib=true; }catch(e){} },2.4,_URG.KOS); return; }
+    const havuz=(S.offP&&S.offP.length)?S.offP:(S.players||[]);
+    let en=null,ed=1e9;
+    havuz.forEach(q=>{ if(!q||!isFinite(q.x)) return; const d=Math.hypot(q.x-b.x,q.y-b.y); if(d<ed){ ed=d; en=q; } });
+    if(en) _chase(en,()=>{ try{ _ballTut(en); }catch(e){} },2.0,_URG.SPRINT);
+  }catch(e){}
+}
 function _ballStep(dt){
   const S=mState._sim, b=S.ball;
-  if(S._klipTop) return;   /* FAZ 50: top gerçek klip yörüngesinde (js/sahne-klip.js) */
+  /* ── FAZ 59 · 1a: UÇAN TOP DONDUYSA TAKILMIŞTIR (kalıcı güvenlik ağı) ─────────────────
+     'pass'/'shot' modunda top TANIMI GEREĞİ hareket eder; 0,35 sn boyunca hiç yer
+     değiştirmiyorsa bir döngüye girmiştir (1b'nin kapattığı sonsuz yeniden-pas gibi).
+     Ölçüldü v102: 640 sn'de 7 olay / 26,7 sn. Bu ağ 1b'den SONRA da kalır — tetiklenirse
+     yeni bir yol takılıyor demektir. */
+  if(b.mode==='pass'||b.mode==='shot'){
+    const _hr=Math.hypot(b.x-(b._sonX!=null?b._sonX:b.x),b.y-(b._sonY!=null?b._sonY:b.y));
+    b._durgunT=(_hr<0.5)?((b._durgunT||0)+dt):0;
+    b._sonX=b.x; b._sonY=b.y;
+    if(b._durgunT>0.35){
+      b._durgunT=0;
+      S._donukN=(S._donukN|0)+1;
+      if(S._klipTop){
+        /* Klip topu sürüyor (`js/sahne-klip.js`): kurtarma GEREKMEZ ve zararlıdır — yalnız
+           mod düzeltilir. Klip devrederken ('atildi') ya da bekleme dalında top kısa süre
+           'pass' modunda yerinde kalabiliyordu; sahipsiz topun modu 'loose'tur (FAZ 54 A1). */
+        b.mode='loose'; b.target=null; b.vx=b.vy=b.vh=0;
+      } else {
+        const _cb=(b.mode==='shot')?b.onDone:null; b.onDone=null;
+        b.mode='dead'; b.carrier=null; b.target=null; b.vx=b.vy=b.vh=0; b.h=0; b.t=0; b._deadAt=S.time;
+        if(_cb){ try{ _cb(); }catch(e){} }   /* şut geri çağrısı düşmesin (ribaunt/anlatım senkronu) */
+        _sokmaYenidenKur();
+        return;
+      }
+    }
+  } else { b._durgunT=0; b._sonX=null; b._sonY=null; }
+  if(S._klipTop) return;   /* FAZ 50: top gerçek klip yörüngesinde (js/sahne-klip.js) — nöbetçi YUKARIDA, klip karelerini de görür */
   /* FAZ 55 B1: 'held' ⇒ taşıyıcı GEÇERLİ bir oyuncu (ya da ölü topu yöneten hakem). */
   if(b.mode==='held'&&b.carrier&&!(S._hakemTop&&S._hakemTop.aktif)&&(S.players||[]).indexOf(b.carrier)<0){
     b.mode='dead'; b.carrier=null; b.vx=b.vy=b.vh=0; b.t=0; b._deadAt=S.time; S._hayaletN=(S._hayaletN|0)+1;
