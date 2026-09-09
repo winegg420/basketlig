@@ -1901,6 +1901,24 @@ function _ziRenk(hex){
 }
 function _ballPass(to,dur,bounce){
   const b=_ball(); if(!to) return;
+  /* ── FAZ 63: "HAVADAN PAS" — TAŞIYICI TOPUN YANINDA DEĞİLSE PAS ATILAMAZ ───────────
+     Kullanıcının tarayıcısından canlı yakalandı (v108, t=357,1): top 'held' modunda ve
+     `b.carrier` a/SF, ama a/SF topa 10,3 METRE uzakta — buna rağmen o "taşıyıcıdan" hakeme
+     pas atıldı. Ekranda görünen: top boşlukta duruyor ve kimse dokunmadan uçuyor
+     (kullanıcı: "abuk sabuk paslar atılıyor, havadan pas geliyor").
+     Taşıyıcı topa yakın değilse top GERÇEKTE onun elinde değildir; 'held' bayrağına
+     güvenilmez. Bu durum sahipsiz top gibi işlenir: `_pasKorumasi` topu önce gerçekten
+     yakında olan (ve pasın hedefiyle AYNI TAKIMDAN — FAZ 58) bir oyuncuya aldırır, pas
+     ondan sonra çıkar. Klip oynatırken top klibin yörüngesindedir ve bu kapıdan muaftır. */
+  try{
+    const S=mState._sim;
+    if(b.mode==='held'&&b.carrier&&isFinite(b.carrier.x)&&!(S&&S._klipTop)
+       &&Math.hypot(b.carrier.x-b.x,b.carrier.y-b.y)>2.0*29.5429){
+      if(S) S._havadanN=(S._havadanN|0)+1;
+      b.carrier=null; b.mode='loose';
+      if(_pasKorumasi(to,dur,bounce)) return;
+    }
+  }catch(e){}
   if(b.mode!=='held'&&_pasKorumasi(to,dur,bounce)) return;   /* FAZ 54 A1/A3: sahipsiz/uçan toptan pas atılamaz */
   /* ── FAZ 58 A: TOP RAKİBE PASLANMAZ — TEK KAPI ────────────────────────────────────────
      Kullanıcının gördüğü "oyuncular rakip takıma pas atıyor" kusuru (ölçüldü v101: 620 sn'de
