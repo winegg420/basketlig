@@ -1794,6 +1794,29 @@ function _ballHold(p,noDrib){
 function _ballTut(p,noDrib){
   const b=_ball(); if(!p) return;
   const S=mState._sim;
+  /* ── FAZ 64: UZAKTAN TOP ALINMAZ — ÖNCE OYUNCU GELİR ──────────────────────────────
+     Nedensellik denetçisi yakaladı: `loose → held` geçişinde taşıyıcı topa 5,3 METRE
+     uzakta (t=268,0, çalma anı). Top sonra ona doğru `_TOP_YAKLAS` hızıyla süzülüyor —
+     ekranda "top havada ona gidiyor" (kullanıcının "havadan pas" şikâyetinin ikinci
+     kaynağı). Basketbolda topu alan oyuncu TOPUN YANINDADIR.
+     Oyuncu 1,5 m'den uzaksa sahiplik verilmez; onun yerine takip kurulur ve top
+     yerinde bekler. ⚠ SONSUZ DÖNGÜ KORUMASI: takibin geri çağrısı yine buraya gelir;
+     aynı oyuncu için 0,8 sn içinde ikinci kez uzaktan istenirse ZORLA verilir (takip
+     zaman aşımına uğramıştır, top sonsuza dek yerde kalmasın). */
+  try{
+    if(S&&isFinite(p.x)&&(b.mode==='loose'||b.mode==='dead')&&!p.ghost&&!S._klipTop){
+      const d=Math.hypot(p.x-b.x,p.y-b.y);
+      if(d>1.5*29.5429){
+        const z=(b._uzakIstek&&b._uzakIstek.p===p&&(S.time-b._uzakIstek.t)<0.8);
+        if(!z){
+          b._uzakIstek={p,t:S.time};
+          S._uzakTutN=(S._uzakTutN|0)+1;
+          if(!S.chase||S.chase.tok!==p) _chase(p,()=>{ try{ _ballTut(p,noDrib); }catch(e){} },1.6,_URG.SPRINT);
+          return;
+        }
+      }
+    }
+  }catch(e){}
   /* ── FAZ 57 · 3b: 'rim'/'shot' MODUNDAN ÇIKIŞ YALNIZ 'loose'A ───────────────────────
      Ölçüldü (v100): `rim>held` 2 olay — top çemberden DOĞRUDAN bir oyuncunun eline geçiyor,
      arada sahipsiz kare yok; ekranda ribaunt anı hiç görünmüyor. FAZ 54'te kapatılan
@@ -2076,7 +2099,25 @@ function _ballStep(dt){
   } else { b._durgunT=0; b._sonX=null; b._sonY=null; }
   if(S._klipTop) return;   /* FAZ 50: top gerçek klip yörüngesinde (js/sahne-klip.js) — nöbetçi YUKARIDA, klip karelerini de görür */
   /* FAZ 55 B1: 'held' ⇒ taşıyıcı GEÇERLİ bir oyuncu (ya da ölü topu yöneten hakem). */
-  if(b.mode==='held'&&b.carrier&&!(S._hakemTop&&S._hakemTop.aktif)&&(S.players||[]).indexOf(b.carrier)<0){
+  /* ── FAZ 64: HAKEM TAŞIYICISI HAYALET DEĞİLDİR — TOP ÖLÜ YAPILMAZ ────────────────
+     Ölçüldü: ağın tetiklendiği 4 vakanın DÖRDÜNDE de taşıyıcı HAKEM'di (`kim:"HAKEM"`),
+     yani tören kapanırken top hakemin elinde/uçuşunda kalmıştı. Ağ topu 'dead' yapıyor,
+     oyun duruyor ve sonraki kurtarmalar zincirleniyordu.
+     ⚠ ÖNCE YUKARI AKIŞTA ÖNLEMEK DENENDİ VE ÖLÇÜLEREK ELENDİ: tören kapanırken hakeme
+     UÇAN pası iptal etmek topu rastgele düşürüyor — toplam önem 53 → 87, top hız kırpma
+     22 → 49, kurtarma 4 → 5. Doğru yer AĞIN KENDİSİDİR: hakemin elindeki top ölü değil
+     SERBEST bırakılır; en yakın oyuncu alır, oyun durmaz. Hakem taşıyıcısı ayrıca
+     "hayalet" sayılmaz — sayaç yalnız gerçekten geçersiz taşıyıcıyı saysın. */
+  if(b.mode==='held'&&b.carrier&&b.carrier.ghost&&!(S._hakemTop&&S._hakemTop.aktif)){
+    b.carrier=null; b.mode='loose'; b.vx=b.vy=0; b.vh=0; b.h=Math.max(b.h||0,6); b.t=0;
+    S._hakemBosN=(S._hakemBosN|0)+1;
+  }
+  else if(b.mode==='held'&&b.carrier&&!(S._hakemTop&&S._hakemTop.aktif)&&(S.players||[]).indexOf(b.carrier)<0){
+    /* FAZ 64 teşhis: hayaletin KİMLİĞİ kaydedilir — ağın kaç kez tetiklendiğini bilmek
+       yetmiyor, hangi yolun geçersiz taşıyıcı ürettiğini de bilmek gerek. */
+    try{ (S._hayaletKim=S._hayaletKim||[]).push({t:+S.time.toFixed(1),tip:S.curType||'-',
+      kim:(b.carrier&&b.carrier.pl)?((b.carrier.team||'?')+'/'+(b.carrier.pl.poz||'?')):(b.carrier&&b.carrier.ghost?'HAKEM':'?'),
+      hk:(S._hakemTop&&S._hakemTop.aktif)?1:0}); if(S._hayaletKim.length>40) S._hayaletKim.shift(); }catch(e){}
     b.mode='dead'; b.carrier=null; b.vx=b.vy=b.vh=0; b.t=0; b._deadAt=S.time; S._hayaletN=(S._hayaletN|0)+1;
   }
   const px=b.x, py=b.y;

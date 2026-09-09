@@ -956,10 +956,14 @@ function oamFtToplayici(shooter,offP,defP,rim,made){
     if(!S.hakem) oamHakemKur(S); if(!S.hakem) return;
     const b=S.ball; const ref=oamHakemYakin(S,b);
     const offLeft=(S.offSide!=null)?S.offSide:(b.x<COURT_MID); const hx=offLeft?(CRT_X0-16):(CRT_X1+16);
-    oamTopHakeme(S,ref);                                          /* FAZ 51: top EN YAKIN hakeme geçer (yuvarlanma yok) */
-    /* FAZ 53 (kullanıcı: "herkes faule yerleşmeden hakem topu oyuncuya atmasın"):
-       kadrolar da saklanır — hakem topu ancak kulvarlar dolunca verir. */
+    /* ── FAZ 64: BAYRAK PASTAN ÖNCE KURULUR ───────────────────────────────────────────
+       `oamTopHakeme` topu 30 px'ten yakınsa ANINDA hakemin eline verir (`_ballHold(ref)`).
+       Bayrak sonra kurulduğu için aradaki karede `_ballStep`'in hayalet ağı devreye giriyor
+       (taşıyıcı `S.players` içinde değil, `_hakemTop.aktif` de henüz false) ve topu ÖLÜ
+       yapıp töreni bozuyordu. Nedensellik denetçisi bunu "hayalet held ×4" olarak
+       yakaladı — hepsi tek karelik, hepsi free/foul anında. Bayrak önce kurulur. */
     S._hakemTop={aktif:true,shooter,t:0,hakem:ref,hedef:{x:hx,y:250-46},inb:false,offP,defP};
+    oamTopHakeme(S,ref);                                          /* FAZ 51: top EN YAKIN hakeme geçer (yuvarlanma yok) */
   }catch(e){}
 }
 /** FAZ 51: ÖLÜ TOP SOKMASI (faul · taç · ihlal · hücum faulü · 24 sn) — top ilgili hakeme geçer, hakem
@@ -974,8 +978,8 @@ function oamOluTopHakem(inb,_eski){
     const dip=(spot.x<=CRT_X0||spot.x>=CRT_X1);
     const ref=oamHakemYakin(S,b);                                 /* topa en yakın hakem yönetir (uzaktan lob olmasın) */
     const hedef=dip?{x:spot.x,y:spot.y+(spot.y<250?40:-40)}:{x:spot.x+(spot.x<COURT_MID?40:-40),y:spot.y};
+    S._hakemTop={aktif:true,shooter:inb,t:0,hakem:ref,hedef,spot,inb:true};   /* FAZ 64: bayrak PASTAN ÖNCE (hayalet ağı töreni bozmasın) */
     oamTopHakeme(S,ref);
-    S._hakemTop={aktif:true,shooter:inb,t:0,hakem:ref,hedef,spot,inb:true};
     inb.tx=spot.x; inb.ty=spot.y; inb._wp=null; _setUrg(inb,_URG.KOS);
   }catch(e){ try{ _eski(inb); }catch(_){} }
 }
@@ -1175,7 +1179,20 @@ function oamTorenTick(S,O,dt){
     /* FAZ 55 B1: taşıyıcı HAKEMİN KENDİSİ olduğu için `!S.ball.carrier` şartı tutmuyor, pas hiç
        atılmıyor ve top hakemin elinde kalıyordu (ölçüldü: 5,88 sn "hayalet held", taç sonrası).
        Şart artık "taşıyıcı bir OYUNCU değilse" — hakemdeki top bekleyen oyuncuya verilir. */
-    try{ const S=oamS(); const HT=S&&S._hakemTop; if(HT&&HT.aktif){ HT.aktif=false; const sh=HT.shooter; const oyuncuda=(S.ball.carrier&&(S.players||[]).indexOf(S.ball.carrier)>=0); if(sh&&isFinite(sh.x)&&!oyuncuda){ const dd=Math.hypot(sh.x-S.ball.x,sh.y-S.ball.y); _ballPass(sh,Math.max(0.3,Math.min(0.9,dd/330))); } } }catch(e){}
+    /* ── FAZ 64: TÖREN KAPANIRKEN TOP HAKEMDE KALMAMALI ──────────────────────────────
+       Nedensellik denetçisi "hayalet held ×4" buldu; teşhis sayacına kimlik eklenince
+       hepsinin `kim:"HAKEM", hk:0` olduğu görüldü — yani tören kapatılıyor ama top
+       hakemin elinde kalıyor ve bir sonraki karede `_ballStep`'in hayalet ağı topu ÖLÜ
+       yapıyor. Eski kod topu yalnız `sh` (bekleyen oyuncu) geçerliyse gönderiyordu;
+       `sh` yoksa top hakemde kalıyordu. Artık her durumda hakemden çıkar: hedef varsa
+       pas, yoksa top HAKEMİN ÖNÜNE serbest bırakılır ve en yakın oyuncu toplar. */
+    try{ const S=oamS(); const HT=S&&S._hakemTop; if(HT&&HT.aktif){ HT.aktif=false;
+      const sh=HT.shooter; const b=S.ball;
+      const oyuncuda=(b.carrier&&(S.players||[]).indexOf(b.carrier)>=0);
+      if(!oyuncuda){
+        if(sh&&isFinite(sh.x)){ const dd=Math.hypot(sh.x-b.x,sh.y-b.y); _ballPass(sh,Math.max(0.3,Math.min(0.9,dd/330))); }
+        if(b.carrier&&(S.players||[]).indexOf(b.carrier)<0){ b.carrier=null; b.mode='loose'; b.vx=b.vy=0; b.vh=0; b.h=Math.max(b.h||0,6); }
+      } } }catch(e){}
     const t=ev&&ev.type;
     const ftMi=!!(ev&&ev.shots&&ev.shots.length&&ev.shots[0].kind==='ft');
     try{ const S=oamS(); if(OAM_ACIK&&S&&S.players&&S.players.length>=10){ if(TOREN_ON.indexOf(t)>=0) oamTorenKur(S,t,ev); else if(ftMi) oamTorenKur(S,'free',ev); } }catch(e){}
