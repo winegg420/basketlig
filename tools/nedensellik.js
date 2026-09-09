@@ -77,9 +77,15 @@ const SEBEP = ['steal', 'reb', 'tac', 'ihlal', 'hucumFaulu', 'ihlal24', 'foul', 
          yoksa denetçi her maçın açılışını "rakibe pas" diye sayar (FAZ 65'te ölçüldü:
          kapı kaldırılıp tap uçar hâle gelince tam olarak bu oldu). */
       if (K[f].t <= 3 || K[f].tip === 'start' || K[oncekiF].tip === 'start') { onceki = c; oncekiF = f; continue; }
-      if (!sebepVar) {
-        /* N1: top hiçbir ara evre olmadan el değiştirdi */
-        olay.push({ tur: 'N1', t: K[f].t, s: `t=${K[f].t.toFixed(1)} ${AD(K[f], onceki)} → ${AD(K[f], c)} · arada HİÇBİR evre yok (${bosluk} kare) [${K[f].tip}]${ayniTakim ? '' : ' · TAKIM DEĞİŞTİ'}` });
+      /* ⚠ ELDEN ELE VERİŞ MEŞRUDUR: basketbolda iki oyuncu yan yanayken top pas evresi
+         OLMADAN el değiştirir (dribble hand-off). Kural mesafededir — bitişik olmayan
+         iki oyuncu arasında ara evresiz geçiş İMKÂNSIZDIR. Ölçüldü: FAZ 64'te yakalanan
+         gerçek kusurlarda oyuncular 2,6-2,8 m aradaydı; kalan iki olayda 0,6-1,1 m,
+         yani gerçek bir veriş. Eşik 1,5 m. */
+      const _cd = Math.hypot(K[f].p[onceki][0] - K[f].p[c][0], K[f].p[onceki][1] - K[f].p[c][1]) / PX_M;
+      if (!sebepVar && _cd > 1.5) {
+        /* N1: top hiçbir ara evre olmadan UZAKTAN el değiştirdi */
+        olay.push({ tur: 'N1', t: K[f].t, s: `t=${K[f].t.toFixed(1)} ${AD(K[f], onceki)} → ${AD(K[f], c)} · arada HİÇBİR evre yok, oyuncular ${_cd.toFixed(1)} m ayrı (${bosluk} kare) [${K[f].tip}]${ayniTakim ? '' : ' · TAKIM DEĞİŞTİ'}` });
       } else if (!ayniTakim) {
         /* N2: takım değişimi — sebebi ya serbest top (ribaunt/çalma) ya ölü top olmalı.
            Yalnız PAS varsa bu bir "rakibe pas"tır: meşru sebebi yoktur. */

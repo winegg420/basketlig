@@ -138,7 +138,8 @@ async function main() {
             os2: (S.offP && S.offP[0]) ? S.offP[0].team : '?',
             hkim: S._hayaletKim ? S._hayaletKim.slice(-3) : null,
             rkim: S._rakipPasKim ? S._rakipPasKim.slice(-4) : null,
-            kkim: S._klempKim ? S._klempKim.slice(-12) : null,              /* FAZ 51: top hakemde (ölü top) — sahipsiz sayılmaz */                                 /* FAZ 51: _simCatchUp (yetişme ışınlaması) sayacı */
+            kkim: S._klempKim ? S._klempKim.slice(-12) : null,
+            ukim: S._kurtarKim ? S._kurtarKim.slice(-8) : null,              /* FAZ 51: top hakemde (ölü top) — sahipsiz sayılmaz */                                 /* FAZ 51: _simCatchUp (yetişme ışınlaması) sayacı */
             oam: (S.oam && S.oam.aktif) ? S.oam.faz : '-',   /* FAZ 48: OAM fazı ('-' = eski kod) */
             p: (S.players || []).map(p => [
               +p.x.toFixed(1), +p.y.toFixed(1),

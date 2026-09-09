@@ -868,6 +868,12 @@ function _sahipsizTopTick(S,dt){
     }
     if(ed<=_SAHIPSIZ_PX||S.chase){ S._sahipsizT=0; return; }
     S._sahipsizT=(S._sahipsizT||0)+dt;
+    /* ⚠ FAZ 66: BEKÇİYİ SERBEST ATIŞ TÖRENİNDE SUSTURMAK DENENDİ VE ÖLÇÜLEREK ELENDİ.
+       Teşhis "üç kurtarmanın üçü de serbest atışlar arasında, bekçi `_ftToplayici`nin
+       önüne geçiyor" diyordu; eşik 0,45 → 2,5 sn yapılınca kurtarmalar KALKMADI, yalnız
+       1,8 saniye GECİKTİ (t=56,3 → 58,1) ve toplam önem 10 → 29'a çıktı (donan uçuş 1,
+       rakibe pas kapısı 1, N6 8). Yani koreografi topu ZATEN toplamıyor; bekçi gereksiz
+       değil, o akışın çalışan parçası. Erken müdahale sanılan şey aslında tek müdahaleydi. */
     if(S._sahipsizT>=_SAHIPSIZ_SN){ S._sahipsizT=0; _ballKurtar(); }
   }catch(e){}
 }
@@ -1759,6 +1765,12 @@ function _ballKurtar(){
     }
     else if(en){ if(Math.hypot(en.x-b.x,en.y-b.y)<=_TOP_AL_PX*1.5){ _ballTut(en); } else { _setUrg(en,_URG.SPRINT); _chase(en,null,1.5); } }
     S._kurtarN=(S._kurtarN|0)+1;   /* teşhis sayacı — ölçüm araçları okur */
+    /* FAZ 66 teşhis: bekçinin devreye girmesi, topun SAHİPSİZ KALDIĞININ kanıtıdır —
+       hangi bağlamda kaldığını bilmeden kök neden bulunamaz. */
+    try{ (S._kurtarKim=S._kurtarKim||[]).push({t:+S.time.toFixed(1),tip:S.curType||'-',mod:b.mode,
+      bos:+((S._bosT2||0)).toFixed(2), enYakin:+(ed/29.5429).toFixed(1),
+      kime:en?((en.team||'?')+'/'+((en.pl&&en.pl.poz)||'?')):'-',
+      inb:S.inb?1:0, klip:S._klipTop?1:0}); if(S._kurtarKim.length>20) S._kurtarKim.shift(); }catch(e){}
   }catch(e){}
 }
 function _ballHold(p,noDrib){
