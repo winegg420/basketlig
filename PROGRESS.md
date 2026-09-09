@@ -10075,3 +10075,71 @@ karede 5,9 m'lik gerçek aralık yumak gibi görünüyor; tam boy karede ve say�
 gerçek kusur (serbest atış töreninin kendini iptali · üç saniyenin ölü topta işlemesi ·
 jeton çapı) dışında, avcının ürettiği adayların tamamı ya tanım hatası ya da gerçek
 basketboldu.
+
+---
+
+## 61. oturum — FAZ 61: KAMERA. Kusur simülasyonda değil GÖRÜNTÜDEYDİ (sürüm 105)
+
+**Kullanıcı:** "yazdığın bot işe yaramamış. maçı canlı izlesen 2 dk'da 100 tane hata
+görürsün ama göremiyorsun. neden?"
+
+Doğru soruydu. Üç sebep vardı ve üçü de yöntem hatasıydı:
+1. **İzlemiyordum, örnekliyordum** — kareler arası 2 sn; "saçma" görünen şeylerin çoğu
+   iki karenin arasındaki HAREKETte.
+2. **Bot "dağılım doğru mu" diye soruyordu, "mantıklı mı" diye değil.**
+3. **En büyüğü:** klip jetonlarını "gerçek NBA = kontrol grubu" saymak YANILTICIYDI.
+   Klip, gerçek bir pozisyonun bizim maçımıza NAKLEDİLMİŞ hâlidir; konumlar gerçek,
+   bağlam bizim. Yani tam da aranan hata sınıfını gizleyen bir ölçüt kullanıyordum.
+
+### Yeni araç: `tools/dikis-goruntu.js`
+0,25 saniyelik ARDIŞIK kareleri şerit hâlinde dizer (izlemeye en yakın şey) ve her karenin
+üstüne sahne durumunu (klip kaç jeton · oam fazı · taşıyıcı · mod) yazar. Öncelik klip
+dikişidir: maç boyunca ~90 kez klip biter, fizik devralır, yeni klip oyuncuları yeni
+rollere eşler.
+
+### KÖK NEDEN — ölçülerek bulundu
+Şeritte 3,7 saniyelik bir dizi okundu: sekiz jeton tek yumak hâlinde birlikte kayıyor,
+iki oyuncu kopuk duruyor. Ama o kare **klip10** idi, yani ON JETON DA gerçek NBA kaydıydı.
+Ölçüldü:
+
+| ölçüt | FİZİK (bizim) | KLİP (gerçek NBA) |
+|---|---|---|
+| 10 oyuncu ortalama ikili mesafe | 6,04 m | 5,85 m |
+| en büyük küme (3 m zincir) | ort 5,99 · 6+ kişilik kare %55,6 | ort 5,75 · %50,1 |
+| kopuk oyuncu (komşu 6 m+) | %1,9 | %1,9 |
+
+Yani **gerçek basketbol da aynı yumağı üretiyor.** Kusur konumlarda değildi.
+
+**Kesin kanıt:** aynı simülasyon anının tüm saha görüntüsü ile YARI SAHAYA KIRPILMIŞ
+görüntüsü yan yana konuldu. Tüm sahada: sekiz jetonluk okunmaz yumak. Yarı sahada: net
+aralıklar, okunaklı isimler, düpedüz basketbol. **Kusur KAMERADAYDI.**
+
+Sayısal gerekçe: saha 28 m, ekranda ~690 px → **24,7 px/m**. Gerçek bir yayın yarı sahayı
+~70 px/m ile gösterir. 3 metrelik gerçek bir kalabalık bizde 74 px'e sığıyor ve altı jeton
+üst üste biniyor.
+
+### Yapılan: SAHA KAMERASI (`js/render.js`)
+Top hangi yarı sahadaysa orayı gösterir; orta çizgide **histerezisle** (±40 px) yarı
+değiştirir, üstel yumuşatmayla kayar. Buton: **🎥 Kamera: Yarı Saha** (varsayılan AÇIK,
+ayar `localStorage`'da). Kapatınca tam saha geri gelir.
+
+⚠ **Görüntü kutusunun ORANI değişmek zorundadır:** yarı saha 14×15 m, yani neredeyse KARE;
+mevcut kutu 1,88:1. Yalnız iç viewBox daraltılırsa (`preserveAspectRatio="none"`) jetonlar
+ELİPS olur ya da kenar çizgisindeki oyuncular kırpılır. Bu yüzden dış viewBox yüksekliği,
+arka plan dikdörtgeni ve iç yuvanın oranı BİRLİKTE ayarlanır — jeton daire kalır, kimse
+kırpılmaz. Kamera yalnız çizim katmanıdır; simülasyon koordinatları, ölçüm araçları ve maç
+matematiği etkilenmez.
+
+**Denenip elenen:** kamera açıkken kutuyu `max-width:640px` ile daraltmak — kutu küçülünce
+zoom kazancı tamamen yok oldu (aynı px/m). Kaldırıldı.
+
+**Dar ekran:** pencere 620 → 780 birim. Yarı saha penceresi kutuyu YÜKSELTİYOR ve 390 px'te
+birincil eylem butonunu ekranın yarısından aşağı itiyordu (`mobile-check` 0,54 ekran →
+17/18). Geniş pencerede kutu yüksekliği bugünküyle aynı kalır, yine de 14 → 17 px/m kazanılır.
+`mobile-check` **18/18**.
+
+### Kapılar
+- `visual-check` ✓ · `mobile-check` **18/18** ✓ · `i18n-scan` ✓ (buton iki dilde)
+- `sim-node --n=500 --seed=42` 93.1 - 87.9 · olay 268 ✓ · `band.js` **c19928475859c7ff** ✓
+  · `measure.js` **51fa02b6e0a8194b** ✓ — maç matematiği değişmedi
+- `surum-check --yaz` → **sürüm 105**

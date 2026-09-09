@@ -102,6 +102,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/faz59-check.js` | **FAZ 59 uçan top + taşıyıcı denetçisi** (tarayıcısız) — `iz-kaydet` kaydını okur: donan uçuş (mod pass/shot ama konum sabit) · pas süresi p99 · rakibe giden pas · canlı sahipsiz top · orta çizgiyi TOPLA geçen rol · FAZ 58 gerileme satırları. Pencere **en az 600 sn**. ⚠ İvme ve savunma mesafesi kapıları burada DEĞİL `sahne-olcum.js`tedir (yuvarlama/tanım farkı). Top durum makinesi ya da klip slot eşlemesi değişince çalıştır. |
 | `tools/anomali.js` | **Anomali avcısı** (tarayıcısız) — `iz-kaydet` kaydının TAMAMINI tarar ve **kapı listesi OLMADAN** aykırı davranışı arar: kıpırdamayan oyuncu · hedefine varamayan · arka sahada kalan hücumcu · kimseyi tutmayan savunmacı · yığılma · titreme · serbest atış yerleşimi · uzun/geri/rakibe pas · topu uzun tutan · boyada 3 saniye · yayılım · pozisyon süresi. Sayılar yeşilken şikâyet geldiğinde İLK bunu çalıştır. Bulgular ADAYDIR; kararı gerçek veri ve göz verir. |
 | `tools/an-goruntu.js` | **Anomali görüntüleyici** — canlı maçta bir durum (serbest atış · yığılma · donuk oyuncu · uzun tutma) OLUŞTUĞU ANDA sahanın PNG.sini çeker (`--secs=420 --max=26`). Kontak sayfasından farkı: sabit aralıkla değil olay anında çeker. |
+| `tools/dikis-goruntu.js` | **Dikiş görüntüleyici** — canlı maçtan 0,25 sn ARDIŞIK kareleri şerit hâlinde dizer (izlemeye en yakın şey); her karenin üstünde klip/oam/taşıyıcı durumu. Kontak sayfası (2 sn) hareketi göstermez. Klip↔fizik dikişini incelemek için. |
 | `tools/kilit-check.js` | **FAZ 51 kilitli sonuç (C1) etiket denetçisi** — maç başlat → yenile → Ana Panel kartı ve Maçlar butonu "⏩ Kilitli sonucu uygula" demeli, tıklayınca skorlu bildirim + fikstür işlenir, etiketler Başlat'a döner, ikinci tıklama gerçek maç. Buton etiketi / pendingMatch akışı değişince çalıştır. |
 | `tools/schema-check.js` | **`db/schema.sql` denetçisi** — sözdizimi (varsa gerçek PostgreSQL ayrıştırıcısı), lig kuralları, RLS, "kod tabanında bağlantı yok". |
 | `db/schema.sql` | **Çok oyunculu veri modeli** (Postgres/Supabase). Yalnız dosya — hiçbir bağlantı kurulmuyor. |
@@ -2113,3 +2114,39 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   (pencere en az 600 sn), ikincisi canlı maçta durum oluşunca `#courtSvg` görüntüsü çeker
   (`node tools/an-goruntu.js <etiket> --secs=420 --max=26`). ⚠ A1/A5 sayıları koşudan koşuya
   %40 oynar (38/42/58 · 40/55/49) — tek koşuyla yargı verme.
+
+- **KUSUR SİMÜLASYONDA DEĞİL KAMERADAYDI — SAHA KAMERASI (FAZ 61, kullanıcı: "maçı canlı
+  izlesen 2 dk'da 100 hata görürsün ama göremiyorsun"):** bütün ölçüler gerçek NBA verisiyle
+  eşleşiyordu ve ekran yine "berbat" duruyordu. Kesin kanıt: AYNI simülasyon anının tüm saha
+  görüntüsü sekiz jetonluk okunmaz bir yumak, YARI SAHAYA KIRPILMIŞ hâli düpedüz basketbol.
+  Sayısal gerekçe: saha 28 m ekranda ~690 px → **24,7 px/m**; gerçek bir yayın yarı sahayı
+  ~70 px/m ile gösterir, yani 3 metrelik gerçek bir kalabalık bizde 74 px'e sığıyor ve altı
+  jeton üst üste biniyordu. `js/render.js` sonundaki kamera topun yarı sahasını gösterir
+  (histerezis ±40 px, üstel yumuşatma), buton `toggleMatchKamera` ile kapanır.
+  ⚠ **GÖRÜNTÜ KUTUSUNUN ORANI DEĞİŞMEK ZORUNDA:** yarı saha 14×15 m, neredeyse KARE; kutu
+  1,88:1. Yalnız iç viewBox daraltılırsa (`preserveAspectRatio="none"`) jetonlar ELİPS olur
+  ya da kenar çizgisindeki oyuncu kırpılır — dış viewBox yüksekliği, `#courtBg` dikdörtgeni
+  ve iç yuvanın oranı BİRLİKTE ayarlanır. Kamera YALNIZ çizim katmanıdır.
+- **"GERÇEK VERİYLE EŞLEŞİYOR" GÖRÜNTÜNÜN DOĞRU OLDUĞUNU KANITLAMAZ (FAZ 61, FAZ 39
+  dersinin görsel karşılığı):** ölçüm konumları yargılar, EKRANI yargılamaz. Ölçülen:
+  10 oyuncu ortalama ikili mesafe fizik 6,04 m ↔ klip (gerçek) 5,85 m; en büyük küme
+  (3 m zincir) 5,99 ↔ 5,75; kopuk oyuncu %1,9 ↔ %1,9 — üçü de eşleşiyordu ve ekran
+  okunmuyordu. Bir görsel şikâyette ölçüm eşleşiyorsa sıradaki soru **"aynı veriyi başka
+  türlü çizsem düzelir mi"** olmalıdır.
+- **KLİP JETONLARINI "KONTROL GRUBU" SAYMANIN SINIRI (FAZ 61, FAZ 60'ta kurduğum ölçütün
+  düzeltmesi):** klip, gerçek bir pozisyonun BİZİM maçımıza NAKLEDİLMİŞ hâlidir — konumlar
+  gerçek, bağlam bizim. Yanlış oyuncuya / yanlış yöne / yanlış olayın ardına yapıştırılmış
+  gerçek bir pozisyonun her karesi "gerçekçi" ölçülür ama izlerken saçmadır. Klip kontrol
+  grubu KONUM dağılımları için geçerlidir, DİZİ ve BAĞLAM için değil.
+- **DAR EKRANDA KAMERA PENCERESİ GENİŞ TUTULUR (FAZ 61):** yarı saha penceresi görüntü
+  kutusunu YÜKSELTİR; 390 px'te bu, birincil eylem butonunu ekranın yarısından aşağı itiyor
+  (`mobile-check` 0,54 ekran, 17/18). Dar ekranda pencere 620 → 780 birim: kutu yüksekliği
+  bugünküyle aynı kalır, yine de 14 → 17 px/m kazanılır. 18/18.
+  ⚠ Kamera açıkken kutuyu `max-width` ile daraltmak DENENDİ ve elendi — kutu küçülünce
+  zoom kazancı tamamen yok oluyor (aynı px/m).
+- **`tools/dikis-goruntu.js` — 0,25 sn ARDIŞIK kare şeridi:** izlemeye en yakın araç. Sabit
+  aralıklı kontak sayfası (2 sn) HAREKETİ göstermez; bir insanın "saçma" dediği şeylerin
+  çoğu iki karenin arasındadır. Her karenin üstüne sahne durumu (klip kaç jeton · oam fazı ·
+  taşıyıcı · mod) yazılır; öncelik KLİP DİKİŞİDİR (maç boyunca ~90 kez klip biter, fizik
+  devralır, yeni klip oyuncuları yeni rollere eşler). Görsel şikâyette `anomali` + `an-goruntu`
+  bir şey bulamıyorsa bunu çalıştır ve şeridi SIRAYLA oku.

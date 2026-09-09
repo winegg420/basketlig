@@ -93,6 +93,8 @@ const I18N_TR_EN={
 '▶ Maçı Başlat':'▶ Start Match',
 'Maçı başlatmak için butona bas 🏀':'Press the button to start the match 🏀',
 '⛶ Büyük Ekran':'⛶ Fullscreen',
+'🎥 Kamera: Yarı Saha':'🎥 Camera: Half Court',
+'🎥 Kamera: Tüm Saha':'🎥 Camera: Full Court',
 '🎧 Manuel Koçluk':'🎧 Manual Coaching',
 '🔴 CANLI MAÇ':'🔴 LIVE MATCH',
 '🔴 Canlı Maç':'🔴 Live Match',

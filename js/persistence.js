@@ -838,6 +838,7 @@ function faz24PersonelAdiOnar(){
   }catch(e){ dbg("faz24PersonelAdiOnar",e); }
 }
 function bootstrapAppUi(){
+  try{ kameraKur(); }catch(e){}   /* FAZ 61: saha kamerası — tek kurulum noktası */
   cleanupDevTelemetryKeys();
   document.getElementById('setupPage').style.display='none';
   document.getElementById('loginPage').style.display='none';

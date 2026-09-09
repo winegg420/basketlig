@@ -1992,3 +1992,99 @@ function openCareerModal(){
       <div style="max-height:220px;overflow-y:auto;">${histHtml}</div>
     </div>`);
 }
+/* eklenecek blok — js/render.js sonuna */
+/* ── FAZ 61: SAHA KAMERASI (yarı saha takibi) ─────────────────────────────────────────
+   Kullanıcı: "maçı canlı izlesen 2 dk'da 100 tane hata görürsün". Ölçümlerin tamamı
+   gerçek NBA verisiyle eşleşiyordu ve ekran yine "berbat" duruyordu. Kök neden ölçülerek
+   bulundu: AYNI simülasyon anı tüm sahada bakınca sekiz jetonluk bir yumak, yarı sahaya
+   kırpılınca düpedüz basketbol. Yani kusur konumlarda değil KAMERADAYDI.
+
+   Sayısal gerekçe: saha 28 m, ekranda ~690 px → 24,7 px/m. Gerçek bir yayın yarı sahayı
+   ~70 px/m ile gösterir. 3 metrelik gerçek bir kalabalık bizde 74 px'e sığıyor ve altı
+   jeton üst üste biniyor; ölçüm "aralık 6,04 m, gerçek 5,85" diyor ama göz yumak görüyor.
+   Aynı kayıtta klip (GERÇEK NBA) kareleri de aynı yumağı üretiyordu — kanıt buydu.
+
+   Kamera topun bulunduğu yarı sahayı gösterir, orta çizgiyi geçerken yumuşak kayar.
+   ⚠ GÖRÜNTÜ KUTUSUNUN ORANI DEĞİŞMEK ZORUNDA: yarı saha 14×15 m, yani neredeyse KARE;
+   mevcut kutu 1,88:1. Sadece iç viewBox daraltılırsa (preserveAspectRatio="none") jetonlar
+   elips olur ya da kenar çizgisindeki oyuncular kırpılır. Bu yüzden dış viewBox'ın YÜKSEKLİĞİ
+   ve iç yuvanın oranı birlikte ayarlanır — jeton daire kalır, kimse kırpılmaz.
+   Kamera YALNIZ çizim katmanıdır: simülasyon koordinatları, ölçüm araçları ve maç
+   matematiği etkilenmez. Kapatınca (`toggleMatchKamera`) tam saha görünümü geri gelir. */
+const KAM_W=620;                 /* saha birimi — gösterilecek genişlik (~16,6 m) */
+const KAM_H=470;                 /* saha birimi — tam saha yüksekliği + kenar payı (kırpma YOK) */
+const KAM_PAY=120;               /* dış viewBox üst/alt payı */
+const KAM_HIZ=2.6;               /* birim/sn üstel yaklaşma katsayısı */
+const KAM_ESIK=40;               /* px — orta çizgi çevresinde histerezis (yarı değiştirme) */
+let _kamAcik=true, _kamX=null, _kamSag=null, _kamRaf=null;
+
+function kameraAcikMi(){ return _kamAcik; }
+
+/** Kamera penceresini uygular (dış viewBox yüksekliği + iç yuva + iç viewBox). */
+function _kamUygula(cx){
+  const dis=document.getElementById('courtSvg'), ic=document.getElementById('courtInner');
+  if(!dis||!ic) return;
+  try{ const kap=dis.closest('.court-container'); if(kap) kap.classList.toggle('kam-on',_kamAcik); }catch(e){}
+  if(!_kamAcik){
+    dis.setAttribute('viewBox','0 0 3200 1900');
+    const bg0=document.getElementById('courtBg'); if(bg0) bg0.setAttribute('height','1900');
+    ic.setAttribute('x','200'); ic.setAttribute('y','200');
+    ic.setAttribute('width','2800'); ic.setAttribute('height','1500');
+    ic.setAttribute('viewBox','-26.3 -14 992.6 528');
+    return;
+  }
+  /* iç yuva: genişlik sabit 2800, yükseklik pencere oranından (jeton daire kalsın) */
+  /* FAZ 61: DAR EKRANDA PENCERE GENİŞ TUTULUR. Yarı saha penceresi kutuyu YÜKSELTİR;
+     390 px genişlikte bu, birincil eylem butonunu ekranın yarısından aşağı itiyor
+     (mobile-check F12: 0,54 ekran). Dar ekranda pencere 780 birim — kutu yüksekliği
+     bugünküyle aynı kalır, yine de 14 → 17 px/m kazanılır. */
+  const dar=(typeof window!=='undefined'&&window.innerWidth<900);
+  const KW=dar?780:KAM_W;
+  const yuk=Math.round(2800*KAM_H/KW);
+  const disY=yuk+KAM_PAY*2;
+  dis.setAttribute('viewBox','0 0 3200 '+disY);
+  const bg=document.getElementById('courtBg'); if(bg) bg.setAttribute('height',String(disY));
+  ic.setAttribute('x','200'); ic.setAttribute('y',String(KAM_PAY));
+  ic.setAttribute('width','2800'); ic.setAttribute('height',String(yuk));
+  ic.setAttribute('viewBox',(cx-KW/2).toFixed(1)+' '+(250-KAM_H/2).toFixed(1)+' '+KW+' '+KAM_H);
+}
+
+/** Her karede: hedef yarı sahayı seç, yumuşak kay. */
+function _kamTick(){
+  _kamRaf=requestAnimationFrame(_kamTick);
+  try{
+    if(!_kamAcik) return;
+    const S=(typeof mState!=='undefined'&&mState)?mState._sim:null;
+    if(!S||!S.ball||!isFinite(S.ball.x)) return;
+    const MID=(56.4+883.6)/2;
+    const bx=S.ball.x;
+    /* Histerezis: top orta çizgiyi 40 px geçmeden yarı değişmez (kamera zıplamasın). */
+    if(_kamSag===null) _kamSag=(bx>MID);
+    else if(_kamSag&&bx<MID-KAM_ESIK) _kamSag=false;
+    else if(!_kamSag&&bx>MID+KAM_ESIK) _kamSag=true;
+    /* Hedef merkez: yarı sahanın ortası, ama topu da penceresinde tut. */
+    let hedef=_kamSag?(MID+ (883.6-MID)/2 +30):(MID-(MID-56.4)/2 -30);
+    hedef=Math.max(56.4-26.3+KAM_W/2-30,Math.min(883.6+26.3-KAM_W/2+30,hedef));
+    if(_kamX===null) _kamX=hedef;
+    else _kamX+=(hedef-_kamX)*Math.min(1,KAM_HIZ*0.016);
+    _kamUygula(_kamX);
+  }catch(e){}
+}
+
+/** Kamera aç/kapa — ayarlarda saklanır. */
+function toggleMatchKamera(){
+  _kamAcik=!_kamAcik;
+  try{ localStorage.setItem('charazay_kamera',_kamAcik?'1':'0'); }catch(e){}
+  const b=document.getElementById('kameraBtn');
+  if(b){ b.textContent=_kamAcik?'🎥 Kamera: Yarı Saha':'🎥 Kamera: Tüm Saha'; b.classList.toggle('on',_kamAcik); }
+  _kamX=null; _kamSag=null;
+  _kamUygula(_kamX==null?((56.4+883.6)/2):_kamX);
+}
+
+/** Açılışta kur (ayar okunur, döngü başlar). */
+function kameraKur(){
+  try{ const v=localStorage.getItem('charazay_kamera'); if(v==='0') _kamAcik=false; }catch(e){}
+  const b=document.getElementById('kameraBtn');
+  if(b){ b.textContent=_kamAcik?'🎥 Kamera: Yarı Saha':'🎥 Kamera: Tüm Saha'; b.classList.toggle('on',_kamAcik); }
+  if(!_kamRaf) _kamTick();
+}
