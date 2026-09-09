@@ -2016,7 +2016,12 @@ const KAM_H=470;                 /* saha birimi — tam saha yüksekliği + kena
 const KAM_PAY=120;               /* dış viewBox üst/alt payı */
 const KAM_HIZ=2.6;               /* birim/sn üstel yaklaşma katsayısı */
 const KAM_ESIK=40;               /* px — orta çizgi çevresinde histerezis (yarı değiştirme) */
-let _kamAcik=true, _kamX=null, _kamSag=null, _kamRaf=null;
+/* ⚠ FAZ 61 düzeltmesi: VARSAYILAN KAPALI. Kamera FAZ 61.de varsayılan AÇIK yapıldı ve
+   kullanıcının hiç istemediği bir görünüm dayatıldı: saha ekrana sığmıyor, maçı yukarıdan
+   bütünüyle izlemek imkânsız hâle geliyor, sayfa kaydırma gerektiriyor. Mevcut davranışı
+   değiştirmek KULLANICININ KARARIDIR — kamera bir SEÇENEKTİR, varsayılan değil.
+   (Global kural: mevcut kodu/davranışı bozma, minimal değişiklik yap.) */
+let _kamAcik=false, _kamX=null, _kamSag=null, _kamRaf=null;
 
 function kameraAcikMi(){ return _kamAcik; }
 
@@ -2076,15 +2081,16 @@ function toggleMatchKamera(){
   _kamAcik=!_kamAcik;
   try{ localStorage.setItem('charazay_kamera',_kamAcik?'1':'0'); }catch(e){}
   const b=document.getElementById('kameraBtn');
-  if(b){ b.textContent=_kamAcik?'🎥 Kamera: Yarı Saha':'🎥 Kamera: Tüm Saha'; b.classList.toggle('on',_kamAcik); }
+  if(b){ b.textContent=_kamAcik?'🎥 Kamera: Tüm Saha':'🎥 Kamera: Yarı Saha';   /* etiket YAPACAĞI işi söyler (theaterBtn kalıbı) */ b.classList.toggle('on',_kamAcik); }
   _kamX=null; _kamSag=null;
-  _kamUygula(_kamX==null?((56.4+883.6)/2):_kamX);
+  _kamUygula((56.4+883.6)/2);
+  if(_kamAcik&&!_kamRaf) _kamTick();
 }
 
 /** Açılışta kur (ayar okunur, döngü başlar). */
 function kameraKur(){
-  try{ const v=localStorage.getItem('charazay_kamera'); if(v==='0') _kamAcik=false; }catch(e){}
+  try{ const v=localStorage.getItem('charazay_kamera'); if(v==='1') _kamAcik=true; }catch(e){}   /* yalnız kullanıcı açtıysa */
   const b=document.getElementById('kameraBtn');
-  if(b){ b.textContent=_kamAcik?'🎥 Kamera: Yarı Saha':'🎥 Kamera: Tüm Saha'; b.classList.toggle('on',_kamAcik); }
-  if(!_kamRaf) _kamTick();
+  if(b){ b.textContent=_kamAcik?'🎥 Kamera: Tüm Saha':'🎥 Kamera: Yarı Saha';   /* etiket YAPACAĞI işi söyler (theaterBtn kalıbı) */ b.classList.toggle('on',_kamAcik); }
+  if(_kamAcik&&!_kamRaf) _kamTick();   /* kapalıyken döngü HİÇ çalışmaz — kapalı kamera sıfır maliyet */
 }

@@ -10143,3 +10143,31 @@ birincil eylem butonunu ekranın yarısından aşağı itiyordu (`mobile-check` 
 - `sim-node --n=500 --seed=42` 93.1 - 87.9 · olay 268 ✓ · `band.js` **c19928475859c7ff** ✓
   · `measure.js` **51fa02b6e0a8194b** ✓ — maç matematiği değişmedi
 - `surum-check --yaz` → **sürüm 105**
+
+### FAZ 61 düzeltmesi — kamera VARSAYILAN KAPALI (sürüm 106)
+
+**Kullanıcı:** "Sahanın tamamı gözükmüyor, maç oynanırken ekranı oynatabiliyorum, yukarıdan
+bütün maçı izleyemiyorum. Bu ayarı da bozmuşsun."
+
+Haklıydı ve hata bendeydi: FAZ 61'de kamerayı **varsayılan AÇIK** yaptım. Kullanıcı böyle
+bir şey istemedi; istediği şey hataların düzeltilmesiydi. Kamerayı açık getirmek görüntü
+kutusunu yükselttiği için saha ekrana sığmıyor, maçı yukarıdan bütünüyle izlemek imkânsız
+hâle geliyor ve sayfa kaydırma gerektiriyor. Üstelik bunu "düzelttim" diye sundum.
+
+**Kural (global CLAUDE.md, ihlal ettim):** mevcut kodu/davranışı bozma, minimal değişiklik
+yap. Bir görünümü herkes için değiştirmek KULLANICININ KARARIDIR.
+
+- `_kamAcik` varsayılanı `false`. Ayar yalnız kullanıcı butona basarsa (`'1'`) açılır.
+- Kapalıyken rAF döngüsü HİÇ çalışmaz (sıfır maliyet); `toggleMatchKamera` açınca başlar.
+- Buton etiketi artık YAPACAĞI işi söyler (`theaterBtn` kalıbı): kapalıyken
+  "🎥 Kamera: Yarı Saha", açıkken "🎥 Kamera: Tüm Saha".
+
+**Doğrulandı** (canlı maç, tarayıcıdan okundu):
+| durum | dış viewBox | iç viewBox | saha | sayfa/ekran |
+|---|---|---|---|---|
+| varsayılan | `0 0 3200 1900` | `-26.3 -14 992.6 528` | 790×469 px | 900 / 900 → **kaydırma yok** |
+| butonla açık | `0 0 3200 2363` | yarı saha | — | — |
+| tekrar kapalı | `0 0 3200 1900` | `-26.3 -14 992.6 528` | — | — |
+
+Yani varsayılan görünüm FAZ 60 öncesiyle **birebir aynı** ve açma/kapama tam geri dönüyor.
+`visual-check` ✓ · `mobile-check` **18/18** ✓ · konsol hatası 0 · sürüm 106.

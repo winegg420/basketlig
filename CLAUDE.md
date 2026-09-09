@@ -2138,6 +2138,15 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   gerçek, bağlam bizim. Yanlış oyuncuya / yanlış yöne / yanlış olayın ardına yapıştırılmış
   gerçek bir pozisyonun her karesi "gerçekçi" ölçülür ama izlerken saçmadır. Klip kontrol
   grubu KONUM dağılımları için geçerlidir, DİZİ ve BAĞLAM için değil.
+- **KAMERA VARSAYILAN KAPALIDIR — GÖRÜNÜMÜ DEĞİŞTİRMEK KULLANICININ KARARIDIR (FAZ 61
+  düzeltmesi, kullanıcı: "bu ayarı da bozmuşsun"):** FAZ 61.de kamera varsayılan AÇIK
+  getirildi; kutu yükseldiği için saha ekrana sığmadı, maçı yukarıdan bütünüyle izlemek
+  imkânsız hâle geldi ve sayfa kaydırma gerektirdi. Kullanıcı bunu istememişti. 
+  varsayılanı **false**; ayar yalnız kullanıcı butona basarsa açılır, kapalıyken rAF döngüsü
+  HİÇ çalışmaz ve varsayılan görünüm FAZ 60 öncesiyle BİREBİR aynıdır (dış viewBox
+  , iç ). Global kural burada ihlal edildi: mevcut
+  davranışı bozma, minimal değişiklik yap. Yeni bir görünüm/mod eklerken varsayılanı
+  DEĞİŞTİRME — seçenek olarak sun.
 - **DAR EKRANDA KAMERA PENCERESİ GENİŞ TUTULUR (FAZ 61):** yarı saha penceresi görüntü
   kutusunu YÜKSELTİR; 390 px'te bu, birincil eylem butonunu ekranın yarısından aşağı itiyor
   (`mobile-check` 0,54 ekran, 17/18). Dar ekranda pencere 620 → 780 birim: kutu yüksekliği
