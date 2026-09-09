@@ -70,10 +70,14 @@ const ekle = (tur, agirlik, satir, t, sure) => BULGU.push({ tur, agirlik, satir,
     }
   }
   /* aynı oyuncunun ardışık epizotlarını birleştir */
+  /* ⚠ KLİP JETONU = GERÇEK NBA KAYDI. Gerçek veride oyuncu zamanın %18,8'inde durağandır
+     (FAZ 54); klip karesinde duran oyuncu KUSUR DEĞİLDİR. Önem yalnız FİZİK jetonundan gelir. */
+  const fizik = out.filter(o => !o.klip);
   out.sort((a, b) => b.sure - a.sure);
-  out.slice(0, TAM ? 999 : 8).forEach(o => ekle('A1 canlı oyunda kıpırdamayan oyuncu', o.sure * 2,
+  fizik.sort((a, b) => b.sure - a.sure);
+  fizik.slice(0, TAM ? 999 : 8).forEach(o => ekle('A1 canlı oyunda kıpırdamayan oyuncu', o.sure * 2,
     `t=${o.t.toFixed(1)} ${AD(o.i)} ${o.sure.toFixed(1)} sn boyunca 0,6 m'den az hareket (${o.x.toFixed(0)},${o.y.toFixed(0)}) [${o.tip}${o.klip ? ' · klip' : ''}]`, o.t, o.sure));
-  if (out.length) ekle('A1 ÖZET', 0, `toplam ${out.length} epizot · en uzun ${out[0].sure.toFixed(1)} sn`, 0, 0);
+  if (out.length) ekle('A1 ÖZET', 0, `toplam ${out.length} epizot (fizik ${fizik.length} · klip ${out.length - fizik.length} = gerçek kayıt, kusur değil) · en uzun ${out[0].sure.toFixed(1)} sn`, 0, 0);
 }
 
 /* A2 — HEDEFİNE VARAMAYAN OYUNCU (uzaklık 4 sn boyunca azalmıyor ve > 1,5 m) */
@@ -83,8 +87,12 @@ const ekle = (tur, agirlik, satir, t, sure) => BULGU.push({ tur, agirlik, satir,
     for (let i = 0; i < 10; i++) {
       const d = Math.hypot(k.p[i][0] - k.p[i][12], k.p[i][1] - k.p[i][13]);
       if (d < 1.5 * PX_M || oluTop(k)) { ep[i] = null; continue; }
-      if (!ep[i]) { ep[i] = { t: k.t, min: d }; continue; }
-      if (d < ep[i].min - 6) { ep[i] = { t: k.t, min: d }; continue; }   /* ilerliyor */
+      /* ⚠ FAZ 60: HEDEF DEĞİŞİMİ EPİZODU SIFIRLAR. İlk sürüm bunu yapmıyordu ve
+         "hedefe 22,8 m, 4 sn ilerleme yok" diyordu; oysa oyuncu 1,6 m'lik eski hedefindeyken
+         sahanın öbür ucuna (26 m) YENİ hedef almış ve koşmaya başlamıştı. Çapraz koşuda
+         düz mesafe yavaş kapanır; ölçüt "ilerliyor mu", "düz mesafe azalıyor mu" değildir. */
+      if (!ep[i] || ep[i].hx !== k.p[i][12] || ep[i].hy !== k.p[i][13]) { ep[i] = { t: k.t, min: d, hx: k.p[i][12], hy: k.p[i][13] }; continue; }
+      if (d < ep[i].min - 6) { ep[i] = { t: k.t, min: d, hx: k.p[i][12], hy: k.p[i][13] }; continue; }   /* ilerliyor */
       const sur = k.t - ep[i].t;
       if (sur >= 4.0) {
         out.push({ t: ep[i].t, i, sure: sur, d: m(d), hx: k.p[i][12], hy: k.p[i][13], tip: k.tip });
@@ -129,19 +137,25 @@ const ekle = (tur, agirlik, satir, t, sure) => BULGU.push({ tur, agirlik, satir,
     const off = [], def = [];
     for (let i = 0; i < 10; i++) (k.p[i][2] === 1 ? off : def).push(i);
     if (off.length !== 5 || def.length !== 5) { ep.fill(null); continue; }
+    /* ⚠ FAZ 60: HÜCUMA GEÇEN OYUNCUNUN EPİZODU SIFIRLANIR. İlk sürüm yalnız `def` listesini
+       geziyordu; top el değiştirince oyuncu `off`a geçiyor, epizodu SİLİNMİYOR ve pozisyon
+       değişimlerinin üstünden atlayarak "10,9 sn kimseyi tutmadı" gibi sahte bir bulgu
+       üretiyordu (ölçüldü: o 10,9 saniyenin ortasında oyuncu ZATEN hücumdaydı). */
+    for (const i of off) ep[i] = null;
     for (const i of def) {
       let en = 1e9;
       for (const j of off) { const d = Math.hypot(k.p[i][0] - k.p[j][0], k.p[i][1] - k.p[j][1]); if (d < en) en = d; }
       if (en < 6 * PX_M) { ep[i] = null; continue; }
       if (!ep[i]) ep[i] = { t: k.t, en };
       const sur = k.t - ep[i].t;
-      if (sur >= 3.0) { out.push({ t: ep[i].t, i, sure: sur, d: m(en), tip: k.tip }); ep[i] = null; }
+      if (sur >= 3.0) { out.push({ t: ep[i].t, i, sure: sur, d: m(en), tip: k.tip, klip: k.p[i][16] | 0 }); ep[i] = null; }
     }
   }
-  out.sort((a, b) => b.sure - a.sure);
-  out.slice(0, TAM ? 999 : 6).forEach(o => ekle('A4 kimseyi tutmayan savunmacı', o.sure,
+  const fizik4 = out.filter(o => !o.klip);   /* klip = gerçek NBA geçiş anı, kusur değil */
+  out.sort((a, b) => b.sure - a.sure); fizik4.sort((a, b) => b.sure - a.sure);
+  fizik4.slice(0, TAM ? 999 : 6).forEach(o => ekle('A4 kimseyi tutmayan savunmacı', o.sure,
     `t=${o.t.toFixed(1)} ${AD(o.i)} ${o.sure.toFixed(1)} sn boyunca en yakın hücumcu ${o.d.toFixed(1)} m [${o.tip}]`, o.t, o.sure));
-  if (out.length) ekle('A4 ÖZET', 0, `toplam ${out.length} epizot`, 0, 0);
+  if (out.length) ekle('A4 ÖZET', 0, `toplam ${out.length} epizot (fizik ${fizik4.length} · klip ${out.length - fizik4.length} = gerçek kayıt)`, 0, 0);
 }
 
 /* A5 — YIĞILMA: 3+ oyuncu 1,5 m yarıçapta, 1,5 sn */
@@ -158,12 +172,13 @@ const ekle = (tur, agirlik, satir, t, sure) => BULGU.push({ tur, agirlik, satir,
     if (!bulundu) { ep = null; continue; }
     if (!ep) ep = { t: k.t, grup: bulundu };
     const sur = k.t - ep.t;
-    if (sur >= 1.5) { out.push({ t: ep.t, sure: sur, grup: ep.grup, tip: k.tip }); ep = null; }
+    if (sur >= 1.5) { out.push({ t: ep.t, sure: sur, grup: ep.grup, tip: k.tip, klip: ep.grup.every(i => k.p[i][16] === 1) }); ep = null; }
   }
-  out.sort((a, b) => b.sure - a.sure);
-  out.slice(0, TAM ? 999 : 6).forEach(o => ekle('A5 üç oyuncu aynı noktada yığılıyor', o.sure * 1.5,
+  const fizik5 = out.filter(o => !o.klip);
+  out.sort((a, b) => b.sure - a.sure); fizik5.sort((a, b) => b.sure - a.sure);
+  fizik5.slice(0, TAM ? 999 : 6).forEach(o => ekle('A5 üç oyuncu aynı noktada yığılıyor', o.sure * 1.5,
     `t=${o.t.toFixed(1)} ${o.sure.toFixed(1)} sn · ${o.grup.map(AD).join(' + ')} 1,5 m yarıçapta [${o.tip}]`, o.t, o.sure));
-  if (out.length) ekle('A5 ÖZET', 0, `toplam ${out.length} epizot`, 0, 0);
+  if (out.length) ekle('A5 ÖZET', 0, `toplam ${out.length} epizot (fizik ${fizik5.length} · klip ${out.length - fizik5.length} = gerçek kayıt)`, 0, 0);
 }
 
 /* A6 — TİTREME: 2 sn içinde 4+ kez 150°'den keskin yön değişimi */
@@ -263,39 +278,61 @@ const ekle = (tur, agirlik, satir, t, sure) => BULGU.push({ tur, agirlik, satir,
   for (let f = 1; f < K.length; f++) {
     if (K[f - 1].b[2] === 'held' && K[f].b[2] === 'pass') {
       const veren = tasiyan(K[f - 1]);
-      let alan = -1, g2 = f;
-      for (let g = f + 1; g < K.length && K[g].t - K[f].t < 3; g++) { const c = tasiyan(K[g]); if (c >= 0) { alan = c; g2 = g; break; } }
-      if (veren < 0) continue;
+      /* FAZ 60: HAKEM ARACILI el değişimi ve SERBEST TOP toplama PAS DEĞİLDİR (FAZ 58/59
+         dersi): düdükte top hakeme atılır, hakem sokucuya verir; aradaki "taşıyıcısız 'held'
+         karesi" iki ayrı el değişimidir. Arada 5 kareden uzun serbest/ölü evre varsa da topu
+         kimin topladığı bir PAS KARARI değildir. */
+      let alan = -1, g2 = f, hakem = false, serbest = 0;
+      for (let g = f + 1; g < K.length && K[g].t - K[f].t < 3; g++) {
+        const md = K[g].b[2];
+        if (md === 'loose' || md === 'dead' || md === 'rim') serbest++;
+        if (md === 'held' && tasiyan(K[g]) < 0) { hakem = true; break; }
+        const c = tasiyan(K[g]); if (c >= 0) { alan = c; g2 = g; break; }
+      }
+      if (veren < 0 || hakem || serbest > 5) continue;
       const d = m(Math.hypot(K[g2].b[0] - K[f].b[0], K[g2].b[1] - K[f].b[1]));
       const rim = hedefPota(K[f]);
       const geri = Math.abs(K[g2].b[0] - rim) - Math.abs(K[f].b[0] - rim);
-      paslar.push({ t: K[f].t, veren, alan, d, geri: m(geri), sure: K[g2].t - K[f].t, tip: K[f].tip });
+      /* FAZ 60: 2 m altı top hareketi PAS DEĞİLDİR — el değişimidir (motor da 2 m altını
+         `_ballTut` ile işler, FAZ 55 A3). Sayarsak ortalama pas mesafesi sahte biçimde
+         düşer (ölçüldü: 2,9 m ↔ `sahne-olcum` aynı koşuda 5,22 m). */
+      if (d >= 2.0) paslar.push({ t: K[f].t, veren, alan, d, geri: m(geri), sure: K[g2].t - K[f].t, tip: K[f].tip });
     }
   }
   const uzun = paslar.filter(p => p.d > 12).sort((a, b) => b.d - a.d);
   const geri = paslar.filter(p => p.geri > 6).sort((a, b) => b.geri - a.geri);
-  const rakip = paslar.filter(p => p.alan >= 0 && (p.veren < 5) !== (p.alan < 5) && p.tip !== 'steal' && p.tip !== 'start');
+  const rakip = paslar.filter(p => p.alan >= 0 && (p.veren < 5) !== (p.alan < 5) && p.tip !== 'steal' && p.tip !== 'start' && p.t > 3);
   ekle('C PAS ÖZET', 0, `${paslar.length} pas · ortalama ${(paslar.reduce((s, p) => s + p.d, 0) / (paslar.length || 1)).toFixed(1)} m (gerçek 5-6) · 12 m üstü ${uzun.length} · 6 m geri giden ${geri.length} · rakibe ${rakip.length}`, 0, 0);
   uzun.slice(0, TAM ? 999 : 5).forEach(p => ekle('C uzun pas', 2, `t=${p.t.toFixed(1)} ${AD(p.veren)}→${p.alan >= 0 ? AD(p.alan) : '?'} ${p.d.toFixed(1)} m [${p.tip}]`, p.t, 0));
   geri.slice(0, TAM ? 999 : 5).forEach(p => ekle('C potadan uzaklaşan pas', 2, `t=${p.t.toFixed(1)} ${AD(p.veren)}→${p.alan >= 0 ? AD(p.alan) : '?'} ${p.geri.toFixed(1)} m geri [${p.tip}]`, p.t, 0));
   rakip.slice(0, TAM ? 999 : 5).forEach(p => ekle('C rakibe pas', 8, `t=${p.t.toFixed(1)} ${AD(p.veren)}→${AD(p.alan)} ${p.d.toFixed(1)} m [${p.tip}]`, p.t, 0));
 }
 
-/* C3 — topu tutma süresi: bir oyuncu topu çok uzun tutuyor mu */
+/* C3 — TOPU TUTMA SÜRESİ — GERÇEK VERİNİN TANIMIYLA ÖLÇÜLÜR
+   ⚠ FAZ 60: ilk sürüm `b.carrier` ile ölçüyordu ve "bir oyuncu topu 12,3 sn tuttu,
+   ortalama 2,00 sn (gerçek 1,47)" diyordu. `b.carrier` HISTEREZİSLİDİR (taşıyıcı ancak
+   top 1,71 m uzaklaşınca değişir), oysa `tools/gercek-hareket/cikar.js` gerçeği "topa
+   ≤ 1,2 m + 0,5 sn köprü" ile ölçer. AYNI tanım bizim kaydımıza uygulanınca ortalama
+   1,47 sn çıktı — gerçekle BİREBİR. Yani ortada kusur YOKTU, tanım farkı vardı
+   (FAZ 48 dersi: iki taraf farklı tanımla ölçülürse fark TANIMIN kendisidir). */
 {
-  const out = []; let cur = null;
+  const tut = []; let cur = null, bosT = 0;
   for (const k of K) {
-    const c = tasiyan(k);
-    if (c < 0 || k.b[2] !== 'held') { if (cur) { out.push(cur); cur = null; } continue; }
-    if (!cur || cur.i !== c) { if (cur) out.push(cur); cur = { i: c, t: k.t, sure: 0, tip: k.tip }; }
-    cur.sure = k.t - cur.t;
+    if (k.b[2] === 'shot' || k.b[2] === 'rim') { if (cur) { tut.push(cur); cur = null; } bosT = 0; continue; }
+    let en = -1, ed = 1e9;
+    for (let i2 = 0; i2 < 10; i2++) { const d = Math.hypot(k.p[i2][0] - k.b[0], k.p[i2][1] - k.b[1]); if (d < ed) { ed = d; en = i2; } }
+    const yakin = (ed <= 1.2 * PX_M);
+    if (yakin && cur && cur.i === en) { cur.son = k.t; bosT = 0; }
+    else if (yakin) { if (cur) tut.push(cur); cur = { i: en, t: k.t, son: k.t, tip: k.tip }; bosT = 0; }
+    else { bosT += 0.0167; if (bosT > 0.5 && cur) { tut.push(cur); cur = null; } }
   }
-  if (cur) out.push(cur);
-  const uzun = out.filter(o => o.sure > 6).sort((a, b) => b.sure - a.sure);
-  const ort = out.length ? out.reduce((s, o) => s + o.sure, 0) / out.length : 0;
-  ekle('C TUTMA ÖZET', 0, `${out.length} tutma · ortalama ${ort.toFixed(2)} sn (gerçek 1,47) · 6 sn üstü ${uzun.length}`, 0, 0);
-  uzun.slice(0, TAM ? 999 : 6).forEach(o => ekle('C topu çok uzun tutan oyuncu', o.sure,
-    `t=${o.t.toFixed(1)} ${AD(o.i)} ${o.sure.toFixed(1)} sn topu tuttu [${o.tip}]`, o.t, o.sure));
+  if (cur) tut.push(cur);
+  const s2 = tut.map(t => ({ ...t, sure: t.son - t.t })).filter(t => t.sure > 0.15);
+  const ort = s2.length ? s2.reduce((a, b) => a + b.sure, 0) / s2.length : 0;
+  const uzun = s2.filter(t => t.sure > 8).sort((a, b) => b.sure - a.sure);
+  ekle('C TUTMA ÖZET', 0, s2.length + ' tutma · ortalama ' + ort.toFixed(2) + ' sn (GERÇEK 1,465 — aynı tanım) · 8 sn üstü ' + uzun.length, 0, 0);
+  uzun.slice(0, TAM ? 999 : 4).forEach(o => ekle('C topu çok uzun tutan oyuncu', o.sure / 2,
+    `t=${o.t.toFixed(1)} ${AD(o.i)} ${o.sure.toFixed(1)} sn topa en yakın [${o.tip}]`, o.t, o.sure));
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════════════
@@ -311,7 +348,10 @@ const ekle = (tur, agirlik, satir, t, sure) => BULGU.push({ tur, agirlik, satir,
     const dip = solaMi ? CRT_X0 : CRT_X1;
     for (let i = 0; i < 10; i++) {
       if (k.p[i][2] !== 1) { ep[i] = null; continue; }
-      const boyada = Math.abs(k.p[i][1] - 250) < PAINT_YARIM && Math.abs(k.p[i][0] - dip) < 5.8 * PX_M;
+      /* ⚠ KLİP JETONU MUAF: klip gerçek NBA kaydıdır ve o pozisyonda ihlal çalmamışlardır;
+         bizim boya/hücum-yönü çıkarımımız geçiş anlarında yanılabilir. Kusur, kendi
+         koreografimizin (fizik jetonu) boyada takılı kalmasıdır. */
+      const boyada = k.p[i][16] !== 1 && Math.abs(k.p[i][1] - 250) < PAINT_YARIM && Math.abs(k.p[i][0] - dip) < 5.8 * PX_M;
       if (!boyada) { ep[i] = null; continue; }
       if (!ep[i]) ep[i] = { t: k.t };
       const sur = k.t - ep[i].t;
@@ -395,6 +435,9 @@ const sirali = Array.from(gruplar.entries()).sort((a, b) => b[1].agirlik - a[1].
 
 const L = [];
 L.push('ANOMALİ AVCISI — kapı listesi YOK, aykırı davranış aranır');
+L.push('⚠ KONTROL GRUBU AYNI KAYITTADIR: klip jetonları GERÇEK NBA kaydıdır (js/klip-data.js).');
+L.push('  Bir davranış klip jetonlarında da görülüyorsa KUSUR DEĞİLDİR — gerçek basketbol öyledir.');
+L.push('  Önem sıralaması yalnız FİZİK (kendi koreografimiz) jetonlarından hesaplanır.');
 L.push('kayıt: ' + path.basename(dosya) + ' · ' + K.length + ' kare · ' + SURE.toFixed(1) + ' sn');
 L.push('='.repeat(78));
 for (const [g, t] of sirali) {

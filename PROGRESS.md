@@ -10031,3 +10031,47 @@ veriyorsa ölçüm yanlıştır.**
 3. Ortalama pas mesafesi 3,0 m (gerçek 5-6) — `sahne-olcum` aynı büyüklüğü 5,22 m ölçüyor,
    iki tanım farklı; hangisinin doğru olduğu netleşmeden kapı kurulmadı.
 4. A1/A5 sayıları koşudan koşuya %40 oynuyor (38/42/58 · 40/55/49) — tek koşuyla yargı verilemez.
+
+### FAZ 60 · ek — anomali avcısı kalibre edildi, kontrol grubu KAYDIN İÇİNDE
+
+Avcının ilk listesi büyük ölçüde KENDİ yanlış pozitifleriydi. Beş ayrı tanım hatası
+ölçülerek bulundu ve düzeltildi:
+
+| bulgu | ilk (yanlış) | doğru tanımla | gerçek |
+|---|---|---|---|
+| topu tutma süresi | ort 2,00 sn · 12,3 sn uç | **1,42 sn** | 1,465 |
+| ortalama pas mesafesi | 2,9 m | **4,3 m** | 5-6 |
+| rakibe giden pas | 5 | **0** | 0 |
+| serbest atış kulvarı | 3,4 oyuncu · dipte savunma 2/5 | **5,8 · 5/5** | 4-6 |
+| "hedefine varamayan" | 9 epizot (22,8 m) | **0** | — |
+| "10,9 sn kimseyi tutmayan" | var | **yok** (oyuncu o sırada hücumdaydı) | — |
+
+Sebepler sırasıyla: (1) `b.carrier` HİSTEREZİSLİ, gerçek çıkarıcı "topa ≤1,2 m + 0,5 sn
+köprü" kullanıyor; (2) 2 m altı el değişimi pas sayılıyordu; (3) hakem aracılı el değişimi
+pas sayılıyordu; (4) `_ftAktif` atıştan sonra da açık kaldığı için epizodun %85'i CANLI oyuna
+düşüyordu; (5) hedef değişimi "ilerlemiyor" sayılıyordu; (6) hücuma geçen oyuncunun epizodu
+silinmiyordu.
+
+**KONTROL GRUBU KAYDIN İÇİNDEDİR (bu turun asıl buluşu):** klip jetonları GERÇEK NBA
+kaydıdır (`js/klip-data.js`). Aynı kayıtta fizik ve klip jetonlarını ayrı saymak, her
+davranış için ücretsiz bir gerçeklik ölçütü verir:
+
+| ölçüt | FİZİK (bizim koreografi) | KLİP (gerçek NBA) |
+|---|---|---|
+| 3 sn kıpırdamayan oyuncu | 22 | **36** |
+| 3+ oyuncu 1,5 m'de yığılıyor | 8 | **41** |
+| kimseyi tutmayan savunmacı | 4 | **14** |
+| 10 oyuncu ortalama ikili mesafe | 6,04 m | 5,85 m |
+| hücum 5'lisi ortalama ikili | 6,47 m | 6,66 m |
+
+Yani **kendi koreografimiz gerçek kayıttan daha az "kusurlu"**; donma, yığılma ve gevşek
+savunma gerçek basketbolun kendisidir. Avcı artık önem sıralamasını YALNIZ fizik
+jetonlarından hesaplar ve klip sayısını yanına basar.
+
+Kontak sayfasındaki "on oyuncu tek yumak" izlenimi de ölçülerek elendi: küçültülmüş
+karede 5,9 m'lik gerçek aralık yumak gibi görünüyor; tam boy karede ve sayıda sorun yok.
+
+**Sonuç:** sahne katmanında ölçülebilen sistematik kusur kalmadı. Bu turda düzeltilen üç
+gerçek kusur (serbest atış töreninin kendini iptali · üç saniyenin ölü topta işlemesi ·
+jeton çapı) dışında, avcının ürettiği adayların tamamı ya tanım hatası ya da gerçek
+basketboldu.
