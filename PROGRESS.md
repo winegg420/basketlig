@@ -9945,3 +9945,89 @@ HEAD'de de geçiyordu) ve biri zaten geçen bir kapıydı (2). Ama **1. maddenin
 tamamen doğruydu ve bu turun en büyük kusuruydu.** Donma noktalarının rastgele
 olmaması kök nedeni tek başına verdi: bir kusurun konumları tekrar ediyorsa, o
 konumların KODDA hangi sabitten geldiğini ara.
+
+---
+
+## 60. oturum — FAZ 60: anomali avcısı + serbest atış iki kusuru + jeton boyutu (sürüm 104)
+
+**Kullanıcı:** "MAÇI izliyorum her şeyin içine sıçılmış… oyuncular faul çizgisine bile yanlış
+yerleşiyor… tek tek hataları söyleyemem, yüzlerce hata var… hiç durmadan izle, hata bul, düzelt."
+
+FAZ 58-59'da bütün kapılar yeşildi ve oyun hâlâ bozuk izleniyordu. Sebep yöntemdeydi:
+**kapılar yalnız SORULAN soruyu yanıtlar.** Bu turda yöntem değişti.
+
+### Yeni iki araç
+- **`tools/anomali.js`** — kaydın TAMAMINI tarar, **kapı listesi YOKTUR**: aykırı davranışı
+  kendi bulur (kıpırdamayan oyuncu · hedefine varamayan · arka sahada kalan hücumcu ·
+  kimseyi tutmayan savunmacı · yığılma · titreme · serbest atış yerleşimi · uzun/geri/rakibe
+  pas · topu uzun tutan · boyada 3 saniye · yayılım · pozisyon süresi · on oyuncu birden
+  duruyor). Çıktı önem sırasına göre gruplanır ve her satır zaman damgalıdır.
+- **`tools/an-goruntu.js`** — o durumlar OLUŞTUĞU ANDA sahanın ekran görüntüsünü çeker
+  (sabit aralıklı kontak sayfası bir serbest atışı yakalamak için 300 kare taramayı gerektiriyordu).
+  Kareler gözle okundu.
+
+### Düzeltilen kusurlar
+**1. Serbest atış töreni ilk karede kendini iptal ediyordu.** `oamTorenKur` atış sayacını
+`sonMod:null` ile başlatıyor; ŞUT FAULÜNDE top zaten `'shot'` modunda olduğu için tören ilk
+karede sahte bir atış sayıp `atisN>=atisToplam` ile kapanıyordu. Tören kapanınca **on
+oyuncunun hedefi hiç yazılmıyor** — üstelik `_setFtFormation`ın hedefleri de `_hedefAta`
+sarmalayıcısı tarafından tören sahipliği yüzünden yutuluyor. Sayaç artık topun O ANKİ moduyla
+başlar. Durum günlüğüyle doğrulandı: üç serbest atışın üçünde de tören açık kalıyor ve
+oyuncular kulvara yürüyor.
+
+**2. Üç saniye kuralı ÖLÜ TOPTA da işliyordu.** `oamHedef`in "boya kaçışı" tören sırasında da
+çalışıyor; tören `O.rim=[0,0]` ile kurulduğu için boya sınavı `|p.x−0| < 171 px` oluyor ve SOL
+potadaki serbest atışlarda kulvar oyuncuları (x = 108-196) "boyada" sayılıp 1,6 saniye sonra
+**kulvardan kovuluyordu**. Gerçek kural: düdükle birlikte üç saniye sayacı durur. `oamBoyaKac`
+artık tören · `_ftAktif` · hakem töreni · ölü topta null döner. Ayrıca düdük anında 3,7 m'den
+uzakta kalan oyuncu SPRINT eder (KOS ile 3,4 sn'lik tören tavanına yetişemiyordu).
+
+**Ölçülen:** `sunum-check` **F14-7 7,7/10 → 9,3/10 ✓** (FAZ 57'den beri düşen kapı),
+ortalama sapma 0,26 → 0,12 m. `anomali` serbest atış bölümü: kulvarda 5,4 → 5,8 oyuncu,
+dipteki iki yer savunmanın **4/5 → 5/5**.
+
+**3. Jeton çapı gerçek oyuncunun iki katıydı (16 → 12 px).** Saha 28 m ve jeton yarıçapı
+16 px, yani çap 1,08 m. Ölçüldü: 3+ oyuncunun 1,5 m'de toplandığı 40 epizodun **37'si KLİP
+jetonu** — yani simülasyon konumu gerçek NBA kaydıdır ve DOĞRUDUR (FAZ 56: gerçek kayıtta en
+yakın çift karelerin %10,4'ünde 40 cm altında). Kusur konumda değil ÇİZİMDEYDİ: iki kat büyük
+jetonlar gerçek bir kalabalığı okunmaz bir yumağa çeviriyordu (bir karede beş jeton üst üste,
+isimler okunmuyor). Yarıçap 12 px = 0,81 m çap. `_CIZ_R` 29 → 25, `_CIZ_MAX` 17 → **12** —
+gereken kayma küçüldüğü için ÇİZİLEN konum gerçek konuma daha yakın. Görüntüyle doğrulandı.
+
+### Denenip ÖLÇÜLEREK GERİ ALINAN
+**Ölü zamanda top çevirme (`oamCevirTick`).** "Bir oyuncu topu 12,3 sn tutuyor" bulgusuna
+karşı yazıldı; 640 sn'lik ölçümde etkisi YOK (tutma 2,00 → 2,02 sn, 6 sn üstü 15 → 16) çünkü
+uzun tutmaların 13/15'i KLİP oynatımı içinde ve klip yörüngesine dokunulmaz. Yığılma da
+40 → 55'e çıktı. Kod geri alındı.
+
+### Anomali avcısının "kusur DEĞİL" dediği bulgular (gerçek veriyle sınandı)
+- **Kimseyi tutmayan savunmacı** (26 epizot): 22'si klip jetonu, yani gerçek NBA geçiş anı.
+  `hareket-bant-check` savunmacı mesafesini zaten gerçekle L1 0,137 ile eşliyor. Dokunulmadı.
+- **Canlı oyunda 3 sn kıpırdamayan oyuncu** (38 epizot): 31'i HEDEFİNDE duruyor; gerçek veride
+  oyuncu zamanın %18,8'inde durağandır. Yalnız 7'sinde hedef uzakta — gerçek kusur o.
+
+### Aracın KENDİ kusuru (FAZ 55 dersinin tekrarı)
+`anomali.js`in serbest atış bölümü epizodun %85'inden örnek alıyordu; `S._ftAktif` atışlar
+bittikten sonra da açık kaldığı için (FAZ 40) oyun YENİDEN CANLIYKEN ölçüp "kulvar boş,
+şutör 8,20 m uzakta" diyordu. Aynı ölçüm düzeltme öncesi ve sonrası AYNI sayıyı verirken
+`sunum-check` F14-7 belirgin yükselmişti — çelişki aracı ele verdi. Örnek artık topun 'shot'
+moduna geçtiği ilk karenin hemen ÖNCESİDİR. **Bir ölçüm iki farklı kodda aynı sonucu
+veriyorsa ölçüm yanlıştır.**
+
+### Kapılar
+- `sim-node --n=500 --seed=42` → 93.1 - 87.9 · olay 268 · determinizm ✓ (birebir)
+- `band.js` **c19928475859c7ff** ✓ · `measure.js` **51fa02b6e0a8194b** ✓ — maç matematiği
+  değişmedi (bütün değişiklikler sahne/çizim katmanında)
+- `visual-check` ✓ · `anlatim-check` 31/31 ✓ · `balon-check` ✓
+- `sunum-check`: F14-7 ✗ → **✓**. Düşenler M9 · F25-1 · F25-2 · F25-6a · F25-6b — F25-6a/6b
+  klip devri yüzünden ZATEN örneksiz (CLAUDE.md'de belgeli), M9 örneklem yetersiz, F25-1
+  (%78,2) ve F25-2 (2 olay, ikisi de tam 1,50 sn eşiğinde) sınırda ve koşudan koşuya oynuyor.
+- `surum-check --yaz` → **sürüm 104**
+
+### Açık kalan
+1. Topu 6+ sn tutan oyuncu (18 olay) — klip oynatımı içinde; klip yörüngesine dokunulamaz.
+   Çözüm klip kütüphanesinde ya da olaylar arası ölü zamanın kısaltılmasında.
+2. Pozisyon duvar saatinde 12 sn'yi aşıyor (11 olay, en uzunu 17,5 sn).
+3. Ortalama pas mesafesi 3,0 m (gerçek 5-6) — `sahne-olcum` aynı büyüklüğü 5,22 m ölçüyor,
+   iki tanım farklı; hangisinin doğru olduğu netleşmeden kapı kurulmadı.
+4. A1/A5 sayıları koşudan koşuya %40 oynuyor (38/42/58 · 40/55/49) — tek koşuyla yargı verilemez.

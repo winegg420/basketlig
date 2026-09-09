@@ -100,6 +100,8 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/_lib/gercek-bant.js` | Bant okuyucu + kapı yardımcısı (`al` / `ham` / `kapi` / `bas`). Yeni bir gerçekçilik kapısı yazarken eşiği BURADAN oku. |
 | `tools/faz58-check.js` | **FAZ 58 canlı sahne kusur denetçisi** (tarayıcısız) — `iz-kaydet` kaydını okur: rakibe giden pas · izinsiz saha dışı / `_oob` sızıntısı · tek kare jeton sıçraması · canlı ve ölü sahipsiz top · tek kare top sıçraması · ÇİZİLEN konumda iç içe jeton payı. Pencere **en az 600 sn**. Top sahipliği / sokma / klip kırpması değişince `iz-kaydet --secs=620` + bunu çalıştır. |
 | `tools/faz59-check.js` | **FAZ 59 uçan top + taşıyıcı denetçisi** (tarayıcısız) — `iz-kaydet` kaydını okur: donan uçuş (mod pass/shot ama konum sabit) · pas süresi p99 · rakibe giden pas · canlı sahipsiz top · orta çizgiyi TOPLA geçen rol · FAZ 58 gerileme satırları. Pencere **en az 600 sn**. ⚠ İvme ve savunma mesafesi kapıları burada DEĞİL `sahne-olcum.js`tedir (yuvarlama/tanım farkı). Top durum makinesi ya da klip slot eşlemesi değişince çalıştır. |
+| `tools/anomali.js` | **Anomali avcısı** (tarayıcısız) — `iz-kaydet` kaydının TAMAMINI tarar ve **kapı listesi OLMADAN** aykırı davranışı arar: kıpırdamayan oyuncu · hedefine varamayan · arka sahada kalan hücumcu · kimseyi tutmayan savunmacı · yığılma · titreme · serbest atış yerleşimi · uzun/geri/rakibe pas · topu uzun tutan · boyada 3 saniye · yayılım · pozisyon süresi. Sayılar yeşilken şikâyet geldiğinde İLK bunu çalıştır. Bulgular ADAYDIR; kararı gerçek veri ve göz verir. |
+| `tools/an-goruntu.js` | **Anomali görüntüleyici** — canlı maçta bir durum (serbest atış · yığılma · donuk oyuncu · uzun tutma) OLUŞTUĞU ANDA sahanın PNG.sini çeker (`--secs=420 --max=26`). Kontak sayfasından farkı: sabit aralıkla değil olay anında çeker. |
 | `tools/kilit-check.js` | **FAZ 51 kilitli sonuç (C1) etiket denetçisi** — maç başlat → yenile → Ana Panel kartı ve Maçlar butonu "⏩ Kilitli sonucu uygula" demeli, tıklayınca skorlu bildirim + fikstür işlenir, etiketler Başlat'a döner, ikinci tıklama gerçek maç. Buton etiketi / pendingMatch akışı değişince çalıştır. |
 | `tools/schema-check.js` | **`db/schema.sql` denetçisi** — sözdizimi (varsa gerçek PostgreSQL ayrıştırıcısı), lig kuralları, RLS, "kod tabanında bağlantı yok". |
 | `db/schema.sql` | **Çok oyunculu veri modeli** (Postgres/Supabase). Yalnız dosya — hiçbir bağlantı kurulmuyor. |
@@ -2059,3 +2061,55 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   `tools/sahne-olcum.js`ten (ham float, 0,2 sn pencereli) okunur. Aynı sebeple
   "savunmadan >4 m" kapısı da `sahne-olcum`dadır — bu araçtaki geniş tanımlı sayı
   (taşıyıcı olan HER kare) sistematik olarak yüksektir (aynı koşuda 27,2 ↔ 17,9).
+
+- **KAPI YALNIZ SORULAN SORUYU YANITLAR — ANOMALİ AVCISI (FAZ 60, kullanıcı: "her şeyin
+  içine sıçılmış"):** FAZ 58-59'da bütün kapılar yeşildi ve oyun hâlâ bozuk izleniyordu.
+  `tools/anomali.js` kaydın tamamını tarar ve **önceden verilmiş bir kapı listesi olmadan**
+  aykırı davranışı arar; `tools/an-goruntu.js` o durum oluştuğu ANDA ekran görüntüsü çeker.
+  Sayılar yeşilken şikâyet geldiğinde sıra: (1) `anomali` çalıştır, (2) en yüksek önemdeki
+  bulgunun karesine `an-goruntu` ile BAK, (3) kök nedeni kodda ara. Kod okumakla değil
+  kareye bakmakla başla (FAZ 44 dersinin aracı).
+- **ANOMALİ BULGUSU KUSUR DEMEK DEĞİLDİR — GERÇEK VERİYLE SINA (FAZ 60):** avcının bulduğu
+  "kimseyi tutmayan savunmacı" 26 epizodun 22'si KLİP jetonuydu, yani gerçek NBA geçiş anı;
+  `hareket-bant-check` savunmacı mesafesini zaten gerçekle L1 0,137 ile eşliyor. "3 sn
+  kıpırdamayan oyuncu" 38 epizodun 31'i HEDEFİNDE duruyordu ve gerçek veride oyuncu zamanın
+  %18,8'inde durağandır. Avcı ADAY üretir; kararı gerçek veri (`_lib/gercek-hareket.json`)
+  ve göz verir. Aday listesini körlemesine "düzeltmek" oyunu gerçeklikten UZAKLAŞTIRIR.
+- **SERBEST ATIŞ TÖRENİ İLK KARESİNDE KENDİNİ İPTAL EDİYORDU (FAZ 60):** `oamTorenKur` atış
+  sayacını `sonMod:null` ile başlatıyordu; ŞUT FAULÜNDE top zaten `'shot'` modundadır,
+  dolayısıyla ilk karede sahte bir atış sayılıp `atisN>=atisToplam` ile tören kapanıyordu.
+  Tören kapanınca ON OYUNCUNUN HEDEFİ HİÇ YAZILMAZ — ve `_setFtFormation`ın hedefleri de
+  `_hedefAta` sarmalayıcısı tarafından tören sahipliği yüzünden yutulur, yani hiçbir yazıcı
+  kalmaz. Sayaç töreni kurarken topun O ANKİ moduyla başlar. Yeni bir tören türü eklerken
+  "bu sayaç önceki olayın durumunu miras alıyor mu" diye sor.
+- **ÜÇ SANİYE KURALI ÖLÜ TOPTA SAYILMAZ (FAZ 60):** `oamHedef`in boya kaçışı (FAZ 54 C1)
+  tören sırasında da çalışıyordu ve tören `O.rim=[0,0]` ile kurulduğu için boya sınavı
+  `|p.x − 0| < 171 px` oluyor, SOL potadaki serbest atışlarda kulvar oyuncuları (x = 108-196)
+  "boyada" sayılıp 1,6 saniye sonra kulvardan KOVULUYORDU. `oamBoyaKac` artık tören ·
+  `_ftAktif` · hakem töreni · `'dead'` modunda null döner. Düdük anında 3,7 m'den uzakta
+  kalan oyuncu SPRINT eder (KOS ile 3,4 sn'lik tören tavanına yetişemiyordu).
+  Ölçülen: `sunum-check` F14-7 **7,7/10 → 9,3/10** (FAZ 57'den beri düşen kapı), ortalama
+  sapma 0,26 → 0,12 m; dipteki iki kulvar yerinin savunmanın olduğu epizot 4/5 → 5/5.
+- **JETON ÇAPI GERÇEK OYUNCUNUN İKİ KATIYDI (FAZ 60, 16 → 12 px):** saha 28 m ve jeton
+  yarıçapı 16 px, yani çap 1,08 m — gerçek omuz genişliğinin (~0,5 m) iki katı. Ölçüldü:
+  3+ oyuncunun 1,5 m'de toplandığı 40 epizodun **37'si klip jetonu**, yani simülasyon konumu
+  gerçek NBA kaydıdır ve doğrudur (FAZ 56: gerçek kayıtta en yakın çift karelerin %10,4'ünde
+  40 cm altında). Kusur konumda değil ÇİZİMDEYDİ. Yarıçap 12 px (0,81 m çap), `_CIZ_R` 29 → 25,
+  `_CIZ_MAX` 17 → 12 — gereken kayma küçüldüğü için çizilen konum gerçek konuma DAHA YAKIN.
+  Bir "üst üste binme" şikâyetinde önce jetonun kendi boyutunu sor.
+- **ÖLÜ ZAMANDA TOP ÇEVİRME DENENDİ VE ÖLÇÜLEREK GERİ ALINDI (FAZ 60):** "bir oyuncu topu
+  12,3 sn tutuyor" bulgusuna karşı `oamCevirTick` yazıldı; 640 sn'lik ölçümde etkisi YOK
+  (tutma 2,00 → 2,02 sn, 6 sn üstü 15 → 16) çünkü uzun tutmaların **13/15'i KLİP oynatımı
+  içindedir** ve klip yörüngesine dokunulmaz. Yığılma da 40 → 55'e çıktı. Kaldırıldı.
+  Bu sınıftaki bir kusurun çözümü sahne kuralı eklemek değil, klip kütüphanesinde ya da
+  olaylar arası ölü zamanın kısaltılmasındadır.
+- **BİR ÖLÇÜM İKİ FARKLI KODDA AYNI SONUCU VERİYORSA ÖLÇÜM YANLIŞTIR (FAZ 60, FAZ 55
+  dersinin tekrarı):** `anomali.js`in serbest atış bölümü epizodun %85'inden örnek alıyordu;
+  `S._ftAktif` atışlar bittikten sonra da açık kaldığı için (FAZ 40) oyun YENİDEN CANLIYKEN
+  ölçüp "kulvarda 0 oyuncu, şutör 8,20 m uzakta" diyordu. Düzeltme öncesi ve sonrası aynı
+  sayıyı verirken `sunum-check` F14-7 belirgin yükselmişti — çelişki aracı ele verdi. Örnek
+  artık topun `'shot'` moduna geçtiği ilk karenin hemen ÖNCESİDİR.
+- **`tools/anomali.js` / `tools/an-goruntu.js`:** ilki `iz-kaydet` kaydını tarayıcısız tarar
+  (pencere en az 600 sn), ikincisi canlı maçta durum oluşunca `#courtSvg` görüntüsü çeker
+  (`node tools/an-goruntu.js <etiket> --secs=420 --max=26`). ⚠ A1/A5 sayıları koşudan koşuya
+  %40 oynar (38/42/58 · 40/55/49) — tek koşuyla yargı verme.

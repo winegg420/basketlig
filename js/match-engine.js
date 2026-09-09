@@ -438,8 +438,11 @@ function _anlatimAdi(name){
    hedeflediğinde çift o değerin ±ε'unda kapanıyor ve karelerin yarısında hâlâ 26 px'in ALTINDA
    ölçülüyordu — kayıttan yeniden çözümlemede pay %34,9 idi; hedef 29 px olunca %11,9'a indi
    (sınırsız kayma ve 30 gevşetme geçişiyle bile %30'un altına inmiyordu, kusur çözünürlüktü). */
-const _CIZ_R=29;             /* px — çizim çözümünün hedef mesafesi (ölçüm eşiği 26) */
-const _CIZ_MAX=17;           /* px (0,58 m) — jeton başına en büyük çizim kayması · FAZ 58 F: 9 → 17.
+const _CIZ_R=25;             /* px — çizim çözümünün hedef mesafesi · FAZ 60: jeton yarıçapı 16 → 12
+                                olunca 2r = 24 px "değme" mesafesidir; 25 px küçük bir boşluk bırakır ve
+                                gereken kayma küçüldüğü için çizilen konum gerçek konuma DAHA YAKIN olur
+                                (_CIZ_MAX 17 → 12). */
+const _CIZ_MAX=12;           /* px (0,58 m) — jeton başına en büyük çizim kayması · FAZ 58 F: 9 → 17.
                                 Ölçüldü (v101): 0,37-0,40 m'lik (11-12 px) klip çiftleri 2,6 sn boyunca
                                 iç içe kalıyordu — 12+2×9=30 px sınırda kalıp hedefe (29) ancak değiyor,
                                 üçlü kümede yetmiyordu. 13 px ölçüldü: %9,05 → %4,21; kalan karelerin %64'ünde
@@ -554,22 +557,31 @@ function initMatchPlayers(lu,rakip,oppPlayers){
       const g=document.createElementNS('http://www.w3.org/2000/svg','g');
       g.setAttribute('class','court-token');
       const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
-      c.setAttribute('r','16'); c.setAttribute('fill',fill);
+      /* ── FAZ 60: JETON ÇAPI GERÇEK OYUNCUYA İNDİ (16 → 12 px) ─────────────────────────
+         Saha 28 m genişliğinde ve jeton yarıçapı 16 px idi: çap 1,08 m — gerçek bir
+         oyuncunun omuz genişliğinin (~0,5 m) iki katı. Ölçüldü (640 sn): 3+ oyuncunun
+         1,5 m yarıçapta toplandığı 40 epizodun 37'si KLİP jetonuydu, yani simülasyon
+         konumu GERÇEK NBA kaydıdır ve doğrudur (FAZ 56: gerçek kayıtta en yakın çift
+         karelerin %10,4'ünde 40 cm'nin altında). Kusur konumda değil ÇİZİMDE: iki kat
+         büyük jetonlar gerçek bir kalabalığı okunmaz bir yumağa çeviriyordu (bir karede
+         beş jeton üst üste, isimler okunmuyor). Yarıçap 12 px = 0,81 m çap — hâlâ
+         cömert ama gerçek kalabalık artık ayırt edilebiliyor. Simülasyona DOKUNULMADI. */
+      c.setAttribute('r','12'); c.setAttribute('fill',fill);
       c.setAttribute('stroke','rgba(0,0,0,0.6)'); c.setAttribute('stroke-width','2.5');
       /* FAZ 57 A2: 1,5 px açık halka — üst üste binen iki jeton hâlâ ayırt edilebilsin. */
       const hal=document.createElementNS('http://www.w3.org/2000/svg','circle');
-      hal.setAttribute('r','17.2'); hal.setAttribute('fill','none');
+      hal.setAttribute('r','13.1'); hal.setAttribute('fill','none');
       hal.setAttribute('stroke','rgba(255,255,255,0.8)'); hal.setAttribute('stroke-width','1.5');
       hal.setAttribute('pointer-events','none');
       const t=document.createElementNS('http://www.w3.org/2000/svg','text');
-      t.setAttribute('text-anchor','middle'); t.setAttribute('dy','5.5');
-      t.setAttribute('font-size','17'); t.setAttribute('font-weight','800');
+      t.setAttribute('text-anchor','middle'); t.setAttribute('dy','4.4');
+      t.setAttribute('font-size','13'); t.setAttribute('font-weight','800');
       t.setAttribute('fill','#fff'); t.setAttribute('pointer-events','none'); t.textContent=num;
       const nm=document.createElementNS('http://www.w3.org/2000/svg','text');
       /* İsim etiketi: EV takımı jetonun ALTINDA, deplasman ÜSTÜNDE — iki jeton yan yana
          geldiğinde etiketler üst üste binip okunmaz hâle gelmesin (takım ayrımı da netleşir). */
       nm.setAttribute('class','tok-name');   /* dar ekranda CSS ile gizlenir (okunmaz hâle gelmesin) */
-      nm.setAttribute('text-anchor','middle'); nm.setAttribute('dy',fill===homeCol?'30':'-21');
+      nm.setAttribute('text-anchor','middle'); nm.setAttribute('dy',fill===homeCol?'25':'-17');
       nm.setAttribute('font-size','12'); nm.setAttribute('font-weight','700');
       nm.setAttribute('fill','rgba(255,255,255,0.95)'); nm.setAttribute('stroke','rgba(0,0,0,0.55)');
       nm.setAttribute('stroke-width','0.9'); nm.setAttribute('paint-order','stroke');

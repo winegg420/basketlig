@@ -577,6 +577,14 @@ function oamBoyaKac(S,O,p){
   try{
     const rim=O.rim; if(!rim) return null;
     const b=S.ball;
+    /* ── FAZ 60: ÜÇ SANİYE ÖLÜ TOPTA SAYILMAZ ────────────────────────────
+       Gerçek kural: düdükle birlikte üç saniye sayacı durur ve sıfırlanır. Serbest atış
+       töreninde oyuncular ZATEN kulvarda, yani boyanın kenarında durmak ZORUNDADIR.
+       Kusur: tören `O.rim=[0,0]` ile kuruluyor; boya sınavı `|p.x - 0| < 171 px` olduğu
+       için SOL potadaki serbest atışlarda kulvar oyuncuları (x = 108-196) "boyada" sayılıyor
+       ve 1,6 saniye sonra kulvardan KOVULUYORDU. Ölçüldü: F14-7 atış anında yerinde
+       7,7/10, en uzak oyuncu 5,81 m. Aynı sebeple hakem töreni ve ölü top da muaftır. */
+    if(O.torenSahibi||O.faz==='toren'||S._ftAktif||(S._hakemTop&&S._hakemTop.aktif)||b.mode==='dead'){ if(p) p._boyaT=0; return null; }
     if(!p||p===b.carrier||p._oob||p._klip) { if(p) p._boyaT=0; return null; }
     const ic=Math.abs(p.y-250)<2.45*29.5429&&Math.abs(p.x-rim[0])<5.8*29.5429;
     if(!ic){ p._boyaT=0; return null; }
@@ -1059,7 +1067,19 @@ function oamTorenKur(S,tip,ev){
       offP:spots._offP||S.offP||S.home,defP:spots._defP||S.defP||S.away,offR:[],defR:[],offLeft:(spots._offLeft!=null?spots._offLeft:S.offSide),dir:1,rim:[0,0],
       spots,zincir:[],zi:0,holdT:0,holdMin:0.6,scheme:null,fastBreak:false,putback:false,iso:false,isPnr:false,screener:null,cutter:null,postup:false,
       degisim:null,degisti:true,inb:null,spot:null,tFire:99,tInb:0,tAdv:0,setDur:99,tSet:null,tGecis:null,res:null,onShoot:null,atildi:false,perdeEvre:0,
-      esle:new Map(),ph:new Map(),zorla:false,sutT:null,_snapSeen:(S._snapN|0),atisN:0,atisToplam:(tip==='free'&&ev&&ev.shots)?Math.min(3,ev.shots.length):0,sonMod:null};
+      esle:new Map(),ph:new Map(),zorla:false,sutT:null,_snapSeen:(S._snapN|0),atisN:0,atisToplam:(tip==='free'&&ev&&ev.shots)?Math.min(3,ev.shots.length):0,
+      /* ── FAZ 60: TÖREN İLK KARESİNDE KENDİNİ İPTAL EDİYORDU ────────────────────────
+         `oamTorenTick`in 'free' dalı atışları `b.mode==='shot'` geçişiyle sayar ve
+         `atisN>=atisToplam` olunca töreni bitirir. `sonMod` null başlatılınca, ŞUT FAULÜ
+         anında top ZATEN 'shot' modunda olduğu için ilk karede sahte bir atış sayılıyor;
+         tek atışlık serbest atışta tören daha ilk karede kapanıyor, iki atışlıkta bir
+         atış erken bitiyordu. Tören kapanınca ON OYUNCUNUN HEDEFİ HİÇ YAZILMIYOR ve
+         `_setFtFormation`ın hedefleri de `_hedefAta` sarmalayıcısı tarafından tören
+         sahipliği yüzünden yutuluyor — sonuç: kulvarlar boş, oyuncular önceki
+         pozisyonun yerinde kalıyor, ikisi sahanın öbür ucunda (ölçüldü ve GÖRÜLDÜ:
+         5 serbest atışın 3'ünde kulvarda 0-3 oyuncu, şutör çizgiden ortalama 4,18 m).
+         Sayaç, töreni kurarken topun O ANKİ moduyla başlar. */
+      sonMod:(S.ball&&S.ball.mode)||null};
     (S.players||[]).forEach((p,i)=>O.ph.set(p,i*1.3));
     S.oam=O; S.canliSet=false; S._setIstek=false; S.defTrack=false; S.cikisSonra=1e9;
     /* hedefler HEMEN yazılır: eski dalın bekleme tahmini (`_ftWaitSec`) ve `_ftHazir` kapısı `p.tx`
@@ -1102,7 +1122,9 @@ function oamTorenTick(S,O,dt){
     if(!p||p._oob||(S.chase&&S.chase.tok===p)) return;
     const c=O.spots.get(p); if(!c) return;
     const d=Math.hypot(p.x-c[0],p.y-c[1]);
-    oamHedef(p,c[0],c[1],d>(O.torenTip==='free'?55:110)?_URG.KOS:_URG.JOG);   /* FAZ 52 */
+    /* FAZ 60: 3,7 m.den uzaktaki oyuncu SPRINT eder — ölçüldü, düdük anında 8-11 m
+       uzakta kalan 2-3 oyuncu KOS ile 3,4 sn.lik tören tavanına yetişemiyordu. */
+    oamHedef(p,c[0],c[1],d>110?_URG.SPRINT:(d>(O.torenTip==='free'?55:110)?_URG.KOS:_URG.JOG));   /* FAZ 52 · FAZ 60 */
   });
 }
 
