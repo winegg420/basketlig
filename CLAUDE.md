@@ -2159,3 +2159,34 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   taşıyıcı · mod) yazılır; öncelik KLİP DİKİŞİDİR (maç boyunca ~90 kez klip biter, fizik
   devralır, yeni klip oyuncuları yeni rollere eşler). Görsel şikâyette `anomali` + `an-goruntu`
   bir şey bulamıyorsa bunu çalıştır ve şeridi SIRAYLA oku.
+
+- **KULLANICININ TARAYICISINDA ÖLÇÜM: `document.hidden` MUTLAKA RAPORLANIR (FAZ 62):** arka
+  plandaki sekmede `requestAnimationFrame` saniyede 3-4 kareye düşer — ölçüldü: aynı gözlemci
+  gizli sekmede 2,9 saniyede 10 kare, görünür sekmede 60 fps topladı. Gizli sekmede alınan
+  HİÇBİR sahne ölçümü geçerli değildir. Kalıcı çözüm kare bazlı gözlemci yerine **fonksiyon
+  kancasıdır** (`_ballPass` / `_ballTut` / `_ballShoot` / `_simTick` sarmalanır): sekme arkada
+  olsa da her olayı yakalar ve yığın izini (`new Error().stack`) verdiği için kök nedeni de
+  gösterir. ⚠ Birden çok Chrome bağlıysa yanlış olanı seçmek mümkündür; simge durumundaki
+  pencerede `window.outerWidth/outerHeight = 0` döner — kullanıcı "sekme yok" derken maç
+  sesini duyuyorsa tam olarak budur.
+- **SAHA KULLANILABİLİR YÜKSEKLİĞE SIĞMALI (FAZ 62, kullanıcı: "sahanın tamamı gözükmüyor,
+  ekranı oynatabiliyorum"):** `.court-svg` yalnız GENİŞLİĞE göre ölçekleniyordu; 1266 px
+  genişlikte yükseklik 752 px olur ve 911 px'lik bir pencerede saha 120 px TAŞAR, alttaki
+  eylem butonları hiç görünmez. `max-height:calc(100vh - 300px)` zorunludur.
+  ⚠ `width:auto` ile denendi ve ELENDİ: saha kutu genişliğini dolduramayıp 262 px altın bant
+  bırakıyor. Saha genişlik boyunca kalır, yükseklik sınırlanınca yanlardaki bantlar
+  `background:#111118` ile koyulaşır. Sahne kutusu ölçüsü değiştiren her değişiklikte
+  SAYFA/EKRAN yüksekliğini de ölç — yalnız sahaya bakmak yetmez (FAZ 61'de bu atlandı).
+- **HAVADAN PAS: TAŞIYICI TOPUN YANINDA DEĞİLSE PAS ATILAMAZ (FAZ 63):** kullanıcının
+  tarayıcısında canlı yakalandı (t=357,1): top `'held'` modunda, `b.carrier` = a/SF, ama a/SF
+  topa **10,3 metre uzakta** — ve o "taşıyıcıdan" hakeme pas atıldı. Ekranda top boşlukta
+  durup kimse dokunmadan uçuyor (kullanıcı: "abuk sabuk paslar atılıyor, havadan pas geliyor").
+  Taşıyıcı 2 m'den uzaksa `'held'` bayrağına GÜVENİLMEZ; durum sahipsiz top gibi işlenir
+  (`_pasKorumasi` — topu önce gerçekten yakında olan ve hedefle AYNI TAKIMDAN bir oyuncuya
+  aldırır). Klip oynatırken top klibin yörüngesindedir ve muaftır. Sayaç `S._havadanN`.
+- **KALABALIKTA İSİM ETİKETİ GİZLENİR (FAZ 62):** canlı ölçüm (626 kare): karelerin
+  %47,6'sında 3 m'lik zincirde 6+ oyuncu, %19,3'ünde 8+ — bu GERÇEK basketbol (klip kareleri
+  %84) ve konum ayrıştırması bu büyüklükte bir kümede yetmiyor (çizimde gerçek örtüşme %10,2).
+  Okunmazlığın büyük kısmı jetonlardan değil İSİM ETİKETLERİNDEN gelir (etiket jetondan
+  geniştir; üç isim yan yana gelince harf yığınına dönüşür). Komşusu `_CIZ_AD` (34 px) içinde
+  olan jetonun ismi saklanır, forma numarası kalır.

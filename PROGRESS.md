@@ -10171,3 +10171,72 @@ yap. Bir görünümü herkes için değiştirmek KULLANICININ KARARIDIR.
 
 Yani varsayılan görünüm FAZ 60 öncesiyle **birebir aynı** ve açma/kapama tam geri dönüyor.
 `visual-check` ✓ · `mobile-check` **18/18** ✓ · konsol hatası 0 · sürüm 106.
+
+---
+
+## 62-63. oturum — KULLANICININ TARAYICISINA CANLI BAĞLANMA (sürüm 107 → 109)
+
+**Kullanıcı:** "BAĞLAN İZLE SORUNLARIN HEPSİNİ NOT ET DÜZELT O ZAMAN."
+
+Chrome eklentisiyle kullanıcının kendi tarayıcısına bağlanıldı ve canlı site onun
+penceresinde izlendi. İlk kez ölçüm KULLANICININ EKRANINDA yapıldı; üç kusuru anında
+görünür kıldı — üçü de yerel harness'te görünmüyordu.
+
+### Bağlantı: iki tuzak
+1. **İki Chrome bağlıydı.** İlk seçilen tarayıcıdaki pencere SİMGE DURUMUNA KÜÇÜLTÜLMÜŞTÜ
+   (`outerWidth/outerHeight = 0`); kullanıcı maç seslerini duyuyor ama sekmeyi göremiyordu.
+   Doğru tarayıcıya geçilince (`select_browser`) pencere görünür oldu (1536×912).
+2. **Arka plandaki sekmede rAF saniyede 3-4 kareye düşüyor.** İlk gözlemci
+   `requestAnimationFrame` tabanlıydı ve 2,9 saniyede 10 kare topladı; sekme görünürken
+   60 fps. **Ders:** gizli sekmede alınan hiçbir sahne ölçümü geçerli değildir. Kalıcı
+   çözüm kare bazlı gözlemci yerine **fonksiyon kancasıdır** (`_ballPass`, `_ballTut`,
+   `_ballShoot`, `_simTick` sarmalanır) — sekme arkada olsa da her olayı yakalar.
+
+### FAZ 62 (sürüm 107) — saha ekrana sığmıyordu
+Kullanıcının penceresinde ölçüldü: saha yalnız GENİŞLİĞE göre ölçekleniyor; 1266 px
+genişlikte yükseklik 752 px oluyor ve 911 px'lik pencerede saha 279 → **1031** arasına
+uzanıyor. 120 px taşıyor, alttaki eylem butonları (1051) HİÇ görünmüyor.
+Kullanıcı: *"sahanın tamamı gözükmüyor, ekranı oynatabiliyorum"*.
+`max-height:calc(100vh - 355px)` eklendi → saha 279 → 835, butonlar 855 → 898, ekran 911.
+
+**Aynı turda ikinci kusur, yine kendi düzeltmemden (FAZ 62b, sürüm 108):** `width:auto` ile
+saha 640×380'e düştü ve 902 px'lik kutuda **262 px altın bant** bıraktı. Saha artık genişlik
+boyunca kalır, yükseklik sınırlanınca yanlardaki bantlar KOYU olur (`background:#111118` —
+mevcut çerçeve rengi), tavan 355 → 300 px. Ölçülen (1536×735): saha **882×435**, 103 → 538,
+butonlar 558 → 601, sayfa 735 = ekran 735, taşma yok.
+
+### FAZ 62 — kalabalıkta isim etiketi gizlenir
+Canlı 626 karede ölçüldü: karelerin **%47,6'sında** 3 m'lik zincirde 6+ oyuncu, **%19,3'ünde
+8+ oyuncu** var (klip kareleri %84 — yani gerçek basketbol) ve konum ayrıştırması bu
+büyüklükte bir kümede yetmiyor (çizimde gerçek örtüşme %10,2). Okunmazlığın büyük kısmı
+jetonlardan değil İSİM ETİKETLERİNDEN geliyor: etiket jetondan geniştir, üç isim yan yana
+gelince harf yığınına dönüşür. Komşusu `_CIZ_AD` (34 px) içinde olan jetonun ismi saklanır;
+forma numarası kalır.
+
+### FAZ 63 (sürüm 109) — "HAVADAN PAS"
+Kullanıcı: *"abuk sabuk paslar atılıyor, havadan pas geliyor"*. Kanca ile canlı yakalandı:
+
+    t=357,1  tip=foul  mod=held  taşıyan=a/SF  taşıyanUzak=10,3 m  hedef=HAKEM
+    yığın: oamTopHakeme < oamOluTopHakem < _oluTopSokucuyaVer
+
+Top `'held'` modunda ve `b.carrier` a/SF, ama **a/SF topa 10,3 metre uzakta** — buna rağmen
+o "taşıyıcıdan" pas atıldı. Ekranda: top boşlukta duruyor ve kimse dokunmadan uçuyor.
+
+**Kural:** taşıyıcı topa 2 m'den uzaksa top GERÇEKTE onun elinde değildir; `'held'` bayrağına
+güvenilmez. Bu durum sahipsiz top gibi işlenir — `_pasKorumasi` topu önce gerçekten yakında
+olan (ve pasın hedefiyle AYNI TAKIMDAN, FAZ 58) bir oyuncuya aldırır, pas ondan sonra çıkar.
+Klip oynatırken top klibin yörüngesindedir ve muaftır. Sayaç `S._havadanN`.
+
+### Kapılar
+`sim-node --n=200 --seed=42` 93.4 - 87.3 · olay 268 · determinizm ✓ ·
+`band.js` **c19928475859c7ff** ✓ · `measure.js` **51fa02b6e0a8194b** ✓ ·
+`visual-check` ✓ · `mobile-check` **18/18** ✓ · `surum-check --yaz` → **109**
+
+### Açık kalan
+1. "Rakip oyuncular birbirine pas veriyor" — `_ballTut` + `_simTick` kancalarıyla (klip yolu
+   dahil) izlendi, 45 saniyede sıfır rakibe-geçiş yakalandı. FAZ 63'ün kapattığı kusurun
+   görüntüsü olabilir; tekrar bildirilirse o anın kaydı alınacak.
+2. "Faul çizgisine düzgün yerleşmiyorlar" — `_ballShoot` üstüne serbest atış dizilim kancası
+   takıldı ama o maçta serbest atış olmadı, örnek toplanamadı.
+3. Simülasyonda en yakın çift min **0,8 px** (2,7 cm) — klip verisinin izleme gürültüsü;
+   çizim ayrıştırması 16 px'e açıyor ama 8 kişilik kümede yetmiyor.
