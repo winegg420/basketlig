@@ -143,7 +143,10 @@ async function main() {
               +(p._nudgeOfs != null ? p._nudgeOfs : -99).toFixed(0), /* 9: sürüklenme ofseti */
               (p._nudgeN | 0),                                 /* 10: salınım atama sayacı */
               (p._oob || p._oobDonus) ? 1 : 0,                 /* 11: çizgi dışı izni + dönüş (A4 muafiyeti) */
-              +(p.tx || 0).toFixed(0), +(p.ty || 0).toFixed(0)  /* 12-13 (FAZ 45): hedef — "nereye gidiyor" teşhisi */
+              +(p.tx || 0).toFixed(0), +(p.ty || 0).toFixed(0),  /* 12-13 (FAZ 45): hedef — "nereye gidiyor" teşhisi */
+              +(p._cizDx || 0).toFixed(2), +(p._cizDy || 0).toFixed(2),  /* 14-15 (FAZ 58): cizim ayristirma ofseti (F) */
+              p._klip ? 1 : 0,                                           /* 16 (FAZ 58): klip jetonu mu (C/F ayrimi) */
+              p._oob ? 1 : 0                                             /* 17 (FAZ 58): ham cizgi-disi IZNI (donus haric) */
             ])
           });
         }

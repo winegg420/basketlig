@@ -468,7 +468,8 @@ function klipTick(dt){
       const kv=bek?hedefV:(hedefV*(1-Math.exp(-om/L)));
       const adim=Math.min(om,kv*dt);
       if(om-adim<0.4){ o[0]=0; o[1]=0; } else { const k2=(om-adim)/om; o[0]*=k2; o[1]*=k2; } }
-    let nx=_inX(c[0]+o[0]+K.warp[0]*ww*wk), ny=_inY(c[1]+o[1]+K.warp[1]*ww*wk);   /* hedef saha içinde: çizgi dışındaki sokucu İÇERİ YÜRÜR (kırpma sıçratmaz — FAZ 40 dersi, ölçüldü 1,35 m tek kare) */
+    const _rx=c[0]+o[0]+K.warp[0]*ww*wk, _ry=c[1]+o[1]+K.warp[1]*ww*wk;
+    let nx=_inX(_rx), ny=_inY(_ry);   /* hedef saha içinde: çizgi dışındaki sokucu İÇERİ YÜRÜR (kırpma sıçratmaz — FAZ 40 dersi, ölçüldü 1,35 m tek kare) */
     /* ⚠ FAZ 56: KLIP_VMAX kırpması KALDIRILDI. Kırpma 5 kare/sn'lik kaydın ara değerinden doğan
        hız sıçramalarını bastırmak için vardı; jetonu yörüngenin gerisinde bıraktığı için fark
        ofsete yazılıyor ve bir sonraki karede DAHA HIZLI kapanıyordu (kırpma açılıp kapandığında
@@ -481,6 +482,33 @@ function klipTick(dt){
        fark bir sonraki karede kapanıyor: kare-kare tepe 845 → 1297, >8 payı %3,67 → %3,92,
        ortalama hız 1,97 → 2,06 m/sn (bandın dışı). Klip yörüngesinden SAPAN her yapı, sapmayı
        kapatırken kaydın kendisinden hızlı hareket etmek zorunda kalıyor. */
+    /* ── FAZ 58 C: SAHAYA GERİ ÇEKME KADEMELİDİR ────────────────────────────────────
+       Ölçüldü (v101): çizginin 0,9 m dışında duran bir jeton (B maddesindeki `_oob`
+       sızıntısı) için klip başlayınca `_inX` kırpması onu TEK KAREDE içeri çekiyordu —
+       sıçrama tam olarak 40 px (1,35 m), altı olayın altısında da aynı. Fizik yolunda bu
+       kademeli sınır FAZ 40 §A2'den beri var; klip yolunda yoktu.
+       ⚠ Bu, FAZ 56'da KALDIRILAN `KLIP_VMAX` DEĞİLDİR: orası klip yörüngesinin KENDİSİNİ
+       kırpıyor, jetonu kaydın gerisinde bırakıp bir sonraki karede daha hızlı kapanmaya
+       zorluyordu. Buradaki sınır YALNIZ KIRPMANIN ETKİN olduğu karelere, yani yörüngeyle
+       ilgisi olmayan bir düzeltme hareketine uygulanır — kırpılmayan hiçbir kareye dokunmaz,
+       dolayısıyla hız/ivme/yayılım satırlarını değiştirmez. */
+    /* ⚠ ÖLÇÜT "OYUNCU SAHA DIŞINDA" DEĞİL "KIRPMA ETKİN"dir (FAZ 58 · 2. ölçüm): `_inX`
+       jetonu çizgiden 14 px İÇERİDE tutar, dolayısıyla çizgi ile çizgi+14 px arasındaki jeton
+       hâlâ kırpılıyor ama "saha dışında" değildir. İlk sürüm bu aralığı kaçırdı ve jeton
+       çizgiyi geçtiği karede birikmiş farkı tek adımda kapattı (ölçüldü: 1,35 m → 0,47 m,
+       yani küçüldü ama bitmedi). */
+    if(Math.abs(_rx-nx)>0.001||Math.abs(_ry-ny)>0.001||p.x<CRT_X0||p.x>CRT_X1||p.y<CRT_Y0||p.y>CRT_Y1){
+      const _dx=nx-p.x, _dy=ny-p.y, _d=Math.hypot(_dx,_dy);
+      const _lim=Math.max(30,(p.sprintV||p.maxV||180))*dt*1.2;
+      if(_d>_lim&&_d>0.001){
+        nx=p.x+_dx/_d*_lim; ny=p.y+_dy/_d*_lim;
+        /* FAZ 58 C2: KIRPILAN FARK OFSETE GERİ YAZILIR. Yoksa jeton çizgiyi geçtiği KARE'de
+           birikmiş farkı tek adımda kapatıyor (ölçüldü: 0,46-0,47 m/kare, 1,35 m'lik snap'in
+           küçültülmüş hâli). FAZ 55/56 dersinin tam karşılığı: hız tavanı tek başına yetmez,
+           kırpılan fark ofsete yazılmalı ki doyumlu kapanış yasasıyla sönsün. */
+        o[0]=nx-c[0]-K.warp[0]*ww*wk; o[1]=ny-c[1]-K.warp[1]*ww*wk;
+      }
+    }
     const ox=p.x, oy=p.y;
     p.x=nx; p.y=ny; p._px=p.x; p._py=p.y;
     if(!K.atildi){ p.tx=p.x; p.ty=p.y; }   /* şuttan sonra hedefler koreografinindir (ribaunt, serbest atış dizilişi) */
@@ -528,7 +556,18 @@ function klipTick(dt){
       else { b.carrier=en; b.mode='held'; b.noDrib=false; b._heldAt=S.time; }
     } else if(b.mode!=='held'){ b.mode='held'; b._heldAt=S.time; }
   }
-  else if(b.mode==='held'&&b.carrier&&Math.hypot(b.carrier.x-b.x,b.carrier.y-b.y)>KLIP_TUTMA_FT*1.6*pxFt){ b.carrier=null; b.mode='pass'; b.target=en; b.from=[b.x,b.y]; }   /* FAZ 54 A5: 4 → 6,4 ft — ölçüldü, 103 pasın 48'i 2 m altındaydı (sürme/ofset titremesi) */
+  else if(b.mode==='held'&&b.carrier&&Math.hypot(b.carrier.x-b.x,b.carrier.y-b.y)>KLIP_TUTMA_FT*1.6*pxFt){
+    /* ── FAZ 58 A: KLİP BAŞLANGICINDA SAHTE PAS ÜRETME ────────────────────────────────
+       Ölçüldü (v101+A1..A6, iki koşuda AYNI anda): önceki pozisyonun sokucusu (h/PF) topu
+       hâlâ elinde tutarken yeni şut pozisyonunun klibi başlıyor; bu dal taşıyıcıyı düşürüp
+       mod'u 'pass' yapıyor ve hedefi klibin hücumundaki en yakın oyuncu (a/PG) oluyordu.
+       Ekranda: h/PF topu rakip takımın oyun kurucusuna ATIYOR. Oysa pozisyon el değiştirmiş,
+       yani bu bir PAS değil sahip değişimidir. Pas yalnız KLİBİN KENDİ hücumu içinde
+       meşrudur; taşıyıcı klibin hücumunda değilse top serbest bırakılır ve klibin hücumcusu
+       4 ft'e girince ELE alır (FAZ 54 A1 sözleşmesi: 'pass' yalnız 'held'den açılır). */
+    if(K.offP&&K.offP.indexOf(b.carrier)<0){ b.carrier=null; b.mode='loose'; b.target=null; b.vx=b.vy=0; }
+    else { b.carrier=null; b.mode='pass'; b.target=en; b.from=[b.x,b.y]; }
+  }   /* FAZ 54 A5: 4 → 6,4 ft — ölçüldü, 103 pasın 48'i 2 m altındaydı (sürme/ofset titremesi) */
   else if(b.mode==='pass'){ b.target=en; }
   /* loose / rim / dead: olduğu gibi kalır — hücumcu 4 ft'e girince 'held' */
   b.rot=(b.rot||0)+dt*(b.mode==='pass'?720:180);

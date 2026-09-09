@@ -269,7 +269,7 @@ function oamSut(sh,onShoot,onResult){
   if(inbPending){
     inb=(S.inb&&S.inb.tok&&offP.indexOf(S.inb.tok)>=0)?S.inb.tok:((b.carrier&&b.carrier._oob)?b.carrier:null);
     if(S.inb) spot={x:S.inb.x,y:S.inb.y}; else if(inb) spot={x:inb.tx,y:inb.ty};
-    if(!inb){ inb=offR.reduce((a,c)=>oamDR(c,_rim(!offLeft))<oamDR(a,_rim(!offLeft))?c:a); spot=_inboundSpot('base',offLeft,null,250+(_sr()<0.5?-1:1)*_srand(24,74)); inb._oob=true; }
+    if(!inb){ inb=offR.reduce((a,c)=>oamDR(c,_rim(!offLeft))<oamDR(a,_rim(!offLeft))?c:a); spot=_inboundSpot('base',offLeft,null,250+(_sr()<0.5?-1:1)*_srand(24,74)); _oobVer(inb); }
   }
   /* FAZ 49: bütçe sabit hızdan değil MERDİVENDEN türer (150/205/250 px/sn sabitleri eski jog'a göreydi) */
   const OAM_V_KOS=_PL_JOGV*_V_TIER[2], OAM_V_SPRINT=_PL_JOGV*_V_TIER[3];
@@ -457,7 +457,7 @@ function oamTick(dt){
     const inb=O.inb, spot=O.spot;
     if(!inb||!spot){ O.faz='bekle'; }
     else {
-      inb._oob=true;
+      _oobVer(inb);
       if(b.carrier!==inb&&!ucusta&&!(S.chase&&S.chase.tok===inb)){
         _chase(inb,()=>{ try{ S.ball.noDrib=true; inb.tx=spot.x; inb.ty=spot.y; inb._wp=null; _setUrg(inb,_URG.KOS); }catch(e){} },2.4);
       }
@@ -901,7 +901,13 @@ function oamHakemTick(S,dt){
       const ucuyor=(b.mode==='pass'&&b.target===HH);
       if(!ucuyor&&(b.carrier||b.mode!=='loose')){ HT.aktif=false; }   /* başka bir yol topu aldı — hakem çekilir */
       else if(!ucuyor){
-        b.x=Math.max(CRT_X0+2,Math.min(CRT_X1-2,HH.x)); b.y=Math.max(CRT_Y0+2,Math.min(CRT_Y1-2,HH.y)); b.h=14; b.vx=b.vy=b.vh=0;   /* FAZ 51: top hakemin elinde · FAZ 54 A4: top çizginin üstünde */
+        /* FAZ 58 E: top hakemin eline SIÇRAMAZ — kalan mesafe top hız tavanıyla kapanır
+           (ölçüldü v101: 620 sn'de bir kez tek karede 2,98 m, mod loose>loose; doğrudan
+           konum ataması `_ballStep` tavanının DIŞINDA kaldığı için kırpılmıyordu). */
+        { const _hx=Math.max(CRT_X0+2,Math.min(CRT_X1-2,HH.x)), _hy=Math.max(CRT_Y0+2,Math.min(CRT_Y1-2,HH.y));
+          const _dx=_hx-b.x, _dy=_hy-b.y, _d=Math.hypot(_dx,_dy), _lim=_TOP_MAXV*dt;
+          if(_d>_lim&&_d>0.001){ b.x+=_dx/_d*_lim; b.y+=_dy/_d*_lim; } else { b.x=_hx; b.y=_hy; } }
+        b.h=14; b.vx=b.vy=b.vh=0;   /* FAZ 51: top hakemin elinde · FAZ 54 A4: top çizginin üstünde */
         const d=Math.hypot(HH.x-HH.tx,HH.y-HH.ty);
         const sh=HT.shooter;
         /* FAZ 53: SERBEST ATIŞTA HAKEM DİZİLİMİ BEKLER. Eski kodda `hazir` serbest atış

@@ -9747,3 +9747,109 @@ salınıyordu, FAZ 57'de üç ardışık koşuda 3,12 / 3,27 / 3,28 sn. **Kapı 
 **F14-7 ve F25-2 HEAD'de de düşüyor** (aynı araç, aynı makine, `git worktree` ile açılan v100
 kopyası): HEAD 8,1/10 · en uzak **6,76 m**; FAZ 57 8,2/10 · en uzak **2,74 m**. Yani gerileme
 değil, süregelen açık madde — ve en uzak jeton tarafında FAZ 57 belirgin daha iyi.
+
+---
+
+## 58. oturum — FAZ 58: rakibe pas · `_oob` sızıntısı · klip kırpma sıçraması (sürüm 102)
+
+**Kullanıcı:** "canlı maçı izliyorum rakip takıma pas atıyor oyuncular. saçma gereksiz
+hızlanmalar. bir şeyi düzeltirken bir şeyi bozuyorsun sürekli." + 32 maddelik FAZ 58 brifi.
+
+Ölçüm yöntemi bu turda baştan kuruldu: `tools/iz-kaydet.js` kaydına üç alan eklendi
+(çizim ofseti `_cizDx/_cizDy`, klip bayrağı `_klip`, ham `_oob` izni) ve
+**`tools/faz58-check.js`** yazıldı — kaydı tarayıcısız çözümler, altı maddeyi ölçer.
+620 saniyelik (≈35.000 kare) taban kaydı ÖNCE alındı ve brifin bulgularını bağımsız
+olarak doğruladı. Tam tablo: `olcum/FAZ58-sonuc.txt`.
+
+### Sonuç (taban v101 → FAZ 58, 620 sn)
+| | v101 | FAZ 58 | kapı |
+|---|---|---|---|
+| rakibe giden pas | 3 / 102 | **0 / 100** | 0 ✓ |
+| sokma izni sızıntısı (>4,5 sn) | 5 (maks 8,1 sn) | **0** (maks 3,8) | 0 ✓ |
+| 0,45 m üstü jeton sıçraması | 10 (maks 1,36 m) | **0** (maks 0,43) | 0 ✓ |
+| canlı yerde sahipsiz top | 2,70 sn | **1,88 sn** | <2,0 ✓ |
+| 1,0 m üstü top sıçraması | 1 (2,98 m) | **0** | 0 ✓ |
+| çizimde <26 px çift payı | %9,05 | **%3,06** | <%3 ~ |
+| izinsiz saha dışı | %0,00 | %0,00 | ✓ |
+
+**Motor matematiği DEĞİŞMEDİ:** `sim-node --n=500 --seed=42` → 93.1 - 87.9 · olay/maç 268
+(FAZ 57 ile birebir) · `band.js` **c19928475859c7ff** · `measure.js` **51fa02b6e0a8194b**.
+Bütün değişiklikler sahne/çizim katmanında ve hiçbiri rastgelelik akışı tüketmiyor.
+
+### 1. Rakibe pas — brif tek kaynak gösteriyordu, ölçüm DÖRT yol buldu
+Ortak kök: **hiçbir dal pasın iki ucunun aynı takımda olduğunu sınamıyordu.**
+1. `_oluTopSokucuyaVer` → `_ballHold(inb,true)` → hedef 14 px'ten uzaksa sessizce
+   `_ballPass`. Düdükte sokucu KAZANAN takımdan ve 3-8 m ötede → top sahayı uçarak
+   geçiyor. Artık ölü topta top `'dead'` olur, sokma noktasına konur, sokucu ona koşar.
+2. `_pasKorumasi` sahipsiz toptan pas isterken topu EN YAKIN oyuncuya veriyordu (rakip
+   olabilir). Havuz artık **pasın hedefinin takımı**; hakem/ghost hedefte sokucunun takımı.
+3. `_inboundPass`in "top sokucuya uçar" dalı — top rakibin elindeyse uçmaz.
+4. `sahne-klip.js` klip başlangıcı: önceki pozisyonun sokucusu topu hâlâ tutarken yeni
+   klip başlıyor, dal mod'u `'pass'` yapıp hedefi KLİBİN hücumundaki en yakın oyuncu
+   seçiyordu. Taşıyıcı klibin hücumunda değilse artık pas üretilmez, top serbest kalır.
+
+Kapı **`_ballPass` başına** kondu (tek nokta). Çalma bu kapıdan geçmez (`_hirsizAl`
+`_ballLoose`+`_chase`), hakem/ghost hedeflerin `team` alanı yoktur.
+
+⚠ **Ölçüm aracı iki MEŞRU olayı kusur sanıyordu:** hava atışı tap'i (rakibe düşebilir) ve
+**hakem aracılı el değişimi** (FAZ 51'den beri düdükte top hakeme atılır, hakem sokucuya
+verir; arada "taşıyıcısız held" karesi görünür — bu tek pas değil, iki ayrı el değişimi).
+
+### 2. `_oob` sızıntısı — brifin teşhisi yanlış, kusur gerçekti
+Brif "izinsiz dışarı" diyordu; ölçüm izinsiz payı v101'de de **%0,00** buldu. Gerçek kusur
+**iznin sızmasıydı**: `_oob` açık kalıyor, oyuncu 8,1 sn'ye kadar çizgi dışında duruyordu
+(16 olayın yarısı pivot). `_oobKapat` 12 yerden çağrılıyor, bazı yollar atlıyor. Çözüm
+ömürdür (`_oobVer` / `_oobBakim`): görev sürerken tazelenir (bekleyen sokma · hakem töreni ·
+aktif takip · elde ölü top), görev bitince 0,8 sn, mutlak 6,0 sn'de düşer; ayrıca izin aynı
+anda TEK oyuncuda olabilir.
+
+### 3. Jeton ışınlanması — B'nin doğrudan sonucu, iki ince nokta ölçülerek bulundu
+Çizgi dışındaki jeton için klip başlayınca `_inX/_inY` onu tek karede içeri çekiyordu
+(tam 40 px = 1,35 m, altı olayın altısı birebir). Fizik yolunda kademeli sınır FAZ 40'tan
+beri vardı, klip yolunda yoktu.
+- Ölçüt **"oyuncu saha dışında" DEĞİL "kırpma etkin"dir**: `_inX` jetonu çizgiden 14 px
+  içeride tutar, dolayısıyla çizgi ile çizgi+14 px arasındaki jeton hâlâ kırpılıyor ama
+  "dışarıda" değil. İlk sürüm bu aralığı kaçırdı: sıçrama 1,35 → 0,47 m, bitmedi.
+- **Kırpılan fark harman ofsetine geri yazılır** (FAZ 55/56 dersi) — hız tavanı tek başına
+  yetmez, yoksa jeton çizgiyi geçtiği karede birikmiş farkı tek adımda kapatır.
+
+### 4. Sahipsiz top — brifin önerisi uygulanmadı, ölçüt düzeltildi
+Brif "ikinci takipçi ekle" diyordu; FAZ 57 bunu ölçerek elemişti (ikinci oyuncu topu
+ALAMAZ ve topun üstünde dikilir) — tekrar denenmedi. Brifin sayacı çemberden **inen** topu
+(h > 8 px, henüz alınamaz) ve ölü top törenini de sayıyordu. Canlı yerdeki top 2,70 →
+1,88 sn; kilitlenme kapısı 1,2 → 0,9 sn (yalnız `!S.chase` iken çalışır, anlatımdaki
+ribauntçudan top ÇALMAZ).
+
+### 5. Top ışınlanması + jeton çakışması
+`_ballStep`in hız tavanı doğruydu; kaçak `oamHakemTick`in doğrudan konum atamasıydı (tavanın
+dışında). — Çizim ayrıştırmasında `_CIZ_MAX` 9 → 17 px, `_CIZ_HIZ` 2,0 → 3,5. **Simülasyon
+konumuna dokunulmadı**: aynı koşularda simülasyondaki pay %41,9 → %40,7 (gürültü) ve bütün
+hız/ivme/yayılım satırları yerinde.
+
+### Kapılar
+- `visual-check` ✓ (üç kez) · `anlatim-check` 31/31 ✓ · `balon-check` ✓
+- `isin-oyuncu` **0** tek kare sıçraması (oyuncu 0 · top 0)
+- `hareket-bant-check`: bant dışı **5 → 4**; hız (maç) 0,359 ✗ → **0,330 ✓**, şut anında
+  duran 0,408 ✗ → **0,342 ✓**, duvar ölçeği 0,276 → **0,254** (ort 1,91 ↔ gerçek 1,72)
+- `sahne-check`: HEAD 3 düşen ↔ FAZ 58 3 düşen (aynı üçü, hepsi belgeli açık madde)
+- `spacing-check`: HEAD 13 düşen ↔ FAZ 58 **11** düşen
+- `surum-check --yaz` → **sürüm 102** (sw.js SCRIPT_V=102 ↔ HTML `?v=102`, 18 dosya)
+
+### Açık kalan (dürüst)
+1. **F kapısı sınırda:** üç koşu %2,94 / %3,02 / %3,06 (hedef %3). Daha ileri gitmek
+   `_CIZ_MAX`'ı jeton çapının (16 px) üstüne çıkarmak demek — jetonu gerçek konumundan
+   bir boydan fazla ayırırdı.
+2. `sahne-check`in üç açık hedefi HEAD'de de düşüyor (aynı anda koşan · serbest atışta
+   yerinde · orta çizgi geçişi — sonuncusu FAZ 44'ten beri çift sayıyor).
+3. `hareket-bant-check`te yayılım x/y ve topu tutma süresi hâlâ bant dışı (HEAD'de de) —
+   set hücumu klip kütüphanesinin kendi dağılımıdır.
+4. D'nin kalan kuyruğu gerçek SportVU bandının **içindedir** (gerçek sahipsiz pay %23,8 ·
+   p90 1,60 sn · maks 5,2; motor ham %10,2 · en uzun 2,67 sn).
+
+### Bu turun genel dersi
+Brifin altı maddesinden **ikisinin teşhisi yanlıştı** (B "izinsiz dışarı" — gerçekte izin
+sızıntısı; E "`_ballStep` tavanı yok" — gerçekte tavan doğru, kaçak başka yerdeydi), biri
+FAZ 57'de zaten ölçülerek elenmiş bir öneri tekrarlıyordu (D "ikinci takipçi") ve biri tek
+kaynak gösterdiği yerde dört kaynak vardı (A). Buna karşılık **her maddede tarif edilen
+GÖZLEM doğruydu.** Kullanıcının gördüğü şey her zaman gerçektir; brifin gösterdiği satır
+her zaman kök neden değildir — önce ölç.

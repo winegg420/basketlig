@@ -98,6 +98,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/gercek-veri/_csv.js` | Akışlı CSV okuyucu. `cut -d,` / `split(',')` bu veride ÇALIŞMAZ — `pbpstats`in EVENTS sütunu tırnak içinde virgül VE satır sonu taşır. |
 | `tools/_lib/gercek-bantlar.json` | **TEK DOĞRULUK KAYNAĞI** — check araçlarının eşikleri. Elle DÜZENLEME; `cikar.js` üretir. |
 | `tools/_lib/gercek-bant.js` | Bant okuyucu + kapı yardımcısı (`al` / `ham` / `kapi` / `bas`). Yeni bir gerçekçilik kapısı yazarken eşiği BURADAN oku. |
+| `tools/faz58-check.js` | **FAZ 58 canlı sahne kusur denetçisi** (tarayıcısız) — `iz-kaydet` kaydını okur: rakibe giden pas · izinsiz saha dışı / `_oob` sızıntısı · tek kare jeton sıçraması · canlı ve ölü sahipsiz top · tek kare top sıçraması · ÇİZİLEN konumda iç içe jeton payı. Pencere **en az 600 sn**. Top sahipliği / sokma / klip kırpması değişince `iz-kaydet --secs=620` + bunu çalıştır. |
 | `tools/kilit-check.js` | **FAZ 51 kilitli sonuç (C1) etiket denetçisi** — maç başlat → yenile → Ana Panel kartı ve Maçlar butonu "⏩ Kilitli sonucu uygula" demeli, tıklayınca skorlu bildirim + fikstür işlenir, etiketler Başlat'a döner, ikinci tıklama gerçek maç. Buton etiketi / pendingMatch akışı değişince çalıştır. |
 | `tools/schema-check.js` | **`db/schema.sql` denetçisi** — sözdizimi (varsa gerçek PostgreSQL ayrıştırıcısı), lig kuralları, RLS, "kod tabanında bağlantı yok". |
 | `db/schema.sql` | **Çok oyunculu veri modeli** (Postgres/Supabase). Yalnız dosya — hiçbir bağlantı kurulmuyor. |
@@ -1945,3 +1946,63 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   (`b._tutBekle`, `'loose'` dalı işletir). Aynı sözleşmeye alınan diğer iki yol: sayı sonrası
   sokucunun topu doğrudan `held` yapması (`_inboundPass`) ve klip oynatıcının tutma dalı.
   FAZ 54'te kapatılan `loose>pass` hatasının kardeşidir; `rim>held` 2 → 0.
+
+- **RAKİBE PAS DİYE BİR ŞEY YOKTUR — KAPI `_ballPass` BAŞINDADIR (FAZ 58 A, kullanıcı:
+  "rakip takıma pas atıyor oyuncular"):** kusur tek bir yerden değil DÖRT ayrı yoldan
+  geliyordu ve ortak kök, hiçbir dalın pasın İKİ UCUNUN AYNI TAKIMDA olduğunu
+  sınamamasıydı: (a) `_oluTopSokucuyaVer` → `_ballHold(inb,true)` → hedef 14 px'ten
+  uzaksa sessizce `_ballPass` (düdükte sokucu KAZANAN takımdan ve 3-8 m ötede);
+  (b) `_pasKorumasi` sahipsiz toptan pas isterken topu EN YAKIN oyuncuya veriyordu, o da
+  rakip olabiliyordu; (c) `_inboundPass`in "top sokucuya uçar" dalı; (d) `sahne-klip.js`
+  klip başlangıcı — önceki pozisyonun sokucusu topu hâlâ tutarken yeni klip başlıyor,
+  dal mod'u `'pass'` yapıp hedefi KLİBİN hücumundaki en yakın oyuncu seçiyordu. Kapı tek
+  noktada: `_ballPass` başında taşıyıcı ile hedefin takımı farklıysa pas ÜRETİLMEZ, top
+  elden ele geçer ('held' dalı `_TOP_YAKLAS` ile kaydırır). Çalma bu kapıdan GEÇMEZ
+  (`_hirsizAl` `_ballLoose`+`_chase` kullanır), hakem/ghost hedeflerin `team` alanı yoktur.
+  Ölü topta top artık `'dead'` olur, sokma noktasına konur ve sokucu ona KOŞAR — `_ballTut`
+  mesafe sınamaz, pasa düşmez. Kapı: `node tools/faz58-check.js olcum/iz-<etiket>.json`.
+- **HAKEM ARACILI EL DEĞİŞİMİ PAS DEĞİLDİR (FAZ 58, ölçüm aracı tuzağı):** FAZ 51'den beri
+  düdükte top hakeme atılır, hakem sokucuya verir. Hakem `S.players` içinde OLMADIĞI için
+  arada "taşıyıcısı olmayan `'held'` karesi" görünür; pas sayacı bunu tek pas sanıp
+  "a/SF → h/PF" gibi SAHTE bir rakibe-pas üretir. Aynı biçimde hava atışı tap'i de meşru
+  olarak rakibe düşebilir. Pas ölçen her araç bu iki durumu ayıklamalı.
+- **`_oob` (ÇİZGİ DIŞI İZNİ) ÖMÜRLÜDÜR VE TEKTİR (FAZ 58 B):** `_oobKapat` 12 ayrı yerden
+  çağrılıyor ve bazı yollar (klip başlangıcı, faul dalı, şut sonrası koreografi) atlıyordu;
+  ölçüldü (620 sn): oyuncu 8,1 sn'ye kadar çizginin dışında duruyor, 16 olayın yarısı pivot.
+  ⚠ Brifin "izinsiz dışarı" teşhisi YANLIŞTI — izinsiz pay v101'de de %0,00'dı; kusur iznin
+  SIZMASIYDI. İzin artık `_oobVer` ile damgalanır ve `_oobBakim` her karede bakar: görev
+  sürerken (bekleyen sokma · hakem töreni · aktif takip · elde ölü top) tazelenir, görev
+  bitince 0,8 sn, mutlak 6,0 sn'de düşer; ayrıca aynı anda TEK oyuncuda olabilir. Yeni bir
+  sokma yolu yazarken `p._oob=true` YAZMA, `_oobVer(p)` çağır.
+- **KLİP YOLUNDA SAHA KIRPMASI KADEMELİDİR — ÖLÇÜT "KIRPMA ETKİN", "OYUNCU DIŞARIDA" DEĞİL
+  (FAZ 58 C):** çizgi dışında duran jeton için klip başlayınca `_inX/_inY` onu TEK KAREDE
+  içeri çekiyordu (tam 40 px = 1,35 m, altı olayın altısı birebir). Fizik yolunda bu sınır
+  FAZ 40 §A2'den beri var, klip yolunda yoktu. İki ince nokta ölçülerek bulundu: (1) `_inX`
+  jetonu çizgiden **14 px içeride** tutar, dolayısıyla çizgi ile çizgi+14 px arasındaki
+  jeton hâlâ kırpılıyor ama "dışarıda" değildir — ilk sürüm bu aralığı kaçırdı ve sıçrama
+  1,35 → 0,47 m'ye indi ama bitmedi; (2) **kırpılan fark harman ofsetine geri yazılmalı**
+  (FAZ 55/56 dersi), yoksa jeton çizgiyi geçtiği karede birikmiş farkı tek adımda kapatır.
+  ⚠ Bu, FAZ 56'da doğru olarak kaldırılan `KLIP_VMAX` DEĞİLDİR: orası klip yörüngesinin
+  KENDİSİNİ kırpıyordu; buradaki sınır yalnız kırpmanın etkin olduğu karelere uygulanır ve
+  hız/ivme/yayılım satırlarını değiştirmez.
+- **SAHİPSİZ TOP ÖLÇÜSÜ ÜÇ AYRI ŞEYİ KARIŞTIRIR (FAZ 58 D):** "taşıyıcısı olmayan kare"
+  sayacı, çemberden/fileden İNEN topu (h > 8 px — `_topAlinabilir` gereği henüz alınamaz)
+  ve ölü top törenini (hakem · serbest atış) de sayar. Kusur olan yalnız CANLI (`'loose'`)
+  topun yerde durup kimsenin almamasıdır; `'dead'` modu FAZ 54 A4 sözleşmesinde "düdük
+  çaldı, top oyun dışı" demektir ve ayrı raporlanır. Ölçüldü: ham 10,2% / en uzun 2,67 sn,
+  canlı yerde en uzun 1,88 sn — gerçek SportVU tabanı sahipsiz pay %23,8 · p90 1,60 sn ·
+  maks 5,2 sn, yani motor gerçeğin İÇİNDE. Kilitlenme kapısı 1,2 → 0,9 sn; yalnız
+  `!S.chase` iken çalışır, anlatımdaki ribauntçudan top ÇALMAZ (FAZ 57 gerekçesi korundu).
+- **DOĞRUDAN KONUM ATAYAN HER YOL HIZ TAVANININ DIŞINDADIR (FAZ 58 E, FAZ 57 A1'in tekrarı):**
+  `_ballStep`in `_TOP_MAXV` ağı yalnız kendi işini kırpar (`px,py` girişte alınır); dışarıdan
+  `b.x=...` yazan bir yol (burada `oamHakemTick` — top hakemin eline SIÇRIYORDU) ağdan geçmez.
+  Ölçüldü: 620 sn'de bir kez tek karede 2,98 m, mod `loose>loose`. Topun ya da jetonun
+  konumuna doğrudan yazan her yapı, hareketi hız cinsinden ifade etmeli.
+- **`tools/faz58-check.js` — canlı sahne kusur denetçisi:** `iz-kaydet` kaydını tarayıcısız
+  çözümler (kayıt bir kez alınır, araç defalarca koşulur): rakibe giden pas · izinsiz saha
+  dışı / `_oob` sızıntısı · tek kare jeton sıçraması · canlı ve ölü sahipsiz top · tek kare
+  top sıçraması · ÇİZİLEN konumda iç içe jeton payı. Pencere **en az 600 sn** olmalı — bu
+  kusurların çoğu dakikada 1'den seyrektir. ⚠ Kayıt `saat>0` ile dilimlenmeli: maç saati
+  başlamadan önceki kurulum kareleri (FAZ 44 §1 pivot ↔ slot takası) 3,5-3,8 m'lik meşru
+  "sıçrama" gösterir ve dilimlenmezse aracın kendi yanlış pozitifini üretir (FAZ 47 dersi).
+  `iz-kaydet` alanları 14-17: çizim ofseti (`_cizDx/_cizDy`) · klip bayrağı · ham `_oob`.
