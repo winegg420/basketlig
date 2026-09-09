@@ -1954,8 +1954,22 @@ function _ballPass(to,dur,bounce){
      geçer: 'held' dalı onu `_TOP_YAKLAS` hızıyla yeni sahibinin eline kaydırır (ışınlanma yok).
      ⚠ Çalma bu kapıdan GEÇMEZ — `_hirsizAl` `_ballLoose` + `_chase` kullanır. Hakem/ghost
      hedeflerin `team` alanı yoktur, onlar da etkilenmez. */
-  if(b.mode==='held'&&b.carrier&&b.carrier.team&&to.team&&b.carrier.team!==to.team){
-    try{ const S=mState._sim; if(S) S._rakipPasN=(S._rakipPasN|0)+1; }catch(e){}
+  /* ⚠ FAZ 65: HAVA ATIŞI MUAF. Sıçrayan pivot topu rakip takıma da dokundurabilir —
+     bu basketbolun kuralıdır, kusur değil. FAZ 58 kapısı bunu da engelliyor ve tapı
+     `_ballTut` ile ANLIK EL DEĞİŞİMİNE çeviriyordu: top uçmuyor, ışınlanıyordu.
+     Teşhis sayacı kapının 400 sn'de tek tetiklenmesinin t=1,0'daki hava atışı olduğunu
+     gösterdi (h/C → a/PG) ve nedensellik denetçisi aynı anı "top sebepsiz el değiştirdi"
+     diye ayrıca sayıyordu — tek kök, iki bulgu. */
+  const _havaAtisi=(()=>{ try{ const S=mState._sim; return !!(S&&(S.curType==='start'||S.time<3)); }catch(e){ return false; } })();
+  if(!_havaAtisi&&b.mode==='held'&&b.carrier&&b.carrier.team&&to.team&&b.carrier.team!==to.team){
+    try{ const S=mState._sim; if(S){ S._rakipPasN=(S._rakipPasN|0)+1;
+      /* FAZ 65 teşhis: kapının tetiklenmesi, bir kod yolunun HÂLÂ rakibe pas atmaya
+         çalıştığının kanıtıdır — kapı yalnız sonucu engeller. Çağıran yığın kaydedilir. */
+      (S._rakipPasKim=S._rakipPasKim||[]).push({t:+S.time.toFixed(1),tip:S.curType||'-',
+        kimden:(b.carrier.team||'?')+'/'+((b.carrier.pl&&b.carrier.pl.poz)||'?'),
+        kime:(to.team||'?')+'/'+((to.pl&&to.pl.poz)||'?'),
+        yol:(new Error().stack||"").split("\n").slice(2,6).map(function(x){var m=x.trim().match(/at ([\w$.]+)/);return m?m[1]:"?";}).join("<")});
+      if(S._rakipPasKim.length>30) S._rakipPasKim.shift(); } }catch(e){}
     _ballTut(to,!!(to&&to.ghost)); return;
   }
   /* FAZ 55 A3: 2,0 m altı "pas" ÜRETİLMEZ — el değişimi olarak işlenir. */
@@ -2180,7 +2194,10 @@ function _ballStep(dt){
       { const _nx=b.from[0]+(tx-b.from[0])*t, _ny=b.from[1]+(ty-b.from[1])*t;
         const _mx=_TOP_MAXV*dt;
         const _dx=_nx-b.x, _dy=_ny-b.y, _d=Math.hypot(_dx,_dy);
-        if(_d>_mx&&_d>0.001){ b.x+=_dx/_d*_mx; b.y+=_dy/_d*_mx; S._klempN=(S._klempN|0)+1; }
+        /* FAZ 65: bu kırpma NORMALDİR — pas uçarken HEDEF hareket eder, konum `t`'den
+           kurulup tavana oturtulur (FAZ 40 §A1). Kusur sayacına karışmasın diye ayrı
+           tutulur; `_klempN` yalnız `_ballStep` sonundaki GÜVENLİK AĞInı sayar. */
+        if(_d>_mx&&_d>0.001){ b.x+=_dx/_d*_mx; b.y+=_dy/_d*_mx; S._klempPasN=(S._klempPasN|0)+1; }
         else { b.x=_nx; b.y=_ny; } }
       /* göğüs pası: alçak yay | yerden pas: ortada zemine değip yükselir */
       b.h=b.bounce?(t<0.55?16*(1-t/0.55):14*((t-0.55)/0.45)):(Math.sin(Math.PI*t)*b.arc+11+((b.hFrom>30)?(b.hFrom-11)*(1-t):0));   /* FAZ 44 §1: hFrom */
@@ -2269,6 +2286,14 @@ function _ballStep(dt){
       const k=_lim/_mv0;
       b.x=px+(b.x-px)*k; b.y=py+(b.y-py)*k;
       S._klempN=(S._klempN|0)+1;
+      /* FAZ 65 teşhis: ağın kırptığı hareketin BAĞLAMI kaydedilir — sayı tek başına
+         hangi dalın topu ışık hızıyla hareket ettirdiğini söylemiyor. */
+      try{ (S._klempKim=S._klempKim||[]).push({t:+S.time.toFixed(1),tip:S.curType||'-',mod:b.mode,
+        hiz:+(_mv0/dt/29.5429).toFixed(0), dt:+(dt*1000).toFixed(0),
+        tas:b.carrier?((b.carrier.team||'?')+'/'+((b.carrier.pl&&b.carrier.pl.poz)||'?')):'-',
+        hedef:(b.target&&b.target.pl)?((b.target.team||'?')+'/'+(b.target.pl.poz||'?')):(b.target?'GHOST':'-'),
+        klip:S._klipTop?1:0});
+        if(S._klempKim.length>40) S._klempKim.shift(); }catch(e){}
     } }
   /* dönme (yuvarlanma/uçuş hissi) */
   const mv=Math.hypot(b.x-px,b.y-py);

@@ -72,6 +72,11 @@ const SEBEP = ['steal', 'reb', 'tac', 'ihlal', 'hucumFaulu', 'ihlal24', 'foul', 
       const bosluk = f - oncekiF - 1;
       const sebepVar = (pas > 0 || serbest > 0 || sut > 0 || olu > 0 || hakem > 0);
       const ayniTakim = (takim(onceki) === takim(c));
+      /* ⚠ HAVA ATIŞI MUAF: sıçrayan pivotun tapı meşru olarak RAKİP takıma gider —
+         basketbolun kuralı budur. Maçın ilk 3 saniyesi ve 'start' damgası hariç tutulur;
+         yoksa denetçi her maçın açılışını "rakibe pas" diye sayar (FAZ 65'te ölçüldü:
+         kapı kaldırılıp tap uçar hâle gelince tam olarak bu oldu). */
+      if (K[f].t <= 3 || K[f].tip === 'start' || K[oncekiF].tip === 'start') { onceki = c; oncekiF = f; continue; }
       if (!sebepVar) {
         /* N1: top hiçbir ara evre olmadan el değiştirdi */
         olay.push({ tur: 'N1', t: K[f].t, s: `t=${K[f].t.toFixed(1)} ${AD(K[f], onceki)} → ${AD(K[f], c)} · arada HİÇBİR evre yok (${bosluk} kare) [${K[f].tip}]${ayniTakim ? '' : ' · TAKIM DEĞİŞTİ'}` });
@@ -134,10 +139,14 @@ const SEBEP = ['steal', 'reb', 'tac', 'ihlal', 'hucumFaulu', 'ihlal24', 'foul', 
 {
   const ilk = K.find(k => k.sy), son = [...K].reverse().find(k => k.sy);
   if (ilk && son) {
+    /* ⚠ FAZ 65: 'top hız kırpma' KUSUR DEĞİLDİR — kimlik sayacı boş çıktı ve sayının
+       tamamının pas dalındaki HEDEF TAKİP kırpmasından geldiği görüldü (pas uçarken hedef
+       hareket eder; FAZ 40 §A1 tasarımı). Sayaç ikiye ayrıldı, buradaki artık yalnız
+       _ballStep sonundaki güvenlik ağını sayar ve önem hesabına girer. */
     const ad = ['havadan pas', 'donan uçuş', 'hayalet held', 'top kurtarma', 'top hız kırpma', 'top saha dışı', 'rakibe pas kapısı', 'yetişme ışınlaması'];
     const fark = son.sy.map((v, i) => v - ilk.sy[i]);
     const satir = fark.map((v, i) => `${ad[i]}=${v}`).join(' · ');
-    const agir = fark[0] * 6 + fark[1] * 4 + fark[2] * 6 + fark[3] * 2 + fark[6] * 8;
+    const agir = fark[0] * 6 + fark[1] * 4 + fark[2] * 6 + fark[3] * 2 + fark[4] * 4 + fark[6] * 8;   /* FAZ 65: ag kirpmasi artik gercek kusur, tartiya girer */
     ekle('N5 güvenlik ağı tetiklendi (kusur hâlâ üretiliyor)', agir, satir);
   } else ekle('N5 güvenlik ağı tetiklendi (kusur hâlâ üretiliyor)', 0, 'eski kayıt — sayaç alanı yok');
 }
