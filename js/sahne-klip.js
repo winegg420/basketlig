@@ -592,8 +592,23 @@ function klipTick(dt){
     if(b.carrier!==en){
       const eskiD=(b.carrier&&isFinite(b.carrier.x))?Math.hypot(b.carrier.x-b.x,b.carrier.y-b.y):1e9;
       if(b.mode==='held'&&b.carrier&&eskiD<=KLIP_TUTMA_FT*1.4*pxFt){ /* eski taşıyıcı hâlâ topta */ }
-      else { b.carrier=en; b.mode='held'; b.noDrib=false; b._heldAt=S.time; }
-    } else if(b.mode!=='held'){ b.mode='held'; b._heldAt=S.time; }
+      /* ── FAZ 64: 'held' → 'held' DOĞRUDAN EL DEĞİŞİMİ YASAK ───────────────────────────
+         Nedensellik denetçisi (`tools/nedensellik.js`) 400 sn'de 30 kez "top sebepsiz el
+         değiştirdi" buldu; 26'sı klip oynatımında ve hepsi mod `held → held`. Ölçülen tipik
+         vaka: top yalnız 0,2 m hareket ediyor ama taşıyıcı 2,7 METRE öteki oyuncuya
+         atlıyor — kimse pas atmadan. Sebep: eski taşıyıcı 1,71 m histerezis eşiğini
+         geçince top ANINDA en yakına veriliyordu. Ekranda "top ışınlandı / havadan geldi"
+         (kullanıcı: "abuk sabuk paslar atılıyor, havadan pas geliyor").
+         Basketbolda top ya paslanır ya sürülür; iki oyuncu arasında atlamaz. Taşıyıcı
+         değişimi artık PAS evresinden geçer: top uçuşa alınır ve yeni oyuncu topu ancak
+         GERÇEKTEN yanına geldiğinde (`KLIP_TUTMA_FT × 0,7`) alır. Top klibin kendi
+         yörüngesinde ilerlediği için varış anı kaydın kendisinden gelir. */
+      else if(b.mode==='held'&&b.carrier){
+        b.carrier=null; b.mode='pass'; b.target=en; b.from=[b.x,b.y];
+        try{ if(S) S._klipElN=(S._klipElN|0)+1; }catch(e){}
+      }
+      else if(b.mode!=='pass'||ed<=KLIP_TUTMA_FT*0.7*pxFt){ b.carrier=en; b.mode='held'; b.noDrib=false; b._heldAt=S.time; }
+    } else if(b.mode!=='held'&&(b.mode!=='pass'||ed<=KLIP_TUTMA_FT*0.7*pxFt)){ b.mode='held'; b._heldAt=S.time; }
   }
   else if(b.mode==='held'&&b.carrier&&Math.hypot(b.carrier.x-b.x,b.carrier.y-b.y)>KLIP_TUTMA_FT*1.6*pxFt){
     /* ── FAZ 58 A: KLİP BAŞLANGICINDA SAHTE PAS ÜRETME ────────────────────────────────

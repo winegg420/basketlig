@@ -129,7 +129,13 @@ async function main() {
             perde: (S._perde && S._perde.evre < 3 && (S.time - S._perde.t) < 1.6) ? 1 : 0,
             ch: S.chase ? 1 : 0,
             cu: S.cuCount | 0,
-            hk: (S._hakemTop && S._hakemTop.aktif) ? 1 : 0,              /* FAZ 51: top hakemde (ölü top) — sahipsiz sayılmaz */                                 /* FAZ 51: _simCatchUp (yetişme ışınlaması) sayacı */
+            hk: (S._hakemTop && S._hakemTop.aktif) ? 1 : 0,
+            /* FAZ 64 — NEDENSELLİK DENETÇİSİ İÇİN: motorun KENDİ güvenlik ağı sayacları.
+               Bir ağın TETIKLENMESİ, o kusurun HALÂ üretildiğinin kanıtıdır — ağ yalnız
+               sonucu gizler. Sayıların TÜMÜ sıfır olmalıdır. */
+            sy: [S._havadanN|0, S._donukN|0, S._hayaletN|0, S._kurtarN|0, S._klempN|0, S._deadN|0, S._rakipPasN|0, S._snapN|0],
+            sut: (S.shooter && S.shooter.pl) ? (S.shooter.team + '/' + (S.shooter.pl.poz||'?')) : '-',
+            os2: (S.offP && S.offP[0]) ? S.offP[0].team : '?',              /* FAZ 51: top hakemde (ölü top) — sahipsiz sayılmaz */                                 /* FAZ 51: _simCatchUp (yetişme ışınlaması) sayacı */
             oam: (S.oam && S.oam.aktif) ? S.oam.faz : '-',   /* FAZ 48: OAM fazı ('-' = eski kod) */
             p: (S.players || []).map(p => [
               +p.x.toFixed(1), +p.y.toFixed(1),
