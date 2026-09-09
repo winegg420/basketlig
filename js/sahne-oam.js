@@ -1123,7 +1123,7 @@ function oamTorenTick(S,O,dt){
     try{
       if(S&&(S._snapN|0)!==(S._oamSnapSeen|0)){
         S._oamSnapSeen=S._snapN|0;
-        (S.players||[]).forEach(p=>{ if(!p||p._oob||!isFinite(p.tx)) return; p.x=_inX(p.tx); p.y=_inY(p.ty); p.vx=0; p.vy=0; try{ _tokSet(p.g,p.x,p.y,p.sc); }catch(_){} });
+        (S.players||[]).forEach(p=>{ if(!p||p._oob||!isFinite(p.tx)) return; p.x=_inX(p.tx); p.y=_inY(p.ty); p.vx=0; p.vy=0; try{ _tokSet(p.g,p.x+(p._cizDx||0),p.y+(p._cizDy||0),p.sc); }catch(_){} });
         if(S.ball&&S.ball.carrier){ S.ball.x=S.ball.carrier.x; S.ball.y=S.ball.carrier.y; }
       }
     }catch(e){}

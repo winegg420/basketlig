@@ -456,9 +456,16 @@ function klipTick(dt){
          Yeni yasa hızı UZAKLIĞIN DÜZGÜN bir fonksiyonu yapar: v = V·(1-e^(-om/L)). Sıfıra
          yaklaşırken hız kendiliğinden söner (ayrı fren yok), ivme tavanı V²/L ≈ 0,7 m/sn².
          _hv durumu kalktı — durum tutmayan yasa, kare atlansa da tutarlıdır. */
-      const hedefV=(K.bekle&&j===K.bekle.j)?KLIP_BEKLE_V:((p===K.shooter)?KLIP_HARMAN_V_SUTOR:KLIP_HARMAN_V);
+      const bek=!!(K.bekle&&j===K.bekle.j);
+      const hedefV=bek?KLIP_BEKLE_V:((p===K.shooter)?KLIP_HARMAN_V_SUTOR:KLIP_HARMAN_V);
       const L=hedefV*KLIP_HARMAN_L;
-      const kv=hedefV*(1-Math.exp(-om/L));
+      /* ⚠ FAZ 57: BEKLEME dalı doyumlu yasadan MUAF. Doyumlu yasa (FAZ 56) bir HARMAN
+         yasasıdır — ofset küçüldükçe hız söner. Ama beklemedeki jeton harman yapmıyor,
+         TOPA KOŞUYOR: 2 m'lik ofsette hız 175 yerine 16 px/sn'ye düşüyor ve klibin kendi
+         hareketi onu geri götürüyordu. Ölçüldü: top (192,203) noktasında 2,6 saniye
+         KIPIRDAMADAN durdu, en yakın oyuncu 2,0 m'de ve her karede 2 cm uzaklaşıyor
+         (sahipsiz top en uzun epizodu 6,60 sn). Beklemede kapanış sabit hızlıdır. */
+      const kv=bek?hedefV:(hedefV*(1-Math.exp(-om/L)));
       const adim=Math.min(om,kv*dt);
       if(om-adim<0.4){ o[0]=0; o[1]=0; } else { const k2=(om-adim)/om; o[0]*=k2; o[1]*=k2; } }
     let nx=_inX(c[0]+o[0]+K.warp[0]*ww*wk), ny=_inY(c[1]+o[1]+K.warp[1]*ww*wk);   /* hedef saha içinde: çizgi dışındaki sokucu İÇERİ YÜRÜR (kırpma sıçratmaz — FAZ 40 dersi, ölçüldü 1,35 m tek kare) */
@@ -480,7 +487,7 @@ function klipTick(dt){
     if(dt>0){ p.vx=Math.max(-400,Math.min(400,(p.x-ox)/dt)); p.vy=Math.max(-400,Math.min(400,(p.y-oy)/dt)); }
     try{ _yonGuncelle(p,dt); }catch(e){}
     if(p.pop>0) p.pop=Math.max(0,p.pop-dt*2.6); p.sc=1+p.pop*0.20;
-    try{ _tokSet(p.g,p.x,p.y,p.sc); }catch(e){}
+    try{ _tokSet(p.g,p.x+(p._cizDx||0),p.y+(p._cizDy||0),p.sc); }catch(e){}   /* FAZ 57 A2: çizim ofseti */
   });
   /* elden çıkış: top motora devredilir, oyuncular klibin sonuna kadar gerçek yörüngede kalır */
   if(tau>=K.T-1e-6&&!K.atildi){ klipAtes(); return; }
@@ -511,7 +518,10 @@ function klipTick(dt){
      (b) Sahipsiz top (loose/rim/dead) ancak bir hücumcu 4 ft'e girince ELE geçer; doğrudan
          'pass' olmaz (`loose>pass` 13 → 0). 'pass' yalnız 'held'den açılır. */
   const tut=(en&&ed<=KLIP_TUTMA_FT*pxFt&&f[2]<7.5);
-  if(tut){
+  /* FAZ 57 · 3b: 'rim'/'shot' modundan çıkış yalnız 'loose'a — klip başlarken top hâlâ çemberden
+     düşüyorsa (önceki pozisyonun şutu) doğrudan ele geçirmek `rim>held` üretiyordu. */
+  if(tut&&(b.mode==='rim'||b.mode==='shot')){ b._carom=null; b.mode='loose'; b.carrier=null; b.vx=0; b.vy=0; b.vh=Math.min(0,b.vh||0); }
+  else if(tut){
     if(b.carrier!==en){
       const eskiD=(b.carrier&&isFinite(b.carrier.x))?Math.hypot(b.carrier.x-b.x,b.carrier.y-b.y):1e9;
       if(b.mode==='held'&&b.carrier&&eskiD<=KLIP_TUTMA_FT*1.4*pxFt){ /* eski taşıyıcı hâlâ topta */ }
@@ -523,12 +533,36 @@ function klipTick(dt){
   /* loose / rim / dead: olduğu gibi kalır — hücumcu 4 ft'e girince 'held' */
   b.rot=(b.rot||0)+dt*(b.mode==='pass'?720:180);
 }
+/** FAZ 57 A1: gelen hıza uygun acele kademesi (duvar ölçeği: 1,4 / 3,3 m/sn eşikleri). */
+function _klipUrg(v){ const ms=v/29.5429; return ms<1.4?_URG.YURU:(ms<3.3?_URG.JOG:_URG.KOS); }
 /** Klip bitti: jetonlar fiziğe geri verilir (şut sonrası koreografi — ribaunt, sokma — devam eder). */
 function klipBitir(){
   const S=oamS(); const K=S&&S.klip; if(!K) return;
   if(!K.atildi) klipAtes();
   K.aktif=false; S._klipTop=false;
-  K.toks.forEach(p=>{ p._klip=false; p.vx=0; p.vy=0; });   /* hedeflere dokunma: şut sonrası koreografi (and-1 dizilişi, ribaunt) onları yazdı */
+  /* ── FAZ 57 A1: KLİP→FİZİK DEVRİNDE HIZ SIFIRLANMAZ ─────────────────────────────────
+     Ölçüldü (v100, 380 sn): rejim değişiminin ±0,5 sn'sinde kare-kare ivmenin >8 m/sn²
+     payı %6,2, diğer her yerde %2,8 — 2,2 kat yoğunlaşma ve aşanların %88'i YAVAŞLAMA.
+     Kök neden buydu: klip bittiği anda on jetonun da hızı birden 0 yapılıyordu, yani
+     koşan oyuncu tek karede duruyordu (ekranda "bir anda durdu/kaydı"). Klip döngüsü
+     p.vx/p.vy'yi zaten konum farkından hesaplıyor; o hız fiziğe DEVREDİLİR, yalnız
+     sprint duvarına kırpılır. Devirden sonraki 0,4 sn ivme tavanı da yumuşatılır
+     (`p._devirT` — `_ivmeSinirla` çarpanı; devir anı basketbolda patlayıcı değildir). */
+  const _tav=8.2*29.5429;   /* px/sn — sprint duvarı (FAZ 54 B2 ölçeği) */
+  const _now=(S.time||0);
+  K.toks.forEach(p=>{
+    p._klip=false;
+    const v=Math.hypot(p.vx||0,p.vy||0);
+    if(!isFinite(v)){ p.vx=0; p.vy=0; }
+    else if(v>_tav){ const k=_tav/v; p.vx*=k; p.vy*=k; }
+    p._devirT=_now+0.4;
+    /* Hedef jetonun ÜSTÜNDEYSE (koreografi henüz yazmadıysa) hız yönünde 0,6 sn ileriye
+       konur: oyuncu koreografi hedefini alana kadar hareketini sürdürür, çakılmaz. */
+    if(Math.hypot((p.tx||p.x)-p.x,(p.ty||p.y)-p.y)<10&&Math.hypot(p.vx,p.vy)>18){
+      p.tx=_inX(p.x+p.vx*0.6); p.ty=_inY(p.y+p.vy*0.6); p._wp=null;
+      try{ _setUrg(p,_klipUrg(Math.hypot(p.vx,p.vy))); }catch(e){}
+    }
+  });   /* hedeflere dokunma: şut sonrası koreografi (and-1 dizilişi, ribaunt) onları yazdı */
 }
 
 /* ── Şut: top eski sözleşmeye (oamAtes) devredilir ─────────────────────────────────── */
@@ -536,7 +570,14 @@ function klipAtes(){
   const S=oamS(); const K=S&&S.klip; if(!K||K.atildi) return;
   K.atildi=true;
   S._klipTop=false;   /* top motora; oyuncular klip bitene dek gerçek yörüngede (`_klip` açık kalır) */
-  K.toks.forEach(p=>{ p.tx=p.x; p.ty=p.y; p._lock=0; try{ _setUrg(p,_URG.YURU); }catch(e){} });
+  /* FAZ 57 A1: hedef jetonun ÜSTÜNE değil ÖNÜNE (mevcut hız yönünde 0,6 sn'lik yol, sahaya
+     kırpılmış) ve kademe gelen hıza uygun. Eski hâl (hedef=konum + YÜRÜ) hızın sıfırlanmasıyla
+     birleşince tam duruş üretiyordu — devir anındaki yavaşlama patlamasının ikinci yarısı. */
+  K.toks.forEach(p=>{
+    const v=Math.hypot(p.vx||0,p.vy||0);
+    if(v>18){ p.tx=_inX(p.x+p.vx*0.6); p.ty=_inY(p.y+p.vy*0.6); } else { p.tx=p.x; p.ty=p.y; }
+    p._wp=null; p._lock=0; try{ _setUrg(p,_klipUrg(v)); }catch(e){}
+  });
   const b=S.ball;
   /* FAZ 54 A2: top şutörün eline ŞİMDİ geçiyorsa `_heldAt` şimdidir — `_ballShoot` koruması atışı
      `_TOP_TUT_SN` (0,10 sn) erteler; ekranda "topu aldı, çekti" okunur (ölçüldü: 14/26 pass>shot). */

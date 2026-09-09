@@ -209,6 +209,8 @@ const _PL_R=40;              /* çarpışma yarıçapı — jetonlar bu mesafede
    (0,43 m / 16 ms ≈ 25 m/sn) ve kare-kare ivmenin SON kaynağı buydu — klip verisi 25 kare/sn'ye
    çıkıp harman düzeltildikten sonra geriye kalan tek katkı. */
 const _PL_R_TABAN=17;        /* px ≈ 0,58 m — kendi koreografimizde jeton çiftinin alt sınırı */
+const _PUSH_ACC=120;         /* px/sn² (4,1 m/sn²) — FAZ 57 A1: ayrışma HIZININ ivme tavanı */
+const _PUSH_ACC_TABAN=520;   /* px/sn² — taban ihlalinde (0,58 m altı) ayrışma çabuk kurulur */
 const _AYIR_MAX=1.2;         /* px/kare — ayrışma HIZI sınırı: derin çakışma birkaç karede çözülür,
                                 tek karede 8 px'lik sıçrama (≈300 m/sn²) üretmez */
 const _PL_R_TAKIM=58;        /* px ≈ 1,96 m (FAZ 54: 62 → 58; 48 denendi, yayılımı bozdu ve binmeyi İYİLEŞTİRMEDİ — gerçek kliplerde <70 cm kare payı %37,7, sahnede %27,6 — ayrışma gerçeğin üstündeydi) */
@@ -422,6 +424,49 @@ function _anlatimAdi(name){
   const son=_soyadTam(a)||tam;
   return (son.replace(/\s+/g,'').length<_ANLATIM_MIN_SOYAD)?tam:son;
 }
+/* ── FAZ 57 A2: ÇİZİM AYRIŞTIRMASI (SİMÜLASYON DEĞİL) ────────────────────────────────
+   Ölçüldü (v100): karelerin ~%47'sinde iki jetonun MERKEZİ 26 px'ten yakın. Bu bir
+   simülasyon kusuru DEĞİLDİR — gerçek SportVU kaydında da en yakın çift karelerin
+   %10,4'ünde 40 cm'nin, %20,7'sinde 55 cm'nin altındadır (FAZ 56 ölçümü) ve klip
+   jetonları o kaydı birebir oynar. Kusur ÇİZİMDEDİR: jeton yarıçapı 16 px, yani çap
+   32 px = 1,08 m; gerçek bir oyuncunun omuz genişliği ~0,5 m. 0,37 m aralıkla duran iki
+   oyuncu gerçekte omuz omuzadır, ama iki daire %66 üst üste biner ve kullanıcı tek bir
+   yumak görür. Çözüm yalnız çizim katmanındadır: `p.x`/`p.y` DEĞİŞMEZ (klip yörüngesi ve
+   bütün ölçümler korunur), yalnız jetonun ÇİZİLDİĞİ nokta `_cizDx/_cizDy` kadar kaydırılır.
+   Kayma en çok `_CIZ_MAX` px ve kare başına `_CIZ_HIZ` px değişir (ani sıçrama yok). */
+/* ⚠ ÇÖZÜM HEDEFİ ÖLÇÜM EŞİĞİNİN ÜSTÜNDE OLMALI (ölçülerek bulundu): gevşetme tam 26 px'i
+   hedeflediğinde çift o değerin ±ε'unda kapanıyor ve karelerin yarısında hâlâ 26 px'in ALTINDA
+   ölçülüyordu — kayıttan yeniden çözümlemede pay %34,9 idi; hedef 29 px olunca %11,9'a indi
+   (sınırsız kayma ve 30 gevşetme geçişiyle bile %30'un altına inmiyordu, kusur çözünürlüktü). */
+const _CIZ_R=29;             /* px — çizim çözümünün hedef mesafesi (ölçüm eşiği 26) */
+const _CIZ_MAX=9;            /* px (0,30 m) — jeton başına en büyük çizim kayması */
+const _CIZ_HIZ=2.0;          /* px/kare (60 fps) — kaymanın değişim hızı */
+const _CIZ_GEC=6;            /* gevşetme geçişi */
+function _cizAyristir(S,dt){
+  const P=(S&&S.players)||[]; if(P.length<2) return;
+  /* İstenen kayma GEVŞETME ile bulunur: üçlü kümelerde bir komşudan kaçarken ötekine
+     girmemek için üç geçiş yapılır ve mesafe her geçişte ÇİZİLEN noktadan ölçülür
+     (ölçüldü: tek geçişte 22-26 px'lik çiftlerin ancak %53'ü ayrılıyordu). */
+  for(const p of P){ p._cwx=p._cizDx||0; p._cwy=p._cizDy||0; }
+  for(let it2=0;it2<_CIZ_GEC;it2++){
+    for(let i=0;i<P.length;i++) for(let j=i+1;j<P.length;j++){
+      const a=P[i],b=P[j]; if(!a||!b||!isFinite(a.x)||!isFinite(b.x)) continue;
+      if(a._oob&&b._oob) continue;
+      const dx=(b.x+b._cwx)-(a.x+a._cwx), dy=(b.y+b._cwy)-(a.y+a._cwy), d=Math.hypot(dx,dy);
+      if(d>=_CIZ_R||d<=0.001) continue;
+      const it=(_CIZ_R-d)/2, ux=dx/d, uy=dy/d;
+      a._cwx-=ux*it; a._cwy-=uy*it; b._cwx+=ux*it; b._cwy+=uy*it;
+    }
+  }
+  const adim=_CIZ_HIZ*Math.min(2,Math.max(0.2,dt*60));
+  for(const p of P){
+    let wx=p._cwx||0, wy=p._cwy||0; const wm=Math.hypot(wx,wy);
+    if(wm>_CIZ_MAX){ wx=wx/wm*_CIZ_MAX; wy=wy/wm*_CIZ_MAX; }
+    let ex=wx-(p._cizDx||0), ey=wy-(p._cizDy||0); const em=Math.hypot(ex,ey);
+    if(em>adim&&em>0){ ex=ex/em*adim; ey=ey/em*adim; }
+    p._cizDx=(p._cizDx||0)+ex; p._cizDy=(p._cizDy||0)+ey;
+  }
+}
 function _tokSet(g,x,y,sc){
   if(!g) return;
   g.setAttribute('transform',(sc&&Math.abs(sc-1)>0.004)
@@ -503,6 +548,11 @@ function initMatchPlayers(lu,rakip,oppPlayers){
       const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
       c.setAttribute('r','16'); c.setAttribute('fill',fill);
       c.setAttribute('stroke','rgba(0,0,0,0.6)'); c.setAttribute('stroke-width','2.5');
+      /* FAZ 57 A2: 1,5 px açık halka — üst üste binen iki jeton hâlâ ayırt edilebilsin. */
+      const hal=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      hal.setAttribute('r','17.2'); hal.setAttribute('fill','none');
+      hal.setAttribute('stroke','rgba(255,255,255,0.8)'); hal.setAttribute('stroke-width','1.5');
+      hal.setAttribute('pointer-events','none');
       const t=document.createElementNS('http://www.w3.org/2000/svg','text');
       t.setAttribute('text-anchor','middle'); t.setAttribute('dy','5.5');
       t.setAttribute('font-size','17'); t.setAttribute('font-weight','800');
@@ -522,7 +572,7 @@ function initMatchPlayers(lu,rakip,oppPlayers){
          post oyununu ve F25-6a kapısını besliyor —, yalnız görsel katman kaldırıldı.
          Parkede yalnız oyuncular, numaralar, adlar ve top vardır (37. oturumdaki
          "canlı sahada O/X şut izi yok" kararının devamı). Geri EKLENMEMELİ. */
-      g.appendChild(c); g.appendChild(t); g.appendChild(nm);
+      g.appendChild(hal); g.appendChild(c); g.appendChild(t); g.appendChild(nm);   /* FAZ 57 A2: halka en altta */
       layer.appendChild(g);
       g._face=null;
       return g;
@@ -679,7 +729,7 @@ function _simCatchUp(){
     if(p.tx!=null) p.x=p._oob?p.tx:_inX(p.tx);
     if(p.ty!=null) p.y=p._oob?p.ty:_inY(p.ty);
     p.vx=0; p.vy=0; p._wp=null;
-    _tokSet(p.g,p.x,p.y,p.sc);
+    _tokSet(p.g,p.x+(p._cizDx||0),p.y+(p._cizDy||0),p.sc);
   }
   const b=S.ball;
   if(b&&b.carrier){ b.x=b.carrier.x; b.y=b.carrier.y; b.h=0; }
@@ -709,6 +759,14 @@ function _simStep(dtReal){
    sahipsizse kurtarma çalışır.
    ⚠ Şut ve çemberden düşüş muaf — top orada tasarım gereği kimsenin elinde değildir.
    ⚠ Yalnız SAHNE katmanı; maç matematiğine dokunmaz, rastgelelik tüketmez. */
+/** FAZ 57 · 3a: serbest topun TAHMİNİ DURUŞ NOKTASI. Sürtünme üstel (vx*=(1-2,2·dt)),
+    dolayısıyla kalan yol ≈ v/2,2; en çok 0,55 sn'lik yolla sınırlanır (uzun kestirim
+    takipçiyi topun ilerisinde bekletir ve mücadeleyi bozar). */
+function _topDurus(b){
+  if(!b||!isFinite(b.x)) return [0,0];
+  const k=Math.min(0.55,1/2.2);
+  return [b.x+(b.vx||0)*k, b.y+(b.vy||0)*k];
+}
 const _SAHIPSIZ_PX=59;        /* ≈ 2 m (29,5429 px/m) */
 const _SAHIPSIZ_SN=0.45;  /* FAZ 37: 1,2 sn kuyruğu ölçümde %2,3 sahipsiz kare bırakıyordu · FAZ 54: 0,6 → 0,45 */
 function _sahipsizTopTick(S,dt){
@@ -736,6 +794,32 @@ function _sahipsizTopTick(S,dt){
       if(d<ed) ed=d;
     }
     /* Peşinde koşan biri varsa süre işlemez — o zaten topa gidiyor. */
+    /* ── FAZ 57 · 3a: SERBEST TOP KİLİTLENMESİ ────────────────────────────────────────
+       Ölçüldü (v100): sahipsiz top payı %4-8 ve tek bir olay 4,0 sn sürüyor (aracın kapısı
+       "en uzun < 2,0 sn"). İki kök neden: (1) takipçi topun ANLIK konumuna koşuyordu,
+       tahmini duruş noktasına değil (klasik takip gecikmesi — düzeltildi, aşağıda `_topDurus`);
+       (2) topu ALMA yolu YALNIZ takip dalındadır: takip yoksa top yerde duruyor, bir oyuncu
+       0,7-0,9 m ötesinde bekliyor ve hiçbir kod onu almıyordu — 2 m'lik bekçi kapısı da
+       oyuncu YAKIN olduğu için hiç açılmıyordu. */
+    /* ⚠ Sayaç MESAFEYE BAĞLANMAZ (ölçüldü, ilk sürüm böyleydi ve çalışmadı): 113,9 sn'lik
+       kaçan şutta PF topun 0,68-0,92 m çevresinde salınıyor, eşiğin iki yanına geçtiği için
+       sayaç sürekli sıfırlanıyor ve top 3,3 sn yerde kalıyordu. Ölçüt topun SAHİPSİZ
+       GEÇİRDİĞİ SÜREdir; ölü top törenleri (serbest atış, hakem) zaten muaftır. */
+    if(S._ftAktif||(S._hakemTop&&S._hakemTop.aktif)) S._bosT2=0; else S._bosT2=(S._bosT2||0)+dt;
+    if(S._bosT2>=1.2){
+      /* ⚠ İKİNCİ TAKİPÇİ DENENDİ VE ÖLÇÜLEREK ELENDİ (FAZ 57): topa koşan ikinci oyuncu
+         topu ALAMAZ (alma hakkı anlatımdaki ribauntçunundur) ve topun 3 cm'sinde 1,3 sn
+         dikiliyordu — ekranda "oyuncu topun üstünde bekliyor". 1 m geride mücadele
+         mesafesinde durdurmak da işe yaramadı: sahipsiz top payı %5,5 → %7,1, en uzun
+         3,22 → 3,40 sn (ikinci jeton gerçek takipçinin yolunu kesiyor). Kalan iki
+         mekanizma yeterli: takipçi artık topun TAHMİNİ DURUŞ NOKTASINA koşar ve takip
+         yoksa (b) kilitlenme kapısı devreye girer. */
+      /* (b) KİLİTLENME: takip YOKSA top kimsenin işi değildir. Ölçüldü (v100, 113,9 sn'lik
+         miss3): top yerde duruyor, PF 0,68-0,92 m ötede 2 saniye bekliyor ve HİÇBİR kod
+         onu almıyor — 2 m kapısı (`_SAHIPSIZ_PX`) da açılmıyor çünkü oyuncu YAKIN.
+         Toplama tek kapıdan (`_ballKurtar`: bekleyen sokucu varsa ona, yoksa en yakına). */
+      if(!S.chase){ S._bosT2=0; S._sahipsizT=0; _ballKurtar(); return; }
+    }
     if(ed<=_SAHIPSIZ_PX||S.chase){ S._sahipsizT=0; return; }
     S._sahipsizT=(S._sahipsizT||0)+dt;
     if(S._sahipsizT>=_SAHIPSIZ_SN){ S._sahipsizT=0; _ballKurtar(); }
@@ -747,6 +831,7 @@ function _hepsiOnde(offLeft,liste){ try{ return (liste||[]).every(p=>!p||(offLef
 function _simTick(dt){
   const S=mState._sim; if(!S) return;
   S.time+=dt;
+  try{ _cizAyristir(S,dt); }catch(e){}   /* FAZ 57 A2: yalnız ÇİZİM ofseti (simülasyon konumu değişmez) */
   _sahipsizTopTick(S,dt);
   /* FAZ 42-B §D: set bayrağı son hücumcu da ön sahaya girince açılır */
   if(S._setIstek&&!S.canliSet&&S.offP&&_hepsiOnde(S.offSide,S.offP)) S.canliSet=true;
@@ -793,7 +878,10 @@ function _simTick(dt){
       }
     }
     else {
-      t.tx=b.x; t.ty=b.y; _setUrg(t,(c.urg!=null?c.urg:_URG.SPRINT)); t._lock=S.time+0.1;
+      /* FAZ 57 · 3a: hedef topun ANLIK konumu değil TAHMİNİ DURUŞ NOKTASI — sürüklenen topun
+         peşinden gitmek klasik takip gecikmesidir ve 3-4 sn'lik sahipsiz epizotların kökeniydi. */
+      { const hd=_topDurus(b); t.tx=_inX(hd[0]); t.ty=_inY(hd[1]); }
+      _setUrg(t,(c.urg!=null?c.urg:_URG.SPRINT)); t._lock=S.time+0.1;
       /* FAZ 43 İŞ 1: yakalama TEK kapıdan (`_topAlinabilir`): top serbest, 0,7 m içinde ve
          ele inmiş. Eski ölçüt (26 px · h<30) topu çemberdeyken ve 0,9 m'den alıyordu. */
       if(_topAlinabilir(t,b)||(c.t>0.5&&Math.hypot(t.x-b.x,t.y-b.y)<=40&&b.h<=_TOP_TUTMA_H)){
@@ -1411,7 +1499,10 @@ function _simTick(dt){
          harekettir, üstelik savunmacı adamının hareketine TEPKİ verir — genel ivme
          tavanıyla sınırlanınca topu tutana olan mesafe 1,74 → 1,92 m'ye açılıyor ve
          `spacing-check` markaj kapısı düşüyordu (ölçüldü). Çarpan 1,6. */
-      _ivmeSinirla(p,_vx0,_vy0,dt,_savunmada?1.6:1);
+      /* FAZ 57 A1: klip→fizik devrinden sonraki 0,4 sn'de ivme tavanı yumuşatılır (×0,7).
+         Devir anı basketbolda hiçbir zaman patlayıcı bir an değildir; ölçüldü, rejim
+         sınırında kare-kare ivmenin >8 payı diğer yerlerin 2,2 katıydı. */
+      _ivmeSinirla(p,_vx0,_vy0,dt,(_savunmada?1.6:1)*(((p._devirT||0)>S.time)?0.7:1));
     } else { p.vx*=0.85; p.vy*=0.85; }
     p.x+=p.vx*dt; p.y+=p.vy*dt;
     /* FAZ 54 B4: SAHA KELEPÇESİ — hızlı jeton çizgiyi aşamaz (ölçüldü: bir SG y=−1, tribünde).
@@ -1446,6 +1537,14 @@ function _simTick(dt){
     } else if(S.offP){ S.offP.forEach(p=>{ if(p) p._boyaT=0; }); }
   }catch(e){}
   /* 4) üst üste binmeyi çöz — itme kare başına SINIRLI; çizgi dışındaki sokucu itilmez. */
+  /* ── FAZ 57 A1: İTME ARTIK BİR HIZDIR, KONUM ŞUTU DEĞİL ─────────────────────────────
+     Ölçüldü (v100 · A1 sonrası): fizik jetonlarında >8 m/sn² olaylarının %62'sinde 40 px'ten
+     yakın bir komşu var (taban pay %18,9 — 3,3 kat yoğunlaşma). Sebep: itme, örtüşme 1,8 px'e
+     varır varmaz tavana oturuyor ve 0,9 px/kare = 1,82 m/sn'lik ANLIK konum kayması demek —
+     örtüşmenin başında ve sonunda iki ivme sıçraması üretiyor. Artık itme jetona bir ayrışma
+     HIZI olarak birikir (`p._pvx/_pvy`) ve o hız ivme tavanıyla (`_PUSH_ACC`) değişir; taban
+     ihlalinde (0,58 m altı) tavan yükselir, iç içe geçme derinleşmesin. */
+  for(const q of P){ q._pdx=0; q._pdy=0; q._pdT=false; }
   const shooterTok=S.shooter;
   for(let i=0;i<P.length;i++){
     for(let j=i+1;j<P.length;j++){
@@ -1482,14 +1581,25 @@ function _simTick(dt){
         const push=Math.min(_tabanIhlal?_AYIR_MAX:0.9,(_R-d)/2)*Math.min(1.5,dt*60);
         dx/=d; dy/=d;
         /* Çizgi dışındaki sokucu itilmez ama İÇİNDEN de geçilmez — yalnız karşı taraf kayar. */
-        if(a._oob){ b.x+=dx*push*1.7; b.y+=dy*push*1.7; }
-        else if(b._oob){ a.x-=dx*push*1.7; a.y-=dy*push*1.7; }
-        else if(a===shooterTok){ b.x+=dx*push*1.7; b.y+=dy*push*1.7; }
-        else if(b===shooterTok){ a.x-=dx*push*1.7; a.y-=dy*push*1.7; }
-        else { a.x-=dx*push; a.y-=dy*push; b.x+=dx*push; b.y+=dy*push; }
+        if(_tabanIhlal){ a._pdT=true; b._pdT=true; }
+        if(a._oob){ b._pdx+=dx*push*1.7; b._pdy+=dy*push*1.7; }
+        else if(b._oob){ a._pdx-=dx*push*1.7; a._pdy-=dy*push*1.7; }
+        else if(a===shooterTok){ b._pdx+=dx*push*1.7; b._pdy+=dy*push*1.7; }
+        else if(b===shooterTok){ a._pdx-=dx*push*1.7; a._pdy-=dy*push*1.7; }
+        else { a._pdx-=dx*push; a._pdy-=dy*push; b._pdx+=dx*push; b._pdy+=dy*push; }
       }
     }
   }
+  /* 4b) FAZ 57 A1: biriken itme, ivme tavanlı bir ayrışma hızıyla uygulanır. */
+  if(dt>0){ for(const q of P){
+    const wx=(q._pdx||0)/dt, wy=(q._pdy||0)/dt;
+    const lim=(q._pdT?_PUSH_ACC_TABAN:_PUSH_ACC)*dt;
+    let ex=wx-(q._pvx||0), ey=wy-(q._pvy||0); const em=Math.hypot(ex,ey);
+    if(em>lim&&em>0){ ex=ex/em*lim; ey=ey/em*lim; }
+    q._pvx=(q._pvx||0)+ex; q._pvy=(q._pvy||0)+ey;
+    if(Math.abs(q._pvx)<0.5&&Math.abs(q._pvy)<0.5&&!q._pdx&&!q._pdy){ q._pvx=0; q._pvy=0; }
+    q.x+=q._pvx*dt; q.y+=q._pvy*dt;
+  } }
   /* 5) SINIR — topu sokan dışında herkes ÇİZGİ İÇİNDE kalır (gerçek kural). */
   for(const p of P){
     if(p._oob){
@@ -1511,7 +1621,7 @@ function _simTick(dt){
       if(p._oobDonus&&p.x>=CRT_X0&&p.x<=CRT_X1&&p.y>=CRT_Y0&&p.y<=CRT_Y1) p._oobDonus=false;
     }
     _yonGuncelle(p,dt);
-    _tokSet(p.g,p.x,p.y,p.sc);
+    _tokSet(p.g,p.x+(p._cizDx||0),p.y+(p._cizDy||0),p.sc);
   }
   _ballStep(dt);
   _fxStep(dt);
@@ -1620,6 +1730,17 @@ function _ballHold(p,noDrib){
 function _ballTut(p,noDrib){
   const b=_ball(); if(!p) return;
   const S=mState._sim;
+  /* ── FAZ 57 · 3b: 'rim'/'shot' MODUNDAN ÇIKIŞ YALNIZ 'loose'A ───────────────────────
+     Ölçüldü (v100): `rim>held` 2 olay — top çemberden DOĞRUDAN bir oyuncunun eline geçiyor,
+     arada sahipsiz kare yok; ekranda ribaunt anı hiç görünmüyor. FAZ 54'te kapatılan
+     `loose>pass` hatasının kardeşi. Top önce serbest bırakılır, alma bir sonraki kareye
+     kuyruğa girer (`_tutBekle`) — en az bir kare 'loose' geçer. */
+  if(b.mode==='rim'||b.mode==='shot'){
+    b._carom=null; b.mode='loose'; b.carrier=null; b.t=0;
+    b.h=Math.max(b.h||0,8); b.vx=0; b.vy=0; b.vh=Math.min(0,b.vh||0);
+    b._tutBekle={p,noDrib,t:(S?S.time:0)};
+    return;
+  }
   if(b.carrier!==p) p._topAldi=null;   /* §7.1: topu YENİ alan oyuncunun 1,2 sn sayacı sıfırlanır */
   if(b.carrier&&b.carrier!==p) b._pasSonra=null;   /* FAZ 43: el değiştirince bekleyen gecikmeli pas düşer · FAZ 45: top UÇARAK gelince (önceki taşıyıcı yok) düşmez — serbest atış toplayıcısı topu tutup kalıyordu */
   if(b.carrier!==p) b._heldAt=S?S.time:0;
@@ -1898,6 +2019,8 @@ function _ballStep(dt){
       break;
     }
     case 'loose':{
+      /* FAZ 57 · 3b: bir önceki karede 'rim'/'shot'tan serbest bırakılan top şimdi ele geçer. */
+      if(b._tutBekle){ const q=b._tutBekle; b._tutBekle=null; if(q.p) _ballTut(q.p,q.noDrib); break; }
       b.x+=b.vx*dt; b.y+=b.vy*dt;
       b.vx*=(1-2.2*dt); b.vy*=(1-2.2*dt);
       b.h+=b.vh*dt; b.vh-=_TOP_G*dt;
@@ -2910,7 +3033,7 @@ function _inboundPass(inb,to,dur){
       b0.onDone=()=>{ try{ b0.noDrib=true; _ballPass(to,dur||0.32); _sokmaSerbest(); }catch(e){} };
       return;
     }
-    b0.mode='held'; b0.carrier=inb; b0.noDrib=true;
+    _ballTut(inb,true);   /* FAZ 57 · 3b: doğrudan 'held' ataması `rim>held` üretiyordu (sayı sonrası filede inen topu sokucu çemberdeyken alıyor); `_ballTut` gerekirse önce bir kare 'loose' geçirir */
   }
   _ballPass(to,dur||0.32);
   if(inb){                                            /* pası attı → sahaya geri dön */

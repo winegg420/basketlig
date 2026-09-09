@@ -9637,3 +9637,113 @@ bu turda ölçüm tablosundaki en temiz katman hâline geldi.
 51fa02b6e0a8194b ✓ · `anlatim-check` 31/31 ✓ · `balon-check` ✓ · `taktik-klip-check` ✓ ·
 `visual-check` ✓ (0 konsol hatası) · `surum-check --yaz` → **sürüm 100** (`sw.js` SCRIPT_V=100 ·
 HTML `?v=100`, 18 dosya senkron).
+
+---
+
+## FAZ 57 — Klip↔fizik devir anı + jeton çakışması (9 Eylül 2026 · sürüm 101)
+
+Ölçüm aracı `tools/sahne-olcum.js`e iki yeni satır eklendi: **rejim sınırı ivmesi** (her jetonun
+`_klip` bayrağı değiştiği anların ±0,5 sn'si vs. diğer her yer) ve **çizim ayrıştırması**
+(jetonun ÇİZİLDİĞİ noktalar arası mesafe — kaydedici artık `p._cizDx/_cizDy` de yazıyor).
+Bütün ölçümler aynı tohumla (987654321), 380 sn / 22.800 kare. Tablo `olcum/FAZ57-sonuc.txt`.
+
+### 1. A1 — devir anındaki ivme patlaması: üç kök neden, biri briften büyüktü
+
+Brif tek satırı işaret ediyordu (`klipBitir` on jetonun hızını sıfırlıyor) ve o satır gerçekten
+kusurluydu; ama ölçüm devir anını FİZİK tarafında hem ÖNCE hem SONRA bozuk gösterdi
+(giriş ±0,5 sn %4,26 · çıkış %5,20 · klip tarafı çıkışta %0,62). Yani mesele yalnız dikiş
+karesi değildi.
+
+- **(a) `klipBitir` hız sıfırlaması** (brifin maddesi): klibin son hızı artık fiziğe devredilir,
+  yalnız sprint duvarına (8,2 m/sn duvar ölçeği) kırpılır. `klipAtes` hedefi jetonun ÜSTÜNE
+  değil hız yönünde 0,6 sn ileriye koyar ve kademe gelen hıza göre seçilir (`_klipUrg`).
+  Devirden sonraki 0,4 sn ivme tavanı ×0,7 (`p._devirT`).
+- **(b) ÇARPIŞMA İTMESİ — asıl kaynak.** (a)'dan sonra ölçüm: fizik jetonlarındaki >8 m/sn²
+  olaylarının **%62'sinde 40 px'ten yakın bir komşu** var (taban pay %18,9 — 3,3 kat
+  yoğunlaşma). Sebep, itmenin örtüşme 1,8 px'e varır varmaz tavana oturmasıydı: 0,9 px/kare
+  = 1,82 m/sn'lik ANLIK konum kayması, örtüşmenin başında ve sonunda iki ivme sıçraması.
+  İtme artık bir **ayrışma HIZIDIR** (`p._pvx/_pvy`) ve ivme tavanıyla değişir
+  (`_PUSH_ACC` 4,1 m/sn² · taban ihlalinde `_PUSH_ACC_TABAN`).
+
+**Ölçülen:** rejim sınırı >8 payı **%6,22 → %2,74** · sınır dışı %2,81 → %1,09 · fizik jetonu
+genel p99 **34,2 → 9,0**, >8 payı %3,49 → %1,42 · `oyuncu ivmesi (0,2 sn) p99 9,0 → 7,8` (kapı
+GEÇTİ) · kare-kare >8 %1,74 → %1,11 · üç saniye max 4,6 → 3,7.
+
+**Ders:** *bir ivme kusurunu jetonun kendi hareketinde ararken, ona UYGULANAN düzeltmeleri de
+say.* Çarpışma itmesi bir konum ataması olduğu sürece `_ivmeSinirla`nın hiçbir hükmü yoktur —
+ivme tavanı yalnız jetonun KENDİ hızına uygulanır.
+
+### 2. A2 — jetonlar iç içe: kusur çizimde, ve çözüm hedefi ölçüm eşiğinin ÜSTÜNDE olmalı
+
+Brifin "önce gerçek veriyi ölç" talimatı yerine getirildi: gerçek SportVU kaydında en yakın çift
+karelerin **%10,41'inde 40 cm'den, %20,71'inde 55 cm'den** yakın (FAZ 56'da 320 klip · 81.942
+karede ölçüldü ve `sahne-olcum`un kapısı zaten oradan geliyor). Motorun değeri %11,9 / %21,6 —
+yani bu bir **simülasyon kusuru değildir**. Kusur çizimdedir: jeton yarıçapı 16 px, çap 32 px =
+**1,08 m**; gerçek omuz genişliği ~0,5 m. Çözüm yalnız çizim katmanında: `p.x/p.y` değişmez,
+jeton `_cizDx/_cizDy` kadar kaydırılarak çizilir (`_cizAyristir`, `_simTick` başında), artı
+1,5 px'lik açık halka.
+
+**Ölçülerek bulunan iki incelik:**
+- **Gevşetme hedefi ölçüm eşiğinin üstünde olmalı.** Çözücü tam 26 px'i hedeflediğinde çift o
+  değerin ±ε'unda kapanıyor ve karelerin yarısı hâlâ 26 px'in ALTINDA ölçülüyordu: kayıttan
+  yeniden çözümlemede pay %34,9. Hedef 29 px olunca %11,9. Sınırsız kayma ve 30 gevşetme
+  geçişiyle bile eski hedefle %30'un altına inilemiyordu — kusur çözünürlüktü, kapasite değil.
+- Tek geçişlik itme üçlü kümelerde yetmiyor (22-26 px'lik çiftlerin ancak %53'ü ayrılıyordu);
+  gevşetme 6 geçiş ve mesafe her geçişte ÇİZİLEN noktadan ölçülüyor.
+
+**Ölçülen:** çizimde <26 px pay **%46,66 → %10,62**, aynı koşuda **simülasyondaki pay
+DEĞİŞMEDİ** (%46,66 → %48,01, koşu gürültüsü) ve hız/ivme/üçlük/yayılım satırlarının hepsi
+yerinde — A2'nin doğru katmana dokunduğunun kanıtı budur.
+
+### 3. 3b — `rim>held` kapatıldı (2 → 0)
+
+`'rim'/'shot'` modundan çıkış yalnız `'loose'`a. `_ballTut` bu iki modda topu önce serbest
+bırakır ve almayı bir sonraki kareye kuyruğa alır (`b._tutBekle`, `'loose'` dalı işletir) —
+en az bir kare sahipsiz geçer. İki ayrı yol daha aynı sözleşmeye alındı: sayı sonrası sokucunun
+topu doğrudan `held` yapması (`_inboundPass`) ve klip oynatıcının tutma dalı.
+
+### 4. 3a — sahipsiz top: iki gerçek kök neden, brifin önerisi ölçülerek elendi
+
+- **Takip gecikmesi:** takipçi topun ANLIK konumuna koşuyordu. Artık **tahmini duruş
+  noktasına** (`_topDurus`: sürtünme üstel, kalan yol ≈ v/2,2, en çok 0,55 sn'lik yol).
+- **Kilitlenme:** topu ALMA yolu YALNIZ takip dalındadır. Ölçüldü (113,9 sn'lik kaçan şut):
+  top yerde duruyor, PF **0,03-0,9 m** ötede 2 saniye bekliyor ve hiçbir kod onu almıyor;
+  2 m'lik bekçi kapısı da oyuncu YAKIN olduğu için hiç açılmıyor. Sayaç artık mesafeye değil
+  **topun sahipsiz geçirdiği süreye** bağlı (1,2 sn) ve takip yoksa `_ballKurtar` devreye girer.
+- **Klip başlangıcındaki bekleme (asıl uzun kuyruk):** klip tutucu topa varana kadar top
+  bekler (FAZ 54 A1). FAZ 56'nın **doyumlu kapanış yasası** bu dala da uygulanıyordu ve
+  2 m'lik ofsette hızı 175 → **16 px/sn**'ye düşürüyordu; klibin kendi hareketi jetonu geri
+  götürünce top **2,6 saniye kıpırdamadan** duruyordu (en uzun epizot 6,60 sn). Bekleme dalı
+  artık doyumlu yasadan MUAF: sabit hız. **Ders: doyumlu yasa bir HARMAN yasasıdır; topa
+  KOŞAN jetona uygulanamaz.**
+- **Brifin "en yakın iki oyuncu koşturulsun" önerisi denendi ve ölçülerek geri alındı:** ikinci
+  oyuncu topu ALAMAZ (alma hakkı anlatımdaki ribauntçunundur) ve topun 3 cm'sinde 1,3 sn
+  dikiliyordu — ekranda "oyuncu topun üstünde bekliyor". 1 m geride mücadele mesafesinde
+  durdurmak da işe yaramadı (sahipsiz pay %5,5 → %7,1). Kod yorumda gerekçesiyle duruyor.
+
+**Ölçülen:** canlı sahipsiz pay %6,18 → **%6,01**, en uzun epizot koşudan koşuya 2,3-6,6 sn
+salınıyordu, FAZ 57'de üç ardışık koşuda 3,12 / 3,27 / 3,28 sn. **Kapı (< 2,0 sn) hâlâ AÇIK.**
+
+### Kapılar
+- `sim-node --n=500 --seed=42` → **93.1 - 87.9 · olay/maç 268** · determinizm ✓ (taban aynı)
+- `band.js` **c19928475859c7ff** ✓ · `measure.js` **51fa02b6e0a8194b** ✓ — maç matematiği
+  değişmedi (bütün değişiklikler sahne/çizim katmanında)
+- `visual-check` ✓ (masaüstü + mobil, 0 konsol hatası) · `balon-check` ✓ · `anlatim-check` 31/31 ✓
+- `surum-check --yaz` → **sürüm 101** (`sw.js` SCRIPT_V=101 · HTML `?v=101`, 18 dosya senkron)
+
+### Açık kalan satırlar (dürüst rapor)
+1. **kare-kare ivme >8 %1,11** (kapı %0,6 · gerçek %0,37) — aşanların **%59'u klip karesi**.
+   Fizik tarafı bu turda %1,08 → %0,45'e indi; kalan klip katmanının kendi ara değerinden
+   geliyor ve FAZ 56'nın işidir.
+2. **rejim sınırı %2,74** (kapı %2,0) ve **fizik geneli >8 %1,42** (kapı %1,0) — beş koşuda
+   sınır %2,38-3,01 arasında salınıyor; taban %6,22 idi, yön doğru, kapı henüz kapanmadı.
+3. **sahipsiz top en uzun 3,1-3,3 sn** (kapı 2,0) — kalan süre olay bekleme (anlatımdaki
+   ribauntçu belli olana kadar) + fiziksel varış süresidir.
+4. **üç saniye (eski fizik) max 3,7 sn** (kapı 3,0) — HEAD'de 4,6 idi; değişikliğin yönü doğru.
+5. **`sunum-check` F14-7** (serbest atış yerleşimi) bu turda 8,2/10 ile düştü; F25-6a/6b klip
+   devri yüzünden zaten örneksiz (CLAUDE.md'de belgeli). M9 ve M12 ilk koşuda düşüp ikincide
+   geçti — örneklem gürültüsü.
+
+**F14-7 ve F25-2 HEAD'de de düşüyor** (aynı araç, aynı makine, `git worktree` ile açılan v100
+kopyası): HEAD 8,1/10 · en uzak **6,76 m**; FAZ 57 8,2/10 · en uzak **2,74 m**. Yani gerileme
+değil, süregelen açık madde — ve en uzak jeton tarafında FAZ 57 belirgin daha iyi.

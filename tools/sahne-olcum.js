@@ -11,7 +11,7 @@
  * ⚠ Top hakemdeyken (`S._hakemTop.aktif`) top SAHİPSİZ değildir (FAZ 51/53).
  *
  * Kullanım: node tools/sahne-olcum.js [--secs=340] [--seed=987654321] [--etiket=ad] [--rate=1]
- * Çıktı: olcum/FAZ56-sonuc.txt (eklenir; her fazda güncellenir) · olcum/sahne-olcum-<etiket>.json (ham)
+ * Çıktı: olcum/FAZ57-sonuc.txt (eklenir; her fazda güncellenir) · olcum/sahne-olcum-<etiket>.json (ham)
  */
 const http = require('http'), fs = require('fs'), path = require('path');
 const { chromium } = require('playwright');
@@ -79,7 +79,7 @@ function TOHUM(seed) {
             ft: S._ftAktif ? 1 : 0, inb: S.inb ? 1 : 0,
             kl: (S.klip && S.klip.aktif) ? 1 : 0, oam: (S.oam && S.oam.aktif) ? (S.oam.faz || '?') : '-',
             os: S.offSide ? 1 : 0, cu: S._snapN | 0,
-            p: S.players.map(p => [+p.x.toFixed(3), +p.y.toFixed(3), (S.offP || []).indexOf(p) >= 0 ? 1 : 0, (p.pl && p.pl.poz) || '?', (p._oob || p._oobDonus) ? 1 : 0, p._klip ? 1 : 0])
+            p: S.players.map(p => [+p.x.toFixed(3), +p.y.toFixed(3), (S.offP || []).indexOf(p) >= 0 ? 1 : 0, (p.pl && p.pl.poz) || '?', (p._oob || p._oobDonus) ? 1 : 0, p._klip ? 1 : 0, +(p._cizDx || 0).toFixed(2), +(p._cizDy || 0).toFixed(2)])
           });
         }
       } catch (e) {}
@@ -238,6 +238,47 @@ function TOHUM(seed) {
     R.kkP999 = kk.length ? kk[Math.floor(kk.length * 0.999)].a : 0;
     R.kk8 = pct(kk.filter(x => x.a > 8).length, kk.length);
     R.kk8Klip = pct(kk.filter(x => x.a > 8 && x.kl).length, Math.max(1, kk.filter(x => x.a > 8).length)); }
+  /* FAZ 57 A1 · REJIM SINIRI (klip<->fizik devir ani): her jeton icin _klip bayraginin
+     degistigi anlar; kare-kare ivme olaylari bu anlarin +-0,5 sn'sine dusenler ve dusmeyenler
+     olarak ayrilir. Olculdu (v100): sinirda >8 payi %9,65 - digerinde %1,47 (6,6 kat). */
+  { const dev = new Map();
+    for (let i = 1; i < N; i++) { const a = K[i - 1], f = K[i];
+      f.p.forEach((p2, j) => { const q = a.p[j]; if (!q) return; if ((p2[5] | 0) !== (q[5] | 0)) { if (!dev.has(j)) dev.set(j, []); dev.get(j).push(f.t); } }); }
+    R.devirN = 0; dev.forEach(v => R.devirN += v.length);
+    const yakin = (j, t) => { const L = dev.get(j); if (!L) return false; for (const x of L) if (Math.abs(x - t) <= 0.5) return true; return false; };
+    const kk2 = []; const vP2 = new Map();
+    for (let i = 1; i < N; i++) {
+      const a = K[i - 1], f = K[i];
+      const dtk = (f.st != null && a.st != null) ? (f.st - a.st) : (f.t - a.t);
+      if (dtk <= 0.004 || dtk > 0.05 || f.t < 1.0 || f.cu !== a.cu) continue;
+      f.p.forEach((p2, j) => {
+        const q = a.p[j]; if (!q) return;
+        const v = m(Math.hypot(p2[0] - q[0], p2[1] - q[1])) / dtk; if (v > 25) return;
+        const pr = vP2.get(j);
+        if (pr && (f.t - pr.t) > 0 && (f.t - pr.t) <= 0.05) kk2.push({ a: Math.abs(v - pr.v) / (f.t - pr.t), kl: p2[5], j, t: f.t, sin: yakin(j, f.t) });
+        vP2.set(j, { v, t: f.t });
+      });
+    }
+    const fz = kk2.filter(x => !x.kl);
+    const fsn = fz.filter(x => x.sin), fd = fz.filter(x => !x.sin);
+    R.sinN = fsn.length; R.sinPct = pct(fsn.filter(x => x.a > 8).length, Math.max(1, fsn.length));
+    R.disN = fd.length; R.disPct = pct(fd.filter(x => x.a > 8).length, Math.max(1, fd.length));
+    const fzs = fz.map(x => x.a).sort((x, y) => x - y);
+    R.fzP99 = fzs.length ? fzs[Math.floor(fzs.length * 0.99)] : 0; R.fz8 = pct(fzs.filter(x => x > 8).length, Math.max(1, fzs.length)); }
+  /* FAZ 57 A2 · CIZIM AYRISMASI: simulasyon konumu degil, jetonun CIZILDIGI nokta
+     (p.x + _cizDx). Jeton capi 32 px oldugu icin merkezleri 26 px'ten yakin iki daire yumak gorunur. */
+  { let n26 = 0, nSim26 = 0;
+    K.forEach(f => {
+      let ec = 1e9, es = 1e9;
+      for (let i = 0; i < f.p.length; i++) for (let j = i + 1; j < f.p.length; j++) {
+        if (f.p[i][4] || f.p[j][4]) continue;
+        const ds = Math.hypot(f.p[i][0] - f.p[j][0], f.p[i][1] - f.p[j][1]);
+        const dc = Math.hypot((f.p[i][0] + (f.p[i][6] || 0)) - (f.p[j][0] + (f.p[j][6] || 0)), (f.p[i][1] + (f.p[i][7] || 0)) - (f.p[j][1] + (f.p[j][7] || 0)));
+        if (ds < es) es = ds; if (dc < ec) ec = dc;
+      }
+      if (ec < 26) n26++; if (es < 26) nSim26++;
+    });
+    R.ciz26Pct = pct(n26, N); R.sim26Pct = pct(nSim26, N); }
   const iv = ivme.map(x => x.a).sort((a, b) => a - b);
   R.ivmeN = iv.length; R.ivmeMax = iv[iv.length - 1] || 0; R.ivmeP99 = iv[Math.floor(iv.length * 0.99)] || 0; R.ivmeP999 = iv[Math.floor(iv.length * 0.999)] || 0;
   R.ivme8 = ivme.filter(x => x.a > 8).length; R.ivme8Klip = ivme.filter(x => x.a > 8 && x.kl).length;
@@ -364,6 +405,12 @@ function TOHUM(seed) {
      >8 PAYIDIR. Kapı: >8 payı ≤ %0,6 (gerçek %0,37 × 1,6) ve tepe ≤ 60. */
   satir('ivme KARE-KARE (m/sn²)', `tepe ${R.kkMax.toFixed(0)} · p99,9 ${R.kkP999.toFixed(1)} · >8 %${R.kk8.toFixed(2)} (aşanların %${R.kk8Klip.toFixed(0)}'i klip) — gerçek: tepe 45 · >8 %0,37`, R.kk8 <= 0.6 && R.kkMax <= 60, '>8 payı ≤ %0,6 · tepe ≤ 60 (gerçek veri)', R.kkN);
   satir('oyuncu ivmesi (m/sn², 0,2 sn)', `p99 ${R.ivmeP99.toFixed(1)} · p99,9 ${R.ivmeP999.toFixed(1)} · max ${R.ivmeMax.toFixed(0)} · >8: %${(100 * R.ivme8 / Math.max(1, R.ivmeN)).toFixed(2)} (gerçek: p99 7,0 · p99,9 13,0 · >8 %0,58)`, R.ivmeP99 <= 8.0, 'p99 ≤ 8,0 (gerçek veri)', R.ivmeN);
+  /* FAZ 57 A1: klip<->fizik devir aninin +-0,5 sn'si vs. digeri. Olculdu (v100): %9,65 vs %1,47.
+     Kok neden klipBitir'in on jetonun hizini birden sifirlamasiydi. Kapi: sinir <= %2,0. */
+  satir('rejim siniri ivme >8 % (fizik)', `sinir +-0,5 sn %${R.sinPct.toFixed(2)} (n ${R.sinN}) - digeri %${R.disPct.toFixed(2)} (n ${R.disN}) - devir ${R.devirN} - fizik geneli p99 ${R.fzP99.toFixed(1)} / >8 %${R.fz8.toFixed(2)}`, R.sinPct <= 2.0 && R.fz8 <= 1.0, 'sinir <= %2,0 - fizik geneli >8 <= %1,0', R.sinN);
+  /* FAZ 57 A2: CIZIM katmani. Jeton capi 32 px; merkezleri 26 px'ten yakin iki daire yumak gorunur.
+     Simulasyon konumu KORUNUR (gercek kayit); yalniz cizim noktasi ayrilir. */
+  satir('cizimde 26 px alti jeton cifti %', `${R.ciz26Pct.toFixed(2)} (simulasyonda %${R.sim26Pct.toFixed(2)} - gercek kayitla ayni)`, R.ciz26Pct <= 0.5, '<= %0,5 (cizim)');
   satir('sahipsiz top % (ham)', `${R.bosPct.toFixed(2)} · en uzun ${R.bosMax.toFixed(2)} sn · >0,8: ${R.bos08} · >1,4: ${R.bos14}`, R.bosPct < 2 && R.bosMax < 0.8, '< 2 · en uzun < 0,8 sn');
   /* GERÇEK TABAN: gerçek kliplerde topu kimsenin tutmadığı kare %23,8; kesintisiz süre p50 0,60 ·
      p90 1,60 · p99 2,80 · max 5,2 sn. Brifin "< %2 · hiçbiri > 0,8 sn" hedefi fiziksel olarak
@@ -405,5 +452,5 @@ function TOHUM(seed) {
   yaz.push(`  bilgi: KLİP kareleri ${JSON.stringify(R.hizKlipBand)} (n=${R.hizKlipN}) · ESKİ FİZİK kareleri ${JSON.stringify(R.hizFizikBand)} (n=${R.hizFizikN})`);
   const metin = yaz.join('\n');
   console.log(metin);
-  fs.appendFileSync(path.join(ROOT, 'olcum/FAZ56-sonuc.txt'), metin + '\n\n');
+  fs.appendFileSync(path.join(ROOT, 'olcum/FAZ57-sonuc.txt'), metin + '\n\n');
 })().catch(e => { console.error(e); process.exit(1); });

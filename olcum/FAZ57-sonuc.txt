@@ -1,0 +1,67 @@
+FAZ 54 — CANLI SAHNE ÖLÇÜMÜ · etiket=f57-kapanis · 22801 kare · 380 sn · hız 1× · seed=987654321 · 2026-09-09T07:32
+  konsol hatası 0 · ölçek: DUVAR (ekran) — sahne→maç oranı için iz-kaydet
+  ✓                  loose>held geçişi              33                                 hedef ≥ 1
+  ✓                  loose>pass geçişi              0                                  hedef 0
+  ✓                  pass>shot geçişi               0                                  hedef 0
+  ✓                  shot>pass geçişi               0                                  hedef 0
+  ✓                  hayalet held (taşıyıcısız) sn  0.0 sn · %0.01 kare · en uzun 0.0sn@276s(tac) · 0.0sn@185s(free) hedef 0,0 sn
+  ✓                  top saha dışı %                0.00 {}                            hedef < 0,5
+  ✓                  oyuncu saha dışı % (>10 px)    0.00 (>0 px: 0.00)                 hedef 0,0
+  ✗                  üç saniye (eski fizik) max sn  3.7 · >3 sn 2 olay · SG@281s       hedef ≤ 3,0 (koreografi bizim)  (n=75)
+  bilgi: boyada kalış TÜMÜ (klip dahil) max 9.6 sn · >3 sn 16 olay — gerçek SportVU aynı ölçütle p99 7,4 · max 12,8 sn · >3 sn %22,2 (kapı YOK: klip gerçek kayıttır)
+  ✓                  üçlük mesafe aralığı (m)       6.84 – 9.62 · ort 7.55 · köşe %30 · >8,3 m %6 hedef min < 7,0 · max > 8,0  (n=69)
+  ✗                  ivme KARE-KARE (m/sn²)         tepe 1211 · p99,9 65.0 · >8 %1.11 (aşanların %59'i klip) — gerçek: tepe 45 · >8 %0,37 hedef >8 payı ≤ %0,6 · tepe ≤ 60 (gerçek veri)  (n=227386)
+  ✓                  oyuncu ivmesi (m/sn², 0,2 sn)  p99 7.8 · p99,9 21.4 · max 35 · >8: %0.93 (gerçek: p99 7,0 · p99,9 13,0 · >8 %0,58) hedef p99 ≤ 8,0 (gerçek veri)  (n=20670)
+  ✗                  rejim siniri ivme >8 % (fizik) sinir +-0,5 sn %2.74 (n 14600) - digeri %1.09 (n 59030) - devir 490 - fizik geneli p99 9.0 / >8 %1.42 hedef sinir <= %2,0 - fizik geneli >8 <= %1,0  (n=14600)
+  ✗                  cizimde 26 px alti jeton cifti % 10.62 (simulasyonda %48.01 - gercek kayitla ayni) hedef <= %0,5 (cizim)
+  ✗                  sahipsiz top % (ham)           8.51 · en uzun 3.27 sn · >0,8: 14 · >1,4: 7 hedef < 2 · en uzun < 0,8 sn
+  ✗                  sahipsiz top % (canlı)         6.01 · en uzun 3.27 sn · >0,8: 10 (gerçek pay %23,8 · p90 1,60 sn) hedef < 6 · en uzun < 2,0 sn (gerçek p90 1,60)
+  ✓                  iç içe geçme % (<40 cm)        11.91 · <55 cm %21.63 · en uzun 55 cm altı 3.5 sn (SF–C) hedef <40 cm ≤ %13 · <55 cm ≤ %26 (gerçek %10,41 / %20,71 · +%25 pay)
+  ✓                  üst üste binme % (<70 cm)      33.0 · canlı top 36.5 (gerçek %37,7) hedef %29,7 – 45,7 (gerçek ±8)
+  ✓                  ortalama pas mesafesi (m)      5.39 · <2 m: 6                     hedef 5,0 – 6,5  (n=68)
+  ✓                  ortalama oyuncu hızı (m/sn)    1.93 · klip 2.05 (gerçek 1,90) · fizik 1.70 hedef 1,70 – 2,00 (gerçek 1,90)  (n=227401)
+  ✓                  0–1 m/sn bandı %               29.6 · bantlar {"0-1":29.6,"1-2":28.1,"2-3.5":28.5,"3.5-5":11.5,"5-7.5":2.2,">7.5":0} (gerçek %32,0) hedef ≥ 27 (gerçek 32,0)
+  ✓                  >7,5 m/sn bandı %              0                                  hedef < 0,5
+  ✓                  donuk oyuncu % (<0,3 px)       15.2 (gerçek %18,8)                hedef %13,8 – 23,8 (gerçek ±5)
+  ✓                  savunmadan >4 m %              16.5 · ort 2.48 m (gerçek %15,6 · 2,43 m) hedef ≤ 20 · ort ≤ 3,0 m (gerçek 15,6)  (n=51823)
+  ÖRNEKLEM YETERSİZ  sokmada 6 m içindeki arkadaş   ort 2.6 · <3 olan 1/5 (gerçek: ort 3,07 · <3 %24) hedef ort ≥ 2,5 · <3 payı ≤ %45 (gerçek 3,07 / %24)  (n=5)
+  ÖRNEKLEM YETERSİZ  orta çizgiyi geçen C           4/16 · {"SG":3,"PF":2,"PG":5,"C":4,"SF":2} hedef ≤ 1/13  (n=16)
+  bilgi: geçişler {"idle>held":1,"held>pass":71,"pass>held":69,"held>shot":26,"shot>rim":23,"rim>loose":23,"loose>held":33,"shot>loose":3,"held>loose":4,"pass>loose":2,"held>dead":1,"dead>loose":1} · held→held el değişimi 33
+  bilgi: en uzun sahipsiz: 103.3s miss3 3.27sn · 184.8s free 2.95sn · 66.8s miss2 2.64sn · 78.9s miss3 2.30sn · 348.5s miss2 2.00sn
+  bilgi: canlı-top hız bantları {"0-1":28.8,"1-2":28.4,"2-3.5":28,"3.5-5":12.3,"5-7.5":2.5,">7.5":0}
+  bilgi: KLİP kareleri {"0-1":27.2,"1-2":29.5,"2-3.5":26.3,"3.5-5":13.8,"5-7.5":3.2,">7.5":0} (n=153761) · ESKİ FİZİK kareleri {"0-1":34.8,"1-2":25.2,"2-3.5":33.1,"3.5-5":6.7,"5-7.5":0.2,">7.5":0} (n=73640)
+
+
+════════════════════════════════════════════════════════════════════════════
+FAZ 57 — ÖNCE / SONRA (aynı tohum 987654321 · 380 sn · 22.800 kare)
+════════════════════════════════════════════════════════════════════════════
+satır                                v100 (taban)   FAZ 57      hedef
+--------------------------------------------------------------------------
+A1 rejim sınırı ±0,5 sn  >8 payı %     6,22          2,74        ≤ 2,0
+A1 sınır dışı fizik      >8 payı %     2,81          1,09         —
+A1 fizik jetonu genel    >8 payı %     3,49          1,42        ≤ 1,0
+A1 fizik jetonu genel    p99          34,2           9,0         ≤ 8,0
+oyuncu ivmesi (0,2 sn)   p99           9,0           7,8   ✓     ≤ 8,0
+ivme KARE-KARE           >8 payı %     1,74          1,11        ≤ 0,6
+   ↳ aşanların klip payı %              38            59          —
+üç saniye (eski fizik) max sn          4,6           3,7         ≤ 3,0
+3b  rim>held olayı                       2             0   ✓       0
+3a  sahipsiz top (canlı) %             6,18          6,01        < 6
+3a  sahipsiz top en uzun sn            2,32*         3,27        < 2,0
+A2  ÇİZİMDE <26 px jeton çifti %      46,66         10,62        ≤ 0,5
+A2  SİMÜLASYONDA <26 px %             46,66         48,01   (değişmemeli ✓)
+iç içe geçme <40 cm %                12,71         11,91   ✓     ≤ 13
+iç içe geçme <55 cm %                22,00         21,63   ✓     ≤ 26
+üst üste binme <70 cm %              32,9          33,0    ✓   29,7-45,7
+ortalama oyuncu hızı m/sn             1,93          1,93   ✓   1,70-2,00
+0-1 m/sn bandı %                      30,3          29,6   ✓     ≥ 27
+donuk oyuncu %                        15,0          15,2   ✓  13,8-23,8
+savunmadan >4 m %                     18,0          16,5   ✓     ≤ 20
+ortalama pas mesafesi m               5,04          5,39   ✓   5,0-6,5
+üçlük mesafe aralığı m           6,84-9,62     6,84-9,62   ✓
+top saha dışı % / oyuncu saha dışı %   0/0           0/0    ✓
+hayalet held sn                        0,0           0,0    ✓
+
+* v100'ün 2,32 sn'lik değeri tek koşuluk bir alt uçtur; aynı kodun taban ölçümünde
+  HAM sahipsiz en uzun 3,68 sn idi. Sahipsiz top epizodu koşudan koşuya 2,3-6,6 sn
+  arasında salınıyor (beş koşu ölçüldü) — bu satır tek koşuda yargılanamaz.

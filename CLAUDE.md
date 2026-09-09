@@ -1894,3 +1894,54 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   pivot 0/19 → 13/47'ye fırlıyordu (FAZ 47'de kullanıcının şikâyet ettiği kusurun geri dönüşü).
   Doğrusu tutmaktır: hedef, oyuncunun KENDİ yönünde sokucudan 5,7 m'ye kırpılır — kulvar ve rol
   korunur, yalnız uzaklaşma sınırlanır.
+
+- **İVME TAVANI YALNIZ JETONUN KENDİ HIZINA UYGULANIR — ONA UYGULANAN DÜZELTMELER MUAFTIR
+  (FAZ 57 A1, bu turun en pahalı bulgusu):** klip↔fizik devir anının ±0,5 sn'sinde kare-kare
+  ivmenin >8 m/sn² payı %6,22, diğer her yerde %2,81 idi. Brif tek satırı gösteriyordu
+  (`klipBitir` on jetonun hızını sıfırlıyor — doğruydu, düzeltildi: klibin son hızı fiziğe
+  devredilir, hedef jetonun ÜSTÜNE değil hız yönünde 0,6 sn ileriye konur, devir sonrası
+  0,4 sn ivme tavanı ×0,7 · `p._devirT`), ama ölçüm devir anını fizik tarafında hem ÖNCE
+  hem SONRA bozuk gösterdi. Asıl kaynak **çarpışma itmesiydi**: >8 olaylarının %62'sinde
+  40 px'ten yakın bir komşu var (taban pay %18,9). İtme örtüşme 1,8 px'e varır varmaz tavana
+  oturuyor ve 0,9 px/kare = 1,82 m/sn'lik ANLIK konum kayması demek — örtüşmenin başında ve
+  sonunda iki ivme sıçraması. `_ivmeSinirla`nın bunlara hükmü YOKTUR. İtme artık bir ayrışma
+  HIZIDIR (`p._pvx/_pvy`, `_PUSH_ACC` 4,1 m/sn² · taban ihlalinde `_PUSH_ACC_TABAN`).
+  Ölçülen: sınır %6,22 → %2,74 · fizik jetonu p99 34,2 → 9,0 · >8 %3,49 → %1,42 ·
+  `oyuncu ivmesi p99` 9,0 → 7,8 (kapı geçti) · üç saniye max 4,6 → 3,7.
+  **Bir jetonun konumuna doğrudan yazan her yapı (çarpışma, kırpma, dizilim ataması) ivme
+  ölçümünde görünür ama ivme tavanından geçmez; birini eklerken hız cinsinden yaz.**
+- **JETON ÇAKIŞMASI ÇİZİM SORUNUDUR — `p.x/p.y`YE DOKUNMA (FAZ 57 A2):** karelerin ~%47'sinde
+  iki jetonun merkezi 26 px'ten yakın. Bu bir simülasyon kusuru DEĞİLDİR: gerçek SportVU
+  kaydında en yakın çift karelerin %10,41'inde 40 cm'nin, %20,71'inde 55 cm'nin altındadır
+  (FAZ 56 ölçümü) ve motor %11,9 / %21,6 ile o bandın içindedir. Kusur jeton yarıçapının
+  16 px (çap 1,08 m) olmasıdır; gerçek omuz genişliği ~0,5 m. `_cizAyristir` yalnız ÇİZİM
+  noktasını kaydırır (`p._cizDx/_cizDy`, en çok 9 px, kare başına 2 px, 6 gevşetme geçişi),
+  artı 1,5 px açık halka. Ölçülen: çizimde <26 px pay %46,7 → %10,6, **simülasyon payı ve
+  bütün hız/ivme/yayılım satırları değişmedi** — doğru katmana dokunulduğunun kanıtı budur.
+  ⚠ `match-engine.js`teki `if(a._klip||b._klip) continue;` satırına DOKUNMA (FAZ 50/56).
+- **GEVŞETME HEDEFİ ÖLÇÜM EŞİĞİNİN ÜSTÜNDE OLMALI (FAZ 57 A2, ölçülerek bulundu):** çizim
+  çözücüsü tam 26 px'i hedeflediğinde çift o değerin ±ε'unda kapanıyor ve karelerin yarısı
+  hâlâ 26 px'in ALTINDA ölçülüyordu (kayıttan yeniden çözümleme: %34,9). Hedef 29 px olunca
+  %11,9. **Sınırsız kayma ve 30 gevşetme geçişiyle bile eski hedefle %30'un altına
+  inilemiyordu** — kusur kapasite değil çözünürlüktü. Ayrıca tek geçişlik itme üçlü kümelerde
+  yetmez (22-26 px'lik çiftlerin ancak %53'ü ayrılıyordu) ve mesafe her geçişte ÇİZİLEN
+  noktadan ölçülmeli.
+- **DOYUMLU KAPANIŞ YASASI BİR HARMAN YASASIDIR — TOPA KOŞAN JETONA UYGULANAMAZ (FAZ 57 · 3a):**
+  FAZ 56'nın `v = V·(1-e^(-om/L))` yasası klip başlangıcındaki BEKLEME dalına da uygulanıyordu;
+  2 m'lik ofsette hız 175 → **16 px/sn**'ye düşüyor, klibin kendi hareketi jetonu geri götürüyor
+  ve **top 2,6 saniye kıpırdamadan** yerde duruyordu (sahipsiz top en uzun epizodu 6,60 sn).
+  Bekleme dalı (`K.bekle`) doyumlu yasadan MUAF, kapanış sabit hızlı (`KLIP_BEKLE_V`).
+- **TOPU ALMA YOLU YALNIZ TAKİP DALINDADIR — TAKİP YOKSA TOP KİMSENİN İŞİ DEĞİLDİR
+  (FAZ 57 · 3a):** ölçüldü (113,9 sn'lik kaçan şut): top yerde duruyor, bir oyuncu 0,03-0,9 m
+  ötesinde 2 saniye bekliyor ve hiçbir kod onu almıyor; 2 m'lik bekçi kapısı (`_SAHIPSIZ_PX`)
+  da oyuncu YAKIN olduğu için hiç açılmıyor. Sayaç MESAFEYE değil topun sahipsiz geçirdiği
+  SÜREye bağlanır (1,2 sn) ve takip yoksa `_ballKurtar` devreye girer. Takipçi de artık topun
+  anlık konumuna değil **tahmini duruş noktasına** koşar (`_topDurus`).
+  ⚠ Brifin "en yakın İKİ oyuncu koşturulsun" önerisi denendi ve ölçülerek elendi: ikinci
+  oyuncu topu ALAMAZ (alma hakkı anlatımdaki ribauntçunundur) ve topun 3 cm'sinde 1,3 sn
+  dikiliyordu; 1 m geride durdurmak da sahipsiz payı %5,5 → %7,1 yaptı.
+- **`rim`/`shot` MODUNDAN ÇIKIŞ YALNIZ `loose`A — ÜÇ YOL BİRDEN KAPATILIR (FAZ 57 · 3b):**
+  `_ballTut` bu iki modda topu önce serbest bırakır ve almayı bir sonraki kareye kuyruğa alır
+  (`b._tutBekle`, `'loose'` dalı işletir). Aynı sözleşmeye alınan diğer iki yol: sayı sonrası
+  sokucunun topu doğrudan `held` yapması (`_inboundPass`) ve klip oynatıcının tutma dalı.
+  FAZ 54'te kapatılan `loose>pass` hatasının kardeşidir; `rim>held` 2 → 0.
