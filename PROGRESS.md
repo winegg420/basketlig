@@ -10240,3 +10240,314 @@ Klip oynatırken top klibin yörüngesindedir ve muaftır. Sayaç `S._havadanN`.
    takıldı ama o maçta serbest atış olmadı, örnek toplanamadı.
 3. Simülasyonda en yakın çift min **0,8 px** (2,7 cm) — klip verisinin izleme gürültüsü;
    çizim ayrıştırması 16 px'e açıyor ama 8 kişilik kümede yetmiyor.
+
+---
+
+## FAZ 67 — TOP SAHİPLİĞİ (2026-09-10, sürüm 114, COMMIT YOK)
+
+Brif: "top maçın dörtte birinde yerde" (topElde %65,2 ↔ gerçek %80,9 · loose %21,9).
+Taban bağımsız doğrulandı (430 sn): topElde %67,8 · loose %16,0 · 50 serbest top olayı.
+
+**En önemli bulgu — brifin teşhisi doğruydu ama ana kaynak değildi.** Brifin gösterdiği
+`_ballHold` → `_ballPass` → `_pasKorumasi` sonsuz kuyruk döngüsü gerçek bir kusurdur ve
+kapatıldı; ama uygulandıktan sonra ölçüm HİÇ DEĞİŞMEDİ (topElde 67,8→67,8). Mod ataması
+19 ayrı yerde doğrudan yapılıyor. FAZ 64'ün kimlik sayacı yöntemi serbest topa uygulandı
+(`_ballStep` başında geçiş kaydedicisi, klip erken-dönüşünün ÜSTÜNDE) ve gerçek döküm
+çıktı: `pass>loose`un TAMAMI FAZ 51'in ÖLÜ TOP TÖRENİYDİ (hakem topu 2,5-4,5 sn elinde
+tutuyor, modu 'loose' yazılıyordu). **Bir kusuru düzeltmeden önce KAYNAĞINI say.**
+
+Yapılanlar:
+1. Pas varış anı ayrı durum — yeniden pas üretilmez (el değişimi / uçuşu sürdür / ayağına düşür).
+   Zincir ≤6 kez/4 m denendi, pas p99 1,80→1,92 oldu; ≤3 kez/3 m ile 1,57.
+2. `_ballLoose(...,sebep)` — 'held'den çıkan topun sebebi olmalı; sebepsiz 4 çağrı yolu
+   `_eldenVer(pg)` ile elden verişe çevrildi. Sebepsiz held>loose 0.
+3. Hakemin elindeki top `'dead'` (FAZ 54 A4 sözleşmesi), 'loose' değil; FAZ 64 ağı topu
+   yere bırakmak yerine sokucuya veriyor.
+4. `_topDurus` 'rim' modunda karambolü ileri sürüp DÜŞÜŞ NOKTASINI döndürüyor — takipçi
+   artık çembere değil oraya koşuyor (rim>loose ort 1,15→0,96-1,11 · max 4,59→2,67).
+5. `tools/faz67-check.js` (yeni) + `sahne-olcum`a KALICI "top elde % (gerçek tanım)" satırı.
+6. DENENDİ VE ÖLÇÜLEREK GERİ ALINDI: karambol dikey hızı 44-54 → 30-38 (rim>loose 30,9→34,6 sn).
+
+Sonuç: loose %16,0 → %10,2-11,4 · serbest top 47 → 39 / 400 sn · pass>loose 7 → 0 ·
+topElde %67,8 → %69,4 (tören hariç %71,9). **topElde ≥%78 kapısı TUTMADI.**
+
+Kullanıcıya bildirilen çelişki: brifin "loose gerçekte ~%3" ve "ribaunt 0,6-0,8 sn"
+hedefleri ölçülmemiş tahmindir; deponun kendi gerçek verisi (FAZ 54, 696 SportVU klibi)
+sahipsiz top payını **%23,8 · p90 1,60 sn · max 5,2 sn** ölçmüştü. Bizim değerimiz bu
+bandın ALTINDA. FAZ 39 dersi gereği kovalanmadı.
+
+Gerileme: faz58 2 düşen / faz59 4 düşen — HEPSİ TABANDA DA DÜŞÜYOR. hareket-bant 5→4.
+band hash c19928475859c7ff değişmedi · sim-node deterministik · visual-check 0 hata.
+Ayrıntı: `olcum/FAZ67-sonuc.txt`.
+
+---
+
+## FAZ 68 — ÇAKIŞMA · ETİKET · TOP SAHİPLİĞİ · SAVUNMA DÖNÜŞÜ (2026-09-10, sürüm 115)
+
+Brif beş iş getirdi. **İkisi ölçümle çürüdü** (biri brifin kendisi tarafından geri çekildi),
+biri kısmen çürüdü, ikisi gerçekti ve düzeltildi. Yeni denetçi: **`tools/goz.js`** — brifle
+birlikte geleceği söylenmişti ama depoda yoktu, bu turda yazıldı.
+
+### Yeni araç — `tools/goz.js` (canlı sahne ÇİZİM denetçisi)
+Maçın her karesini hem geometri (`mState._sim`) hem ÇİZİM (SVG/DOM) katmanında tarar; ölçüt
+jetonun simülasyon konumu değil **kullanıcının EKRANDA GÖRDÜĞÜ** noktadır (`_cizDx/_cizDy`
+uygulanmış) ve etiketler gerçek `getBBox()` kutularıyla ölçülür. Her ihlal maç saatiyle
+damgalanır, aynı tip 2,5 sn içinde tekrar sayılmaz. Ham döküm `tools/goz-rapor.json`.
+`node tools/goz.js --sn=180 [--exec=/yol/chromium]`.
+
+### Kapılar — önce/sonra (`goz.js --sn=120`, tohum 987654321, 7.188 kare)
+
+| Kapı | Önce | Sonra | Hedef |
+|---|---|---|---|
+| jeton çakışması (<26,2 px, klip çifti hariç) | **%9,8** | **%0,4** ✓ | ≤ %5 |
+| etiket kutusu çakışması | **%30,7** | **%0,0** ✓ | ≤ %2 |
+| hakem boyalı alanda | 13 olay | **0** ✓ | 0 |
+| hakem tribünde | 0 | **0** ✓ | 0 |
+| oyuncu saha dışı (izinsiz) | 0 | **0** ✓ | 0 |
+| sahne dondu (≥8/10 hareketsiz) | %0,2 | **%0,2** ✓ | ≤ %25 |
+| top taşıyıcıdan kopuk (>30 px) | %4,6 | **%2,4** ✗ | ≤ %1 — *tutmadı, aşağıda* |
+
+Bilgi satırları (sonra): klip karelerinde çakışma %52,7 → **%9,5** · görünen etiket dağılımı
+`{6:8, 7:140, 8:198, 9:1081, 10:5761}` (karelerin %80'inde 10/10, %15'inde 9/10 — brifin
+şikâyet ettiği "2,3,4,5,6,7,8,10 arası zıplama" bitti) · konsol hatası 0.
+
+**Simülasyon değişmedi:** `sim-node --n=200 --seed=42` → **93.4 - 87.3 · olay/maç 268** ·
+determinizm ✓ · `band.js` hash **c19928475859c7ff** (FAZ 43 tabanı) · `visual-check` 0 hata ·
+`mobile-check` **18/18** · `surum-check --yaz` → **115**.
+
+---
+
+### İŞ 1 — ÇAKIŞMA: çizim yarıçapı ile ayrışma tabanı çelişiyordu ✓
+
+**Kök neden brifin dediğiydi ve FAZ 57'nin kendi dersinin ihlaliydi.** Jetonun görünür çapı
+26,2 px (daire r=12 + halka r=13,1) ama çizim çözücüsünün hedefi `_CIZ_R=25` idi — yani
+"çözülmüş" sayılan her çift, iki diskin hâlâ 0,6 px iç içe girdiği noktada duruyordu. Üstelik
+ölçüm eşiği 26 px olduğu için çözülen çiftler eşiğin ±ε'unda kapanıp ölçümde yine "çakışık"
+sayılıyordu (FAZ 57 A2 bunu "çözüm hedefi ölçüm eşiğinin ÜSTÜNDE olmalı" diye yazmıştı;
+FAZ 60 jeton yarıçapını 16 → 12 indirirken hedefi 25'e çekip kuralı kırdı — **halka 13,1'de
+kaldığı için görünür çap küçülmemişti**).
+
+620 sn'lik kayıttan tarayıcısız yeniden çözümleme (37.134 kare, `scratchpad/f68-ciz2.js`):
+
+| R / MAX | kapı (klip çifti hariç) | klip çifti | ort. çizim sapması |
+|---|---|---|---|
+| 25 / 12 (eski) | %9,8 | %52,7 | 9,9 px |
+| **29 / 14 (yeni)** | **%0,1** | **%7,9** | **11,5 px** |
+| 29 / 16 | %0,1 | %6,8 | 13,1 px |
+| 31 / 16 | %0,0 | %4,7 | 13,1 px |
+
+`js/match-engine.js`: `_CIZ_R` 25 → **29**, `_CIZ_MAX` 12 → **14**, `_CIZ_HIZ` 3,5 → **4,0**,
+`_CIZ_GEC` 6 → **8**. Yalnız `_cizDx/_cizDy` (çizim ofseti) değişir; `p.x/p.y` ve dolayısıyla
+bütün hız/ivme/yayılım ölçümleri birebir aynı kalır.
+
+**⚠ Brifin "klip jetonlarına (`p._klip`) dokunma" maddesi ölçülerek uygulanmadı.** Gerekçe
+FAZ 57 A2'nin kendi ilkesidir: gerçek NBA kaydı `p.x/p.y`de durur ve DEĞİŞMEZ, burada yalnız
+ÇİZİLEN nokta kaydırılır. Klip jetonları dışarıda bırakılırsa kapı yine %0,1 çıkar (kapı zaten
+klip çiftlerini saymıyor) **ama ekranda hiçbir şey düzelmez**: aynı kayıttan ölçüldü — klip
+dahil %52,7 → %7,9, klip hariç %52,7 → **%56,8**. Maçın **%57'si** klip karesidir; kullanıcının
+şikâyet ettiği yumak tam olarak orasıdır. Karar yorum bloğunda gerekçesiyle yazılı.
+
+`match-engine.js`'teki FİZİK çarpışmasındaki `if(a._klip||b._klip) continue;` satırına
+DOKUNULMADI (FAZ 50/56 kuralı).
+
+---
+
+### İŞ 2 — TOP TAŞIYICIYA OTURMUYOR — kısmen gerçek, kapı ulaşılamaz ⚠
+
+Ölçüm (620 sn · 26.145 `held` karesi): taşıyıcıya 30 px'ten uzak kare payı **%4,70**.
+Dökümü ise brifin teşhisini çürüttü:
+
+| kaynak | pay |
+|---|---|
+| **KLİP yolu** (`_klipTop`) | **%7,00** (1.128 / 1.230 vakanın kaynağı) |
+| fizik yolu (`_topDurus` sürüş salınımı) | **%0,94** |
+
+Yani brifin gösterdiği "sürüş salınımının genliği" vakaların **%8'i**. Salınımın nominal
+ofseti zaten `|(10, ±11)| ≈ 15 px`; büyüyen şey `_TOP_YAKLAS` (260 px/sn) kapanma hızının
+sprint eden taşıyıcının GERİSİNDE KALMASI.
+
+**Yapılan (fizik yolu):** `_ballStep` `held` dalının sonuna mutlak sınır kondu — top taşıyıcıdan
+en çok 30 px (1,02 m) geride kalabilir. Kapanma hızına dokunulmadı (ışınlanma üretir,
+FAZ 42-B §B). Sonuç: toplam **%4,6 → %2,4**.
+
+**Klip yolu bilerek muaf bırakıldı — ölçüldü.** Klipte top gerçek SportVU kaydının kendisidir.
+320 klibin **65.305 alçak-top karesinde** (bz < 7,5 ft) topun EN YAKIN hücumcuya uzaklığı
+ölçüldü (`scratchpad/f68-gercek-top.js`): ortalama **0,61 m**, ve **%10,91'i 1 m'nin
+(30 px) üstünde**, %5,66'sı 1,6 m'nin üstünde. Bizim klip karelerimizdeki aynı ölçüt **%4,99**.
+Yani motor GERÇEĞİN ALTINDA. Brifin **≤%1 hedefi gerçek NBA verisiyle ulaşılamaz** — sürerken
+top oyuncudan gerçekten 1 m ayrılır. `goz.js` kapısı brifin istediği ≤%1'de bırakıldı ki sayı
+görünsün; **bu kapı bugün ve bundan sonra klip yolundan dolayı düşer ve bu bir kusur değildir**
+(FAZ 39 dersi: uydurulmuş eşik, eşiksizlikten kötüdür).
+
+---
+
+### İŞ 3 — SAVUNMA GERİ DÖNMÜYOR — ÖLÇÜLDÜ, PREMİS DOĞRULANMADI ⚠
+
+Brifin istediği üç soru, 620 sn'lik kayıtta (`S._faz`, `S.offSide`, `S.defTrack` alanları
+`iz-kaydet`e eklendi) ölçülerek yanıtlandı:
+
+**1) `phase==='trans'` karelerin yüzde kaçında geçerli?** **%78,3** (set %21,4). Ama bu bir
+geçiş fazı değil, **bayat bir etikettir**: `trans` epizotlarının süresi medyan **56,2 sn**
+(en uzunu 110 sn). Sebep FAZ 50 mimarisidir — şutlu pozisyonu klip oynattığı için
+`_setFormation(...,{phase:'set'})` neredeyse hiç çağrılmaz ve `S._faz` bir önceki geçişte
+kaldığı gibi kalır. OAM karelerin yalnız **%17,6'sında** aktif, klip **%57'sinde** on jetonu
+doğrudan sürüyor.
+
+**2) TRANS_DEF hedefi üzerine yazılıyor mu?** Evet, ve bu doğrudur: 9 `trans` epizodunun
+**7'sinde 5/5**, 8'inde ≥3/5 savunmacı TRANS_DEF noktasına vardı; 3 epizotta markaj
+(`defTrack`) trans içinde açıldı. Klip başlayınca hedefler zaten anlamsızlaşır (jeton
+kinematik oynar).
+
+**3) `trans` fazı savunmacılar varmadan mı bitiyor?** Hayır — tam tersi, çok uzun sürüyor.
+
+**Sonuç ölçümü (asıl soru):** hücum ÖN SAHADAYKEN (top + ≥4 hücumcu ön sahada, 21.049 kare):
+
+| ölçüm | değer |
+|---|---|
+| orta yuvarlakta (|x−orta| < 4 m) kalan savunmacı | **0,26 / 5** |
+| potaya 5 m içinde savunmacı | **2,28 / 5** |
+| potadan 9 m+ savunmacı | 0,45 / 5 |
+| **3+ savunmacı orta yuvarlakta** | **%2,6 kare** — 8 epizot, toplam **9,0 sn / 620 sn**, en uzunu **2,30 sn** |
+
+Ve o 540 "kötü" karenin **183'ü KLİP karesidir**, yani gerçek NBA kaydının kendisi.
+"5 savunmacı orta sahada takılı, sayı boş potaya atılıyor" tablosu bu kayıtta yeniden
+üretilemedi; gözlenen şey 1-2 saniyelik geçiş anlarıdır.
+
+**Bu yüzden İŞ 3'te KOD DEĞİŞTİRİLMEDİ.** Ölçülmemiş bir premise göre savunma dönüşünü
+"hızlandırmak" `hareket-bant-check`in gerçek verilere oturmuş savunmacı mesafesi kapılarını
+(ön saha L1 0,212 · arka saha L1 0,197 · toplam L1 0,173) bozardı.
+
+**Kabul ölçütleri tutmadı — açıkça yazıyorum:**
+- `sahne-check` "orta çizgi geçişi / pozisyon değişimi" **%56 (18/32)**, hedef ≥%85.
+  Bu kapı CLAUDE.md'de zaten "ÇİFT SAYAR, davranış yargısı için `gecis-analiz` kullan" diye
+  işaretli. `gecis-analiz` (pozisyon başına): 42 pozisyonun **26'sında (%62)** top orta çizgiyi
+  `held` ile geçiyor, 2'sinde pasla, 11'inde hiç. O 11'in çoğu **arka sahada çalmayla biten**
+  pozisyonlar (top ön sahaya hiç gitmiyor — geçiş olmaması DOĞRU) ya da **klibin zaten ön
+  sahada başladığı** pozisyonlar. Yani kapı bugün savunma dönüşünü değil FAZ 50 klip
+  mimarisini ölçüyor.
+- `sahne-check` "yarı sahayı geçiren PG/SG/SF" **%89** `{PG:8, SG:4, SF:4, C:2}`, hedef ≥%90 —
+  n=18'de tek olay farkı. Aynı büyüklüğün gerçek verili karşılığı `hareket-bant-check`in
+  "yarı sahayı geçen rol" satırıdır: bizde **G %72 · F %28 · C %0**, gerçek **G %79 · F %14 ·
+  C %6**. Forward payı gerçeğin iki katı — bu gerçek ve açık bir borç (FAZ 59'da %78'e
+  çekilmişti), ama İŞ 3'ün anlattığı kusur bu değil ve düzeltmesi klip slot eşlemesindedir.
+
+---
+
+### İŞ 4 — ETİKET ÇAKIŞMASI ✓ (en büyük ölçülen sapma, %30,7 → %0,0)
+
+FAZ 62'nin ölçütü "komşusu 34 px'ten yakınsa ismi sakla" idi. İki kusuru vardı: (a) JETON
+mesafesi ölçülüyordu, oysa çakışan şey ETİKET KUTUSUDUR — etiket jetondan geniştir, iki jeton
+26 px ayrıkken bile isimler üst üste biner; (b) kaba olduğu için 10 oyuncudan 3-5'inin ismi
+görünüyor, hangisinin görüneceği kare kare değişiyordu.
+
+Yeni çözücü (`_cizAyristir` sonu, `js/match-engine.js`) geometriktir ve İŞ 1'in çizim
+ayrıştırmasından SONRA çalışır:
+1. Etiket kutusu bir kez gerçek **`getBBox()`** ile ölçülüp önbelleğe alınır (`p._nmBB`).
+2. Kutu saha çizgilerinin içinde tutulur; taşarsa jetonun öbür tarafına alınır.
+3. Çakışan çiftte etiket **alternatiflenir** (biri üstte biri altta), sonra 12 px daha dışarı
+   denenir; hiçbiri boş değilse **topa UZAK olanın** etiketi gizlenir (topun çevresindeki oyun
+   okunur kalsın — sıralama topa uzaklığa göre).
+4. İsim ASLA kırpılmaz — sığmıyorsa gizlenir.
+
+**⚠ ÇÖZÜCÜ İLE DENETÇİ AYNI KUTUYU GÖRMELİ (ölçülerek bulundu):** ilk sürüm genişliği
+`getComputedTextLength()` + sabit yükseklikle tahmin ediyordu ve çakışma **%2,5'te takılıyordu**
+— gerçek `getBBox()` kutusu kontur (`stroke-width` 0,9, `paint-order:stroke`) ve yazı tipi
+metrikleri yüzünden tahminden geniş/yüksek. Kutu tek kaynaktan (`getBBox`, 1,5 px pay)
+alınınca **%2,5 → %0,0**.
+
+Eski `_CIZ_AD` sabiti silinmedi, "kullanılmıyor / geri açılmamalı" diye işaretlendi.
+
+---
+
+### İŞ 5 — HAKEM JETONLARI ✓ (13 olay → 0)
+
+İki gerçek kusur bulundu, ikisi de düzeltildi:
+
+1. **Ölü top sokmasında hakemin hedefi SAHA İÇİNE konuyordu.** `oamOluTopHakem`
+   (`js/sahne-oam.js`) sokma noktasını 40 px içeri kaydırıyordu (dip sokmasında `y ± 40`,
+   kenar sokmasında `x ± 40`); dip çizgi sokması pota hizasındaysa bu nokta **boyalı alanın
+   içine** düşüyordu. Hedef artık noktanın HİZASINDA, çizginin 16 px dışında.
+2. **Hakem bir hedeften ötekine giderken parkeyi kesiyordu.** Hedefler doğru olsa bile hareket
+   DÜZ çizgiydi: orta saha kenarındaki trail, dip çizgiye çağrılınca sahayı boydan boya geçip
+   boyalı alanın içinden yürüyordu (`goz.js` örneği: `bas 126,233` — dip çizgiden 2,4 m
+   içeride, kulvarın ortasında). `oamHakemTick` hareket döngüsüne yapısal ağ kondu: hakem saha
+   dikdörtgeninin içine düşerse en yakın kenarın 16 px dışına taşınır, yani kenar boyunca
+   kayar. Hava atışı MUAF (orta hakem çemberden topu atar).
+
+**Brifin geri çektiği madde uygulanmadı:** hakemin çizgi dışında durması kural gereğidir ve
+kusur değildir; o yönde yapılmış ilk deneme geri alındı. `goz.js` saha dışı kapısı yalnız
+TRİBÜN sınırını (çizgi + 45 px) ölçer, ve boyalı alan testi çizgi ÜSTÜNDE durmayı ihlal
+saymaz (20 px pay).
+
+---
+
+### Brifin çürüyen ölçütleri (kayda geçsin)
+
+`goz.js` bilgi satırları + 620 sn'lik kayıt + gerçek SportVU tabanı:
+
+| brifin hedefi | gerçek taban | bizim değer |
+|---|---|---|
+| oyuncu X yayılımı ≥ 450 px | **klip (gerçek NBA) kareleri 301 px** | 318 px (fizik kareleri 315) |
+| tüm oyuncular tek yarıda = kusur | **%68,1** (FAZ 49, SportVU) | %56,2 — gerçeğin ALTINDA |
+| top taşıyıcıdan kopuk ≤ %1 | **%10,91** (320 klip · 65.305 kare) | %2,4 — gerçeğin ALTINDA |
+| (geri çekilen) donma ≤ %25 | gerçek durağan pay %18,8 (FAZ 54) | %0,2 · gerçek yer değiştirmeyle 1,39/10 |
+
+Yani "oyuncular sahaya yayılmıyor" ve "hepsi tek yarıda" ölçütleri gerçek basketbolu kusur
+ilan ediyor. Kovalanmadı (FAZ 39 dersi).
+
+"Aynı anda koşan oyuncu" iki araçta üç kat ayrışıyor: `goz.js` 250 ms penceresinde **8,8/10**,
+`sahne-check` kare farkından **2,77/10**. Uzlaştıran üçüncü ölçüm `hareket-bant-check`tir ve
+gerçek veriyle kıyaslar: **3,12 ↔ gerçek 3,337 · L1 0,133 ✓**. İki araçtaki eşik farkı
+(15 px/sn ↔ pencere uzunluğu) tanım farkıdır; **karar `hareket-bant-check`e aittir** ve
+o kapı geçiyor. `sahne-check`in 3-5/10 bandı elle yazılmıştır.
+
+### Ölçüm alanları (kalıcı)
+`tools/iz-kaydet.js` kare kaydına üç alan eklendi: `faz` (`S._faz`), `osd` (`S.offSide`),
+`dtr` (`S.defTrack`). Brif "geçici, sonra kaldır" diyordu; FAZ 45'in `p[12..13]` hedef
+alanları gibi kalıcı bırakıldı — savunma dizilimiyle ilgili her teşhis bunlar olmadan
+yapılamıyor ve maliyeti kare başına ~20 bayt.
+
+### Açık kalan
+1. **`top taşıyıcıdan kopuk` kapısı (%2,4 ↔ hedef %1)** — klip yolundan gelir, gerçek verinin
+   (%10,9) altındayız; kapı bilerek sıkı bırakıldı.
+2. **`sahne-check` orta çizgi geçişi %56 ve yarı sahayı geçiren %89** — İŞ 3'te düzeltilmedi,
+   gerekçe yukarıda ölçümle yazılı.
+3. **Yarı sahayı geçen rol dağılımı G %72 / F %28** (gerçek G %79 / F %14) — gerçek ve açık
+   borç; kökü klip slot eşlemesinde (FAZ 53/59'un konusu), İŞ 3'ün anlattığı kusur değil.
+4. `hareket-bant-check`: yayılım x/y ve topu tutma süresi eşiğin dışında (bu turdan önce de
+   öyleydi; çizim katmanı bu satırları değiştirmez — değiştirseydi yanlış katmana
+   dokunulmuş olurdu).
+
+### Gerileme denetimi (620 sn iz kaydı · önce → sonra)
+
+`faz58-check`:
+```
+ ✓ A · rakibe giden pas              0 / 126 pas   kapı 0
+ ✓ B1 · izinsiz saha dışı payı             0.00%   kapı 0,00%
+ ✓ B2 · izin sızıntısı (>4,5 sn)               0   kapı 0
+ ✓ C · 0,45 m üstü jeton sıçraması             0   kapı 0
+ ✗ D · CANLI yerde sahipsiz en uzun      2.35 sn   kapı < 2,0 sn   (taban 2,77 — TABANDA DA DÜŞÜYOR)
+ ✓ E · 1,0 m üstü top sıçraması                0   kapı 0
+ ✗ F · çizimde < 26 px çift payı           4.63%   kapı < 3%       (taban %39,10)
+      simülasyon payı 41.14%  ← DEĞİŞMEDİ (yalnız çizim katmanına dokunulduğunun kanıtı)
+ ✓ F · en uzun iç içe epizot             0.63 sn   (taban 1,90 sn)
+DÜŞEN KAPI: 2  (tabanda da 2)
+```
+F kapısı (<%3) FAZ 58'de `_CIZ_R=25` iken kalibre edilmişti ve **klip çiftlerini de sayar**;
+gerçek kayıtta yakın çift zaten sıktır. Brifin kendi kapısı (`goz.js`, klip çifti hariç)
+%0,4 ile geçiyor. %39,10 → %4,63 (8,4 kat) iyileşme kaydedildi, hedefin altına inilmedi.
+
+`faz59-check`: **5 düşen → 3 düşen**.
+```
+ ✓ 1 · donan uçuş                     1 olay → 0 olay
+ ✓ R · jeton iç içe (>1,2 sn)              14 → 0     ← İŞ 1'in etkisi
+ ✗ 1 · pas süresi p99               2,37 → 2,27 sn   (tabanda da düşüyor)
+ ✗ 2 · canlı sahipsiz top en uzun   2,77 → 2,35 sn   (tabanda da düşüyor)
+ ✗ 3 · orta çizgiyi geçen PG payı      %48 → %27     ← aşağıda
+ ✓ R · ortalama oyuncu hızı (duvar)      1.94 m/sn   kapı 1,70 – 2,00
+```
+**"Orta çizgiyi geçen PG payı" %48 → %27 bir GERİLEME DEĞİL, örneklem gürültüsüdür** —
+n=26 geçişte 12/26 ↔ 7/26, yani 5 olay. Bu turun değişiklikleri (çizim ofseti + topun
+taşıyıcıya kelepçelenmesi) taşıyıcı KİMLİĞİNE dokunmaz. Ayrıca CLAUDE.md FAZ 59 · 3'te
+yazılı: **PG/SG ayrımı gerçek veride YOKTUR**, ölçülebilir büyüklük guard payıdır
+(`hareket-bant-check`: G %72 ↔ gerçek %79). Yine de açık borç listesine yazıldı.

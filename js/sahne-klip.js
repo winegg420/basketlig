@@ -444,7 +444,7 @@ function klipSut(sh,onShoot,onResult){
          Top o an 'pass' modundaysa ekranda "uçan ama kımıldamayan top" görünür — ölçüldü:
          1. madde düzeltildikten sonra kalan TEK donma olayı (0,5 sn, (836,247)) buydu.
          Bekleyen top sahipsizdir: mod 'loose'a alınır (FAZ 54 A1 sözleşmesi). */
-      if(b.mode==='pass'){ b.mode='loose'; b.target=null; b.vx=0; b.vy=0; b.onDone=null; }
+      if(b.mode==='pass'){ b._looseKaynak='klip-bekle'; b.mode='loose'; b.target=null; b.vx=0; b.vy=0; b.onDone=null; }
     } }
   S.klip={aktif:true,t:0,tau0,k,D,toks,offMap,defMap,offP,defP,offLeft,flip:sec.flip,rim,sh,shooter,bas0,ofs:bas0.map(v=>v.slice()),bOfs:bOfs.slice(),warp,T,TN,res:_res,onShoot,atildi:false,si,ix:sec.ix,bas,bekle:_bekle};
   if(_bekle){ const dd=Math.hypot(_bekle.tok.x-b.x,_bekle.tok.y-b.y); _bekle.tahmin=Math.min(2.6,dd/KLIP_BEKLE_V); }
@@ -587,7 +587,7 @@ function klipTick(dt){
   const tut=(en&&ed<=KLIP_TUTMA_FT*pxFt&&f[2]<7.5);
   /* FAZ 57 · 3b: 'rim'/'shot' modundan çıkış yalnız 'loose'a — klip başlarken top hâlâ çemberden
      düşüyorsa (önceki pozisyonun şutu) doğrudan ele geçirmek `rim>held` üretiyordu. */
-  if(tut&&(b.mode==='rim'||b.mode==='shot')){ b._carom=null; b.mode='loose'; b.carrier=null; b.vx=0; b.vy=0; b.vh=Math.min(0,b.vh||0); }
+  if(tut&&(b.mode==='rim'||b.mode==='shot')){ b._carom=null; b._looseKaynak='klip-tut'; b.mode='loose'; b.carrier=null; b.vx=0; b.vy=0; b.vh=Math.min(0,b.vh||0); }
   else if(tut){
     if(b.carrier!==en){
       const eskiD=(b.carrier&&isFinite(b.carrier.x))?Math.hypot(b.carrier.x-b.x,b.carrier.y-b.y):1e9;
@@ -619,7 +619,7 @@ function klipTick(dt){
        yani bu bir PAS değil sahip değişimidir. Pas yalnız KLİBİN KENDİ hücumu içinde
        meşrudur; taşıyıcı klibin hücumunda değilse top serbest bırakılır ve klibin hücumcusu
        4 ft'e girince ELE alır (FAZ 54 A1 sözleşmesi: 'pass' yalnız 'held'den açılır). */
-    if(K.offP&&K.offP.indexOf(b.carrier)<0){ b.carrier=null; b.mode='loose'; b.target=null; b.vx=b.vy=0; }
+    if(K.offP&&K.offP.indexOf(b.carrier)<0){ b._looseKaynak='klip-basla'; b.carrier=null; b.mode='loose'; b.target=null; b.vx=b.vy=0; }
     else { b.carrier=null; b.mode='pass'; b.target=en; b.from=[b.x,b.y]; }
   }   /* FAZ 54 A5: 4 → 6,4 ft — ölçüldü, 103 pasın 48'i 2 m altındaydı (sürme/ofset titremesi) */
   else if(b.mode==='pass'){ b.target=en; }

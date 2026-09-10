@@ -353,7 +353,7 @@ function oamAtes(){
       _res();
       let a2=_sr()*6.283;
       try{ const nxB=_peekNext(); if(nxB&&nxB.type==='reb'&&nxB.rebId!=null){ const nm=offP.concat(defP).find(p=>p.pl&&p.pl.id===nxB.rebId); if(nm) a2=Math.atan2(nm.y-by,nm.x-bx)+(_sr()*2-1)*0.4; } }catch(e){}
-      _ballLoose(Math.cos(a2)*150,Math.sin(a2)*140,63);
+      _ballLoose(Math.cos(a2)*150,Math.sin(a2)*140,63,'blok');
       oamRebScramble(S,offP,defP,rim,offLeft);
     });
     oamBitir(); return;
@@ -387,6 +387,12 @@ function oamAtes(){
         const nm=offP.concat(defP).find(p=>p.pl&&p.pl.id===nxR.rebId);
         if(nm){ const dn=oamDR(nm,rim); if(dn>90){ away=Math.atan2(nm.y-rim[1],nm.x-rim[0])+(_sr()*2-1)*0.35; sp=_srand(70,98); } }
       } }catch(e){}
+      /* ⚠ FAZ 67 · 4: DİKEY karambol hızını 44-54 → 30-38 yapmak DENENDİ ve ÖLÇÜLEREK
+         GERİ ALINDI. Gerekçe makuldü (top çemberin 0,6 m üstüne çıkıyor, `_topAlinabilir`
+         tepe noktasından önce izin vermiyor) ama ölçüm tersini söyledi: rim>loose 30,9 →
+         34,6 sn, en uzun epizot 2,99 → 4,56 sn, topElde %70,6 → %68,4. Alçak seken top
+         yere daha erken iniyor ve sürtünmeyle KAYIYOR; ribaundcunun vardığı nokta ile
+         topun durduğu nokta ayrışıyor. Tekrar denenmesin. */
       _ballCarom(Math.cos(away)*sp,Math.sin(away)*sp,_srand(44,54));
       S.inb=null;
       oamRebScramble(S,offP,defP,rim,offLeft);
@@ -420,7 +426,10 @@ function oamRebScramble(S,offA,defA,rimXY,left){
     if(l===w) l=pick(loseTeam===winTeam?defA:loseTeam);
     const bb=S.ball;
     const winIsUser=(winTeam===S.home);
-    if(l&&l!==w){ const an=_sr()*6.283, rr=_srand(48,66); _setUrg(l,_URG.KOS); l.tx=_inX(bb.x+Math.cos(an)*rr); l.ty=_inY(bb.y+Math.sin(an)*rr); _lockTok(l,1.4); }
+    /* FAZ 67 · 4: çevresinde toplanılacak nokta çember DEĞİL, topun tahmini düşüş noktasıdır. */
+    const _dn=_topDurus(bb);
+    if(l&&l!==w){ const an=_sr()*6.283, rr=_srand(48,66); _setUrg(l,_URG.KOS); l.tx=_inX(_dn[0]+Math.cos(an)*rr); l.ty=_inY(_dn[1]+Math.sin(an)*rr); _lockTok(l,1.4); }
+    if(w){ _setUrg(w,_URG.SPRINT); w.tx=_inX(_dn[0]); w.ty=_inY(_dn[1]); w._wp=null; }
     if(w){
       w.pop=0.7;
       if(!(nx&&nx.type==='reb')) _chase(w,()=>{ _startBreak(winIsUser); },2.4);
@@ -446,7 +455,7 @@ function oamTick(dt){
       if(carrier!==pg&&!_tasiyabilir(carrier)&&!O.putback){ oamOutletTick(S,dt); }   /* uzun sürmez: PG gelir, çıkış pası */
       if(carrier===pg||_tasiyabilir(carrier)||O.holdT>0.6){ O.faz='gecis'; O.tGecis=O.t; }
     } else if(carrier&&!bizde){
-      if(O.holdT>0.2){ _ballLoose(0,0,14); _chase(pg,null,2.2); O.holdT=0; }
+      if(O.holdT>0.2){ _eldenVer(pg); O.holdT=0; }   /* FAZ 67 · 3: sebepsiz held>loose yok — top elden verilir */
     } else if(!ucusta&&!S.chase){
       let en=null,ed=1e9; offP.forEach(p=>{ if(!p||p._oob) return; const d=Math.hypot(p.x-b.x,p.y-b.y); if(d<ed){ ed=d; en=p; } });
       if(en) _chase(en,null,2.2);
@@ -495,7 +504,7 @@ function oamTick(dt){
     if(O.sutsuz){
       /* şut olayı henüz gelmedi: dizilim korunur, uzun tutuyorsa çıkış pası; top hareketi yok */
       if(bizde&&carrier!==pg&&!_tasiyabilir(carrier)) oamOutletTick(S,dt);
-      else if(!bizde&&!ucusta&&carrier){ if(O.holdT>0.2){ _ballLoose(0,0,14); _chase(pg,null,2.2); O.holdT=0; } }
+      else if(!bizde&&!ucusta&&carrier){ if(O.holdT>0.2){ _eldenVer(pg); O.holdT=0; }   /* FAZ 67 · 3: sebepsiz held>loose yok — top elden verilir */ }
       oamHedefler(S,O); return;
     }
     const ts=O.t-O.tSet;
@@ -563,7 +572,7 @@ function oamTick(dt){
           oamPas(hedef); O.holdMin=0.12+_sr()*0.3;   /* FAZ 49: 0,28-0,58 → 0,12-0,42 sn (gerçek tutmaların %49'u 0,5 sn altı) */
         }
       }
-    } else if(!bizde&&!ucusta&&carrier){ if(O.holdT>0.2){ _ballLoose(0,0,14); _chase(pg,null,2.2); O.holdT=0; } }
+    } else if(!bizde&&!ucusta&&carrier){ if(O.holdT>0.2){ _eldenVer(pg); O.holdT=0; }   /* FAZ 67 · 3: sebepsiz held>loose yok — top elden verilir */ }
     else if(!bizde&&!ucusta&&!S.chase){ let en=null,ed=1e9; offP.forEach(p=>{ if(!p||p._oob) return; const d=Math.hypot(p.x-b.x,p.y-b.y); if(d<ed){ ed=d; en=p; } }); if(en) _chase(en,null,2.0); }
     if(kalan<=-1.2&&!O.atildi){ _ballHold(shooter); oamAtes(); return; }   /* güvenlik: bütçe bitti */
   }
@@ -899,15 +908,35 @@ function oamHakemTick(S,dt){
       const v=(h===HH)?150:60;   /* FAZ 50: kenarda yavaş; topu taşıyan hakem hızlı */
       const adim=Math.min(d,v*dt);
       if(d>0.5){ h.x+=dx/d*adim; h.y+=dy/d*adim; }
+      /* ── FAZ 68 İŞ 5: HAKEM SAHANIN İÇİNDEN GEÇMEZ ────────────────────────────────────
+         Hedefler zaten çizgi dışındaydı, ama hakem bir hedeften ötekine giderken DÜZ
+         gidiyordu: orta saha kenarındaki trail, dip çizgiye çağrılınca parkeyi boydan boya
+         kesiyor ve boyalı alanın içinden yürüyordu (goz.js: 13 olay / 120 sn, örnek
+         "bas 126,233" — dip çizgiden 2,4 m içeride, kulvarın ortasında). Hakem parkeye
+         basmaz; çizgi dışında kalır ve kenar boyunca kayar. Hava atışında orta hakem
+         çemberden topu attığı için o dal MUAFTIR. */
+      if(!havaAtisi&&h.x>CRT_X0&&h.x<CRT_X1&&h.y>CRT_Y0&&h.y<CRT_Y1){
+        const dSol=h.x-CRT_X0, dSag=CRT_X1-h.x, dUst=h.y-CRT_Y0, dAlt=CRT_Y1-h.y;
+        const m=Math.min(dSol,dSag,dUst,dAlt);
+        if(m===dSol) h.x=CRT_X0-16; else if(m===dSag) h.x=CRT_X1+16;
+        else if(m===dUst) h.y=CRT_Y0-16; else h.y=CRT_Y1+16;
+      }
       _tokSet(h.g,h.x,h.y,1);
     });
     /* top hakemde: hakem yerine varınca (serbest atış: atıcıya · ölü top: çizgiye varmış sokucuya) verir */
     if(HT&&HT.aktif){
       HT.t=(HT.t||0)+dt;
       S._sahipsizT=0;                                            /* bekçi oyuncu yollamasın */
-      if(b.carrier===HH){ b.carrier=null; b.mode='loose'; b.vx=b.vy=b.vh=0; }   /* atılan top hakeme vardı */
+      /* ── FAZ 67 · A: HAKEMİN ELİNDEKİ TOP 'loose' DEĞİL 'dead'TİR ─────────────────────
+         FAZ 54 A4 sözleşmesi: 'dead' = "düdük çaldı, top oyun dışı". Tören boyunca top
+         hakemin elinde duruyor ama modu 'loose' idi; ölçümde (v113, 430 sn) bu 1.002 kare
+         (17 sn) "serbest top" olarak sayılıyor ve `pass>loose` geçişlerinin TAMAMINI
+         (7 olay / 18 sn) tek başına üretiyordu. Davranış aynı — sınıflandırma doğru.
+         `_topuAlmayaCalis` zaten `_hakemTop.aktif` iken hiç çalışmaz, yani 'dead' modunda
+         topu yoldan geçen oyuncu alamaz. */
+      if(b.carrier===HH){ b._looseKaynak='hakem-vardi'; b.carrier=null; b.mode='dead'; b.vx=b.vy=b.vh=0; b._deadAt=S.time; }   /* atılan top hakeme vardı */
       const ucuyor=(b.mode==='pass'&&b.target===HH);
-      if(!ucuyor&&(b.carrier||b.mode!=='loose')){ HT.aktif=false; }   /* başka bir yol topu aldı — hakem çekilir */
+      if(!ucuyor&&(b.carrier||(b.mode!=='loose'&&b.mode!=='dead'))){ HT.aktif=false; }   /* başka bir yol topu aldı — hakem çekilir */
       else if(!ucuyor){
         /* FAZ 58 E: top hakemin eline SIÇRAMAZ — kalan mesafe top hız tavanıyla kapanır
            (ölçüldü v101: 620 sn'de bir kez tek karede 2,98 m, mod loose>loose; doğrudan
@@ -947,7 +976,7 @@ function oamTopHakeme(S,ref){
   /* uzaktaysa en yakın oyuncu topu hakeme ATAR (gerçekte de öyle: düdükte top hakeme fırlatılır) — ışınlanma yok;
      pas bitince _ballHold(ref) hakemi tutucu yapar, hakem tick'i bunu görüp topu eline alır */
   if(d>30){ ref.ghost=true; _ballPass(ref,Math.max(0.3,Math.min(0.8,d/430))); return; }
-  b.carrier=null; b.mode='loose'; b.vx=b.vy=b.vh=0; b.h=14; b.x=ref.x; b.y=ref.y; b.noDrib=false; b.t=0;
+  b._looseKaynak='hakem-ver'; b.carrier=null; b.mode='dead'; b.vx=b.vy=b.vh=0; b.h=14; b.x=ref.x; b.y=ref.y; b.noDrib=false; b.t=0; try{ b._deadAt=S.time; }catch(e){}   /* FAZ 67 · A: hakemdeki top ÖLÜ toptur */
 }
 /** Serbest atış arası: top oyuncuya değil HAKEME — eski `_ftToplayici` sarmalanır. */
 function oamFtToplayici(shooter,offP,defP,rim,made){
@@ -977,7 +1006,16 @@ function oamOluTopHakem(inb,_eski){
     const spot={x:inb.tx,y:inb.ty};
     const dip=(spot.x<=CRT_X0||spot.x>=CRT_X1);
     const ref=oamHakemYakin(S,b);                                 /* topa en yakın hakem yönetir (uzaktan lob olmasın) */
-    const hedef=dip?{x:spot.x,y:spot.y+(spot.y<250?40:-40)}:{x:spot.x+(spot.x<COURT_MID?40:-40),y:spot.y};
+    /* ── FAZ 68 İŞ 5: HAKEM SOKMA NOKTASININ HİZASINDA, ÇİZGİNİN DIŞINDA DURUR ────────
+       Eski hedef sokma noktasını 40 px SAHA İÇİNE kaydırıyordu (dip çizgi sokmasında
+       y ± 40, kenar sokmasında x ± 40). Dip çizgi sokması pota hizasındaysa bu nokta
+       BOYALI ALANIN İÇİNE düşüyor ve hakem oyuncuların arasında duruyordu (kullanıcı:
+       "hakem boyalı alanın içinde, oyuncuların arasında"). Hakem topu çizginin dışından
+       verir: dip sokmasında dip çizginin, kenar sokmasında kenar çizgisinin 16 px dışı,
+       noktanın hizasında. */
+    const hedef=dip
+      ? {x:(spot.x<=COURT_MID?CRT_X0-16:CRT_X1+16), y:Math.max(CRT_Y0+20,Math.min(CRT_Y1-20,spot.y))}
+      : {x:Math.max(CRT_X0+20,Math.min(CRT_X1-20,spot.x)), y:(spot.y<250?CRT_Y0-16:CRT_Y1+16)};
     S._hakemTop={aktif:true,shooter:inb,t:0,hakem:ref,hedef,spot,inb:true};   /* FAZ 64: bayrak PASTAN ÖNCE (hayalet ağı töreni bozmasın) */
     oamTopHakeme(S,ref);
     inb.tx=spot.x; inb.ty=spot.y; inb._wp=null; _setUrg(inb,_URG.KOS);
@@ -1191,7 +1229,7 @@ function oamTorenTick(S,O,dt){
       const oyuncuda=(b.carrier&&(S.players||[]).indexOf(b.carrier)>=0);
       if(!oyuncuda){
         if(sh&&isFinite(sh.x)){ const dd=Math.hypot(sh.x-b.x,sh.y-b.y); _ballPass(sh,Math.max(0.3,Math.min(0.9,dd/330))); }
-        if(b.carrier&&(S.players||[]).indexOf(b.carrier)<0){ b.carrier=null; b.mode='loose'; b.vx=b.vy=0; b.vh=0; b.h=Math.max(b.h||0,6); }
+        if(b.carrier&&(S.players||[]).indexOf(b.carrier)<0){ b._looseKaynak='oam-gecersiz'; b.carrier=null; b.mode='loose'; b.vx=b.vy=0; b.vh=0; b.h=Math.max(b.h||0,6); }
       } } }catch(e){}
     const t=ev&&ev.type;
     const ftMi=!!(ev&&ev.shots&&ev.shots.length&&ev.shots[0].kind==='ft');

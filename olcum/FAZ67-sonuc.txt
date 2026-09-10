@@ -1,0 +1,194 @@
+================================================================================
+FAZ 67 — TOP MAÇIN DÖRTTE BİRİNDE YERDE  (sürüm 114)
+================================================================================
+Ölçüm ortamı: tools/iz-kaydet.js (Playwright + Chromium, GÖRÜNÜR pencere),
+document.hidden=false HER KAYITTA doğrulandı, örnekleme ~17,5 ms.
+Pencere: taban 430 sn / 24.766 kare · final 630 sn / 35.325 kare.
+COMMIT/PUSH YAPILMADI. node tools/surum-check.js --yaz GEÇTİ (sürüm 114,
+hash d3acbf1abb4f0579; charazay2.0.html ?v=114 <-> sw.js SCRIPT_V=114).
+
+--------------------------------------------------------------------------------
+0) TABAN DOĞRULANDI
+--------------------------------------------------------------------------------
+Brifin tablosu bağımsız olarak yeniden üretildi (iz-f67-taban, 430 sn):
+  topElde %67,8 · held %70,2 · loose %16,0 · pass %8,9 · shot+rim %4,8
+  serbest top 50 olay / 69,1 sn · pass>loose 7 · held>loose 9
+  rim>loose 31 olay ort 1,15 sn en uzun 4,59 sn
+Brifin 419 sn'lik ölçümüyle uyumlu (topElde 65,2 · loose 21,9 · 54 olay).
+
+--------------------------------------------------------------------------------
+1) BRİFİN TEŞHİSİ DOĞRUYDU AMA EKSİKTİ — KİMLİK SAYACI KURULDU
+--------------------------------------------------------------------------------
+Brifin gösterdiği zincir (_ballHold d>14 -> _ballPass -> _pasKorumasi mod 'pass'
+-> b._pasBekle kuyruğu hiç boşalmaz -> FAZ 59 nöbetçisi topu yere bırakır) GERÇEK
+bir kusurdur ve kapatıldı. AMA tek başına yalnız birkaç olayı açıklıyordu:
+2. madde uygulandıktan sonra ölçüm HİÇ DEĞİŞMEDİ (topElde 67,8->67,8 · loose
+16,0->16,1 · pass>loose 7->6). Yani ana kaynak başka yerdeydi.
+
+Mod ataması 19 ayrı yerde DOĞRUDAN yapılıyor. FAZ 64'ün "hayalet kimliği"
+yöntemi serbest topa uygulandı: _ballStep'in EN BAŞINA (klip erken-dönüşünün
+ÜSTÜNE) bir geçiş kaydedicisi kondu; her loose/dead girişi kaynak etiketiyle
+sayılıyor (S._looseKaynakN · S._looseKim). Sonuç (430 sn):
+
+    30  ballLoose:SEBEPSIZ|rim>loose      <- kaçan şutun karambolü (MEŞRU)
+     6  hakem-vardi|pass>loose            <- pass>loose'un TAMAMI buymuş
+     5  ballLoose:calma|held>loose        <- çalma (MEŞRU)
+     3  hakem-bos|held>loose              <- FAZ 64 ağı: hakemin elinde kalan top
+     3  ballLoose:blok|shot>loose         <- blok (MEŞRU)
+     1  ballLoose:hava|idle>loose         <- hava atışı (MEŞRU)
+     1  hakem-ver|rim>loose
+    serbest top epizodu KLİP sırasında mı: klip 0 · fizik 49
+
+Yani brifin "pass>loose = pas yere düşüyor, MEŞRU DEĞİL" maddesinin gerçek kökü
+_ballHold döngüsü DEĞİL, FAZ 51'in ÖLÜ TOP TÖRENİYDİ: düdükte top hakeme
+atılıyor, hakem onu 2,5-4,5 sn elinde tutuyor ve bu süre boyunca topun modu
+'loose' idi.
+
+--------------------------------------------------------------------------------
+2) YAPILANLAR
+--------------------------------------------------------------------------------
+[2a] PAS VARIŞ ANI AYRI BİR DURUM (js/match-engine.js · case 'pass' bitişi)
+     Varışta artık YENİDEN PAS ÜRETİLMEZ. Üç dal:
+       · alıcı <=1,5 m  -> _ballTut (el değişimi)
+       · alıcı <=3,0 m ve hedef ULAŞILABİLİR (kırpma yüzünden değil) -> AYNI topun
+         uçuşu sürdürülür (en çok 3 kez) — yeni _ballPass yok, döngü yok
+       · aksi hâlde top alıcının ayağına düşer ve o topa SPRINT ile koşar
+     b._pasBekle bayatlaması artık SESSİZ DEĞİL: S._pasKuyrukDustu + kimlik.
+     ! Zincir ilk sürümde <=6 kez / 4,0 m idi; ölçüldü, pas süresi p99 1,80->1,92
+     sn'ye çıktı (faz59 kapısı). <=3 kez / 3,0 m ile p99 1,57 sn, en uzun 2,8->1,8.
+
+[2b] SEBEPSİZ held>loose = 0 (js/match-engine.js _ballLoose + js/sahne-oam.js)
+     _ballLoose(vx,vy,vh,SEBEP) — 'held'den çıkan her topun bir sebebi olmalı
+     ('calma' · 'blok' · 'hava' · 'faul' · 'ihlal'). Sebepsiz çağrı
+     S._sebepsizDusurmeN + yığın iziyle (S._dusurmeKim) görünür olur.
+     Sebepsiz olan DÖRT çağrı yolu düzeltildi: OAM'ın üç "top yanlış takımda ->
+     yere bırak" dalı (O.holdT>0.2 -> _ballLoose(0,0,14)) ve match-engine'deki
+     eşi, artık _eldenVer(pg) kullanıyor: top ELDE KALIR, oyun kurucu gelir,
+     1,5 m'de el değiştirir. ÖLÇÜLEN: sebepsiz held>loose = 0 (her koşuda).
+     Kalan held>loose: 6 çalma + 4 hakem devri = HEPSİ SEBEPLİ.
+
+[2c] HAKEMİN ELİNDEKİ TOP 'dead'DİR, 'loose' DEĞİL (js/sahne-oam.js)
+     FAZ 54 A4 sözleşmesi: 'dead' = "düdük çaldı, top oyun dışı". Tören boyunca
+     top hakemin elinde duruyordu ama modu 'loose' idi — 430 sn'de 1.002 kare
+     (17 sn) "serbest top" sayılıyor ve pass>loose geçişlerinin TAMAMINI tek
+     başına üretiyordu. Davranış aynı, sınıflandırma doğru. _topuAlmayaCalis
+     zaten _hakemTop.aktif iken çalışmaz; 'dead' dalı hakemin elindeki topun
+     yüksekliğini artık sıfırlamıyor.
+     Ek: FAZ 64 ağı (hakemin elinde kalan top) artık topu YERE BIRAKMIYOR,
+     bekleyen sokucuya / en yakın oyuncuya VERİYOR (hakem-bos-verildi).
+
+[2d] RİBAUNT: TAKİPÇİ ÇEMBERE DEĞİL DÜŞÜŞ NOKTASINA KOŞAR (_topDurus)
+     'rim' modunda topun hızı SIFIRDIR (karambol b._carom içinde bekler), yani
+     _chase topu ÇEMBERDE sanıp oraya koşuyor, top oradan açıyla uzaklaşınca
+     yolu İKİNCİ KEZ kat ediyordu. Karambol vektörü _ballCarom'ta scramble'dan
+     ÖNCE yazılır — düşüş noktası bellidir. _topDurus artık 'rim' modunda
+     serbest top fiziğini ileri sürüp topun ALINABİLİR olacağı noktayı döndürür;
+     _rebScramble/oamRebScramble kaybeden oyuncuyu da o noktanın çevresine
+     yerleştirir (eskiden çemberin çevresine).
+     ÖLÇÜLEN: rim>loose ort 1,15 -> 0,96-1,11 sn · en uzun 4,59 -> 2,67-2,99 sn.
+
+[2e] KALICI ÖLÇÜM SATIRI (tools/sahne-olcum.js) + YENİ ARAÇ (tools/faz67-check.js)
+     "top elde % (gerçek tanım)" satırı eklendi — gerçek verinin KENDİ tanımıyla
+     (yatay <=0,9 m ve top <=2,1 m), referans %80,9, kapı >=%78, mod dağılımıyla.
+     Bu satır FAZ 67'ye kadar HİÇBİR ölçüm aracında yoktu.
+     tools/faz67-check.js iz kaydını tarayıcısız çözümler: topElde (ölü top
+     töreniyle ve töreni hariç tutarak), mod dağılımı, serbest top epizotları
+     KAYNAĞIYLA, pas bitişi, motor kimlik sayaçları.
+
+[2f] ÖLÇÜLEREK GERİ ALINDI: karambolün DİKEY hızını 44-54 -> 30-38 yapmak
+     Gerekçe makuldü (top çemberin 0,6 m üstüne çıkıyor, _topAlinabilir tepe
+     noktasından önce izin vermiyor). Ölçüm tersini söyledi: rim>loose 30,9->34,6
+     sn · en uzun 2,99->4,56 sn · topElde %70,6->%68,4. Alçak seken top yere erken
+     inip sürtünmeyle KAYIYOR. Gerekçe kodda yorumda duruyor ki tekrar denenmesin.
+
+--------------------------------------------------------------------------------
+3) ÖLÇÜLEN SONUÇ (630 sn · iz-f67-final)
+--------------------------------------------------------------------------------
+                              TABAN(430sn)   FINAL(630sn)   HEDEF     DURUM
+  pass>loose                       7             0-2*         0       GECTI (yolum 0)
+  boşalmayan pas kuyruğu           -             0            0       GECTI
+  SEBEPSİZ held>loose              -             0            0       GECTI
+  held>loose (toplam)              9            11 (hepsi sebepli)    —
+  serbest top olay / 400 sn       47            39           <=20     DUSTU
+  serbest top toplam süre       69,1 sn      64,5-72,0 sn     —       —
+  loose mod payı                %16,0        %10,2-11,4     <=%6      DUSTU
+  rim>loose ortalama            1,15 sn      0,96-1,11 sn   <=0,80    DUSTU
+  rim>loose en uzun             4,59 sn      2,67-4,99 sn   <=2,00    DUSTU
+  topElde % (gerçek tanım)      %67,8        %68,7-69,4     >=%78     DUSTU
+  topElde % (tören hariç)         —          %71,7-71,9       —       —
+  _kurtarN / 400 sn                3,7          2,5          <=2      DUSTU (sınırda)
+
+  * final koşusunda çıkan 2 pass>loose "nobetci-klip" etiketlidir: KLİP
+    oynatılırken takılan uçuşu FAZ 59 nöbetçisinin 'loose'a çekmesi. Benim
+    varış dalımdan gelen pass>loose HER KOŞUDA 0.
+
+--------------------------------------------------------------------------------
+4) GEÇMEYEN KAPILAR — NEDEN (dürüst değerlendirme)
+--------------------------------------------------------------------------------
+[4a] "loose <=%6 (gerçek ~%3)" ve "rim>loose <=0,80 sn" HEDEFLERİ ÖLÇÜLMEMİŞ
+     TAHMİNDİR VE DEPONUN KENDİ GERÇEK VERİSİYLE ÇELİŞİR.
+     CLAUDE.md FAZ 54, 696 gerçek SportVU klibinde AYNI ölçütü ölçmüştü:
+       gerçek sahipsiz top payı %23,8 · p90 1,60 sn · en uzun 5,2 sn
+     Bizim değerimiz (%10,2-11,4 · en uzun 2,7-5,0 sn) bu gerçek bandın
+     ALTINDADIR. FAZ 39'un en pahalı dersi ("eşik elle yazılmaz, ölçülür")
+     gereği bu iki hedefi KOVALAMADIM; kovalamak motoru gerçekten uzaklaştırırdı.
+     Kapılar araçta duruyor ama satırın yanında gerçek değer de basılıyor.
+
+[4b] topElde >=%78 KAPISI TUTMADI (%69,4 · tören hariç %71,9). Gerçek %80,9.
+     Kalan 9-11 puanlık farkın ÖLÇÜLEN dökümü (mod başına "en yakın oyuncu"):
+       held  %71,9 · karelerin %94'ünde biri 0,9 m içinde (kayıp ~%4 -> el ofseti)
+       pass  %8,2  · %21,7                (gerçekte pas payı DAHA yüksek: ~%12)
+       loose %11,4 · %21,6                <- asıl fark burada
+       shot+rim %4,9 · %41                (top havada — gerçekte de sayılmaz)
+     Yani fark "top yerde ve kimse yanında değil" karelerinden geliyor ve bunun
+     ~%70'i MEŞRU ribaunt karambolüdür (45 olay / 50 sn). Bunu daha da kısaltmanın
+     ölçülen tek yolu ya ribaundcuyu ışınlamak ya karambolü öldürmektir; ikisi de
+     hareket-bant-check'in gerçek dağılımlarını bozar. KALAN BORÇ olarak yazıldı.
+
+[4c] _kurtarN 2,5/400 sn (kapı <=2). FAZ 66 bunun serbest atışlar arasındaki
+     koreografinin ÇALIŞAN parçası olduğunu ölçerek belgelemişti; taban 3,7 idi,
+     düştü ama kapının altına inmedi.
+
+--------------------------------------------------------------------------------
+5) FAZ 59-66 GERİLEME KONTROLÜ (630 sn, aynı kayıt)
+--------------------------------------------------------------------------------
+  havadan pas 0-1 · donan uçuş 0-2 · hayalet held 0 · rakibe pas 0 / 131-150 pas
+  izinsiz saha dışı %0,00 · _oob sızıntısı 0 · top saha dışı %0,00
+  top ışınlanması 0 (>1,0 m) · oyuncu ışınlanması 0-1 (>0,45 m, tek olay, klip)
+  document.hidden=false · çizim 60 fps
+
+  faz58-check: DÜŞEN 2 — ikisi de TABANDA DA DÜŞÜYOR
+      "F · çizimde <26 px çift payı %38,7" taban %37,2 (FAZ 60'ta jeton yarıçapı
+       16->12 px olunca bu kapının 26 px eşiği bayatladı; aynı büyüklüğün güncel
+       kapısı sahne-olcum "iç içe geçme %" satırıdır ve GEÇİYOR: <40 cm %10,6
+       <-> gerçek %10,41 · <55 cm %20,1 <-> gerçek %20,71)
+      "D · canlı yerde sahipsiz en uzun 2,61 sn" — sayı sonrası sokma epizodu;
+       taban 1,88 sn. Bu ölçüt aynı kodda altı koşuda 1,88-2,61 arasında salındı.
+
+  faz59-check: DÜŞEN 4 — TABANDA DA 4 DÜŞÜYOR (aynı dört kapı)
+      pas süresi p99 1,80 -> 1,57 (İYİLEŞTİ, kapı 1,50'ye çok yaklaştı)
+      orta çizgiyi geçen PG payı %36 -> %36-43 (kötüleşmedi)
+      jeton iç içe (>1,2 sn) 14 -> 17 (taban aralığında)
+
+  hareket-bant-check: bant dışı 5 -> 4 (İYİLEŞTİ)
+      yayılım x  L1 0,375 -> 0,341 GECTI   pas/pozisyon L1 0,531 -> 0,348 GECTI
+      top elde oranı (aracın kendi bilgi satırı) %70,2 -> %71,8
+      savunmacı mesafesi L1 0,150 · aynı anda koşan L1 0,189 · hız (duvar) L1 0,267
+
+  visual-check: masaüstü + mobil, 0 konsol hatası GECTI
+  sim-node --n=500 --seed=42: 93.1 - 87.9 · deterministik GECTI
+  band.js skor dizisi hash: c19928475859c7ff — DEĞİŞMEDİ GECTI
+  surum-check --yaz: sürüm 114 tutarlı GECTI
+
+--------------------------------------------------------------------------------
+6) KALAN BORÇ
+--------------------------------------------------------------------------------
+  · topElde %69 <-> gerçek %81. Kalanın çoğu ribaunt karambolünün "top havada /
+    yerde, kimse 0,9 m'de değil" süresidir. Bir sonraki adım karambolü kısaltmak
+    DEĞİL (denendi, kötüleşti), ribaundcunun BAŞLANGIÇ konumunu şut anında topa
+    daha yakın kurmaktır — ama bu "şut anında duran" (L1 0,53) ve "yayılım y"
+    (L1 0,60) dağılımlarını doğrudan etkiler, ölçerek yapılmalı.
+  · "topu tutma süresi" L1 0,84 (ort 3,07 sn <-> gerçek 1,465) — FAZ 60'ta da
+    açıktı; tutmaların 13/15'i KLİP oynatımı içinde, klip yörüngesine dokunulmaz.
+    Çözüm klip kütüphanesinde ya da olaylar arası ölü zamanın kısaltılmasındadır.
+  · faz58-check F kapısının 26 px eşiği FAZ 60'tan beri bayat; güncellenmeli.

@@ -288,6 +288,20 @@ function TOHUM(seed) {
     if (c0 && c1) { let onceki = null; K.forEach(f => { if (onceki && f.saat > 0 && onceki.saat > 0 && f.saat < onceki.saat && (onceki.saat - f.saat) < 30) {   /* çeyrek sonu 600→0 sıçraması hariç */ saatFark += onceki.saat - f.saat; duvar += f.t - onceki.t; } onceki = f; }); }
     R.sahneKat = duvar > 0 ? saatFark / duvar : 0; }
 
+  /* ── FAZ 67: TOP ELDE ORANI — gerçek verinin KENDİ TANIMIYLA ─────────────────────────
+     tools/_lib/gercek-hareket.json → topElde.heldOran (%80,9). Dosyanın tanımı:
+     "Tutan = topa yatay <= 0,9 m ve top <= 2,1 m". Aynı tanım burada da uygulanır — iki
+     taraf farklı tanımla ölçülürse fark davranışı değil TANIMI ölçer (FAZ 48 dersi).
+     ⚠ Bu satır FAZ 67'ye kadar HİÇBİR ölçüm aracında yoktu; asıl kusur (top maçın dörtte
+     birinde yerde) yedi faz boyunca bu yüzden görünmedi. */
+  { const TUT = 0.9 * PXM, TUTH = 2.1 * 9.836; let eldeN = 0;
+    K.forEach(f => { let en = 1e9;
+      for (const q of f.p) { const d = Math.hypot(q[0] - f.bx, q[1] - f.by); if (d < en) en = d; }
+      if (en <= TUT && (f.bh || 0) <= TUTH) eldeN++; });
+    R.topElde = pct(eldeN, N);
+    const modN = {}; K.forEach(f => { modN[f.m] = (modN[f.m] || 0) + 1; });
+    R.topModPay = {}; Object.keys(modN).forEach(m => R.topModPay[m] = +pct(modN[m], N).toFixed(1)); }
+
   /* sahipsiz top */
   let bosN = 0, bosEp = [], bcur = null;
   K.forEach(f => {
@@ -411,6 +425,8 @@ function TOHUM(seed) {
   /* FAZ 57 A2: CIZIM katmani. Jeton capi 32 px; merkezleri 26 px'ten yakin iki daire yumak gorunur.
      Simulasyon konumu KORUNUR (gercek kayit); yalniz cizim noktasi ayrilir. */
   satir('cizimde 26 px alti jeton cifti %', `${R.ciz26Pct.toFixed(2)} (simulasyonda %${R.sim26Pct.toFixed(2)} - gercek kayitla ayni)`, R.ciz26Pct <= 0.5, '<= %0,5 (cizim)');
+  /* FAZ 67: KALICI SATIR — referans %80,9 (gercek-hareket.json · topElde.heldOran) */
+  satir('top elde % (gerçek tanım)', `${R.topElde.toFixed(1)} · modlar ${JSON.stringify(R.topModPay)} (gerçek %80,9)`, R.topElde >= 78, '≥ %78 (gerçek %80,9)');
   satir('sahipsiz top % (ham)', `${R.bosPct.toFixed(2)} · en uzun ${R.bosMax.toFixed(2)} sn · >0,8: ${R.bos08} · >1,4: ${R.bos14}`, R.bosPct < 2 && R.bosMax < 0.8, '< 2 · en uzun < 0,8 sn');
   /* GERÇEK TABAN: gerçek kliplerde topu kimsenin tutmadığı kare %23,8; kesintisiz süre p50 0,60 ·
      p90 1,60 · p99 2,80 · max 5,2 sn. Brifin "< %2 · hiçbiri > 0,8 sn" hedefi fiziksel olarak

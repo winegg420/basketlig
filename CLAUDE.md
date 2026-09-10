@@ -100,6 +100,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/_lib/gercek-bant.js` | Bant okuyucu + kapı yardımcısı (`al` / `ham` / `kapi` / `bas`). Yeni bir gerçekçilik kapısı yazarken eşiği BURADAN oku. |
 | `tools/faz58-check.js` | **FAZ 58 canlı sahne kusur denetçisi** (tarayıcısız) — `iz-kaydet` kaydını okur: rakibe giden pas · izinsiz saha dışı / `_oob` sızıntısı · tek kare jeton sıçraması · canlı ve ölü sahipsiz top · tek kare top sıçraması · ÇİZİLEN konumda iç içe jeton payı. Pencere **en az 600 sn**. Top sahipliği / sokma / klip kırpması değişince `iz-kaydet --secs=620` + bunu çalıştır. |
 | `tools/faz59-check.js` | **FAZ 59 uçan top + taşıyıcı denetçisi** (tarayıcısız) — `iz-kaydet` kaydını okur: donan uçuş (mod pass/shot ama konum sabit) · pas süresi p99 · rakibe giden pas · canlı sahipsiz top · orta çizgiyi TOPLA geçen rol · FAZ 58 gerileme satırları. Pencere **en az 600 sn**. ⚠ İvme ve savunma mesafesi kapıları burada DEĞİL `sahne-olcum.js`tedir (yuvarlama/tanım farkı). Top durum makinesi ya da klip slot eşlemesi değişince çalıştır. |
+| `tools/goz.js` | **Canlı sahne ÇİZİM denetçisi (FAZ 68)** — maçın her karesini hem geometri hem ÇİZİM (SVG/DOM) katmanında tarar; ölçüt jetonun simülasyon konumu değil **kullanıcının EKRANDA GÖRDÜĞÜ** noktadır (`_cizDx/_cizDy` uygulanmış) ve etiketler gerçek `getBBox()` kutularıyla ölçülür. Kapılar: jeton çakışması (<26,2 px, **klip çifti hariç** — gerçek kayıtta yakın çift sıktır) · top taşıyıcıdan kopuk · etiket kutusu çakışması · sahne dondu · hakem boyalı alanda / tribünde · izinsiz saha dışı oyuncu. Her ihlal maç saatiyle damgalanır, aynı tip 2,5 sn içinde tekrar sayılmaz; ham döküm `tools/goz-rapor.json`. `node tools/goz.js --sn=180 [--exec=/yol/chromium]`. Çizim/etiket/hakem katmanı değişince çalıştır. |
 | `tools/anomali.js` | **Anomali avcısı** (tarayıcısız) — `iz-kaydet` kaydının TAMAMINI tarar ve **kapı listesi OLMADAN** aykırı davranışı arar: kıpırdamayan oyuncu · hedefine varamayan · arka sahada kalan hücumcu · kimseyi tutmayan savunmacı · yığılma · titreme · serbest atış yerleşimi · uzun/geri/rakibe pas · topu uzun tutan · boyada 3 saniye · yayılım · pozisyon süresi. Sayılar yeşilken şikâyet geldiğinde İLK bunu çalıştır. Bulgular ADAYDIR; kararı gerçek veri ve göz verir. |
 | `tools/an-goruntu.js` | **Anomali görüntüleyici** — canlı maçta bir durum (serbest atış · yığılma · donuk oyuncu · uzun tutma) OLUŞTUĞU ANDA sahanın PNG.sini çeker (`--secs=420 --max=26`). Kontak sayfasından farkı: sabit aralıkla değil olay anında çeker. |
 | `tools/dikis-goruntu.js` | **Dikiş görüntüleyici** — canlı maçtan 0,25 sn ARDIŞIK kareleri şerit hâlinde dizer (izlemeye en yakın şey); her karenin üstünde klip/oam/taşıyıcı durumu. Kontak sayfası (2 sn) hareketi göstermez. Klip↔fizik dikişini incelemek için. |
@@ -2190,3 +2191,71 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   Okunmazlığın büyük kısmı jetonlardan değil İSİM ETİKETLERİNDEN gelir (etiket jetondan
   geniştir; üç isim yan yana gelince harf yığınına dönüşür). Komşusu `_CIZ_AD` (34 px) içinde
   olan jetonun ismi saklanır, forma numarası kalır.
+
+- **ÇAKIŞMA ÇİZİM YARIÇAPI İLE ÇÖZÜM HEDEFİNİN ÇELİŞKİSİYDİ (FAZ 68 İŞ 1, FAZ 57 dersinin
+  ikinci tekrarı):** jetonun GÖRÜNÜR çapı 26,2 px'tir (daire r=12 + halka r=13,1) ama çizim
+  çözücüsünün hedefi `_CIZ_R=25` idi — "çözülmüş" sayılan her çift, iki diskin hâlâ iç içe
+  girdiği noktada duruyordu. FAZ 60 jeton yarıçapını 16 → 12 indirirken hedefi 25'e çekti ama
+  HALKA 13,1'de kaldığı için görünür çap küçülmemişti. Üstelik ölçüm eşiği 26 px olduğundan
+  çözülen çiftler eşiğin ±ε'unda kapanıyordu (FAZ 57'nin "çözüm hedefi ölçüm eşiğinin ÜSTÜNDE
+  olmalı" kuralı). `_CIZ_R` 29 · `_CIZ_MAX` 14 · `_CIZ_HIZ` 4,0 · `_CIZ_GEC` 8 →
+  kapı %9,8 → %0,1, klip çiftleri %52,7 → %7,9, `faz59` "jeton iç içe >1,2 sn" 14 → 0.
+  **Bir jetonun/çizimin boyutunu değiştiren, ona bağlı BÜTÜN sabitleri (halka, etiket eşiği,
+  ayrışma hedefi) aynı turda gözden geçirmeli.**
+- **ÇİZİM AYRIŞTIRMASI KLİP JETONLARINA DA UYGULANIR (FAZ 68 İŞ 1, ölçülerek):** brif "klip
+  jetonlarına dokunma, gerçek NBA kaydı korunmalı" diyordu; gerçek kayıt `p.x/p.y`de durur ve
+  zaten DEĞİŞMİYOR (kanıt: `faz58-check` "simülasyon payı %41,14" birebir aynı kaldı). Klip
+  jetonları dışarıda bırakılırsa kapı yine geçer (kapı klip çiftlerini saymaz) ama EKRANDA
+  hiçbir şey düzelmez: maçın %57'si klip karesidir ve o karelerin %56,8'inde jetonlar iç içe
+  kalır — kullanıcının "yumak" dediği yer tam orasıdır. Ölçüldü: klip dahil %52,7 → %7,9,
+  klip hariç %52,7 → %56,8. ⚠ `match-engine.js`teki FİZİK çarpışmasındaki
+  `if(a._klip||b._klip) continue;` satırı AYRI bir konudur, ona dokunma (FAZ 50/56).
+- **ETİKET ÇAKIŞMASINDA ÇÖZÜCÜ İLE DENETÇİ AYNI KUTUYU GÖRMELİ (FAZ 68 İŞ 4):** ilk sürüm
+  etiket genişliğini `getComputedTextLength()` + sabit yükseklikle tahmin ediyordu ve çakışma
+  %2,5'te TAKILIYORDU; gerçek `getBBox()` kutusu kontur (`stroke-width` 0,9, `paint-order:
+  stroke`) ve yazı tipi metrikleri yüzünden tahminden geniş/yüksektir, yani çözücünün
+  "ayrık" dediği çifti denetçi "çakışık" görüyordu. Kutu tek kaynaktan (`getBBox`, bir kez
+  ölçülüp `p._nmBB`de önbelleğe alınır, 1,5 px pay) alınınca %2,5 → **%0,0**.
+  Yeni çözücü geometriktir: kutu saha içinde tutulur → çakışan çiftte etiket ALTERNATİFLENİR
+  (biri üstte biri altta) → 12 px daha dışarı denenir → hiçbiri boş değilse TOPA UZAK olanın
+  etiketi gizlenir. İsim ASLA kırpılmaz. FAZ 62'nin "komşusu 34 px'ten yakınsa gizle" kaba
+  ölçütü (`_CIZ_AD`) JETON mesafesi ölçüyordu, oysa çakışan şey ETİKET KUTUSUDUR — o yüzden
+  10 oyuncudan yalnız 3-5'inin ismi görünüyor ve kare kare değişiyordu. Geri açılmamalı.
+- **TOP TAŞIYICIDAN 1 m UZAKLAŞABİLİR — BU GERÇEKTİR (FAZ 68 İŞ 2, gerçek veriyle ölçüldü):**
+  brif "top `held` iken taşıyıcısından 30 px'ten uzak, kapı ≤%1" diyor ve kaynağı `_topDurus`
+  sürüş salınımı sanıyordu. Döküm bunu çürüttü: 620 sn'de d>30 karelerin **%92'si KLİP
+  yolundadır** (`_klipTop` %7,00 ↔ fizik %0,94). Klipte top gerçek SportVU kaydının kendisidir
+  ve o kayıtta (320 klip · 65.305 alçak-top karesi) top, EN YAKIN hücumcudan **karelerin
+  %10,91'inde 1 m'den uzaktır** — sürerken top gerçekten oyuncudan ayrılır. Motor %4,99 ile
+  gerçeğin ALTINDA. Fizik yoluna mutlak sınır kondu (`_ballStep` 'held' dalı sonu: en çok
+  30 px geride; kapanma hızına DOKUNULMAZ, ışınlanma üretir — FAZ 42-B §B) ve toplam
+  %4,6 → %2,4 oldu; **≤%1 hedefi gerçek NBA verisiyle ulaşılamaz.**
+- **HAKEM PARKEYE BASMAZ — HEDEF DEĞİL YOL SORUNUYDU (FAZ 68 İŞ 5):** iki kusur vardı.
+  (a) `oamOluTopHakem` sokma noktasını 40 px SAHA İÇİNE kaydırıyordu; dip çizgi sokması pota
+  hizasındaysa hakem BOYALI ALANIN içinde duruyordu. Hedef artık noktanın hizasında, çizginin
+  16 px dışında. (b) Hedefler doğru olsa bile hareket DÜZ çizgiydi: orta saha kenarındaki
+  trail, dip çizgiye çağrılınca parkeyi boydan boya kesiyordu (`goz.js`: 13 olay / 120 sn,
+  örnek "bas 126,233" — dip çizgiden 2,4 m içeride, kulvarın ortasında). `oamHakemTick`
+  hareket döngüsüne yapısal ağ kondu: hakem saha dikdörtgeninin içine düşerse en yakın kenarın
+  16 px dışına taşınır (hava atışı MUAF). ⚠ Hakemin ÇİZGİ DIŞINDA durması kural gereğidir ve
+  KUSUR DEĞİLDİR — o yönde kural koyma.
+- **SAVUNMA GERİ DÖNÜYOR — "ORTA YUVARLAKTA TAKILI KALIYOR" ÖLÇÜMLE DOĞRULANMADI (FAZ 68
+  İŞ 3):** hücum ÖN SAHADAYKEN (21.049 kare) orta yuvarlakta kalan savunmacı **0,26/5**,
+  potaya 5 m içinde **2,28/5**, 3+ savunmacının orta yuvarlakta olduğu kare payı **%2,6** —
+  8 epizot, toplam 9,0 sn / 620 sn, en uzunu 2,30 sn, ve o karelerin üçte biri KLİP karesi
+  (gerçek NBA kaydı). Kod DEĞİŞTİRİLMEDİ; ölçülmemiş bir premise göre savunmayı hızlandırmak
+  `hareket-bant-check`in gerçek verilere oturmuş savunmacı mesafesi kapılarını (ön saha
+  L1 0,212 · arka saha L1 0,197) bozardı.
+- **`S._faz` BAYAT BİR ETİKETTİR — FAZ 50'DEN BERİ (FAZ 68 İŞ 3 ölçümü):** karelerin %78,3'ünde
+  `'trans'`, ve bir `trans` epizodunun süresi MEDYAN **56 saniye** (en uzunu 110). Sebep klip
+  mimarisidir: şutlu pozisyonu klip oynattığı için `_setFormation(...,{phase:'set'})` neredeyse
+  hiç çağrılmaz ve bayrak bir önceki geçişte kaldığı gibi kalır. OAM karelerin yalnız %17,6'sında
+  aktif, klip %57'sinde on jetonu doğrudan sürüyor. `S._faz`i "şu an geçiş fazındayız" diye
+  okuyan yeni kod YAZMA — ölçüm aracı da (`spacing-check` gibi) ondan faz çıkarıyorsa sonucu
+  bu ışıkta oku.
+- **`sahne-check` "ORTA ÇİZGİ GEÇİŞİ" KAPISI BUGÜN KLİP MİMARİSİNİ ÖLÇÜYOR (FAZ 68):** kapı
+  %56 (18/32) veriyor; `gecis-analiz` (pozisyon başına, doğru araç) 42 pozisyonun 26'sında
+  (%62) topun orta çizgiyi `held` ile geçtiğini söylüyor ve geçmeyen 11 pozisyonun çoğu ARKA
+  SAHADA ÇALMAYLA biten (top ön sahaya hiç gitmiyor — geçiş olmaması DOĞRU) ya da KLİBİN ZATEN
+  ÖN SAHADA BAŞLADIĞI pozisyonlar. CLAUDE.md'nin FAZ 44'teki "bu kapı çift sayar" uyarısının
+  devamıdır: davranış yargısı için `gecis-analiz` kullan.

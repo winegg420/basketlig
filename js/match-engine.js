@@ -438,11 +438,32 @@ function _anlatimAdi(name){
    hedeflediğinde çift o değerin ±ε'unda kapanıyor ve karelerin yarısında hâlâ 26 px'in ALTINDA
    ölçülüyordu — kayıttan yeniden çözümlemede pay %34,9 idi; hedef 29 px olunca %11,9'a indi
    (sınırsız kayma ve 30 gevşetme geçişiyle bile %30'un altına inmiyordu, kusur çözünürlüktü). */
-const _CIZ_R=25;             /* px — çizim çözümünün hedef mesafesi · FAZ 60: jeton yarıçapı 16 → 12
+/* ── FAZ 68 İŞ 1: ÇÖZÜM HEDEFİ GÖRÜNÜR ÇAPIN VE ÖLÇÜM EŞİĞİNİN ÜSTÜNDE OLMALI ────────
+   FAZ 60 jeton yarıçapını 16 → 12 yaptı ve hedefi 25 px'e indirdi, ama HALKA (r=13,1)
+   olduğu gibi kaldı: jetonun GÖRÜNÜR çapı 26,2 px'tir. Yani 25 px'lik hedef, iki diskin
+   her iki yandan 0,6 px iç içe girdiği noktadır — çakışma bir hata değil, çizim yarıçapı
+   ile izin verilen en küçük mesafenin ÇELİŞKİSİNİN kaçınılmaz sonucuydu. Üstelik FAZ 57'nin
+   kendi dersi ("hedef ölçüm eşiğinin ÜSTÜNDE olmalı") ihlal edilmişti: ölçüm <26 px'e
+   bakıyor, çözüm 25 px'i hedefliyordu, dolayısıyla çözülen her çift eşiğin ±ε'unda kapanıp
+   ölçümde yine "çakışık" sayılıyordu.
+   Kayıttan yeniden çözümleme (37.134 kare, 620 sn · scratchpad taraması):
+     R=25 MAX=12 → %39,1  ·  R=27 MAX=14 → %7,4  ·  R=29 MAX=16 → %3,7  ·  R=31 MAX=20 → %2,0
+   R=29/MAX=14 seçildi: `goz.js` kapısı (klip çifti hariç, eşik 26,2 px) %9,8 → %0,1;
+   çizilen nokta gerçek konumdan ortalama 9,9 → 11,5 px (0,39 m) sapar. R=31/MAX=16 yalnız
+   klip çiftlerinde 2 puan daha kazandırıp sapmayı büyütüyordu — çizilen konumun gerçek
+   konumdan kopması kendi başına bir kusurdur.
+   ⚠ KLİP JETONLARI DA AYRIŞTIRILIR — brifin "klip jetonlarına dokunma" maddesi ÖLÇÜLEREK
+   uygulanmadı. Gerekçe FAZ 57 A2'nin kendi ilkesidir: gerçek NBA kaydı `p.x/p.y`de durur ve
+   DEĞİŞMEZ; burada yalnız ÇİZİLEN nokta kaydırılır, hız/ivme/yayılım ölçümleri birebir aynı
+   kalır. Klip jetonları dışarıda bırakılırsa kapı yine %0,1 çıkar (kapı zaten klip çiftlerini
+   saymaz) ama EKRANDA maçın %57'sini oluşturan klip karelerinin %56,8'inde jetonlar iç içe
+   kalır — kullanıcının şikâyet ettiği yumak tam olarak orasıdır. Ölçüldü (aynı 620 sn kayıt):
+   klip dahil %52,7 → %7,9 · klip hariç %52,7 → %56,8. */
+const _CIZ_R=29;             /* px — çizim çözümünün hedef mesafesi · FAZ 60: jeton yarıçapı 16 → 12
                                 olunca 2r = 24 px "değme" mesafesidir; 25 px küçük bir boşluk bırakır ve
                                 gereken kayma küçüldüğü için çizilen konum gerçek konuma DAHA YAKIN olur
                                 (_CIZ_MAX 17 → 12). */
-const _CIZ_MAX=12;           /* px (0,58 m) — jeton başına en büyük çizim kayması · FAZ 58 F: 9 → 17.
+const _CIZ_MAX=14;           /* px (0,58 m) — jeton başına en büyük çizim kayması · FAZ 58 F: 9 → 17.
                                 Ölçüldü (v101): 0,37-0,40 m'lik (11-12 px) klip çiftleri 2,6 sn boyunca
                                 iç içe kalıyordu — 12+2×9=30 px sınırda kalıp hedefe (29) ancak değiyor,
                                 üçlü kümede yetmiyordu. 13 px ölçüldü: %9,05 → %4,21; kalan karelerin %64'ünde
@@ -450,10 +471,13 @@ const _CIZ_MAX=12;           /* px (0,58 m) — jeton başına en büyük çizim
                                 17 px'te ölçülen değer aşağıdadır. Üçlü kümede bütçe bölündüğü için çift hesabı yetmiyor. Bu YALNIZ ÇİZİM katmanıdır: simülasyon konumu
                                 klibin gerçek NBA kaydıdır ve DEĞİŞMEZ (kanıt: hız/ivme/yayılım satırları
                                 birebir aynı kalmalı — değişiyorsa yanlış katmana dokunulmuştur). */
-const _CIZ_HIZ=3.5;          /* px/kare (60 fps) — kaymanın değişim hızı · FAZ 58 F: 2,0 → 3,5 (çift 1,3-2,6 sn
+const _CIZ_HIZ=4.0;          /* px/kare (60 fps) — kaymanın değişim hızı · FAZ 58 F: 2,0 → 3,5 (çift 1,3-2,6 sn
                                 sürüyor; kayma 9 px'e ancak 4-5 karede varıyordu, epizot bitmeden yetişmiyordu) */
-const _CIZ_GEC=6;            /* gevşetme geçişi */
-const _CIZ_AD=34;            /* px — bu mesafeden yakın komşusu olan jetonun İSMİ gizlenir (FAZ 62)
+const _CIZ_GEC=8;            /* gevşetme geçişi */
+/* ⚠ FAZ 68 İŞ 4'ten sonra KULLANILMIYOR: isim gizleme artık jeton mesafesine değil
+   ETİKET KUTUSU çakışmasına bakıyor (aşağıdaki çözücü). Sabit silinmedi — eski kararın
+   kaydı olarak durur; geri açılmamalı (kaba ölçüt 10 oyuncudan 3-5'inin ismini gizliyordu). */
+const _CIZ_AD=34;            /* px — (ESKİ) bu mesafeden yakın komşusu olan jetonun İSMİ gizlenirdi (FAZ 62)
                                 jeton çapı 24 px; etiket ondan geniş olduğu için eşik 1,4 katı */
 function _cizAyristir(S,dt){
   const P=(S&&S.players)||[]; if(P.length<2) return;
@@ -479,25 +503,73 @@ function _cizAyristir(S,dt){
     if(em>adim&&em>0){ ex=ex/em*adim; ey=ey/em*adim; }
     p._cizDx=(p._cizDx||0)+ex; p._cizDy=(p._cizDy||0)+ey;
   }
-  /* ── FAZ 62: KALABALIKTA İSİM ETİKETİ GİZLENİR ────────────────────────────────────────
-     Kullanıcının tarayıcısında ölçüldü (canlı site, 626 kare): karelerin %47,6'sında 3 m'lik
-     bir zincirde 6+ oyuncu, %19,3'ünde 8+ oyuncu var — bu GERÇEK basketboldur (klip kareleri
-     %84) ve konum ayrıştırması bu kadar büyük bir kümede yetmiyor (çizimde gerçek örtüşme
-     %10,2). Ama okunmazlığın büyük kısmı jetonlardan değil İSİM ETİKETLERİNDEN geliyor:
-     etiket jetondan geniştir, üç isim yan yana gelince harf yığınına dönüşüyor ve kullanıcı
-     "isimler okunmuyor" diyor. Kalabalıkta isim SAKLANIR — forma numarası zaten jetonun
-     üstünde ve okunur kalır. Eşik jeton çapının ~1,4 katıdır. */
+  /* ── FAZ 62 → FAZ 68 İŞ 4: İSİM ETİKETİ ÇAKIŞMA ÇÖZÜCÜSÜ ────────────────────────────
+     FAZ 62 ölçütü "komşusu 34 px'ten yakınsa ismi sakla" idi. Kaba olduğu için canlıda
+     10 oyuncudan yalnız 3-5'inin ismi görünüyor, hangisinin görüneceği kare kare
+     değişiyordu (kullanıcı: "isimler tutarsız, bazıları hiç yok"); üstelik JETON mesafesi
+     ölçülüyordu, oysa çakışan şey ETİKET KUTUSUDUR — etiket jetondan geniştir, iki jeton
+     26 px ayrıkken bile isimler üst üste binebilir ("Lawson/Maier"), ve saha kenarındaki
+     jetonun etiketi görüntü kutusunun dışına taşıp kırpılıyordu ("Baumann" → "Baum").
+     Yeni çözüm GEOMETRİKTİR ve üç adımlıdır:
+       1) etiket kutusu (gerçek metin genişliği, bir kez ölçülüp önbelleğe alınır) sahanın
+          içinde tutulur — taşarsa jetonun öbür tarafına alınır;
+       2) çakışan çiftte etiket ALTERNATİFLENİR (biri üstte, biri altta);
+       3) iki taraf da doluysa TOPA UZAK olanın etiketi gizlenir (topun çevresindeki oyun
+          okunur kalsın). İsim ASLA kırpılmaz — sığmıyorsa gizlenir.
+     Yalnız SUNUM: hiçbir konum/karar etkilenmez. */
+  const _EY_ALT=25, _EY_UST=-17;          /* etiket taban çizgisinin jetona göre kayması */
+  const _ET=[];
   for(const p of P){
-    if(!p.g) continue;
-    let en=1e9;
-    for(const q of P){ if(q===p||!q.g) continue;
-      const d=Math.hypot((q.x+(q._cizDx||0))-(p.x+(p._cizDx||0)),(q.y+(q._cizDy||0))-(p.y+(p._cizDy||0)));
-      if(d<en) en=d; }
-    const gizle=(en<_CIZ_AD);
-    if(p._adGizli!==gizle){
-      p._adGizli=gizle;
-      if(!p._nmEl){ try{ p._nmEl=p.g.querySelector('.tok-name'); }catch(e){} }
-      if(p._nmEl) p._nmEl.style.display=gizle?'none':'';
+    if(!p||!p.g) continue;
+    if(!p._nmEl){ try{ p._nmEl=p.g.querySelector('.tok-name'); }catch(e){} }
+    const el=p._nmEl; if(!el) continue;
+    /* Kutu GERÇEK `getBBox()`ten alınır ve önbelleğe konur (metin değişmez).
+       ⚠ Tahmini genişlik (harf sayısı × 6,6) ile ölçülünce çözücü ile denetçi AYRI kutu
+       görüyor ve çakışma %2,5'te takılıyordu: gerçek kutu kontur (stroke 0,9) ve yazı tipi
+       metrikleri yüzünden tahminden geniş/yüksektir. Ölçüt tek kaynaktan gelmeli. */
+    if(p._nmBB==null){
+      let bb=null; try{ bb=el.getBBox(); }catch(e){}
+      const dy0=Number(el.getAttribute('dy'))||0;
+      if(bb&&bb.width) p._nmBB=[bb.x-1.5,bb.y-dy0-1.5,bb.width+3,bb.height+3];
+      else { const w=String(el.textContent||'').length*6.6; p._nmBB=[-w/2-1.5,-12,w+3,15]; }
+    }
+    if(p._nmVar==null) p._nmVar=(Number(el.getAttribute('dy'))>0);   /* varsayılan taraf: alt mı */
+    _ET.push(p);
+  }
+  if(_ET.length){
+    const b=S.ball;
+    const bx=(b&&isFinite(b.x))?b.x:470, by=(b&&isFinite(b.y))?b.y:250;
+    /* topa yakın oyuncunun etiketi öncelikli — oyunun okunduğu yer orası */
+    _ET.sort((a,c)=>(Math.hypot(a.x-bx,a.y-by)-Math.hypot(c.x-bx,c.y-by)));
+    const kutu=[];
+    const _cak=(k)=>{ for(const q of kutu) if(k[0]<q[2]&&k[2]>q[0]&&k[1]<q[3]&&k[3]>q[1]) return true; return false; };
+    for(const p of _ET){
+      const cx=p.x+(p._cizDx||0), cy=p.y+(p._cizDy||0);
+      const BB=p._nmBB;
+      const _kur=(alt,ek)=>{ const dy2=(alt?(_EY_ALT+(ek||0)):(_EY_UST-(ek||0)));
+        return [cx+BB[0],cy+BB[1]+dy2,cx+BB[0]+BB[2],cy+BB[1]+dy2+BB[3]]; };
+      const _icerde=(k)=>(k[0]>=CRT_X0-14&&k[2]<=CRT_X1+14&&k[1]>=CRT_Y0-12&&k[3]<=CRT_Y1+12);
+      /* Üç deneme: varsayılan taraf → ters taraf → aynı tarafta 12 px daha dışarı.
+         Üçüncüsü ölçülerek eklendi (goz.js: iki denemeyle çakışma %2,3'te takılıyordu;
+         kalanların çoğu jetonu üst üste gelen ÜÇLÜ kümelerdi — iki taraf da doluydu). */
+      let alt=p._nmVar, ek=0, k=_kur(alt,0);
+      if(!_icerde(k)){ const k2=_kur(!alt,0); if(_icerde(k2)){ alt=!alt; k=k2; } }
+      let gizle=false;
+      if(!_icerde(k)) gizle=true;                              /* sığmıyorsa gizle, KIRPMA */
+      else if(_cak(k)){
+        const k2=_kur(!alt,0);
+        if(_icerde(k2)&&!_cak(k2)){ alt=!alt; k=k2; }
+        else {
+          const k3=_kur(alt,12), k4=_kur(!alt,12);
+          if(_icerde(k3)&&!_cak(k3)){ ek=12; k=k3; }
+          else if(_icerde(k4)&&!_cak(k4)){ alt=!alt; ek=12; k=k4; }
+          else gizle=true;
+        }
+      }
+      if(!gizle) kutu.push(k);
+      if(p._adGizli!==gizle){ p._adGizli=gizle; try{ p._nmEl.style.display=gizle?'none':''; }catch(e){} }
+      const _dy=alt?(_EY_ALT+ek):(_EY_UST-ek);
+      if(!gizle&&p._nmAlt!==_dy){ p._nmAlt=_dy; try{ p._nmEl.setAttribute('dy',String(_dy)); }catch(e){} }
     }
   }
 }
@@ -807,6 +879,25 @@ function _simStep(dtReal){
     takipçiyi topun ilerisinde bekletir ve mücadeleyi bozar). */
 function _topDurus(b){
   if(!b||!isFinite(b.x)) return [0,0];
+  /* ── FAZ 67 · 4: ÇEMBERDEKİ TOPUN KARAMBOLÜ ZATEN BİLİNİYOR ────────────────────────
+     Ölçüldü (v113, 419 sn): kaçan şutun ribaundu ortalama 1,07 sn kimsenin eline geçmiyor,
+     en uzunu 4 sn (gerçekte 0,6-0,8 sn). Sebep: 'rim' modunda topun hızı SIFIRDIR (karambol
+     `b._carom` içinde bekler), dolayısıyla takipçi topun ŞU ANKİ yerine — çembere — koşuyor;
+     top oradan seçilen açıyla uzaklaşınca yolu İKİNCİ KEZ kat ediyordu. Karambol vektörü
+     `_ballCarom`ta scramble'dan ÖNCE yazılır, yani düşüş noktası bellidir: takipçi
+     doğrudan oraya gider (gerçek ribaundcu topun nereye düşeceğini okur). */
+  if(b.mode==='rim'&&b._carom){
+    const c=b._carom;
+    let x=b.x,y=b.y,vx=c.vx||0,vy=c.vy||0,vh=(c.vh!=null?c.vh:48),h=30;
+    const dt=1/30;
+    for(let i=0;i<36;i++){
+      x+=vx*dt; y+=vy*dt; vx*=(1-2.2*dt); vy*=(1-2.2*dt);
+      h+=vh*dt; vh-=_TOP_G*dt;
+      if(h<0){ h=0; vh=-vh*0.52; if(Math.abs(vh)<14) vh=0; }
+      if(h<=_TOP_TUTMA_H&&vh<=0) break;
+    }
+    return [_inX(x),_inY(y)];
+  }
   const k=Math.min(0.55,1/2.2);
   return [b.x+(b.vx||0)*k, b.y+(b.vy||0)*k];
 }
@@ -1748,7 +1839,7 @@ function _ballKurtar(){
     const S=mState._sim; if(!S) return;
     const b=S.ball;
     if(!isFinite(b.x)||!isFinite(b.y)){ b.x=COURT_MID; b.y=250; }
-    b.mode='loose'; b.carrier=null; b.noDrib=false; b.t=0;
+    b._looseKaynak='kurtar'; b.mode='loose'; b.carrier=null; b.noDrib=false; b.t=0;
     b.vx=b.vy=0; b.vh=0; b.h=Math.max(0,Math.min(30,b.h||0));
     b.onDone=null; b.target=null;
     let en=null,ed=1e9;
@@ -1835,7 +1926,7 @@ function _ballTut(p,noDrib){
      `loose>pass` hatasının kardeşi. Top önce serbest bırakılır, alma bir sonraki kareye
      kuyruğa girer (`_tutBekle`) — en az bir kare 'loose' geçer. */
   if(b.mode==='rim'||b.mode==='shot'){
-    b._carom=null; b.mode='loose'; b.carrier=null; b.t=0;
+    b._carom=null; b._looseKaynak='tut-rim'; b.mode='loose'; b.carrier=null; b.t=0;
     b.h=Math.max(b.h||0,8); b.vx=0; b.vy=0; b.vh=Math.min(0,b.vh||0);
     b._tutBekle={p,noDrib,t:(S?S.time:0)};
     return;
@@ -1950,7 +2041,7 @@ function _ballPass(to,dur,bounce){
     if(b.mode==='held'&&b.carrier&&isFinite(b.carrier.x)&&!(S&&S._klipTop)
        &&Math.hypot(b.carrier.x-b.x,b.carrier.y-b.y)>2.0*29.5429){
       if(S) S._havadanN=(S._havadanN|0)+1;
-      b.carrier=null; b.mode='loose';
+      b._looseKaynak='havadan'; b.carrier=null; b.mode='loose';
       if(_pasKorumasi(to,dur,bounce)) return;
     }
   }catch(e){}
@@ -1991,6 +2082,7 @@ function _ballPass(to,dur,bounce){
   try{ const S=mState._sim; if(S&&b.mode==='held'&&b.carrier&&to!==b.carrier&&(S.time-(b._heldAt||0))<_TOP_TUT_SN){ b._pasBekle={to,dur:dur||null,bounce:!!bounce,t0:S.time}; return; } }catch(e){}
   const d=Math.hypot(to.x-b.x,to.y-b.y);
   b.mode='pass'; b.carrier=null; b.from=[b.x,b.y]; b.target=to; b.noDrib=false;
+  b._varisN=0;   /* FAZ 67 · 2: varış zinciri sayacı yeni pasta sıfırlanır */
   b.hFrom=b.h;   /* FAZ 44 §1: yüksekten başlayan pas (hava atışı tap'i) 11 px'e düşmez, iner */
   /* Pas hızı ~16 m/sn (520 px/sn); uzun paslar 0.9 sn'ye kadar havada kalır. */
   /* FAZ 40 §A1: ÇAĞIRANIN VERDİĞİ SABİT SÜRE HIZ TAVANINI EZEMEZ. Koreografi adımları
@@ -2055,11 +2147,43 @@ function _ballShoot(to,dur,made,onDone,tip){
   b.tip=tip||null;
   b.made=!!made; b.onDone=onDone||null;
 }
-function _ballLoose(vx,vy,vh){
-  const b=_ball(); b.mode='loose'; b.carrier=null; b.noDrib=false;
+/** @param sebep FAZ 67 · 3: 'held' modundan çıkan her topun BİR SEBEBİ olmalı.
+    Ölçüldü (v113, 419 sn): 9 kez / 19,8 sn top 'held' iken sahipsiz kaldı — anlatıya
+    top kaybı olarak yansımıyorsa bu GÖRSEL KUSURDUR (oyuncu topu sebepsiz bırakıyor).
+    Meşru sebepler: 'calma' (rakip çaldı) · 'faul' · 'ihlal' (çift sürme/adım) ·
+    'blok' · 'hava' (hava atışı) · 'sut'. Sebepsiz çağrılar `S._dusurmeKim` kimlik
+    sayacında yığın iziyle görünür (FAZ 64'ün hayalet kimliğinde işe yarayan yöntem). */
+function _ballLoose(vx,vy,vh,sebep){
+  const b=_ball();
+  try{
+    const S=mState._sim;
+    if(S&&b.mode==='held'&&b.carrier){
+      if(!sebep){
+        S._sebepsizDusurmeN=(S._sebepsizDusurmeN|0)+1;
+        (S._dusurmeKim=S._dusurmeKim||[]).push({t:+S.time.toFixed(1),tip:S.curType||'-',
+          kim:(b.carrier.team||'?')+'/'+((b.carrier.pl&&b.carrier.pl.poz)||'?'),
+          yol:(new Error().stack||"").split(String.fromCharCode(10)).slice(2,6).map(function(x){var m=x.trim().match(/at ([\w$.]+)/);return m?m[1]:"?";}).join("<")});
+        if(S._dusurmeKim.length>20) S._dusurmeKim.shift();
+      } else { S._dusurmeSebep=S._dusurmeSebep||{}; S._dusurmeSebep[sebep]=(S._dusurmeSebep[sebep]|0)+1; }
+    }
+  }catch(e){}
+  b._looseKaynak='ballLoose:'+(sebep||'SEBEPSIZ'); b.mode='loose'; b.carrier=null; b.noDrib=false;
   b.vx=vx; b.vy=vy; b.vh=vh!=null?vh:70;
   b._sekme=0; b._yerdenAl=false;
   try{ const S=mState._sim; if(S) b._looseAt=S.time; }catch(e){}
+}
+/** FAZ 67 · 3: TOP YANLIŞ TAKIMIN ELİNDEYSE YERE BIRAKILMAZ, ELDEN VERİLİR.
+    Eski davranış (`_ballLoose(0,0,14)` + `_chase`) topu sebepsiz yere düşürüyordu; ekranda
+    oyuncu topu bırakıp gidiyor gibi görünüyordu. Gerçekte sayı/düdük sonrası top elden
+    verilir. Alıcı 1,5 m'den uzaksa ona koşulur, top O ANA KADAR elde kalır. */
+function _eldenVer(alan){
+  try{
+    const S=mState._sim; if(!S||!alan||!isFinite(alan.x)) return;
+    const b=S.ball;
+    if(b.mode!=='held'){ if(!S.chase||S.chase.tok!==alan) _chase(alan,()=>{ try{ _ballTut(alan); }catch(e){} },2.2); return; }
+    if(Math.hypot(alan.x-b.x,alan.y-b.y)<=1.5*29.5429){ _ballTut(alan); return; }
+    if(!S.chase||S.chase.tok!==alan) _chase(alan,()=>{ try{ _ballTut(alan); }catch(e){} },2.2,_URG.KOS);
+  }catch(e){}
 }
 /** FAZ 43 İŞ 1: KAÇAN ŞUTUN KARAMBOLU. `_ballShoot` geri çağrısı çember anında çalışır;
     top önce `_TOP_RIM_TEMAS` boyunca çemberde sallanır, sonra verilen hızla serbest kalır.
@@ -2097,6 +2221,25 @@ function _sokmaYenidenKur(){
 }
 function _ballStep(dt){
   const S=mState._sim, b=S.ball;
+  /* ── FAZ 67 TEŞHİS: 'loose'A GEÇİŞİN KİMLİĞİ ──────────────────────────────────────
+     FAZ 67'nin ilk ölçümü şunu gösterdi: motorun 'held'/'pass' dallarına yapılan
+     düzeltmeler serbest top payını (%16) HİÇ değiştirmedi — yani kaynak `_ballLoose`
+     ya da `_ballHold` değil. Mod ataması ~19 ayrı yerde doğrudan yapılıyor ve bir kısmı
+     KLİP oynatıcısındadır (`js/sahne-klip.js`), yani `_ballStep` dönüş yapmadan önce.
+     Bu blok `_ballStep`in EN BAŞINDA, klip erken-dönüşünün ÜSTÜNDE durur; her geçişi
+     kaynak etiketiyle (`b._looseKaynak`) birlikte kaydeder. FAZ 64'ün hayalet
+     kimliğinde işe yarayan yöntemin serbest top karşılığı. */
+  if(b._onceMod!==b.mode){
+    try{
+      if(b.mode==='loose'||b.mode==='dead'){
+        const k=(b._looseKaynak||'?')+'|'+(b._onceMod||'?')+'>'+b.mode+(S._klipTop?'|KLIP':'');
+        S._looseKaynakN=S._looseKaynakN||{}; S._looseKaynakN[k]=(S._looseKaynakN[k]|0)+1;
+        (S._looseKim=S._looseKim||[]).push({t:+S.time.toFixed(1),k,tip:S.curType||'-'});
+        if(S._looseKim.length>60) S._looseKim.shift();
+      }
+    }catch(e){}
+    b._onceMod=b.mode; b._looseKaynak=null;
+  }
   /* ── FAZ 59 · 1a: UÇAN TOP DONDUYSA TAKILMIŞTIR (kalıcı güvenlik ağı) ─────────────────
      'pass'/'shot' modunda top TANIMI GEREĞİ hareket eder; 0,35 sn boyunca hiç yer
      değiştirmiyorsa bir döngüye girmiştir (1b'nin kapattığı sonsuz yeniden-pas gibi).
@@ -2113,7 +2256,7 @@ function _ballStep(dt){
         /* Klip topu sürüyor (`js/sahne-klip.js`): kurtarma GEREKMEZ ve zararlıdır — yalnız
            mod düzeltilir. Klip devrederken ('atildi') ya da bekleme dalında top kısa süre
            'pass' modunda yerinde kalabiliyordu; sahipsiz topun modu 'loose'tur (FAZ 54 A1). */
-        b.mode='loose'; b.target=null; b.vx=b.vy=b.vh=0;
+        b._looseKaynak='nobetci-klip'; b.mode='loose'; b.target=null; b.vx=b.vy=b.vh=0;
       } else {
         const _cb=(b.mode==='shot')?b.onDone:null; b.onDone=null;
         b.mode='dead'; b.carrier=null; b.target=null; b.vx=b.vy=b.vh=0; b.h=0; b.t=0; b._deadAt=S.time;
@@ -2135,8 +2278,20 @@ function _ballStep(dt){
      SERBEST bırakılır; en yakın oyuncu alır, oyun durmaz. Hakem taşıyıcısı ayrıca
      "hayalet" sayılmaz — sayaç yalnız gerçekten geçersiz taşıyıcıyı saysın. */
   if(b.mode==='held'&&b.carrier&&b.carrier.ghost&&!(S._hakemTop&&S._hakemTop.aktif)){
-    b.carrier=null; b.mode='loose'; b.vx=b.vy=0; b.vh=0; b.h=Math.max(b.h||0,6); b.t=0;
+    /* ── FAZ 67 · A2: HAKEMİN ELİNDE KALAN TOP YERE BIRAKILMAZ, VERİLİR ────────────────
+       Ölçüldü (v113 · 430 sn): 4 olay / 5 sn — tören bayrağı (`_hakemTop.aktif`) düşüyor
+       ama top hâlâ hakemin elinde; ağ topu yere bırakıyor ve serbest top epizodu doğuyor.
+       Gerçekte hakem topu her zaman BİRİNE verir. Bekleyen sokucu varsa ona, yoksa en
+       yakın oyuncuya kısa pasla gider; hiçbiri yoksa eski davranış (yere bırakma) kalır. */
+    let _al=null;
+    try{
+      if(S.inb&&S.inb.tok&&isFinite(S.inb.tok.x)) _al=S.inb.tok;
+      else { let ed=1e9; (S.players||[]).forEach(q=>{ if(!q||!isFinite(q.x)) return; const d=Math.hypot(q.x-b.x,q.y-b.y); if(d<ed){ ed=d; _al=q; } }); }
+    }catch(e){ _al=null; }
+    b.carrier=null;
     S._hakemBosN=(S._hakemBosN|0)+1;
+    if(_al){ b._looseKaynak='hakem-bos-verildi'; b.mode='loose'; b.vx=b.vy=0; b.vh=0; b.h=Math.max(b.h||0,6); b.t=0; _ballTut(_al,!!S.inb); }
+    else { b._looseKaynak='hakem-bos'; b.mode='loose'; b.vx=b.vy=0; b.vh=0; b.h=Math.max(b.h||0,6); b.t=0; }
   }
   else if(b.mode==='held'&&b.carrier&&!(S._hakemTop&&S._hakemTop.aktif)&&(S.players||[]).indexOf(b.carrier)<0){
     /* FAZ 64 teşhis: hayaletin KİMLİĞİ kaydedilir — ağın kaç kez tetiklendiğini bilmek
@@ -2150,10 +2305,16 @@ function _ballStep(dt){
   switch(b.mode){
     case 'held':{
       const p=b.carrier;
-      if(!p){ b.mode='loose'; b.vx=b.vy=0; b.vh=0; break; }
+      if(!p){ b._looseKaynak='held-tasiyicisiz'; b.mode='loose'; b.vx=b.vy=0; b.vh=0; break; }
       /* FAZ 54 A1/A2: bekleyen pas/şut — top en az `_TOP_TUT_SN` elde kaldıktan sonra çıkar */
       if(b._sutBekle){ const q=b._sutBekle; if(S.time-q.t0>2.5){ b._sutBekle=null; } else if(S.time-(b._heldAt||0)>=_TOP_TUT_SN){ b._sutBekle=null; _ballShoot(q.to,q.dur,q.made,q.onDone,q.tip); break; } }
-      if(b._pasBekle){ const q=b._pasBekle; if(S.time-q.t0>2.5||!q.to||!isFinite(q.to.x)){ b._pasBekle=null; } else if(q.to===p){ b._pasBekle=null; } else if(S.time-(b._heldAt||0)>=_TOP_TUT_SN){ b._pasBekle=null; _ballPass(q.to,q.dur,q.bounce); break; } }
+      /* FAZ 67 · 2: kuyruk SESSİZCE silinmez — bayatlaması, bir pas isteğinin hiç
+         çalışmadığının kanıtıdır (asıl kusur bu yüzden yedi faz görünmedi). */
+      if(b._pasBekle){ const q=b._pasBekle; if(S.time-q.t0>2.5||!q.to||!isFinite(q.to.x)){ b._pasBekle=null;
+          S._pasKuyrukDustu=(S._pasKuyrukDustu|0)+1;
+          (S._pasKuyrukKim=S._pasKuyrukKim||[]).push({t:+S.time.toFixed(1),mod:b.mode,tip:S.curType||'-',
+            kime:(q.to&&q.to.team?q.to.team+'/'+((q.to.pl&&q.to.pl.poz)||'?'):'-')});
+          if(S._pasKuyrukKim.length>20) S._pasKuyrukKim.shift(); } else if(q.to===p){ b._pasBekle=null; } else if(S.time-(b._heldAt||0)>=_TOP_TUT_SN){ b._pasBekle=null; _ballPass(q.to,q.dur,q.bounce); break; } }
       if(b._pasSonra&&S.time>=b._pasSonra.t){ const ps=b._pasSonra; b._pasSonra=null; if(ps.to&&ps.to!==p){ _ballPass(ps.to,ps.dur||null); break; } }
       const sp=Math.hypot(p.vx,p.vy);
       const ux=sp>10?p.vx/sp:1, uy=sp>10?p.vy/sp:0;
@@ -2192,6 +2353,21 @@ function _ballStep(dt){
       /* FAZ 54 A4: elde tutulan top SAHA DIŞINA çıkmaz — çizgi dışındaki sokucu/hakem topu
          çizginin üstünde tutar (ölçüldü: x=883,9'da 7,98 sn 'held', saha dışı karelerin %90'ı buydu). */
       b.x=Math.max(CRT_X0+2,Math.min(CRT_X1-2,b.x)); b.y=Math.max(CRT_Y0+2,Math.min(CRT_Y1-2,b.y));
+      /* ── FAZ 68 İŞ 2: ELDE TUTULAN TOP TAŞIYICIDAN 1 m'DEN UZAKLAŞAMAZ ──────────────────
+         Sürüş noktası zaten yakındır (|(10, ±11)| ≈ 15 px); mesafe _TOP_YAKLAS (260 px/sn)
+         kapanma hızının GERİDE KALMASINDAN büyüyor — sprint eden taşıyıcıda ve saha dışı
+         kırpmasında top jetonun 1,5 m gerisine düşüyordu. Ölçüldü (620 sn · 26.145 held
+         karesi): fizik yolunda taşıyıcıya 30 px'ten uzak kare payı %0,94, en uzak 137 px.
+         Kapanma hızına dokunulmaz (ışınlanma üretir — FAZ 42-B §B); yalnız MUTLAK sınır
+         konur: top hedef noktası yönünde en çok 30 px (1,02 m) geride kalabilir.
+         ⚠ KLİP YOLU MUAF: orada top gerçek SportVU kaydının KENDİSİDİR ve o kayıtta top,
+         en yakın hücumcudan karelerin %10,9'unda 1 m'den uzaktır (320 klip · 65.305 alçak
+         top karesi, scratchpad/f68-gercek-top.js) — sürerken top gerçekten oyuncudan
+         ayrılır. Klip yolunu 30 px'e kelepçelemek gerçek kaydı bozardı. */
+      if(!(S&&S._klipTop)&&b.carrier&&isFinite(b.carrier.x)){
+        const _ox=b.x-b.carrier.x, _oy=b.y-b.carrier.y, _om=Math.hypot(_ox,_oy);
+        if(_om>30){ b.x=b.carrier.x+_ox/_om*30; b.y=b.carrier.y+_oy/_om*30; }
+      }
       break;
     }
     case 'pass':{
@@ -2213,7 +2389,38 @@ function _ballStep(dt){
         else { b.x=_nx; b.y=_ny; } }
       /* göğüs pası: alçak yay | yerden pas: ortada zemine değip yükselir */
       b.h=b.bounce?(t<0.55?16*(1-t/0.55):14*((t-0.55)/0.45)):(Math.sin(Math.PI*t)*b.arc+11+((b.hFrom>30)?(b.hFrom-11)*(1-t):0));   /* FAZ 44 §1: hFrom */
-      if(b.t>=1){ const to=b.target; b.bounce=false; _ballHold(to,!!(to&&to.ghost)); }
+      if(b.t>=1){
+        const to=b.target; b.bounce=false;
+        /* ── FAZ 67 · 2: PAS VARIŞ ANI AYRI BİR DURUMDUR — YENİDEN PAS ÜRETİLMEZ ──────────
+           Ölçüldü (v113, 419 sn): 92 pasın 13'ü (%14,1) yere düştü, toplam 36,5 sn; hepsinin
+           imzası birebir aynıydı (kısa pas, küçük mesafe, top TAM 0,5 m yükseklikte).
+           Zincir: alıcı uçuş boyunca yer değiştirir → `_ballHold` d>14 dalı YENİDEN pas ister
+           → `_ballPass` içinde mod hâlâ 'pass' olduğu için `_pasKorumasi` pası çalıştırmaz,
+           `b._pasBekle` kuyruğuna alır → kuyruğu yalnız 'held' dalı boşaltır, top 'held'
+           olmadığı için kuyruk 2,5 sn sonra sessizce silinir → top donar → FAZ 59 nöbetçisi
+           topu yere bırakır (S._kurtarN). FAZ 59 (nöbetçi), FAZ 63 (havadan pas) ve FAZ 64b
+           (uzaktan top alınmaz) ÜÇÜ DE TEK TEK DOĞRU; kesişimlerinde varış anı çözümsüz kaldı.
+           Kural: varışta ya el değişimi olur, ya uçuş SÜRDÜRÜLÜR (yeni `_ballPass` YOK), ya da
+           top alıcının ayağına düşer ve o topa koşar. */
+        const _ax=to?Math.hypot(to.x-b.x,to.y-b.y):1e9;
+        const _rx=to?Math.max(CRT_X0+2,Math.min(CRT_X1-2,to.x)):0, _ry=to?Math.max(CRT_Y0+2,Math.min(CRT_Y1-2,to.y)):0;
+        const _erisilir=to&&isFinite(to.x)&&Math.hypot(b.x-_rx,b.y-_ry)>14;   /* hedef kırpma yüzünden ulaşılmaz değilse */
+        b._varisN=(b._varisN|0)+1;
+        if(to&&isFinite(to.x)&&_ax<=1.5*29.5429){
+          b._varisN=0; _ballTut(to,!!(to&&to.ghost));                          /* yakalama yarıçapı: doğrudan ele */
+        } else if(_erisilir&&_ax<=3.0*29.5429&&b._varisN<=3){   /* zincir kısa tutulur: `faz59-check` pas süresi p99 kapısı uzun uçuşu cezalandırır */
+          /* alıcı uçuş sırasında kaydı: UÇUŞ SÜRER (yeni pas değil, aynı topun yeni hedefi) */
+          b.from=[b.x,b.y]; b.t=0; b.dur=Math.max(0.10,Math.min(0.45,_ax/520)); b.hFrom=b.h;
+        } else if(to&&isFinite(to.x)){
+          /* Gerçekten uzaklaştı ya da hedef ulaşılamaz: top ONUN AYAĞINA düşer ve o topa koşar. */
+          b._varisN=0;
+          b._looseKaynak='varis-uzak'; b.mode='loose'; b.carrier=null; b.vx=b.vy=0; b.vh=0; b.h=Math.min(b.h,8);
+          b._sekme=0; b._yerdenAl=false; try{ const _S=mState._sim; if(_S) b._looseAt=_S.time; }catch(e){}
+          _chase(to,()=>{ try{ _ballTut(to,!!(to&&to.ghost)); }catch(e){} },1.6,_URG.SPRINT);
+        } else {
+          b._varisN=0; _ballKurtar();
+        }
+      }
       break;
     }
     case 'shot':{
@@ -2269,7 +2476,8 @@ function _ballStep(dt){
     case 'dead':{
       /* FAZ 54 A4: ÖLÜ TOP — çizgiyi geçen top burada durur; hiçbir fizik uygulanmaz. Sokma
          töreni (`_ballHold`) ya da 0,9 m'ye gelen oyuncu topu 'held'e alır. */
-      b.vx=b.vy=b.vh=0; b.h=0;
+      /* FAZ 67 · A: hakemin elindeki ölü top YERDE DEĞİLDİR — yüksekliği tören yazar. */
+      b.vx=b.vy=b.vh=0; if(!(S._hakemTop&&S._hakemTop.aktif)) b.h=0;
       _topuAlmayaCalis(S,b);
       break;
     }
@@ -3419,7 +3627,7 @@ function movePlayersForEvent(ev,paint){
       S.inb=null;
       const T0=0.15;   /* düdük + toss — top 'idle' modunda en fazla bu kadar bekler */
       return _script([
-        {at:T0,fn:()=>{ const b=S.ball; b.carrier=null; b.x=COURT_MID; b.y=250; b.h=0; _ballLoose(0,0,140); if(typeof sfx==='function') sfx('whistle'); }},
+        {at:T0,fn:()=>{ const b=S.ball; b.carrier=null; b.x=COURT_MID; b.y=250; b.h=0; _ballLoose(0,0,140,'hava'); if(typeof sfx==='function') sfx('whistle'); }},
         {at:T0+0.50,fn:()=>{ hc.pop=1.3; ac.pop=1.3; }},                                   /* iki pivot sıçrar (top tepeye yaklaşırken) */
         {at:T0+0.80,fn:()=>{                                                                /* kazanan tepede dokunur → takım arkadaşına */
           winC.pop=1.5;
@@ -3452,7 +3660,7 @@ function movePlayersForEvent(ev,paint){
       if(_dq>2){
         _ballPass({x:COURT_MID,y:250,vx:0,vy:0,side:1,ghost:true},Math.max(0.25,Math.min(0.85,_dq/520)));
       } else {
-        b.mode='loose'; b.x=COURT_MID; b.y=250;
+        b._looseKaynak='hava-atisi'; b.mode='loose'; b.x=COURT_MID; b.y=250;
       }
       S.inb=null;
       return 0;
@@ -3641,7 +3849,7 @@ function movePlayersForEvent(ev,paint){
           /* FAZ 53: çalınan top 110 px/sn ile 3-4 m uzağa fırlıyor ve hırsız peşinden
              koşarken 2,17 sn ölü zaman doğuyordu (ölçüldü, üç ayrı epizot birebir aynı süre).
              Elden alınan top kısa mesafe sıçrar — hırsız bir adımda toplar. */
-          _ballLoose(ddx/dn*62+_srand(-18,18),ddy/dn*62+_srand(-18,18),26);   /* FAZ 42-B §B / FAZ 43 yerçekimi */
+          _ballLoose(ddx/dn*62+_srand(-18,18),ddy/dn*62+_srand(-18,18),26,'calma');   /* FAZ 42-B §B / FAZ 43 yerçekimi */
           _chase(thief,()=>{
             if(P){ P(); }
             _startBreak(thiefIsUser);
@@ -3938,7 +4146,7 @@ function animateShotPossession(sh,onShoot,onResult){
           _res();
           let a2=_sr()*6.283;
           try{ const nxB=_peekNext(); if(nxB&&nxB.type==='reb'&&nxB.rebId!=null){ const nm=offP.concat(defP).find(p=>p.pl&&p.pl.id===nxB.rebId); if(nm) a2=Math.atan2(nm.y-by,nm.x-bx)+(_sr()*2-1)*0.4; } }catch(e){}   /* FAZ 43 İŞ 1 */
-          _ballLoose(Math.cos(a2)*150,Math.sin(a2)*140,63);   /* FAZ 43: 95 → 63 (yerçekimi 460 → 202, tepe aynı) */
+          _ballLoose(Math.cos(a2)*150,Math.sin(a2)*140,63,"blok");   /* FAZ 43: 95 → 63 (yerçekimi 460 → 202, tepe aynı) */
           _rebScramble(offP,defP,rim,offLeft);
         });
         return;
@@ -4016,7 +4224,10 @@ function animateShotPossession(sh,onShoot,onResult){
       const winIsUser=(winTeam===S.home);
       /* Rakip ribaundcu topun ÜSTÜNE değil, box-out mesafesinde (≈1.5m) yüklenir —
          iki jeton iç içe geçmesin. */
-      if(l&&l!==w){ const an=_sr()*6.283, rr=_srand(48,66); _setUrg(l,_URG.KOS); l.tx=_inX(bb.x+Math.cos(an)*rr); l.ty=_inY(bb.y+Math.sin(an)*rr); _lockTok(l,1.4); }
+      /* FAZ 67 · 4: çevresinde toplanılacak nokta çember DEĞİL, topun tahmini düşüş noktasıdır. */
+    const _dn=_topDurus(bb);
+    if(l&&l!==w){ const an=_sr()*6.283, rr=_srand(48,66); _setUrg(l,_URG.KOS); l.tx=_inX(_dn[0]+Math.cos(an)*rr); l.ty=_inY(_dn[1]+Math.sin(an)*rr); _lockTok(l,1.4); }
+    if(w){ _setUrg(w,_URG.SPRINT); w.tx=_inX(_dn[0]); w.ty=_inY(_dn[1]); w._wp=null; }
       if(w){
         w.pop=0.7;
         /* Anlatımda ribaund cümlesi VARSA topu 'reb' olayı aldırır (senkron);
@@ -4143,7 +4354,7 @@ function animateShotPossession(sh,onShoot,onResult){
            bekçinin yanlış oyuncuya verdiği top) hücumun PG'sine 7-8 m "pas" atılıyordu — rakibe
            pas. Top bırakılır, oyun kurucu ona koşar; koreografi topu alana kadar bekler. */
         const _dus=b.carrier;
-        steps.push({at:0.05,fn:()=>{ try{ if(S.ball.carrier===_dus){ _ballLoose(0,0,14); } _chase(pg,null,2.2); }catch(e){} }});
+        steps.push({at:0.05,fn:()=>{ try{ if(S.ball.carrier===_dus){ _eldenVer(pg); } else { _chase(pg,null,2.2); } }catch(e){} }});   /* FAZ 67 · 3: yere bırakma değil elden veriş */
         steps.push({at:0.10,bekle:()=>(S.ball.carrier===pg),max:2.2,fn:()=>{}});
         tOff=0.35;
       } else if(!b.carrier){
