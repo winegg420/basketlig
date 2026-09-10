@@ -10731,3 +10731,88 @@ jeton/top ışınlanması **0** · jeton iç içe (>1,2 sn) **0** (taban 14). `f
 gerçek verili kapı L1 0,276 ile GEÇİYOR ve 7,5+ bandı %0,01 · gerçek %0,25).
 `sim-node --n=200 --seed=42` **93.4 - 87.3 · 268** · determinizm ✓ · `visual-check` 0 hata ·
 `surum-check --yaz` → **117**. Ayrıntı: `olcum/FAZ69-sonuc.txt`.
+
+---
+
+## FAZ 70 — HAVA ATIŞI TOPU RAKİBE VERİYORDU (2026-09-10, sürüm 118)
+
+Kullanıcı: *"Hava atışı yapılıyor, YEŞİL takım kazanıyor, ilk pası KIRMIZI takıma atıyor.
+Daha oyunun başı bile bozuk."* — **haklıydı ve kusur 6 maçın 3'ünde vardı.**
+
+### Tekrar üretim — `tools/hava-check.js` (yeni)
+Maçın ilk 6 saniyesini kare kare izler ve tek şey sorar: **motorun kararına göre topu kazanan
+takım hangisiyse, topu ilk ELE ALAN oyuncu da o takımdan mı ve ilk pas takım içinde mi
+kaldı?** Sekiz ayrı tohumla koşar — hava atışını kimin kazandığı tohuma bağlıdır ve **tek
+tohum kusuru gizler** (varsayılan tohum 987654321'de kusur VAR, 42'de YOK).
+
+Taban ölçümü:
+```
+  tohum        motor kazanan   ilk ELE ALAN   ilk PAS hedefi   sonuç
+  987654321   DEP            EV/C@0.17      DEP/PG@0.97      ✗ RAKİBE GEÇTİ
+  42          EV             EV/C@0.18      EV/PG@0.98       ✓
+  7           DEP            EV/C@0.18      DEP/PG@0.98      ✗ RAKİBE GEÇTİ
+  555         DEP            EV/C@0.18      DEP/PG@0.98      ✗ RAKİBE GEÇTİ
+✗ 3 / 6 maçta hava atışı topu RAKİBE gitti
+```
+Örüntü tek satırda görünüyor: **topu ilk alan HER ZAMAN EV takımının pivotu** (t≈0,18),
+kim kazanmış olursa olsun. Deplasman kazandığında betiğin tap adımı topu o pivottan
+rakibin oyun kurucusuna PASLIYORDU.
+
+### Kök neden — ortada "tap" diye bir şey yoktu
+`_ballLoose(0,0,140,'hava')` topu vh=140 ile yukarı atar ama **h SIFIRDAN başlar**;
+dolayısıyla tosun hemen sonraki karelerinde `h <= _TOP_TUTMA_H` şartı sağlanıyor ve
+çemberdeki iki pivottan biri topu **havalanmadan** kapıyordu. Hangisi? `_topKimeYakin`
+diziyi baştan tarayıp ilk en yakını döndürdüğü için **hep EV**. Sonra betiğin 0,80 sn'deki
+tap adımı `_ballPass(recv)` çağırıyor ve `recv` KAZANANIN oyuncusu olduğu için top, kaybeden
+pivotun elinden kazananın oyun kurucusuna geçiyordu.
+
+**FAZ 65 bu anı görmüştü ve yanlış yorumladı.** Çapraz pas kapısı (FAZ 58) t=1,0'da
+tetikleniyordu; FAZ 65 bunu *"sıçrayan pivot topu rakibe dokundurabilir, bu basketbolun
+kuralıdır"* diye okuyup kapıya **hava atışı muafiyeti** yazdı. Muafiyet kusuru görünmez
+yaptı — kapı zaten doğru şeyi söylüyordu.
+
+### İlk denemem de yanlış yere kondu
+Kapıyı önce `_topAlinabilir`e koydum ve **hiçbir etkisi olmadı** (3/6 aynen düştü). Yığın
+izi kancasıyla (FAZ 62 dersi) gerçek yol bulundu:
+```
+  t=0.17  _ballTut  arg=EV/C  <- _topuAlmayaCalis < _ballStep < _simTick
+```
+`_topuAlmayaCalis` **`_topAlinabilir`i çağırmaz** — kendi satır içi koşullarını kullanır.
+Kural bu yüzden **tek boğaz noktasına** kondu: oyuncunun topu aldığı her yol `_ballTut`tan
+geçer.
+
+### Yapılanlar (`js/match-engine.js`)
+1. **`S._havaTos` bayrağı** — tostan tapa kadar açık. `_ballTut` (yapısal ağ),
+   `_topuAlmayaCalis` (erken çıkış), `_topAlinabilir` ve `_sahipsizTopTick` (bekçi boşuna
+   tetiklenmesin) bu bayrakta durur. Top gerçekten uçar.
+2. **Tap KAZANANDAN çıkar** — tap anında top kazanan pivota verilir (`b.carrier=winC`) ve
+   pas oradan atılır. FAZ 54 A1 sözleşmesi ("pas yalnız 'held'den başlar") sağlanır ve pas
+   takım içinde kaldığı için **muafiyet gerekmez**.
+3. **FAZ 65'in muafiyeti KALDIRILDI** — çapraz pas kapısı artık hava atışında da işler, yani
+   bu sınıf bir daha sessizce geri gelemez.
+
+### Sonuç
+```
+  tohum        motor kazanan   ilk ELE ALAN   ilk PAS hedefi   sonuç
+  987654321   DEP            DEP/PG@0.98    DEP/PG@1.08      ✓
+  42          EV             EV/C@0.98      EV/PG@1.08       ✓
+  7           DEP            DEP/SG@0.98    DEP/PG@1.08      ✓
+  123         EV             EV/C@0.98      EV/PG@1.08       ✓
+  555         DEP            DEP/SG@0.97    DEP/PG@1.09      ✓
+  31 · 999 · 2024  EV        EV/C           EV/PG            ✓
+✓ 8/8 — hava atışını kazanan takım topu aldı ve ilk pas takım içinde kaldı
+```
+Yol izinde tos ile tap arasında **hiçbir dokunuş kalmadı** (eski izde `_ballKurtar` +
+`_ballTut` vardı). Dizi artık: tos → top uçar → 0,97'de kazanan tepede dokunur → pas →
+1,85'te takım arkadaşı alır.
+
+### Kapılar
+`sim-node --n=200 --seed=42` **93.4 - 87.3 · 268** · determinizm ✓ ·
+`band.js` **c19928475859c7ff** (değişmedi — sahne katmanı maçın rastgele akışını tüketmez) ·
+`visual-check` masaüstü + mobil 0 konsol hatası · `surum-check --yaz` → **118**.
+
+### Ders
+**Tek tohumla sınanan bir açılış, kusuru %50 olasılıkla gizler.** Hava atışını kimin
+kazandığı tohuma bağlı ve varsayılan tohumda "EV kazanır" hâli hiç denk gelmiyordu; bütün
+FAZ 40-69 ölçümleri aynı tohumla koşulduğu için kusur 30 fazdır ekranda duruyordu.
+Açılış/kapanış gibi tek seferlik akışlar **birden çok tohumla** sınanmalı.

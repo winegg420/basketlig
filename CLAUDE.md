@@ -99,6 +99,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/_lib/gercek-bantlar.json` | **TEK DOĞRULUK KAYNAĞI** — check araçlarının eşikleri. Elle DÜZENLEME; `cikar.js` üretir. |
 | `tools/_lib/gercek-bant.js` | Bant okuyucu + kapı yardımcısı (`al` / `ham` / `kapi` / `bas`). Yeni bir gerçekçilik kapısı yazarken eşiği BURADAN oku. |
 | `tools/faz58-check.js` | **FAZ 58 canlı sahne kusur denetçisi** (tarayıcısız) — `iz-kaydet` kaydını okur: rakibe giden pas · izinsiz saha dışı / `_oob` sızıntısı · tek kare jeton sıçraması · canlı ve ölü sahipsiz top · tek kare top sıçraması · ÇİZİLEN konumda iç içe jeton payı. Pencere **en az 600 sn**. Top sahipliği / sokma / klip kırpması değişince `iz-kaydet --secs=620` + bunu çalıştır. |
+| `tools/hava-check.js` | **Hava atışı denetçisi (FAZ 70)** — maçın ilk 6 saniyesini kare kare izler ve motorun kararına göre topu KAZANAN takımın onu gerçekten alıp almadığını, ilk pasın takım içinde kalıp kalmadığını **sekiz ayrı tohumda** sınar (hava atışını kimin kazandığı tohuma bağlıdır; tek tohum kusuru %50 olasılıkla gizler). Düşerse topu held yapan yolu yığın iziyle basar. Hava atışı / top sahipliği koreografisi değişince çalıştır. |
 | `tools/faz69-check.js` | **Dizilim VARIŞ denetçisi (FAZ 69)** — `iz-kaydet` kaydını tarayıcısız çözer: faz başına süre + hücumcunun KENDİ NOKTASINA uzaklığı (başta/bitişte · ortalama/en uzak) · faz başına **KONUM ve HEDEF yayılımı ayrı** (geniş hedef + dar konum = VARIŞ sorunu, dar hedef = hedefleme sorunu) · 10 oyuncunun kutusu (ortalama · en dar · 40 m² altında geçen süre) · hücum yayılımı **KLİP ve FİZİK kareleri AYRI** artı **canlı top fizik** (serbest atış töreni hariç) · saha dışı hedef payı. Pencere ≥ 280 sn ve kayıt GÖRÜNÜR sekmede olmalı (`meta.gizli`). Dizilim/bütçe/kademe değişince çalıştır. |
 | `tools/faz59-check.js` | **FAZ 59 uçan top + taşıyıcı denetçisi** (tarayıcısız) — `iz-kaydet` kaydını okur: donan uçuş (mod pass/shot ama konum sabit) · pas süresi p99 · rakibe giden pas · canlı sahipsiz top · orta çizgiyi TOPLA geçen rol · FAZ 58 gerileme satırları. Pencere **en az 600 sn**. ⚠ İvme ve savunma mesafesi kapıları burada DEĞİL `sahne-olcum.js`tedir (yuvarlama/tanım farkı). Top durum makinesi ya da klip slot eşlemesi değişince çalıştır. |
 | `tools/goz.js` | **Canlı sahne ÇİZİM denetçisi (FAZ 68)** — maçın her karesini hem geometri hem ÇİZİM (SVG/DOM) katmanında tarar; ölçüt jetonun simülasyon konumu değil **kullanıcının EKRANDA GÖRDÜĞÜ** noktadır (`_cizDx/_cizDy` uygulanmış) ve etiketler gerçek `getBBox()` kutularıyla ölçülür. Kapılar: jeton çakışması (<26,2 px, **klip çifti hariç** — gerçek kayıtta yakın çift sıktır) · top taşıyıcıdan kopuk · etiket kutusu çakışması · sahne dondu · hakem boyalı alanda / tribünde · izinsiz saha dışı oyuncu. Her ihlal maç saatiyle damgalanır, aynı tip 2,5 sn içinde tekrar sayılmaz; ham döküm `tools/goz-rapor.json`. `node tools/goz.js --sn=180 [--exec=/yol/chromium]`. Çizim/etiket/hakem katmanı değişince çalıştır. |
@@ -2320,3 +2321,26 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   L1 0,433 → 0,634** (2,63/4 ↔ gerçek 1,655/4). Gerçek SportVU'da şut anında 4 arkadaştan
   ancak 1,66'sı durur (FAZ 48). Hedefini tutturmayan ve gerçekten uzaklaştıran değişiklik
   tutulmaz.
+
+- **HAVA ATIŞINDA TOS İLE TAP ARASINDA TOPA KİMSE DOKUNAMAZ (FAZ 70, kullanıcı: "yeşil
+  kazanıyor, ilk pası kırmızıya atıyor"):** `_ballLoose(0,0,140,'hava')` topu yukarı atar ama
+  **h SIFIRDAN başlar**, dolayısıyla tosun hemen sonraki karelerinde `h<=_TOP_TUTMA_H` sağlanır
+  ve çemberdeki iki pivottan biri topu HAVALANMADAN kapıyordu — `_topKimeYakin` diziyi baştan
+  taradığı için **hep EV takımı**. Sonra betiğin tap adımı topu KAZANANIN oyuncusuna paslıyor
+  ve deplasman kazandığında top kaybeden pivotun elinden rakibe geçiyordu (ölçüldü,
+  `tools/hava-check.js`: **6 tohumun 3'ünde**). Bayrak: `S._havaTos`; tap artık KAZANANDAN
+  çıkar (`b.carrier=winC` sonra `_ballPass`), böylece FAZ 54 A1 sözleşmesi sağlanır ve pas
+  takım içinde kalır.
+- **KAPIYI TEK BOĞAZ NOKTASINA KOY — `_topuAlmayaCalis` `_topAlinabilir`i ÇAĞIRMAZ (FAZ 70):**
+  ilk denemede kapı `_topAlinabilir`e konuldu ve **hiçbir etkisi olmadı**; yığın izi kancası
+  (FAZ 62 dersi) gerçek yolu gösterdi: `_ballTut < _topuAlmayaCalis < _ballStep < _simTick`.
+  `_topuAlmayaCalis` kendi satır içi koşullarını kullanır. Oyuncunun topu aldığı HER yol
+  `_ballTut`tan geçer — "kimse topu alamaz" türü bir kural oraya konur.
+- **FAZ 65'İN HAVA ATIŞI MUAFİYETİ YANLIŞ TEŞHİSTİ (FAZ 70'te kaldırıldı):** çapraz pas kapısı
+  t=1,0'da tetikleniyordu; FAZ 65 bunu "sıçrayan pivot topu rakibe dokundurabilir, kural bu"
+  diye okuyup muafiyet yazdı. Kapı doğru şeyi söylüyordu — muafiyet kusuru 5 faz boyunca
+  görünmez yaptı. **Bir kapı tetikleniyorsa önce kapının HAKLI olma ihtimalini ölç.**
+- **AÇILIŞ/KAPANIŞ AKIŞLARI BİRDEN ÇOK TOHUMLA SINANIR (FAZ 70):** hava atışını kimin
+  kazandığı tohuma bağlıdır ve deponun bütün sahne ölçümleri tek tohumla (987654321)
+  koşuluyordu. Tek seferlik akışlarda tek tohum kusuru **%50 olasılıkla gizler**;
+  `hava-check` sekiz tohum sürer.

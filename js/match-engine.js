@@ -906,6 +906,7 @@ const _SAHIPSIZ_SN=0.45;  /* FAZ 37: 1,2 sn kuyruğu ölçümde %2,3 sahipsiz ka
 function _sahipsizTopTick(S,dt){
   try{
     if(S._klipTop){ S._sahipsizT=0; return; }   /* FAZ 50: klip oynarken bekçi yok */
+    if(S._havaTos){ S._sahipsizT=0; return; }   /* FAZ 70: hava atışı havada — top sahipsiz değil, uçuyor */
     if(typeof mState!=='undefined'&&mState&&mState.running===false){ S._sahipsizT=0; return; }   /* FAZ 43 D2: önizleme */
     const b=S.ball;
     /* ── FAZ 40 §A1: UÇAN PAS SAHİPSİZ DEĞİLDİR ─────────────────────────────────────────
@@ -1897,6 +1898,12 @@ function _ballHold(p,noDrib){
 function _ballTut(p,noDrib){
   const b=_ball(); if(!p) return;
   const S=mState._sim;
+  /* ── FAZ 70: TOS İLE TAP ARASINDA TOPU KİMSE ALAMAZ (YAPISAL AĞ) ──────────────────────
+     Kapı önce _topAlinabilir'e konmuştu ve HİÇBİR ETKİSİ OLMADI: topu alan yol
+     _topuAlmayaCalis'tir ve o, _topAlinabilir'i ÇAĞIRMAZ — kendi satır içi koşullarını
+     kullanır (yığın izi: _topuAlmayaCalis < _ballStep < _simTick, t=0,17). Kural bu yüzden
+     TEK BOĞAZ NOKTASINA kondu: oyuncunun topu aldığı her yol _ballTut'tan geçer. */
+  if(S&&S._havaTos) return;
   /* ── FAZ 64: UZAKTAN TOP ALINMAZ — ÖNCE OYUNCU GELİR ──────────────────────────────
      Nedensellik denetçisi yakaladı: `loose → held` geçişinde taşıyıcı topa 5,3 METRE
      uzakta (t=268,0, çalma anı). Top sonra ona doğru `_TOP_YAKLAS` hızıyla süzülüyor —
@@ -1951,6 +1958,7 @@ const _TOP_TUT_SN=0.10;       /* sn — pas/şut öncesi asgari tutma (ekranda "
 /** FAZ 54 A1/A4: sahipsiz (loose/dead) topu 0,9 m içindeki oyuncu alır — tek kapı. */
 function _topuAlmayaCalis(S,b){
   if(S._hakemTop&&S._hakemTop.aktif) return;
+  if(S._havaTos) return;   /* FAZ 70: hava atışı havada — kimse uzanmaz */
   /* FAZ 58 A: ölü top GÖREVLİ SOKUCUYU bekler. Arada bir takım arkadaşı alırsa sokmanın
      geri çağrısı topu ondan geri ister ve ekranda "top havada el değiştirdi" görünür. */
   if(b.mode==='dead'&&S.chase&&S.chase.tok&&S.chase.tok._oob) return;
@@ -2063,8 +2071,14 @@ function _ballPass(to,dur,bounce){
      Teşhis sayacı kapının 400 sn'de tek tetiklenmesinin t=1,0'daki hava atışı olduğunu
      gösterdi (h/C → a/PG) ve nedensellik denetçisi aynı anı "top sebepsiz el değiştirdi"
      diye ayrıca sayıyordu — tek kök, iki bulgu. */
-  const _havaAtisi=(()=>{ try{ const S=mState._sim; return !!(S&&(S.curType==='start'||S.time<3)); }catch(e){ return false; } })();
-  if(!_havaAtisi&&b.mode==='held'&&b.carrier&&b.carrier.team&&to.team&&b.carrier.team!==to.team){
+  /* ⚠ FAZ 65'İN HAVA ATIŞI MUAFİYETİ KALDIRILDI (FAZ 70). FAZ 65 kapının t=1,0'da
+     tetiklendiğini görüp "sıçrayan pivot topu rakibe dokundurabilir, kural bu" diye
+     yorumlamış ve muafiyet yazmıştı. Teşhis YANLIŞTI: ortada tap yoktu — top havalanmadan
+     EV pivotunun eline geçiyor, betik onu rakibin oyun kurucusuna PASLIYORDU (ölçüldü,
+     tools/hava-check.js: 6 tohumun 3'ünde, deplasman kazandığı HER seferde). Kök neden
+     _topAlinabilir icindeki S._havaTos kapısıyla kapatıldı ve tap artık KAZANANDAN
+     çıkıyor; kapı bu sınıfı yeniden yakalayabilsin diye muafiyetsizdir. */
+  if(b.mode==='held'&&b.carrier&&b.carrier.team&&to.team&&b.carrier.team!==to.team){
     try{ const S=mState._sim; if(S){ S._rakipPasN=(S._rakipPasN|0)+1;
       /* FAZ 65 teşhis: kapının tetiklenmesi, bir kod yolunun HÂLÂ rakibe pas atmaya
          çalıştığının kanıtıdır — kapı yalnız sonucu engeller. Çağıran yığın kaydedilir. */
@@ -2200,6 +2214,18 @@ function _ballCarom(vx,vy,vh){
     top bir kez seker, sokucu yerden toplar. */
 function _topAlinabilir(p,b){
   if(!p||!b||(b.mode!=='loose'&&b.mode!=='dead')) return false;   /* FAZ 54 A4: ölü top da yerden alınır */
+  /* ── FAZ 70: HAVA ATIŞINDA TOS İLE TAP ARASINDA TOP ALINAMAZ ──────────────────────────
+     Kullanıcı: "hava atışı yapılıyor, YEŞİL kazanıyor, ilk pası KIRMIZI'ya atıyor."
+     tools/hava-check.js ile 6 tohumda tekrar üretildi: 3'ünde (deplasman kazandığında)
+     top t=0,17'de EV takımının pivotunun ELİNE geçiyor, sonra betiğin tap adımı onu
+     DEP/PG'ye pasladığı için top rakibe gidiyordu. Yani ortada "tap" diye bir şey yoktu —
+     top havalanmadan yerden alınıyordu: _ballLoose(0,0,140) topu vh=140 ile yukarı atar
+     ama h SIFIRDAN başlar, dolayısıyla ilk karelerde h<=_TOP_TUTMA_H şartı sağlanır ve
+     çemberdeki iki pivottan biri (dizi sırasına göre HEP EV) topu anında kapıyordu.
+     FAZ 65 bunu "sıçrayan pivot topu rakibe dokundurabilir, kural bu" diye yorumlayıp
+     çapraz pas kapısına MUAFİYET yazmıştı — teşhis yanlıştı ve muafiyet kusuru görünmez
+     yaptı. Artık top gerçekten uçar: tos ile tap arasında kimse dokunamaz. */
+  try{ const S=mState._sim; if(S&&S._havaTos) return false; }catch(e){}
   if(Math.hypot(p.x-b.x,p.y-b.y)>_TOP_TUTMA_PX) return false;
   if(b._yerdenAl) return (b.h<=8&&b.vh<=0)||((b._sekme|0)>=1&&b.h<=3&&b.vh<=0);   /* FAZ 54: fileden inen top yere değmeden de alınır */
   if(b.h<=_TOP_TUTMA_H&&b.vh<=0) return true;
@@ -3627,6 +3653,7 @@ function movePlayersForEvent(ev,paint){
       S.home.filter(p=>p!==hc).forEach((p,i)=>{ const s=hSpots[i%4]; _hedefAta(p,_jit(s[0],6),_jit(s[1],6),_URG.YURU); });
       S.away.filter(p=>p!==ac).forEach((p,i)=>{ const s=aSpots[i%4]; _hedefAta(p,_jit(s[0],6),_jit(s[1],6),_URG.YURU); });
       const b=S.ball; b.mode='idle'; b.carrier=null; b.x=COURT_MID; b.y=250; b.h=0; b.vx=0; b.vy=0; b.vh=0;
+      S._havaTos=false;   /* FAZ 70: bayrak yalnız tos ile tap arasında açıktır */
       const winOff=_peekNextOff();
       const winP=winOff?S.home:S.away;
       const winC=winOff?hc:ac;
@@ -3635,11 +3662,19 @@ function movePlayersForEvent(ev,paint){
       S.inb=null;
       const T0=0.15;   /* düdük + toss — top 'idle' modunda en fazla bu kadar bekler */
       return _script([
-        {at:T0,fn:()=>{ const b=S.ball; b.carrier=null; b.x=COURT_MID; b.y=250; b.h=0; _ballLoose(0,0,140,'hava'); if(typeof sfx==='function') sfx('whistle'); }},
+        {at:T0,fn:()=>{ const b=S.ball; b.carrier=null; b.x=COURT_MID; b.y=250; b.h=0; S._havaTos=true; _ballLoose(0,0,140,'hava'); if(typeof sfx==='function') sfx('whistle'); }},
         {at:T0+0.50,fn:()=>{ hc.pop=1.3; ac.pop=1.3; }},                                   /* iki pivot sıçrar (top tepeye yaklaşırken) */
         {at:T0+0.80,fn:()=>{                                                                /* kazanan tepede dokunur → takım arkadaşına */
           winC.pop=1.5;
-          const b=S.ball; const d=Math.hypot(recv.x-b.x,recv.y-b.y);
+          const b=S.ball;
+          /* FAZ 70: TAP KAZANANDAN ÇIKAR. Pas _ballPass ile atılır ve o da FAZ 54 A1
+             sözleşmesi gereği 'held'den başlamak zorundadır; taşıyıcı KAZANAN pivottur,
+             dolayısıyla pas takım içinde kalır ve FAZ 58'in çapraz pas kapısına muafiyet
+             GEREKMEZ. Tap bir yakalama değildir: top pivotun elinde bir kare bile durmaz,
+             aynı adımda uçmaya başlar (yükseklik tepeden iner — hFrom). */
+          S._havaTos=false;
+          b.mode='held'; b.carrier=winC; b._heldAt=S.time; b.vx=0; b.vy=0; b.vh=0;
+          const d=Math.hypot(recv.x-b.x,recv.y-b.y);
           _ballPass(recv,Math.max(0.78,d/380));
           if(typeof sfx==='function') sfx('pass');
         }},
