@@ -114,14 +114,24 @@ const DENETCI = function () {
     kare: 0, domOrnek: 0, olay: [], son: {}, bitti: false,
     sayac: { cakisma: 0, ayniTakim: 0, derin: 0, kopuk: 0, donuk: 0, sahaDisi: 0, topDisi: 0, isin: 0, hizli: 0, sahipsiz: 0, etiketCakisma: 0, hakemDisi: 0, hakemBoyada: 0, topIsin: 0, topHizli: 0 },
     looseT: 0, looseEp: [], pasKare: 0, pasDuzKare: 0,
-    mod: {}, faz: {}, yayilim: [], kosan: [], duran: [], gorunenEtiket: {},
+    epizot: {}, karePayi: {}, klipKare: 0, ayrim: { klip: { kare: 0, yayilim: 0, tekYari: 0, raket: 0 }, motor: { kare: 0, yayilim: 0, tekYari: 0, raket: 0 } }, mod: {}, faz: {}, yayilim: [], kosan: [], duran: [], gorunenEtiket: {},
     saatGeri: 0, sonSaat: null, konsol: 0,
   };
   const KAP = 20000;
+  /* ⚠ TEKRAR FİLTRESİ ANAHTARINA DETAY KOYMA — ölçüldü ve düzeltildi.
+     İlk sürümde anahtar `tip+'|'+detay` idi; "199px" ile "198px" AYRI olay sayılıyordu
+     ve sayaçlar 2-4 kat şişiyordu. Anahtar artık yalnız TİP. Ayrıca her ihlal
+     EPİZOT olarak da ölçülür (kaç kez başladı, toplam kaç saniye sürdü) — asıl
+     kabul ölçütü budur, olay sayısı değil. */
   const ekle = (tip, detay, saat) => {
-    const k = tip + '|' + detay;
+    const k = tip;
     const n = performance.now();
-    if (G.son[k] && n - G.son[k] < 2500) return;   /* aynı ihlal 2,5 sn içinde tekrar sayılmaz */
+    /* epizot: aynı tip 400 ms'den uzun ara verdiyse YENİ epizot */
+    const E = (G.epizot[tip] = G.epizot[tip] || { adet: 0, sn: 0, sonT: -1e9, basT: 0 });
+    if (n - E.sonT > 400) { E.adet++; E.basT = n; } else { E.sn += (n - E.sonT) / 1000; }
+    E.sonT = n;
+    G.karePayi[tip] = (G.karePayi[tip] || 0) + 1;
+    if (G.son[k] && n - G.son[k] < 2500) return;
     G.son[k] = n;
     if (G.olay.length < KAP) G.olay.push({ t: Math.round(n / 1000), saat: saat || '', tip: tip, detay: detay });
   };
@@ -159,6 +169,10 @@ const DENETCI = function () {
     const saatEl = document.getElementById('liveTime');
     const saat = saatEl ? (saatEl.textContent || '').trim() : '';
     G.kare++;
+    /* ⚠ KLİP KARELERİ TOP KONTROLLERİNDEN MUAF — gerçek SportVU kaydı oynuyor;
+       top ve oyuncu konumu gerçek veriden gelir, "kopuk" ölçmek anlamsız. */
+    const klip = !!S._klipTop;
+    if (klip) G.klipKare++;
     G.mod[b.mode] = (G.mod[b.mode] || 0) + 1;
     G.faz[S._faz || '?'] = (G.faz[S._faz || '?'] || 0) + 1;
 
@@ -211,7 +225,7 @@ const DENETCI = function () {
       let raket = 0; for (const p of P) if (boyada(p.x, p.y)) raket++;
       if (raket >= 4) ekle('RAKET_TIKANDI', raket + ' oyuncu boyalı alanda', saat);
       /* ribaunt boşluğu: şut/rim anında potanın 120 px çevresinde kimse yok */
-      if (b.mode === 'rim' || b.mode === 'shot') {
+      if (!klip && (b.mode === 'rim' || b.mode === 'shot')) {
         let yakin = 0; for (const p of P) if (Math.hypot(p.x - pota[0], p.y - pota[1]) < 120) yakin++;
         if (yakin === 0) ekle('RIBAUNT_BOSLUGU', 'pota çevresinde kimse yok', saat);
       }
@@ -243,7 +257,7 @@ const DENETCI = function () {
     else if (G.looseT > 0) { G.looseEp.push(+G.looseT.toFixed(2)); if (G.looseT > 2) ekle('TOP_YERDE_UZUN', G.looseT.toFixed(1) + ' sn', saat); G.looseT = 0; }
 
     /* ── 3) top ↔ taşıyıcı ── */
-    if (b.mode === 'held' && b.carrier && b.carrier.x != null) {
+    if (!klip && b.mode === 'held' && b.carrier && b.carrier.x != null) {
       const d = Math.hypot(b.x - b.carrier.x, b.y - b.carrier.y);
       if (d > KOPUK) { G.sayac.kopuk++; ekle('TOP_TASIYICIDAN_KOPUK', ad(b.carrier) + ' d=' + Math.round(d), saat); }
     }
@@ -302,6 +316,13 @@ const DENETCI = function () {
     G.yayilim.push(Math.round(Math.max.apply(null, xs) - Math.min.apply(null, xs)));
     const sol = P.filter(p => p.x < (CRT.x0 + CRT.x1) / 2).length;
     if (sol === 0 || sol === P.length) ekle('TUM_OYUNCULAR_TEK_YARIDA', (sol === 0 ? 'sağ' : 'sol') + ' yarı', saat);
+    /* KLİP / MOTOR AYRIMI — yumaklaşma gerçek kayıtta mı motorun kendi sahnesinde mi? */
+    const yay = Math.round(Math.max.apply(null, xs) - Math.min.apply(null, xs));
+    let raketS = 0; for (const p of P) if (boyada(p.x, p.y)) raketS++;
+    const kova = klip ? G.ayrim.klip : G.ayrim.motor;
+    kova.kare++; kova.yayilim += yay;
+    if (sol === 0 || sol === P.length) kova.tekYari++;
+    if (raketS >= 4) kova.raket++;
 
     /* ── 6) hakem jetonları ── */
     const H = S.hakem || [];
@@ -439,7 +460,7 @@ async function main() {
   }
   process.stdout.write('\n');
 
-  const R = await sayfa.evaluate(() => { window.__goz.bitti = true; const G = window.__goz; return JSON.parse(JSON.stringify({ kare: G.kare, domOrnek: G.domOrnek, sayac: G.sayac, mod: G.mod, faz: G.faz, olay: G.olay, yayilim: G.yayilim, kosan: G.kosan, duran: G.duran, looseEp: G.looseEp, pasKare: G.pasKare, pasDuzKare: G.pasDuzKare, gorunenEtiket: G.gorunenEtiket, saatGeri: G.saatGeri })); });
+  const R = await sayfa.evaluate(() => { window.__goz.bitti = true; const G = window.__goz; return JSON.parse(JSON.stringify({ kare: G.kare, domOrnek: G.domOrnek, sayac: G.sayac, mod: G.mod, faz: G.faz, olay: G.olay, yayilim: G.yayilim, kosan: G.kosan, duran: G.duran, looseEp: G.looseEp, pasKare: G.pasKare, pasDuzKare: G.pasDuzKare, epizot: G.epizot, karePayi: G.karePayi, klipKare: G.klipKare, ayrim: G.ayrim, gorunenEtiket: G.gorunenEtiket, saatGeri: G.saatGeri })); });
   const skor = await sayfa.evaluate(() => { try { return { s: mState.score, q: mState.quarter }; } catch (e) { return null; } });
 
   await tarayici.close(); sunucu.close();
@@ -469,6 +490,22 @@ async function main() {
     for (const o of grup[t].slice(0, 3)) console.log('          @' + (o.saat || '?') + '  ' + o.detay);
   }
   console.log('  ' + String(toplam).padStart(4) + '  TOPLAM');
+
+  console.log('\nEPİZOT ÖLÇÜMÜ  (asıl ölçüt — kaç kez oldu, toplam kaç saniye, karelerin yüzde kaçı)');
+  const ep = R.epizot || {}, kp = R.karePayi || {};
+  const eps = Object.keys(ep).sort((a, b2) => (ep[b2].sn || 0) - (ep[a].sn || 0));
+  console.log('  ' + 'olay'.padEnd(28) + 'epizot'.padStart(7) + 'toplam sn'.padStart(11) + 'kare payı'.padStart(11));
+  for (const t of eps) console.log('  ' + t.padEnd(28) + String(ep[t].adet).padStart(7) + (ep[t].sn || 0).toFixed(1).padStart(11) + (yuz(kp[t] || 0, K) + '%').padStart(11));
+  console.log('  klip karesi (gerçek kayıt): ' + yuz(R.klipKare || 0, K) + '% — top kontrolleri bu karelerde uygulanmadı');
+
+  const A = R.ayrim || { klip: {}, motor: {} };
+  console.log('\nKLİP / MOTOR AYRIMI  (yumaklaşma nerede oluyor?)');
+  console.log('  ' + 'kaynak'.padEnd(10) + 'kare'.padStart(8) + 'ort. yayılım'.padStart(14) + 'tek yarı'.padStart(10) + 'raket 4+'.padStart(10));
+  for (const k of ['klip', 'motor']) {
+    const v = A[k] || {}; const n = v.kare || 1;
+    console.log('  ' + k.padEnd(10) + String(v.kare || 0).padStart(8) + (Math.round((v.yayilim || 0) / n) + 'px').padStart(14)
+      + (yuz(v.tekYari || 0, n) + '%').padStart(10) + (yuz(v.raket || 0, n) + '%').padStart(10));
+  }
 
   console.log('\nKARE ORANLARI');
   const kapi = [];

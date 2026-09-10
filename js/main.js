@@ -83,8 +83,25 @@ function setMatchButtonsRunning(running){
   if(!running) syncMatchButtons();
 }
 /** F11-6: sıradaki maçın sonucu kilitli mi? (maç başlatılıp yarıda bırakılmış) */
+/** FAZ 75: BAYAT KİLİT TEMİZLİĞİ — kilit ZATEN OYNANMIŞ bir maça işaret ediyorsa silinir.
+    Seri ilerledikçe (wins toplamı gameNo'yu geçince) eski kilit kayıtta kalıyor ve
+    imza karşılaştırması tutmasa bile kullanıcıya 'kilitli' hissi veren artık bir durum
+    bırakıyordu. Seri maç numarası = galibiyet toplamı + 1. */
+function _bayatKilidiTemizle(){
+  try{
+    const P=G&&G.pendingMatch; if(!P||!P.sig) return;
+    const m=String(P.sig).match(/^po\|(\d+)\|.*\|g(\d+)$/);
+    if(!m) return;
+    if(!G.playoff||!G.playoff.active){ G.pendingMatch=null; return; }   /* playoff bitti */
+    if((G.playoff.round|0)!==(+m[1])){ G.pendingMatch=null; return; }   /* tur değişti */
+    const po=(typeof userPlayoffMatch==='function')?userPlayoffMatch():null;
+    if(!po){ G.pendingMatch=null; return; }                             /* seri bitti */
+    if((po.gameNo|0)>(+m[2])) G.pendingMatch=null;                      /* o maç oynandı */
+  }catch(e){}
+}
 function pendingMatchIsNext(){
   try{
+    _bayatKilidiTemizle();
     if(!G.pendingMatch||!G.pendingMatch.sig||!G.pendingMatch.ev) return false;
     if(mState&&mState.sig&&G.pendingMatch.sig===mState.sig) return true;
     /* ── FAZ 72: KİLİT PLAYOFF MAÇINDA DA TANINIR ─────────────────────────────────────
@@ -109,18 +126,12 @@ function pendingMatchIsNext(){
 }
 /** F11-6: kilitli sonuç varken "Maçı Başlat" butonu bunu SÖYLESİN — sayfa yenilendikten
     sonra etiket kayboluyor, oyuncu neden maç başlamadığını anlayamıyordu. */
+/* FAZ 75: İKİNCİ ETİKET YAZICISI KALDIRILDI — tek kaynak `syncMatchButtons`.
+   Bu fonksiyon `pending` ve `idle` dışındaki durumları (running · frozen · playoff · yok)
+   bilmiyordu; çağrıldığı yerde etiketi yanlış yazma riski taşıyordu. Gövdesi tek kaynağa
+   devreder; imza korundu (dışarıdan çağıran olabilir). */
 function syncPendingMatchButton(){
-  try{
-    const b=document.getElementById('startMatchBtn');
-    if(!b||mState.running) return;
-    if(pendingMatchIsNext()){
-      b.textContent='⏩ Kilitli sonucu uygula';
-      b.title='Bu maç daha önce başlatılmış ve sonucu kilitlenmişti — canlı izlenemez; basınca kilitli sonuç doğrudan uygulanır.';
-    } else {
-      b.textContent='▶ Maçı Başlat';
-      b.removeAttribute('title');
-    }
-  }catch(e){}
+  try{ syncMatchButtons(); }catch(e){}
 }
 /** FAZ 43 D2: MAÇ ÖNCESİ PARKE. Maç sayfası açıldığında maç yoksa (kilitli ya da süren maç da
     yoksa) kullanıcının ilk beşi ile sıradaki rakibin en iyi beşi hava atışı dizilişinde çizilir.
@@ -149,9 +160,23 @@ const MAC_BTN_ETIKET={running:'⏳ Maç Devam Ediyor',frozen:'▶ Devam et',
   yok:'Maç yok',idle:'▶ Maçı Başlat'};
 function startMatch(playoff){
   /* FAZ 68b: lig sezonu bittiyse ama playoff serin bekliyorsa buton playoff maçını açar —
-     eskiden !G.season.active dalına düşüp "Önce Lig'den sezonu başlat." diyordu. */
+     eskiden !G.season.active dalına düşüp "Önce Lig'den sezonu başlat." diyordu.
+     ── FAZ 75: 'pending' DURUMU DA PLAYOFF'A YÖNLENDİRİLİR ─────────────────────────────
+     FAZ 72 `pendingMatchIsNext`e playoff imzasını ekledi; bunun yan etkisi şuydu:
+     `matchPlaybackState()` artık 'playoff' yerine 'pending' dönüyor ve bu yönlendirme
+     ('playoff' arıyordu) HİÇ ÇALIŞMIYOR. Sonuç: argümansız `startMatch()` lig dalına
+     düşüp "Lig sezonun bitti" diyor ve çıkıyor — kilitli sonuç UYGULANMIYOR.
+     Kullanıcının canlı kaydında birebir yakalandı (seri 3-3, 7. maç):
+       etiket 'Kilitli sonucu uygula' → tıkla → log: 'Lig sezonun bitti…' · running=false
+     Ölçüt durum adı DEĞİL, playoff maçının VARLIĞIDIR: bekleyen bir seri maçı varsa
+     (kilitli olsun olmasın) o yoldan gidilir; kilidi `startMatch`in C1 dalı zaten
+     doğru imzayla ('po|…') tanır ve sonucu bildirimle uygular. */
   if(!playoff){
-    try{ if(matchPlaybackState()==='playoff'){ startPlayoffMatch(); return; } }catch(e){}
+    try{
+      if(G.playoff&&G.playoff.active&&typeof userPlayoffMatch==='function'&&userPlayoffMatch()){
+        startPlayoffMatch(); return;
+      }
+    }catch(e){}
   }
   /* F11-6: eskiden bu dal SESSİZCE dönüyordu. mState.running bir kez takılı kaldığında
      (olay zamanlayıcısı ölmüş ama bayrak açık kalmış) oyun KALICI olarak kilitleniyor,
@@ -167,9 +192,18 @@ function startMatch(playoff){
     dbg('startMatch','takılı running bayrağı temizlendi');
   }
   if(!G.team){ showNotif('Önce takım oluştur.'); return; }
-  /* C1: buton "sonuçlandır" durumundaysa normale döndür. */
+  /* C1: buton "sonuçlandır" durumundaysa normale döndür.
+     ── FAZ 75: ETİKET KÖR SIFIRLANMAZ ─────────────────────────────────────────────────
+     Bu satır her tıklamada etiketi koşulsuz '▶ Maçı Başlat' yapıyordu. Kullanıcının
+     canlı kaydında ölçüldü: tıklamadan önce '⏩ Kilitli sonucu uygula', tıklamadan
+     SONRA '▶ Maçı Başlat' — oysa durum hâlâ 'pending'. Etiket yalan söylüyor ve
+     kullanıcı "basıyorum bir şey olmuyor" diyor. Etiketi TEK KAYNAK yazar
+     (`syncMatchButtons`); burada yalnız başlık temizlenir ve senkron çağrılır.
+     (`syncPendingMatchButton` ikinci yazıcıydı — hiç çağrılmıyordu, artık tek kaynağa
+     devrediyor.) */
   const _smBtn=document.getElementById('startMatchBtn');
-  if(_smBtn){ _smBtn.textContent='▶ Maçı Başlat'; _smBtn.removeAttribute('title'); }
+  if(_smBtn) _smBtn.removeAttribute('title');
+  try{ syncMatchButtons(); }catch(e){}
   { const _shr=document.getElementById('shareResultBtn'); if(_shr) _shr.style.display='none'; }
   const isPlayoff=!!(playoff&&playoff.matchup);
   const isCup=!!(playoff&&playoff.cup);   /* Paket 1: kupa modu — startCupMatch() geçirir */

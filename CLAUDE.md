@@ -2426,3 +2426,27 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   (boyada 6+ oyuncu kare payı %6,0 → %5,1) ve 18 saniyelik tıkanma epizotlarını ÇÖZMEZ —
   o epizotlarda hücumcular da kulvardadır ve savunmanın onları takip etmesi doğrudur;
   kusur dizilimin kendisindedir.
+
+- **BİR DURUM EKLEYİNCE O DURUMU OKUYAN BÜTÜN YOLLARI DA GÜNCELLE (FAZ 75, iki doğru
+  düzeltme birbirini iptal etti):** FAZ 68b `startMatch` başına "durum 'playoff' ise
+  `startPlayoffMatch()`e devret" yönlendirmesi koydu. FAZ 72 `pendingMatchIsNext`e playoff
+  imzasını ekleyince `matchPlaybackState()` artık 'playoff' yerine **'pending'** dönmeye
+  başladı ve o yönlendirme SESSİZCE ÖLDÜ: argümansız `startMatch()` lig dalına düşüp
+  "Lig sezonun bitti" deyip çıkıyordu. Kullanıcının canlı kaydında birebir ölçüldü
+  (seri 3-3): etiket "⏩ Kilitli sonucu uygula" → tıkla → log "Lig sezonun bitti…",
+  running=false. **Durum ADINA göre dallanan kod kırılgandır; ölçüt VARLIK olmalı**
+  ("bekleyen playoff maçı var mı"), durum etiketi değil.
+- **ETİKETİ KÖR SIFIRLAMA — TEK KAYNAK (FAZ 75):** `startMatch` her tıklamada koşulsuz
+  `textContent='▶ Maçı Başlat'` yazıyordu; durum 'pending' iken bile. Ölçüldü: tıklamadan
+  önce "⏩ Kilitli sonucu uygula", sonra "▶ Maçı Başlat" — etiket yalan söylüyor ve
+  kullanıcı "basıyorum bir şey olmuyor" diyor. Etiketi yalnız `syncMatchButtons` yazar;
+  `syncPendingMatchButton` (yalnız pending/idle biliyordu) gövdesi tek kaynağa devretti.
+  FAZ 51 · 68b · 72'nin dördüncü tekrarı. Kapı: `playoff-check` [5a-5c].
+- **KLİP ÖLÇEKLEMESİ DOĞRU — SIKIŞMA HAM VERİDEDİR (FAZ 75, ölçüldü):** `klipPx` NBA
+  sahasını (94×50 ft) oyun sahasına (827×443 px) doğrusal ve TAM eşliyor; ham klip verisi
+  x aralığının tamamını (-4,8 … 98,4 ft) kullanıyor. Ham veride 10 oyuncunun X yayılımı
+  **303 px**, "hepsi tek yarıda" **%68,1** (CLAUDE.md'de FAZ 49'dan beri yazılı gerçek
+  taban). Yani "oyuncular yumak hâlinde" görüntüsünün klip yarısı (karelerin %63'ü)
+  gerçek NBA kaydının kendisidir ve ≥400 px / ≤%25 hedefleri onunla çelişir. Motor
+  kareleri zaten 351 px ile gerçeğin ÜSTÜNDE — dizilimi daha da açmak oyunu gerçek
+  basketboldan uzaklaştırır (FAZ 39 dersi).

@@ -11209,3 +11209,96 @@ Bu araçla bir değişikliğin işe yarayıp yaramadığına karar vermek için 
 yetmez**. Her kabul ölçütü ya (a) kare payı / kare ortalaması olarak yazılmalı, ya da
 (b) en az 3 koşunun ortalaması alınmalı. Aksi hâlde 2-4 katlık gürültü, yapılan işi de
 yapılmayan işi de aynı gösteriyor — bu turda benim geri alma kararım dahil.
+
+---
+
+## FAZ 75 — KİLİTLİ MAÇ ÇIKMAZI KAPATILDI · KLİP ÖLÇEKLEMESİ ÖLÇÜLDÜ (2026-09-10, sürüm 122)
+
+Düzeltilmiş `tools/goz-benim.js` kuruldu (kullanıcının indirdiği sürüm, **içeriğine
+dokunulmadı**). Brifin 0. maddesindeki öz eleştiri doğrulandı: tekrar süzgeci detay
+metnini içerdiği için sayaçlar 2-4 kat şişikti — FAZ 74'te aynı sonuca bağımsız olarak
+varılmıştı (aynı kodda TOPLAM 1229·1326·1337·1374).
+
+### İŞ 2 (ENGELLEYİCİ) — KİLİTLİ MAÇ ÇIKMAZI ✓ ÇÖZÜLDÜ
+
+Kullanıcının canlı kaydında (seri **3-3**, 7. maç) iki kusur birebir üretildi.
+Sonucu uygulamadan, `applyMatchResult` ve `showNotif` kancalanarak ölçüldü:
+
+```
+  etiketOnce : "⏩ Kilitli sonucu uygula"     (durum 'pending' — DOĞRU)
+  tıkla →
+  etiketSonra: "▶ Maçı Başlat"                ← ETİKET YALAN (durum hâlâ 'pending')
+  log        : showNotif "Lig sezonun bitti — yeni sezon otomatik açılacak."
+  running    : false                          ← kilitli sonuç UYGULANMADI
+```
+
+**Kök neden 1 — yönlendirme ölü kalmış (benim FAZ 72 değişikliğimin yan etkisi).**
+FAZ 72 `pendingMatchIsNext()`e playoff imzasını ekledi; bunun sonucu
+`matchPlaybackState()`in artık `'playoff'` yerine **`'pending'`** dönmesiydi. FAZ 68b'nin
+yönlendirmesi ise yalnız `'playoff'` arıyordu, dolayısıyla hiç çalışmadı ve argümansız
+`startMatch()` LİG dalına düşüp çıktı. Ölçüt artık durum adı değil **playoff maçının
+VARLIĞI**: bekleyen seri maçı varsa (kilitli olsun olmasın) o yoldan gidilir; kilidi
+`startMatch`in C1 dalı doğru imzayla (`po|…`) tanır ve bildirimle uygular.
+
+**Kök neden 2 — etiketi kör sıfırlama.** `startMatch` her tıklamada koşulsuz
+`textContent='▶ Maçı Başlat'` yazıyordu. Artık etiketi TEK KAYNAK yazar
+(`syncMatchButtons`); ikinci yazıcı `syncPendingMatchButton()` gövdesi tek kaynağa
+devretti (o fonksiyon `running · frozen · playoff · yok` durumlarını bilmiyordu).
+
+**Bayat kilit temizliği** eklendi (`_bayatKilidiTemizle`): kilit playoff turu değişmiş,
+seri bitmiş ya da o maç zaten oynanmışsa (`gameNo` ilerlemişse) silinir.
+
+**Yeni gerileme kapıları** — `tools/playoff-check.js` [5a-5c], **18/18 ✓**:
+```
+  ✓ [5a] kilitli tıklama lig dalına DÜŞMEDİ    "⏩ …kilitli sonuç uygulandı: …"
+  ✓ [5b] kilitli sonuç uygulandı (seri ilerledi)  1|0-0 -> 2|0-1
+  ✓ [5c] tıklamadan sonra etiket yalan söylemiyor  "🏆 Playoff maçını oyna" durum=playoff
+```
+
+### İŞ 1 — KLİP ÖLÇEKLEMESİ ÖLÇÜLDÜ: ÖLÇEKLEME DOĞRU
+
+Brif "klip kareleri sahaya ölçeklenerek mi yerleştiriliyor, dar bir alt aralığa mı
+sıkışıyor — ölç, sonra karar ver" dedi. Ölçüldü (`klipPx` + ham klip verisi, 320 klip ·
+81.942 kare, tarayıcısız):
+
+```
+  kullanılan x aralığı      -4,8 … 98,4 ft      (NBA sahası 0-94 ft)
+  10 oyuncunun X yayılımı   303 px              (oyun sahası 827 px)
+  10 oyuncunun Y yayılımı   319 px              (oyun sahası 443 px)
+  hepsi tek yarıda          %68,1
+```
+
+`klipPx` NBA sahasını (94×50 ft) oyun sahasına (827×443 px) **doğrusal ve tam** eşliyor;
+veri aralığın tamamını, hatta çizgi dışını da kullanıyor. **Ölçekleme/hizalama hatası
+YOK** — sıkışma ham SportVU kaydının kendisindedir.
+
+**Bunun sonucu: brifin klip hedefleri gerçek veriyle çelişiyor.**
+
+| ölçüt | brifin hedefi | HAM SportVU kaydının kendisi |
+|---|---|---|
+| klip karelerinde ortalama yayılım | ≥ 400 px | **303 px** |
+| `TUM_OYUNCULAR_TEK_YARIDA` kare payı | ≤ %25 | **%68,1** |
+
+%68,1 rakamı CLAUDE.md'de FAZ 49'dan beri gerçek veri tabanı olarak zaten yazılı
+(`ayniYari`). Karelerin %63'ü klip olduğu için, klip yarısı hedefe çekilemeden toplam
+hedefe de ulaşılamaz. **Motor kareleri zaten 351 px ile gerçek kaydın (303 px)
+ÜSTÜNDE.** Bu yüzden dizilim şablonlarına dokunulmadı: motoru "gerçekten daha geniş"
+yapmak, oyunu gerçek basketboldan uzaklaştırır (FAZ 39 dersi).
+
+**İŞ 1 TUTTURULAMADI — açıkça yazıyorum.** Yapılan tek şey ölçümdür; kabul ölçütlerinin
+üçü (klip yayılımı ≥400 px · tek yarı ≤%25 · toplam yayılım ≥420 px) gerçek NBA
+kaydının kendisi tarafından da karşılanmıyor. Kalan tek meşru hedef "motor karelerinde
+yayılım ≥430 px" olabilir ama motor zaten gerçeğin üstünde; onu daha da açmak
+`hareket-bant-check`in gerçek verili yayılım kapılarını ters yöne iter.
+
+### Kapılar
+`playoff-check` **18/18 ✓** · `kilit-check` 7/7 ✓ · `sim-node --n=200 --seed=42`
+**93.4 - 87.3 · 268** determinizm ✓ · `visual-check` 0 konsol hatası ·
+`surum-check --yaz` → **122**.
+
+### Ders
+**Bir durum ekleyince o durumu OKUYAN bütün yolları da güncelle.** FAZ 72
+`pendingMatchIsNext`e playoff imzasını ekledi ve bu, FAZ 68b'nin `'playoff'` arayan
+yönlendirmesini sessizce ölü bıraktı: iki doğru düzeltme birbirini iptal etti. Durum
+adına göre dallanan kod kırılgandır; ölçüt VARLIK olmalı ("bekleyen playoff maçı var mı"),
+durum etiketi değil.

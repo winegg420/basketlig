@@ -143,6 +143,28 @@ async function main() {
     });
   }
 
+  /* ── FAZ 75: KİLİTLİ DURUMDA TIKLAMA — SESSİZ ÇIKIŞ OLMAMALI ──────────────────────
+     Kullanıcının kaydında (seri 3-3, 7. maç) tıklama LİG dalına düşüp
+     "Lig sezonun bitti" diyordu; kilitli sonuç uygulanmıyordu ve etiket
+     tıklamadan sonra '▶ Maçı Başlat'a dönüyordu (durum hâlâ 'pending'). */
+  if (R.kilit && R.kilit.state === 'pending') {
+    R.tik = await page.evaluate(() => {
+      window.__nb = [];
+      const _sn = showNotif; showNotif = m => { __nb.push(String(m).slice(0, 70)); };
+      const b = document.getElementById('startMatchBtn');
+      const once = b.textContent;
+      const seriOnce = (() => { const m = userPlayoffMatch(); return m ? m.gameNo + '|' + m.series.wins.join('-') : null; })();
+      b.click();
+      return new Promise(res => setTimeout(() => {
+        showNotif = _sn;
+        res({
+          once, sonra: b.textContent, bildirim: __nb.slice(),
+          seriOnce, seriSonra: (() => { const m = userPlayoffMatch(); return m ? m.gameNo + '|' + m.series.wins.join('-') : 'seri bitti'; })(),
+          durum: matchPlaybackState()
+        });
+      }, 1200));
+    });
+  }
   await browser.close(); srv.close();
 
   let dusen = 0;
@@ -169,6 +191,10 @@ async function main() {
   ok('[4b] durum makinesi kilidi tanıyor', KL.state, KL.state === 'pending');
   ok('[4c] buton kilidi söylüyor', JSON.stringify(KL.btnTxt), /Kilitli/.test(KL.btnTxt || ''));
   ok('[4d] kart aynı etiketi gösteriyor', JSON.stringify(KL.kartTxt), KL.kartTxt === KL.btnTxt);
+  const TK = R.tik || {};
+  ok('[5a] kilitli tıklama lig dalına DÜŞMEDİ', JSON.stringify((TK.bildirim||[]).join(' | ')).slice(0,70), !!TK.bildirim && !TK.bildirim.some(x => /Lig sezonun bitti|Önce Lig/.test(x)));
+  ok('[5b] kilitli sonuç uygulandı (seri ilerledi)', String(TK.seriOnce) + ' -> ' + String(TK.seriSonra), !!TK.seriOnce && TK.seriOnce !== TK.seriSonra);
+  ok('[5c] tıklamadan sonra etiket yalan söylemiyor', JSON.stringify(TK.sonra) + ' durum=' + TK.durum, TK.durum !== 'pending' || /Kilitli/.test(TK.sonra || ''));
   ok('konsol hatası', hatalar.length, hatalar.length === 0);
   if (hatalar.length) hatalar.slice(0, 5).forEach(h => console.log('      ' + h.slice(0, 160)));
   console.log(dusen ? '\n✗ ' + dusen + ' kapı düştü' : '\n✓ playoff çıkmazı yok — buton doğru durumu gösteriyor ve maçı açıyor');
