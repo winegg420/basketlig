@@ -1135,6 +1135,8 @@ function oamBeklemeTick(S,dt){
     const spots=oamSpotlar(S,offLeft,offR);
     const carrier=b.carrier;
     const atla=q=>(!q||q._oob||(S.chase&&S.chase.tok===q)||(S._outlet&&(q===S._outlet.c||q===S._outlet.pg))||((q._lock||0)>S.time));
+    /* boya (kulvar): dip çizgiden 171 px, orta çizgiden ±72 px — goz-benim ile aynı tanım */
+    const _kulvarda=(x,y)=>(Math.abs(x-rim[0])<171&&Math.abs(y-250)<72);
     /* hücum: kendi şablon noktasına yürür/koşar */
     offR.forEach(q=>{
       if(atla(q)||q===carrier) return;
@@ -1148,8 +1150,31 @@ function oamBeklemeTick(S,dt){
       const m2=offR[i]||offR[0]; if(!m2) return;
       if(m2===carrier) return;
       const dm=oamDR(m2,rim)||1;
-      const g=Math.min(_defGap(oamD(m2,carrier||m2)),Math.max(0,dm-26));
-      const tx=m2.x+(rim[0]-m2.x)/dm*g, ty=m2.y+(rim[1]-m2.y)/dm*g;
+      let g=Math.min(_defGap(oamD(m2,carrier||m2)),Math.max(0,dm-26));
+      let tx=m2.x+(rim[0]-m2.x)/dm*g, ty=m2.y+(rim[1]-m2.y)/dm*g;
+      /* ── FAZ 74: ADAMI KULVARIN DIŞINDAYSA SAVUNMACI DA KULVARA GİRMEZ ────────────────
+         Özgün denetçi (tools/goz-benim.js --playoff) 180 sn'de RAKET_TIKANDI'yı 16 EPİZOT /
+         TOPLAM 66 sn, en uzunu 18 SANİYE ölçtü — boyada aynı anda 8 oyuncuya kadar.
+         Hücum/savunma ayrılınca döküm hep 'huc=2 sav=3/4': hücum zaten 2 sınırındaydı,
+         kulvarı dolduran SAVUNMAydı ve olayların %56'sı bu fonksiyondaydı (FAZ 69).
+         Kök neden: hedef adam→pota doğrultusunda `g` kadar ilerletiliyor. Adam kulvarın
+         DIŞINDA olsa bile bu izdüşüm hedefi kulvarın İÇİNE düşürebiliyor (pota kulvarın
+         dibindedir), yani savunmacı sebepsiz boyaya çekiliyordu. Adamı kulvarda olan
+         savunmacı kulvarda kalır — adamını orada tutuyordur, doğrusu budur.
+         ⚠ İLK DENEME ÖLÇÜLEREK ELENDİ: 'fazla savunmacıyı 250±80'e it' kuralı hepsini AYNI
+         y'ye yığdı ve YENİ olay türleri doğurdu (INSANUSTU_HIZ 0 → 6, TOP_IMKANSIZ_HIZ
+         0 → 1 — değişmemiş kodda ikisi de hiç görünmüyor). Burada yığılma yok: her
+         savunmacı KENDİ adam-pota hattında kalır, yalnız hattın kulvara giren kısmında
+         durdurulur; hatlar farklı olduğu için hedefler de ayrık kalır. */
+      if(!_kulvarda(m2.x,m2.y)&&_kulvarda(tx,ty)){
+        let lo=0, hi=g;                       /* hattı kulvara girmeden en ileri noktaya kırp */
+        for(let it=0;it<12;it++){
+          const mid=(lo+hi)/2;
+          const px2=m2.x+(rim[0]-m2.x)/dm*mid, py2=m2.y+(rim[1]-m2.y)/dm*mid;
+          if(_kulvarda(px2,py2)) hi=mid; else lo=mid;
+        }
+        g=lo; tx=m2.x+(rim[0]-m2.x)/dm*g; ty=m2.y+(rim[1]-m2.y)/dm*g;
+      }
       const dd=Math.hypot(d0.x-tx,d0.y-ty);
       oamHedef(d0,tx,ty,oamKademe(dd));
       d0._mark=m2;

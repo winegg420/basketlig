@@ -2404,3 +2404,25 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   kuralı yazıldı; `goz-benim.js` ile ölçüldü ve GERİLEDİ — AYNI_TAKIM_CAKISMA 33 → **116**,
   DERIN_CAKISMA 29 → **42**, INSANUSTU_HIZ 0 → **6**, TOP_IMKANSIZ_HIZ 0 → **1**. Sebep:
   itilen savunmacıların hepsi AYNI y'ye yığılıyor. Kural doğru, dağıtım yanlış.
+
+- **`goz-benim.js` OLAY SAYILARI KOŞU-ARASI 2-4 KAT OYNAR — TEK KOŞUYLA KARAR VERME
+  (FAZ 74, ölçüldü):** aynı kod, aynı tohum, dört koşu: TOPLAM **1229·1326·1337·1374** ·
+  TOP_TASIYICIDAN_KOPUK **312·378·382** · AYNI_TAKIM_CAKISMA **33·56·133** ·
+  INSANUSTU_HIZ **0·0·5** · X yayılımı **280,7·300,4·300,9·301 px**. Sebep: araç gerçek
+  zamanlı (rAF) örnekliyor ve tekrar süzgeci (tip + DETAY METNİ) üzerinden işliyor.
+  ⚠ FAZ 73'te kulvar düzeltmesini "INSANUSTU_HIZ 0 → 6 oldu" diye geri almıştım;
+  **o gerekçe YANLIŞTI** — aynı olaylar değişmemiş kodda da çıkıyor. Bu araçla bir
+  değişikliği yargılamak için ölçüt ya KARE PAYI / KARE ORTALAMASI olmalı ya da en az
+  3 koşunun ortalaması alınmalı.
+- **KARE PAYI KARARLIDIR, OLAY SAYISI DEĞİL (FAZ 74):** aynı koşularda "boyada savunmacı
+  (ortalama)" 1,07 ↔ 1,06 · "boyada hücumcu" 0,67 ↔ 0,67 — yani aynı araç, oran olarak
+  yazılınca üçüncü haneye kadar tekrarlanabilir. `tools/goz.js`e kalıcı satır eklendi:
+  **`boyada 4+ oyuncu (kare payı)` ve `6+`**. Yeni bir sahne kapısı yazarken ölçütü
+  SAYIM değil ORAN olarak kur (FAZ 39'un "eşik ölçülür" dersinin ölçüm-yöntemi karşılığı).
+- **KULVAR İZDÜŞÜMÜ: ADAMI DIŞARIDAYSA SAVUNMACI DA GİRMEZ (FAZ 74, marjinal ama doğru):**
+  `oamBeklemeTick`te savunma hedefi adam→pota doğrultusunda ilerletiliyor; pota kulvarın
+  dibinde olduğu için adam kulvarın DIŞINDA olsa bile hedef kulvarın İÇİNE düşüyordu.
+  Hedef artık hattın kulvara girdiği noktada durur (ikili arama). Ölçülen etki marjinal
+  (boyada 6+ oyuncu kare payı %6,0 → %5,1) ve 18 saniyelik tıkanma epizotlarını ÇÖZMEZ —
+  o epizotlarda hücumcular da kulvardadır ve savunmanın onları takip etmesi doğrudur;
+  kusur dizilimin kendisindedir.

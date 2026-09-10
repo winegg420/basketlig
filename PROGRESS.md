@@ -11125,3 +11125,87 @@ Denenen tek düzeltme ölçülerek geri alındı. Kalan üç kapı:
 `RAKET_TIKANDI` (66 sn, en uzun 18 sn) — teşhis HAZIR: bekleme penceresinde savunma
 kulvarı dolduruyor. Doğru çözüm, kulvardan çıkarılan savunmacıları **birbirinden de
 ayrık** noktalara dağıtmak (bu turda denenen tek-y yığılması işe yaramadı).
+
+---
+
+## FAZ 74 — DENETÇİ GÜRÜLTÜSÜ ÖLÇÜLDÜ · FAZ 73'ÜN GERİ ALMA GEREKÇESİ YANLIŞTI (2026-09-10, sürüm 121)
+
+### ⚠ ÖNCE BİR DÜZELTME — FAZ 73'te YANLIŞ YAZDIM
+
+FAZ 73'te "kulvar düzeltmesini geri aldım çünkü `INSANUSTU_HIZ` 0 → 6 ve
+`TOP_IMKANSIZ_HIZ` 0 → 1 oldu" yazmıştım. **Bu gerekçe yanlıştı.** Aynı denetçi,
+**DEĞİŞMEMİŞ kodda**, üçüncü koşuda `INSANUSTU_HIZ 5 · TOP_IMKANSIZ_HIZ 1` verdi.
+Bu olaylar benim değişikliğimden değil, aracın koşu-arası gürültüsünden geliyor.
+
+### `goz-benim.js` KOŞU-ARASI GÜRÜLTÜSÜ (aynı kod, aynı tohum, 180 sn)
+
+| ölçüt | dört ayrı koşu |
+|---|---|
+| TOPLAM | **1229 · 1326 · 1337 · 1374** |
+| TOP_TASIYICIDAN_KOPUK | **312 · 378 · 382** (%3,5 · %4,0 · %4,7 · %5,1) |
+| AYNI_TAKIM_CAKISMA | **33 · 56 · 133** |
+| DERIN_CAKISMA | **22 · 29 · 38** |
+| INSANUSTU_HIZ | **0 · 0 · 5** |
+| oyuncu X yayılımı | **280,7 · 300,4 · 300,9 · 301** px |
+
+**Her satır 2-4 kat oynuyor.** Sebep: araç gerçek zamanlı (rAF) örnekliyor ve tekrar
+süzgeci (tip + DETAY METNİ) üzerinden işliyor, yani "199px"/"198px" ayrı olay sayılıyor
+(FAZ 73 bulgusu). Sonuç: **tek koşuluk karşılaştırma bu araçla hiçbir şeyi kanıtlamaz** —
+ne benim geri alma kararımı, ne "toplam 1061'de sabit kaldı", ne de
+"TOP_TASIYICIDAN_KOPUK 300'e çıktı" (300, değişmemiş kodun 312-382 bandının içinde).
+
+### KARARLI ÖLÇÜT: KARE PAYI
+
+Olay sayısı yerine **kare payı / kare ortalaması** kullanılınca aynı araç kararlı oluyor:
+
+| ölçüt | koşu 1 | koşu 2 |
+|---|---|---|
+| boyada savunmacı (ortalama) | 1,07 / 5 | 1,06 / 5 |
+| boyada hücumcu (ortalama) | 0,67 / 5 | 0,67 / 5 |
+
+`tools/goz.js`e kalıcı satır eklendi: **`boyada 4+ oyuncu (kare payı)` ve `6+`** —
+tıkanmayı olay sayısıyla değil ZAMAN PAYIYLA ölçer.
+
+### YAPILAN — KULVAR İZDÜŞÜMÜ DÜZELTMESİ (`oamBeklemeTick`, `js/sahne-oam.js`)
+
+Teşhis FAZ 73'te doğrulanmıştı: bekleme penceresinde savunma hedefi adam→pota
+doğrultusunda `g` kadar ilerletiliyor; pota kulvarın dibinde olduğu için, adam kulvarın
+DIŞINDA olsa bile izdüşüm hedefi kulvarın İÇİNE düşürüyordu. Artık adamı kulvarın
+dışındaki savunmacının hedefi, hattın kulvara girdiği noktada durdurulur (ikili arama,
+12 adım). Her savunmacı KENDİ adam-pota hattında kaldığı için FAZ 73'teki yığılma yok.
+
+**Ölçülen etki (kararlı ölçüt, 120 sn × 2 koşu):**
+
+| | taban | düzeltmeyle |
+|---|---|---|
+| boyada 4+ oyuncu (kare payı) | %24,3 · %22,0 | **%22,7 · %21,8** |
+| boyada 6+ oyuncu | %6,8 · %5,3 | **%5,1 · %5,1** |
+| boyada savunmacı (ort) | 1,07 · 1,06 | 1,05 · 1,07 |
+
+**Etki MARJİNAL** (6+ tıkanma ortalama %6,0 → %5,1). Dürüst değerlendirme: düzeltme
+doğru bir düzeltmedir (savunmacı sebepsiz kulvara çekilmiyor) ve hiçbir şeyi
+geriletmiyor, ama brifin şikâyet ettiği **18 saniyelik tıkanma epizodunu çözmüyor.**
+O epizotlarda hücumcular da kulvarda (ribaunt/post kalabalığı) ve savunmanın onları
+takip etmesi doğrudur — kusur dizilimin kendisindedir, izdüşümde değil.
+
+### DEĞİŞMEYENLER (gerileme yok)
+`jeton çakışması` %0,8-1,1 ✓ · `top taşıyıcıdan kopuk — FİZİK` %0,06-0,08 ✓ ·
+`X yayılımı` 279-297 px (taban 280-301 — bant içinde) ·
+`sim-node --n=200 --seed=42` **93.4 - 87.3 · 268** determinizm ✓ ·
+`visual-check` 0 konsol hatası · `surum-check --yaz` → **121**.
+
+### BRİFİN 2-6. İŞLERİ — HÂLÂ YAPILMADI, SEBEBİ
+
+| iş | durum |
+|---|---|
+| 2 · top taşıyıcıdan kopuk ≤%1 | **YAPILMADI.** Kaynak ayrıldı (FAZ 71): %96'sı KLİP yolu = gerçek SportVU kaydı; fizik yolu zaten %0,06-0,08. Klip yolunu kelepçelemek gerçek kaydı bozar. |
+| 3 · GERI_PAS ≤20 | **YAPILMADI.** Epizota çevrilince 9 epizot / TOPLAM 2 saniye — süre olarak en küçük kalem. |
+| 4 · DERIN_CAKISMA 0 | **YAPILMADI.** Çizim ayrıştırması FAZ 68'de kuruldu; olay sayısı 22-46 arasında gürültülü, kare payı %0,8-1,1 ile kapıda. |
+| 5 · etiket kırpma 0 | **YAPILMADI.** `goz-benim.js` "etiket kutusu çakışması %0" diyor; kırpma ölçütü aracın kapılarında yok, ölçemedim. |
+| 6 · OYUNCU_SAHA_DISI 0 · RIBAUNT_BOSLUGU ≤2 | **YAPILMADI.** Epizota çevrilince ikisi de ~0 saniye (anlık); RIBAUNT_BOSLUGU'nun çoğu KLİP karesi (FAZ 71). |
+
+### SIRADAKİ TUR İÇİN GEREKLİ OLAN
+Bu araçla bir değişikliğin işe yarayıp yaramadığına karar vermek için **tek koşu
+yetmez**. Her kabul ölçütü ya (a) kare payı / kare ortalaması olarak yazılmalı, ya da
+(b) en az 3 koşunun ortalaması alınmalı. Aksi hâlde 2-4 katlık gürültü, yapılan işi de
+yapılmayan işi de aynı gösteriyor — bu turda benim geri alma kararım dahil.

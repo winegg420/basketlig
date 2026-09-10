@@ -191,7 +191,16 @@ function kaydedici() {
           if (klipVar) { G.acKlip = (G.acKlip||0)+enUzak; G.acKlipN = (G.acKlipN||0)+1; }
           else { G.acFizik = (G.acFizik||0)+enUzak; G.acFizikN = (G.acFizikN||0)+1; }
           if (enUzak < 200) kay('ACILIM_YOK', saat, 'en uzak hücumcu potaya ' + enUzak.toFixed(0) + ' px');
-          if (boyada >= 4) kay('RAKET_TIKANDI', saat, boyada + ' hücumcu boyada');
+          /* FAZ 73 teşhis: tıkanmayı KİM yapıyor — hücum mu savunma mı, hangi fazda */
+          var savBoya = 0;
+          for (i = 0; i < defP.length; i++) { var dq = defP[i]; if (!dq || !isFinite(dq.x)) continue;
+            if (Math.abs(dq.x - rim[0]) < 171 && Math.abs(dq.y - 250) < 72) savBoya++; }
+          G.boyaSavTop = (G.boyaSavTop||0) + savBoya;
+          if (boyada + savBoya >= 4) G.tikaliKare = (G.tikaliKare||0)+1;
+          if (boyada + savBoya >= 6) G.tikali6 = (G.tikali6||0)+1;
+
+          if (boyada + savBoya >= 4) kay('RAKET_TIKANDI', saat, 'boyada huc=' + boyada + ' sav=' + savBoya +
+            ' faz=' + ((S.oam && S.oam.aktif) ? S.oam.faz : (S._klipTop ? 'klip' : '-')) + (klipVar ? ' [KLİP]' : ' [fizik]'));
           G.boyaTop += boyada; G.boyaN++;
           /* RİBAUNT BOŞLUĞU: şut havadayken potanın 120 px çevresi boş */
           if (b.mode === 'shot' || b.mode === 'rim') {
@@ -327,6 +336,8 @@ async function main() {
   console.log('    aynı anda koşan (250 ms)     ' + (R.kosanN ? (R.kosanTop / R.kosanN).toFixed(2) : '-') + '/10');
   console.log('    hücumun en uzak oyuncusu     ' + (R.acilimN ? (R.acilimTop / R.acilimN).toFixed(0) : '-') + ' px (potaya)' +
     '   [KLİP ' + (R.acKlipN ? (R.acKlip / R.acKlipN).toFixed(0) : '-') + ' · FİZİK ' + (R.acFizikN ? (R.acFizik / R.acFizikN).toFixed(0) : '-') + ']  ← açılım');
+  console.log('    boyada 4+ oyuncu (kare payı)  ' + pc(R.tikaliKare||0) + '   ·  6+ ' + pc(R.tikali6||0) + '   ← TIKANMA (kararlı ölçüt)');
+  console.log('    boyada savunmacı (ortalama)  ' + (R.boyaN ? ((R.boyaSavTop||0) / R.boyaN).toFixed(2) : '-') + ' / 5');
   console.log('    boyada hücumcu (ortalama)    ' + (R.boyaN ? (R.boyaTop / R.boyaN).toFixed(2) : '-') + ' / 5');
   console.log('    top yerde (loose) payı       ' + pc(R.looseKare) + '  en uzun ' + (R.looseMax || 0).toFixed(1) + ' sn');
   console.log('    geri pas payı                ' + (R.pasN ? (100 * R.geriPas / R.pasN).toFixed(1) + '% (' + R.geriPas + '/' + R.pasN + ')' : '-'));
