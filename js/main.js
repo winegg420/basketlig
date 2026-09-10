@@ -87,6 +87,22 @@ function pendingMatchIsNext(){
   try{
     if(!G.pendingMatch||!G.pendingMatch.sig||!G.pendingMatch.ev) return false;
     if(mState&&mState.sig&&G.pendingMatch.sig===mState.sig) return true;
+    /* ── FAZ 72: KİLİT PLAYOFF MAÇINDA DA TANINIR ─────────────────────────────────────
+       Kullanıcının canlı kaydında yakalandı (playoff çeyrek final, seri 3-2, 6. maç):
+       G.pendingMatch.sig = 'po|0|dgfg|Santos United|g6' — yani 6. maçın sonucu KİLİTLİ.
+       Ama bu fonksiyon yalnız LİG imzasına ('lig|'+seasonMatchIx) bakıyordu, dolayısıyla
+       false dönüyor, durum makinesi 'playoff' diyor ve buton '🏆 Playoff maçını oyna'
+       yazıyordu. Kullanıcı basınca canlı maç AÇILMIYOR — startMatch'in C1 dalı kilitli
+       sonucu uyguluyor. Ekranda görünen: 'butona basıyorum hiçbir şey olmuyor'.
+       FAZ 51'in kuralı buydu ve playoff'a uygulanmamıştı: ETİKET DOĞRUYU SÖYLEMELİ.
+       İmza startMatch'teki ile BİREBİR aynı biçimde kurulur (host/other sırası dahil). */
+    if(G.playoff&&G.playoff.active&&typeof userPlayoffMatch==='function'){
+      const po=userPlayoffMatch();
+      if(po){
+        const psig='po|'+((G.playoff&&G.playoff.round)||0)+'|'+po.home+'|'+po.away+'|g'+(po.gameNo||1);
+        if(G.pendingMatch.sig===psig) return true;
+      }
+    }
     const m=(typeof findNextUserSeasonMatch==='function')?findNextUserSeasonMatch():null;
     return !!(m&&G.pendingMatch.sig===('lig|'+m.seasonMatchIx));
   }catch(e){ return false; }
@@ -197,6 +213,9 @@ function startMatch(playoff){
     { const _pe=G.pendingMatch.ev; const _us=userIsHome?_pe.home:_pe.away, _op=userIsHome?_pe.away:_pe.home;
       showNotif('⏩ Bu maç daha önce başlatılıp yarıda kalmıştı — kilitli sonuç uygulandı: '+G.team.isim+' '+_us+' - '+_op+' '+rakip.isim+'. Sıradaki maç için tekrar “Maçı Başlat”a bas.',{critical:true}); }
     applyMatchResult(G.pendingMatch.ev,ctx);
+    /* FAZ 72: kart da tazelenir — yalnız buton güncellenince Ana Panel eski etiketi
+       taşıyor ve kullanıcı ikinci kez basıp 'yine olmadı' sanıyordu. */
+    try{ if(typeof renderDashboardNextMatch==='function') renderDashboardNextMatch(); }catch(e){}
     syncMatchButtons();
     return;
   }

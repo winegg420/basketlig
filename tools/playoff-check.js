@@ -118,6 +118,29 @@ async function main() {
       oyuncu: ((mState && mState._sim && mState._sim.players) || []).length,
       anlatim: document.querySelectorAll('#commentary .ci').length
     }));
+    /* ── FAZ 72: PLAYOFF MAÇI YARIDA KALINCA KİLİT TANINMALI ──────────────────────────
+       Kullanıcının kaydında yakalandı: seri 3-2, 6. maçın sonucu KİLİTLİ
+       (G.pendingMatch.sig='po|0|...|g6') ama pendingMatchIsNext yalnız LİG imzasına
+       bakıyordu; buton '🏆 Playoff maçını oyna' diyor, basınca canlı maç açılmıyor
+       (C1 dalı kilitli sonucu uyguluyor) ve kullanıcı 'hiçbir şey olmuyor' diyordu. */
+    R.kilit = await page.evaluate(() => {
+      try {
+        stopMatch();
+        /* Sayfa yenilemesini taklit et: kilit KAYITTA durur ama canlı maç sürdürülemez.
+           Kullanıcının durumu budur — yarıda kalan maçtan sonra sekmeyi kapatıp dönmek. */
+        mState.events = []; mState.idx = 0; mState.sig = null; mState.running = false;
+        renderDashboardNextMatch(); syncMatchButtons();
+        const b = document.getElementById('startMatchBtn');
+        const card = document.getElementById('dashNextCard');
+        const db = card ? card.querySelector('.dn-play') : null;
+        return {
+          sig: (G.pendingMatch && G.pendingMatch.sig) || null,
+          state: matchPlaybackState(),
+          btnTxt: b ? b.textContent : null,
+          kartTxt: db ? db.textContent : null
+        };
+      } catch (e) { return { hata: String(e) }; }
+    });
   }
 
   await browser.close(); srv.close();
@@ -141,6 +164,11 @@ async function main() {
   ok('[2e] kartta rakip görünüyor', JSON.stringify(D.rakip), !!D.rakip && !/sezon bitti|sezon yok/.test(D.rakip));
   ok('[2f] kart metni playoff diyor', JSON.stringify((D.meta || '').slice(0, 60)), /[Pp]layoff/.test(D.meta || ''));
   ok('[3] butona basınca CANLI maç açıldı', 'running=' + S.running + ' oyuncu=' + S.oyuncu + ' anlatım=' + S.anlatim, !!S.running && S.oyuncu >= 10);
+  const KL = R.kilit || {};
+  ok('[4a] yarıda kalan playoff kilidi kuruldu', String(KL.sig), /^po\|/.test(KL.sig || ''));
+  ok('[4b] durum makinesi kilidi tanıyor', KL.state, KL.state === 'pending');
+  ok('[4c] buton kilidi söylüyor', JSON.stringify(KL.btnTxt), /Kilitli/.test(KL.btnTxt || ''));
+  ok('[4d] kart aynı etiketi gösteriyor', JSON.stringify(KL.kartTxt), KL.kartTxt === KL.btnTxt);
   ok('konsol hatası', hatalar.length, hatalar.length === 0);
   if (hatalar.length) hatalar.slice(0, 5).forEach(h => console.log('      ' + h.slice(0, 160)));
   console.log(dusen ? '\n✗ ' + dusen + ' kapı düştü' : '\n✓ playoff çıkmazı yok — buton doğru durumu gösteriyor ve maçı açıyor');

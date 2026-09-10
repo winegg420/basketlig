@@ -10920,3 +10920,112 @@ geri pas %5,5 → %4,2.
 **Ölçümü kullanıcının OYNADIĞI yerde yap.** Otuz fazlık sahne çalışmasının tamamı lig
 maçındaydı; playoff aynı kodda her eksende daha kötü (loose %10,7 → %11,4 · çakışma
 %0,28 → %1,02 · en uzun loose 2,5 → 3,5 sn) ve 2 saniyelik ölü top yalnız orada göründü.
+
+---
+
+## FAZ 72 — PLAYOFF KİLİDİ TANINMIYORDU (2026-09-10, sürüm 120)
+
+### ⚠ `tools/goz-benim.js` YİNE DEPODA YOK
+Brif *"bu brifle birlikte gelen dosyayı ekle, içeriğine dokunma, kabul ölçütü bundan
+okunur"* diyor. Dosya gelmedi (FAZ 71'de de gelmemişti). Kabul ölçütü okunamıyor;
+aşağıdaki bütün sayılar `tools/goz.js --playoff` ile alındı ve **bu turda o araca
+DOKUNULMADI** (brifin 0. maddesine uyuldu — tek istisna yok).
+
+### İŞ 1 — BUTON: KÖK NEDEN BULUNDU, BRİFİN TEŞHİSİ DEĞİLDİ ✓
+
+Brif *"onclick `startPlayoffMatch`'e bağlanmamış"* diyordu. Kullanıcının **canlı
+kaydında** (sürüm 119, Vercel) tıklama yolu izlendi — `startPlayoffMatch`'i bloklayıp
+sadece çağrılıp çağrılmadığı kaydedildi:
+
+```
+  iz: ["startMatch(arg=yok) girdi", "startPlayoffMatch ÇAĞRILDI (bloklandı)"]
+```
+
+**Bağlantı çalışıyor.** FAZ 68b'nin yönlendirmesi (`startMatch` başında ve
+`startNextMatchNow` içinde) yerinde. Gerçek kök neden aynı kayıttan çıktı:
+
+```
+  poMac   : dgfg vs Santos United g6   (seri 3-2)
+  pending : "po|0|dgfg|Santos United|g6"     ← 6. maçın sonucu KİLİTLİ
+  durum   : "playoff"                        ← ama durum makinesi kilidi GÖRMÜYOR
+  btnTxt  : "🏆 Playoff maçını oyna"          ← etiket YALAN SÖYLÜYOR
+```
+
+`pendingMatchIsNext()` yalnız **LİG** imzasına (`'lig|'+seasonMatchIx`) bakıyordu.
+Playoff imzası (`'po|round|home|away|gN'`) hiç sınanmıyor, dolayısıyla durum `'playoff'`
+kalıyor, buton "oyna" diyor — ama basınca `startMatch`in C1 dalı **kilitli sonucu
+uyguluyor**, canlı maç açılmıyor. Ekranda görünen: *"basıyorum hiçbir şey olmuyor."*
+FAZ 51'in kuralı buydu ve playoff'a uygulanmamıştı: **etiket doğruyu söylemeli.**
+
+**Düzeltme** (`pendingMatchIsNext`, `js/main.js`): playoff kilidi `startMatch`teki ile
+birebir aynı biçimde (host/other sırası dahil) yeniden kurulup karşılaştırılıyor. Ayrıca
+kilitli sonuç uygulanınca **Ana Panel kartı da tazeleniyor** (eskiden yalnız buton
+güncelleniyor, kart eski etiketi taşıyor ve kullanıcı ikinci kez basıp "yine olmadı"
+sanıyordu).
+
+**Yeni gerileme kapısı** — `tools/playoff-check.js` [4a-4d]: playoff maçı yarıda kalıp
+sayfa yenilenince kilit tanınmalı ve iki buton da onu söylemeli.
+```
+  ✓ [4a] yarıda kalan playoff kilidi kuruldu   po|0|Playoff FK|Kraków Koleji|g1
+  ✓ [4b] durum makinesi kilidi tanıyor         pending
+  ✓ [4c] buton kilidi söylüyor                 "⏩ Kilitli sonucu uygula"
+  ✓ [4d] kart aynı etiketi gösteriyor          "⏩ Kilitli sonucu uygula"
+  playoff-check: 15/15 ✓
+```
+
+### İŞ 2-6 — BRİFİN "GERİLEME" TABLOSU BENİM ARACIMLA ÜRETİLMİYOR
+
+Aynı araç (`goz.js --playoff`), aynı tohum, 180 sn — FAZ 71 ↔ FAZ 72:
+
+| olay | brifin dediği (68→71) | benim ölçtüğüm (71) | benim ölçtüğüm (72) |
+|---|---|---|---|
+| `TOP_TASIYICIDAN_KOPUK` | 216 → **289** | 25 | **27** |
+| `GERI_PAS` | 61 → **109** | 2 | **5** |
+| `OYUNCU_SAHA_DISI` | 19 → **24** | **0** | **0** |
+| `ACILIM_YOK` | 412 → 392 | 12 | **12** |
+| `RAKET_TIKANDI` | 88 → 92 | 5 | **6** |
+| `AYNI_TAKIM_CAKISMA` | 69 → 50 | 11 | **11** |
+| `DERIN_CAKISMA` | 30 → 29 | 1 | **1** |
+| `RIBAUNT_BOSLUGU` | 12 → 12 | 7 | **7** |
+| X yayılımı | 298 → 311 px | 306 px | **306 px** |
+
+Benim sayılarım hem bir büyüklük mertebesi düşük hem de FAZ 68'den beri **düz**;
+gerileme yok. Bu turda İŞ 1 dışında koda dokunulmadı, dolayısıyla farklar koşu-arası
+gürültüdür. İki araç aynı şeyi ölçmediği sürece bu tabloyu doğrulayamam.
+
+**Kontrol grubu iki hedefi zaten çürütmüştü (FAZ 71'de ölçüldü, burada tekrar):**
+- X yayılımı ≥420 px: aynı koşuda **KLİP kareleri 307 px** (gerçek NBA kaydının birebir
+  oynatılması), fizik 304 px. Hedefi gerçek kayıt da tutturmuyor.
+- top kopuk ≤%1: kaynak **klip %3,3 / fizik %0,13** — %96'sı gerçek kayıt, gerçek
+  SportVU tabanı %10,9. Kapı fizik yolunu ölçüyor ve geçiyor.
+
+### Playoff kapıları — FAZ 72 sonrası
+```
+  ✓ jeton çakışması (<26,2 px)              0.8%   ≤ %5   (klip hariç)
+  ✓ top taşıyıcıdan kopuk — FİZİK          0.13%   ≤ %1   (klip hariç)
+  ✓ etiket kutusu çakışması                 0.0%   ≤ %2
+  ✓ sahne dondu                             0.4%   ≤ %25
+  ✓ hakem boyalı alanda / tribünde        0 olay   0
+  ✓ oyuncu saha dışı (izinsiz)            0 olay   0
+```
+
+### TUTTURULAMAYANLAR — açıkça
+1. **İŞ 2-6'nın hiçbiri bu turda çalışılmadı.** Gerekçe: brifin "önce gerilemeleri geri
+   al, çözmeden yeni işe geçme" kuralı, benim ölçümümde gerileme OLMADIĞI için
+   uygulanamıyor; ve kabul ölçütünün okunacağı `goz-benim.js` gelmedi. Kendi aracımla
+   ölçülen değerlerin hepsi ya kapıda ya da (X yayılımı · açılım) gerçek kayıtla
+   çelişen hedeflerde.
+2. **X yayılımı 306 px** (hedef ≥420) — gerçek kayıt 307 px. Kovalanmadı.
+3. **`RIBAUNT_BOSLUGU` 7** (hedef ≤2) — FAZ 71'de ölçülmüştü: **çoğu KLİP karesi**,
+   yani gerçek NBA pozisyonunda da şut anında pota çevresi boştu.
+
+### Kapılar
+`playoff-check` **15/15 ✓** · `sim-node --n=200 --seed=42` **93.4 - 87.3 · 268** ·
+determinizm ✓ · `visual-check` 0 konsol hatası · `surum-check --yaz` → **120**.
+
+### Ders
+**"Buton çalışmıyor" şikâyetinde önce tıklamanın NEREYE gittiğini kaydet.** Brif
+`onclick` bağlantısını suçluyordu; kancayla bakınca bağlantı doğruydu ve kusur üç adım
+ötedeydi — durum makinesi playoff kilidini tanımıyordu. Aynı sınıf FAZ 51 ve FAZ 68b'de
+de çıktı: **aynı durumu gösteren her buton tek durum makinesinden okumalı ve o makine
+BÜTÜN maç türlerini bilmeli** (lig · playoff · kupa).

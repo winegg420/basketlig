@@ -2367,3 +2367,20 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   (FAZ 69). `goz.js` kapısı artık FİZİK yolunu ölçer (%0,15 ✓), klip payı bilgi olarak
   basılır. Aynı ayrım X yayılımı ve açılım için de var: kıyas tabanı **aynı koşudaki KLİP
   satırıdır** — brifin "X yayılımı ≥ 420 px" hedefini gerçek kayıt da tutturmuyor (308 px).
+
+- **DURUM MAKİNESİ BÜTÜN MAÇ TÜRLERİNİ BİLMELİ — PLAYOFF KİLİDİ TANINMIYORDU (FAZ 72,
+  kullanıcı: "butona basıyorum hiçbir şey olmuyor"):** `pendingMatchIsNext()` yalnız LİG
+  imzasına (`'lig|'+seasonMatchIx`) bakıyordu; playoff imzası (`'po|round|home|away|gN'`)
+  hiç sınanmıyordu. Kullanıcının canlı kaydında yakalandı (seri 3-2, 6. maç):
+  `pendingMatch.sig='po|0|dgfg|Santos United|g6'` yani sonuç KİLİTLİ, ama durum makinesi
+  `'playoff'` diyor ve buton "🏆 Playoff maçını oyna" yazıyordu. Basınca `startMatch`in C1
+  dalı kilitli sonucu uyguluyor, canlı maç açılmıyor. Etiket YALAN söylüyordu. Kapı:
+  `tools/playoff-check.js` [4a-4d] — playoff maçı yarıda kalıp sayfa yenilenince kilit
+  tanınmalı ve İKİ buton da onu söylemeli. FAZ 51 ve FAZ 68b ile aynı sınıf: **aynı durumu
+  gösteren her buton tek durum makinesinden okur ve o makine lig · playoff · kupa hepsini
+  bilmelidir.**
+- **"BUTON ÇALIŞMIYOR" ŞİKÂYETİNDE ÖNCE TIKLAMANIN NEREYE GİTTİĞİNİ KAYDET (FAZ 72):**
+  brif `onclick` bağlantısını suçluyordu. Kullanıcının canlı sayfasında `startPlayoffMatch`
+  bloklanıp yalnız çağrılıp çağrılmadığı kaydedildi (maçı harcamadan):
+  `["startMatch(arg=yok) girdi","startPlayoffMatch ÇAĞRILDI"]` — bağlantı DOĞRUYDU, kusur
+  üç adım ötedeydi. Kancayla bakmak kod okumaktan da tahminden de hızlı (FAZ 62 dersi).
