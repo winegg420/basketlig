@@ -10632,3 +10632,102 @@ PLAYOFF ÇIKMAZI DENETİMİ (FAZ 68b) · tohum 987654321
 Bir akışın "sonu" (sezon bitişi, playoff, yeni sezon geçişi) başlangıcı kadar sınanmalı;
 `playoff-check` bu boşluğu kapatır. Ayrıca: **hiçbir buton, arkasında yapılacak iş yokken
 "Başlat" yazmamalı** — durum makinesine 'yok' durumu bu yüzden eklendi.
+
+---
+
+## FAZ 69 — OYUNCULAR DİZİLİM NOKTALARINA VARAMIYOR (2026-09-10, sürüm 117)
+
+Brifin teşhisi **doğrulandı** ve mekanizma bulundu, ama **dokuz sayısal hedefin hiçbiri
+tutturulamadı**. Aşağıda ne düzeldi, ne düzelmedi ve NEDEN — hepsi ölçümle.
+
+### Yeni araç — `tools/faz69-check.js`
+Brifin 6. maddesindeki satırların hepsini basar: faz başına süre + hedefe uzaklık
+(başta/bitişte, ortalama/en uzak) · 10 oyuncunun kutusu (ortalama · en dar · 40 m² altında
+geçen süre) · hücum yayılımı **KLİP ve FİZİK kareleri AYRI** · saha dışı hedef payı. Ayrıca
+iki satır kendim ekledim: **faz başına KONUM ve HEDEF yayılımı** (teşhisi bu ikisi verdi) ve
+**canlı top fizik yayılımı** (serbest atış töreni hariç). `iz-kaydet` artık `meta.gizli`
+(sekme görünür mü) yazıyor — gizli sekmede alınan sahne ölçümü geçersizdir (FAZ 62 dersi).
+
+### Teşhis — hedefler doğru, VARIŞ yok (brif haklı)
+Taban (620 sn, görünür sekme): `gecis` fazı en uzak oyuncu **16,7 m** ötedeyken başlayıp
+1,1 sn sürüyor; `set` 0,5 sn sürüyor ve biterken en uzak oyuncu 13,3 m ötede.
+Yeni HEDEF/KONUM ayrımı kusuru kesin olarak yerine oturttu:
+
+| faz | KONUM X/Y | HEDEF X/Y |
+|---|---|---|
+| bekleme (-) | 2,65 / 2,70 | **4,22 / 3,86** |
+| gecis | 2,46 / 3,87 | **6,81 / 4,51** |
+
+**Hedefler gerçeğin (3,636/3,754) bile üstünde geniş, konumlar dar** — yani hedefleme değil
+varış sorunu. Sonra "neden varamıyor" sorusu ölçüldü (yalnız noktasına 5 m'den uzak hücumcular):
+
+| faz | kademe dağılımı | gerçekleşen hız |
+|---|---|---|
+| bekleme (-) | %97 KOŞ | **2,30 m/sn** |
+| gecis | %92 KOŞ | 2,53 m/sn |
+| **toren (serbest atış)** | **%100 SPRİNT** | **3,96 m/sn** |
+
+KOŞ kademesi 10 metreyi 4,3 saniyede aldırıyor, pencere 3,9 saniye. Oyuncu yola çıkıyor ama
+**yetişemiyor**. Serbest atış töreni bunu FAZ 60'ta zaten çözmüştü ("düdük anında 3,7 m'den
+uzak kalan SPRİNT eder") — desen doğruydu, canlı fazlara uygulanmamıştı.
+
+### Yapılanlar
+- **1A · bütçe en yavaş oyuncudan** (`oamSut`, `js/sahne-oam.js`): `tInb` yalnız sokucunun,
+  `tAdv` yalnız oyun kurucunun yolunu sayıyordu. Artık on hücumcunun kendi noktasına
+  uzaklığı ölçülüp bütçe **en uzaktakine** göre açılır; `tInb` kelepçesi 3,4 → 4,5 sn.
+- **1B · set, dizilim oturmadan başlamaz** — yeni tek kaynak `oamYerlesti(offR,spots,eşik,gerekli)`,
+  `_ftYerlesti`nin canlı karşılığı. ⚠ İlk sürüm (≥4 oyuncu 2,0 m + tavan tInb+tAdv+4,5 sn)
+  **SET FAZINI TAMAMEN YOK ETTİ** (300 sn'de 0 epizot): tAdv 6 sn'ye açıldığı için tavan
+  10 sn'yi buluyor, pozisyon o kadar yaşamıyordu. Ölçülerek ≥3 oyuncu / 2,5 m ve tavan
+  tam `tInb+tAdv` yapıldı. Set 0,5 → **1,4 sn**.
+- **1D · noktasından 5 m'den uzak oyuncu SPRİNT eder** (`oamKademe`, `OAM_SPRINT_PX=148`) —
+  bekleme penceresi, geçiş ve savunma dönüşünde.
+- **2 · bekleme penceresinde dizilim korunur** — yeni `oamBeklemeTick`: OAM kapalı ve klip
+  yokken (karelerin %31'i) topsuz dokuz oyuncuya hedef YAZILMIYORDU, son hedefleri BİR ÖNCEKİ
+  pozisyona aitti ve o pozisyon karşı potadaydı. Artık boşluk şablonu + adam adama savunma
+  çalışır (kesme/perde/post YOK — onlar pozisyon koreografisidir).
+- **3 · saha dışı hedef** — `oamOluTopHakem` sokma hedefini `_oobVer`siz yazıyordu; ayrıca
+  izin ömürlü (FAZ 58 B) ve düştüğünde hedef dışarıda kalıyordu. İzin hedeften önce verilir,
+  `_oobKapat` hedefi de saha içine alır. 34 → **9 kare** (%0,02 → %0,00).
+
+### Ölçülerek GERİ ALINANLAR (iki tanesi)
+- **1C · "şut setDur*0,6'dan önce atılmasın"** — uygulandı, set fazını 0,5 → 1,4 sn yaptı
+  ama hedefi (3,0 sn) tutturmadı ve **gerçek veriye karşı bedeli ölçüldü**: `şut anında duran`
+  L1 0,433 → **0,634** (2,63/4 ↔ gerçek 1,655/4). FAZ 48'in dersi tam buydu — gerçek
+  SportVU'da şut anında 4 arkadaştan ancak 1,66'sı durur. Geri alındı (0,634 → 0,502).
+- **Sprint eşiği 190 px (6,4 m)** — `faz59`un elle yazılmış hız bandını korumak için denendi,
+  **kazancın tamamını götürdü**: bekleme penceresi yayılım X 3,30 → 2,82, canlı top fizik
+  3,11 → 2,74. 148 px'e dönüldü.
+
+### Tutturulamayan hedefler — ve NEDENİ
+**Dokuz kapının dokuzu da düştü.** En önemli bulgu şu ve brifin 4. maddesini de kapsıyor:
+
+> **Yayılım hedefi (≥3,30 / ≥3,40) gerçek NBA kaydının KENDİSİ tarafından da tutturulamıyor.**
+> Aynı koşulardaki KLİP kareleri — SportVU kaydının birebir oynatılması, yani bu maçın kendi
+> kontrol grubu — üç ayrı 620 sn koşuda **X 2,93-3,07 · Y 3,12-3,28** ölçüldü. Bizim canlı top
+> fizik karelerimiz **3,03 / 2,83**. Yani X kontrol grubuyla eşleşiyor, açık yalnız Y'de.
+> `gercek-hareket.json`ın 3,636/3,754 değeri **10 TAM MAÇIN bütün fazlarından** çıkarılmıştır
+> (tam saha geçişleri dahil) ve yarı saha pozisyonundan tanımı gereği geniştir. Eşiği fizik
+> karelerine uygulamak, gerçek basketbolu kusur ilan etmektir (FAZ 39/54 dersi).
+
+Kalan gerçek açıklar (uydurmuyorum, tutmadı):
+1. **`gecis` bitişinde en uzak oyuncu 14,4 m** (hedef ≤4,0). Bütçe artık en yavaş oyuncuyu
+   sayıyor ama geçiş fazının SÜRESİNİ olay kuyruğu belirliyor; klip şut olayı gelince faz
+   kesiliyor. Bütçeyi uzatmak şut anını geciktirir ve 1C'nin ölçülen bedelini doğurur.
+2. **Kademe SPRİNT olduğu hâlde gerçekleşen hız 2,83 m/sn** (törende 4,00). Aradaki fark
+   ivme tavanı + dönüş yarıçapı + kısa pencere; tören 12 sn boyunca SABİT bir hedefe düz
+   koşuyor, canlı fazlar 4 sn'de yön değiştiriyor. Bunu kapatmanın yolu ivme/dönüş
+   sabitlerini gevşetmektir ve o sabitler FAZ 56/57'de gerçek veriye oturtuldu — dokunmadım.
+3. **Kutunun en dar anı 13 m²** — o kare bir KLİP karesidir (klip en dar 12-17 m²), yani
+   gerçek NBA kaydı. Kapı bizim koreografimizi değil kaydı ölçüyor.
+
+### Gerileme ve kapılar
+`hareket-bant-check` DÜŞEN **5 → 5** (yayılım x 0,422→0,389 · y 0,640→0,568 · pas/pozisyon
+0,334→0,194 iyileşti; şut anında duran 0,433→0,502 ve potaya uzaklık 0,354→0,427 kötüleşti).
+`aynı yarıda` %61,8 → **%66,0** (gerçek %68,1). Yapısal satırların hepsi korundu: rakibe pas
+**0/130** · donan uçuş **0** (taban 1) · hayalet held 0,17 sn · izinsiz saha dışı **%0,00** ·
+jeton/top ışınlanması **0** · jeton iç içe (>1,2 sn) **0** (taban 14). `faz58` DÜŞEN 2 (taban 2) ·
+`faz59` DÜŞEN 5 (taban 5; yeni tek düşen duvar hızı 2,07 ↔ elle yazılmış bant 1,70-2,00 —
+gerçek verili kapı L1 0,276 ile GEÇİYOR ve 7,5+ bandı %0,01 · gerçek %0,25).
+`sim-node --n=200 --seed=42` **93.4 - 87.3 · 268** · determinizm ✓ · `visual-check` 0 hata ·
+`surum-check --yaz` → **117**. Ayrıntı: `olcum/FAZ69-sonuc.txt`.

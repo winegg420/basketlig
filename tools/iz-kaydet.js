@@ -195,13 +195,14 @@ async function main() {
       a.push(G.team && G.team.isim, mState && mState.rakipName);
       return a.filter(Boolean);
     } catch (e) { return []; } })(),
-    dil: (typeof getLang === 'function') ? getLang() : '?'
+    dil: (typeof getLang === 'function') ? getLang() : '?',
+    gizli: (typeof document !== 'undefined') ? !!document.hidden : null   /* FAZ 69: gizli sekmede alınan sahne ölçümü GEÇERSİZDİR (FAZ 62 dersi) */
   }));
   await page.evaluate(() => { try { stopMatch(); } catch (e) {} });
   await browser.close(); srv.close();
 
   const izDosya = path.join(OUT, `iz-${ETIKET}.json`);
-  fs.writeFileSync(izDosya, JSON.stringify({ meta: { etiket: ETIKET, seed: SEED, secs: SECS, rate: RATE, pxM: PX_M, dil: veri.dil }, kare: veri.kare, balon: veri.balon, adlar: veri.adlar }));
+  fs.writeFileSync(izDosya, JSON.stringify({ meta: { etiket: ETIKET, seed: SEED, secs: SECS, rate: RATE, pxM: PX_M, dil: veri.dil, gizli: veri.gizli }, kare: veri.kare, balon: veri.balon, adlar: veri.adlar }));
 
   const R = analiz(veri.kare, veri.balon, veri.adlar);
   R.dil = veri.dil;

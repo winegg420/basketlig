@@ -3455,6 +3455,14 @@ function _oobKapat(p){
   if(p._oob){
     const _ic=(p.x>=CRT_X0&&p.x<=CRT_X1&&p.y>=CRT_Y0&&p.y<=CRT_Y1);
     p._oobDonus=!_ic;
+    /* ── FAZ 69 · 3: İZİN KALKINCA HEDEF DE SAHA İÇİNE ALINIR ──────────────────────────
+       Sokma noktası çizginin DIŞINDADIR ve doğrudan `p.tx=spot.x` ile yazılır (kırpılmaz —
+       yazıldığı an bu doğrudur). Ama izin ömürlüdür (FAZ 58 B: görev bitince 0,8 sn,
+       mutlak 6,0 sn); izin düştüğünde hedef dışarıda kalıyordu ve oyuncunun KONUMU
+       `_inX/_inY` ile çizgiye yapıştırıldığı için hedefe asla "varamıyor", orada takılıp
+       dizilim kutusunun kenarını çiviliyordu. Ölçüldü (v116 · 300 sn): 34 kare (%0,02),
+       hepsi ölü top sokucusu. İzin ve hedef aynı anda düşer. */
+    if(isFinite(p.tx)&&(p.tx<CRT_X0||p.tx>CRT_X1||p.ty<CRT_Y0||p.ty>CRT_Y1)){ p.tx=_inX(p.tx); p.ty=_inY(p.ty); p._wp=null; }
   }
   p._oob=false;
 }

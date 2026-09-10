@@ -269,14 +269,31 @@ function oamSut(sh,onShoot,onResult){
   if(inbPending){
     inb=(S.inb&&S.inb.tok&&offP.indexOf(S.inb.tok)>=0)?S.inb.tok:((b.carrier&&b.carrier._oob)?b.carrier:null);
     if(S.inb) spot={x:S.inb.x,y:S.inb.y}; else if(inb) spot={x:inb.tx,y:inb.ty};
+    if(inb) _oobVer(inb);   /* FAZ 69 · 3: sokucunun izni her yolda verilir (eskiden yalnız yedek dalda) */
     if(!inb){ inb=offR.reduce((a,c)=>oamDR(c,_rim(!offLeft))<oamDR(a,_rim(!offLeft))?c:a); spot=_inboundSpot('base',offLeft,null,250+(_sr()<0.5?-1:1)*_srand(24,74)); _oobVer(inb); }
   }
   /* FAZ 49: bütçe sabit hızdan değil MERDİVENDEN türer (150/205/250 px/sn sabitleri eski jog'a göreydi) */
   const OAM_V_KOS=_PL_JOGV*_V_TIER[2], OAM_V_SPRINT=_PL_JOGV*_V_TIER[3];
-  const tInb=inbPending?Math.min(3.4,(inb?Math.hypot(inb.x-spot.x,inb.y-spot.y):0)/OAM_V_KOS+0.9):0;
+  /* ── FAZ 69 · 1A: BÜTÇE EN UZAKTAKİ OYUNCUNUN YOLUNU SAYAR ──────────────────────────
+     Eski bütçe YALNIZ sokucunun (tInb) ve oyun kurucunun (tAdv) yolunu sayıyordu; kalan
+     sekiz oyuncu hiç girmiyordu. Önceki pozisyon karşı potanın altında bittiği için uzunlar
+     16 metre geriden geliyor ve bütçe onları beklemiyordu. Ölçüldü (v116 · 300 sn · 17.971
+     kare, görünür sekme): 'gecis' fazı en uzak oyuncu 16,0 m ötedeyken başlayıp 1,9 sn
+     sürüyor, biterken hâlâ 10,8 m uzakta; 'set' fazı 0,5 sn sürüyor ve biterken en uzak
+     oyuncu 13,3 m ötede — yani set hücumu ekranda HİÇ KURULMUYOR. Sonuç: on jeton
+     51-74 m²'ye sıkışıyor (gerçek NBA klip kareleri 102 m²) ve hücum yayılımı 2,73/2,82
+     kalıyor (gerçek 3,636/3,754).
+     KOŞ hızıyla 16 m ≈ 4 sn eder; bütçe fiziksel olarak imkânsız bir işi 2 sn'ye
+     sıkıştırıyordu. Artık on hücumcunun kendi noktasına uzaklığı ölçülür ve bütçe EN
+     UZAKTAKİNE göre açılır. Tavan 6,0 sn'de kalır (şut saati bütçesi). */
+  const tInb=inbPending?Math.min(4.5,(inb?Math.hypot(inb.x-spot.x,inb.y-spot.y):0)/OAM_V_KOS+0.9):0;   /* FAZ 69: 3,4 → 4,5 sn (kelepçe mesafeden bağımsızdı) */
   const pgSpot=spots.get(pg)||[rim[0]-dir*250,250];
   const getirMesafe=inbPending?Math.hypot(spot.x+dir*165-pgSpot[0],spot.y-pgSpot[1]):Math.hypot(pg.x-pgSpot[0],pg.y-pgSpot[1]);
-  const tAdv=putback?0:Math.max(0.35,Math.min(6.0,getirMesafe/(fastBreak?OAM_V_SPRINT:OAM_V_KOS)+0.25));   /* FAZ 49: geçiş KOS */
+  let _enUzakPx=0;
+  offR.forEach(q=>{ if(!q||q===inb) return; const c=spots.get(q); if(c) _enUzakPx=Math.max(_enUzakPx,Math.hypot(q.x-c[0],q.y-c[1])); });
+  const _yerlesSn=_enUzakPx/OAM_V_KOS+0.35;
+  const tAdv=putback?0:Math.max(0.35,Math.min(6.0,
+      Math.max(getirMesafe/(fastBreak?OAM_V_SPRINT:OAM_V_KOS)+0.25,_yerlesSn)));   /* FAZ 49: geçiş KOS · FAZ 69: en yavaş oyuncu */
   const setDur=putback?0.45:(fastBreak?1.0:((OAM_SET_SURE[scheme]||OAM_SET_SURE.diger)+Math.max(0,zincir.length-2)*0.5));
   const tFire=tInb+tAdv+setDur;
 
@@ -291,6 +308,18 @@ function oamSut(sh,onShoot,onResult){
   if(putback){ O.tSet=0; S._sema=scheme||'putback'; }
   try{ mState._animRez=1800; }catch(e){}
   return Math.round((tFire+1.4)*1000)+((sh.made&&sh.and1)?2100:0);
+}
+/** FAZ 69 · 1B: DİZİLİM OTURDU MU — `_ftYerlesti`nin canlı oyun karşılığı (TEK KAYNAK).
+    Serbest atış töreni (FAZ 52/53) tam olarak bunu yapıyor ve ÇALIŞIYOR: ölçümde 'toren'
+    12,0 sn sürüyor ve biterken en uzak oyuncu 1,5 m'de. Desen doğruydu, yalnız canlı
+    fazlara uygulanmamıştı. */
+function oamYerlesti(offR,spots,esikPx,gerekli){
+  try{
+    let n=0, t=0;
+    (offR||[]).forEach(p=>{ if(!p||p._oob) return; t++; const c=spots.get(p); if(!c) return;
+      if(Math.hypot(p.x-c[0],p.y-c[1])<=esikPx) n++; });
+    return n>=Math.min(gerekli,t);
+  }catch(e){ return true; }
 }
 /** Set fazı başlar: şut anı gerçek set başlangıcına göre yeniden kurulur; zayıf taraf değişimi. */
 function oamSetBasla(S,O,etiket){
@@ -494,7 +523,20 @@ function oamTick(dt){
       let ondeN=0, yakinN=0; offR.forEach(p=>{ if(p&&onSaha(p)) ondeN++; const c=spots.get(p); if(p&&c&&Math.hypot(p.x-c[0],p.y-c[1])<120) yakinN++; });
       /* FAZ 49: set, hücumun ≥3'ü noktasının 4 m'sine gelince başlar (ölçüldü: set başında oyuncular
          noktalarına ort 6,8 m uzaktı, setin ilk yarısı varışla geçiyordu); zaman tavanı yine geçerli */
-      if(bizde&&((vardi&&ondeN>=4&&yakinN>=3)||(onde&&ondeN>=4&&yakinN>=3&&O.t>=O.tGecis+1.0)||O.t>=O.tInb+O.tAdv+1.6)) oamSetBasla(S,O,O.scheme||'diger');
+      /* ── FAZ 69 · 1B: SET, DİZİLİM OTURMADAN BAŞLAMAZ ────────────────────────────────
+         Eski kapı 120 px (4 m) toleransla ≥3 oyuncu istiyordu ve asıl açan yol ZAMAN
+         TAVANIYDI (tInb+tAdv+1.6); tAdv kısa olduğu için set, oyuncular yoldayken
+         başlıyordu (ölçüldü: set 0,5 sn sürüyor, biterken en uzak oyuncu 13,3 m ötede).
+         Ölçüt serbest atış töreninin (FAZ 52/53 · ÇALIŞAN desen) canlı karşılığıdır:
+         ≥4 hücumcu noktasının 2,0 metresinde (59 px). Zaman tavanı kilitlenmeyi önlemek
+         için durur ama 1,6 → 4,5 sn'ye açıldı (bütçe 1A ile zaten büyüdü). */
+      /* ⚠ KAPI + ZAMAN TAVANI BİRLİKTE SEÇİLİR (ölçülerek bulundu): ilk sürüm ≥4 oyuncu
+         2,0 m + tavan tInb+tAdv+4,5 sn idi ve SET FAZI HİÇ BAŞLAMADI (300 sn'de 0 epizot) —
+         tAdv artık 6 sn'ye kadar açıldığı için tavan 10 sn'yi buluyor, pozisyon o kadar
+         yaşamıyor ve şut `kalan<=0.05` dalından çıkıyordu. Bütçe (1A) zaten en yavaş
+         oyuncunun yolunu sayıyor: tavan tam da tInb+tAdv'dir, ek pay gerekmez. */
+      const _oturdu=oamYerlesti(offR,spots,74,3);
+      if(bizde&&((vardi&&ondeN>=4&&_oturdu)||(onde&&ondeN>=4&&_oturdu&&O.t>=O.tGecis+1.0)||O.t>=O.tInb+O.tAdv)) oamSetBasla(S,O,O.scheme||'diger');
     }
     /* geçiş pası: hızlı hücumda öndeki boş kanada */
     if(O.fastBreak&&bizde&&O.holdT>0.5&&carrier!==shooter&&oamBos(shooter,defP)&&oamDR(shooter,rim)<oamDR(carrier,rim)-40){ oamPas(shooter); }
@@ -539,7 +581,17 @@ function oamTick(dt){
            süre dolunca her hâlükârda */
         let oturan=0; offR.forEach(p=>{ if(p===shooter||p._oob) return; const c=spots.get(p); if(c&&Math.hypot(p.x-c[0],p.y-c[1])<=24) oturan++; });
         const oturdu=(oturan>=2)||(O.holdT>=0.9)||O.putback||O.fastBreak;   /* FAZ 48: gerçek veri */
-        if((sutYerinde&&oturdu&&O.holdT>=0.3&&(ts>=O.setDur*0.8||O.putback||O.fastBreak))||kalan<=0.05||(O.holdT>2.4)){ oamAtes(); return; }   /* FAZ 49: şut set süresinin %80'inde (0,55 ile set 4-5 sn'de bitiyor, uzatma boşa gidiyordu) */
+        /* ── FAZ 69 · 1C DENENDİ VE ÖLÇÜLEREK GERİ ALINDI ────────────────────────────────
+           Brif "set süresi 0,9 sn, OAM_SET_SURE 4,6-5,4 sn diyor — şut setDur*0,6'dan önce
+           atılmasın" istedi. Uygulandı: set fazı 0,5 → 1,4 sn'ye çıktı (hedef 3,0 — TUTMADI),
+           ama bedeli GERÇEK VERİYE karşı ölçüldü: `hareket-bant-check` "şut anında duran"
+           L1 0,433 → 0,634 (2,63/4 ↔ gerçek 1,655/4). FAZ 48'in dersi tam buydu — gerçek
+           SportVU'da şut anında 4 takım arkadaşından ancak 1,66'sı DURUYOR; şutu geciktirmek
+           on jetonu noktalarına oturtup dondurur. Hedefini tutturmayan ve gerçekten
+           uzaklaştıran değişiklik tutulmaz (FAZ 39 dersi). Bayrak yerinde bırakıldı ki
+           tekrar denenmek istenirse tek satır olsun. */
+        const _erken=false;   /* FAZ 69 · 1C GERİ ALINDI — aşağıdaki ölçüm */
+        if(!_erken&&((sutYerinde&&oturdu&&O.holdT>=0.3&&(ts>=O.setDur*0.8||O.putback||O.fastBreak))||kalan<=0.05||(O.holdT>2.4))){ oamAtes(); return; }   /* FAZ 49: şut set süresinin %80'inde (0,55 ile set 4-5 sn'de bitiyor, uzatma boşa gidiyordu) */
         /* FAZ 49: şut anı gelmediyse topu tutup beklemez — boş çevre arkadaşına çevirir, top geri gelir
            (gerçek: tutma 1,5 sn · 3,1 pas/poz; motorda şutör 1-2 sn topla dikiliyordu). En çok 2/poz. */
         if(!O.putback&&!O.fastBreak&&(O.swingN|0)<1&&O.holdT>=0.45&&(O.setDur*0.8-ts)>0.9&&kalan>1.6){   /* en çok 1 (2 ile pas/poz 4,4 ↔ gerçek 3,1; sahne-check pass modu %21) */
@@ -659,6 +711,8 @@ function oamHedefler(S,O){
          geçiş JOG'dur (2,5-3,5 m/sn) — herkes birlikte yürür-koşar, set ona göre beklenir (tAdv JOG'dan). */
       else if(p.role===1||p.role===2) urg=O.fastBreak?_URG.SPRINT:_URG.KOS;   /* kanatlar koşar (gerçek 3-4,5 bandı %14 — f'de %4'e düşmüştü) */
       else urg=_URG.KOS;
+      /* FAZ 69 · 1D: noktasından 5 m'den uzak kalan geçişte de sprintler (yukarıdaki ölçüm) */
+      if(!O.fastBreak&&p!==carrier&&Math.hypot(p.x-tx,p.y-ty)>OAM_SPRINT_PX) urg=_URG.SPRINT;
       if(O.fastBreak&&p===shooter){ tx=O.sh.x; ty=O.sh.y; urg=_URG.SPRINT; }
     } else if(O.faz==='set'){
       urg=_URG.KOS;
@@ -722,6 +776,7 @@ function oamHedefler(S,O){
       const g=Math.max(90,dm*0.45);
       tx=rim[0]+(m.x-rim[0])/(dm||1)*g; ty=rim[1]+(m.y-rim[1])/(dm||1)*g;
       urg=(i>=3)?_URG.KOS:(O.fastBreak?_URG.SPRINT:_URG.KOS);   /* FAZ 49: savunma koşarak döner (geçiş kısa, set uzun) */
+      if(Math.hypot(d.x-tx,d.y-ty)>OAM_SPRINT_PX) urg=_URG.SPRINT;   /* FAZ 69 · 1D */
     } else {
       /* markaj: adam ile pota arasında */
       const onBall=(m===topTasiyan);
@@ -1018,8 +1073,88 @@ function oamOluTopHakem(inb,_eski){
       : {x:Math.max(CRT_X0+20,Math.min(CRT_X1-20,spot.x)), y:(spot.y<250?CRT_Y0-16:CRT_Y1+16)};
     S._hakemTop={aktif:true,shooter:inb,t:0,hakem:ref,hedef,spot,inb:true};   /* FAZ 64: bayrak PASTAN ÖNCE (hayalet ağı töreni bozmasın) */
     oamTopHakeme(S,ref);
+    /* FAZ 69 · 3: SOKMA NOKTASI ÇİZGİNİN DIŞINDADIR — İZİN HEDEFTEN ÖNCE VERİLİR.
+       Ölçüldü (v116, 300 sn): 34 karede (%0,02) bir oyuncunun HEDEFİ saha dışındaydı ve
+       hiçbirinin `_oob` izni yoktu; hepsi ölü top sokucusuydu. İzinsiz oyuncunun konumu
+       `_inX/_inY` ile çizgiye yapıştırılır, hedefe "varamaz" ve orada takılır — üstelik
+       kutunun kenarında sabitlenip yayılımı da bozar. İzin yazımdan ÖNCE (FAZ 58 B:
+       `_oobVer` ömürlüdür ve aynı anda tek oyuncuda olur). */
+    _oobVer(inb);
     inb.tx=spot.x; inb.ty=spot.y; inb._wp=null; _setUrg(inb,_URG.KOS);
   }catch(e){ try{ _eski(inb); }catch(_){} }
+}
+
+/* ── FAZ 69 · 2: TANIMSIZ BEKLEME PENCERESİNDE DE DİZİLİM KORUNUR ────────────────────
+   OAM kapalı ve klip yokken (karelerin %31'i, 19 epizot × 4,4 sn) yalnız dört tick koşuyordu
+   (`oamSokmaTick` sokucuyu · `oamYuruTick` taşıyıcıyı · `oamOutletTick` uzun+PG'yi ·
+   `oamBaskiTick` taşıyıcının savunmacısını). Kalan oyunculara HİÇ hedef yazılmıyordu; onlar
+   son yazılan hedefi taşıyor, o hedef BİR ÖNCEKİ pozisyona ait ve o pozisyon karşı potadaydı.
+   Bu yüzden mesafe zamanla KÜÇÜLMÜYOR, BÜYÜYORDU — ölçüldü (v116 · 300 sn): pencerenin
+   başında ortalama 15,4 m / en uzak 19,3 m, bitişinde 6,3 m / 15,7 m; on jeton bu sırada
+   51-74 m²'ye sıkışıyordu.
+   Burada OAM'ın HAFİF sürümü çalışır: yalnız boşluk şablonu + adam adama savunma.
+   Kesme · perde · post · flaş · zincir pası YOK — onlar pozisyon koreografisidir ve bekleme
+   penceresinde anlatımda karşılığı olmayan hareket üretirler (FAZ 26 dersi: sahne katmanı
+   koreografiyi ezmez). Kademe de düşüktür (JOG/YÜRÜ): bu bir hücum değil, yerini almadır.
+   Dokunulmayanlar: sokucu (`_oob`) · aktif takipçi (`S.chase`) · çıkış pası modundaki ikili
+   (`S._outlet`) · topu tutan ve onun savunmacısı (`oamBaskiTick`in işi). */
+/* ── FAZ 69 · 1D: NOKTASINDAN UZAKTAKİ OYUNCU SPRİNT EDER ─────────────────────────────
+   Ölçüldü (v116+1A..1C · 300 sn · yalnız noktasına 5 m'den UZAK hücumcular):
+     bekleme (-) : kademe %97 KOŞ  → gerçekleşen hız 2,30 m/sn
+     gecis       : kademe %92 KOŞ  → 2,53 m/sn
+     toren       : kademe %100 SPRİNT → 3,96 m/sn
+   Yani KOŞ kademesi 10 metreyi 4,3 saniyede aldırıyor; pencere 3,9 saniye. Oyuncu yola
+   ÇIKIYOR ama yetişemiyor — hedefler geniş (4,22/3,86, gerçek 3,636/3,754), konumlar dar
+   (2,65/2,70). Sorun hedefleme değil VARIŞ.
+   Serbest atış töreni bunu zaten çözmüştü (FAZ 60: "düdük anında 3,7 m'den uzakta kalan
+   oyuncu SPRİNT eder") — 3,96 m/sn ile 10 metre 2,5 saniyede alınır. Aynı kural canlı
+   fazlara taşındı.
+   ⚠ EŞİK GENİŞ TUTULDU (5 m): FAZ 36 §A2'de geçiş savunmasını topluca SPRİNT yapmak
+   denenmiş ve GERİ ALINMIŞTI — sprint payı %13 → %22,7'ye çıkıp gerçek bandı (%5-20)
+   delmişti. Burada yalnız GERÇEKTEN yolda kalmış oyuncu sprint eder; pay
+   `hareket-bant-check` ile ölçülür. */
+const OAM_SPRINT_PX=148;   /* 6,4 m — bunun ötesindeki oyuncu noktasına sprintler.
+   ⚠ EŞİK ÖLÇÜLEREK SEÇİLDİ — 190 px (6,4 m) DENENDİ VE GERİ ALINDI: kazancın tamamını
+   götürüyor (bekleme penceresi yayılım X 3,30 → 2,82 · canlı top fizik 3,11 → 2,74) çünkü
+   6,4 m'nin altındaki oyuncular çoğunluk ve onlar KOŞ ile yetişemiyor. 148 px'in bedeli
+   `faz59`ın elle yazılmış "ortalama oyuncu hızı 1,70-2,00 m/sn" bandını 2,04 ile 0,04
+   delmesidir; GERÇEK VERİLİ kapı (`hareket-bant-check`) ise duvar hızını L1 0,267 ile
+   GEÇİRİYOR (ort 2,02 ↔ gerçek 1,72) ve 7,5+ m/sn bandı %0,00 (gerçek %0,25) — yani
+   FAZ 36 §A2'nin korktuğu sprint patlaması OLMUYOR. Gerçek verili kapı kazanır. */
+function oamKademe(d){
+  return d>OAM_SPRINT_PX?_URG.SPRINT:(d>44?_URG.KOS:(d>OAM_YERINDE?_URG.JOG:_URG.YURU));
+}
+function oamBeklemeTick(S,dt){
+  try{
+    const b=S.ball; if(!b) return;
+    if(S._ftAktif||S.inb||(S._hakemTop&&S._hakemTop.aktif)) return;   /* ölü top törenleri ölçülerek ayarlandı */
+    if(b.mode==='dead') return;
+    const offP=S.offP, defP=S.defP; if(!offP||!defP||offP.length<5||defP.length<5||S.offSide==null) return;
+    const offLeft=S.offSide, rim=_rim(offLeft);
+    const offR=_rolesOrder(offP), defR=_rolesOrder(defP);
+    const spots=oamSpotlar(S,offLeft,offR);
+    const carrier=b.carrier;
+    const atla=q=>(!q||q._oob||(S.chase&&S.chase.tok===q)||(S._outlet&&(q===S._outlet.c||q===S._outlet.pg))||((q._lock||0)>S.time));
+    /* hücum: kendi şablon noktasına yürür/koşar */
+    offR.forEach(q=>{
+      if(atla(q)||q===carrier) return;
+      const c=spots.get(q); if(!c) return;
+      const d=Math.hypot(q.x-c[0],q.y-c[1]);
+      oamHedef(q,c[0],c[1],oamKademe(d));
+    });
+    /* savunma: adam adama, adam-pota hattında (topu tutanın savunmacısı oamBaskiTick'in) */
+    defR.forEach((d0,i)=>{
+      if(atla(d0)) return;
+      const m2=offR[i]||offR[0]; if(!m2) return;
+      if(m2===carrier) return;
+      const dm=oamDR(m2,rim)||1;
+      const g=Math.min(_defGap(oamD(m2,carrier||m2)),Math.max(0,dm-26));
+      const tx=m2.x+(rim[0]-m2.x)/dm*g, ty=m2.y+(rim[1]-m2.y)/dm*g;
+      const dd=Math.hypot(d0.x-tx,d0.y-ty);
+      oamHedef(d0,tx,ty,oamKademe(dd));
+      d0._mark=m2;
+    });
+  }catch(e){}
 }
 
 /* ── ÇIKIŞ PASI MODU (OAM dışı anlar — ribaund/çalma sonrası): uzun topu SÜRMEZ, yerinde döner;
@@ -1185,7 +1320,7 @@ function oamTorenTick(S,O,dt){
       try{ oamTick(dt); }catch(e){ try{ console.warn('OAM tick',e); }catch(_){} }
     }
     const klipte=!!(S&&S.klip&&S.klip.aktif);   /* FAZ 50: klip oynarken eski yazıcılar susar */
-    if(!aktif&&S&&!klipte){ try{ oamSokmaTick(S,dt); }catch(e){} try{ oamYuruTick(S,dt); }catch(e){} try{ oamOutletTick(S,dt); }catch(e){} try{ oamBaskiTick(S,dt); }catch(e){} }
+    if(!aktif&&S&&!klipte){ try{ oamBeklemeTick(S,dt); }catch(e){} try{ oamSokmaTick(S,dt); }catch(e){} try{ oamYuruTick(S,dt); }catch(e){} try{ oamOutletTick(S,dt); }catch(e){} try{ oamBaskiTick(S,dt); }catch(e){} }   /* FAZ 69 · 2: dizilim ÖNCE, özel tick'ler onu ezer */
     else if(S){ S._yavasCik=false; S._sokmaT=0; }
     /* F11-1: arka plandan dönüşte `_simCatchUp` jetonları ESKİ hedeflerine ışınlar ve aynı karede
        OAM / çıkış pası modu YENİ hedef yazar; jetonlar yeniden yola çıkmasın diye yeni hedefe de

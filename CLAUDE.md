@@ -99,11 +99,13 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/_lib/gercek-bantlar.json` | **TEK DOĞRULUK KAYNAĞI** — check araçlarının eşikleri. Elle DÜZENLEME; `cikar.js` üretir. |
 | `tools/_lib/gercek-bant.js` | Bant okuyucu + kapı yardımcısı (`al` / `ham` / `kapi` / `bas`). Yeni bir gerçekçilik kapısı yazarken eşiği BURADAN oku. |
 | `tools/faz58-check.js` | **FAZ 58 canlı sahne kusur denetçisi** (tarayıcısız) — `iz-kaydet` kaydını okur: rakibe giden pas · izinsiz saha dışı / `_oob` sızıntısı · tek kare jeton sıçraması · canlı ve ölü sahipsiz top · tek kare top sıçraması · ÇİZİLEN konumda iç içe jeton payı. Pencere **en az 600 sn**. Top sahipliği / sokma / klip kırpması değişince `iz-kaydet --secs=620` + bunu çalıştır. |
+| `tools/faz69-check.js` | **Dizilim VARIŞ denetçisi (FAZ 69)** — `iz-kaydet` kaydını tarayıcısız çözer: faz başına süre + hücumcunun KENDİ NOKTASINA uzaklığı (başta/bitişte · ortalama/en uzak) · faz başına **KONUM ve HEDEF yayılımı ayrı** (geniş hedef + dar konum = VARIŞ sorunu, dar hedef = hedefleme sorunu) · 10 oyuncunun kutusu (ortalama · en dar · 40 m² altında geçen süre) · hücum yayılımı **KLİP ve FİZİK kareleri AYRI** artı **canlı top fizik** (serbest atış töreni hariç) · saha dışı hedef payı. Pencere ≥ 280 sn ve kayıt GÖRÜNÜR sekmede olmalı (`meta.gizli`). Dizilim/bütçe/kademe değişince çalıştır. |
 | `tools/faz59-check.js` | **FAZ 59 uçan top + taşıyıcı denetçisi** (tarayıcısız) — `iz-kaydet` kaydını okur: donan uçuş (mod pass/shot ama konum sabit) · pas süresi p99 · rakibe giden pas · canlı sahipsiz top · orta çizgiyi TOPLA geçen rol · FAZ 58 gerileme satırları. Pencere **en az 600 sn**. ⚠ İvme ve savunma mesafesi kapıları burada DEĞİL `sahne-olcum.js`tedir (yuvarlama/tanım farkı). Top durum makinesi ya da klip slot eşlemesi değişince çalıştır. |
 | `tools/goz.js` | **Canlı sahne ÇİZİM denetçisi (FAZ 68)** — maçın her karesini hem geometri hem ÇİZİM (SVG/DOM) katmanında tarar; ölçüt jetonun simülasyon konumu değil **kullanıcının EKRANDA GÖRDÜĞÜ** noktadır (`_cizDx/_cizDy` uygulanmış) ve etiketler gerçek `getBBox()` kutularıyla ölçülür. Kapılar: jeton çakışması (<26,2 px, **klip çifti hariç** — gerçek kayıtta yakın çift sıktır) · top taşıyıcıdan kopuk · etiket kutusu çakışması · sahne dondu · hakem boyalı alanda / tribünde · izinsiz saha dışı oyuncu. Her ihlal maç saatiyle damgalanır, aynı tip 2,5 sn içinde tekrar sayılmaz; ham döküm `tools/goz-rapor.json`. `node tools/goz.js --sn=180 [--exec=/yol/chromium]`. Çizim/etiket/hakem katmanı değişince çalıştır. |
 | `tools/anomali.js` | **Anomali avcısı** (tarayıcısız) — `iz-kaydet` kaydının TAMAMINI tarar ve **kapı listesi OLMADAN** aykırı davranışı arar: kıpırdamayan oyuncu · hedefine varamayan · arka sahada kalan hücumcu · kimseyi tutmayan savunmacı · yığılma · titreme · serbest atış yerleşimi · uzun/geri/rakibe pas · topu uzun tutan · boyada 3 saniye · yayılım · pozisyon süresi. Sayılar yeşilken şikâyet geldiğinde İLK bunu çalıştır. Bulgular ADAYDIR; kararı gerçek veri ve göz verir. |
 | `tools/an-goruntu.js` | **Anomali görüntüleyici** — canlı maçta bir durum (serbest atış · yığılma · donuk oyuncu · uzun tutma) OLUŞTUĞU ANDA sahanın PNG.sini çeker (`--secs=420 --max=26`). Kontak sayfasından farkı: sabit aralıkla değil olay anında çeker. |
 | `tools/dikis-goruntu.js` | **Dikiş görüntüleyici** — canlı maçtan 0,25 sn ARDIŞIK kareleri şerit hâlinde dizer (izlemeye en yakın şey); her karenin üstünde klip/oam/taşıyıcı durumu. Kontak sayfası (2 sn) hareketi göstermez. Klip↔fizik dikişini incelemek için. |
+| `tools/playoff-check.js` | **FAZ 68b sezon sonu / playoff çıkmazı denetçisi** — sezonu uçtan uca sürer (190 maç), playoff'u başlatır ve kullanıcının serisi varsa: durum makinesi `'playoff'` diyor mu · Maçlar butonu ile Ana Panel kartı AYNI etiketi gösterip ETKİN mi · kart rakibi ve seri durumunu yazıyor mu · **butona basınca canlı maç gerçekten açılıyor mu**. Sezon sonu / playoff / yeni sezon geçişine dokunan her değişiklikten sonra çalıştır. |
 | `tools/playoff-check.js` | **FAZ 68b sezon sonu / playoff çıkmazı denetçisi** — sezonu uçtan uca sürer (190 maç), playoff'u başlatır ve kullanıcının serisi varsa: durum makinesi `'playoff'` diyor mu · Maçlar butonu ile Ana Panel kartı AYNI etiketi gösterip ETKİN mi · kart rakibi ve seri durumunu yazıyor mu · **butona basınca canlı maç gerçekten açılıyor mu**. Sezon sonu / playoff / yeni sezon geçişine dokunan her değişiklikten sonra çalıştır. |
 | `tools/kilit-check.js` | **FAZ 51 kilitli sonuç (C1) etiket denetçisi** — maç başlat → yenile → Ana Panel kartı ve Maçlar butonu "⏩ Kilitli sonucu uygula" demeli, tıklayınca skorlu bildirim + fikstür işlenir, etiketler Başlat'a döner, ikinci tıklama gerçek maç. Buton etiketi / pendingMatch akışı değişince çalıştır. |
 | `tools/schema-check.js` | **`db/schema.sql` denetçisi** — sözdizimi (varsa gerçek PostgreSQL ayrıştırıcısı), lig kuralları, RLS, "kod tabanında bağlantı yok". |
@@ -2278,3 +2280,43 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   Kapı: **`node tools/playoff-check.js`** (sezonu uçtan uca sürer, playoff'u başlatır, iki
   butonu ve canlı maçın gerçekten açıldığını sınar). **Hiçbir buton, arkasında yapılacak iş
   yokken "Başlat" yazmamalı.**
+
+- **"YAVAŞ GİDİYOR" DEĞİL "YETİŞEMİYOR" — KADEME DOĞRU, HIZ YETERSİZ (FAZ 69, kusurun kök
+  nedeni):** dizilim HEDEFLERİ doğruydu (bekleme penceresinde yayılım 4,22/3,86 — gerçeğin
+  3,636/3,754'ünün bile üstünde) ama KONUMLAR dardı (2,65/2,70). Teşhis ancak **hedef ile
+  konumun yayılımı AYRI ölçülünce** çıktı: geniş hedef + dar konum = varış sorunu; dar hedef
+  = hedefleme sorunu. Sonra "neden varamıyor" ölçüldü (yalnız noktasına 5 m'den uzak
+  hücumcular): bekleme penceresinde kademe %97 KOŞ ama gerçekleşen hız **2,30 m/sn**, serbest
+  atış töreninde %100 SPRİNT ve **3,96 m/sn**. KOŞ 10 metreyi 4,3 saniyede aldırıyor, pencere
+  3,9 saniye. Çözüm FAZ 60'ın tören deseniydi (5 m'den uzak olan SPRİNT eder — `oamKademe`,
+  `OAM_SPRINT_PX`). ⚠ Eşiği 190 px'e (6,4 m) çıkarmak kazancın TAMAMINI götürüyor (bekleme
+  yayılımı 3,30 → 2,82) — çoğunluk 5-6 m bandındadır. Kapı: **`node tools/faz69-check.js`**.
+- **FAZ BÜTÇESİ EN YAVAŞ OYUNCUYU SAYMALI (FAZ 69 · 1A):** `oamSut`un bütçesi (`tInb`+`tAdv`)
+  YALNIZ sokucunun ve oyun kurucunun yolunu sayıyordu; kalan sekiz oyuncu hiç girmiyordu ve
+  önceki pozisyon karşı potada bittiği için uzunlar 16 m geriden geliyordu. Artık on hücumcunun
+  kendi noktasına uzaklığı ölçülüp bütçe en uzaktakine göre açılır. ⚠ **BÜTÇE İLE KAPI BİRLİKTE
+  SEÇİLİR:** bütçe büyüyünce "set dizilim oturmadan başlamasın" kapısının zaman tavanı
+  (`tInb+tAdv+4,5`) 10 saniyeyi buldu ve **SET FAZI TAMAMEN YOK OLDU** (300 sn'de 0 epizot,
+  şut `kalan<=0.05` dalından çıkıyordu). Tavan tam `tInb+tAdv` olmalı; bütçe zaten yerleşmeyi
+  sayıyor.
+- **BEKLEME PENCERESİNDE DE DİZİLİM YAZILMALI (FAZ 69 · 2):** OAM kapalı ve klip yokken
+  (karelerin %31'i, 46 epizot × 4,0 sn) yalnız dört tick koşuyordu ve hiçbiri TOPSUZ dokuz
+  oyuncuya hedef yazmıyordu; onlar BİR ÖNCEKİ pozisyonun hedefini taşıyordu ve o pozisyon
+  karşı potadaydı — mesafe zamanla KÜÇÜLMÜYOR, BÜYÜYORDU. `oamBeklemeTick` boşluk şablonu +
+  adam adama savunma yazar; kesme/perde/post GİRMEZ (onlar pozisyon koreografisidir ve
+  anlatımda karşılığı olmayan hareket üretirler — FAZ 26 dersi).
+- **YAYILIM EŞİĞİ FİZİK KARELERİNE UYGULANAMAZ — KONTROL GRUBU KLİPTİR (FAZ 69, FAZ 39/54
+  dersinin altıncı tekrarı):** "fizik karelerinde yayılım ≥3,30/≥3,40" hedefi GERÇEK NBA
+  KAYDININ KENDİSİ tarafından da tutturulamıyor — aynı koşulardaki KLİP kareleri (SportVU'nun
+  birebir oynatılması) üç ayrı 620 sn koşuda **X 2,93-3,07 · Y 3,12-3,28** ölçüldü.
+  `gercek-hareket.json`ın 3,636/3,754 değeri 10 TAM MAÇIN bütün fazlarından çıkarılmıştır
+  (tam saha geçişleri dahil) ve yarı saha pozisyonundan tanımı gereği geniştir. Bir yayılım
+  sayısını yargılarken kıyas tabanı AYNI KOŞUDAKİ klip satırıdır; ayrıca serbest atış töreni
+  (karelerin ~%25'i) ölü top dizilimidir ve dar durması DOĞRUDUR — ortalamadan çıkarılmalı
+  (`faz69-check` "CANLI TOP fizik" satırı).
+- **ŞUTU GECİKTİRMEK DİZİLİMİ OTURTUR AMA GERÇEKTEN UZAKLAŞTIRIR (FAZ 69 · 1C, denendi ve
+  geri alındı):** "şut `setDur*0,6`dan önce atılmasın" kuralı set fazını 0,5 → 1,4 sn yaptı
+  (hedef 3,0 — tutturmadı) ve bedeli `hareket-bant-check`te ölçüldü: **şut anında duran
+  L1 0,433 → 0,634** (2,63/4 ↔ gerçek 1,655/4). Gerçek SportVU'da şut anında 4 arkadaştan
+  ancak 1,66'sı durur (FAZ 48). Hedefini tutturmayan ve gerçekten uzaklaştıran değişiklik
+  tutulmaz.
