@@ -2450,3 +2450,29 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   gerçek NBA kaydının kendisidir ve ≥400 px / ≤%25 hedefleri onunla çelişir. Motor
   kareleri zaten 351 px ile gerçeğin ÜSTÜNDE — dizilimi daha da açmak oyunu gerçek
   basketboldan uzaklaştırır (FAZ 39 dersi).
+
+- **ÖLÇÜMÜN ANI, ÖLÇÜTÜN KENDİSİ KADAR ÖNEMLİDİR (FAZ 76, FAZ 68'in tekrarı):** "sayı
+  sonrası sokucu dip çizgiden 730 px içeride, 10 kez tekrarladı" bulgusu, sokucuyu çizgiye
+  YÜRÜRKEN ölçmekten doğuyordu — o an sahanın içinde olması DOĞRUDUR. Ölçüm sokma PASININ
+  atıldığı ana çekilince (`b.mode==='pass'` ve pasın çıkış noktası sokucunun yanında)
+  ihlal **1 → 0**. Bir davranışı yargılamadan önce "bu değeri hangi anda okuyorum ve o an
+  davranış tamamlanmış mı" diye sor.
+- **`tools/kural-goz.js` + `tools/yorum-goz.js` (FAZ 76):** FAZ 68-75'in bütün denetçileri
+  GEOMETRİK ölçüyordu (çakışma, mesafe, yayılım) ve o kalemlerin çoğu gürültü çıktı.
+  Bu ikisi OYUNUN KURALLARINA ve ANLATIM↔SAHNE tutarlılığına bakar; ölçütler **epizot +
+  toplam saniye** (olay sayısı DEĞİL — FAZ 74 dersi). ⚠ İkisi de `setInterval(16)` kullanır:
+  `requestAnimationFrame` arka plan sekmesinde boğulur ve ölçüm SESSİZCE durur.
+  ⚠ `yorum-goz` öznesini olay nesnesinden (`sh.sid`/`ev.rebId`) okur, METİNDEN ad ayıklamaz —
+  değişiklik satırlarındaki adlar ve "Top Min'in" gibi kalıplar yanlış pozitif üretir.
+- **PERİMETRE GARANTİSİ: EN UZAK İKİ SLOT YAYIN DIŞINA (FAZ 76 · `oamSpotlar`):** SET
+  şablonlarının yay çevresindeki slotları tam **212 px**'te oturuyor ve üç sayı yayı 209 px —
+  varış payı ya da küçük bir jitter beş oyuncuyu birden yayın içine düşürüyordu. En uzak iki
+  slot 225 px'e RADYAL itilir (yön korunur, şablonun şekli ve y yayılımı bozulmaz; yanal itme
+  FAZ 73'te denenmiş ve oyuncuları aynı hatta yığmıştı). Ölçülen kazanç **boyada 3+ hücumcu
+  15 ep/16,6 sn → 11 ep/11,5 sn**; üçlük ölçütü değişmedi.
+- **RİBAUNT KALABALIĞINDA TOPU ALMAYI ENGELLEYEN ŞART YARIÇAP DEĞİL HIZDIR (FAZ 76, denendi
+  ve geri alındı):** pota dibinde sahipsiz top için alma yarıçapını 0,8 sn sonra 100 px'e
+  açmak ölçülebilir fayda vermedi (29 ep/24,4 sn → 27 ep/23,0 sn). Sebep: A1b dalı alıcının
+  neredeyse DURAĞAN olmasını şart koşuyor (`_TOP_AL_V`), ribaunt kalabalığında 3 m ötedeki
+  oyuncu ise koşuyor. ⚠ Kıyas: gerçek SportVU'da sahipsiz top epizotlarının p90'ı **1,60 sn**
+  (FAZ 54); bizim epizot ortalamamız **0,85 sn** — yani o dağılımın altında.

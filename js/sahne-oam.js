@@ -145,6 +145,29 @@ function oamSpotlar(S,offLeft,offR){
   offR.forEach((p,i)=>{ const c=_pt((base[i]||base[0]).slice(),offLeft,!!S.flip);
     /* şablon %7 içeri çekilir (ölçüldü: potaya ortalama uzaklık 8,2 m, hedef ≤ 7) */
     m.set(p,[c[0],c[1]]); });   /* FAZ 49: %7 içeri çekme kaldırıldı — gerçek yayılım y 3,75 m, motor 3,0 ("≤ 7 m" kapısı elle yazılmıştı) */
+  /* ── FAZ 76 · İŞ 1: PERİMETRE BOŞ KALMAZ — EN AZ İKİ SLOT YAYIN DIŞINDA ─────────────
+     Ölçüm (`tools/kural-goz.js --playoff`, 300 sn): maçın bir bölümünde hücumun EN UZAK
+     oyuncusu bile potaya 208-209 px'ten yakın — yani beş hücumcunun tamamı üç sayı yayının
+     (209 px) içinde. Gerçek basketbolda perimetre boş kalmaz.
+     Şablonların kendisi sağlamdır (ölçüldü: SET_SPREAD/POST/MOTION 2 slot, 5OUT 3 slot
+     yay çevresinde; yalnız SET_HORNS 1). Kusur, şablonun yay çevresindeki slotlarının
+     tam 212 px'te oturması: hedefe VARIŞ payı (FAZ 69) ya da küçük bir jitter bile
+     oyuncuyu yayın içine düşürüyor ve o an beş oyuncu birden içeride kalıyor.
+     Kural: en uzak iki slot yayın en az 16 px DIŞINA (225 px) itilir — yön korunur,
+     yalnız yarıçap büyür, dolayısıyla şablonun şekli ve y yayılımı bozulmaz.
+     ⚠ Slotlar potaya göre RADYAL itilir; yanal (y) itmek FAZ 73'te denendi ve
+       oyuncuları aynı hatta yığıp çakışma üretti. */
+  try{
+    const _UC=225;
+    const dizi=offR.map(q=>({q,c:m.get(q)})).filter(o=>o.c)
+      .map(o=>({...o,d:Math.hypot(o.c[0]-rim[0],o.c[1]-rim[1])}))
+      .sort((a,b)=>b.d-a.d);
+    for(let k=0;k<Math.min(2,dizi.length);k++){
+      const o=dizi[k]; if(o.d>=_UC||o.d<1) continue;
+      const ux=(o.c[0]-rim[0])/o.d, uy=(o.c[1]-rim[1])/o.d;
+      m.set(o.q,[_inX(rim[0]+ux*_UC),_inY(rim[1]+uy*_UC)]);
+    }
+  }catch(e){}
   return m;
 }
 

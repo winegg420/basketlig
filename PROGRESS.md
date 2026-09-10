@@ -11302,3 +11302,94 @@ yayılım ≥430 px" olabilir ama motor zaten gerçeğin üstünde; onu daha da 
 yönlendirmesini sessizce ölü bıraktı: iki doğru düzeltme birbirini iptal etti. Durum
 adına göre dallanan kod kırılgandır; ölçüt VARLIK olmalı ("bekleyen playoff maçı var mı"),
 durum etiketi değil.
+
+---
+
+## FAZ 76 — BASKETBOL KURALI DENETÇİLERİ (2026-09-11, sürüm 123)
+
+Brifin yöntemi doğruydu ve boşluğu kapattı: **hiçbir araç oyunun KURALLARINA bakmıyordu.**
+İki kalıcı denetçi eklendi, ikisi de `setInterval(16)` ile çalışır (rAF arka planda
+boğulur ve ölçüm sessizce durur):
+
+- **`tools/kural-goz.js`** — hava atışı konumu · sayı sonrası taç konumu · potanın dibinde
+  sahipsiz top · üçlük çizgisi boşluğu · boyada 3+ hücumcu · top sıçraması.
+  Hepsi **EPİZOT + TOPLAM SANİYE** olarak raporlanır (olay sayısı değil).
+- **`tools/yorum-goz.js`** — şut tipi ifadesi ↔ gerçek mesafe · üçlük ifadesi ↔ mesafe ·
+  metindeki skor ↔ tabela · olayın öznesi sahada mı · **sahne geride mi** (metin doğru ama
+  taşıyıcı jeton potadan uzaksa ayrı sayılır — brifin 750/782 px'lik vakaları budur).
+  ⚠ Özne METİNDEN ayıklanmaz, olay nesnesinden (`sh.sid`/`ev.rebId`) okunur — brifin kendi
+  uyardığı ayrıştırma gürültüsü böyle önlenir.
+
+### Taban ölçümü (playoff, 600 sn, tohum 987654321)
+
+| olay | epizot | toplam sn | brifin tam maç ölçümü | karar |
+|---|---|---|---|---|
+| `UCLUK_CIZGISINDE_KIMSE_YOK` | 20 | 25,7 | 127 ep / 233 sn | **gerçek** |
+| `TOP_POTA_DIBINDE_SAHIPSIZ` | 29 | 24,4 | 71 ep / 39,2 sn | **gerçek** |
+| `SAYI_SONRASI_TAC_YANLIS_YERDE` | **0** | 0 | 10 | ölçüm anı artefaktı |
+| `HAVA_ATISI_MERKEZ_DISI` | **0** (top merkezden **0 px**) | 0 | 1 (359 px) | üretilmedi |
+| `TOP_SICRADI` | **0** | 0 | 30 | üretilmedi |
+| `YAKIN_SUT_UZAKTAN` · `UCLUK_YAKINDAN` · `SAHADA_OLMAYAN` · `SKOR_UYUSMAZ` · `SAHNE_GERIDE` | **0** | — | 4 + 36 | üretilmedi |
+
+**İŞ 2 (sayı sonrası taç) bir ÖLÇÜM ANI hatasıydı.** İlk sürümde sokucunun konumu skor
+değişir değişmez okunuyordu — o an sokucu haklı olarak sahanın içinde, çizgiye YÜRÜYOR.
+Ölçüm sokma PASININ atıldığı ana çekilince (`b.mode==='pass'` ve pasın çıkış noktası
+sokucunun yanında) sonuç **1 epizot → 0**. Brifin "10 kez tekrarladı, tesadüf değil"
+gözlemi doğruydu ama ölçtüğü şey kusur değildi.
+
+**İŞ 3 (hava atışı) üretilemedi:** maçın ilk ölçülebilir karesinde top merkezden **0 px**.
+FAZ 70'te hava atışı yeniden yazılmıştı (`S._havaTos`, tap kazanandan); brifin 359 px'i
+büyük olasılıkla o düzeltmeden önceki sürümde ya da `start` olayı işlenmeden önceki
+kareden okunmuş.
+
+### YAPILAN — İŞ 1: PERİMETRE GARANTİSİ (`oamSpotlar`, `js/sahne-oam.js`)
+
+Şablonlar ölçüldü ve **sağlam** çıktı (potaya uzaklıklar): SET_SPREAD 262/262/212/212/100 ·
+SET_POST 248/258/212/208/95 · SET_5OUT 248/259/259/212/212 — yalnız SET_HORNS'ta tek slot
+215 px'in ötesinde. Kusur şablonda değil, yay çevresindeki slotların **tam 212 px'te**
+oturmasında: varış payı ya da küçük bir jitter oyuncuyu yayın (209 px) içine düşürüyor ve
+o an beş oyuncu birden içeride kalıyor. Artık en uzak **iki slot yayın 16 px dışına
+(225 px) RADYAL olarak itilir** — yön korunur, şablonun şekli ve y yayılımı bozulmaz.
+(⚠ Yanal itme FAZ 73'te denenmiş ve oyuncuları aynı hatta yığıp çakışma üretmişti.)
+
+**Ölçülen etki (300 sn):**
+
+| ölçüt | önce | sonra |
+|---|---|---|
+| `UCLUK_CIZGISINDE_KIMSE_YOK` | 13 ep / 20,4 sn | 11 ep / 20,5 sn |
+| `BOYADA_3_HUCUMCU` | 15 ep / 16,6 sn | **11 ep / 11,5 sn** |
+
+Yani kazanç **boyalı alanın boşalmasında** (epizot −%27, süre −%31); üçlük ölçütü
+değişmedi. Dürüst değerlendirme aşağıda.
+
+### DENENDİ VE ÖLÇÜLEREK GERİ ALINDI — İŞ 4
+Pota dibindeki sahipsiz top için alma yarıçapı 0,8 sn sonra 100 px'e açıldı
+(FAZ 71'in 40 px'lik açılımının pota bölgesi karşılığı). 600 sn ölçüm:
+**29 ep / 24,4 sn → 27 ep / 23,0 sn** — ölçülebilir fayda yok, `git checkout` ile geri
+alındı. Sebep sonradan görüldü: A1b dalı alıcının **neredeyse durağan** olmasını şart
+koşuyor (`_TOP_AL_V`), ribaunt kalabalığında 3 m ötedeki oyuncu ise koşuyor. Yarıçap
+değil o şart bağlayıcı.
+
+### TUTTURULAMAYANLAR — açıkça
+1. **`UCLUK_CIZGISINDE_KIMSE_YOK`** — 600 sn'de 18-20 epizot / 25,7-29,3 sn. Kapı
+   (≤25 ep / ≤40 sn) TAM MAÇ için yazılmıştı; 600 sn bir maçın ~%27'si, dolayısıyla tam
+   maça ölçeklenince ~70 ep / ~100 sn eder ve **hedefin üstünde kalır**. Kalan epizotların
+   hepsinde "en uzak hücumcu 208-209 px" — yani oyuncular yayın tam ÜSTÜNDE, içeri
+   çökmüş değil. Bu bir eşik-kenarı etkisidir; brifin 118/122/188 px'lik vakaları bu
+   koşuda hiç görülmedi.
+2. **`TOP_POTA_DIBINDE_SAHIPSIZ`** — 27-29 ep / 23-24,4 sn, hedef ≤10 / ≤5. Epizot
+   ortalaması **0,85 sn**. ⚠ Kıyas için: gerçek SportVU kaydında sahipsiz top epizotlarının
+   **p90'ı 1,60 sn, maksimumu 5,2 sn** (FAZ 54 ölçümü). Bizim epizotlarımız o dağılımın
+   ALTINDA; hedefin (≤5 sn TOPLAM) gerçek basketbolla uyumlu olup olmadığı ölçülmedi.
+3. **İŞ 5 · İŞ 6** — bu koşuda hiç üretilmedi (0). Kod değiştirilmedi.
+
+### Kapılar
+`sim-node --n=200 --seed=42` **93.4 - 87.3 · 268** · determinizm ✓ ·
+`visual-check` 0 konsol hatası · `surum-check --yaz` → **123**.
+
+### Ders
+**Ölçümün ANI, ölçütün kendisi kadar önemlidir.** "Sayı sonrası sokucu 730 px içeride"
+bulgusu, sokucuyu çizgiye YÜRÜRKEN ölçmekten doğmuştu; doğru an sokma pasının atıldığı
+kare olunca ihlal sıfırlandı. Aynı sınıf FAZ 68'de de çıkmıştı (donma ölçütü `|tx-x|`).
+Bir davranışı yargılamadan önce "bu değeri hangi anda okuyorum ve o an davranışın
+tamamlanmış hâli mi" diye sor.
