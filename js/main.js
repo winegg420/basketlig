@@ -28,7 +28,14 @@ function startNextMatchNow(){
   try{ if(typeof closeAppModal==='function') closeAppModal(); }catch(e){}
   gotoMacPage();
   if(mState.running){ setTimeout(()=>scrollToMacLive(),80); return; }
-  if(!G.season||!G.season.active){ setTimeout(()=>scrollToMacLive(false),80); showNotif('Önce Lig’den sezonu başlat.'); return; }
+  /* FAZ 68b: playoff serisi bekliyorsa "Maçı izle" de onu açar. */
+  try{ if(matchPlaybackState()==='playoff'){ startPlayoffMatch(); setTimeout(()=>scrollToMacLive(),90); return; } }catch(e){}
+  if(!G.season||!G.season.active){
+    setTimeout(()=>scrollToMacLive(false),80);
+    const _bitti=!!(G.season&&G.season.matches&&G.season.matches.length&&seasonAllMatchesPlayed());
+    showNotif(_bitti?'Lig sezonun bitti — yeni sezon otomatik açılacak.':'Önce Lig’den sezonu başlat.');
+    return;
+  }
   const m=findNextUserSeasonMatch();
   if(!m){ showNotif(seasonAllMatchesPlayed()?'Bu sezonun maçların bitti.':'Sıradaki maç bulunamadı.'); return; }
   /* Önce maçı başlat (panel içeriği dolsun, .live-on gelsin), sonra panele kaydır. */
@@ -119,7 +126,17 @@ function renderPreMatchCourt(){
     const bEl=document.getElementById('liveBall'); if(bEl) bEl.style.opacity='0';
   }catch(e){ dbg('renderPreMatchCourt',e); }
 }
+/* FAZ 68b: maç butonu etiketleri TEK TABLODA — syncMatchButtons ve renderDashboardNextMatch
+   aynı kaynaktan okur (FAZ 51 dersi: aynı durumu gösteren iki buton tek durum makinesinden). */
+const MAC_BTN_ETIKET={running:'⏳ Maç Devam Ediyor',frozen:'▶ Devam et',
+  pending:'⏩ Kilitli sonucu uygula',playoff:'🏆 Playoff maçını oyna',
+  yok:'Maç yok',idle:'▶ Maçı Başlat'};
 function startMatch(playoff){
+  /* FAZ 68b: lig sezonu bittiyse ama playoff serin bekliyorsa buton playoff maçını açar —
+     eskiden !G.season.active dalına düşüp "Önce Lig'den sezonu başlat." diyordu. */
+  if(!playoff){
+    try{ if(matchPlaybackState()==='playoff'){ startPlayoffMatch(); return; } }catch(e){}
+  }
   /* F11-6: eskiden bu dal SESSİZCE dönüyordu. mState.running bir kez takılı kaldığında
      (olay zamanlayıcısı ölmüş ama bayrak açık kalmış) oyun KALICI olarak kilitleniyor,
      hiçbir bildirim de çıkmadığı için sebebi görünmüyordu. Artık takılı durum tespit edilip
@@ -146,7 +163,13 @@ function startMatch(playoff){
     rakip={isim:playoff.opp};
     userIsHome=!!playoff.userIsHome;
   } else {
-    if(!G.season||!G.season.active){ showNotif('Önce Lig’den sezonu başlat.'); return; }
+    if(!G.season||!G.season.active){
+      /* FAZ 68b: "başlamadı" ile "bitti" ayrı şeylerdir — kullanıcı sezonu bitirmişken
+         "Önce Lig'den sezonu başlat." mesajını alıp ne yapacağını bilemiyordu. */
+      const _bitti=!!(G.season&&G.season.matches&&G.season.matches.length&&seasonAllMatchesPlayed());
+      showNotif(_bitti?'Lig sezonun bitti — yeni sezon otomatik açılacak.':'Önce Lig’den sezonu başlat.');
+      return;
+    }
     match=findNextUserSeasonMatch();
     if(!match){ showNotif(seasonAllMatchesPlayed()?'Bu sezonun maçların bitti.':'Fikstürde maç yok.'); return; }
     /* F10-2: fikstür saati kapısı. Çok oyunculu sürümde maç, saati gelince oynanır; kapıyı
@@ -2176,28 +2199,60 @@ function matchPlaybackState(){
     if(typeof mState!=='undefined'&&mState&&mState.running) return 'running';
     if(canResumeMatch()) return 'frozen';
     if(typeof pendingMatchIsNext==='function'&&pendingMatchIsNext()) return 'pending';
+    /* ── FAZ 68b: PLAYOFF VE "MAÇ YOK" DA BİRER DURUMDUR (kullanıcı: "maçı başlatamıyorum")
+       Kullanıcının kendi kaydında yakalandı: lig sezonu bitmiş (190/190 oynanmış), PLAYOFF
+       AKTİF ve kullanıcının çeyrek final serisi bekliyor (Santos United - dgfg, 1. maç). Ama:
+         • Ana Panel kartı "— sezon bitti —" deyip butonu "Maç yok / disabled" yapıyor,
+           hemen ardından syncMatchButtons AYNI butona "▶ Maçı Başlat" yazıp ETKİNLEŞTİRİYOR
+           (FAZ 51'in "aynı durumu gösteren iki buton tek durum makinesinden okur" dersinin
+           ihlali: burada TEK butona İKİ yazıcı vardı ve ikincisi ÖLÜ bir etiket bırakıyordu);
+         • Butona basınca startMatch !G.season.active dalına düşüp "Önce Lig'den sezonu
+           başlat." diyor — sezon başlamamış değil, BİTMİŞ; üstelik yapılacak iş playoff
+           maçını oynamak. Kullanıcı çıkmaza giriyordu (hata da fırlamıyor, sessiz).
+       Playoff maçı ve "oynanacak maç yok" artık durum makinesinin kendi durumlarıdır;
+       etiket, başlık ve tıklama davranışı tek yerden türer. */
+    /* ⚠ 'active' ŞARTI ZORUNLU: bitmiş bir playoff nesnesi kayıtta duruyor olabilir ve
+       şartsız okunursa normal lig maçını gölgeler. */
+    if(G&&G.playoff&&G.playoff.active&&typeof userPlayoffMatch==='function'&&userPlayoffMatch()) return 'playoff';
+    if(typeof _oynanacakMacYok==='function'&&_oynanacakMacYok()) return 'yok';
   }catch(e){}
   return 'idle';
+}
+/** FAZ 68b: ne lig maçı ne playoff maçı var (sezon bitti / fikstür yok). */
+function _oynanacakMacYok(){
+  try{
+    if(!G||!G.team) return false;
+    if(!G.season||!G.season.active) return true;
+    return !findNextUserSeasonMatch();
+  }catch(e){ return false; }
+}
+/** FAZ 68b: bekleyen playoff serisi maçının rakibi (buton başlığı için). */
+function _playoffRakip(){
+  try{ const m=userPlayoffMatch(); if(!m) return ''; return (m.home===G.team.isim)?m.away:m.home; }catch(e){ return ''; }
 }
 function syncMatchButtons(){
   try{
     const durum=matchPlaybackState();
-    const etiket={running:'⏳ Maç Devam Ediyor',frozen:'▶ Devam et',
-                  pending:'⏩ Kilitli sonucu uygula',idle:'▶ Maçı Başlat'}[durum];
+    const etiket=MAC_BTN_ETIKET[durum]||MAC_BTN_ETIKET.idle;
+    const pasif=(durum==='running'||durum==='yok');
     const b=document.getElementById('startMatchBtn');
     if(b){
-      b.disabled=(durum==='running');
+      b.disabled=pasif;
       b.textContent=etiket;
       if(durum==='pending') b.title='Bu maç daha önce başlatılmış ve sonucu kilitlenmişti — canlı izlenemez; basınca kilitli sonuç doğrudan uygulanır.';
       else if(durum==='frozen') b.title='Maç kaldığı yerde duruyor — basınca devam eder.';
       else if(durum==='running') b.title='Maç canlı oynanıyor.';
+      else if(durum==='playoff') b.title='Playoff serindeki sıradaki maç — rakip: '+_playoffRakip();
+      else if(durum==='yok') b.title='Lig sezonun bitti ve oynanacak playoff maçın yok — yeni sezon otomatik açılacak.';
       else b.removeAttribute('title');
     }
     const card=document.getElementById('dashNextCard');
     const db=card?card.querySelector('.dn-play'):null;
     if(db){
-      db.disabled=(durum==='running');
+      db.disabled=pasif;
       db.textContent=etiket;
+      /* kart "maç yok" diye söndürülmüş olabilir — playoff varken tıklanabilir kalmalı */
+      if(durum==='playoff'&&card){ card.style.opacity=''; card.style.pointerEvents=''; }
     }
   }catch(e){}
 }

@@ -104,6 +104,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/anomali.js` | **Anomali avcısı** (tarayıcısız) — `iz-kaydet` kaydının TAMAMINI tarar ve **kapı listesi OLMADAN** aykırı davranışı arar: kıpırdamayan oyuncu · hedefine varamayan · arka sahada kalan hücumcu · kimseyi tutmayan savunmacı · yığılma · titreme · serbest atış yerleşimi · uzun/geri/rakibe pas · topu uzun tutan · boyada 3 saniye · yayılım · pozisyon süresi. Sayılar yeşilken şikâyet geldiğinde İLK bunu çalıştır. Bulgular ADAYDIR; kararı gerçek veri ve göz verir. |
 | `tools/an-goruntu.js` | **Anomali görüntüleyici** — canlı maçta bir durum (serbest atış · yığılma · donuk oyuncu · uzun tutma) OLUŞTUĞU ANDA sahanın PNG.sini çeker (`--secs=420 --max=26`). Kontak sayfasından farkı: sabit aralıkla değil olay anında çeker. |
 | `tools/dikis-goruntu.js` | **Dikiş görüntüleyici** — canlı maçtan 0,25 sn ARDIŞIK kareleri şerit hâlinde dizer (izlemeye en yakın şey); her karenin üstünde klip/oam/taşıyıcı durumu. Kontak sayfası (2 sn) hareketi göstermez. Klip↔fizik dikişini incelemek için. |
+| `tools/playoff-check.js` | **FAZ 68b sezon sonu / playoff çıkmazı denetçisi** — sezonu uçtan uca sürer (190 maç), playoff'u başlatır ve kullanıcının serisi varsa: durum makinesi `'playoff'` diyor mu · Maçlar butonu ile Ana Panel kartı AYNI etiketi gösterip ETKİN mi · kart rakibi ve seri durumunu yazıyor mu · **butona basınca canlı maç gerçekten açılıyor mu**. Sezon sonu / playoff / yeni sezon geçişine dokunan her değişiklikten sonra çalıştır. |
 | `tools/kilit-check.js` | **FAZ 51 kilitli sonuç (C1) etiket denetçisi** — maç başlat → yenile → Ana Panel kartı ve Maçlar butonu "⏩ Kilitli sonucu uygula" demeli, tıklayınca skorlu bildirim + fikstür işlenir, etiketler Başlat'a döner, ikinci tıklama gerçek maç. Buton etiketi / pendingMatch akışı değişince çalıştır. |
 | `tools/schema-check.js` | **`db/schema.sql` denetçisi** — sözdizimi (varsa gerçek PostgreSQL ayrıştırıcısı), lig kuralları, RLS, "kod tabanında bağlantı yok". |
 | `db/schema.sql` | **Çok oyunculu veri modeli** (Postgres/Supabase). Yalnız dosya — hiçbir bağlantı kurulmuyor. |
@@ -2259,3 +2260,21 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   SAHADA ÇALMAYLA biten (top ön sahaya hiç gitmiyor — geçiş olmaması DOĞRU) ya da KLİBİN ZATEN
   ÖN SAHADA BAŞLADIĞI pozisyonlar. CLAUDE.md'nin FAZ 44'teki "bu kapı çift sayar" uyarısının
   devamıdır: davranış yargısı için `gecis-analiz` kullan.
+
+- **BİR AKIŞIN SONU BAŞLANGICI KADAR SINANMALI — SEZON SONU HİÇ SINANMAMIŞTI (FAZ 68b,
+  kullanıcı: "maçı başlatamıyorum"):** yerelde ve canlıda HİÇBİR denetçi düşmüyordu
+  (`goz` · `visual-check` · `kilit-check` · `live-check` · `sim-node`) çünkü hepsi YENİ kariyer
+  kurup İLK maçı oynuyor. Kullanıcının kendi kaydında (FAZ 51 dersi: "bende oluyor sende
+  olmuyor" şikâyetinde önce KULLANICININ KAYDIYLA dene) lig 190/190 bitmiş, PLAYOFF aktif ve
+  kullanıcının serisi bekliyordu. İki kusur üst üsteydi: (a) `renderDashboardNextMatch` lig
+  maçı bulamayınca butona "Maç yok / disabled" yazıyor, hemen ardından `syncMatchButtons` AYNI
+  butona "▶ Maçı Başlat" yazıp ETKİNLEŞTİRİYORDU — tek butona iki yazıcı, ölü etiket
+  (FAZ 51'in "aynı durumu gösteren iki buton tek durum makinesinden okur" dersinin ihlali);
+  (b) `startMatch` playoff'u hiç bilmiyor, `!G.season.active` dalına düşüp "Önce Lig'den sezonu
+  başlat." diyordu — sezon başlamamış değil BİTMİŞTİ. Çözüm: `matchPlaybackState()` iki yeni
+  durum kazandı (**`'playoff'`** — `G.playoff.active` şartı ZORUNLU, yoksa bitmiş bir playoff
+  nesnesi normal lig maçını gölgeler — ve **`'yok'`**), etiketler tek tabloda (`MAC_BTN_ETIKET`),
+  `startMatch` argümansız çağrıda `'playoff'` durumunda `startPlayoffMatch()`e devreder.
+  Kapı: **`node tools/playoff-check.js`** (sezonu uçtan uca sürer, playoff'u başlatır, iki
+  butonu ve canlı maçın gerçekten açıldığını sınar). **Hiçbir buton, arkasında yapılacak iş
+  yokken "Başlat" yazmamalı.**

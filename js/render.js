@@ -145,6 +145,27 @@ function renderDashboardNextMatch(){
   if(homeCol) homeCol.classList.remove('mine');
   if(awayCol) awayCol.classList.remove('mine');
   if(!m){
+    /* ── FAZ 68b: LİG MAÇI YOK AMA PLAYOFF SERİSİ OLABİLİR ─────────────────────────────
+       Kullanıcının kaydında yakalandı: lig 190/190 bitmiş, playoff aktif ve çeyrek final
+       serisi bekliyor — ama kart "— sezon bitti —" deyip butonu söndürüyordu (ardından
+       syncMatchButtons onu yeniden "Maçı Başlat" yapıp ÖLÜ bir buton bırakıyordu; FAZ 51'in
+       "aynı durumu gösteren iki buton tek durum makinesinden okur" dersinin ihlali).
+       Playoff maçı varsa kart onu gösterir ve buton oynatır. */
+    let _po=null; try{ _po=(typeof userPlayoffMatch==='function')?userPlayoffMatch():null; }catch(e){}
+    if(_po){
+      nh.textContent=_po.home; na.textContent=_po.away;
+      if(homeCol&&_po.home===G.team.isim) homeCol.classList.add('mine');
+      if(awayCol&&_po.away===G.team.isim) awayCol.classList.add('mine');
+      if(homeRec) homeRec.textContent=_teamRecordLabel(_po.home);
+      if(awayRec) awayRec.textContent=_teamRecordLabel(_po.away);
+      if(card){ card.style.opacity=''; card.style.pointerEvents=''; }
+      if(meta){
+        const w=(_po.series&&_po.series.wins)||[0,0];
+        meta.textContent='🏆 Playoff serisi · '+_po.gameNo+'. maç · seri '+w[0]+'-'+w[1]+' (ilk 4 galibiyet)';
+      }
+      if(typeof syncMatchButtons==='function') syncMatchButtons();
+      return;
+    }
     nh.textContent=G.team.isim;
     const done=G.season&&seasonAllMatchesPlayed();
     na.textContent=done?'— sezon bitti —':'— sezon yok —';
@@ -166,8 +187,8 @@ function renderDashboardNextMatch(){
   if(card){ card.style.opacity=''; card.style.pointerEvents=''; const btn=card.querySelector('.dn-play'); if(btn){
     let _durum=_live?'running':'idle';
     try{ if(typeof matchPlaybackState==='function') _durum=matchPlaybackState(); }catch(e){}
-    btn.textContent={running:'⏳ Maç Devam Ediyor',frozen:'▶ Devam et',pending:'⏩ Kilitli sonucu uygula',idle:'▶ Maçı Başlat'}[_durum]||'▶ Maçı Başlat';
-    btn.disabled=(_durum==='running');
+    btn.textContent=((typeof MAC_BTN_ETIKET!=='undefined')?MAC_BTN_ETIKET[_durum]:null)||'▶ Maçı Başlat';
+    btn.disabled=(_durum==='running'||_durum==='yok');
     if(_durum==='pending') btn.title='Bu maç daha önce başlatılmış ve sonucu kilitlenmişti — canlı izlenemez; basınca kilitli sonuç doğrudan uygulanır.';
     else btn.removeAttribute('title');
   } }

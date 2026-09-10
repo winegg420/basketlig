@@ -10551,3 +10551,84 @@ n=26 geçişte 12/26 ↔ 7/26, yani 5 olay. Bu turun değişiklikleri (çizim of
 taşıyıcıya kelepçelenmesi) taşıyıcı KİMLİĞİNE dokunmaz. Ayrıca CLAUDE.md FAZ 59 · 3'te
 yazılı: **PG/SG ayrımı gerçek veride YOKTUR**, ölçülebilir büyüklük guard payıdır
 (`hareket-bant-check`: G %72 ↔ gerçek %79). Yine de açık borç listesine yazıldı.
+
+---
+
+## FAZ 68b — "MAÇI BAŞLATAMIYORUM": PLAYOFF ÇIKMAZI (2026-09-10, sürüm 116)
+
+Kullanıcı FAZ 68 sonrası "maçı başlatamıyorum" dedi. **Yerelde ve canlıda hiçbir denetçi
+düşmüyordu** (`goz`, `visual-check`, `kilit-check`, `live-check`, `sim-node` — hepsi temiz),
+çünkü hepsi YENİ kariyer kurup ilk maçı oynuyor. CLAUDE.md FAZ 51 dersi uygulandı:
+**"bende oluyor sende olmuyor" şikâyetinde önce KULLANICININ KAYDIYLA dene.**
+
+### Kullanıcının tarayıcısında ölçüm
+`basketlig.vercel.app` (sürüm 115 servis ediliyor, SW güncel), kullanıcının kendi kaydı
+(`charazay_game_save_v5`, v11, 13-6, 232.065 $):
+
+| ölçüm | değer |
+|---|---|
+| lig fikstürü | **190 / 190 oynanmış** — `G.season.active = false` |
+| `findNextUserSeasonMatch()` | **null** |
+| `G.playoff.active` | **true** · round 0 · takımlar arasında **kullanıcının takımı var** |
+| bekleyen seri | Santos United – dgfg · 1. maç · 0-0 |
+| Ana Panel kartı | "— sezon bitti —" + **"▶ Maçı Başlat"** |
+| butona tıklama | `mState._sim` yok · oyuncu 0 · anlatım 0 · **fırlatılan hata yok** |
+
+### Kök neden — İKİ kusur üst üste
+1. **TEK BUTONA İKİ YAZICI (FAZ 51 dersinin ihlali).** `renderDashboardNextMatch` lig maçı
+   bulamayınca kartı söndürüp butona "Maç yok" yazıp `disabled` yapıyor; hemen ardından
+   çalışan `syncMatchButtons` aynı butona durum makinesinden **"▶ Maçı Başlat"** yazıp
+   ETKİNLEŞTİRİYORDU. Ekranda çalışır görünen, aslında ölü bir buton kalıyordu.
+2. **`startMatch` playoff'u hiç bilmiyordu.** `!G.season.active` dalına düşüp
+   *"Önce Lig'den sezonu başlat."* diyordu — sezon başlamamış değil **bitmişti**, ve
+   yapılacak iş playoff maçını oynamaktı. Playoff yalnız **Lig ekranındaki** panelden
+   oynanabiliyordu (`startPlayoffMatch`), Ana Panel ve Maçlar sayfası bunu hiç söylemiyordu.
+
+### Düzeltme — durum makinesi tek kaynak (FAZ 51 kalıbı)
+`matchPlaybackState()` (`js/main.js`) iki yeni durum kazandı:
+- **`'playoff'`** — `G.playoff.active` ve `userPlayoffMatch()` varsa. (`active` şartı ZORUNLU:
+  bitmiş bir playoff nesnesi kayıtta durabilir ve şartsız okunursa normal lig maçını gölgeler.)
+- **`'yok'`** — ne lig maçı ne playoff maçı var (`_oynanacakMacYok()`).
+
+Etiketler artık TEK TABLODA: `MAC_BTN_ETIKET` (`js/main.js`) — `syncMatchButtons` ve
+`renderDashboardNextMatch` aynı kaynaktan okur:
+`running / frozen / pending / **playoff: '🏆 Playoff maçını oyna'** / **yok: 'Maç yok' (pasif)** / idle`.
+
+- `startMatch()` başında: argümansız çağrıda durum `'playoff'` ise `startPlayoffMatch()`e devreder.
+- `openMatchLive` ("Maçı izle") aynı yolu kullanır.
+- Ana Panel kartı playoff maçı varsa **rakibi ve seri durumunu** gösterir
+  ("🏆 Playoff serisi · 1. maç · seri 0-0 (ilk 4 galibiyet)"), kart sönmez.
+- Yanıltıcı mesaj ayrıldı: sezon **bitmişse** "Lig sezonun bitti — yeni sezon otomatik
+  açılacak.", **başlamamışsa** eski metin.
+
+### Yeni denetçi — `tools/playoff-check.js`
+Sezonu uçtan uca sürer (190 maç), playoff'u başlatır ve kullanıcının serisi varsa: durum
+makinesi · iki butonun etiketi/etkinliği · kart metni · **butona basınca canlı maç gerçekten
+açılıyor mu** diye sınar. Sezon sonu / playoff akışına dokunan her değişiklikten sonra çalıştır.
+
+```
+PLAYOFF ÇIKMAZI DENETİMİ (FAZ 68b) · tohum 987654321
+  ✓ sezon uçtan uca sürüldü            190 maç
+  ✓ playoff aktif                      true
+  ✓ [1] durum makinesi                 playoff
+  ✓ [2a] Maçlar butonu etiketi         "🏆 Playoff maçını oyna"
+  ✓ [2b] Maçlar butonu etkin           true
+  ✓ [2c] Ana Panel kartı aynı etiket   "🏆 Playoff maçını oyna"
+  ✓ [2d] Ana Panel kartı tıklanabilir  pointerEvents="" disabled=false
+  ✓ [2e] kartta rakip görünüyor        "Kraków Koleji"
+  ✓ [2f] kart metni playoff diyor      "🏆 Playoff serisi · 1. maç · seri 0-0 (ilk 4 galibiyet)"
+  ✓ [3] butona basınca CANLI maç açıldı  running=true oyuncu=10 anlatım=2
+  ✓ konsol hatası                      0
+✓ playoff çıkmazı yok
+```
+
+### Kapılar
+`sim-node --n=200 --seed=42` **93.4 - 87.3 · 268** · determinizm ✓ ·
+`visual-check` 0 hata · `kilit-check` 7/7 ✓ · `playoff-check` 11/11 ✓ ·
+`surum-check --yaz` → **116**.
+
+### Ders
+**Bütün denetçiler YENİ kariyer kurup İLK maçı oynuyordu — sezon sonu hiç sınanmamıştı.**
+Bir akışın "sonu" (sezon bitişi, playoff, yeni sezon geçişi) başlangıcı kadar sınanmalı;
+`playoff-check` bu boşluğu kapatır. Ayrıca: **hiçbir buton, arkasında yapılacak iş yokken
+"Başlat" yazmamalı** — durum makinesine 'yok' durumu bu yüzden eklendi.
