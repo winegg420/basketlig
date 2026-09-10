@@ -99,6 +99,7 @@ kategorilerdir — ikincisi devralma havuzuna asla girmez ve sezonda en fazla 1 
 | `tools/_lib/gercek-bantlar.json` | **TEK DOĞRULUK KAYNAĞI** — check araçlarının eşikleri. Elle DÜZENLEME; `cikar.js` üretir. |
 | `tools/_lib/gercek-bant.js` | Bant okuyucu + kapı yardımcısı (`al` / `ham` / `kapi` / `bas`). Yeni bir gerçekçilik kapısı yazarken eşiği BURADAN oku. |
 | `tools/faz58-check.js` | **FAZ 58 canlı sahne kusur denetçisi** (tarayıcısız) — `iz-kaydet` kaydını okur: rakibe giden pas · izinsiz saha dışı / `_oob` sızıntısı · tek kare jeton sıçraması · canlı ve ölü sahipsiz top · tek kare top sıçraması · ÇİZİLEN konumda iç içe jeton payı. Pencere **en az 600 sn**. Top sahipliği / sokma / klip kırpması değişince `iz-kaydet --secs=620` + bunu çalıştır. |
+| `tools/goz.js --playoff` | **FAZ 71:** sezonu uctan uca surer, playoff.u baslatir ve kullanicinin SERI macini acar; sahne dogrulamasi bundan sonra bununla yapilir (lig maci playoff.u temsil etmiyor — olculdu: loose %10,7 ↔ %11,4, cakisma %0,28 ↔ %1,02, en uzun loose 2,5 ↔ 3,5 sn). Olay turleri: ACILIM_YOK · RAKET_TIKANDI · AYNI_TAKIM_CAKISMA · DERIN_CAKISMA · GERI_PAS · RIBAUNT_BOSLUGU · TOP_YERDE_UZUN · TUM_OYUNCULAR_TEK_YARIDA. X yayilimi, acilim ve top-kopuk olcutleri **KLIP/FIZIK ayri** basilir — klip ayni kosunun kontrol grubudur. |
 | `tools/hava-check.js` | **Hava atışı denetçisi (FAZ 70)** — maçın ilk 6 saniyesini kare kare izler ve motorun kararına göre topu KAZANAN takımın onu gerçekten alıp almadığını, ilk pasın takım içinde kalıp kalmadığını **sekiz ayrı tohumda** sınar (hava atışını kimin kazandığı tohuma bağlıdır; tek tohum kusuru %50 olasılıkla gizler). Düşerse topu held yapan yolu yığın iziyle basar. Hava atışı / top sahipliği koreografisi değişince çalıştır. |
 | `tools/faz69-check.js` | **Dizilim VARIŞ denetçisi (FAZ 69)** — `iz-kaydet` kaydını tarayıcısız çözer: faz başına süre + hücumcunun KENDİ NOKTASINA uzaklığı (başta/bitişte · ortalama/en uzak) · faz başına **KONUM ve HEDEF yayılımı ayrı** (geniş hedef + dar konum = VARIŞ sorunu, dar hedef = hedefleme sorunu) · 10 oyuncunun kutusu (ortalama · en dar · 40 m² altında geçen süre) · hücum yayılımı **KLİP ve FİZİK kareleri AYRI** artı **canlı top fizik** (serbest atış töreni hariç) · saha dışı hedef payı. Pencere ≥ 280 sn ve kayıt GÖRÜNÜR sekmede olmalı (`meta.gizli`). Dizilim/bütçe/kademe değişince çalıştır. |
 | `tools/faz59-check.js` | **FAZ 59 uçan top + taşıyıcı denetçisi** (tarayıcısız) — `iz-kaydet` kaydını okur: donan uçuş (mod pass/shot ama konum sabit) · pas süresi p99 · rakibe giden pas · canlı sahipsiz top · orta çizgiyi TOPLA geçen rol · FAZ 58 gerileme satırları. Pencere **en az 600 sn**. ⚠ İvme ve savunma mesafesi kapıları burada DEĞİL `sahne-olcum.js`tedir (yuvarlama/tanım farkı). Top durum makinesi ya da klip slot eşlemesi değişince çalıştır. |
@@ -2344,3 +2345,25 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   kazandığı tohuma bağlıdır ve deponun bütün sahne ölçümleri tek tohumla (987654321)
   koşuluyordu. Tek seferlik akışlarda tek tohum kusuru **%50 olasılıkla gizler**;
   `hava-check` sekiz tohum sürer.
+
+- **ÖLÇÜMÜ KULLANICININ OYNADIĞI YERDE YAP — LİG MAÇI PLAYOFF'U TEMSİL ETMİYOR (FAZ 71):**
+  FAZ 40-70 arasındaki her sahne ölçümü LİG maçındaydı; kullanıcı playoff oynuyor. Aynı kod,
+  aynı tohum, iki maç türü (180 sn, `goz.js`): top yerde %10,7 ↔ **%11,4** · jeton çakışması
+  %0,28 ↔ **%1,02** · en uzun loose 2,5 ↔ **3,5 sn** · ACILIM_YOK 1 ↔ **11** · TOP_KOPUK
+  20 ↔ **28**. 2 saniyelik ölü top epizodu YALNIZ playoff'ta göründü.
+  `node tools/goz.js --sn=180 --playoff` sezonu uçtan uca sürer, playoff'u başlatır ve seri
+  maçını açar (kullanıcı ilk 8'e giremezse 8. sırayla deterministik değiştirir).
+- **ALMA YARIÇAPI, OYUNCUNUN FİİLEN DURABİLDİĞİ MESAFEDEN KÜÇÜK OLAMAZ (FAZ 71, FAZ 57'nin
+  ikinci tekrarı):** playoff'ta 2,0 saniyelik ölü top yakalandı; tanılama tek satırda kök
+  nedeni verdi — *takipçi 215 px (7,3 m) ötede, top yerde (h=1), EN YAKIN OYUNCU 31 px'te ve
+  alamıyor*. FAZ 54 A1b kuralı yarıçap olarak `_TOP_AL_PX` (26,6 px) kullanıyordu; oyuncu
+  onun **4 px** dışındaydı. Çarpışma yarıçapı + varış freni + tahmini duruş noktası sapması
+  oyuncuyu 30-40 px'te tutar. Top **1,2 sn**'den uzun süredir yerdeyse yarıçap takipçinin
+  kendi kurtarma yarıçapına (40 px) açılır; aynı takımdan olma şartı korunur (FAZ 58 D).
+  Ölçülen: loose %11,0 → **%9,8**, en uzun 3,6 → **3,0 sn**.
+- **KAPI, KONTROL EDİLEN YOLU ÖLÇMELİ — KLİP PAYINI AYIR (FAZ 71):** "top taşıyıcıdan kopuk"
+  olaylarının kaynağı ayrıldı: **klip 557 kare, fizik 12 kare** — %98'i gerçek SportVU
+  kaydının kendisi ve o kayıtta top en yakın hücumcudan karelerin %10,91'inde 1 m'den uzaktır
+  (FAZ 69). `goz.js` kapısı artık FİZİK yolunu ölçer (%0,15 ✓), klip payı bilgi olarak
+  basılır. Aynı ayrım X yayılımı ve açılım için de var: kıyas tabanı **aynı koşudaki KLİP
+  satırıdır** — brifin "X yayılımı ≥ 420 px" hedefini gerçek kayıt da tutturmuyor (308 px).

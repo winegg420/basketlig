@@ -10816,3 +10816,107 @@ Yol izinde tos ile tap arasında **hiçbir dokunuş kalmadı** (eski izde `_ball
 kazandığı tohuma bağlı ve varsayılan tohumda "EV kazanır" hâli hiç denk gelmiyordu; bütün
 FAZ 40-69 ölçümleri aynı tohumla koşulduğu için kusur 30 fazdır ekranda duruyordu.
 Açılış/kapanış gibi tek seferlik akışlar **birden çok tohumla** sınanmalı.
+
+---
+
+## FAZ 71 — PLAYOFF SAHNESİ: ÖLÇÜM YERİ DEĞİŞTİ (2026-09-10, sürüm 119)
+
+Brifin **tek en değerli maddesi** şuydu ve haklıydı: *"Kullanıcı playoff'ta oynuyor; önceki
+bütün ölçümler normal lig maçında yapıldı."* Bu doğru — FAZ 40-70 arasındaki her sahne
+ölçümü lig maçındaydı. `tools/goz.js`e **`--playoff`** eklendi (sezonu uçtan uca sürer,
+playoff'u başlatır, kullanıcının seri maçını açar; kullanıcı ilk 8'e giremezse 8. sırayla
+deterministik olarak değiştirir — ölçülen şey playoff SAHNESİDİR, kimin elendiği değil).
+
+Ayrıca `goz.js`e brifin saydığı olay türleri eklendi: `ACILIM_YOK` · `RAKET_TIKANDI` ·
+`AYNI_TAKIM_CAKISMA` · `DERIN_CAKISMA` · `GERI_PAS` · `RIBAUNT_BOSLUGU` · `TOP_YERDE_UZUN` ·
+`TUM_OYUNCULAR_TEK_YARIDA`, ve üç ölçüt **KLİP/FİZİK ayrı** basılıyor (klip gerçek SportVU
+kaydıdır — aynı koşunun kendi kontrol grubudur).
+
+### Lig ↔ playoff, AYNI araç, aynı tohum (180 sn)
+
+| ölçüt | LİG | PLAYOFF |
+|---|---|---|
+| jeton çakışması | %0,28 | %1,02 |
+| top taşıyıcıdan kopuk | %2,74 | %4,55 |
+| top yerde (loose) | %10,70 | %11,44 |
+| en uzun loose | 2,5 sn | **3,5 sn** |
+| X yayılımı | 311 px | 302 px |
+| ACILIM_YOK | 1 | **11** |
+| RAKET_TIKANDI | 1 | **5** |
+| TOP_KOPUK | 20 | **28** |
+
+**Brifin premisi doğru: playoff her eksende bir tık kötü.** Ama brifin OLAY SAYILARI benim
+eşiklerimle üretilmiyor (brif: ACILIM_YOK 412 · TOP_TASIYICIDAN_KOPUK 216 · RAKET_TIKANDI 88 ·
+GERI_PAS 61 · OYUNCU_SAHA_DISI 19; ölçtüğüm: 11 · 28 · 5 · 3 · **0**). Brifin `goz.js`i
+depoda yoktu, ben yazdım; tanımlar farklı. Aşağıdaki kararlar KENDİ ölçümüme dayanıyor.
+
+### Kontrol grubu iki maddeyi çürüttü
+
+- **İŞ 1 (açılım / X yayılımı ≥420 px):** aynı koşuda KLİP kareleri (gerçek NBA kaydının
+  birebir oynatılması) **308 px**, bizim fizik karelerimiz **304 px**. Hedefi gerçek kaydın
+  kendisi de tutturmuyor. "Hücumun en uzak oyuncusu potaya" ortalama **452 px (fizik) /
+  476 px (klip)** — yani beş oyuncu yayın içine sıkışmıyor; ACILIM_YOK'un 12 olayı kısa
+  anlardır. FAZ 69'un bulgusu playoff'ta da geçerli.
+- **İŞ 2 (top taşıyıcıdan kopuk ≤%1):** olayların kaynağı ayrıldı — **klip 557 kare, fizik
+  12 kare**, yani %98'i gerçek SportVU kaydı. O kayıtta top, en yakın hücumcudan karelerin
+  %10,91'inde 1 m'den uzaktır (FAZ 69 ölçümü); bizimki %3,9. `goz.js` kapısı artık bizim
+  kontrol ettiğimiz FİZİK yolunu ölçüyor: **%0,15 ✓** (FAZ 69'un kelepçesi çalışıyor).
+
+### İŞ 5 — GERÇEK KUSUR BULUNDU VE DÜZELTİLDİ
+
+Playoff'ta 2,0 saniyelik bir "top yerde" epizodu yakalandı ve tanılama tek satırda kök nedeni
+verdi:
+
+```
+  512.6  TOP_YERDE_UZUN  2.0 sn · en yakın oyuncu 31 px · chase=d215 t0.7 · h=1 [fizik]
+```
+
+**Takipçi 215 px (7,3 m) ötede, top yerde, ve 31 px'teki (1,05 m) oyuncu topu ALAMIYOR.**
+Sebep: FAZ 54 A1b kuralı ("takipçi 3 m'den uzak + top 0,7 sn'dir yerde → aynı takımdan
+yakındaki alır") yarıçap olarak `_TOP_AL_PX` = 26,6 px (0,90 m) kullanıyordu; oyuncu onun
+**4 px** dışındaydı. FAZ 57'nin dersi tekrarladı: *yakalama yarıçapı, oyuncunun fiilen
+durabildiği mesafeden küçükse top alınamaz* (çarpışma yarıçapı + varış freni + tahmini duruş
+noktası sapması onu 30-40 px'te tutar).
+
+**Düzeltme** (`_topuAlmayaCalis`, `js/match-engine.js`): top **1,2 saniyeden uzun** süredir
+yerdeyse alma yarıçapı, takipçinin kendi kurtarma yarıçapına (**40 px**) açılır. Aynı
+takımdan olma şartı korundu — anlatımdaki takım değişmez (FAZ 58 D).
+
+Sonuç: **loose %11,0 → %9,8** (brifin hedefi ≤%10 ✓) · en uzun **3,6 → 3,0 sn** ·
+geri pas %5,5 → %4,2.
+
+### Playoff kapıları — sonra
+
+```
+  ✓ jeton çakışması (<26,2 px)              0.8%   ≤ %5   (klip hariç)
+  ✓ top taşıyıcıdan kopuk — FİZİK          0.15%   ≤ %1   (klip hariç)
+  ✓ etiket kutusu çakışması                 0.0%   ≤ %2
+  ✓ sahne dondu (≥8/10 hareketsiz)          0.5%   ≤ %25
+  ✓ hakem boyalı alanda / tribünde        0 olay   0
+  ✓ oyuncu saha dışı (izinsiz)            0 olay   0
+  olaylar: TEK_YARIDA 57 · TOP_KOPUK 25 · AYNI_TAKIM_CAKISMA 11 · ACILIM_YOK 12 ·
+           RIBAUNT_BOSLUGU 6 · RAKET_TIKANDI 5 · SAHNE_DONDU 3 · GERI_PAS 2 ·
+           TOP_YERDE_UZUN 1 · DERIN_CAKISMA 1 · JETON_TAM_UST_USTE 1
+```
+
+### TUTTURULAMAYANLAR — açıkça
+
+1. **X yayılımı ≥420 px** — 304 px. Gerçek kayıt 308 px; hedef gerçekle çelişiyor, kovalanmadı.
+2. **`TOP_YERDE_UZUN` 0** — 1 olay kaldı (3,0 sn). Kalan epizot klip devri sırasında.
+3. **`RIBAUNT_BOSLUGU` ≤2** — 6 olay. Tanılama: **6'nın 5'i KLİP karesi** (`mod=rim [KLİP]
+   chase=var`), yani gerçek NBA pozisyonunda da şut anında pota çevresi boştu (geçiş şutu).
+   Kalan 1 fizik olayında takipçi ZATEN atanmış. Kod değiştirilmedi.
+4. **`AYNI_TAKIM_CAKISMA` ≤10** — 11 olay (sınırda). Çizim ayrıştırması FAZ 68'de kuruldu ve
+   kapı %0,8 ile geçiyor; bu 11 olay 25-26 px'lik anlık temaslar.
+
+### Kapılar
+
+`sim-node --n=200 --seed=42` **93.4 - 87.3 · 268** · determinizm ✓ ·
+`band.js` **c19928475859c7ff** (değişmedi) · `visual-check` 0 konsol hatası ·
+`surum-check --yaz` → **119**.
+
+### Ders
+
+**Ölçümü kullanıcının OYNADIĞI yerde yap.** Otuz fazlık sahne çalışmasının tamamı lig
+maçındaydı; playoff aynı kodda her eksende daha kötü (loose %10,7 → %11,4 · çakışma
+%0,28 → %1,02 · en uzun loose 2,5 → 3,5 sn) ve 2 saniyelik ölü top yalnız orada göründü.

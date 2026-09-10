@@ -1973,9 +1973,22 @@ function _topuAlmayaCalis(S,b){
     const ch=(S.chase&&S.chase.tok===aday)?S.chase:null;
     if(!ch) return;
     const cd=Math.hypot(aday.x-b.x,aday.y-b.y);
-    if(cd<=90||(S.time-(b._looseAt||S.time))<0.7) return;
+    const _yerde=(S.time-(b._looseAt||S.time));
+    if(cd<=90||_yerde<0.7) return;
     const yk2=_topKimeYakin(S,b,(S.players||[]).filter(q=>q&&q.team===aday.team&&!q._oob));
-    if(yk2.p&&yk2.d<=_TOP_AL_PX&&Math.hypot(yk2.p.vx||0,yk2.p.vy||0)<=_TOP_AL_V){
+    /* ── FAZ 71: TOP UZUN SÜREDİR YERDEYSE ALMA YARIÇAPI AÇILIR ────────────────────────
+       FAZ 54 A1b kuralı (takipçi 3 m'den uzak + top 0,7 sn'dir yerde → aynı takımdan
+       yakındaki alır) yarıçap olarak _TOP_AL_PX (26,6 px = 0,90 m) kullanıyordu. Playoff
+       ölçümünde (goz.js --playoff) tam bu yüzden 2,0 saniyelik bir epizot çıktı:
+       takipçi 215 px (7,3 m) ötede, top yerde (h=1), ve EN YAKIN OYUNCU 31 px'te —
+       yani 0,90 m'lik yarıçapın 4 px dışında. Kimse alamadı, oyun 2 saniye durdu.
+       FAZ 57'nin dersi burada tekrarlıyor: yakalama yarıçapı, oyuncunun fiilen
+       durabildiği mesafeden küçükse top ALINAMAZ (çarpışma yarıçapı, varış freni ve
+       tahmini duruş noktası sapması onu 30-40 px'te tutar). Top 1,2 saniyeden uzun
+       süredir yerdeyse yarıçap takipçinin kendi kurtarma yarıçapına (40 px) açılır —
+       aynı takımdan olma şartı korunur, yani anlatımdaki takım değişmez (FAZ 58 D). */
+    const _alR=(_yerde>=1.2)?40:_TOP_AL_PX;
+    if(yk2.p&&yk2.d<=_alR&&Math.hypot(yk2.p.vx||0,yk2.p.vy||0)<=_TOP_AL_V){
       const fn=ch.fn; S.chase=null; _ballTut(yk2.p); yk2.p.pop=Math.max(yk2.p.pop||0,0.6);
       if(typeof fn==='function'){ try{ fn(); }catch(e){} }
     }
