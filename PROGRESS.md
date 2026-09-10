@@ -11393,3 +11393,101 @@ bulgusu, sokucuyu çizgiye YÜRÜRKEN ölçmekten doğmuştu; doğru an sokma pa
 kare olunca ihlal sıfırlandı. Aynı sınıf FAZ 68'de de çıkmıştı (donma ölçütü `|tx-x|`).
 Bir davranışı yargılamadan önce "bu değeri hangi anda okuyorum ve o an davranışın
 tamamlanmış hâli mi" diye sor.
+
+---
+
+## FAZ 77 — ORTA SAHA YIĞILMASI ÖLÇÜLDÜ · TAÇ KAPANDI · İŞ 2 ÇÖZÜLEMEDİ (2026-09-11)
+
+Ölçüm: `tools/kural-goz.js --sn=600 --playoff`, tohum 987654321, 37.349 örnek.
+600 sn bir playoff maçının ~%27'sidir; tam maç karşılıkları ×3,7 ile okunur.
+
+### İŞ 1 — ÜÇLÜK BOŞLUĞU: İYİLEŞTİ (FAZ 76'nın perimetre garantisi ölçüldü)
+
+| ölçüt | FAZ 76 öncesi (600 sn) | FAZ 77 (600 sn) |
+|---|---|---|
+| `UCLUK_CIZGISINDE_KIMSE_YOK` | 27 ep / 40,4 sn | **20 ep / 26,9 sn** |
+| `BOYADA_3_HUCUMCU` | 55 ep / 26,6 sn | **33 ep / 34,1 sn** |
+
+Epizot −%26, süre −%33. Tam maça ölçeklenince ~74 ep / ~100 sn — hedefin (≤25 / ≤40)
+hâlâ üstünde, ama brifin başlangıç noktası olan 127 ep / 233 sn'nin yarısından az.
+
+### İŞ 1 EK ÖLÇÜM — `ORTA_SAHA_YIGILMASI` (brifin istediği)
+
+Brifin hipotezi **doğrulandı**: yumak potadan orta sahaya taşınmış.
+
+```
+  ORTA_SAHA_YIGILMASI (merkez ±120 px'te 4+ oyuncu)   67 epizot   137,0 sn
+  orta sahada ortalama oyuncu                          2,02 / 10
+  pota çevresinde (150 px) ortalama oyuncu             3,11 / 10
+```
+
+137 sn, 600 sn'lik pencerenin **%22,8'i**. Tam maç karşılığı ~250 epizot / ~500 sn.
+Bu kalem **bu turda düzeltilmedi** — yalnız ölçüldü ve denetçiye kalıcı olarak eklendi.
+Ortalama 2,02/10 düşük olduğu için sorun ortalamada değil EPİZOTLARDA; kök neden
+büyük olasılıkla geçiş fazının uzunluğu ve iki takımın orta çizgide aynı anda
+bulunması (FAZ 69'da ölçülen "bekleme penceresi" ile aynı bölge).
+
+### İŞ 3 — SAYI SONRASI TAÇ: **ÖLÇÜM DÜZELTİLDİ, İHLAL YOK**
+
+⚠ Önceki turda (FAZ 76) bu kalemi "0" diye raporlamıştım ve o **sahte negatifti**:
+ölçüm pasın atıldığı TEK KAREYİ yakalamaya çalışıyordu, 16 ms örnekleme onu kaçırıyor
+ve `tacHepsi` dizisi BOŞ kalıyordu — yani kapı hiç çalışmamıştı. Düzeltildi: sokma
+yaşadığı sürece sokucunun dip çizgiye **en yakın olduğu** mesafe izleniyor.
+
+Düzeltilmiş ölçüm — 600 sn'de 17 sokma, 10'u sayı sonrası, minimum mesafeler:
+
+```
+  [0, 0, 0, 58, 18, 0, 0, 8, 8, 68] px      (eşik 100 px)
+```
+
+**Onunun onu da dip çizgiye çıkıyor** (en kötü 68 px). Artık ölçümün gerçekten
+çalıştığının kanıtı var (10/10 sokma yakalandı). Brifin "3 ep / tam maç ~12" bulgusu,
+sokucuyu çizgiye YÜRÜRKEN ölçmekten doğuyor olmalı — FAZ 76'da aynı hatayı ben de
+yapmıştım, orada da ölçüm anını düzeltince ihlal sıfırlanmıştı.
+
+### İŞ 2 — TOP POTA DİBİNDE SAHİPSİZ: **ÇÖZÜLEMEDİ**
+
+| | epizot | toplam sn |
+|---|---|---|
+| FAZ 76 sonrası | 31 | 25,4 |
+| denenen gevşetme sonrası | **29** | **25,6** |
+
+Denenen (ve **geri alınan**) değişiklik: top 0,4 sn'den uzun yerdeyse takipçi uzaklık
+şartı 90 → 60 px, bekleme 0,7 → 0,4 sn, alma yarıçapı 52-70 px, hız şartı `_TOP_AL_V`
+×2,4. Üç eşiğin üçü birden gevşetildiği hâlde **ölçülebilir fayda yok** → kendi
+standardım gereği `git checkout` ile geri alındı (FAZ 74'ten beri kural: ölçülebilir
+faydası olmayan davranış gevşetmesi tutulmaz).
+
+Neden işe yaramadığına dair ölçülen ipucu: ihlal anlarında "en yakın oyuncu **50-55 px**"
+(1,7-1,9 m). Bu mesafe denenen yarıçapın (52 px) tam sınırında; yani yarıçapı biraz daha
+açmak epizotları kapatabilir ama o zaman top, **anlatımdaki ribauntçu yerine** yanındaki
+oyuncuya geçer ve FAZ 58 D'nin koruduğu şey bozulur (anlatım ile sahnenin aynı oyuncuyu
+göstermesi). Bu bir eşik ayarı değil, **tasarım tercihi**: ya top daha çabuk toplanır ama
+bazen "yanlış" oyuncu alır, ya anlatım korunur ama top 0,8 sn daha yerde kalır.
+Karar kullanıcıya bırakıldı — kod değiştirilmedi.
+
+⚠ Kıyas: gerçek SportVU kaydında sahipsiz top epizotlarının **p90'ı 1,60 sn, maksimumu
+5,2 sn** (FAZ 54 ölçümü). Bizim epizot ortalamamız 25,6/29 = **0,88 sn** — o dağılımın
+altında. Hedefin (tam maç ≤5 sn TOPLAM) gerçek basketbolla uyumlu olup olmadığı
+ölçülmedi; 600 sn'de 25 sn, tam maçta ~95 sn eder ve gerçek veriye göre bu normal olabilir.
+
+### İŞ 4 — TOP SIÇRAMASI: **0 epizot** (hedef ≤5) ✓
+
+### Denetçi gürültüsü — brifin uyarısı
+`tools/yorum-goz.js` özneyi METİNDEN ayıklamıyor; olay nesnesinden (`sh.sid` / `ev.rebId`)
+okuyor. Bu yüzden "Esprili Cem", "Cam Min'de", "soluklanmaya gidiyor" gibi kalıplar
+yanlış pozitif üretmiyor — `SAHADA_OLMAYAN` bu turda da **0**.
+
+### Bu turda değişen tek dosya
+`tools/kural-goz.js`: `ORTA_SAHA_YIGILMASI` kapısı + pota çevresi/orta saha ortalamaları
++ **sayı sonrası taç ölçümünün düzeltilmesi** (sahte negatif kapatıldı).
+**Oyun kodu değişmedi** — İŞ 2 denemesi geri alındı, İŞ 1'in kazancı FAZ 76'dan geliyor.
+
+### Kapılar
+`sim-node --n=200 --seed=42` **93.4 - 87.3 · 268** determinizm ✓ · `visual-check` 0 hata.
+
+### Ders
+**Bir kapının "0" demesi, kapının ÇALIŞTIĞI anlamına gelmez.** FAZ 76'da sayı sonrası taç
+"0" çıkmıştı ve bu doğru sonuç YANLIŞ sebeptendi: ölçüm hiç tetiklenmiyordu (`tacHepsi`
+boş). Kapının sıfır verdiği her yerde "kaç örnek topladın" diye sor; örneklem sayacı
+olmayan kapı sessizce ölür.

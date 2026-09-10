@@ -2476,3 +2476,26 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   neredeyse DURAĞAN olmasını şart koşuyor (`_TOP_AL_V`), ribaunt kalabalığında 3 m ötedeki
   oyuncu ise koşuyor. ⚠ Kıyas: gerçek SportVU'da sahipsiz top epizotlarının p90'ı **1,60 sn**
   (FAZ 54); bizim epizot ortalamamız **0,85 sn** — yani o dağılımın altında.
+
+- **BİR KAPININ "0" DEMESİ, KAPININ ÇALIŞTIĞI ANLAMINA GELMEZ (FAZ 77, kendi hatamın
+  düzeltmesi):** FAZ 76'da "sayı sonrası taç 0 ihlal" diye raporladım; doğru sonuçtu ama
+  YANLIŞ SEBEPTEN — ölçüm pasın atıldığı TEK KAREYİ yakalamaya çalışıyordu, 16 ms örnekleme
+  onu kaçırıyordu ve örnek dizisi (`tacHepsi`) BOŞ kalıyordu, yani kapı hiç tetiklenmemişti.
+  Ölçüt "sokma yaşadığı sürece sokucunun dip çizgiye EN YAKIN olduğu mesafe" olunca 600 sn'de
+  10/10 sayı sonrası sokma yakalandı ve hepsi çizgiye çıkıyor: **[0,0,0,58,18,0,0,8,8,68] px**
+  (eşik 100). **Sıfır veren her kapıya "kaç örnek topladın" diye sor**; örneklem sayacı
+  olmayan kapı sessizce ölür.
+- **`ORTA_SAHA_YIGILMASI` — YUMAK POTADAN ORTA SAHAYA TAŞINDI (FAZ 77, ölçüldü, AÇIK):**
+  merkez ±120 px'te aynı anda 4+ oyuncu: **67 epizot / 137,0 sn** (600 sn'lik pencerenin
+  %22,8'i). Ortalama orta saha 2,02/10, pota çevresi 3,11/10 — yani sorun ortalamada değil
+  EPİZOTLARDA. FAZ 76'nın perimetre garantisi üçlük boşluğunu düşürdü (27 ep/40,4 sn →
+  20 ep/26,9 sn) ama yığılmayı orta sahaya kaydırmış olabilir. Kalem `kural-goz`a kalıcı
+  eklendi; henüz DÜZELTİLMEDİ.
+- **POTA DİBİNDEKİ SAHİPSİZ TOP BİR EŞİK DEĞİL TASARIM TERCİHİDİR (FAZ 77, denendi ve geri
+  alındı):** üç eşik birden gevşetildi (takipçi uzaklığı 90 → 60 px · bekleme 0,7 → 0,4 sn ·
+  yarıçap 52-70 px · hız şartı ×2,4) ve sonuç 31 ep/25,4 sn → **29 ep/25,6 sn** — ölçülebilir
+  fayda yok, geri alındı. İhlal anlarında en yakın oyuncu **50-55 px** (1,7-1,9 m): yarıçapı
+  biraz daha açmak epizotları kapatır AMA top anlatımdaki ribauntçu yerine yanındakine geçer
+  ve FAZ 58 D'nin koruduğu şey (anlatım ile sahnenin aynı oyuncuyu göstermesi) bozulur.
+  ⚠ Kıyas: gerçek SportVU'da sahipsiz top epizotlarının p90'ı 1,60 sn; bizim ortalamamız
+  **0,88 sn** — dağılımın altında. Hedefin gerçekle uyumu ölçülmedi.

@@ -116,6 +116,16 @@ function kaydedici() {
         } else kapa('UCLUK_CIZGISINDE_KIMSE_YOK');
         if (onSaha && boyada >= 3) ac('BOYADA_3_HUCUMCU', saat, boyada + ' hücumcu'); else kapa('BOYADA_3_HUCUMCU');
       } else { kapa('UCLUK_CIZGISINDE_KIMSE_YOK'); kapa('BOYADA_3_HUCUMCU'); }
+      /* ── FAZ 77 İŞ 1: ORTA SAHA YIĞILMASI — yumak potadan orta sahaya taşınmış olabilir.
+         Mevcut ölçüt "potaya uzaklık" olduğu için bunu göremiyordu. */
+      { let ortaN = 0;
+        for (const q of P) if (Math.abs(q.x - MID) < 120) ortaN++;
+        if (ortaN >= 4) ac('ORTA_SAHA_YIGILMASI', saat, ortaN + ' oyuncu orta sahada'); else kapa('ORTA_SAHA_YIGILMASI');
+        G0.ortaTop = (G0.ortaTop || 0) + ortaN; G0.ortaN = (G0.ortaN || 0) + 1; }
+      /* ── FAZ 77 İŞ 2 teşhisi: pota çevresinde (150 px) kaç oyuncu var ── */
+      { let rimN = 0; const _rr = [[62,250],[878,250]];
+        for (const q of P) { for (const r of _rr) if (Math.hypot(q.x-r[0], q.y-r[1]) < 150) { rimN++; break; } }
+        G0.rimTop = (G0.rimTop || 0) + rimN; G0.rimN = (G0.rimN || 0) + 1; }
       /* ── top potanın dibinde sahipsiz ── */
       if ((b.mode === 'loose' || b.mode === 'dead') && !(S._hakemTop && S._hakemTop.aktif)) {
         const r1 = [62, 250], r2 = [878, 250];
@@ -132,22 +142,26 @@ function kaydedici() {
         G0._tacBekle = { saat, t: performance.now() };
       }
       G0.sonSkor = sk;
-      /* ⚠ ÖLÇÜM ANI: sokucu daha çizgiye YÜRÜRKEN ölçmek yanlış pozitif üretir
-         (o an haklı olarak sahanın içindedir). Doğru an, sokma PASININ atıldığı andır —
-         yani top sokucunun elinden çıktığı kare. */
-      if (G0._tacBekle && S.inb && S.inb.tok) {
+      /* ── FAZ 77: SOKUCU DİP ÇİZGİYE HİÇ ÇIKTI MI ────────────────────────────────────
+         Önceki sürüm pasın atıldığı TEK KAREYİ yakalamaya çalışıyordu; 16 ms örnekleme
+         onu kaçırdığı için ölçüm sahte "0" veriyordu (tacHepsi dizisi boş kaldı).
+         Doğru ölçüt: sokma yaşadığı sürece sokucunun dip çizgiye EN YAKIN olduğu mesafe.
+         Sokucu hiç çizgiye çıkmadıysa bu minimum büyük kalır. */
+      if (S.inb && S.inb.tok) {
         const inb = S.inb.tok;
-        /* sayı olan pota = sokma noktasına en yakın pota */
         const rr = (Math.abs(S.inb.x - 62) < Math.abs(S.inb.x - 878)) ? 62 : 878;
         const d = Math.abs(inb.x - rr);
-        const pasAnI = (b.mode === 'pass' && b.from && Math.abs(b.from[0] - inb.x) < 40);
-        if (!pasAnI) { /* henüz sokmadı — bekle */ }
-        else if (d > 100) {
-          ac('SAYI_SONRASI_TAC_YANLIS_YERDE', G0._tacBekle.saat, 'sokucu dip çizgiden ' + d.toFixed(0) + ' px içeride');
+        if (!G0._tacIzle || G0._tacIzle.tok !== inb) G0._tacIzle = { tok: inb, min: d, sayi: !!G0._tacBekle, saat };
+        else { if (d < G0._tacIzle.min) G0._tacIzle.min = d; if (G0._tacBekle) G0._tacIzle.sayi = true; }
+      } else if (G0._tacIzle) {
+        const T = G0._tacIzle; G0._tacIzle = null;
+        (G0.tacHepsi = G0.tacHepsi || []).push({ min: Math.round(T.min), sayi: T.sayi });
+        if (T.sayi && T.min > 100) {
+          ac('SAYI_SONRASI_TAC_YANLIS_YERDE', T.saat, 'sokucu dip çizgiye en fazla ' + T.min.toFixed(0) + ' px yaklaştı');
           kapa('SAYI_SONRASI_TAC_YANLIS_YERDE');
-          if (G0.tacOrn.length < 10) G0.tacOrn.push(G0._tacBekle.saat + ' ' + d.toFixed(0) + 'px');
+          if (G0.tacOrn.length < 10) G0.tacOrn.push(T.saat + ' ' + T.min.toFixed(0) + 'px');
         }
-        if (pasAnI) G0._tacBekle = null;
+        G0._tacBekle = null;
       }
       if (G0._tacBekle && performance.now() - G0._tacBekle.t > 9000) G0._tacBekle = null;
       /* ── top sıçraması: mod değişmeden 40 px+ ── */
@@ -226,7 +240,10 @@ async function main() {
   kapi('HAVA_ATISI_MERKEZ_DISI', 0, 0);
   kapi('TOP_SICRADI', 5, 5);
   kapi('BOYADA_3_HUCUMCU', 40, 60);
+  kapi('ORTA_SAHA_YIGILMASI', 60, 120);
   console.log('  ── BİLGİ ──');
+  console.log('    orta sahada ortalama oyuncu : ' + (R.ortaN ? (R.ortaTop/R.ortaN).toFixed(2) : '-') + ' / 10');
+  console.log('    pota çevresinde (150px) oyuncu: ' + (R.rimN ? (R.rimTop/R.rimN).toFixed(2) : '-') + ' / 10');
   console.log('    hava atışında top merkezden: ' + (R.hava == null ? '-' : R.hava + ' px'));
   if (R.ucOrn && R.ucOrn.length) console.log('    üçlük boşluğu örnekleri : ' + R.ucOrn.slice(0, 6).join(' · '));
   if (R.potaOrn && R.potaOrn.length) console.log('    pota dibi örnekleri     : ' + R.potaOrn.slice(0, 6).join(' · '));
