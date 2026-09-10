@@ -2384,3 +2384,23 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   bloklanıp yalnız çağrılıp çağrılmadığı kaydedildi (maçı harcamadan):
   `["startMatch(arg=yok) girdi","startPlayoffMatch ÇAĞRILDI"]` — bağlantı DOĞRUYDU, kusur
   üç adım ötedeydi. Kancayla bakmak kod okumaktan da tahminden de hızlı (FAZ 62 dersi).
+
+- **OLAY SAYISI DEĞİL EPİZOT SÜRESİ SIRALAR (FAZ 73, iki denetçi uzlaştırıldı):**
+  `tools/goz-benim.js` 180 sn playoff koşusunda 1325 "ihlal" sayıyor, benim aracım ~120.
+  Fark yöntemdir: goz-benim'in "2,5 sn tekrar süzgeci" **(tip + DETAY METNİ)** üzerinden
+  işliyor, yani ACILIM_YOK için "200px"/"199px"/"198px" ayrı olay sayılıyor. Ham dökümü
+  (`tools/goz-rapor.json`) epizota çevirince ikisi uzlaşır ve ÖNCELİK DEĞİŞİR:
+  ACILIM_YOK 598 olay = **9 epizot / 21 sn**, ama RAKET_TIKANDI 90 olay = **16 epizot /
+  66 sn, en uzunu 18 SANİYE**. Bir ihlal listesini sıralarken olay sayısına değil
+  **toplam süreye ve en uzun epizoda** bak.
+- **BOYAYI TIKAYAN HÜCUM DEĞİL SAVUNMA (FAZ 73 teşhisi, düzeltme HENÜZ YOK):** tıkanma
+  olayları hücum/savunma ayrılınca döküm hep `huc=2 sav=2/3/4` — hücum zaten 2 sınırında.
+  Olayların %56'sı BEKLEME penceresinde, yani FAZ 69'da eklenen `oamBeklemeTick`: savunma
+  hedefi adam-pota hattında `_defGap` kadar ve tavanı `dm-26`, adamı potaya yakınsa
+  savunmacı çemberin 26 px'ine oturuyor; sayı/ribaunt sonrası bütün savunmacılar
+  hücumcuların peşinden boyaya giriyor.
+- **KULVARDAN ÇIKARILAN SAVUNMACILAR BİRBİRİNDEN DE AYRIK OLMALI (FAZ 73, denendi ve
+  ölçülerek GERİ ALINDI):** "en fazla 2 savunmacı kulvarda, fazlası 250±80'e itilsin"
+  kuralı yazıldı; `goz-benim.js` ile ölçüldü ve GERİLEDİ — AYNI_TAKIM_CAKISMA 33 → **116**,
+  DERIN_CAKISMA 29 → **42**, INSANUSTU_HIZ 0 → **6**, TOP_IMKANSIZ_HIZ 0 → **1**. Sebep:
+  itilen savunmacıların hepsi AYNI y'ye yığılıyor. Kural doğru, dağıtım yanlış.

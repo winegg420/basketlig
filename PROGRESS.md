@@ -11029,3 +11029,99 @@ determinizm ✓ · `visual-check` 0 konsol hatası · `surum-check --yaz` → **
 ötedeydi — durum makinesi playoff kilidini tanımıyordu. Aynı sınıf FAZ 51 ve FAZ 68b'de
 de çıktı: **aynı durumu gösteren her buton tek durum makinesinden okumalı ve o makine
 BÜTÜN maç türlerini bilmeli** (lig · playoff · kupa).
+
+---
+
+## FAZ 73 — ÖZGÜN DENETÇİ KURULDU: İKİ ARAÇ UZLAŞTI, BİR DENEME GERİ ALINDI (2026-09-10)
+
+Kullanıcı `goz-benim.js`i indirdi; `tools/goz-benim.js` olarak depoya kondu ve
+**içeriğine dokunulmadı**. Bundan sonra kabul ölçütü buradan okunur.
+
+### Sayı farkının kaynağı bulundu — iki araç aynı şeyi ölçüyor
+
+`goz-benim.js` 180 sn playoff koşusunda **1325 ihlal** sayıyor, benim aracım aynı
+koşuda ~120. Fark yöntemdir: `goz-benim.js` "aynı ihlal 2,5 sn içinde tekrar sayılmaz"
+diyor ama tekrar süzgeci **(tip + detay metni)** üzerinden işliyor — ACILIM_YOK için
+"200px", "199px", "198px" AYRI olay sayılıyor. Ham dökümü (`tools/goz-rapor.json`)
+epizota çevirince ikisi uzlaşıyor:
+
+| tip | ham olay | AYRI EPİZOT | toplam süre | en uzun epizot |
+|---|---|---|---|---|
+| ACILIM_YOK | 598 | **9** | 21 sn | 3,0 sn |
+| TOP_TASIYICIDAN_KOPUK | 382 | **25** | 41 sn | 5,0 sn |
+| GERI_PAS | 146 | **9** | 2 sn | 1,0 sn |
+| **RAKET_TIKANDI** | 90 | **16** | **66 sn** | **18,0 sn** |
+| TUM_OYUNCULAR_TEK_YARIDA | 52 | 33 | 38 sn | 2,0 sn |
+| AYNI_TAKIM_CAKISMA | 33 | 4 | 1 sn | 1,0 sn |
+| DERIN_CAKISMA | 29 | 7 | ~0 sn | ~0 sn |
+| OYUNCU_SAHA_DISI | 27 | 5 | ~0 sn | ~0 sn |
+| RIBAUNT_BOSLUGU | 13 | 13 | ~0 sn | ~0 sn |
+
+**Süreye göre bakınca öncelik değişiyor:** en büyük kusur `ACILIM_YOK` değil
+**`RAKET_TIKANDI`** — 66 saniye toplam, tek epizot 18 SANİYE, boyada aynı anda
+8 oyuncuya kadar. Kullanıcının gördüğü "yumak" budur.
+
+### Teşhis — boyayı tıkayan HÜCUM DEĞİL SAVUNMA
+
+Kendi aracımda tıkanma olayları hücum/savunma ve faz olarak ayrıldı:
+```
+  t=410.2  boyada huc=2 sav=3  faz=- [fizik]
+  t=419.5  boyada huc=2 sav=4  faz=- [fizik]
+  faz dağılımı: {"- [fizik]":24, "klip [klip]":14, "- [klip]":3, "set":1, "toren":1}
+```
+**Hücum zaten brifin istediği 2 sınırında; kulvarı dolduran savunma.** Ve olayların
+%56'sı BEKLEME penceresinde — yani FAZ 69'da benim eklediğim `oamBeklemeTick`.
+Sebep: savunma hedefi adam-pota hattında `_defGap` kadar, tavanı `dm-26`; adamı potaya
+yakınsa savunmacı çemberin 26 px'ine oturuyor. Sayı/ribaunt sonrası birkaç hücumcu pota
+çevresindeyse bütün savunmacılar peşlerinden boyaya giriyor.
+
+### DENENDİ VE ÖLÇÜLEREK GERİ ALINDI
+
+"En fazla 2 savunmacının hedefi kulvarda olabilir; fazlası yanal olarak (250±80) kulvar
+dışına itilir" kuralı yazıldı. `goz-benim.js` ile ölçüldü — **geriledi**:
+
+| ölçüt | önce | deneme sonrası |
+|---|---|---|
+| RAKET_TIKANDI | 90 | 82 |
+| TOP_TASIYICIDAN_KOPUK | 382 | 294 |
+| **AYNI_TAKIM_CAKISMA** | 33 | **116** |
+| **DERIN_CAKISMA** | 29 | **42** |
+| **INSANUSTU_HIZ** | 0 | **6** |
+| **TOP_IMKANSIZ_HIZ** | 0 | **1** |
+| TOP_YERDE_UZUN | 1 | 2 |
+
+Sebep açık: itilen savunmacıların hepsi AYNI y'ye (250±80) yığılıyor, takım arkadaşı
+çakışması ve ışınlanma üretiyor. Kural doğru, uygulaması yanlış — itilen oyuncular
+birbirlerinden de ayrık kalmalı. **`git checkout js/sahne-oam.js` ile geri alındı.**
+
+### Bu turda kalan durum (`goz-benim.js --sn=180 --playoff`)
+```
+  ✓ jeton çakışması (<26,2 px)                 8.6%   hedef ≤ %10
+  ✓ sahne dondu (≥8/10 hareketsiz)               0%   hedef ≤ %25
+  ✗ top taşıyıcıdan kopuk                      4.7%   hedef ≤ %1
+  ✗ oyuncu X yayılımı (saha 827 px)         300.9px   hedef ≥ 450 px
+  ✓ top ışınlandı (>60 px/kare)                  0%   hedef ≤ %0,2
+  ✓ top imkânsız hız (>1400 px/sn)               0%   hedef ≤ %0,2
+  ✗ 2 sn+ yerde kalan top epizodu                1 adet   hedef 0 adet
+  ✓ etiket kutusu çakışması                      0%   hedef ≤ %2
+  loose epizot: 15 adet · ort 1,03 sn · en uzun 2,95 sn
+  ortalama hareketsiz oyuncu 1,31/10 · konsol hatası 0
+```
+`sim-node --n=200 --seed=42` **93.4 - 87.3 · 268** · determinizm ✓ (kod geri alındığı
+için değişmedi).
+
+### AÇIKÇA: BU TURDA KOD DEĞİŞMEDİ
+FAZ 72'nin buton düzeltmesi dışında bu turda **hiçbir sahne değişikliği kalmadı**.
+Denenen tek düzeltme ölçülerek geri alındı. Kalan üç kapı:
+1. **top taşıyıcıdan kopuk %4,7** — kaynağı ayrılmıştı (FAZ 71): %96'sı KLİP yolu,
+   yani gerçek SportVU kaydı; fizik yolu %0,13. Gerçek kayıtta top en yakın hücumcudan
+   karelerin %10,9'unda 1 m'den uzak. Bu kapı klip yolundan dolayı düşüyor.
+2. **X yayılımı 300,9 px** (hedef ≥450) — aynı koşudaki KLİP karelerinin (gerçek NBA
+   kaydı) yayılımı da ~307 px. Hedefi gerçek kayıt da tutturmuyor.
+3. **2 sn+ yerde kalan top: 1 epizot** (2,95 sn) — FAZ 71'de 3,6 → 3,0 sn'ye indi,
+   sıfırlanamadı.
+
+### Sıradaki turun ilk işi
+`RAKET_TIKANDI` (66 sn, en uzun 18 sn) — teşhis HAZIR: bekleme penceresinde savunma
+kulvarı dolduruyor. Doğru çözüm, kulvardan çıkarılan savunmacıları **birbirinden de
+ayrık** noktalara dağıtmak (bu turda denenen tek-y yığılması işe yaramadı).
