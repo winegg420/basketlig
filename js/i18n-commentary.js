@@ -1465,3 +1465,20 @@ I18N_PHRASES.unshift(
   [/ Yerine (.+?) girdi\./g, ' $1 comes in for him.'],
   [/ Yedek kalmadı, eksik oynanıyor\./g, ' No bench left; they play a man short.']
 );
+
+/* FAZ 80 · K5: anlatım dolgusu (DOLGU_LINES) — havuz `localizeCatalogs()` ile yerinde çevrilir,
+   bu yüzden girişler TAM DÜĞÜM karşılığıdır (FAZ 31 dersi: cümle içinde geçmiyorlar). */
+Object.assign(I18N_TR_EN,{
+  'Top çevrede dolaşıyor, hücum sabırlı.':'The ball moves around the perimeter; the offense is patient.',
+  'Savunma dizilimini korudu, boşluk yok.':'The defense holds its shape — no gaps.',
+  'Pas trafiği yavaş, kimse riske girmiyor.':'Passing is slow; nobody is forcing it.',
+  'Hücum yeniden kuruluyor.':'The offense resets.',
+  'Savunma yardıma hazır bekliyor.':'The defense waits, ready to help.',
+  'Top yaydan yaya taşınıyor.':'The ball swings from wing to wing.',
+  'Şut saati işliyor, acele eden yok.':'The shot clock runs down; no one hurries.',
+  'Perimetre geniş, boya kalabalık.':'The perimeter is spread, the paint is crowded.',
+  'Oyun kurucu tempoyu düşürdü.':'The point guard slows the tempo.',
+  'İki takım da yerini aldı.':'Both teams are set.',
+  'Savunma adamına yapıştı.':'The defender stays glued to his man.',
+  'Hücum içeriye yol arıyor.':'The offense looks for a way inside.'
+});

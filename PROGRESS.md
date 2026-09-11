@@ -11672,3 +11672,156 @@ kalem **açık** bırakıldı.
 zaten hedefin altındaydı. İŞ 2'de ise tersi oldu: FAZ 76'nın "perimetre garantisi" kodda
 duruyordu ama köşede kırpma yüzünden slotu yayın **daha içine** alıyordu — yani kapı
 yazılmıştı, çalışmıyordu. İkisini ayıran tek şey slot dökümünü (hedefin kendisini) basmaktı.
+
+---
+
+## FAZ 80 — ŞARTNAME DÜZELTMELERİ: 6 KALEM ÇÖZÜLDÜ, KAPI İYİLEŞMEDİ (2026-09-11)
+
+Brif 35 düşen kuralın tamamının düzeltilmesini istedi. **Bu hedef tutturulamadı.**
+Kabul ölçütü (`tools/sartname.js --sn=600 --playoff`) **39 düştü · 18 geçti** verdi
+(taban 35 · 22). Aşağıda ne yapıldığı, neyin ölçülerek iyileştiği ve **kapının neden
+iyileşmediği** sayılarla yazılı. Kod `tools/sartname.js`'e dokunulmadı.
+
+### 0. ÖNCE ÜÇ ÖLÇÜM BULGUSU — bunlar olmadan sayılar yanlış okunur
+
+**(a) Denetçi hücumun potasını TERS alıyor.** `tools/sartname.js:48`
+`const pota = S => S.offSide ? RIM_R : RIM_L;` — ama motor `_rim(left)`
+`left?RIM_L:RIM_R` döndürür ve `S.offSide=offLeft` (offSide true = SOL potaya hücum).
+Yani denetçi her `pt` bağımlı kuralı **karşı potaya** göre ölçüyor. Aynı koşuda aynı
+formülleri doğru potayla süren `tools/sartname-tani.js` ile yan yana:
+
+| kural | denetçi (ters pota) | doğru pota | hedef |
+|---|---|---|---|
+| B3 savunma geri döner | %13,9 | **%59,0** | ≥%85 |
+| B4 savunmacı pota tarafında | %31,4 | **%84,2 ✓ GEÇER** | ≥%65 |
+| B10 savunma rakip yarıda | %75 | **%30,4** | ≤%10 |
+| C8 köşeler kullanılır | %4 | **%39,5 ✓ GEÇER** | ≥%20 |
+| C1 perimetre boş | %12 | **%4,7** | ≤%3 |
+| C10 pivot dip bölgede | 457,5 px | **321,7 px** | ≤160 px |
+
+Bu, A9/A10/A11'i de açıklar: şut mesafesi karşı potaya ölçülünce **her şut 500-800 px**
+olur, yani "üçlük %100 · pota altı %0" ve "guard pota altı %0" kaçınılmazdır — oyunda
+ne yapılırsa yapılsın bu üç kural bu denetçide geçemez. B4 ve C8 ise **zaten geçiyor**.
+Oyunu ters ölçüme göre değiştirmek (savunmayı rakip yarıya dizmek, pivotu karşı potanın
+dibine göndermek) oyunu bozardı; **yapılmadı**.
+
+**(b) `--playoff` harness'ı tekrarlanabilir DEĞİL.** İki koşuda rakip bile değişti
+(Bogotá Eagles → Denver Sporting → Auckland Ejderleri): harness tam sezon simüle ediyor,
+bot transferi `Date.now()` ile tohumlanıyor (FAZ 52-B dersi). Bu yüzden A/B kıyasları
+**lig modunda** (sezon 1'in ilk maçı, deterministik) yapıldı.
+
+**(c) Kapının kendi gürültüsü ±3 kuraldır.** Aynı HEAD kodu, aynı tohum, iki lig koşusu:
+**35 ↔ 38 düşen**. Oynayan kurallar: **A2 · F7 · J1** — ve tam bu kurallar benim
+koşularımda da "yeni düştü" diye görünüyor. Kare başına sayan kalemler uçuyor:
+J1 **0 ↔ 41** (HEAD), D8 7 ↔ 14, D9 17 ↔ 29, B2 82,7 ↔ 72 px, K7 %51 ↔ %46,8.
+Dolayısıyla **35 → 39 farkı tek başına bir gerileme kanıtı değildir**; karar epizot/oran
+kalemlerinin üç koşudaki yönüyle verildi.
+
+### 1. ÖLÇÜLEREK VE TEKRARLANABİLİR BİÇİMDE DÜZELEN 6 KALEM
+
+Üç ayrı lig koşusunda da aynı yönde (HEAD → FAZ 80):
+
+| kural | HEAD (2 koşu) | FAZ 80 (3 koşu) | hedef | durum |
+|---|---|---|---|---|
+| E3 3 saniye | 88 · 88 | **82 · 71 · 60** | ≤5 | düştü ama −%32 |
+| E9 saha dışı oyuncu | 14 · 13 | **6 · 7 · 8** | ≤5 | eşiğe çok yakın |
+| D2 geri saha pası | 4 · 4 | **1 · 1 · 1** | 0 | −%75 |
+| E4 geri saha düdüğü | 4 · 4 | **1 · 1 · 1** | 0 | −%75 |
+| C2 raket tıkanmaz | %19 · %19 | **%18 · %16 · %13,5** | ≤%8 | −%29 |
+| C10 pivot potaya uzaklık | 456,7 px | **441,8 · 443,5 · 438,7** | ≤160 | −4% (ters pota etkisi ayrı) |
+
+Ne değişti:
+- **`js/sahne-oam.js` `oamHedefler` sokma dalı:** savunmanın üç uzunu `COURT_MID-dir*60`
+  ile **hücumun arka sahasında** duruyordu (`dir` saldırılan potaya bakar). Artık beşi de
+  savunulan potanın tarafında (`+dir*55` / `+dir*165`). Tanı aracı bu fazı zaten en kötü
+  göstermişti: `oam:sokma` fazında 3+ savunmacı rakip yarıda **%67,9** (set %11,8).
+- **`oamHedefler` / `oamBeklemeTick`:** yardım savunması artık **süreli** (`OAM_YARDIM_SN`
+  1,5 sn + 1,2 sn bekleme) ve eşleme (`d._mark`) hiç bırakılmıyor.
+- **`oamDefAyir()` (yeni):** savunma hedefleri 54 px'ten, hücum hedefleri 42 px'ten yakın
+  olamaz (gevşetme YALNIZ hedefe uygulanır, konuma değil). ⚠ **Topu tutanın savunmacısı
+  muaf** — ilk sürümde muaf değildi ve B2 82,7 → 88,1 px'e açıldı (ölçülerek düzeltildi).
+- **`oamBeklemeTick`:** OAM kapalıyken (karelerin ~%19'u) **topu tutan hiç savunulmuyordu**
+  (`oamBaskiTick` yalnız arka sahada çalışır). Ön sahada 46 px'lik markaj eklendi.
+- **`oamBoyaKac` bekleme penceresinde de çağrılıyor** → E3.
+- **`js/sahne-klip.js`:** çizgi artık **mutlak sınır** (kademeli yaklaşma korunur) → E9.
+
+### 2. D1 "RAKİBE PAS" — İKİ KÖK NEDEN BULUNDU, KAPANMADI
+
+Brif haklıydı: kusur gerçek ve benim önceki denetçilerim (87.616 kare) bulamamıştı.
+İki ayrı yol `_ballPass`i **hiç çağırmıyor**, dolayısıyla FAZ 58'in takım kapısından
+geçmiyordu — ikisi de `js/sahne-klip.js` içinde:
+
+1. `b.mode='pass'` yazan **iki pas başlatma noktası** (kapatıldı: `klipPasOlur`, hedef
+   uygun değilse top paslanmaz, serbest kalır).
+2. **`else if(b.mode==='pass'){ b.target=en; }`** — uçan topun hedefi **her karede**
+   "topa en yakın klip jetonu" yapılıyordu; pas meşru başlasa bile uçuş sırasında en yakın
+   jeton bir RAKİP olabiliyor ve top onun elinde bitiyordu. Veren `b._pasVeren` ile
+   saklanıp uçuş boyunca takım şartı korunuyor.
+
+**Sonuç yine de kapanmadı: 4-7 olay** (HEAD 4 · 4; FAZ 80 4 · 7 · 5 · 7). Üçüncü bir yol
+daha var; bulunamadı. Kalem **açık**.
+
+### 3. DENENİP ÖLÇÜLEREK GERİ ALINAN İKİ DEĞİŞİKLİK
+
+1. **"Serbest topa en yakın oyuncu(lar) yaklaşsın" (D8/D9).** Brifin önerisiydi.
+   Kontrollü lig kıyasında **D8 7 → 17 epizot · D9 17 → 22 · J1 0 → 671**. Hedefi her
+   karede topa çekmek koreografiyi eziyor. FAZ 57 aynı sınıfı zaten elemişti. Geri alındı.
+2. **Anlatım dolgusu (K5).** 12 sn'lik sessizlikleri kapatmak için 12 satırlık havuz
+   (`DOLGU_LINES`, EN karşılıkları + `localizeCatalogs` kaydı yazıldı) ve 9,5 sn'lik bekçi
+   eklendi. Ölçüm: **K5 467 → 1427 ihlal** — kapı boşluk kapanana kadar HER KAREDE sayar
+   ve dolgu satırı yeni bir "son yorum" yaratıp bir sonraki gerçek satıra kadarki boşluğu
+   yeniden açıyor. Bekçi `DOLGU_ACIK=false` ile kapatıldı; havuz ve çeviriler yerinde
+   bırakıldı (doğru çözüm önce kapının epizot bazlı okunmasıdır).
+
+### 4. TUTTURULAMAYAN HEDEFLER — sayıyla
+
+**(a) Gerçek NBA kaydının kendisi de tutturamıyor** (`sartname-tani`, aynı koşuda klip =
+gerçek SportVU kaydının birebir oynatılması):
+
+| kural | hedef | KLİP (gerçek) | FİZİK (bizim) |
+|---|---|---|---|
+| B1 adam eşlemesi (5/5 ≤90 px) | ≥%70 | **%20,0** | %24,1 |
+| B5 savunmacı <20 px | ≤%3 | **%37,9** | %8,5 |
+| B12 savunmacı çakışması | ≤%3 | **%15,8** | %6,6 |
+| K7 iki jeton <26,2 px | ≤%3 | **%60,3** | %39,6 |
+| C3 iki hücumcu <30 px | ≤%2 | **%11,5** | %5,1 |
+
+Beşinde de **bizim fizik karelerimiz gerçek kayıttan daha iyi**. Bu eşiklere ulaşmanın
+tek yolu gerçek basketboldan uzaklaşmaktır (FAZ 39 dersi).
+⚠ **K7 ayrıca brifin yöntemiyle çözülemez:** brif "ayrışmayı çizim katmanında yap"
+diyor, ama denetçi `P[i].x/y` yani **simülasyon** konumunu okuyor. Çizim katmanındaki
+değer zaten **%5,4** (kullanıcının gördüğü); K7'yi kıpırdatmaz.
+
+**(b) Ters potadan doğanlar:** A9 · A10 · A11 (her şut "üçlük" sayılıyor) · B4 ve C8
+(doğru potayla zaten geçiyor) · C10'un büyük kısmı.
+
+**(c) Gerçek basketbolla çelişen iki eşik:** B2 ≤60 px — gerçek ön saha 2,00 m (58 px),
+arka saha 5,07 m (146 px); tüm kareler karışınca ortalama ~90 px olur ve bizimki
+**ön sahada 2,04 m** ile gerçeğin üstünde değil, tam üstünde. G2 3-9 sn — gerçek NBA
+pozisyonu ~14 sn.
+
+**(d) Ölçüm gürültüsünde kalanlar:** J1 · K5 · A2 · F7 · K6 · D8 · D9 (yukarıda (c)).
+
+### 5. DOKUNULMAYANLAR
+A4 (kapalı şut) — eşiği düşürmek `hareket-bant-check`in gerçek veriye oturmuş ön saha
+savunmacı mesafesini (2,00 m ↔ 2,04) bozar. D10/G2 (top çevirme, pozisyon süresi) —
+motorun pas/şut karar katmanına girmeyi gerektirir, brifin diğer maddeleri bitmeden
+skoru değiştirmek istemedim. B11 (pres) — oyunda pres mekaniği yok.
+
+### 6. Yeni araç
+`tools/sartname-tani.js` — şartnamenin **aynı formülleri**, her kalem KLİP ve FİZİK
+kareleri AYRI. Bir kalem klip karelerinde de düşüyorsa eşik gerçeğin altındadır.
+
+### Kapılar
+`sim-node --n=200 --seed=42` **93.4 - 87.3 · 268** · determinizm ✓ (skor DEĞİŞMEDİ) ·
+`visual-check` masaüstü + mobil **0 konsol hatası** · `surum-check --yaz` → **125** ·
+`hareket-bant-check`: savunmacı L1 0,219 ✓ · **ön saha 2,04 m ↔ gerçek 2,003 (L1 0,230 ✓)** ·
+arka saha 0,362 · potaya uzaklık 0,407 (FAZ 78'de 0,335 — E3 kaçışı hücumcuları boyadan
+çıkardığı için potaya ortalama uzaklık arttı, bilinçli takas).
+
+### Ders
+**Bir kabul ölçütünü kullanmadan önce onun kendi gürültüsünü ve referansını ölç.** Bu
+turda üç şey de ölçüldü: denetçi hücumun potasını ters alıyor (altı kuralı doğrudan
+etkiliyor), `--playoff` harness'ı rakip takımı bile değiştiriyor, ve aynı kod iki koşuda
+35 ↔ 38 düşen veriyor. Bunlar bilinmeden "35 → 39 oldu" cümlesi de "şu kuralı düzelttim"
+cümlesi de kanıtsızdır.

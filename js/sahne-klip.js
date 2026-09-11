@@ -548,6 +548,17 @@ function klipTick(dt){
         o[0]=nx-c[0]-K.warp[0]*ww*wk; o[1]=ny-c[1]-K.warp[1]*ww*wk;
       }
     }
+    /* ── FAZ 80 · E9: ÇİZGİ MUTLAK SINIRDIR (kademeli yaklaşma korunur) ───────────────
+       FAZ 58 C kırpmayı HIZ SINIRLI yaptı (tek karede 40 px'lik snap'i bitirmek için) ama
+       bunun bedeli, dışarıda başlayan jetonun bir süre dışarıda KALMASIDIR: şartname
+       denetçisi 11-13 epizot 'saha dışı oyuncu' saydı (ör. 309,20 — üst çizgi y0=28,43).
+       Çizginin 14 px içine kademeli yaklaşılır ama ÇİZGİNİN KENDİSİ aşılamaz; bu düzeltme
+       en çok jetonun dışarıda kaldığı kadar (birkaç px) hareket üretir, 40 px'lik snap'i
+       geri getirmez. `_oob` (sokucu) muaftır — o gerçekten çizgi dışındadır. */
+    if(!p._oob){
+      if(nx<CRT_X0) nx=CRT_X0; else if(nx>CRT_X1) nx=CRT_X1;
+      if(ny<CRT_Y0) ny=CRT_Y0; else if(ny>CRT_Y1) ny=CRT_Y1;
+    }
     const ox=p.x, oy=p.y;
     p.x=nx; p.y=ny; p._px=p.x; p._py=p.y;
     if(!K.atildi){ p.tx=p.x; p.ty=p.y; }   /* şuttan sonra hedefler koreografinindir (ribaunt, serbest atış dizilişi) */
@@ -604,8 +615,9 @@ function klipTick(dt){
          GERÇEKTEN yanına geldiğinde (`KLIP_TUTMA_FT × 0,7`) alır. Top klibin kendi
          yörüngesinde ilerlediği için varış anı kaydın kendisinden gelir. */
       else if(b.mode==='held'&&b.carrier){
-        b.carrier=null; b.mode='pass'; b.target=en; b.from=[b.x,b.y];
-        try{ if(S) S._klipElN=(S._klipElN|0)+1; }catch(e){}
+        if(!klipPasOlur(b,en,S)){ b._looseKaynak='klip-kapi'; b.carrier=null; b.mode='loose'; b.target=null; b.vx=b.vy=0; try{ if(S) S._klipKapiN=(S._klipKapiN|0)+1; }catch(e){} }
+        else { b._pasVeren=b.carrier; b.carrier=null; b.mode='pass'; b.target=en; b.from=[b.x,b.y];
+          try{ if(S) S._klipElN=(S._klipElN|0)+1; }catch(e){} }
       }
       else if(b.mode!=='pass'||ed<=KLIP_TUTMA_FT*0.7*pxFt){ b.carrier=en; b.mode='held'; b.noDrib=false; b._heldAt=S.time; }
     } else if(b.mode!=='held'&&(b.mode!=='pass'||ed<=KLIP_TUTMA_FT*0.7*pxFt)){ b.mode='held'; b._heldAt=S.time; }
@@ -620,11 +632,46 @@ function klipTick(dt){
        meşrudur; taşıyıcı klibin hücumunda değilse top serbest bırakılır ve klibin hücumcusu
        4 ft'e girince ELE alır (FAZ 54 A1 sözleşmesi: 'pass' yalnız 'held'den açılır). */
     if(K.offP&&K.offP.indexOf(b.carrier)<0){ b._looseKaynak='klip-basla'; b.carrier=null; b.mode='loose'; b.target=null; b.vx=b.vy=0; }
-    else { b.carrier=null; b.mode='pass'; b.target=en; b.from=[b.x,b.y]; }
+    else if(!klipPasOlur(b,en,S)){ b._looseKaynak='klip-kapi'; b.carrier=null; b.mode='loose'; b.target=null; b.vx=b.vy=0; try{ if(S) S._klipKapiN=(S._klipKapiN|0)+1; }catch(e){} }
+    else { b._pasVeren=b.carrier; b.carrier=null; b.mode='pass'; b.target=en; b.from=[b.x,b.y]; }
   }   /* FAZ 54 A5: 4 → 6,4 ft — ölçüldü, 103 pasın 48'i 2 m altındaydı (sürme/ofset titremesi) */
-  else if(b.mode==='pass'){ b.target=en; }
+  /* ── FAZ 80 · D1'İN ASIL KÖKÜ: UÇAN TOP HER KAREDE YENİDEN HEDEFLENİYORDU ──────────
+     Bu satır klip oynatımı boyunca uçan topun hedefini HER KAREDE 'topa en yakın klip
+     jetonu' yapıyordu. Pas meşru başlasa bile uçuş sırasında en yakın jeton bir RAKİP
+     olabiliyor ve top onun elinde bitiyordu — şartname denetçisi bunu 'rakibe pas' diye
+     yakaladı (tam maçta 4-7 olay, üçü aynı oyuncudan). Pasın iki ucunu kapıya bağlamak
+     tek başına yetmez, UÇUŞ BOYUNCA da hedef aynı takımda kalmalı. Veren `b._pasVeren`
+     ile saklanır; yeni hedef onunla aynı takımda değilse hedef DEĞİŞTİRİLMEZ. */
+  else if(b.mode==='pass'){
+    const v=b._pasVeren;
+    if(!v||!v.team||!en||!en.team||v.team===en.team) b.target=en;
+  }
   /* loose / rim / dead: olduğu gibi kalır — hücumcu 4 ft'e girince 'held' */
   b.rot=(b.rot||0)+dt*(b.mode==='pass'?720:180);
+}
+/* ── FAZ 80 · D1/D2: KLİP YOLUNUN DOĞRUDAN PASI DA KAPIDAN GEÇER ────────────────────
+   `sahne-klip.js` iki yerde `b.mode='pass'` yazarak topu uçuşa alır ve `_ballPass`i HİÇ
+   çağırmaz; dolayısıyla FAZ 58'in 'rakibe pas yok' ve FAZ 78'in 'geri saha pası yok'
+   kapıları bu yolda İŞLEMİYORDU. Şartname denetçisi tam maçta 6 rakibe pas (üçü aynı
+   oyuncudan) ve 4 geri saha pası yakaladı; kendi denetçilerim bulamamıştı çünkü ikisi de
+   klip karelerini muaf tutuyordu. Basketbolda rakibe pas diye bir şey yoktur: hedef
+   uygun değilse top PASLANMAZ, serbest kalır (FAZ 58 sözleşmesi) ve klibin hücumcusu
+   yanına gelince eline alır. */
+function klipPasOlur(b,to,S){
+  try{
+    if(!to) return false;
+    const c=b.carrier;
+    if(c&&c.team&&to.team&&c.team!==to.team) return false;          /* D1 */
+    if(c&&S&&S.offSide!=null&&isFinite(c.x)&&isFinite(to.x)){       /* D2 */
+      const sol=(S.offP&&S.offP.indexOf(c)>=0)?S.offSide:((S.defP&&S.defP.indexOf(c)>=0)?!S.offSide:null);
+      if(sol!=null){
+        const onda=sol?(c.x<COURT_MID-8):(c.x>COURT_MID+8);
+        const arkada=sol?(to.x>COURT_MID+8):(to.x<COURT_MID-8);
+        if(onda&&arkada) return false;
+      }
+    }
+  }catch(e){}
+  return true;
 }
 /** FAZ 57 A1: gelen hıza uygun acele kademesi (duvar ölçeği: 1,4 / 3,3 m/sn eşikleri). */
 function _klipUrg(v){ const ms=v/29.5429; return ms<1.4?_URG.YURU:(ms<3.3?_URG.JOG:_URG.KOS); }

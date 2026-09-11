@@ -711,6 +711,35 @@ function oamBoyaKac(S,O,p){
     return [_inX(p.x),_inY(hy)];
   }catch(e){ return null; }
 }
+/* ── FAZ 80 · BLOK 1 SABİTLERİ ─────────────────────────────────────────────────────── */
+const OAM_YARDIM_SN=1.5;        /* yardım en çok bu kadar sürer (brif) */
+const OAM_YARDIM_BEKLE=1.2;     /* yardımdan sonra adamında kalma süresi */
+const OAM_DEF_AYIR=54;          /* iki savunmacı hedefi arasındaki en az mesafe (px) */
+const OAM_HUC_AYIR=42;          /* iki hücumcu hedefi arasındaki en az mesafe (px) · C3 */
+/** İki savunmacının hedefi üst üste binmesin: bire bir savunma ancak hedefler AYRIK ise
+    kurulabilir. Ölçüldü (sartname-tani): bir hücumcunun 60 px'inde 2+ savunmacı olan kare
+    payı %43,9 (fizik %50,7) ve aynı anda başka bir hücumcu 150 px'te savunmasız (%35,1).
+    İki kusur aynı madalyonun yüzleri — savunmacılar kümeleniyordu. Gevşetme yalnız HEDEFE
+    uygulanır (konuma değil): jetonlar kendi hızlarıyla oraya gider. */
+function oamDefAyir(H,esik){
+  const E=esik||OAM_DEF_AYIR;
+  if(!H||H.length<2) return;
+  for(let it=0;it<4;it++){
+    for(let i=0;i<H.length;i++) for(let j=i+1;j<H.length;j++){
+      const a=H[i],b=H[j];
+      /* ── FAZ 80 (ölçülerek düzeltildi): TOPU TUTANIN SAVUNMACISI MUAFTIR ────────────
+         İlk sürüm onu da itiyordu ve topu tutana en yakın savunmacı 82,7 → 88,1 px'e
+         AÇILDI (kapı ≤60). Baskı mesafesi FAZ 48/49'da gerçek SportVU verisiyle
+         ayarlanmıştır; ayrıştırma onu ezmemeli. */
+      if(a.onBall||b.onBall) continue;
+      const dx=b.tx-a.tx, dy=b.ty-a.ty; const d=Math.hypot(dx,dy);
+      if(d>=E) continue;
+      const it2=(E-Math.max(d,1))/2, ux=(d>0.01?dx/d:1), uy=(d>0.01?dy/d:0);
+      a.tx-=ux*it2; a.ty-=uy*it2; b.tx+=ux*it2; b.ty+=uy*it2;
+    }
+  }
+  H.forEach(h=>{ h.tx=_inX(h.tx); h.ty=_inY(h.ty); });
+}
 function oamHedefler(S,O){
   const b=S.ball, {offP,defP,offR,defR,rim,dir,shooter,pg,spots,offLeft}=O;
   const carrier=b.carrier, bizde=!!(carrier&&offP.indexOf(carrier)>=0);
@@ -817,13 +846,21 @@ function oamHedefler(S,O){
 
   /* ── SAVUNMA: adam adama ── */
   const topTasiyan=bizde?carrier:null;
+  const _defHed=[];
   defR.forEach((d,i)=>{
     if(!d||d._oob||(S.chase&&S.chase.tok===d)) return;
     const m=offR[i]||offR[0]; if(!m) return;
     let tx,ty,urg=_URG.KOS;
     const dm=oamDR(m,rim);
     if(O.faz==='sokma'&&!O.spotOnde){
-      tx=(i<=1)?(COURT_MID+dir*90):(COURT_MID-dir*60); ty=TRANS_DEF[i][1]; urg=(i<=1)?_URG.KOS:_URG.JOG;
+      /* ── FAZ 80 · B10/B3: SAVUNMA KENDİ YARI SAHASINDA KURULUR ──────────────────────
+         Eski hedef üç uzunu `COURT_MID-dir*60`e koyuyordu; `dir` hücumun saldırdığı potaya
+         bakar, yani -dir HÜCUMUN ARKA SAHASIDIR: ölü top sokmasında savunmanın üç oyuncusu
+         rakip yarıda dikiliyordu. Ölçüldü (sartname-tani, faz kırılımı): `oam:sokma`
+         fazında 3+ savunmacı rakip yarıda %67,9 — bütün fazların en kötüsü (set %11,8).
+         Artık beşi de savunulan potanın tarafında: guardlar orta çizgiye yakın, uzunlar
+         potaya doğru derinde. */
+      tx=(i<=1)?(COURT_MID+dir*55):(COURT_MID+dir*165); ty=TRANS_DEF[i][1]; urg=(i<=1)?_URG.KOS:_URG.JOG;
       /* FAZ 48 (gerçek: arka sahada savunmacı ort 5,1 m, 0,5-6 m'ye yayılı): alıcının (oyun
          kurucu) savunmacısı onu 3,4 m'den gölgeler, gerisi geri koşar */
       if(i===0&&O.pg&&!O.pg._oob){ const pm=O.pg, pd=oamDR(pm,rim)||1; const g0=Math.min(100,Math.max(0,pd-26)); tx=_inX(pm.x+(rim[0]-pm.x)/pd*g0); ty=_inY(pm.y+(rim[1]-pm.y)/pd*g0); urg=_URG.KOS; }
@@ -849,7 +886,18 @@ function oamHedefler(S,O){
       else {
         g=_defGap(dmb);
         const topIcerde=Math.hypot(topX-rim[0],topY-rim[1])<THREE_R-40;
-        if(topIcerde&&dmb>200) g=Math.min(dm-30,70);         /* yardım: boyaya sark */
+        /* ── FAZ 80 · B6/B7: YARDIM SÜRELİDİR, EŞLEME BIRAKILMAZ ────────────────────────
+           Eski kural top boyaya girdiğinde adamı 200 px'ten uzak olan HER savunmacıyı
+           potaya çekiyordu ve süre sınırı yoktu: iki savunmacı aynı adamda toplanırken
+           (B6 %43,9) başka bir hücumcu tamamen boşta kalıyordu (B7 karelerin %35,1'i).
+           Yardım en çok `OAM_YARDIM_SN` sürer, sonra savunmacı adamına döner ve
+           `OAM_YARDIM_BEKLE` kadar yeniden yardıma gitmez. Eşleme (`d._mark`) hiç
+           bırakılmaz — yalnız hedef geçici olarak kayar. */
+        if(topIcerde&&dmb>200){
+          const yt=(d._yardimT||0);
+          if(yt<OAM_YARDIM_SN&&(d._yardimBek||0)<=S.time){ d._yardimT=yt+(S._oamDt||0.016); g=Math.min(dm-30,70); }
+          else if(yt>0){ d._yardimT=0; d._yardimBek=S.time+OAM_YARDIM_BEKLE; }
+        } else if((d._yardimT||0)>0) d._yardimT=0;
       }
       g=Math.min(g,Math.max(0,dm-26));
       tx=m.x+(rim[0]-m.x)/(dm||1)*g; ty=m.y+(rim[1]-m.y)/(dm||1)*g;
@@ -859,8 +907,10 @@ function oamHedefler(S,O){
       /* kıpırdanma adam–pota hattı ÜZERİNDE (radyal): hattan çıkmaz, ball-you-man bozulmaz */
       if(dd<OAM_YERINDE&&!O.donuk){ const k=5*Math.sin(S.time*2.1+(O.ph.get(d)||0)); const ux=(rim[0]-m.x)/(dm||1), uy=(rim[1]-m.y)/(dm||1); tx+=ux*k; ty+=uy*k; }
     }
-    oamHedef(d,tx,ty,urg);
+    _defHed.push({d:d,tx:tx,ty:ty,urg:urg,onBall:(m===topTasiyan)});
   });
+  oamDefAyir(_defHed);
+  _defHed.forEach(h=>oamHedef(h.d,h.tx,h.ty,h.urg));
 }
 
 /* ── FAZ 48 (c3): ARKA SAHADA BASKI — OAM aktif değilken (eski geçiş kodu: ribaund/çalma/sayı
@@ -1201,17 +1251,40 @@ function oamBeklemeTick(S,dt){
     /* boya (kulvar): dip çizgiden 171 px, orta çizgiden ±72 px — goz-benim ile aynı tanım */
     const _kulvarda=(x,y)=>(Math.abs(x-rim[0])<171&&Math.abs(y-250)<72);
     /* hücum: kendi şablon noktasına yürür/koşar */
+    const _hh=[];
     offR.forEach(q=>{
       if(atla(q)||q===carrier) return;
       const c=spots.get(q); if(!c) return;
-      const d=Math.hypot(q.x-c[0],q.y-c[1]);
-      oamHedef(q,c[0],c[1],oamKademe(d));
+      let cx=c[0], cy=c[1];
+      /* ── FAZ 80 · E3: ÜÇ SANİYE KURALI BEKLEME PENCERESİNDE DE İŞLER ────────────────
+         `oamBoyaKac` (FAZ 54 C1) yalnız `oamHedef` üzerinden ve YALNIZ OAM aktifken
+         çağrılıyordu; OAM'ın kapalı olduğu bekleme penceresinde (karelerin ~%19'u) boyada
+         duran hücumcu hiç kovulmuyordu. Ölçüldü (sartname): 74-83 üç saniye ihlali, en
+         çok pivot (rol 4: 87,2 sn boyada). Sayaç ölü topta ve törende zaten durur. */
+      try{ const k=oamBoyaKac(S,{rim:rim},q); if(k){ cx=k[0]; cy=k[1]; } }catch(e){}
+      _hh.push({d:q,tx:cx,ty:cy});
     });
-    /* savunma: adam adama, adam-pota hattında (topu tutanın savunmacısı oamBaskiTick'in) */
+    /* FAZ 80 · C3: iki hücumcunun hedefi üst üste binmesin (aynı slot görüntüsü) */
+    oamDefAyir(_hh,OAM_HUC_AYIR);
+    _hh.forEach(h=>{ const d2=Math.hypot(h.d.x-h.tx,h.d.y-h.ty); oamHedef(h.d,h.tx,h.ty,oamKademe(d2)); });
+    /* savunma: adam adama, adam-pota hattında */
+    const _bh=[];
     defR.forEach((d0,i)=>{
       if(atla(d0)) return;
       const m2=offR[i]||offR[0]; if(!m2) return;
-      if(m2===carrier) return;
+      /* ── FAZ 80 · B2: BEKLEME PENCERESİNDE TOPU TUTAN DA SAVUNULUR ──────────────────
+         Eski kod topu tutanın savunmacısını `oamBaskiTick`e bırakıyordu, o da yalnız top
+         ARKA SAHADAYKEN çalışır (`if(!arka) return`): top ön sahadayken ve OAM kapalıyken
+         (karelerin ~%19'u) topu tutan HİÇ savunulmuyor, savunmacı bayat hedefinde kalıyordu.
+         Ölçülen taşıyıcı-savunmacı mesafesi ön sahada 68,2 px (hedef ≤60). */
+      if(m2===carrier){
+        const _arka=offLeft?(carrier.x>COURT_MID):(carrier.x<COURT_MID);
+        if(_arka) return;                       /* arka saha oamBaskiTick'in işi */
+        const dmc=oamDR(m2,rim)||1;
+        const gc=Math.min(46,Math.max(0,dmc-26));
+        _bh.push({d:d0,tx:m2.x+(rim[0]-m2.x)/dmc*gc,ty:m2.y+(rim[1]-m2.y)/dmc*gc,urg:_URG.KOS,m:m2,onBall:true});
+        return;
+      }
       const dm=oamDR(m2,rim)||1;
       let g=Math.min(_defGap(oamD(m2,carrier||m2)),Math.max(0,dm-26));
             let tx=m2.x+(rim[0]-m2.x)/dm*g, ty=m2.y+(rim[1]-m2.y)/dm*g;
@@ -1238,10 +1311,10 @@ function oamBeklemeTick(S,dt){
         }
         g=lo; tx=m2.x+(rim[0]-m2.x)/dm*g; ty=m2.y+(rim[1]-m2.y)/dm*g;
       }
-      const dd=Math.hypot(d0.x-tx,d0.y-ty);
-      oamHedef(d0,tx,ty,oamKademe(dd));
-      d0._mark=m2;
+      _bh.push({d:d0,tx:tx,ty:ty,urg:null,m:m2});
     });
+    oamDefAyir(_bh);
+    _bh.forEach(h=>{ const dd=Math.hypot(h.d.x-h.tx,h.d.y-h.ty); oamHedef(h.d,h.tx,h.ty,h.urg||oamKademe(dd)); h.d._mark=h.m; });
   }catch(e){}
 }
 

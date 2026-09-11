@@ -710,7 +710,41 @@ function startClockTween(targetT,durMs,ev){
   _clkTimer=setInterval(tick,100);
 }
 
+/* ── FAZ 80 · K5: ANLATIM SESSİZLİĞİ BEKÇİSİ ───────────────────────────────────────
+   Kapı 'iki yorum arası ≤ 12 sn' diyor ve boşluk kapanana kadar HER KAREDE sayıyor.
+   Sessizlik gerçek: ölü top, uzun pozisyon ve klip oynatımı sırasında spiker susuyor.
+   Bekçi 9 saniyede bir bakar; 9,5 sn'dir yeni satır yoksa SAHNEYİ anlatan bir dolgu
+   satırı basar. Maç matematiğine dokunmaz: seçim `_sr()` iledir (B-5) ve olay akışına
+   hiçbir şey eklenmez — yalnız ekrana bir balon yazılır. */
+/* ⚠ FAZ 80: DOLGU BEKÇİSİ ÖLÇÜLEREK KAPATILDI. Amaç K5'i (iki yorum arası ≤12 sn)
+   kapatmaktı; kontrollü lig kıyasında K5 467 → 1427 ihlale ÇIKTI. Sebep ölçüldü: kapı
+   boşluk kapanana kadar HER KAREDE sayar, dolgu satırı ise yeni bir 'son yorum' yaratıp
+   bir sonraki gerçek satıra kadar olan boşluğu YENİDEN açıyor. Havuz (DOLGU_LINES) ve EN
+   karşılıkları yerinde bırakıldı; doğru çözüm önce kapının epizot bazlı okunmasıdır. */
+const DOLGU_ACIK=false;
+function _dolguBekcisiKur(){
+  try{
+    if(mState._dolguIv) clearInterval(mState._dolguIv);
+    mState._dolguN=0;
+    mState._dolguIv=setInterval(()=>{
+      try{
+        if(!mState.running||mState.paused) return;
+        const S=mState._sim; if(!S) return;
+        const hiz=Math.max(0.5,mState.rate||1);
+        const son=mState._sonYorumAt||0;
+        if(!son) { mState._sonYorumAt=performance.now(); return; }
+        if(!DOLGU_ACIK) return;   /* FAZ 80: ölçülerek kapatıldı — aşağıdaki nota bak */
+        if((performance.now()-son)/1000/hiz < 9.5) return;
+        const havuz=(typeof DOLGU_LINES!=='undefined'&&DOLGU_LINES.length)?DOLGU_LINES:null;
+        if(!havuz) return;
+        const i=Math.floor((typeof _sr==='function'?_sr():Math.random())*havuz.length)%havuz.length;
+        addComment(havuz[i],'',('dolgu:'+(++mState._dolguN)));
+      }catch(e){}
+    },1500);
+  }catch(e){}
+}
 function stopMatch(){
+  try{ if(mState._dolguIv){ clearInterval(mState._dolguIv); mState._dolguIv=null; } }catch(e){}
   clearMatchEventTimer();
   clearBallTimers();
   stopClockTween();
@@ -959,6 +993,7 @@ function _balonTemiz(s){
   }catch(e){ return s; }
 }
 function addComment(txt,type='',key,zincir){
+  try{ mState._sonYorumAt=performance.now(); }catch(e){}   /* FAZ 80 K5: sessizlik bekçisi */
   /* _k fonksiyon kapsamında olmalı: zincir birleştirme (§3) da aynı anahtarı okur. */
   const _k=(key!=null)?key:('t:'+String(txt).slice(0,60));
   try{
@@ -2228,7 +2263,7 @@ function canResumeMatch(){
 /** Donmuş maçı kaldığı yerden sürdür. */
 function resumeMatch(){
   if(!canResumeMatch()){ showNotif('Sürdürülecek maç yok.'); return false; }
-  mState.running=true;
+  mState.running=true; mState._sonYorumAt=performance.now(); try{ _dolguBekcisiKur(); }catch(e){}   /* FAZ 80 K5 */
   mState.paused=false;
   clearMatchEventTimer();
   try{

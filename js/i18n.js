@@ -287,6 +287,7 @@ function localizeCatalogs(){
   try{ mapStrArr(typeof HUCUM_FAULU_LINES!=='undefined'?HUCUM_FAULU_LINES:null); }catch(e){}
   try{ mapStrArr(typeof ADIM_LINES!=='undefined'?ADIM_LINES:null); }catch(e){}
   try{ mapStrArr(typeof TAC_LINES!=='undefined'?TAC_LINES:null); }catch(e){}
+  try{ mapStrArr(typeof DOLGU_LINES!=='undefined'?DOLGU_LINES:null); }catch(e){}   /* FAZ 80 K5 */
   try{ mapStrArr(typeof TEKNIK_LINES!=='undefined'?TEKNIK_LINES:null); }catch(e){}
   try{ mapStrArr(typeof SPORTMEN_LINES!=='undefined'?SPORTMEN_LINES:null); }catch(e){}
   try{ mapStrArr(typeof SAKAT_MAC_LINES!=='undefined'?SAKAT_MAC_LINES:null); }catch(e){}

@@ -1,0 +1,50 @@
+
+ŞARTNAME TANI — 18628 kare · klip %65.8 · 300 sn · PLAYOFF
+
+  KARE PAYI              TOPLAM    KLİP(gerçek)   FİZİK(bizim)   hedef
+  B1                     21.4%         20.0%         24.1%   ≥%70 ok
+  B3                     59.0%         61.6%         53.9%   ≥%85 ok
+  B4                     84.2%         85.6%         81.5%   ≥%65 ok
+  B5                     27.8%         37.9%          8.5%   ≤%3
+  B6                     43.9%         40.4%         50.7%   ≤%10
+  B7_kare                35.1%         34.0%         37.3%   —
+  B10                    30.4%         26.8%         37.3%   ≤%10
+  B12                    12.6%         15.8%          6.6%   ≤%3
+  C1                      4.7%          2.4%          9.3%   ≤%3
+  C2                      8.5%          7.4%         10.7%   ≤%8
+  C3                      9.3%         11.5%          5.1%   ≤%2
+  C5                     15.3%         13.0%         19.6%   ≤%4
+  C8                     39.5%         43.4%         32.1%   ≥%20 ok
+  K7                     53.2%         60.3%         39.6%   ≤%3
+  K7_cizim                5.4%          7.3%          1.6%   (bilgi)
+  J4                      1.7%          0.0%          4.9%   ≤%1
+
+  ORTALAMA               TOPLAM    KLİP        FİZİK
+  B1_eslenenSayi           3.4         3.4         3.6   n=18628
+  B2                     100.1        94.3       115.2   n=12751
+  B2_on                   68.2        69.3        64.5   n=7435
+  B2_arka                144.6       134.7       164.6   n=5316
+  B10_rakipYarida          1.5         1.3         1.7   n=18628
+  C2_raketSayi             0.7         0.7         0.9   n=18628
+  C10                    321.7       323.8       317.7   n=18628
+  C10_rol34              326.7       321.5       336.9   n=37256
+
+  B10 FAZ KIRILIMI (savunmanın 3+ oyuncusu rakip yarıda):
+    klip             26.8%  (3281/12250)
+    bekle            34.7%  (1213/3492)
+    oam:sokma        67.9%  (605/891)
+    oam:gecis        52.8%  (187/354)
+    oam:set          11.8%  (119/1011)
+    oam:toren        40.5%  (255/630)
+
+  BOYADA KALIŞ (rol başına toplam sn):
+    E3r0 : 33.2 sn
+    E3r1 : 20.0 sn
+    E3r2 : 31.9 sn
+    E3r3 : 49.6 sn
+    E3r4 : 87.2 sn
+
+  ÖRNEKLER:
+    B1: 10:00 eşlenen 1/5 · faz oam:toren
+
+  ham: tools/sartname-tani-rapor.json

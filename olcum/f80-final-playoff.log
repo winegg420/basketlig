@@ -1,0 +1,146 @@
+[kurulum] playoff: Auckland Ejderleri vs Sartname FK · running=true
+Taranıyor 600 sn ........................................................................................................................
+
+======================================================================================
+BASKETBOL ŞARTNAMESİ — 37219 kare · klip %57.6 · 47 şut · 33 pas · 44 hücum · 124 yorum
+======================================================================================
+
+✗ DÜŞEN (39)
+  A4   Kapalı şut atılmaz                        29.8%
+  A6   Turnike/smaç mesafesi ≤100px              1 uyuşmazlık (K2 ile aynı)
+  A9   Şut mesafesi dağılımı                     pota altı %0 · üçlük %100
+  A10  Pivot üçlük yağdırmaz                     %40
+  A11  Guard pota altına girer                   %0
+  B1   Adam eşlemesi kurulur                     17.6%
+  B2   Topu tutan savunulur                      87.8px ortalama
+  B3   Savunma geri döner                        18.4%
+  B4   Savunmacı pota tarafında                  28.5%
+  B5   Savunmacı adamın üstüne oturmaz           22%
+  B6   İki savunmacı aynı adamı tutmaz           68.1%
+  B7   Hücumcu savunmasız kalmaz                 71 epizot
+  B9   Ribaunt blokajı                           29%
+  B10  Savunma rakip yarıya geçmez               67.4%
+  B12  Savunmacılar çakışmaz                     12.9%
+  C1   Perimetre boş kalmaz                      14.1%
+  C2   Raket tıkanmaz                            17.5%
+  C3   İki hücumcu aynı slotta durmaz            12.5%
+  C5   Orta sahada yığılma olmaz                 11.2%
+  C8   Köşeler kullanılır                        3%
+  C10  Pivot dip bölgede                         426.8px
+  D1   Rakibe pas atılmaz                        7 olay
+        7:56 · Kavaliauskas → ? (rakip)
+        6:19 · Jiménez → ? (rakip)
+        3:48 · Meyer → ? (rakip)
+  D2   Geri saha pası atılmaz                    2 olay
+        7:59 · Vega → Lai
+        10:00 · Regev → Chausevski
+  D8   Top 2sn+ sahipsiz kalmaz                  13 epizot
+        8:53 · 2.1 sn
+        8:43 · 3.3 sn
+        8:28 · 3.5 sn
+  D9   Pota dibinde sahipsiz top                 17 epizot
+        8:34 · en yakın 66px
+        8:01 · en yakın 101px
+        8:01 · en yakın 68px
+  D10  Top çevirme olur                          %5
+  E3   3 saniye kuralı                           87 ihlal
+        9:56 · Seki rakette 3.0 sn
+        9:39 · Wallace rakette 3.0 sn
+        9:39 · Kavaliauskas rakette 3.0 sn
+  E4   Geri saha ihlali uygulanır                2 pas düdüksüz geçti
+  E9   Saha dışı oyuncu olmaz                    7 epizot
+        8:27 · Dike (832,19)
+        8:27 · Dike (832,24)
+        8:27 · Dike (832,27)
+  F1   Şut anında pota çevresi dolu              47 epizot
+        10:00 · 0 oyuncu pota çevresinde
+        10:00 · 0 oyuncu pota çevresinde
+        10:00 · 0 oyuncu pota çevresinde
+  G1   Hızlı hücumda önde koşan var              2 uyuşmazlık
+        7:55 · ⚡ Hızlı hücum! Bell boşta bıraktı; Seki 
+        3:31 · ⚡ Hızlı hücum! Top hızla karşı yarı saha
+  G2   Hücum süresi gerçekçi                     13.3 sn
+  H1   Sayı sonrası taç dip çizgiden             3 ihlal
+        8:35 · dip çizgiden 656px
+        5:10 · dip çizgiden 744px
+        2:34 · dip çizgiden 693px
+  J1   Oyuncu hızı insani                        514 ihlal
+        9:33 · Vega 966px/sn
+        9:29 · Jiménez 660px/sn
+        9:29 · Bell 712px/sn
+  J4   Oyuncular iç içe geçmez                   1.6%
+  K2   Yorumdaki şut tipi mesafeye uyar          1 ihlal
+        8:09 · 575px · Dönerek sıyrıldı — Justin Wallace savunm
+  K5   Anlatım susmaz                            1199 ihlal
+        7:55 · 17.9 sn sessizlik
+        7:55 · 17.9 sn sessizlik
+        7:55 · 17.9 sn sessizlik
+  K6   Etiketler okunur                          8.3%
+  K7   Jetonlar tek jeton gibi görünmez          52.3%
+
+✓ GEÇEN (18)
+  A1   Pota altı boş oyuncu şut atar             1 ihlal
+  A2   Pota altı boş oyuncu dışarı pas atmaz     0 ihlal
+  A3   Üçlükte boş oyuncu atar                   1 ihlal
+  C4   Hücumcular arası mesafe                   107.5px
+  C6   Saha genişliği kullanılır                 246.1px
+  C7   Saha derinliği kullanılır                 240.7px
+  C9   Kesme hareketi olur                       79 kez
+  C11  Kurucu top çevresinde                     148.3px
+  D3   Pas uçuş süresi ≥0,25sn                   2 ihlal
+  D4   Pas kavisi var                            %0 düz
+  D5   Top taşıyıcıdan kopmaz                    0.1%
+  D6   Top ışınlanmaz                            0 olay
+  D7   Sürme yapılır                             0 ihlal
+  F7   Yorumdaki ribaunt sahibi doğru            0 uyuşmazlık
+  H6   Hava atışı orta yuvarlakta                0 ihlal
+  J2   Oyuncu ışınlanmaz                         0 ihlal
+  K3   Yorumdaki skor doğru                      0 ihlal
+  K8   Hakemler saha kenarında                   0%
+
+? ÖLÇÜLEMEDİ (39)
+  A5   Şut saati baskısında şut                  ÖLÇÜLEMEDİ — şut saati durumu okunamıyor
+  A7   Üçlük şut mesafesi ≥195px                 ÖLÇÜLEMEDİ — şut tipi etiketi state'te yok
+  A8   Orta mesafe şut                           ÖLÇÜLEMEDİ — şut tipi etiketi state'te yok
+  A12  Şut tekeli                                ÖLÇÜLEMEDİ — hücum sınırları güvenilir ayrılamıyor
+  B8   Yardım savunması                          ÖLÇÜLEMEDİ — yardım olayı state'te işaretlenmiyor
+  B11  Pres tutarlılığı                          ÖLÇÜLEMEDİ — pres durumu state'te yok
+  B13  Top çalma mesafesi                        ÖLÇÜLEMEDİ — steal olayı state'te işaretlenmiyor
+  B14  Blok mesafesi                             ÖLÇÜLEMEDİ — blok olayı state'te işaretlenmiyor
+  C12  Taç sonrası dizilim                       ÖLÇÜLEMEDİ — taç bitiş anı güvenilir yakalanamıyor
+  D11  Asist–sayı oranı                          ÖLÇÜLEMEDİ — asist sayacı state'te yok
+  E1   24 saniye kuralı                          ÖLÇÜLEMEDİ — şut saati state'te yok
+  E2   8 saniye kuralı                           ÖLÇÜLEMEDİ — ön saha geçiş süresi izlenmiyor
+  E5   Adım (traveling)                          ÖLÇÜLEMEDİ — sürme kesintisi state'te yok
+  E6   Çift sürme tutarlılığı                    ÖLÇÜLEMEDİ — sürme durumu state'te yok
+  E7   5 faul → oyun dışı                        ÖLÇÜLEMEDİ — faul sayacı oyuncu state'inde yok
+  E8   Takım faulü → serbest atış                ÖLÇÜLEMEDİ — takım faul sayacı yok
+  E10  Top saha dışı → taç                       ÖLÇÜLEMEDİ — taç tetikleyicisi izlenmiyor
+  F2   Ribaunt mesafeden alınır                  ÖLÇÜLEMEDİ — ribaunt olayı state'te işaretlenmiyor
+  F3   Uzunlar ribaunt alır                      ÖLÇÜLEMEDİ — ribaunt sahibi state'te yok
+  F4   Hücum/savunma ribaunt oranı               ÖLÇÜLEMEDİ — ribaunt tipi state'te yok
+  F5   Ribaunt sonrası geçiş                     ÖLÇÜLEMEDİ — ribaunt anı yakalanamıyor
+  F6   Ribaunt sayısı gerçekçi                   ÖLÇÜLEMEDİ — kutu skor okunmalı — ayrı iş
+  G3   Geçişte savunma geri koşar                ÖLÇÜLEMEDİ — geçiş fazı ayrı izlenmiyor
+  G4   Sayı sonrası geçiş yavaşlar               ÖLÇÜLEMEDİ — hücum sınırları güvenilir değil
+  G5   Hızlı hücum sayısı                        ÖLÇÜLEMEDİ — hızlı hücum etiketi state'te yok
+  G6   Geçişte top önde                          ÖLÇÜLEMEDİ — geçiş fazı ayrı izlenmiyor
+  H2   Yan çizgi tacı                            ÖLÇÜLEMEDİ — taç tipi state'te yok
+  H3   Sokan oyuncu saha dışında                 ÖLÇÜLEMEDİ — ayrı ölçüm gerekli
+  H4   Taç 5 saniyede tamamlanır                 ÖLÇÜLEMEDİ — taç süresi izlenmiyor
+  H5   Taç sonrası dizilim                       ÖLÇÜLEMEDİ — C12 ile aynı — ölçülemedi
+  I1   Atıcı serbest atış çizgisinde             ÖLÇÜLEMEDİ — serbest atış fazı state'te yok
+  I2   Diğerleri raket kenarında                 ÖLÇÜLEMEDİ — serbest atış fazı yok
+  I3   Atış öncesi raket boş                     ÖLÇÜLEMEDİ — serbest atış fazı yok
+  I4   Serbest atış yüzdesi                      ÖLÇÜLEMEDİ — kutu skor okunmalı — ayrı iş
+  I5   Faul–atış eşleşmesi                       ÖLÇÜLEMEDİ — faul state'i yok
+  J3   İvmelenme gerçekçi                        ÖLÇÜLEMEDİ — ayrı ölçüm gerekli
+  J5   Yorulma hıza yansır                       veri yok
+  K1   Yorumdaki isim sahada                     ÖLÇÜLEMEDİ — ayrıştırma gürültülü — güvenilir değil
+  K4   Yorum gecikmesi                           ÖLÇÜLEMEDİ — yorum saati ile sahne saati eşlenemedi
+
+======================================================================================
+SONUÇ: 39 düştü · 18 geçti · 39 ölçülemedi (toplam 96)
+KARAR: başlık bazında düzeltme
+======================================================================================
+Ham rapor: C:\Users\ida\Desktop\basketlig\tools\sartname-rapor.json

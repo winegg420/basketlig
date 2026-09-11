@@ -928,6 +928,10 @@ function _sahipsizTopTick(S,dt){
       const d=Math.hypot(p.x-b.x,p.y-b.y);
       if(d<ed) ed=d;
     }
+    /* ⚠ FAZ 80: "serbest topa en yakın oyuncu yaklaşsın" DENENDİ ve ÖLÇÜLEREK ELENDİ.
+       Kontrollü lig kıyasında (aynı tohum, HEAD ile yan yana) D8 7 → 17 epizot, D9 17 → 22
+       epizot, J1 (insanüstü hız) 0 → 671 ihlal. Hedefi her karede topa çekmek koreografiyi
+       eziyor ve jetonu varış freniyle savaştırıyor. FAZ 57 aynı sınıfı zaten elemişti. */
     /* Peşinde koşan biri varsa süre işlemez — o zaten topa gidiyor. */
     /* ── FAZ 57 · 3a: SERBEST TOP KİLİTLENMESİ ────────────────────────────────────────
        Ölçüldü (v100): sahipsiz top payı %4-8 ve tek bir olay 4,0 sn sürüyor (aracın kapısı
@@ -5730,6 +5734,28 @@ const TAC_LINES=[
   'Top dip çizgiyi geçti — %S{in} elinden çıktı.',
   '%S pasında top dışarı gitti.',
   'Top çizgi dışına çıktı, %R sokacak.'
+];
+/* ── FAZ 80 · K5: ANLATIM DOLGUSU ───────────────────────────────────────────────────
+   Ölçüldü (sartname): iki yorum arası 12 saniyeyi aşan boşluk var ve boşluk kapanana
+   kadar kapı HER KAREDE sayıyor (925-953 'ihlal' = birkaç düzine gerçek sessizlik).
+   Uzun sessizlik gerçek bir kusurdur: ekranda oyun sürerken spiker susuyor. Bu havuz
+   SAHNEYİ anlatır (dizilim · savunma · şut saati · tempo) ve maç MATEMATİĞİNE
+   DOKUNMAZ — seçim `_sr()` (sahne PRNG'si) ile yapılır, rastgelelik tüketmez (B-5).
+   ⚠ Yeni havuz `localizeCatalogs()`'a KAYDEDİLDİ ve EN karşılıkları
+   `js/i18n-commentary.js`e yazıldı (B-1 dersinin üçüncü tekrarı). */
+const DOLGU_LINES=[
+  'Top çevrede dolaşıyor, hücum sabırlı.',
+  'Savunma dizilimini korudu, boşluk yok.',
+  'Pas trafiği yavaş, kimse riske girmiyor.',
+  'Hücum yeniden kuruluyor.',
+  'Savunma yardıma hazır bekliyor.',
+  'Top yaydan yaya taşınıyor.',
+  'Şut saati işliyor, acele eden yok.',
+  'Perimetre geniş, boya kalabalık.',
+  'Oyun kurucu tempoyu düşürdü.',
+  'İki takım da yerini aldı.',
+  'Savunma adamına yapıştı.',
+  'Hücum içeriye yol arıyor.'
 ];
 const SUT_ON_LINES={
   uc:['%S üçlük için kalktı.','%S dıştan tetiği çekti.','%S yaydan bıraktı.',
