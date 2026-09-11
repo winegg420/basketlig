@@ -2102,6 +2102,39 @@ function _ballPass(to,dur,bounce){
       if(S._rakipPasKim.length>30) S._rakipPasKim.shift(); } }catch(e){}
     _ballTut(to,!!(to&&to.ghost)); return;
   }
+  /* ── FAZ 78 · İŞ 3: GERİ SAHA PASI YOK — TEK KAPI ──────────────────────────────────
+     FIBA'da top ön sahaya geçtikten sonra kendi yarı sahasına geri gönderilemez. Kural
+     `oamPasOlur`/`_pasHedefSinirla` içinde VARDI ama yalnız OAM'ın kendi pas seçicisini
+     ve uzun pasları kapsıyordu; sokma, takip geri çağrıları, klip dikişi ve `_ballHold`un
+     "hedef 14 px'ten uzak" dalı bu kapıdan geçmiyordu. Ölçüldü (kural-goz --playoff,
+     600 sn): 1 olay — seyrek ama kural ihlali, ve kapı FAZ 58'in rakibe-pas kapısıyla
+     aynı noktada kurulmalı ki yeni bir pas yolu açıldığında da kapsansın.
+     Yönlendirme: aynı takımdan ÖN SAHADAKİ en yakın oyuncu. Aday yoksa pas ENGELLENMEZ
+     (kilitlenme riski) — yalnız sayaçla raporlanır (`S._geriSahaN`). */
+  try{
+    const S=mState._sim;
+    if(S&&!S._klipTop&&b.mode==='held'&&b.carrier&&to&&b.carrier.team&&to.team&&b.carrier.team===to.team
+       &&!(S._hakemTop&&S._hakemTop.aktif)&&isFinite(to.x)&&isFinite(b.carrier.x)){
+      const c=b.carrier;
+      let sol=null;
+      if(S.offP&&S.offP.indexOf(c)>=0) sol=S.offSide;
+      else if(S.defP&&S.defP.indexOf(c)>=0&&S.offSide!=null) sol=!S.offSide;
+      if(sol!=null){
+        const mid=COURT_MID;
+        const onda=sol?(c.x<mid-8):(c.x>mid+8);
+        const arkada=sol?(to.x>mid+8):(to.x<mid-8);
+        if(onda&&arkada){
+          S._geriSahaN=(S._geriSahaN|0)+1;
+          const takim=(S.offP&&S.offP.indexOf(c)>=0)?S.offP:S.defP;
+          let en=null,ed=1e9;
+          (takim||[]).forEach(q=>{ if(!q||q===c||q===to||q._oob||!isFinite(q.x)) return;
+            if(sol?(q.x>mid-8):(q.x<mid+8)) return;
+            const d2=Math.hypot(q.x-c.x,q.y-c.y); if(d2<ed){ ed=d2; en=q; } });
+          if(en) to=en;
+        }
+      }
+    }
+  }catch(e){}
   /* FAZ 55 A3: 2,0 m altı "pas" ÜRETİLMEZ — el değişimi olarak işlenir. */
   if(isFinite(to.x)&&Math.hypot(to.x-b.x,to.y-b.y)<2.0*29.5429){ _ballTut(to,!!(to&&to.ghost)); return; }
   /* FAZ 54: top ele geçtiği KARE içinde geri çıkamaz (ölçüldü: 60 fps örneklemede loose>held>pass

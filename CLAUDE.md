@@ -2499,3 +2499,45 @@ JS, `charazay2.0.html` gövdesinden **mekanik olarak** (bitişik dilimler, sıf�
   ve FAZ 58 D'nin koruduğu şey (anlatım ile sahnenin aynı oyuncuyu göstermesi) bozulur.
   ⚠ Kıyas: gerçek SportVU'da sahipsiz top epizotlarının p90'ı 1,60 sn; bizim ortalamamız
   **0,88 sn** — dağılımın altında. Hedefin gerçekle uyumu ölçülmedi.
+
+- **BİR KAPI "DÜZELMİYOR"SA ÖNCE ÖLÇTÜĞÜ KATMANI SOR (FAZ 78, iki yönlü ders):** brif
+  "aynı slotta iki hücumcu, karelerin %13,4'ü" diyordu; ayırt edici ölçüt konum değil
+  **HEDEF** mesafesidir (aynı slot atanmışsa `tx,ty` de üst üstedir) ve o ölçüldüğünde
+  motorun kendi karelerinde **%0,0** çıktı — iki oyuncuya aynı slot HİÇ atanmıyor.
+  Kullanıcının GÖRDÜĞÜ büyüklük (`_cizDx/_cizDy` uygulanmış çizim konumu, FAZ 57) ise
+  **%0,9** ve hedefin (≤%2) zaten altında; simülasyon konumundaki %9-13 ise gerçek NBA
+  kaydının (klip %13,7) altında. Tersi de aynı turda çıktı: FAZ 76'nın "perimetre
+  garantisi" kodda duruyor ama KÖŞEDE TERS TEPİYORDU — köşe slotu (potaya 212 px) radyal
+  olarak 225'e itilince nokta dip çizginin dışına düşüyor, `_inY` geri kırpıyor ve sonuç
+  **207 px** oluyordu; yani itme slotu yayın DAHA İÇİNE alıyordu. Bir koordinatı saha
+  içinde tutmak gerekiyorsa KIRPMA yerine **yarıçabı koru, açıyı döndür**.
+- **SOKMA DİZİLİMİ SET FAZINA SIZIYORDU (FAZ 78 · perimetre kusurunun asıl kaynağı):**
+  FAZ 54 C4 sokucunun üç arkadaşını 6 m içine çağırır — bu SOKMA ANININ kuralıdır, ama o üç
+  nokta `O.spots` içine KALICI yazılıyor ve faz sokma → geçiş → set diye ilerlerken bir daha
+  hesaplanmıyordu. Ölçülen slot dizisi [190, 122, 217, 93, 69] px (yay 209): biri bile yayda
+  değil, `oam:set` fazında perimetre karelerin %87,9-92,2'sinde boş. `O._sokmaGeri` ile
+  noktalar sokma pasında şablona döner → %7,6. ⚠ Geri koymayı "top ön sahaya geçince"ye
+  ERTELEMEK ölçülerek elendi (fizik %3,9-5,6 → %16,7). **Bir faza ait geçici dizilim yazan
+  her yer, o fazın bitişinde geri alma yolunu da yazmalı.**
+- **GERİ SAHA KURALI TEK KAPIDADIR — `_ballPass` (FAZ 78 İŞ 3):** kural `oamPasOlur` /
+  `_pasHedefSinirla` içinde vardı ama yalnız OAM'ın pas seçicisini ve uzun pasları
+  kapsıyordu; sokma, takip geri çağrıları, klip dikişi ve `_ballHold`un "hedef 14 px'ten
+  uzak" dalı geçmiyordu. Kapı artık FAZ 58'in rakibe-pas kapısıyla AYNI noktada: veren ön
+  sahadayken arka sahadaki hedef, aynı takımdan ön sahadaki en yakın oyuncuyla değiştirilir
+  (aday yoksa engellenmez — kilitlenme riski; sayaç `S._geriSahaN`). İhlali düdükle
+  cezalandırmak SEÇİLMEDİ: motor bunu üretmiyor, kusur sahne katmanında; top kaybı yazmak
+  maç sonucunu ve `band.js` hash'ini değiştirirdi.
+- **"RAKİBE PAS" DİYE BİR ŞEY YOK — SAHİPLİK SERBEST TOPTAN GEÇER (FAZ 78 · 5. madde):**
+  geniş tanımla (taşıyıcı değişimi, klip dahil) sahipliğin rakibe geçtiği 51 olayın **49'u**
+  arada top SERBEST kalarak olur (ribaunt · çalma · top kaybı — meşru); kalan 0-2 olay bir
+  ribaunt takibinin geri çağrısıdır ve FAZ 58 kapısı onu zaten uçan pasa çevirmeden el
+  değişimine indirir. Uçan topun rakip eline geçtiği bir kod yolu YOKTUR (`_ballPass` takım
+  kapısı · `_hirsizAl` loose+chase · `_ballTut` yalnız loose/dead · `_ballKurtar` aynı takım).
+  Kullanıcının gördüğü, pasın rakip jetonun üstünden geçmesidir (jeton çapı 26,2 px).
+- **ARKA SAHADA TOP SAVUNMACISI ORTA ÇİZGİDE PRES YAPMAZ (FAZ 78):** `oamBaskiTick`in FAZ 49
+  formülü boşluğu orta çizgiye yaklaştıkça 52 px'e (1,76 m) indiriyordu — savunma top ORTA
+  SAHAYA gelince en sıkı presi yapıyordu. Gerçek (SportVU): arka saha 5,07 m, ön saha 2,00 m.
+  Taban 52 → 84 px. ⚠ Aynı kalemi `oamBeklemeTick`ten düzeltmek DENENDİ ve ölçülerek elendi
+  (3,85 → 3,80 m, etki yok): o fonksiyon topu TUTANIN savunmacısını atlar (`m2===carrier`),
+  oysa ölçülen büyüklük tam odur. **Bir mesafe kalemini düzeltmeden önce o kalemi hangi
+  aktörün belirlediğini ölç.**

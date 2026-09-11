@@ -66,7 +66,7 @@ const TOHUM = (seed) => {
 function kaydedici() {
   const G0 = window.__KG = {
     kare: 0, ep: {}, acik: {}, olay: [], sonSkor: null, hava: null,
-    tacOrn: [], ucOrn: [], potaOrn: []
+    tacOrn: [], ucOrn: [], potaOrn: [], slotOrn: [], geriOrn: [], geri2Orn: [], rakOrn: [], f: {}
   };
   const X0 = 56.4, X1 = 883.6, Y0 = 28.43, Y1 = 471.57, MID = 470;
   const UC_R = 209;          /* üç sayı çizgisi yarıçapı (px) */
@@ -164,6 +164,114 @@ function kaydedici() {
         G0._tacBekle = null;
       }
       if (G0._tacBekle && performance.now() - G0._tacBekle.t > 9000) G0._tacBekle = null;
+      /* ══ FAZ 78 ÖLÇÜMLERİ — KARE PAYI (ham kare sayısı DEĞİL, brif §0) ══════════════
+         Her kalem KLİP ve FİZİK kareleri AYRI sayılır (FAZ 71 dersi): klip, gerçek
+         SportVU kaydının birebir oynatılmasıdır ve kontrol grubudur. */
+      {
+        const klipKare = !!(S._klipTop) || P.some(q => q && q._klip);
+        const KA = G0.f || (G0.f = {});
+        /* faz etiketi: klip / OAM fazı / bekleme (OAM kapalı) — kusurun NEREDE olduğu */
+        const O = S.oam;
+        const fazAd = klipKare ? 'klip' : ((O && O.aktif) ? ('oam:' + (O.faz || '?')) : 'bekle');
+        const say = (k, v) => { const o = KA[k] || (KA[k] = { n: 0, h: 0, k: 0, tn: 0, nk: 0, nf: 0 }); o.n++; if (klipKare) o.nk++; else o.nf++; if (v) { o.h++; if (klipKare) o.k++; else o.tn++; } };
+        /* 1) AYNI SLOTTA İKİ HÜCUMCU — ayırt edici ölçüt HEDEF mesafesidir (FAZ 69) */
+        if (offP.length >= 5) {
+          let en = 1e9, ea = null, eb = null;
+          for (let i = 0; i < offP.length; i++) for (let j = i + 1; j < offP.length; j++) {
+            const a = offP[i], c = offP[j]; if (!a || !c || !isFinite(a.x) || !isFinite(c.x)) continue;
+            const d = Math.hypot(a.x - c.x, a.y - c.y); if (d < en) { en = d; ea = a; eb = c; }
+          }
+          const cak = en < 30;
+          say('AYNI_SLOTTA_IKI_HUCUMCU', cak);
+          /* Kullanıcının GÖRDÜĞÜ mesafe: çizim ayrıştırması uygulanmış konum (FAZ 57) */
+          { let ec = 1e9;
+            for (let i = 0; i < offP.length; i++) for (let j = i + 1; j < offP.length; j++) {
+              const a = offP[i], c = offP[j]; if (!a || !c || !isFinite(a.x) || !isFinite(c.x)) continue;
+              const ax = a.x + (a._cizDx || 0), ay = a.y + (a._cizDy || 0), cx = c.x + (c._cizDx || 0), cy = c.y + (c._cizDy || 0);
+              const d = Math.hypot(ax - cx, ay - cy); if (d < ec) ec = d;
+            }
+            say('CIZIMDE_IKI_HUCUMCU', ec < 26.2);
+            if (ec < 26.2) { G0.cizMin = Math.min(G0.cizMin == null ? 1e9 : G0.cizMin, ec); G0.cizTop = (G0.cizTop || 0) + ec; G0.cizN = (G0.cizN || 0) + 1; } }
+          if (cak && ea && eb) {
+            const hd = (isFinite(ea.tx) && isFinite(eb.tx)) ? Math.hypot(ea.tx - eb.tx, ea.ty - eb.ty) : -1;
+            say('AYNI_HEDEF_IKI_HUCUMCU', hd >= 0 && hd < 40);
+            if (G0.slotOrn.length < 12) G0.slotOrn.push(saat + ' ' + en.toFixed(0) + 'px hedefFark=' + (hd < 0 ? '?' : hd.toFixed(0)) + (klipKare ? ' KLIP' : ' fizik'));
+          } else say('AYNI_HEDEF_IKI_HUCUMCU', false);
+        }
+        /* 2) PERİMETRE BOŞ · 5) RAKETTE 4+ HÜCUMCU */
+        if (rim && offP.length >= 5 && (b.mode === 'held' || b.mode === 'pass')) {
+          const onSaha2 = (S.offSide ? (b.x < MID) : (b.x > MID));
+          let eu = 0, bo = 0;
+          for (const q of offP) { if (!q || !isFinite(q.x)) continue; const d = Math.hypot(q.x - rim[0], q.y - rim[1]); if (d > eu) eu = d; if (Math.abs(q.x - rim[0]) < 171 && Math.abs(q.y - 250) < 72) bo++; }
+          if (onSaha2) { say('PERIMETRE_BOS', eu < UC_R); say('RAKETTE_4_HUCUMCU', bo >= 4);
+            const fz = G0.fazPer || (G0.fazPer = {}); const o = fz[fazAd] || (fz[fazAd] = { n: 0, h: 0 }); o.n++; if (eu < UC_R) o.h++;
+            /* AYRINTI: oam:set ihlallerinde her hücumcunun rolü · konum · HEDEF uzaklığı */
+            if (eu < UC_R && fazAd === 'oam:set' && (G0.perDet = G0.perDet || []).length < 16 && performance.now() - (G0._perT || 0) > 1500) {
+              G0._perT = performance.now();
+              G0.perDet.push({ faz: fazAd, saat: saat, sutYakin: !!(O && O.sutYakin), donuk: !!(O && O.donuk), putback: !!(O && O.putback),
+                o: offP.map(q => ({ r: q.role, d: Math.round(Math.hypot(q.x - rim[0], q.y - rim[1])),
+                  t: (isFinite(q.tx) ? Math.round(Math.hypot(q.tx - rim[0], q.ty - rim[1])) : -1),
+                  s: (O && O.spots && O.spots.get(q)) ? Math.round(Math.hypot(O.spots.get(q)[0] - rim[0], O.spots.get(q)[1] - rim[1])) : -1,
+                  sh: !!(O && q === O.shooter), c: (b.carrier === q) })) });
+            } }
+        }
+        /* 4) ORTA SAHA YIĞILMASI: merkez ±120 px'te 6+ oyuncu */
+        { let o6 = 0; for (const q of P) if (Math.abs(q.x - MID) < 120) o6++; say('ORTA_SAHA_6', o6 >= 6);
+          const fz = G0.fazOrta || (G0.fazOrta = {}); const o = fz[fazAd] || (fz[fazAd] = { n: 0, h: 0 }); o.n++; if (o6 >= 6) o.h++; }
+        /* 3b) GENİŞ TANIM — TAŞIYICI DEĞİŞİMİ (klip dahil): mod geçişine bakmaz.
+           `held→pass→held` dar tanımı klip oynatımındaki el değişimlerini GÖREMEZ
+           (maçın ~%57'si klip karesidir). Burada topun sahibi değişiyorsa pas sayılır. */
+        {
+          const cr = b.carrier;
+          if (b.mode !== 'held') G0._araSerbest = true;
+          if (cr && cr !== G0._sonTut) {
+            const ev = G0._sonTut;
+            if (ev && ev !== cr) {
+              G0.pasGN = (G0.pasGN | 0) + 1;
+              const evX = G0._sonTutX, evOff = G0._sonTutOff;
+              const rakibe = !!(ev.team && cr.team && ev.team !== cr.team);
+              say('TASIYICI_RAKIBE', rakibe);
+              /* KATI: arada top hiç serbest kalmadan (loose/rim/dead) rakibe geçti mi? */
+              if (rakibe && !G0._araSerbest) {
+                ac('RAKIBE_DOGRUDAN', saat, ((ev.pl && ev.pl.ad) || '?')); kapa('RAKIBE_DOGRUDAN');
+                if (G0.rakOrn.length < 10) G0.rakOrn.push(saat + ' DOGRUDAN ' + ((ev.pl && ev.pl.ad) || '?') + '->' + ((cr.pl && cr.pl.ad) || '?') + (klipKare ? ' KLIP' : ' fizik'));
+              } else if (rakibe) { G0.rakSerbest = (G0.rakSerbest | 0) + 1; }
+              if (ev.team && cr.team && ev.team === cr.team && evOff != null && isFinite(evX)) {
+                const onSahaBas = evOff ? (evX < MID - 8) : (evX > MID + 8);
+                const arkaBit = evOff ? (cr.x > MID + 8) : (cr.x < MID - 8);
+                if (onSahaBas && arkaBit) {
+                  ac('GERI_SAHA_EL_DEGISTIRME', saat, ((ev.pl && ev.pl.ad) || '?')); kapa('GERI_SAHA_EL_DEGISTIRME');
+                  if (G0.geri2Orn.length < 12) G0.geri2Orn.push(saat + ' ' + ((ev.pl && ev.pl.ad) || '?') + '->' + ((cr.pl && cr.pl.ad) || '?') + ' ' + evX.toFixed(0) + '->' + cr.x.toFixed(0) + (klipKare ? ' KLIP' : ' fizik'));
+                }
+              }
+            }
+            G0._sonTut = cr; G0._araSerbest = false;
+          }
+          if (cr) { G0._sonTutX = cr.x; G0._sonTutOff = S.offSide; }
+        }
+        /* 3) GERİ SAHA PASI + RAKİBE PAS: pas BAŞLANGICI ve BİTİŞİ (held→pass→held) */
+        if (b.mode === 'pass' && oncekiMod !== 'pass') {
+          const vrn = G0._sonTut;
+          G0._pas = { x: (vrn && isFinite(vrn.x)) ? vrn.x : b.x, y: b.y, off: S.offSide, tak: (b.carrier && b.carrier.team) || (vrn && vrn.team) || null,
+                      ad: (b.carrier && b.carrier.pl && b.carrier.pl.ad) || '?', saat: saat };
+        }
+        if (b.mode !== 'pass' && oncekiMod === 'pass' && G0._pas) {
+          const pa = G0._pas; G0._pas = null; const al = b.carrier;
+          G0.pasN = (G0.pasN | 0) + 1;
+          if (al && pa.tak && al.team && al.team !== pa.tak && !(S._hakemTop && S._hakemTop.aktif)) {
+            ac('RAKIBE_PAS', saat, pa.ad); kapa('RAKIBE_PAS');
+            if (G0.rakOrn.length < 10) G0.rakOrn.push(saat + ' ' + pa.ad + '->' + ((al.pl && al.pl.ad) || '?'));
+          }
+          if (pa.off != null) {
+            const onSahaBas = pa.off ? (pa.x < MID) : (pa.x > MID);
+            const arkaBit = pa.off ? (b.x > MID + 8) : (b.x < MID - 8);
+            if (onSahaBas && arkaBit) {
+              ac('GERI_SAHA_PASI', saat, pa.ad); kapa('GERI_SAHA_PASI');
+              if (G0.geriOrn.length < 12) G0.geriOrn.push(pa.saat + ' veren x=' + pa.x.toFixed(0) + ' -> alan x=' + b.x.toFixed(0) + (klipKare ? ' KLIP' : ' fizik') + ' mod=' + b.mode);
+            }
+          }
+        }
+      }
       /* ── top sıçraması: mod değişmeden 40 px+ ── */
       if (onceki && oncekiMod === b.mode) {
         const d = Math.hypot(b.x - onceki[0], b.y - onceki[1]);
@@ -218,7 +326,8 @@ async function main() {
   await page.evaluate('(' + kaydedici.toString() + ')()');
   await page.evaluate((po) => { try { if (po) startPlayoffMatch(); else startMatch(); setMatchRate(1); } catch (e) { window.__kgErr = String(e); } }, PLAYOFF);
   await bekle(SN * 1000);
-  const R = await page.evaluate(() => { try { clearInterval(window.__KG._iv); } catch (e) {} Object.keys(window.__KG.acik || {}).forEach(k => { const a = window.__KG.acik[k]; if (a) window.__KG.ep[k].sn += (performance.now() - a.t) / 1000; }); return window.__KG; });
+  const R = await page.evaluate(() => { try { clearInterval(window.__KG._iv); } catch (e) {} Object.keys(window.__KG.acik || {}).forEach(k => { const a = window.__KG.acik[k]; if (a) window.__KG.ep[k].sn += (performance.now() - a.t) / 1000; }); const K = window.__KG; K._sonTut = null; K._pas = null; K._tacIzle = null; K._tacBekle = null; K.acik = null; return K; });
+  const sayac = await page.evaluate(() => { try { const S = mState._sim; return { rakipPas: S._rakipPasN | 0, geriSaha: S._geriSahaN | 0, havadan: S._havadanN | 0, donuk: S._donukN | 0, yol: (S._rakipPasKim || []).slice(-4) }; } catch (e) { return null; } });
   const err = await page.evaluate(() => window.__kgErr || null);
   await browser.close(); srv.close();
 
@@ -241,6 +350,39 @@ async function main() {
   kapi('TOP_SICRADI', 5, 5);
   kapi('BOYADA_3_HUCUMCU', 40, 60);
   kapi('ORTA_SAHA_YIGILMASI', 60, 120);
+  console.log('  ── FAZ 78 · KARE PAYI (brif §0: ham sayı DEĞİL) ──');
+  const pay = (k, hedef) => {
+    const o = (R.f || {})[k] || { n: 0, h: 0, k: 0, tn: 0 };
+    const pc = o.n ? o.h / o.n * 100 : 0;
+    const ok = hedef == null || pc <= hedef;
+    if (hedef != null && !ok) dusen++;
+    const pk = o.nk ? o.k / o.nk * 100 : 0, pf = o.nf ? o.tn / o.nf * 100 : 0;
+    console.log('  ' + (hedef == null ? ' ' : (ok ? '✓' : '✗')) + ' ' + k.padEnd(26) + pc.toFixed(1).padStart(6) + '%   (' + o.h + '/' + o.n + ')   KLİP ' + pk.toFixed(1) + '% · FİZİK ' + pf.toFixed(1) + '%' + (hedef != null ? '   hedef ≤' + hedef + '%' : ''));
+  };
+  pay('AYNI_SLOTTA_IKI_HUCUMCU', 2);
+  pay('CIZIMDE_IKI_HUCUMCU', null);
+  pay('AYNI_HEDEF_IKI_HUCUMCU', null);
+  pay('PERIMETRE_BOS', 3);
+  pay('ORTA_SAHA_6', 4);
+  pay('RAKETTE_4_HUCUMCU', null);
+  kapi('GERI_SAHA_PASI', 0, 0);
+  kapi('RAKIBE_PAS', 0, 0);
+  kapi('GERI_SAHA_EL_DEGISTIRME', 0, 0);
+  pay('TASIYICI_RAKIBE', null);
+  kapi('RAKIBE_DOGRUDAN', 0, 0);
+  console.log('    rakibe geçiş: serbest toptan (ribaunt/çalma, MEŞRU) ' + (R.rakSerbest | 0));
+  console.log('    çizimde çakışan karede ortalama mesafe: ' + (R.cizN ? (R.cizTop / R.cizN).toFixed(1) : '-') + ' px · en yakın ' + (R.cizMin == null ? '-' : R.cizMin.toFixed(1)) + ' px');
+  const dok = (ad, o2) => { if (!o2) return; console.log('    ' + ad + ': ' + Object.keys(o2).map(k => k + ' ' + (o2[k].n ? (o2[k].h / o2[k].n * 100).toFixed(1) : '0') + '% (' + o2[k].h + '/' + o2[k].n + ')').join(' · ')); };
+  dok('PERIMETRE_BOS faz kırılımı', R.fazPer);
+  if (R.perDet) { console.log('    ── PERİMETRE AYRINTI (r=rol, d=konum, t=hedef, s=slot · px) ──');
+    R.perDet.slice(0, 8).forEach(x => console.log('      ' + x.faz + ' ' + x.saat + (x.sutYakin ? ' sutYakin' : '') + (x.donuk ? ' donuk' : '') + (x.putback ? ' putback' : '') + ' | ' + x.o.map(q => 'r' + q.r + ' d' + q.d + ' t' + q.t + ' s' + q.s + (q.sh ? '*' : '') + (q.c ? '@' : '')).join('  '))); }
+  dok('ORTA_SAHA_6 faz kırılımı  ', R.fazOrta);
+  console.log('    taşıyıcı değişimi (geniş pas): ' + (R.pasGN | 0));
+  if (R.geri2Orn && R.geri2Orn.length) console.log('    geri saha el değiştirme: ' + R.geri2Orn.slice(0, 8).join(' · '));
+  console.log('    toplam pas: ' + (R.pasN | 0));
+  if (R.slotOrn && R.slotOrn.length) console.log('    slot çakışması : ' + R.slotOrn.slice(0, 6).join(' · '));
+  if (R.geriOrn && R.geriOrn.length) console.log('    geri saha pası : ' + R.geriOrn.slice(0, 6).join(' · '));
+  if (R.rakOrn && R.rakOrn.length) console.log('    rakibe pas     : ' + R.rakOrn.slice(0, 6).join(' · '));
   console.log('  ── BİLGİ ──');
   console.log('    orta sahada ortalama oyuncu : ' + (R.ortaN ? (R.ortaTop/R.ortaN).toFixed(2) : '-') + ' / 10');
   console.log('    pota çevresinde (150px) oyuncu: ' + (R.rimN ? (R.rimTop/R.rimN).toFixed(2) : '-') + ' / 10');
@@ -248,6 +390,9 @@ async function main() {
   if (R.ucOrn && R.ucOrn.length) console.log('    üçlük boşluğu örnekleri : ' + R.ucOrn.slice(0, 6).join(' · '));
   if (R.potaOrn && R.potaOrn.length) console.log('    pota dibi örnekleri     : ' + R.potaOrn.slice(0, 6).join(' · '));
   if (R.tacOrn && R.tacOrn.length) console.log('    sayı sonrası taç        : ' + R.tacOrn.slice(0, 6).join(' · '));
+  if (sayac) { console.log('    ── MOTOR SAYAÇLARI (kapıların kaç kez TETİKLENDİĞİ) ──');
+    console.log('      rakibe pas denemesi (FAZ 58 kapısı): ' + sayac.rakipPas + ' · geri saha pası (FAZ 78 kapısı): ' + sayac.geriSaha + ' · havadan pas: ' + sayac.havadan + ' · donan uçuş: ' + sayac.donuk);
+    if (sayac.yol && sayac.yol.length) sayac.yol.forEach(y => console.log('      yol: t=' + y.t + ' ' + y.tip + ' ' + y.kimden + '->' + y.kime + ' | ' + y.yol)); }
   console.log('    sayfa hatası: ' + hatalar.length);
   console.log(dusen ? '\n✗ ' + dusen + ' kapı düştü' : '\n✓ bütün kural kapıları geçti');
   process.exit(dusen ? 1 : 0);

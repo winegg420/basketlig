@@ -11491,3 +11491,184 @@ yanlış pozitif üretmiyor — `SAHADA_OLMAYAN` bu turda da **0**.
 "0" çıkmıştı ve bu doğru sonuç YANLIŞ sebeptendi: ölçüm hiç tetiklenmiyordu (`tacHepsi`
 boş). Kapının sıfır verdiği her yerde "kaç örnek topladın" diye sor; örneklem sayacı
 olmayan kapı sessizce ölür.
+
+---
+
+## FAZ 78 — SLOT ÇAKIŞMASI ÖLÇÜLDÜ · PERİMETRE ÇÖZÜLDÜ · GERİ SAHA KAPISI (2026-09-11)
+
+Ölçüm: `tools/kural-goz.js --sn=600 --playoff`, tohum 987654321, ~37.000 örnek/koşu.
+Brifin §0 uyarısına uyuldu: her kalem **kare payı** olarak raporlanır. Denetçiye dört yeni
+kalem eklendi ve hepsi **KLİP ve FİZİK kareleri AYRI** sayılır — klip, gerçek SportVU
+kaydının birebir oynatılmasıdır ve aynı koşunun kontrol grubudur (FAZ 71 dersi).
+
+### İŞ 1 — AYNI SLOTTA İKİ HÜCUMCU: **BRİFİN HİPOTEZİ ÇÜRÜDÜ, KOD DEĞİŞMEDİ**
+
+Brif "iki oyuncuya aynı dizilim slotu atanıyor" diyordu. Ayırt edici ölçüt konum değil
+**HEDEF** mesafesidir (FAZ 69): aynı slot atanmışsa `tx,ty` de üst üstedir.
+
+```
+  AYNI_HEDEF_IKI_HUCUMCU (hedefler 40 px'ten yakın)   FİZİK %0,0   (dört koşuda da)
+                                                      KLİP  %10,5-13,6  (artefakt: klip
+                                                      konumu doğrudan sürer, hedef bayattır)
+```
+
+Motorun kendi koreografisinde **iki oyuncuya aynı slot HİÇ atanmıyor.** Peki kullanıcının
+gördüğü çakışma? İki ayrı büyüklük ölçüldü:
+
+| ölçüt | önce | sonra | gerçek taban (klip) |
+|---|---|---|---|
+| simülasyon konumu < 30 px | %8,9-10,7 (FİZİK %5,5-9,3) | %9,3 (FİZİK **%3,5**) | KLİP %13,7 |
+| **ÇİZİLEN konum < 26,2 px** (kullanıcının gördüğü) | **%0,6-0,9** | **%0,9** | KLİP %1,4 |
+
+Yani (a) simülasyon çakışması motorun kendi karelerinde gerçek NBA kaydının **altındadır**,
+(b) ekranda görülen çakışma FAZ 57'nin çizim ayrıştırıcısı sayesinde zaten **%1'in altında**
+ve brifin ≤%2 hedefini karşılıyor. Brifin "%13,4" rakamı simülasyon konumunu ölçüyor ve
+çizim katmanını görmüyor. **Kod değiştirilmedi** (ölçülebilir kusur yok).
+
+### İŞ 2 — PERİMETRE BOŞ: **ÇÖZÜLDÜ** (kök neden iki ayrı kusurdu)
+
+Faz kırılımı kusuru tek adımda gösterdi:
+
+```
+  ÖNCE  PERIMETRE_BOS faz kırılımı:
+        oam:set %87,9-92,2 · oam:gecis %53,0-67,9 · bekle %3,2-23,3 · klip %11,3 (GERÇEK)
+  SONRA oam:set  %7,6      · oam:gecis %27,4      · bekle %6,1      · klip  %3,9
+```
+
+Slot dökümü (her hücumcunun slotunun potaya uzaklığı) iki kök neden verdi:
+
+1. **`oamOluTop`'un sokma dizilimi set fazına sızıyordu.** FAZ 54 C4 sokucunun üç arkadaşını
+   6 m içine çağırır — bu SOKMA ANININ kuralıdır; ama o üç nokta `O.spots` içine KALICI
+   yazılıyor ve faz sokma → geçiş → set diye ilerlerken bir daha hesaplanmıyordu. Ölçülen
+   slot dizisi: **[190, 122, 217, 93, 69] px** — üç sayı yayı 209 px, yani biri bile yayda
+   değil. Noktalar sokma pası atılır atılmaz şablona döner (`O._sokmaGeri`).
+2. **FAZ 76'nın perimetre garantisi köşede TERS TEPİYORDU.** Köşe slotu (potaya 212 px)
+   radyal olarak 225 px'e itilince nokta dip çizginin DIŞINA düşüyor, `_inY` geri kırpıyor
+   ve sonuç **207 px** oluyordu — itme slotu yayın daha içine alıyordu. Artık yarıçap
+   korunur, AÇI saha içinde kalana dek 5°'lik adımlarla döndürülür; yarıçap 225 → **216 px**
+   (7,31 m; 225 px potaya ortalama uzaklığı 10,99 → 11,89 m'ye şişiriyordu, gerçek 10,94).
+
+| ölçüt (kare payı) | önce (3 koşu) | sonra | gerçek (klip) | brif hedefi |
+|---|---|---|---|---|
+| `PERIMETRE_BOS` toplam | %6,8 · %10,9 · %8,6 | **%4,8** | %3,9-11,3 | ≤%3 |
+| ↳ FİZİK | %13,9 · %10,0 · %27,3 | **%6,2** | — | — |
+
+Hedef (≤%3) **tutturulamadı**; ama gerçek NBA kaydının kendi payı aynı koşularda %3,9-11,3
+olduğu için ≤%3 bu ölçütte gerçeğin altındadır. Epizot kapısı `UCLUK_CIZGISINDE_KIMSE_YOK`
+FAZ 77'de 20 ep / 26,9 sn idi, şimdi **17 ep / 14,5 sn** (kapı ≤25 / ≤40) ✓.
+
+### İŞ 3 — GERİ SAHA PASI: **KURAL KAPISI EKLENDİ** (brifin 1. yolu)
+
+Kural `oamPasOlur` / `_pasHedefSinirla` içinde VARDI ama yalnız OAM'ın kendi pas seçicisini
+ve uzun pasları kapsıyordu; sokma, takip geri çağrıları, klip dikişi ve `_ballHold`un
+"hedef 14 px'ten uzak" dalı o kapıdan geçmiyordu. Kapı artık FAZ 58'in rakibe-pas kapısıyla
+**aynı noktada** (`_ballPass` başı): veren ön sahadayken arka sahadaki hedef, aynı takımdan
+ÖN SAHADAKİ en yakın oyuncuyla değiştirilir. Aday yoksa pas engellenmez (kilitlenme riski),
+yalnız `S._geriSahaN` ile sayılır. **Düdük çalma yolu (2. seçenek) seçilmedi** — motor bunu
+bilerek üretmiyor, sahne katmanının kusuru; ihlal sayılıp top kaybı yazmak maç sonucunu
+değiştirirdi (`band.js` hash'i kayardı).
+
+```
+  GERI_SAHA_PASI          önce 0 / 0 / 1 epizot   →  sonra 0 epizot
+  motor sayacı (kapı kaç kez tetiklendi): 0 · havadan pas 1-2 · donan uçuş 1-5
+```
+
+⚠ Brifin "16 olay" bulgusu bizim ölçümümüzde üretilmedi (600 sn'de 0-1). Muhtemel sebep:
+top el değiştirince hücum yönü de değişir; eski hücumun "ön sahası" yeni hücumun arka
+sahasıdır ve yön bayrağı okunmadan bakılan her pas "geri" görünür.
+
+### İŞ 4 — ORTA SAHA YIĞILMASI: **HEDEF GERÇEĞİN ALTINDA, FİZİK GERÇEĞE OTURDU**
+
+```
+  ORTA_SAHA_6 (merkez ±120 px'te 6+ oyuncu)
+    önce  %12,0 · %10,9 · %11,4    FİZİK %12,4-13,0   KLİP (GERÇEK) %9,7-10,7
+    sonra %10,9                    FİZİK %12,3        KLİP (GERÇEK)  %9,9
+```
+
+Brifin ≤%4 hedefi **gerçek NBA kaydının kendisi tarafından da tutturulamıyor**: aynı
+koşularda klip kareleri %9,9-10,7 veriyor (FAZ 39 dersi — eşik uydurulmaz, ölçülür).
+Motorun gerçeğe göre fazlası +2,3 puandan **+2,4 puana** denk kaldı; İŞ 1/İŞ 2 düzeltmeleri
+bu kalemi ölçülebilir biçimde değiştirmedi. Epizot kapısı (4+ oyuncu) 55-65 ep / 133-136 sn
+ile FAZ 77'deki (67 ep / 137 sn) düzeyinde. **Ayrı iş olarak açık kalıyor.**
+
+### 5. MADDE — "RAKİBE PAS": ÖLÇÜLDÜ, İKİ İHTİMAL DE SINANDI
+
+Brifin istediği iki kontrol de yapıldı.
+
+**(1) Ölçüt eksik miydi?** Dar tanım (`held→pass→held`, takım değişimi) 600 sn'de **0**.
+Bu yüzden GENİŞ tanım eklendi: topun sahibi değişiyorsa pas sayılır (klip dahil, mod
+geçişine bakmaz). Sonuç:
+
+```
+  taşıyıcı değişimi (geniş)             210
+  TASIYICI_RAKIBE                       %24,3 (51/210)  — sahiplik rakibe geçti
+  ↳ arada top SERBEST kalarak            49   (ribaunt · çalma · top kaybı — MEŞRU)
+  ↳ RAKIBE_DOGRUDAN (serbest kalmadan)  0-2 / 600 sn
+```
+
+Yani sahipliğin rakibe geçtiği 51 olayın 49'u ribaunt/çalmadır ve top **paslanmıyor, yere
+düşüyor**. Kalan 0-2 olayın yığın izi de alındı:
+`t=546,2 reb a/C → h/PF | _ballHold<Object.fn<_simTick` — bir ribaunt takibinin geri
+çağrısı topu karşı takımdan bir oyuncuya veriyor ve **FAZ 58 kapısı onu zaten uçan pasa
+çevirmeden el değişimine indiriyor** (`_ballTut`). Ekranda top uçmuyor.
+
+**(2) Görsel yanılsama mı?** Pas sırasında sahip değişiminin olabileceği yollar listelendi:
+`_ballPass` (FAZ 58 kapısı takım değişimini engelliyor) · `_hirsizAl` (çalma — `_ballLoose`
++ `_chase`, pas DEĞİL) · `_topuAlmayaCalis` / `_ballTut` (yalnız `loose`/`dead`) ·
+`_ballKurtar` (bekçi, aynı takım şartı) · klip oynatıcı (gerçek kayıt). **Uçan topun rakip
+eline geçtiği bir yol yok.** Geriye kalan açıklama görsel: pas rakip jetonun üstünden /
+yanından geçiyor ve jeton çapı 26,2 px olduğu için "ona gitti" gibi okunuyor.
+**Düzeltme işi olarak alınmadı** (brifin talimatı).
+
+### Değişen dosyalar
+
+| dosya | değişiklik |
+|---|---|
+| `js/sahne-oam.js` | `oamSpotlar`: perimetre itmesi artık yarıçapı koruyup AÇIYI döndürüyor (köşe kırpması), `_UC` 225 → 216 · `oamOluTop`: sokma için yazılan üç nokta `O._sokmaGeri`'ye alınıp sokma pasında geri konuyor · `oamBaskiTick`: arka sahada top savunmacısının tabanı 52 → 84 px |
+| `js/match-engine.js` | `_ballPass` başına geri saha kuralı (tek kapı, FAZ 58'in yanında) |
+| `tools/kural-goz.js` | dört yeni kare payı kalemi (klip/fizik paydaları ayrı), çizilen konum ölçümü, geniş pas tanımı, faz kırılımı, slot dökümü, motor sayaçları |
+
+### Denenen ve ÖLÇÜLEREK ELENEN iki sürüm
+
+1. **Noktaları "top ön sahaya geçince" geri koymak.** Arka saha savunmacı mesafesini
+   koruyordu (L1 0,351) ama perimetre kazancının çoğunu geri veriyordu:
+   `PERIMETRE_BOS` FİZİK %3,9-5,6 → **%16,7**, `oam:set` %17-29 → **%56**. Geri alındı.
+2. **`oamBeklemeTick`'te arka saha savunmacısını geri çekmek** (`dm>430` ise boşluk büyür).
+   Ölçülen etki **yok** (arka saha 3,85 → 3,80 m) çünkü bu kalemi belirleyen TOPU TUTANIN
+   savunmacısıdır ve o `oamBaskiTick`'tedir; üstelik yayılım x kötüleşti (0,362 → 0,451).
+   Geri alındı. Doğru yer bulununca (`oamBaskiTick` tabanı) kalem HEAD düzeyine döndü.
+
+### Gerileme kapıları — HEAD ile yan yana (`git worktree`, aynı tohum)
+
+`hareket-bant-check` koşu-arası gürültülü olduğu için **3 koşunun ortalaması** (HEAD 2):
+
+| L1 | HEAD | FAZ 78 | yön |
+|---|---|---|---|
+| yayılım x | 0,408 | **0,384** | iyileşti |
+| yayılım y | 0,511 | **0,486** | iyileşti |
+| savunmacı mesafesi | 0,263 | **0,191** | iyileşti |
+| ↳ ön sahada | 0,325 | **0,281** | iyileşti |
+| ↳ arka sahada | 0,309 | 0,368 | **kötüleşti** (4,43 → 4,32 m · gerçek 5,07) |
+| potaya uzaklık | 0,316 | 0,335 | eşit |
+
+`spacing-check`: HEAD **13 hedef düşüyor**, FAZ 78 **10** — set hücumunda ikili mesafe
+5,52 → 7,18 m ✓ · en yakın ikili 2,84 → 3,74 m ✓ · yayılım %19,1 → %32,3 ✓ ·
+potaya uzaklık 11,75 → 10,49 m. (Bu aracın "oturmuş set" örneklemi 6-7 karedir; yön
+bilgisi değerli ama tek başına yargı değil.)
+
+`sunum-check`: FAZ 78 **M9 · M12 · F25-6a · F25-6b** düşüyor, HEAD **M12 · F14-7 · F25-6a ·
+F25-6b**. F14-7 (serbest atış yerleşimi) HEAD'de 7,7/10 ile düşerken FAZ 78'de **9,3/10** ✓.
+⚠ **M9 kıyaslanamadı**: HEAD koşusunda payda **1** (araç "ÖRNEKLEM YETERSİZ: M9" diyor ve
+1/1 = %100 basıyor), FAZ 78 koşusunda payda 9 (5/9 = %56). İki sayı aynı şeyi ölçmüyor;
+kalem **açık** bırakıldı.
+
+### Kapılar
+`sim-node --n=200 --seed=42` **93.4 - 87.3 · 268** · determinizm ✓ (skor değişmedi) ·
+`visual-check` masaüstü + mobil **0 konsol hatası** · `surum-check --yaz` → **124**.
+
+### Ders
+**Bir kapı "düzelmiyor"sa, önce kapının ÖLÇTÜĞÜ KATMANI sor.** İŞ 1'de brifin gördüğü
+%13,4 simülasyon konumuydu; kullanıcının gördüğü çizim katmanında aynı büyüklük %0,9 idi ve
+zaten hedefin altındaydı. İŞ 2'de ise tersi oldu: FAZ 76'nın "perimetre garantisi" kodda
+duruyordu ama köşede kırpma yüzünden slotu yayın **daha içine** alıyordu — yani kapı
+yazılmıştı, çalışmıyordu. İkisini ayıran tek şey slot dökümünü (hedefin kendisini) basmaktı.

@@ -158,14 +158,32 @@ function oamSpotlar(S,offLeft,offR){
      ⚠ Slotlar potaya göre RADYAL itilir; yanal (y) itmek FAZ 73'te denendi ve
        oyuncuları aynı hatta yığıp çakışma üretti. */
   try{
-    const _UC=225;
+    const _UC=216;   /* FAZ 78: 225 → 216. İtme FAZ 76'da köşede işlemiyordu (kırpma onu yayın
+                         içine geri alıyordu); çalışır hâle gelince potaya ortalama uzaklık
+                         10,99 → 11,89 m'ye çıktı (gerçek 10,94, hareket-bant-check). 216 px
+                         (7,31 m) yayın 0,24 m dışıdır — garanti korunur, yayılım şişmez. */
     const dizi=offR.map(q=>({q,c:m.get(q)})).filter(o=>o.c)
       .map(o=>({...o,d:Math.hypot(o.c[0]-rim[0],o.c[1]-rim[1])}))
       .sort((a,b)=>b.d-a.d);
     for(let k=0;k<Math.min(2,dizi.length);k++){
       const o=dizi[k]; if(o.d>=_UC||o.d<1) continue;
-      const ux=(o.c[0]-rim[0])/o.d, uy=(o.c[1]-rim[1])/o.d;
-      m.set(o.q,[_inX(rim[0]+ux*_UC),_inY(rim[1]+uy*_UC)]);
+      /* ── FAZ 78 · İŞ 2: RADYAL İTME KÖŞEDE TERS TEPİYORDU (ölçüldü) ────────────────
+         Köşe slotu (SET_SPREAD [56,38], potaya 212 px) radyal olarak 225'e itilince nokta
+         dip çizginin DIŞINA düşüyor, `_inY` geri kırpıyor ve sonuç 207 px oluyordu — yani
+         "perimetre garantisi" slotu yayın DAHA İÇİNE alıyordu. Slot dökümü bunu birebir
+         gösterdi: en uzak slot 217 px (hedef 225). Çözüm: YARIÇAP korunur, AÇI saha içinde
+         kalana dek 5°'lik adımlarla döndürülür (radyale en yakın geçerli açı). Kırpma yok. */
+      const a0=Math.atan2(o.c[1]-rim[1],o.c[0]-rim[0]);
+      const ici=(x,y)=>(x>=CRT_X0+CRT_IN&&x<=CRT_X1-CRT_IN&&y>=CRT_Y0+CRT_IN&&y<=CRT_Y1-CRT_IN);
+      let nx=rim[0]+Math.cos(a0)*_UC, ny=rim[1]+Math.sin(a0)*_UC, bulundu=ici(nx,ny);
+      for(let ad=1;ad<=14&&!bulundu;ad++){
+        for(const yon of [1,-1]){
+          const a=a0+yon*ad*0.0873;
+          const px=rim[0]+Math.cos(a)*_UC, py=rim[1]+Math.sin(a)*_UC;
+          if(ici(px,py)){ nx=px; ny=py; bulundu=true; break; }
+        }
+      }
+      if(bulundu) m.set(o.q,[nx,ny]);
     }
   }catch(e){}
   return m;
@@ -366,15 +384,23 @@ function oamOluTop(S){
     const spots=oamSpotlar(S,offLeft,offR);
     let icerde=false; spots.forEach((c)=>{ if(Math.hypot(c[0]-rim[0],c[1]-rim[1])<150) icerde=true; });
     if(!icerde){ const uzun=offR.filter(p=>p!==pg).sort((a,b2)=>(b2.role|0)-(a.role|0))[0]; if(uzun) spots.set(uzun,[_inX(rim[0]+dir*44),_inY(250+(spot.y<250?54:-54))]); }
+    /* ── FAZ 78 · İŞ 2: SOKMA DİZİLİMİ SET FAZINA SIZMASIN ──────────────────────────────
+       FAZ 54 C4 sokucunun üç arkadaşını 6 m içine çağırır — bu SOKMA ANININ kuralıdır. Ama
+       o üç nokta `O.spots` içine KALICI yazılıyor ve faz sokma → geçiş → set diye ilerlerken
+       bir daha hesaplanmıyordu: ön sahadan yapılan bir sokmadan sonra beş hücumcunun üçü dip
+       çizgi dibinde park ediyor ve perimetre boş kalıyordu. Ölçüldü (kural-goz --playoff, faz
+       kırılımı): `oam:set` %87,9-92,2 · `oam:gecis` %53-68 — klip (gerçek NBA) tabanı %11,3.
+       Şablon noktaları sokma pası atılır atılmaz geri konur. */
+    const _sokmaGeri=[];
     /* FAZ 54 C4: sokucunun ÜÇ arkadaşı 6 m içine gelir (pas ancak o zaman atılır) — geri kalan
        ikisi şablon noktasında kalır. Ölçüldü: ölü top sokmalarında 5 m içinde 1-2 kişi. */
     { const ust=spot.y<250, sg=ust?1:-1;
       const yak=[[spot.x+dir*150,spot.y+sg*60],[spot.x+dir*110,spot.y+sg*130],[spot.x+dir*60,spot.y+sg*160]];
-      offR.filter(p=>p!==inb).slice(0,3).forEach((p,i)=>{ spots.set(p,[_inX(yak[i][0]),_inY(yak[i][1])]); }); }
+      offR.filter(p=>p!==inb).slice(0,3).forEach((p,i)=>{ _sokmaGeri.push([p,spots.get(p)]); spots.set(p,[_inX(yak[i][0]),_inY(yak[i][1])]); }); }
     S.script=[]; S.sIdx=0;                                  /* eski dalın pası OAM'a geçer */
     const spotOnde=offLeft?(spot.x<COURT_MID):(spot.x>COURT_MID);
     const O={aktif:true,sutsuz:true,spotOnde,faz:'sokma',t:0,sh:null,shooter:null,pg,outletTok:null,mid:null,offP,defP,offR,defR,offLeft,dir,rim,
-      spots,zincir:[pg],zi:0,holdT:0,holdMin:0.6,scheme:null,fastBreak:false,putback:false,iso:false,isPnr:false,screener:null,cutter:null,postup:false,
+      spots,_sokmaGeri,zincir:[pg],zi:0,holdT:0,holdMin:0.6,scheme:null,fastBreak:false,putback:false,iso:false,isPnr:false,screener:null,cutter:null,postup:false,
       degisim:null,degisti:true,inb,spot,tFire:99,tInb:2,tAdv:2.5,setDur:99,tSet:null,tGecis:null,res:null,onShoot:null,atildi:false,perdeEvre:0,
       esle:new Map(),ph:new Map(),zorla:false,sutT:null,_snapSeen:(S._snapN|0)};
     offR.forEach((p,i)=>{ O.esle.set(p,defR[i]||defR[0]); O.ph.set(p,i*1.3); }); defR.forEach((p,i)=>{ O.ph.set(p,i*1.7+0.5); });
@@ -529,6 +555,12 @@ function oamTick(dt){
         if(Math.hypot(pg.x-inb.x,pg.y-inb.y)>_SOKMA_MAX_PX){ alici=_pasHedefSinirla(inb,pg,offP,_SOKMA_MAX_PX)||pg; }
         oamPas(alici);
         _oobKapat(inb); inb._wp=null; S.inb=null; S._sokmaBekle=null;
+        /* FAZ 78 İŞ 2: sokma için çağrılan üç oyuncu ŞABLON noktasına döner.
+           ⚠ Geri koymayı "top ön sahaya geçince"ye ERTELEMEK denendi ve ölçülerek elendi:
+           perimetre kazancının çoğu kayboldu (fizik %3,9-5,6 → %16,7 · oam:set %17-29 → %56),
+           çünkü ertelenen noktalar set fazına yine sızıyordu. Bunun arka saha bedeli
+           savunmanın kendi kapısından (oamBaskiTick) çözülür. */
+        try{ if(O._sokmaGeri&&O._sokmaGeri.length){ O._sokmaGeri.forEach(g=>{ if(g&&g[0]&&g[1]) O.spots.set(g[0],g[1]); }); O._sokmaGeri.length=0; } }catch(e){}
         O.faz='gecis'; O.tGecis=O.t;
       }
     }
@@ -566,6 +598,7 @@ function oamTick(dt){
   }
   else if(O.faz==='set'){
     S.canliSet=true;
+    if(O._sokmaGeri&&O._sokmaGeri.length){ O._sokmaGeri.forEach(g=>{ if(g&&g[0]&&g[1]) O.spots.set(g[0],g[1]); }); O._sokmaGeri.length=0; }
     if(O.sutsuz){
       /* şut olayı henüz gelmedi: dizilim korunur, uzun tutuyorsa çıkış pası; top hareketi yok */
       if(bizde&&carrier!==pg&&!_tasiyabilir(carrier)) oamOutletTick(S,dt);
@@ -845,7 +878,14 @@ function oamBaskiTick(S,dt){
     const rim=_rim(offLeft);
     const arka=offLeft?(c.x>COURT_MID):(c.x<COURT_MID); if(!arka) return;
     const offR=_rolesOrder(offP), defR=_rolesOrder(defP); const i=offR.indexOf(c); const d=defR[i]; if(!d||d._oob||(S.chase&&S.chase.tok===d)) return;
-    const dm=oamDR(c,rim)||1; let g=52+100*Math.min(1,Math.abs(c.x-COURT_MID)/220); g=Math.min(g,Math.max(0,dm-26));   /* FAZ 49 */
+    /* ── FAZ 78: ARKA SAHADA TOP SAVUNMACISININ TABANI ────────────────────────────────
+       Eski formül (FAZ 49) boşluğu orta çizgiye yaklaştıkça 52 px'e (1,76 m) indiriyordu —
+       yani savunma top ORTA SAHAYA geldiğinde en sıkı presi yapıyordu. Gerçek veride
+       (SportVU, tools/_lib/gercek-hareket.json) arka sahada topu tutana en yakın savunmacı
+       ortalama 5,07 m, ön sahada 2,00 m; motor arka sahada 3,85-4,43 m ölçülüyordu.
+       Taban 52 → 84 px (1,76 → 2,84 m); tavan aynı. Ön saha DOKUNULMADI (bu kapı yalnız
+       top arka sahadayken çalışır — 874. satır `if(!arka) return`). */
+    const dm=oamDR(c,rim)||1; let g=84+100*Math.min(1,Math.abs(c.x-COURT_MID)/220); g=Math.min(g,Math.max(0,dm-26));
     d.tx=_inX(c.x+(rim[0]-c.x)/dm*g); d.ty=_inY(c.y+(rim[1]-c.y)/dm*g); d._wp=null; _setUrg(d,_URG.KOS); d._lock=S.time+0.1; d._mark=c;
   }catch(e){}
 }
@@ -1174,7 +1214,7 @@ function oamBeklemeTick(S,dt){
       if(m2===carrier) return;
       const dm=oamDR(m2,rim)||1;
       let g=Math.min(_defGap(oamD(m2,carrier||m2)),Math.max(0,dm-26));
-      let tx=m2.x+(rim[0]-m2.x)/dm*g, ty=m2.y+(rim[1]-m2.y)/dm*g;
+            let tx=m2.x+(rim[0]-m2.x)/dm*g, ty=m2.y+(rim[1]-m2.y)/dm*g;
       /* ── FAZ 74: ADAMI KULVARIN DIŞINDAYSA SAVUNMACI DA KULVARA GİRMEZ ────────────────
          Özgün denetçi (tools/goz-benim.js --playoff) 180 sn'de RAKET_TIKANDI'yı 16 EPİZOT /
          TOPLAM 66 sn, en uzunu 18 SANİYE ölçtü — boyada aynı anda 8 oyuncuya kadar.
